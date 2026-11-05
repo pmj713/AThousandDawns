@@ -42,6 +42,8 @@ namespace AThousandDawns.Player
         float _ultimateTimer;
         float _sinceUltimatePress = float.PositiveInfinity;
         float _slowTimer, _slowRatio;
+        int _burnStacks, _burnMaxStacks;
+        float _burnTimer, _burnTickTimer, _burnPerStack, _burnDuration, _burnTick;
 
         Vector3 _velocity;
         Vector3 _knockbackVelocity;
@@ -88,6 +90,43 @@ namespace AThousandDawns.Player
         {
             _slowRatio = Mathf.Max(SlowRatio, ratio);
             _slowTimer = Mathf.Max(_slowTimer, duration);
+        }
+
+        // 화상 (녹림왕 불타는 죽림): 1중첩씩 쌓이고(최대 5), 쌓일 때마다 지속 4초가 새로 시작돼요.
+        // 0.5초마다 중첩 × perStackPerSecond × 0.5 만큼 피해. 무적·경직과 상관없는 지속 피해예요.
+        public int BurnStacks => _burnTimer > 0f ? _burnStacks : 0;
+
+        public void AddBurnStack(float perStackPerSecond)
+        {
+            if (IsDead) return;
+            _burnStacks = Mathf.Min(_burnMaxStacks, BurnStacks + 1);
+            _burnTimer = _burnDuration;
+            _burnPerStack = perStackPerSecond;
+        }
+
+        void TickBurn(float dt)
+        {
+            if (_burnTimer <= 0f)
+            {
+                _burnStacks = 0;
+                _burnTickTimer = 0f;
+                return;
+            }
+            _burnTimer -= dt;
+            _burnTickTimer += dt;
+            while (_burnTickTimer >= _burnTick && !IsDead)
+            {
+                _burnTickTimer -= _burnTick;
+                TakeDirectDamage(Mathf.Max(1, Mathf.RoundToInt(_burnStacks * _burnPerStack * _burnTick)));
+            }
+        }
+
+        void TakeDirectDamage(int damage)
+        {
+            Health = Mathf.Max(0f, Health - damage);
+            DamagePopups.Spawn(transform.position + Vector3.up * 2f, damage, true);
+            Hurt?.Invoke(damage);
+            if (IsDead && visual != null) visual.localScale = new Vector3(1.2f, 0.25f, 1.2f);
         }
         public float SkillCooldown => _skillCooldown;
         public float SkillCooldownLeft => Mathf.Max(0f, _skillCooldownLeft);
@@ -155,6 +194,10 @@ namespace AThousandDawns.Player
             _ultimateFallTime = GameConfig.Get("ultimate.sword_fall_time", 0.15f);
             Gongryeok = Mathf.RoundToInt(GameConfig.Get("player.gongryeok", 0f));
 
+            _burnMaxStacks = Mathf.RoundToInt(GameConfig.Get("burn.max_stacks", 5f));
+            _burnDuration = GameConfig.Get("burn.duration", 4f);
+            _burnTick = Mathf.Max(0.05f, GameConfig.Get("burn.tick", 0.5f));
+
             _gaugeMax = GameConfig.Get("ultimate.gauge_max", 100f);
             _gaugeBasic = GameConfig.Get("gauge.basic_hit", 2f);
             _gaugeFinisher = GameConfig.Get("gauge.finisher_hit", 4f);
@@ -189,6 +232,8 @@ namespace AThousandDawns.Player
             if (_invulnerableTimer > 0f) _invulnerableTimer -= dt;
             if (_skillCooldownLeft > 0f) _skillCooldownLeft -= dt;
             if (_slowTimer > 0f) _slowTimer -= dt;
+            TickBurn(dt);
+            if (IsDead) return;
 
             if (IsStunned)
             {
@@ -295,7 +340,7 @@ namespace AThousandDawns.Player
             bodyRenderer.SetPropertyBlock(_block);
         }
 
-        // 만검귀종 (하단전): 1초 동안 반경 3칸 안 적에게 검 8자루가 고르게 떨어져요. 기세를 모두 써요.
+        // 만검귀종 (하단전): 1초 동안 맵 전체 적에게 검 8자루가 고르게 떨어져요 (ultimate.radius 0 = 맵 전체). 기세를 모두 써요.
         void StartUltimate()
         {
             _sinceUltimatePress = float.PositiveInfinity;
@@ -310,7 +355,7 @@ namespace AThousandDawns.Player
             _dashAttackTimer = 0f;
             ApplyFacing();
 
-            if (swingFlash != null) swingFlash.Show(transform.position, _facing, _ultimateRadius, 360f, 0.2f);
+            if (swingFlash != null && _ultimateRadius > 0f) swingFlash.Show(transform.position, _facing, _ultimateRadius, 360f, 0.2f); // 0이면 맵 전체라 범위 표시 없음
             var hit = HitDamageInput.Of(_ultimateSwordDamage);
             hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
             swordRain.Begin(transform.position, _ultimateRadius, _ultimateSwordCount, _ultimateCastTime, _ultimateFallTime, hit, _rules);

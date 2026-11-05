@@ -59,6 +59,12 @@ namespace AThousandDawns.Enemies
                 BodyPosition = new Vector3(0f, 0.15f, 0f), BodyScale = new Vector3(0.35f, 0.25f, 1.2f),
                 MarkPosition = new Vector3(0f, 0.22f, 0.7f), MarkScale = new Vector3(0.3f, 0.2f, 0.3f),
             },
+            EnemyKind.Nokrim => new Shape
+            {
+                Name = "녹림왕", Radius = 0.7f, Height = 2.4f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 1.2f, 0f), BodyScale = new Vector3(1.3f, 1.2f, 1.3f),
+                MarkPosition = new Vector3(0.8f, 1.3f, 0.7f), MarkScale = new Vector3(0.14f, 0.3f, 2f), // 대도
+            },
             _ => new Shape
             {
                 Name = "산적 졸개", Radius = 0.35f, Height = 1.6f, Primitive = PrimitiveType.Capsule,
@@ -76,6 +82,7 @@ namespace AThousandDawns.Enemies
             EnemyKind.Horn => v.horn,
             EnemyKind.Bomber => v.bomber,
             EnemyKind.Snake => v.snake,
+            EnemyKind.Nokrim => v.nokrim,
             _ => v.grunt,
         };
 
@@ -126,6 +133,7 @@ namespace AThousandDawns.Enemies
                 EnemyKind.Horn => root.AddComponent<HornBrain>(),
                 EnemyKind.Bomber => root.AddComponent<BomberBrain>(),
                 EnemyKind.Snake => root.AddComponent<SnakeBrain>(),
+                EnemyKind.Nokrim => root.AddComponent<NokrimBrain>(),
                 _ => root.AddComponent<GruntBrain>(),
             };
             if (brain is ShieldBrain shieldBrain) shieldBrain.SetShieldVisual(mark.transform);

@@ -38,6 +38,9 @@ namespace AThousandDawns.EditorTools
         const string BomberColor = "#8C3B2E";
         const string SnakeColor = "#4F8F3A";
         const string BushColor = "#5E9E5A";
+        const string NokrimColor = "#8A3324";
+        const string FireColor = "#E25822";       // 불타는 죽림 (임시)
+        const string GateColor = "#B7322C";       // 결계 부적 (잠긴 문), 색감 시트
         const string EnemyAccentColor = "#EFE6D2";
         const string ArrowColor = "#1E1C1A";
         const string TelegraphBaseColor = "#E7BD7B";
@@ -45,6 +48,7 @@ namespace AThousandDawns.EditorTools
         const string TelegraphOutlineColor = "#FFFFFF";
 
         static readonly Vector3 CameraOffset = new Vector3(0f, 13.1f, -9.2f); // 거리 16, 55°
+        static readonly Vector3 BossZoneCenter = new Vector3(0f, 0f, 16.5f); // 녹림왕 결투장 가운데
 
         [MenuItem("AThousandDawns/시험판 씬 만들기")]
         public static void BuildFromMenu()
@@ -74,7 +78,7 @@ namespace AThousandDawns.EditorTools
             var dummyMat = GetMaterial("Dummy", DummyColor, false);
             var flashMat = GetMaterial("SwingFlash", FlashColor, true);
 
-            BuildRoom(floorMat, wallMat, bambooMat);
+            var gate = BuildRoom(floorMat, wallMat, bambooMat, GetMaterial("BossGate", GateColor, false));
             BuildBushes(GetMaterial("Bush", BushColor, false));
 
             var config = new GameObject("GameConfig").AddComponent<GameConfig>();
@@ -93,6 +97,10 @@ namespace AThousandDawns.EditorTools
             var director = BuildDirector(player);
             var arena = new GameObject("PrototypeArena").AddComponent<PrototypeArena>();
             SetRef(arena, "director", director);
+            SetRef(arena, "bossGate", gate);
+            var arenaSo = new SerializedObject(arena);
+            arenaSo.FindProperty("bossZoneCenter").vector3Value = BossZoneCenter;
+            arenaSo.ApplyModifiedPropertiesWithoutUndo();
 
             var hud = new GameObject("PrototypeHud").AddComponent<PrototypeHud>();
             SetRef(hud, "player", player);
@@ -112,11 +120,15 @@ namespace AThousandDawns.EditorTools
             Debug.Log($"[시험판 씬] {ScenePath} 를 만들었어요.");
         }
 
-        // 청죽사가 숨는 풀숲 4곳 (대나무·목인장·플레이어 시작 자리와 떨어진 곳). 충돌체 없음.
+        // 청죽사가 숨는 풀숲 8곳 (대나무·목인장·플레이어 시작 자리·테스트 경로와 떨어진 곳). 충돌체 없음.
         static void BuildBushes(Material mat)
         {
             var parent = new GameObject("Bushes").transform;
-            Vector3[] spots = { new Vector3(-6.5f, 0f, -2.5f), new Vector3(6.5f, 0f, 2f), new Vector3(-3f, 0f, 4.8f), new Vector3(3.5f, 0f, -4.5f) };
+            Vector3[] spots =
+            {
+                new Vector3(-6.5f, 0f, -2.5f), new Vector3(6.5f, 0f, 2f), new Vector3(-3f, 0f, 4.8f), new Vector3(3.5f, 0f, -4.5f),
+                new Vector3(-15f, 0f, 5f), new Vector3(15f, 0f, -9f), new Vector3(-5f, 0f, -11f), new Vector3(13f, 0f, 8f),
+            };
             for (int i = 0; i < spots.Length; i++)
             {
                 var bush = new GameObject($"Bush_{i + 1}");
@@ -135,16 +147,41 @@ namespace AThousandDawns.EditorTools
             }
         }
 
-        static void BuildRoom(Material floorMat, Material wallMat, Material bambooMat)
+        // 넓은 죽림 (x −20~20, z −14~10) + 북쪽 녹림왕 결투장 (16×12칸, x −8~8, z 10.5~22.5, 몬스터 시트 결투장 크기).
+        // 결투장 입구(가운데 3칸)는 녹림왕이 깨어나면 결계로 막혀요. 결계 오브젝트를 돌려줘요.
+        static GameObject BuildRoom(Material floorMat, Material wallMat, Material bambooMat, Material gateMat)
         {
             var room = new GameObject("Room").transform;
-            Box("Floor", room, new Vector3(0f, -0.1f, 0f), new Vector3(16f, 0.2f, 12f), floorMat);
-            Box("Wall_N", room, new Vector3(0f, 0.75f, 6.25f), new Vector3(17f, 1.5f, 0.5f), wallMat);
-            Box("Wall_S", room, new Vector3(0f, 0.75f, -6.25f), new Vector3(17f, 1.5f, 0.5f), wallMat);
-            Box("Wall_W", room, new Vector3(-8.25f, 0.75f, 0f), new Vector3(0.5f, 1.5f, 12f), wallMat);
-            Box("Wall_E", room, new Vector3(8.25f, 0.75f, 0f), new Vector3(0.5f, 1.5f, 12f), wallMat);
+            Box("Floor_Field", room, new Vector3(0f, -0.1f, -2f), new Vector3(41f, 0.2f, 25f), floorMat);
+            Box("Floor_Arena", room, new Vector3(0f, -0.1f, 16.5f), new Vector3(17f, 0.2f, 13f), floorMat);
 
-            Vector3[] bamboo = { new Vector3(-5f, 0f, 3.5f), new Vector3(5.5f, 0f, -3f), new Vector3(-4.5f, 0f, -4f), new Vector3(5f, 0f, 4f) };
+            Box("Wall_S", room, new Vector3(0f, 0.75f, -14.25f), new Vector3(41f, 1.5f, 0.5f), wallMat);
+            Box("Wall_W", room, new Vector3(-20.25f, 0.75f, -2f), new Vector3(0.5f, 1.5f, 25f), wallMat);
+            Box("Wall_E", room, new Vector3(20.25f, 0.75f, -2f), new Vector3(0.5f, 1.5f, 25f), wallMat);
+            Box("Wall_N_West", room, new Vector3(-11f, 0.75f, 10.25f), new Vector3(19f, 1.5f, 0.5f), wallMat);
+            Box("Wall_N_East", room, new Vector3(11f, 0.75f, 10.25f), new Vector3(19f, 1.5f, 0.5f), wallMat);
+
+            // 결투장 테두리는 대나무 숲 (몬스터 시트)
+            Box("Arena_W", room, new Vector3(-8.25f, 1.25f, 16.5f), new Vector3(0.5f, 2.5f, 12.5f), bambooMat);
+            Box("Arena_E", room, new Vector3(8.25f, 1.25f, 16.5f), new Vector3(0.5f, 2.5f, 12.5f), bambooMat);
+            Box("Arena_N", room, new Vector3(0f, 1.25f, 22.75f), new Vector3(17f, 2.5f, 0.5f), bambooMat);
+
+            var gate = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            gate.name = "BossGate (결계)";
+            gate.transform.SetParent(room, false);
+            gate.transform.localPosition = new Vector3(0f, 0.75f, 10.25f);
+            gate.transform.localScale = new Vector3(3f, 1.5f, 0.5f);
+            gate.GetComponent<Renderer>().sharedMaterial = gateMat;
+            gate.SetActive(false);
+
+            // 가운데(시작 자리·테스트 경로 x −2~2)는 비워 둬요
+            Vector3[] bamboo =
+            {
+                new Vector3(-5f, 0f, 3.5f), new Vector3(5.5f, 0f, -3f), new Vector3(-4.5f, 0f, -4f), new Vector3(5f, 0f, 4f),
+                new Vector3(-10f, 0f, -12f), new Vector3(-16f, 0f, -4f), new Vector3(-16f, 0f, 8f), new Vector3(-11f, 0f, 6f),
+                new Vector3(11f, 0f, -11f), new Vector3(16f, 0f, -2f), new Vector3(16f, 0f, 8f), new Vector3(10f, 0f, 2f),
+                new Vector3(-9f, 0f, -6f), new Vector3(9f, 0f, -3f),
+            };
             for (int i = 0; i < bamboo.Length; i++)
             {
                 var b = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
@@ -154,6 +191,7 @@ namespace AThousandDawns.EditorTools
                 b.transform.localScale = new Vector3(0.6f, 1.5f, 0.6f);
                 b.GetComponent<Renderer>().sharedMaterial = bambooMat;
             }
+            return gate;
         }
 
         static PlayerController BuildPlayer(Material bodyMat, Material noseMat, Material flashMat, Material swordMat)
@@ -216,6 +254,8 @@ namespace AThousandDawns.EditorTools
             v.FindPropertyRelative("horn").objectReferenceValue = GetMaterial("Enemy_Horn", HornColor, false);
             v.FindPropertyRelative("bomber").objectReferenceValue = GetMaterial("Enemy_Bomber", BomberColor, false);
             v.FindPropertyRelative("snake").objectReferenceValue = GetMaterial("Enemy_Snake", SnakeColor, false);
+            v.FindPropertyRelative("nokrim").objectReferenceValue = GetMaterial("Enemy_Nokrim", NokrimColor, false);
+            v.FindPropertyRelative("fire").objectReferenceValue = GetMaterial("Fire", FireColor, true);
             v.FindPropertyRelative("accent").objectReferenceValue = GetMaterial("Enemy_Accent", EnemyAccentColor, false);
             v.FindPropertyRelative("arrow").objectReferenceValue = GetMaterial("Arrow", ArrowColor, false);
             v.FindPropertyRelative("telegraphBase").objectReferenceValue = GetMaterial("Telegraph_Base", TelegraphBaseColor, true);

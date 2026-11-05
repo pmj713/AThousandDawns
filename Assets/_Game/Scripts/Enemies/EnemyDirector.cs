@@ -18,6 +18,8 @@ namespace AThousandDawns.Enemies
         public Material horn;
         public Material bomber;
         public Material snake;
+        public Material nokrim;
+        public Material fire;
         public Material accent;
         public Material arrow;
         public Material telegraphBase;
@@ -38,6 +40,7 @@ namespace AThousandDawns.Enemies
         DamageRules _rules;
 
         public PlayerController Player => player;
+        public EnemyVisuals Visuals => visuals;
         public AttackTokenPool MeleeTokens { get; private set; }
         public AttackTokenPool RangedTokens { get; private set; }
         public IReadOnlyList<EnemyBrain> Enemies => _enemies;

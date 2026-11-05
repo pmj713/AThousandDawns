@@ -5,11 +5,15 @@ namespace AThousandDawns.Combat
 {
     // 만검귀종 (검 절초): 시전 시간 동안 검이 범위 안 적에게 고르게 나뉘어 떨어져요. 적이 1명이면 전부 그 적에게.
     // 검은 떨어지는 동안 대상을 따라가서 반드시 맞고, 강인함을 무시해요 (방어력은 적용). 범위에 적이 없으면 빈 땅에 꽂혀요.
+    // 반경이 0 이하면 맵 전체 (멀리서 자고 있던 적도 맞고 깨어나요).
     public sealed class SwordRain : MonoBehaviour
     {
         const float DropHeight = 7f;
         const float RestHeight = -0.3f; // 칼끝이 땅에 살짝 박힌 높이
         const float Linger = 0.35f;
+        const float EmptyScatter = 3f;  // 맞힐 적이 없을 때 검이 꽂히는 범위 (플레이어 둘레)
+
+        bool WholeMap => _radius <= 0f;
 
         [SerializeField] Material swordMaterial;
 
@@ -97,7 +101,7 @@ namespace AThousandDawns.Combat
             }
             else
             {
-                Vector2 r = Random.insideUnitCircle * _radius;
+                Vector2 r = Random.insideUnitCircle * (WholeMap ? EmptyScatter : _radius);
                 point = _center + new Vector3(r.x, 0f, r.y);
             }
 
@@ -112,13 +116,21 @@ namespace AThousandDawns.Combat
         Damageable PickTarget()
         {
             _candidates.Clear();
-            int found = Physics.OverlapSphereNonAlloc(_center, _radius + 1f, _overlap, ~0, QueryTriggerInteraction.Collide);
-            for (int i = 0; i < found; i++)
+            if (WholeMap)
             {
-                var d = _overlap[i].GetComponentInParent<Damageable>();
-                if (d == null || d.IsDead || !d.Targetable || _candidates.Contains(d)) continue;
-                if (DistanceXZ(_center, d.transform.position) > _radius + d.BodyRadius) continue;
-                _candidates.Add(d);
+                foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+                    if (!d.IsDead && d.Targetable) _candidates.Add(d);
+            }
+            else
+            {
+                int found = Physics.OverlapSphereNonAlloc(_center, _radius + 1f, _overlap, ~0, QueryTriggerInteraction.Collide);
+                for (int i = 0; i < found; i++)
+                {
+                    var d = _overlap[i].GetComponentInParent<Damageable>();
+                    if (d == null || d.IsDead || !d.Targetable || _candidates.Contains(d)) continue;
+                    if (DistanceXZ(_center, d.transform.position) > _radius + d.BodyRadius) continue;
+                    _candidates.Add(d);
+                }
             }
 
             Damageable best = null;

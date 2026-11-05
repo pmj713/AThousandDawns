@@ -17,7 +17,7 @@ namespace AThousandDawns.Prototype
         [SerializeField] EnemyDirector director;
         [SerializeField] PrototypeArena arena;
 
-        GUIStyle _label, _popup, _dummy, _big;
+        GUIStyle _label, _popup, _dummy, _big, _bossLabel;
         Camera _camera;
 
         void Update() => DamagePopups.Tick(Time.deltaTime);
@@ -30,7 +30,7 @@ namespace AThousandDawns.Prototype
             GUILayout.BeginArea(new Rect(16, 16, 640, 320), GUI.skin.box);
             GUILayout.Label("일조천회 시험판 · 전투", _label);
             GUILayout.Label("WASD 이동 · 좌클릭(누르고 있기) 평타 · 우클릭 회선참 · Q 만검귀종 · Space 대시", _label);
-            GUILayout.Label("부르기: 1 졸개 · 2 멧돼지 · 3 궁수 · 4 들개 · 5 방패 · 6 나팔수 · 7 화약 · 8 청죽사", _label);
+            GUILayout.Label("부르기 (바로 옆): 1 졸개 · 2 멧돼지 · 3 궁수 · 4 들개 · 5 방패 · 6 나팔수 · 7 화약 · 8 청죽사 · 9 녹림왕 (결투장)", _label);
             GUILayout.Label("G 기세 채우기 · F5 처음부터", _label);
             if (player != null)
             {
@@ -41,6 +41,7 @@ namespace AThousandDawns.Prototype
 
                 var combo = player.Combo;
                 string slow = player.SlowLeft > 0f ? $"  · 둔화 {player.SlowRatio:0%} {player.SlowLeft:0.0}초" : "";
+                if (player.BurnStacks > 0) slow += $"  · 화상 {player.BurnStacks}중첩";
                 GUILayout.Label($"대시 {player.Dash.Charges}/{player.Dash.MaxCharges}  {(player.IsInvulnerable ? "(무적)" : "")}{slow}", _label);
                 string ultimate = player.IsCastingUltimate ? "  · 만검귀종!" : player.UltimateReady ? "  · Q 만검귀종 준비" : "";
                 GUILayout.Label($"기세 {player.Gauge:0}/{player.GaugeMax:0}{ultimate}", _label);
@@ -50,13 +51,24 @@ namespace AThousandDawns.Prototype
             }
             if (director != null && director.MeleeTokens != null)
             {
-                string wave = arena != null && arena.WaveNumber > 0 ? $"{arena.WaveNumber}번째 무리 · " : "";
+                string wave = arena != null && arena.RoundNumber > 0 ? $"{arena.RoundNumber}번째 배치 · " : "";
                 GUILayout.Label($"{wave}적 {director.Enemies.Count}  ·  공격 중 근접 {director.MeleeTokens.InUse}/{director.MeleeTokens.Capacity}, 원거리 {director.RangedTokens.InUse}/{director.RangedTokens.Capacity}", _label);
             }
             GUILayout.EndArea();
 
             if (player != null && player.IsDead)
                 GUI.Label(new Rect(0, Screen.height * 0.4f, Screen.width, 60), "쓰러졌어요 · F5 키로 다시 시작", _big);
+
+            // 녹림왕이 깨어나면 화면 위쪽 가운데에 큰 체력바
+            var boss = arena != null ? arena.Boss : null;
+            if (boss != null && !boss.IsDead && boss.IsAwake && boss.Damageable != null)
+            {
+                float width = Mathf.Min(560f, Screen.width - 40f);
+                var area = new Rect((Screen.width - width) * 0.5f, 16f, width, 18f);
+                string state = boss.IsTransitioning ? " · 전환 중 (무적)" : boss.Grove != null && boss.Grove.IsBurning ? " · 불타는 죽림" : "";
+                GUI.Label(new Rect(area.x, area.y, area.width, 24f), $"녹림왕 · {boss.Phase}페이즈{state}   {boss.Damageable.Health:0}/{boss.Damageable.MaxHealth:0}", _bossLabel);
+                DrawBar(new Rect(area.x, area.y + 26f, area.width, 12f), boss.Damageable.Health / Mathf.Max(1f, boss.Damageable.MaxHealth), HealthColor);
+            }
 
             if (_camera == null) return;
 
@@ -117,6 +129,8 @@ namespace AThousandDawns.Prototype
             _dummy.normal.textColor = Color.black;
             _big = new GUIStyle(GUI.skin.label) { fontSize = 32, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             _big.normal.textColor = Color.white;
+            _bossLabel = new GUIStyle(GUI.skin.label) { fontSize = 18, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+            _bossLabel.normal.textColor = Color.white;
         }
     }
 }

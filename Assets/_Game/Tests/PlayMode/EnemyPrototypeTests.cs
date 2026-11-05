@@ -101,16 +101,36 @@ namespace AThousandDawns.Tests
             Assert.AreEqual(0, Object.FindObjectsByType<Arrow>(FindObjectsSortMode.None).Length, "맞힌 화살은 사라져요");
         }
 
-        // 한 무리(졸개 3, 멧돼지 1, 궁수 1)를 8초 동안 풀어 둬요. 오류 로그가 하나라도 나오면 테스트가 실패해요.
+        // 넓은 맵: 일반 적 8종 한 마리씩 + 결투장의 녹림왕. 플레이어가 시작 자리에 있으면 아무도 깨어나지 않아요.
         [UnityTest]
-        public IEnumerator 한_무리가_오류_없이_싸우고_동시_공격_수를_지킴()
+        public IEnumerator 넓은_맵에_적_9마리가_가만히_있음()
         {
             PrototypeArena.AutoSpawn = true;
             yield return SceneManager.LoadSceneAsync("Prototype_Combat", LoadSceneMode.Single);
             yield return null;
-            _player = Object.FindFirstObjectByType<PlayerController>();
             _director = Object.FindFirstObjectByType<EnemyDirector>();
-            Assert.AreEqual(5, _director.Enemies.Count);
+            var arena = Object.FindFirstObjectByType<PrototypeArena>();
+            Assert.AreEqual(9, _director.Enemies.Count);
+            Assert.IsNotNull(arena.Boss);
+
+            yield return new WaitForSeconds(1.5f);
+            foreach (var e in _director.Enemies) Assert.IsFalse(e.IsAwake, $"{e.DisplayName}은(는) 아직 자고 있어야 해요");
+        }
+
+        // 일반 적 8종을 플레이어 둘레에 한꺼번에 깨워서 8초 동안 풀어 둬요. 오류 로그가 하나라도 나오면 테스트가 실패해요.
+        [UnityTest]
+        public IEnumerator 여덟_종이_오류_없이_싸우고_동시_공격_수를_지킴()
+        {
+            yield return LoadScene();
+            PlacePlayer(new Vector3(0f, 0f, -3f));
+            var spots = new[]
+            {
+                (EnemyKind.Grunt, new Vector3(-5f, 0f, 1f)), (EnemyKind.Boar, new Vector3(5f, 0f, 1f)),
+                (EnemyKind.Archer, new Vector3(0f, 0f, 4f)), (EnemyKind.Hound, new Vector3(-6f, 0f, -6f)),
+                (EnemyKind.Shield, new Vector3(6f, 0f, -6f)), (EnemyKind.Horn, new Vector3(8f, 0f, 0f)),
+                (EnemyKind.Bomber, new Vector3(-3f, 0f, -8f)), (EnemyKind.Snake, new Vector3(3f, 0f, -8f)),
+            };
+            foreach (var (kind, position) in spots) _director.Spawn(kind, position);
 
             int maxMelee = 0, maxRanged = 0;
             float end = Time.time + 8f;
@@ -131,13 +151,39 @@ namespace AThousandDawns.Tests
         public IEnumerator 멧돼지가_플레이어를_뚫고_벽에_부딪혀_기절()
         {
             yield return LoadScene();
-            PlacePlayer(new Vector3(0f, 0f, 4.5f)); // 북쪽 벽 바로 앞
-            var boar = (BoarBrain)_director.Spawn(EnemyKind.Boar, new Vector3(0f, 0f, -2f));
+            PlacePlayer(new Vector3(0f, 0f, -12.5f)); // 남쪽 벽 바로 앞 (북쪽 가운데는 결투장 입구라 비어 있음)
+            var boar = (BoarBrain)_director.Spawn(EnemyKind.Boar, new Vector3(0f, 0f, -6f));
 
             yield return WaitUntil(() => boar.IsWallStunned, 6f);
             Assert.IsTrue(boar.IsWallStunned, "벽에 부딪혀 기절해야 해요");
             Assert.AreEqual(85f, _player.Health, "멧돼지 공격 15");
-            Assert.Greater(boar.transform.position.z, _player.transform.position.z - 0.5f, "플레이어를 뚫고 지나가요");
+            Assert.Less(boar.transform.position.z, _player.transform.position.z + 0.5f, "플레이어를 뚫고 지나가요");
+        }
+
+        // 결투장에 들어가면 녹림왕이 깨어나 입구가 막히고, 체력 50% 아래로 떨어지면 1.5초 뒤 2페이즈 + 불타는 죽림.
+        [UnityTest]
+        public IEnumerator 녹림왕_결투장_입구가_막히고_2페이즈로_넘어감()
+        {
+            yield return LoadScene();
+            var arena = Object.FindFirstObjectByType<PrototypeArena>();
+            var boss = arena.SpawnBoss();
+            PlacePlayer(new Vector3(0f, 0f, 13f));
+
+            yield return WaitUntil(() => boss.IsAwake, 2f);
+            Assert.IsTrue(boss.IsAwake);
+            yield return null;
+            var gate = GameObject.Find("BossGate (결계)");
+            Assert.IsNotNull(gate, "결계가 켜져 있어야 해요");
+
+            yield return WaitUntil(() => _player.Health < _player.MaxHealth, 8f);
+            Assert.Less(_player.Health, _player.MaxHealth, "녹림왕 공격이 들어와야 해요");
+
+            boss.Damageable.ApplyHit(Mathf.CeilToInt(boss.Damageable.MaxHealth * 0.55f));
+            Assert.IsTrue(boss.IsTransitioning);
+            Assert.IsFalse(boss.Damageable.Targetable, "전환 중엔 무적");
+            yield return WaitUntil(() => boss.Phase == 2, 3f);
+            Assert.AreEqual(2, boss.Phase);
+            Assert.IsNotNull(boss.Grove, "2페이즈에 불타는 죽림");
         }
     }
 }

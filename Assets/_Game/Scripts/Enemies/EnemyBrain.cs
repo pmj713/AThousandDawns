@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace AThousandDawns.Enemies
 {
-    public enum EnemyKind { Grunt, Boar, Archer, Hound, Shield, Horn, Bomber, Snake }
+    public enum EnemyKind { Grunt, Boar, Archer, Hound, Shield, Horn, Bomber, Snake, Nokrim }
 
     // 일반 적 공통: 첫 공격 대기, 공격 토큰, 공격 간격, 예고 절반 규칙, 경직. 종류별 움직임과 공격은 하위 클래스가 정해요.
     [RequireComponent(typeof(CharacterController), typeof(Damageable))]
@@ -51,6 +51,12 @@ namespace AThousandDawns.Enemies
         public bool IsStunned => _stunTimer > 0f;
         public bool IsDead => _dead;
         public bool IsHidden { get; private set; }
+
+        // 넓은 맵에 놓아 둔 적은 플레이어가 이 거리 안에 오거나 맞기 전까지 가만히 있어요. 0이면 바로 깨어 있어요.
+        public float WakeRadius { get; set; }
+        public bool IsAwake => _awake;
+        public event System.Action<EnemyBrain> Woke;
+        bool _awake;
         public bool TelegraphVisible => Telegraph != null && Telegraph.IsVisible;
 
         protected float PlayerRadius => Player != null ? Player.BodyRadius : 0.3f;
@@ -68,15 +74,15 @@ namespace AThousandDawns.Enemies
 
             MoveSpeed = Tuning("move_speed", 3f);
             AttackPower = Tuning("atk", 8f);
-            WindupTime = Tuning("windup", 0.6f);
-            // 몬스터 시트에서 빈 칸인 적이 있는 값 (나팔수 사거리, 화약 산적 빈틈·공격 간격)
+            // 몬스터 시트에서 빈 칸인 적이 있는 값 (나팔수 사거리, 화약 산적 빈틈·공격 간격, 보스는 패턴마다 다름)
+            WindupTime = GameConfig.GetOptional($"{Key}.windup", 0.6f);
             AttackRange = GameConfig.GetOptional($"{Key}.attack_range", 1.2f);
             RecoveryTime = GameConfig.GetOptional($"{Key}.recovery", 0f);
             AttackInterval = GameConfig.GetOptional($"{Key}.attack_interval", 2f);
             TrackMoveRatio = GameConfig.Get("enemy.track_move_ratio", 0.5f);
             ReadTuning();
 
-            Body.Configure(Tuning("hp", 30f), Tuning("toughness", 0f), 0f, Controller.radius, flashRenderer);
+            Body.Configure(Tuning("hp", 30f), Tuning("toughness", 0f), GameConfig.GetOptional($"{Key}.defense", 0f), Controller.radius, flashRenderer);
             Body.Damaged += OnDamaged;
 
             _reaction = new HitReaction(
@@ -108,6 +114,19 @@ namespace AThousandDawns.Enemies
 
         protected virtual void ReadTuning() { }
         protected virtual void OnInitialized() { }
+        protected virtual void OnWoke() { }
+
+        protected virtual bool ShouldWake() => WakeRadius <= 0f || ToPlayer().magnitude <= WakeRadius;
+
+        // 깨어나면 그때부터 첫 공격 대기(1초)를 세요.
+        protected void Wake()
+        {
+            if (_awake) return;
+            _awake = true;
+            _cooldown = GameConfig.Get("enemy.first_attack_delay", 1f);
+            OnWoke();
+            Woke?.Invoke(this);
+        }
 
         void Update()
         {
@@ -121,6 +140,12 @@ namespace AThousandDawns.Enemies
             {
                 if (Attack.IsAttacking) CancelAttack();
                 return;
+            }
+
+            if (!_awake)
+            {
+                if (!ShouldWake()) return;
+                Wake();
             }
 
             if (_stunTimer > 0f)
@@ -310,6 +335,8 @@ namespace AThousandDawns.Enemies
                 Die();
                 return;
             }
+
+            Wake(); // 멀리서 맞아도 깨어나요
 
             if (InterruptibleWindup && Attack.Current == EnemyAttackTimeline.Phase.Windup)
             {
