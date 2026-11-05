@@ -134,3 +134,8 @@ archer.max_per_room,2,,방마다 최대 궁수 수 (몬스터 K77 설명),
 sword.skill_cast_time,0.35,s,회선참 시전 시간,조작!B47
 sword.skill_radius,2.2,cell,회선참 주변 원형 반경 (조작 B48 설명),
 sword.skill_hit_time,0.12,s,"회선참 베는 순간, 시전 시작부터 (임시)",
+ultimate.radius,3,cell,만검귀종 범위 (반경),무기!B45
+ultimate.sword_count,8,,만검귀종 검 자루 수 (하단전),무기!B55
+ultimate.sword_damage,18,,만검귀종 검 한 자루 피해,무기!B56
+ultimate.sword_fall_time,0.15,s,검이 하늘에서 떨어지는 시간 (임시),
+player.gongryeok,3,,시험판 공력 = 무기 탭 하단전 가정값,무기!B53

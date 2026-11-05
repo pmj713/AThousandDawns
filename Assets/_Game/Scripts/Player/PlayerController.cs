@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace AThousandDawns.Player
 {
-    // 시험판 플레이어: 이동, 대시(무적), 평타 3연타(누르고 있기), 대시 공격, 초식(회선참), 피격. 수치는 전부 data_balance에서 읽어요.
+    // 시험판 플레이어: 이동, 대시(무적), 평타 3연타(누르고 있기), 대시 공격, 초식(회선참), 절초(만검귀종), 피격. 수치는 전부 data_balance에서 읽어요.
     [RequireComponent(typeof(CharacterController), typeof(PlayerInputReader))]
     public sealed class PlayerController : MonoBehaviour
     {
@@ -15,6 +15,7 @@ namespace AThousandDawns.Player
         [SerializeField] Transform visual;
         [SerializeField] SwingFlash swingFlash;
         [SerializeField] Renderer bodyRenderer;
+        [SerializeField] SwordRain swordRain;
 
         CharacterController _controller;
         PlayerInputReader _input;
@@ -35,6 +36,11 @@ namespace AThousandDawns.Player
         float _skillCooldownLeft;
         bool _skillHitDone;
         float _sinceSkillPress = float.PositiveInfinity;
+
+        float _ultimateCastTime, _ultimateRadius, _ultimateSwordDamage, _ultimateFallTime;
+        int _ultimateSwordCount;
+        float _ultimateTimer;
+        float _sinceUltimatePress = float.PositiveInfinity;
 
         Vector3 _velocity;
         Vector3 _knockbackVelocity;
@@ -69,6 +75,8 @@ namespace AThousandDawns.Player
         public int Gongryeok { get; set; } // 공력: 초식·절초 피해 배율 (영약·흡성으로 오름)
 
         public bool IsCastingSkill => _skillElapsed >= 0f;
+        public bool IsCastingUltimate => _ultimateTimer > 0f;
+        public bool UltimateReady => Gauge >= _gaugeMax;
         public float SkillCooldown => _skillCooldown;
         public float SkillCooldownLeft => Mathf.Max(0f, _skillCooldownLeft);
 
@@ -80,6 +88,7 @@ namespace AThousandDawns.Player
             _input = GetComponent<PlayerInputReader>();
             ReadTuning();
             Health = _maxHealth;
+            if (swordRain == null) swordRain = gameObject.AddComponent<SwordRain>(); // 씬을 다시 만들기 전에도 쓸 수 있게
             if (bodyRenderer != null && bodyRenderer.sharedMaterial != null && bodyRenderer.sharedMaterial.HasProperty(BaseColorId))
                 _bodyColor = bodyRenderer.sharedMaterial.GetColor(BaseColorId);
         }
@@ -127,6 +136,13 @@ namespace AThousandDawns.Player
             _skillRadius = GameConfig.Get("sword.skill_radius", 2.2f);
             _gaugeSkill = GameConfig.Get("gauge.skill_hit", 3f);
 
+            _ultimateCastTime = GameConfig.Get("ultimate.cast_time", 1f);
+            _ultimateRadius = GameConfig.Get("ultimate.radius", 3f);
+            _ultimateSwordCount = Mathf.RoundToInt(GameConfig.Get("ultimate.sword_count", 8f));
+            _ultimateSwordDamage = GameConfig.Get("ultimate.sword_damage", 18f);
+            _ultimateFallTime = GameConfig.Get("ultimate.sword_fall_time", 0.15f);
+            Gongryeok = Mathf.RoundToInt(GameConfig.Get("player.gongryeok", 0f));
+
             _gaugeMax = GameConfig.Get("ultimate.gauge_max", 100f);
             _gaugeBasic = GameConfig.Get("gauge.basic_hit", 2f);
             _gaugeFinisher = GameConfig.Get("gauge.finisher_hit", 4f);
@@ -154,6 +170,7 @@ namespace AThousandDawns.Player
             _sinceDashPress = _input.DashPressed ? 0f : _sinceDashPress + dt;
             _sinceAttackPress = _input.AttackPressed ? 0f : _sinceAttackPress + dt;
             _sinceSkillPress = _input.SkillPressed ? 0f : _sinceSkillPress + dt;
+            _sinceUltimatePress = _input.UltimatePressed ? 0f : _sinceUltimatePress + dt;
             if (_input.AttackPressed) _combo.Press();
 
             _dash.Tick(dt);
@@ -168,9 +185,23 @@ namespace AThousandDawns.Player
                 return;
             }
 
+            // 절초 시전 중: 제자리 고정, 무적 (조작 시트)
+            if (IsCastingUltimate)
+            {
+                _ultimateTimer -= dt;
+                return;
+            }
+
             if (IsDashing)
             {
                 UpdateDash(dt);
+                return;
+            }
+
+            // 절초는 기세가 가득이면 평타·초식 중에도 바로 나가요 (몰릴 때 뒤집는 수단)
+            if (_sinceUltimatePress <= _inputBuffer && UltimateReady)
+            {
+                StartUltimate();
                 return;
             }
 
@@ -249,6 +280,30 @@ namespace AThousandDawns.Player
             _block.SetColor(BaseColorId, _flashTimer > 0f ? Color.white : _bodyColor);
             bodyRenderer.SetPropertyBlock(_block);
         }
+
+        // 만검귀종 (하단전): 1초 동안 반경 3칸 안 적에게 검 8자루가 고르게 떨어져요. 기세를 모두 써요.
+        void StartUltimate()
+        {
+            _sinceUltimatePress = float.PositiveInfinity;
+            Gauge = Mathf.Max(0f, Gauge - _gaugeMax);
+            _ultimateTimer = _ultimateCastTime;
+            _invulnerableTimer = Mathf.Max(_invulnerableTimer, _ultimateCastTime);
+
+            _combo.Cancel();
+            _skillElapsed = -1f;
+            _velocity = Vector3.zero;
+            _lungeRemaining = 0f;
+            _dashAttackTimer = 0f;
+            ApplyFacing();
+
+            if (swingFlash != null) swingFlash.Show(transform.position, _facing, _ultimateRadius, 360f, 0.2f);
+            var hit = HitDamageInput.Of(_ultimateSwordDamage);
+            hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
+            swordRain.Begin(transform.position, _ultimateRadius, _ultimateSwordCount, _ultimateCastTime, _ultimateFallTime, hit, _rules);
+        }
+
+        // 시험판용: G 키로 기세를 가득 채워요.
+        public void FillGauge() => Gauge = _gaugeMax;
 
         // 회선참: 주변 원형(반경 2.2칸)을 한 바퀴 베요. 시전 0.35초, 쿨타임은 누르는 순간부터.
         void StartSkill()

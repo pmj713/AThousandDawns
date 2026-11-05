@@ -26,6 +26,7 @@ namespace AThousandDawns.EditorTools
         const string PlayerColor = "#C8463C";
         const string DummyColor = "#B8913A";
         const string FlashColor = "#FFF6D8";
+        const string UltimateSwordColor = "#DDE3E8"; // 만검귀종 검 (임시)
 
         // 시험판 적 (임시 색). 예고 색은 색감 시트 #FF9A2E + 흰 테두리, 바탕은 예고 색과 바닥색의 중간
         const string GruntColor = "#6B4E3D";
@@ -72,7 +73,8 @@ namespace AThousandDawns.EditorTools
             var config = new GameObject("GameConfig").AddComponent<GameConfig>();
             SetRef(config, "balance", balance);
 
-            var player = BuildPlayer(playerMat, wallMat, flashMat);
+            var swordMat = GetMaterial("UltimateSword", UltimateSwordColor, false);
+            var player = BuildPlayer(playerMat, wallMat, flashMat, swordMat);
             var dummyA = BuildDummy("목인장 (강인함 0)", new Vector3(-2.5f, 0f, 2f), 0f, 0f, dummyMat);
             var dummyB = BuildDummy("목인장 (녹림왕: 강인함 5, 방어 10%)", new Vector3(2.5f, 0f, 2f), 5f, 0.1f, dummyMat);
 
@@ -124,7 +126,7 @@ namespace AThousandDawns.EditorTools
             }
         }
 
-        static PlayerController BuildPlayer(Material bodyMat, Material noseMat, Material flashMat)
+        static PlayerController BuildPlayer(Material bodyMat, Material noseMat, Material flashMat, Material swordMat)
         {
             var root = new GameObject("Player");
             root.transform.position = new Vector3(0f, 0f, -3f);
@@ -164,6 +166,9 @@ namespace AThousandDawns.EditorTools
             SetRef(controller, "visual", visual);
             SetRef(controller, "swingFlash", flash);
             SetRef(controller, "bodyRenderer", body.GetComponent<Renderer>());
+            var rain = root.AddComponent<SwordRain>();
+            SetRef(rain, "swordMaterial", swordMat);
+            SetRef(controller, "swordRain", rain);
             return controller;
         }
 

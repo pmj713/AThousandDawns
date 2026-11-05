@@ -8,7 +8,8 @@ using UnityEngine.SceneManagement;
 namespace AThousandDawns.Prototype
 {
     // 시험판 방: 시작하면 한 무리가 나오고, 다 쓰러뜨리면 잠시 뒤 다시 나와요.
-    // 1 졸개 · 2 멧돼지 · 3 궁수 (방마다 최대 2명) 를 하나씩 부르고, R로 처음부터 다시 해요.
+    // 1 졸개 · 2 멧돼지 · 3 궁수 (방마다 최대 2명) 를 하나씩 부르고, G로 기세를 채우고, F5로 처음부터 다시 해요.
+    // (R은 조작 시트에서 금창약 키라 비워 둬요)
     public sealed class PrototypeArena : MonoBehaviour
     {
         [Serializable]
@@ -55,7 +56,7 @@ namespace AThousandDawns.Prototype
             var keyboard = Keyboard.current;
             if (keyboard != null)
             {
-                if (keyboard.rKey.wasPressedThisFrame)
+                if (keyboard.f5Key.wasPressedThisFrame)
                 {
                     SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
                     return;
@@ -63,6 +64,7 @@ namespace AThousandDawns.Prototype
                 if (keyboard.digit1Key.wasPressedThisFrame) SpawnOne(EnemyKind.Grunt);
                 if (keyboard.digit2Key.wasPressedThisFrame) SpawnOne(EnemyKind.Boar);
                 if (keyboard.digit3Key.wasPressedThisFrame) SpawnOne(EnemyKind.Archer);
+                if (keyboard.gKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.FillGauge();
             }
 
             if (!AutoSpawn || director == null) return;

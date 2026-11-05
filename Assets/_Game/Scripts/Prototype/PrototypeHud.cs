@@ -29,8 +29,8 @@ namespace AThousandDawns.Prototype
 
             GUILayout.BeginArea(new Rect(16, 16, 600, 295), GUI.skin.box);
             GUILayout.Label("일조천회 시험판 · 전투", _label);
-            GUILayout.Label("WASD 이동 · 좌클릭(누르고 있기) 평타 · 우클릭 회선참 · Space 대시 · 마우스로 조준", _label);
-            GUILayout.Label("1 졸개 · 2 멧돼지 · 3 궁수 부르기 · R 처음부터", _label);
+            GUILayout.Label("WASD 이동 · 좌클릭(누르고 있기) 평타 · 우클릭 회선참 · Q 만검귀종 · Space 대시", _label);
+            GUILayout.Label("1 졸개 · 2 멧돼지 · 3 궁수 부르기 · G 기세 채우기 · F5 처음부터", _label);
             if (player != null)
             {
                 GUILayout.Label($"체력 {player.Health:0}/{player.MaxHealth:0}", _label);
@@ -40,7 +40,8 @@ namespace AThousandDawns.Prototype
 
                 var combo = player.Combo;
                 GUILayout.Label($"대시 {player.Dash.Charges}/{player.Dash.MaxCharges}  {(player.IsInvulnerable ? "(무적)" : "")}", _label);
-                GUILayout.Label($"기세 {player.Gauge:0}/{player.GaugeMax:0}", _label);
+                string ultimate = player.IsCastingUltimate ? "  · 만검귀종!" : player.UltimateReady ? "  · Q 만검귀종 준비" : "";
+                GUILayout.Label($"기세 {player.Gauge:0}/{player.GaugeMax:0}{ultimate}", _label);
                 string skill = player.IsCastingSkill ? "베는 중" : player.SkillCooldownLeft > 0f ? $"{player.SkillCooldownLeft:0.0}초" : "준비";
                 GUILayout.Label($"회선참 {skill}", _label);
                 if (combo != null) GUILayout.Label($"평타 {combo.HitIndex + 1}타 · {combo.CurrentPhase}", _label);
@@ -53,7 +54,7 @@ namespace AThousandDawns.Prototype
             GUILayout.EndArea();
 
             if (player != null && player.IsDead)
-                GUI.Label(new Rect(0, Screen.height * 0.4f, Screen.width, 60), "쓰러졌어요 · R 키로 다시 시작", _big);
+                GUI.Label(new Rect(0, Screen.height * 0.4f, Screen.width, 60), "쓰러졌어요 · F5 키로 다시 시작", _big);
 
             if (_camera == null) return;
 
