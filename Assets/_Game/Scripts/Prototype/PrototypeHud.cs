@@ -59,12 +59,12 @@ namespace AThousandDawns.Prototype
             if (player != null && player.IsDead)
                 GUI.Label(new Rect(0, Screen.height * 0.4f, Screen.width, 60), "쓰러졌어요 · F5 키로 다시 시작", _big);
 
-            // 녹림왕이 깨어나면 화면 위쪽 가운데에 큰 체력바
+            // 녹림왕이 깨어나면 화면 아래쪽 가운데에 큰 체력바 (왼쪽 위 도움말과 겹치지 않게)
             var boss = arena != null ? arena.Boss : null;
             if (boss != null && !boss.IsDead && boss.IsAwake && boss.Damageable != null)
             {
                 float width = Mathf.Min(560f, Screen.width - 40f);
-                var area = new Rect((Screen.width - width) * 0.5f, 16f, width, 18f);
+                var area = new Rect((Screen.width - width) * 0.5f, Screen.height - 64f, width, 18f);
                 string state = boss.IsTransitioning ? " · 전환 중 (무적)" : boss.Grove != null && boss.Grove.IsBurning ? " · 불타는 죽림" : "";
                 GUI.Label(new Rect(area.x, area.y, area.width, 24f), $"녹림왕 · {boss.Phase}페이즈{state}   {boss.Damageable.Health:0}/{boss.Damageable.MaxHealth:0}", _bossLabel);
                 DrawBar(new Rect(area.x, area.y + 26f, area.width, 12f), boss.Damageable.Health / Mathf.Max(1f, boss.Damageable.MaxHealth), HealthColor);

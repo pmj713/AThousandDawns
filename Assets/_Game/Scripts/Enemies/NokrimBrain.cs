@@ -36,6 +36,7 @@ namespace AThousandDawns.Enemies
         int _repeat, _summonsThisPhase, _spinsDone;
         float _decisionTimer, _transitionTimer, _summonCooldown;
         float _lungeRemaining, _traveled, _plannedLength, _spinElapsed;
+        Vector3 _slamPoint; // 내려찍기 원 자리 (돌진이 끝나는 곳, 월드 좌표)
         bool _hitPlayer;
         readonly List<EnemyBrain> _minions = new List<EnemyBrain>();
         BurningGrove _grove;
@@ -264,7 +265,8 @@ namespace AThousandDawns.Enemies
                     // 돌진하는 동안 끝자리에 내려찍기 원이 차올라요
                     _traveled = 0f;
                     Telegraph.Show(TelegraphShapes.Circle(_slamRadius), true);
-                    Telegraph.SetPose(transform.position + AimDirection * _plannedLength, Vector3.forward);
+                    _slamPoint = transform.position + AimDirection * _plannedLength;
+                    Telegraph.SetPose(_slamPoint, Vector3.forward);
                     break;
                 case Pattern.Summon:
                     for (int i = 0; i < _summonCount; i++)
@@ -325,6 +327,8 @@ namespace AThousandDawns.Enemies
                 if (!_hitPlayer && ToPlayer().magnitude <= _chargeWidth * 0.5f + PlayerRadius) _hitPlayer = HitPlayer(_chargeRatio);
                 if ((flags & CollisionFlags.Sides) != 0) break;
             }
+            // 예고는 녹림왕 자식이라 같이 움직이니까, 매 프레임 끝자리에 다시 놓아요
+            Telegraph.SetPose(_slamPoint, Vector3.forward);
             Telegraph.SetProgress(_plannedLength > 0.1f ? _traveled / _plannedLength : 1f);
             if (_traveled >= _plannedLength - 1e-3f || total > 0f) Slam();
         }
