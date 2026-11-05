@@ -131,3 +131,6 @@ archer.shot_pause,0.2,s,쏘는 순간 멈춤 (몬스터 K77 설명),
 archer.arrow_speed,10,cell/s,화살 속도 (몬스터 K77 설명),
 archer.arrow_radius,0.2,cell,화살 판정 반경 (임시),
 archer.max_per_room,2,,방마다 최대 궁수 수 (몬스터 K77 설명),
+sword.skill_cast_time,0.35,s,회선참 시전 시간,조작!B47
+sword.skill_radius,2.2,cell,회선참 주변 원형 반경 (조작 B48 설명),
+sword.skill_hit_time,0.12,s,"회선참 베는 순간, 시전 시작부터 (임시)",

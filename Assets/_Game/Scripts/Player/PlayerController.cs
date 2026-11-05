@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace AThousandDawns.Player
 {
-    // 시험판 플레이어: 이동, 대시(무적), 평타 3연타(누르고 있기), 대시 공격, 피격. 수치는 전부 data_balance에서 읽어요.
+    // 시험판 플레이어: 이동, 대시(무적), 평타 3연타(누르고 있기), 대시 공격, 초식(회선참), 피격. 수치는 전부 data_balance에서 읽어요.
     [RequireComponent(typeof(CharacterController), typeof(PlayerInputReader))]
     public sealed class PlayerController : MonoBehaviour
     {
@@ -29,6 +29,12 @@ namespace AThousandDawns.Player
         float _finisherLunge, _finisherActive;
         float _gaugeMax, _gaugeBasic, _gaugeFinisher, _gaugeDashAttack, _gaugeHurt;
         float _maxHealth, _hurtIframe, _hurtKnockback, _hurtStun;
+        float _skillDamage, _skillCooldown, _skillCastTime, _skillHitTime, _skillRadius, _gaugeSkill;
+
+        float _skillElapsed = -1f; // 0 이상이면 회선참 시전 중
+        float _skillCooldownLeft;
+        bool _skillHitDone;
+        float _sinceSkillPress = float.PositiveInfinity;
 
         Vector3 _velocity;
         Vector3 _knockbackVelocity;
@@ -60,6 +66,11 @@ namespace AThousandDawns.Player
         // 지금은 기물이 없어서 0. 기물이 붙으면 여기로 들어와요.
         public float Toughness { get; set; }
         public float Defense { get; set; }
+        public int Gongryeok { get; set; } // 공력: 초식·절초 피해 배율 (영약·흡성으로 오름)
+
+        public bool IsCastingSkill => _skillElapsed >= 0f;
+        public float SkillCooldown => _skillCooldown;
+        public float SkillCooldownLeft => Mathf.Max(0f, _skillCooldownLeft);
 
         public event Action<int> Hurt;
 
@@ -109,6 +120,13 @@ namespace AThousandDawns.Player
             _dashAttackRadius = GameConfig.Get("sword.dash_attack_radius", 2f);
             _dashAttackAngle = GameConfig.Get("sword.dash_attack_angle", 120f);
 
+            _skillDamage = GameConfig.Get("sword.skill_damage", 40f);
+            _skillCooldown = GameConfig.Get("sword.skill_cooldown", 5f);
+            _skillCastTime = GameConfig.Get("sword.skill_cast_time", 0.35f);
+            _skillHitTime = GameConfig.Get("sword.skill_hit_time", 0.12f);
+            _skillRadius = GameConfig.Get("sword.skill_radius", 2.2f);
+            _gaugeSkill = GameConfig.Get("gauge.skill_hit", 3f);
+
             _gaugeMax = GameConfig.Get("ultimate.gauge_max", 100f);
             _gaugeBasic = GameConfig.Get("gauge.basic_hit", 2f);
             _gaugeFinisher = GameConfig.Get("gauge.finisher_hit", 4f);
@@ -135,10 +153,12 @@ namespace AThousandDawns.Player
 
             _sinceDashPress = _input.DashPressed ? 0f : _sinceDashPress + dt;
             _sinceAttackPress = _input.AttackPressed ? 0f : _sinceAttackPress + dt;
+            _sinceSkillPress = _input.SkillPressed ? 0f : _sinceSkillPress + dt;
             if (_input.AttackPressed) _combo.Press();
 
             _dash.Tick(dt);
             if (_invulnerableTimer > 0f) _invulnerableTimer -= dt;
+            if (_skillCooldownLeft > 0f) _skillCooldownLeft -= dt;
 
             if (IsStunned)
             {
@@ -154,10 +174,24 @@ namespace AThousandDawns.Player
                 return;
             }
 
-            if (_sinceDashPress <= _inputBuffer && _combo.CanDashCancel && _dash.TryConsume())
+            // 대시로 끊기: 평타는 후딜 중에만, 회선참은 베고 난 뒤에만
+            bool canCancel = _combo.CanDashCancel && (!IsCastingSkill || _skillHitDone);
+            if (_sinceDashPress <= _inputBuffer && canCancel && _dash.TryConsume())
             {
                 StartDash();
                 UpdateDash(dt);
+                return;
+            }
+
+            // 초식은 평타를 쉬고 있거나 평타 후딜 중에 나가요 (대시로 끊을 수 있는 때와 같음)
+            if (_sinceSkillPress <= _inputBuffer && _skillCooldownLeft <= 0f && !IsCastingSkill && _combo.CanDashCancel)
+                StartSkill();
+
+            if (IsCastingSkill)
+            {
+                TickSkill(dt);
+                UpdateMovement(dt);
+                ApplySkillSpin();
                 return;
             }
 
@@ -194,6 +228,7 @@ namespace AThousandDawns.Player
             _knockbackVelocity = away.normalized * (_hurtKnockback / Mathf.Max(0.01f, _hurtStun));
 
             _combo.Cancel();
+            _skillElapsed = -1f; // 맞으면 회선참도 끊겨요 (쿨타임은 그대로 돎)
             _velocity = Vector3.zero;
             _lungeRemaining = 0f;
             _dashAttackTimer = 0f;
@@ -215,12 +250,60 @@ namespace AThousandDawns.Player
             bodyRenderer.SetPropertyBlock(_block);
         }
 
+        // 회선참: 주변 원형(반경 2.2칸)을 한 바퀴 베요. 시전 0.35초, 쿨타임은 누르는 순간부터.
+        void StartSkill()
+        {
+            _sinceSkillPress = float.PositiveInfinity;
+            _skillCooldownLeft = _skillCooldown;
+            _skillElapsed = 0f;
+            _skillHitDone = false;
+            _combo.Cancel();
+            _lungeRemaining = 0f;
+            _dashAttackTimer = 0f;
+            if (_input.TryGetAimPoint(out Vector3 aim))
+            {
+                Vector3 dir = aim - transform.position;
+                dir.y = 0f;
+                if (dir.sqrMagnitude > 0.01f) _facing = dir.normalized;
+            }
+        }
+
+        void TickSkill(float dt)
+        {
+            _skillElapsed += dt;
+            if (!_skillHitDone && _skillElapsed >= _skillHitTime)
+            {
+                _skillHitDone = true;
+                _hitThisSwing.Clear();
+                if (swingFlash != null) swingFlash.Show(transform.position, _facing, _skillRadius, 360f, 0.15f);
+                var hit = HitDamageInput.Of(_skillDamage);
+                hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
+                int count = HitSector(_skillRadius, 360f, hit);
+                Gauge = Mathf.Min(_gaugeMax, Gauge + count * _gaugeSkill);
+            }
+        }
+
+        // 베는 동안 몸을 한 바퀴 돌려요 (시험판용 표시). 시전이 끝나면 원래 방향.
+        void ApplySkillSpin()
+        {
+            if (_skillElapsed >= _skillCastTime)
+            {
+                _skillElapsed = -1f;
+                ApplyFacing();
+                return;
+            }
+            if (visual == null) return;
+            float t = Mathf.Clamp01(_skillElapsed / Mathf.Max(0.01f, _skillHitTime + 0.08f));
+            visual.rotation = Quaternion.LookRotation(_facing) * Quaternion.Euler(0f, 360f * t, 0f);
+        }
+
         void StartDash()
         {
             Vector2 move = _input.Move;
             _dashDirection = move.sqrMagnitude > 0.01f ? new Vector3(move.x, 0f, move.y).normalized : _facing;
             _facing = _dashDirection;
             _combo.Cancel();
+            _skillElapsed = -1f;
             _dashTimer = _dashDuration;
             _invulnerableTimer = _dashIframe;
             _sinceDashPress = float.PositiveInfinity;
@@ -240,7 +323,8 @@ namespace AThousandDawns.Player
         void UpdateMovement(float dt)
         {
             Vector2 move = Vector2.ClampMagnitude(_input.Move, 1f);
-            float speed = _moveSpeed * (_combo.IsAttacking ? _attackMoveRatio : 1f);
+            bool attacking = _combo.IsAttacking || IsCastingSkill;
+            float speed = _moveSpeed * (attacking ? _attackMoveRatio : 1f);
             Vector3 desired = new Vector3(move.x, 0f, move.y) * speed;
             float rate = desired.sqrMagnitude >= _velocity.sqrMagnitude ? _moveSpeed / Mathf.Max(0.001f, _accelTime) : _moveSpeed / Mathf.Max(0.001f, _decelTime);
             _velocity = Vector3.MoveTowards(_velocity, desired, rate * dt);
@@ -254,7 +338,7 @@ namespace AThousandDawns.Player
             }
             _controller.Move(displacement);
 
-            if (!_combo.IsAttacking && _velocity.sqrMagnitude > 0.01f) _facing = _velocity.normalized;
+            if (!attacking && _velocity.sqrMagnitude > 0.01f) _facing = _velocity.normalized;
             ApplyFacing();
         }
 
@@ -294,7 +378,10 @@ namespace AThousandDawns.Player
             Gauge = Mathf.Min(_gaugeMax, Gauge + count * _gaugeDashAttack);
         }
 
-        int HitSector(float radius, float angle, float baseDamage)
+        int HitSector(float radius, float angle, float baseDamage) => HitSector(radius, angle, HitDamageInput.Of(baseDamage));
+
+        // template의 피해·배율을 그대로 쓰고, 대상마다 강인함·방어력만 채워요.
+        int HitSector(float radius, float angle, HitDamageInput template)
         {
             int found = Physics.OverlapSphereNonAlloc(transform.position, radius + 1f, _overlap, ~0, QueryTriggerInteraction.Collide);
             int hits = 0;
@@ -304,7 +391,7 @@ namespace AThousandDawns.Player
                 if (target == null || target.IsDead || !_hitThisSwing.Add(target)) continue;
                 if (!HitShapes.InSector(transform.position, _facing, radius, angle, target.transform.position, target.BodyRadius)) continue;
 
-                var hit = HitDamageInput.Of(baseDamage);
+                var hit = template;
                 hit.Toughness = target.Toughness;
                 hit.Defense = target.Defense;
                 target.ApplyHit(DamageFormula.ToEnemy(hit, _rules));
