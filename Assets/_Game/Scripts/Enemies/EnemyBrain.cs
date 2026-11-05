@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace AThousandDawns.Enemies
 {
-    public enum EnemyKind { Grunt, Boar, Archer }
+    public enum EnemyKind { Grunt, Boar, Archer, Hound, Shield, Horn, Bomber, Snake }
 
     // 일반 적 공통: 첫 공격 대기, 공격 토큰, 공격 간격, 예고 절반 규칙, 경직. 종류별 움직임과 공격은 하위 클래스가 정해요.
     [RequireComponent(typeof(CharacterController), typeof(Damageable))]
@@ -35,6 +35,12 @@ namespace AThousandDawns.Enemies
         protected virtual bool IsRanged => false;
         protected abstract float ActiveTime { get; }
         protected virtual bool SuperArmor => false;
+        protected virtual bool UsesToken => true;            // 나팔수 소환은 동시 공격 수에 안 들어가요
+        protected virtual float TurnSpeed => 0f;             // 초당 회전 각도. 0이면 바로 돌아봐요 (방패 산적 180°)
+        protected virtual bool InterruptibleWindup => false; // 예고 중에 맞으면 끊김 (나팔수 소환, 예고 중 경직 규칙의 유일한 예외)
+        protected virtual bool RadialTelegraph => false;     // 원형 예고는 가운데부터 차올라요
+        protected virtual float HitKnockback => -1f;         // 플레이어를 미는 거리. 음수면 기본 넉백
+        protected virtual float DeathDelay => 0.25f;         // 쓰러진 뒤 사라지기까지
 
         public string DisplayName { get; private set; }
         public Damageable Damageable => Body;
@@ -44,6 +50,7 @@ namespace AThousandDawns.Enemies
         public bool HasToken => _tokens != null && _tokens.Holds(this);
         public bool IsStunned => _stunTimer > 0f;
         public bool IsDead => _dead;
+        public bool IsHidden { get; private set; }
         public bool TelegraphVisible => Telegraph != null && Telegraph.IsVisible;
 
         protected float PlayerRadius => Player != null ? Player.BodyRadius : 0.3f;
@@ -61,10 +68,11 @@ namespace AThousandDawns.Enemies
 
             MoveSpeed = Tuning("move_speed", 3f);
             AttackPower = Tuning("atk", 8f);
-            AttackRange = Tuning("attack_range", 1.2f);
             WindupTime = Tuning("windup", 0.6f);
-            RecoveryTime = Tuning("recovery", 0.6f);
-            AttackInterval = Tuning("attack_interval", 2f);
+            // 몬스터 시트에서 빈 칸인 적이 있는 값 (나팔수 사거리, 화약 산적 빈틈·공격 간격)
+            AttackRange = GameConfig.GetOptional($"{Key}.attack_range", 1.2f);
+            RecoveryTime = GameConfig.GetOptional($"{Key}.recovery", 0f);
+            AttackInterval = GameConfig.GetOptional($"{Key}.attack_interval", 2f);
             TrackMoveRatio = GameConfig.Get("enemy.track_move_ratio", 0.5f);
             ReadTuning();
 
@@ -93,11 +101,13 @@ namespace AThousandDawns.Enemies
 
             if (Player != null) FaceToward(ToPlayer());
             _initialized = true;
+            OnInitialized();
         }
 
         protected float Tuning(string field, float fallback) => GameConfig.Get($"{Key}.{field}", fallback);
 
         protected virtual void ReadTuning() { }
+        protected virtual void OnInitialized() { }
 
         void Update()
         {
@@ -122,9 +132,9 @@ namespace AThousandDawns.Enemies
             switch (Attack.Current)
             {
                 case EnemyAttackTimeline.Phase.Ready:
-                    bool canAttack = _cooldown <= 0f && (_tokens.HasFree || HasToken);
+                    bool canAttack = _cooldown <= 0f && (!UsesToken || _tokens.HasFree || HasToken);
                     TickMovement(dt, canAttack);
-                    if (canAttack && WantsToAttack(ToPlayer().magnitude) && _tokens.TryAcquire(this)) BeginAttack();
+                    if (canAttack && WantsToAttack(ToPlayer().magnitude) && (!UsesToken || _tokens.TryAcquire(this))) BeginAttack();
                     break;
                 case EnemyAttackTimeline.Phase.Windup:
                     if (!Attack.IsPaused) TickWindup(dt, Attack.IsTracking);
@@ -143,15 +153,15 @@ namespace AThousandDawns.Enemies
         {
             _cooldown = AttackInterval;
             Vector3 to = ToPlayer();
-            AimDirection = to.sqrMagnitude > 1e-4f ? to.normalized : Facing;
-            FaceToward(AimDirection);
+            if (TurnSpeed <= 0f && to.sqrMagnitude > 1e-4f) FaceToward(to); // 천천히 도는 적은 지금 보는 방향 그대로
+            AimDirection = Facing;
             Attack.Start(WindupTime, ActiveTime, RecoveryTime);
             OnAttackStarted();
-            Telegraph.Show(TelegraphShape());
+            Telegraph.Show(TelegraphShape(), RadialTelegraph);
             UpdateTelegraph();
         }
 
-        void CancelAttack()
+        protected void CancelAttack()
         {
             Attack.Cancel();
             Telegraph.Hide();
@@ -168,14 +178,17 @@ namespace AThousandDawns.Enemies
         protected virtual void OnAttackStarted() { }
         protected virtual void OnActiveStarted() { }
         protected virtual void OnAttackFinished() { }
+        protected virtual void OnAttackInterrupted() { } // InterruptibleWindup인 적의 예고가 끊겼을 때
+        protected virtual void OnHitTaken() { }          // 쓰러지지 않고 맞았을 때 (경직 처리 뒤)
+        protected virtual void OnDied() { }
 
         // 예고 앞 절반: 플레이어 쪽으로 방향을 맞추며 이동속도 50%로 따라와요. 뒤 절반은 멈춰서 고정.
         protected virtual void TickWindup(float dt, bool tracking)
         {
             if (!tracking) return;
             Vector3 to = ToPlayer();
-            if (to.sqrMagnitude > 1e-4f) AimDirection = to.normalized;
-            FaceToward(AimDirection);
+            TurnToward(to, dt);
+            AimDirection = Facing;
             if (to.magnitude > TrackStopDistance) Move(AimDirection * (MoveSpeed * TrackMoveRatio), dt);
         }
 
@@ -200,6 +213,36 @@ namespace AThousandDawns.Enemies
             if (direction.sqrMagnitude < 1e-6f) return;
             Facing = direction.normalized;
             if (_visual != null) _visual.rotation = Quaternion.LookRotation(Facing);
+        }
+
+        // TurnSpeed만큼만 돌아요 (0이면 바로). 방패 산적은 이 때문에 옆·뒤가 열려요.
+        protected void TurnToward(Vector3 direction, float dt)
+        {
+            direction.y = 0f;
+            if (direction.sqrMagnitude < 1e-6f) return;
+            if (TurnSpeed <= 0f)
+            {
+                FaceToward(direction);
+                return;
+            }
+            FaceToward(Vector3.RotateTowards(Facing, direction.normalized, TurnSpeed * Mathf.Deg2Rad * dt, 0f));
+        }
+
+        // 숨으면 보이지 않고 맞힐 수도 없어요 (청죽사 풀숲). 충돌체는 그대로 둬요.
+        protected void SetHidden(bool hidden)
+        {
+            IsHidden = hidden;
+            Body.Targetable = !hidden;
+            if (_visual != null) _visual.gameObject.SetActive(!hidden);
+        }
+
+        // CharacterController는 위치를 직접 바꾸려면 잠깐 꺼야 해요.
+        // 껐다 켜면 Physics.IgnoreCollision이 풀리니까 EnemyDirector.Spawn 전(OnInitialized)에만 써요.
+        protected void Teleport(Vector3 position)
+        {
+            Controller.enabled = false;
+            transform.position = new Vector3(position.x, 0f, position.z);
+            Controller.enabled = true;
         }
 
         // 다른 적과 겹치지 않게 살짝 밀어내면서 움직여요. 벽에 막히면 옆걸음 방향을 바꿔요.
@@ -227,7 +270,7 @@ namespace AThousandDawns.Enemies
             return free >= distance - 0.05f;
         }
 
-        protected bool TryHitPlayer() => Player.TryReceiveHit(AttackPower, transform.position);
+        protected bool TryHitPlayer() => Player.TryReceiveHit(AttackPower, transform.position, HitKnockback);
 
         Vector3 Separation()
         {
@@ -268,6 +311,15 @@ namespace AThousandDawns.Enemies
                 return;
             }
 
+            if (InterruptibleWindup && Attack.Current == EnemyAttackTimeline.Phase.Windup)
+            {
+                CancelAttack();
+                _stunTimer = _reaction.Hitstun;
+                OnAttackInterrupted();
+                OnHitTaken();
+                return;
+            }
+
             switch (_reaction.OnHit(Attack.Current, SuperArmor))
             {
                 case HitResponse.Stun:
@@ -280,16 +332,20 @@ namespace AThousandDawns.Enemies
                     Attack.ExtendRecovery(_reaction.Hitstun);
                     break;
             }
+            OnHitTaken();
         }
 
-        void Die()
+        // 쓰러짐. 화약 산적은 자폭할 때도 이걸 불러요.
+        protected void Die()
         {
+            if (_dead) return;
             _dead = true;
             CancelAttack();
             Director.Unregister(this);
             Controller.enabled = false;
             if (_visual != null) _visual.localScale = new Vector3(1.1f, 0.3f, 1.1f);
-            Destroy(gameObject, 0.25f);
+            OnDied();
+            Destroy(gameObject, DeathDelay);
         }
 
         void OnDestroy()

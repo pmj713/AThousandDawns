@@ -27,10 +27,11 @@ namespace AThousandDawns.Prototype
             EnsureStyles();
             if (_camera == null) _camera = Camera.main;
 
-            GUILayout.BeginArea(new Rect(16, 16, 600, 295), GUI.skin.box);
+            GUILayout.BeginArea(new Rect(16, 16, 640, 320), GUI.skin.box);
             GUILayout.Label("일조천회 시험판 · 전투", _label);
             GUILayout.Label("WASD 이동 · 좌클릭(누르고 있기) 평타 · 우클릭 회선참 · Q 만검귀종 · Space 대시", _label);
-            GUILayout.Label("1 졸개 · 2 멧돼지 · 3 궁수 부르기 · G 기세 채우기 · F5 처음부터", _label);
+            GUILayout.Label("부르기: 1 졸개 · 2 멧돼지 · 3 궁수 · 4 들개 · 5 방패 · 6 나팔수 · 7 화약 · 8 청죽사", _label);
+            GUILayout.Label("G 기세 채우기 · F5 처음부터", _label);
             if (player != null)
             {
                 GUILayout.Label($"체력 {player.Health:0}/{player.MaxHealth:0}", _label);
@@ -39,7 +40,8 @@ namespace AThousandDawns.Prototype
                 DrawBar(bar, player.MaxHealth > 0f ? player.Health / player.MaxHealth : 0f, HealthColor);
 
                 var combo = player.Combo;
-                GUILayout.Label($"대시 {player.Dash.Charges}/{player.Dash.MaxCharges}  {(player.IsInvulnerable ? "(무적)" : "")}", _label);
+                string slow = player.SlowLeft > 0f ? $"  · 둔화 {player.SlowRatio:0%} {player.SlowLeft:0.0}초" : "";
+                GUILayout.Label($"대시 {player.Dash.Charges}/{player.Dash.MaxCharges}  {(player.IsInvulnerable ? "(무적)" : "")}{slow}", _label);
                 string ultimate = player.IsCastingUltimate ? "  · 만검귀종!" : player.UltimateReady ? "  · Q 만검귀종 준비" : "";
                 GUILayout.Label($"기세 {player.Gauge:0}/{player.GaugeMax:0}{ultimate}", _label);
                 string skill = player.IsCastingSkill ? "베는 중" : player.SkillCooldownLeft > 0f ? $"{player.SkillCooldownLeft:0.0}초" : "준비";
@@ -76,7 +78,7 @@ namespace AThousandDawns.Prototype
             {
                 foreach (var e in director.Enemies)
                 {
-                    if (e == null || e.Damageable == null) continue;
+                    if (e == null || e.Damageable == null || !e.Damageable.Targetable) continue; // 숨은 청죽사는 안 보여요
                     Vector3 sp = _camera.WorldToScreenPoint(e.transform.position + Vector3.up * (e.Height + 0.4f));
                     if (sp.z <= 0f) continue;
                     var dmg = e.Damageable;

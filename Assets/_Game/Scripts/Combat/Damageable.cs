@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace AThousandDawns.Combat
 {
+    // 플레이어 공격 종류. 방패 산적처럼 종류에 따라 다르게 받는 적이 있어요 (대시 공격 = 방패 파괴).
+    public enum HitTag { Basic, Finisher, DashAttack, Skill, Ultimate }
+
     // 맞을 수 있는 대상. 강인함·방어력은 몬스터 시트 값을 넣어요.
     public sealed class Damageable : MonoBehaviour
     {
@@ -25,6 +28,15 @@ namespace AThousandDawns.Combat
         public float Defense => defense;
         public float BodyRadius => bodyRadius;
         public bool IsDead => !invincible && Health <= 0f;
+
+        // 풀숲에 숨은 청죽사처럼 지금은 맞힐 수 없는 대상
+        public bool Targetable { get; set; } = true;
+
+        // 맞는 방향·공격 종류에 따른 상황 배율(⑧). 방패 정면 0.2처럼. 대시 공격에 방패가 깨지듯 상태를 바꿀 수도 있어요.
+        public Func<Vector3, HitTag, float> SituationalResolver { get; set; }
+
+        public float ResolveSituational(Vector3 attackerPosition, HitTag tag) =>
+            SituationalResolver != null ? SituationalResolver(attackerPosition, tag) : 1f;
 
         public event Action<Damageable, int> Damaged;
 

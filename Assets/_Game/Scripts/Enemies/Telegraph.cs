@@ -17,6 +17,7 @@ namespace AThousandDawns.Enemies
         MeshRenderer _fill;
         LineRenderer _outline;
         Transform _fillTransform;
+        bool _radial;
 
         public bool IsVisible => _base != null && _base.enabled;
 
@@ -60,8 +61,10 @@ namespace AThousandDawns.Enemies
             return go;
         }
 
-        public void Show(List<Vector2> polygon)
+        // radial이면 가운데에서 바깥으로 차올라요 (원형 예고: 폭발·소환). 아니면 앞쪽으로.
+        public void Show(List<Vector2> polygon, bool radial = false)
         {
+            _radial = radial;
             SetShape(polygon);
             SetProgress(0f);
             _base.enabled = _fill.enabled = _outline.enabled = true;
@@ -101,7 +104,11 @@ namespace AThousandDawns.Enemies
             transform.SetPositionAndRotation(new Vector3(origin.x, 0f, origin.z), Quaternion.LookRotation(forward));
         }
 
-        public void SetProgress(float t) => _fillTransform.localScale = new Vector3(1f, 1f, Mathf.Clamp(t, 0.001f, 1f));
+        public void SetProgress(float t)
+        {
+            float s = Mathf.Clamp(t, 0.001f, 1f);
+            _fillTransform.localScale = _radial ? new Vector3(s, 1f, s) : new Vector3(1f, 1f, s);
+        }
 
         public void Hide()
         {

@@ -41,6 +41,7 @@ namespace AThousandDawns.Player
         int _ultimateSwordCount;
         float _ultimateTimer;
         float _sinceUltimatePress = float.PositiveInfinity;
+        float _slowTimer, _slowRatio;
 
         Vector3 _velocity;
         Vector3 _knockbackVelocity;
@@ -77,6 +78,17 @@ namespace AThousandDawns.Player
         public bool IsCastingSkill => _skillElapsed >= 0f;
         public bool IsCastingUltimate => _ultimateTimer > 0f;
         public bool UltimateReady => Gauge >= _gaugeMax;
+        public Vector3 Facing => _facing;
+
+        // 둔화 (청죽사 물기: 이동 −25%, 2초). 겹치면 더 센 쪽, 더 긴 쪽으로.
+        public float SlowRatio => _slowTimer > 0f ? _slowRatio : 0f;
+        public float SlowLeft => Mathf.Max(0f, _slowTimer);
+
+        public void ApplySlow(float ratio, float duration)
+        {
+            _slowRatio = Mathf.Max(SlowRatio, ratio);
+            _slowTimer = Mathf.Max(_slowTimer, duration);
+        }
         public float SkillCooldown => _skillCooldown;
         public float SkillCooldownLeft => Mathf.Max(0f, _skillCooldownLeft);
 
@@ -176,6 +188,7 @@ namespace AThousandDawns.Player
             _dash.Tick(dt);
             if (_invulnerableTimer > 0f) _invulnerableTimer -= dt;
             if (_skillCooldownLeft > 0f) _skillCooldownLeft -= dt;
+            if (_slowTimer > 0f) _slowTimer -= dt;
 
             if (IsStunned)
             {
@@ -243,7 +256,8 @@ namespace AThousandDawns.Player
         }
 
         // 적 공격이 닿았을 때. 무적(대시·피격 후)이면 false를 돌려줘요. 화살은 이때 그대로 지나가요.
-        public bool TryReceiveHit(float enemyAttack, Vector3 source)
+        // knockback을 주면 기본 넉백(0.5칸) 대신 그만큼 밀려요 (방패 산적 1칸).
+        public bool TryReceiveHit(float enemyAttack, Vector3 source, float knockback = -1f)
         {
             if (IsDead || IsInvulnerable) return false;
 
@@ -256,7 +270,7 @@ namespace AThousandDawns.Player
             Vector3 away = transform.position - source;
             away.y = 0f;
             if (away.sqrMagnitude < 1e-4f) away = -_facing;
-            _knockbackVelocity = away.normalized * (_hurtKnockback / Mathf.Max(0.01f, _hurtStun));
+            _knockbackVelocity = away.normalized * ((knockback >= 0f ? knockback : _hurtKnockback) / Mathf.Max(0.01f, _hurtStun));
 
             _combo.Cancel();
             _skillElapsed = -1f; // 맞으면 회선참도 끊겨요 (쿨타임은 그대로 돎)
@@ -333,7 +347,7 @@ namespace AThousandDawns.Player
                 if (swingFlash != null) swingFlash.Show(transform.position, _facing, _skillRadius, 360f, 0.15f);
                 var hit = HitDamageInput.Of(_skillDamage);
                 hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
-                int count = HitSector(_skillRadius, 360f, hit);
+                int count = HitSector(_skillRadius, 360f, hit, HitTag.Skill);
                 Gauge = Mathf.Min(_gaugeMax, Gauge + count * _gaugeSkill);
             }
         }
@@ -379,7 +393,7 @@ namespace AThousandDawns.Player
         {
             Vector2 move = Vector2.ClampMagnitude(_input.Move, 1f);
             bool attacking = _combo.IsAttacking || IsCastingSkill;
-            float speed = _moveSpeed * (attacking ? _attackMoveRatio : 1f);
+            float speed = _moveSpeed * (attacking ? _attackMoveRatio : 1f) * (1f - SlowRatio);
             Vector3 desired = new Vector3(move.x, 0f, move.y) * speed;
             float rate = desired.sqrMagnitude >= _velocity.sqrMagnitude ? _moveSpeed / Mathf.Max(0.001f, _accelTime) : _moveSpeed / Mathf.Max(0.001f, _decelTime);
             _velocity = Vector3.MoveTowards(_velocity, desired, rate * dt);
@@ -421,7 +435,7 @@ namespace AThousandDawns.Player
             float radius = _hitRadius[Mathf.Min(index, _hitRadius.Length - 1)];
             float angle = _hitAngle[Mathf.Min(index, _hitAngle.Length - 1)];
             if (swingFlash != null) swingFlash.Show(transform.position, _facing, radius, angle, _combo.HitCount > 0 ? 0.1f : 0f);
-            int count = HitSector(radius, angle, finisher ? _finisherDamage : _basicDamage);
+            int count = HitSector(radius, angle, HitDamageInput.Of(finisher ? _finisherDamage : _basicDamage), finisher ? HitTag.Finisher : HitTag.Basic);
             Gauge = Mathf.Min(_gaugeMax, Gauge + count * (finisher ? _gaugeFinisher : _gaugeBasic));
         }
 
@@ -429,26 +443,25 @@ namespace AThousandDawns.Player
         {
             _hitThisSwing.Clear();
             if (swingFlash != null) swingFlash.Show(transform.position, _facing, _dashAttackRadius, _dashAttackAngle, 0.12f);
-            int count = HitSector(_dashAttackRadius, _dashAttackAngle, _dashAttackDamage);
+            int count = HitSector(_dashAttackRadius, _dashAttackAngle, HitDamageInput.Of(_dashAttackDamage), HitTag.DashAttack);
             Gauge = Mathf.Min(_gaugeMax, Gauge + count * _gaugeDashAttack);
         }
 
-        int HitSector(float radius, float angle, float baseDamage) => HitSector(radius, angle, HitDamageInput.Of(baseDamage));
-
-        // template의 피해·배율을 그대로 쓰고, 대상마다 강인함·방어력만 채워요.
-        int HitSector(float radius, float angle, HitDamageInput template)
+        // template의 피해·배율을 그대로 쓰고, 대상마다 강인함·방어력·상황 배율(방패 정면 등)만 채워요.
+        int HitSector(float radius, float angle, HitDamageInput template, HitTag tag)
         {
             int found = Physics.OverlapSphereNonAlloc(transform.position, radius + 1f, _overlap, ~0, QueryTriggerInteraction.Collide);
             int hits = 0;
             for (int i = 0; i < found; i++)
             {
                 var target = _overlap[i].GetComponentInParent<Damageable>();
-                if (target == null || target.IsDead || !_hitThisSwing.Add(target)) continue;
+                if (target == null || target.IsDead || !target.Targetable || !_hitThisSwing.Add(target)) continue;
                 if (!HitShapes.InSector(transform.position, _facing, radius, angle, target.transform.position, target.BodyRadius)) continue;
 
                 var hit = template;
                 hit.Toughness = target.Toughness;
                 hit.Defense = target.Defense;
+                hit.Situational *= target.ResolveSituational(transform.position, tag);
                 target.ApplyHit(DamageFormula.ToEnemy(hit, _rules));
                 hits++;
             }

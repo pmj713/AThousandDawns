@@ -32,6 +32,12 @@ namespace AThousandDawns.EditorTools
         const string GruntColor = "#6B4E3D";
         const string BoarColor = "#3D2F26";
         const string ArcherColor = "#4A5560";
+        const string HoundColor = "#7A6A58";
+        const string ShieldColor = "#5A4A3A";
+        const string HornColor = "#7B5B3A";
+        const string BomberColor = "#8C3B2E";
+        const string SnakeColor = "#4F8F3A";
+        const string BushColor = "#5E9E5A";
         const string EnemyAccentColor = "#EFE6D2";
         const string ArrowColor = "#1E1C1A";
         const string TelegraphBaseColor = "#E7BD7B";
@@ -69,6 +75,7 @@ namespace AThousandDawns.EditorTools
             var flashMat = GetMaterial("SwingFlash", FlashColor, true);
 
             BuildRoom(floorMat, wallMat, bambooMat);
+            BuildBushes(GetMaterial("Bush", BushColor, false));
 
             var config = new GameObject("GameConfig").AddComponent<GameConfig>();
             SetRef(config, "balance", balance);
@@ -103,6 +110,29 @@ namespace AThousandDawns.EditorTools
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
             AssetDatabase.SaveAssets();
             Debug.Log($"[시험판 씬] {ScenePath} 를 만들었어요.");
+        }
+
+        // 청죽사가 숨는 풀숲 4곳 (대나무·목인장·플레이어 시작 자리와 떨어진 곳). 충돌체 없음.
+        static void BuildBushes(Material mat)
+        {
+            var parent = new GameObject("Bushes").transform;
+            Vector3[] spots = { new Vector3(-6.5f, 0f, -2.5f), new Vector3(6.5f, 0f, 2f), new Vector3(-3f, 0f, 4.8f), new Vector3(3.5f, 0f, -4.5f) };
+            for (int i = 0; i < spots.Length; i++)
+            {
+                var bush = new GameObject($"Bush_{i + 1}");
+                bush.transform.SetParent(parent, false);
+                bush.transform.localPosition = spots[i];
+
+                var visual = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                visual.name = "Visual";
+                Object.DestroyImmediate(visual.GetComponent<Collider>());
+                visual.transform.SetParent(bush.transform, false);
+                visual.transform.localPosition = new Vector3(0f, 0.3f, 0f);
+                visual.transform.localScale = new Vector3(1.5f, 0.7f, 1.5f);
+                visual.GetComponent<Renderer>().sharedMaterial = mat;
+
+                SetRef(bush.AddComponent<AmbushBush>(), "visual", visual.transform);
+            }
         }
 
         static void BuildRoom(Material floorMat, Material wallMat, Material bambooMat)
@@ -181,6 +211,11 @@ namespace AThousandDawns.EditorTools
             v.FindPropertyRelative("grunt").objectReferenceValue = GetMaterial("Enemy_Grunt", GruntColor, false);
             v.FindPropertyRelative("boar").objectReferenceValue = GetMaterial("Enemy_Boar", BoarColor, false);
             v.FindPropertyRelative("archer").objectReferenceValue = GetMaterial("Enemy_Archer", ArcherColor, false);
+            v.FindPropertyRelative("hound").objectReferenceValue = GetMaterial("Enemy_Hound", HoundColor, false);
+            v.FindPropertyRelative("shield").objectReferenceValue = GetMaterial("Enemy_Shield", ShieldColor, false);
+            v.FindPropertyRelative("horn").objectReferenceValue = GetMaterial("Enemy_Horn", HornColor, false);
+            v.FindPropertyRelative("bomber").objectReferenceValue = GetMaterial("Enemy_Bomber", BomberColor, false);
+            v.FindPropertyRelative("snake").objectReferenceValue = GetMaterial("Enemy_Snake", SnakeColor, false);
             v.FindPropertyRelative("accent").objectReferenceValue = GetMaterial("Enemy_Accent", EnemyAccentColor, false);
             v.FindPropertyRelative("arrow").objectReferenceValue = GetMaterial("Arrow", ArrowColor, false);
             v.FindPropertyRelative("telegraphBase").objectReferenceValue = GetMaterial("Telegraph_Base", TelegraphBaseColor, true);

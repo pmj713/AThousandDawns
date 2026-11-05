@@ -25,6 +25,18 @@ namespace AThousandDawns.Enemies
             return points;
         }
 
+        // 폭발·소환: 가운데가 원점인 원.
+        public static List<Vector2> Circle(float radius, int segments = 28)
+        {
+            var points = new List<Vector2>(segments);
+            for (int i = 0; i < segments; i++)
+            {
+                float a = i / (float)segments * Mathf.PI * 2f;
+                points.Add(new Vector2(Mathf.Sin(a), Mathf.Cos(a)) * radius);
+            }
+            return points;
+        }
+
         // 돌진·화살: 폭 width, 길이 length인 직사각형 (시작점이 뒤쪽 가운데).
         public static List<Vector2> Rect(float width, float length)
         {

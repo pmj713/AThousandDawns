@@ -116,7 +116,7 @@ namespace AThousandDawns.Combat
             for (int i = 0; i < found; i++)
             {
                 var d = _overlap[i].GetComponentInParent<Damageable>();
-                if (d == null || d.IsDead || _candidates.Contains(d)) continue;
+                if (d == null || d.IsDead || !d.Targetable || _candidates.Contains(d)) continue;
                 if (DistanceXZ(_center, d.transform.position) > _radius + d.BodyRadius) continue;
                 _candidates.Add(d);
             }
@@ -140,7 +140,7 @@ namespace AThousandDawns.Combat
 
         void Land(Damageable target)
         {
-            if (target == null || target.IsDead) return;
+            if (target == null || target.IsDead || !target.Targetable) return;
             var hit = _hit;
             hit.Toughness = target.Toughness;
             hit.Defense = target.Defense;

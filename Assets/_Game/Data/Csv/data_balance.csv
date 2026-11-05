@@ -139,3 +139,67 @@ ultimate.sword_count,8,,만검귀종 검 자루 수 (하단전),무기!B55
 ultimate.sword_damage,18,,만검귀종 검 한 자루 피해,무기!B56
 ultimate.sword_fall_time,0.15,s,검이 하늘에서 떨어지는 시간 (임시),
 player.gongryeok,3,,시험판 공력 = 무기 탭 하단전 가정값,무기!B53
+hound.hp,20,,들개 체력 (죽림),몬스터!B23
+hound.atk,6,,들개 공격,몬스터!C23
+hound.toughness,0,,들개 강인함,몬스터!D23
+hound.move_speed,5,cell/s,들개 이동,몬스터!C75
+hound.attack_range,2,cell,들개 뛰어들기 시작 거리,몬스터!D75
+hound.lunge,2,cell,들개 뛰어드는 거리,몬스터!E75
+hound.windup,0.35,s,들개 예고,몬스터!F75
+hound.recovery,0.5,s,들개 빈틈 (착지 순간),몬스터!G75
+hound.attack_interval,1.5,s,들개 공격 간격,몬스터!H75
+hound.hop_distance,1.5,cell,물고 옆으로 빠지는 거리 (몬스터 K75 설명),
+hound.leap_time,0.2,s,뛰어드는 데 걸리는 시간 (임시),
+hound.hop_time,0.2,s,옆으로 빠지는 데 걸리는 시간 (임시),
+hound.bite_reach,0.3,cell,몸 바깥으로 무는 거리 (임시),
+hound.flank_angle,100,deg,플레이어가 보는 방향에서 돌아 들어가는 각도 (임시),
+shield.hp,60,,방패 산적 체력 (죽림),몬스터!B26
+shield.atk,10,,방패 산적 공격,몬스터!C26
+shield.toughness,2,,방패 산적 강인함,몬스터!D26
+shield.move_speed,2.5,cell/s,방패 산적 이동 (방패를 내렸거나 깨졌을 때),몬스터!C78
+shield.attack_range,1.5,cell,방패 산적 베기 반경,몬스터!D78
+shield.lunge,2,cell,방패 산적 돌진 거리,몬스터!E78
+shield.windup,0.6,s,방패 산적 예고,몬스터!F78
+shield.recovery,0.8,s,방패 산적 빈틈 (방패를 내림),몬스터!G78
+shield.attack_interval,2.5,s,방패 산적 공격 간격,몬스터!H78
+shield.guard_angle,120,deg,정면 방어 각도 (몬스터 K78 설명),
+shield.guard_ratio,0.2,,정면에서 받는 피해 배율 (몬스터 K78 설명),
+shield.turn_speed,180,deg/s,도는 속도 (몬스터 K78 설명),
+shield.guard_move_speed,2,cell/s,방패를 든 채 다가오는 속도 (몬스터 K78 설명),
+shield.knockback,1,cell,맞으면 밀려나는 거리 (몬스터 K78 설명),
+shield.attack_angle,90,deg,방패 산적 베기 부채꼴 각도 (임시),
+shield.lunge_time,0.2,s,방패 산적 돌진에 걸리는 시간 (임시),
+horn.hp,40,,나팔수 체력 (죽림),몬스터!B27
+horn.atk,5,,나팔수 공격 (지금은 호출만 해서 안 씀),몬스터!C27
+horn.toughness,0,,나팔수 강인함,몬스터!D27
+horn.move_speed,3,cell/s,나팔수 이동,몬스터!C79
+horn.windup,1.5,s,나팔 예고 (맞으면 끊김),몬스터!F79
+horn.recovery,0.5,s,나팔수 빈틈,몬스터!G79
+horn.attack_interval,8,s,나팔 간격,몬스터!H79
+horn.keep_distance,6,cell,유지하는 거리 (몬스터 K79 설명),
+horn.summon_count,2,,한 번에 부르는 졸개 수 (몬스터 K79 설명),
+horn.summon_max,2,,방마다 최대 호출 횟수 (몬스터 K79 설명),
+bomber.hp,25,,화약 산적 체력 (죽림),몬스터!B28
+bomber.atk,20,,화약 산적 폭발 피해,몬스터!C28
+bomber.toughness,0,,화약 산적 강인함,몬스터!D28
+bomber.move_speed,4.5,cell/s,화약 산적 이동,몬스터!C80
+bomber.attack_range,2,cell,폭발 반경 (다른 적도 맞음),몬스터!D80
+bomber.windup,1,s,점화 뒤 폭발까지,몬스터!F80
+bomber.ignite_distance,1.5,cell,점화하는 거리 (몬스터 K80 설명),
+bomber.fuse_move_ratio,0.7,,점화 뒤 쫓아오는 속도 비율 (몬스터 K80 설명),
+bomber.hit_fuse,0.5,s,먼저 맞으면 그 자리에서 터지기까지 (몬스터 K80 설명),
+snake.hp,30,,청죽사 체력 (죽림),몬스터!B29
+snake.atk,6,,청죽사 공격,몬스터!C29
+snake.toughness,0,,청죽사 강인함,몬스터!D29
+snake.move_speed,4,cell/s,청죽사 이동,몬스터!C81
+snake.attack_range,3,cell,청죽사 뛰어들기 거리 (풀숲이 없을 때 시작 거리),몬스터!D81
+snake.lunge,3,cell,청죽사 뛰어드는 거리,몬스터!E81
+snake.windup,0.4,s,청죽사 예고,몬스터!F81
+snake.recovery,1,s,청죽사 빈틈,몬스터!G81
+snake.attack_interval,3,s,청죽사 공격 간격,몬스터!H81
+snake.ambush_distance,2.5,cell,풀숲에서 뛰어나오는 거리 (몬스터 K81 설명),
+snake.slow_ratio,0.25,,물리면 이동속도 감소 (몬스터 K81 설명),
+snake.slow_duration,2,s,둔화 시간 (몬스터 K81 설명),
+snake.relocate_time,2,s,공격 뒤 다른 풀숲으로 옮기는 시간 (몬스터 K81 설명),
+snake.leap_time,0.2,s,뛰어드는 데 걸리는 시간 (임시),
+snake.bite_reach,0.3,cell,몸 바깥으로 무는 거리 (임시),
