@@ -1,0 +1,83 @@
+key,value,unit,note,source
+world.cell_size,1,unit,1칸 = 유니티 1 유닛,
+damage.toughness_floor_ratio,0.2,,강인함을 빼도 적용 전 피해의 이 비율 아래로는 안 내려감,
+damage.gongryeok_per_point,10%,,공력 1당 초식·절초 피해 증가,무기!B47
+damage.player_multiplier_floor,0.4,,받는 피해 배율 최저치,
+damage.player_defense_constant,50,,방어 감소율 = 방어력 / (방어력 + 이 값),
+player.move_speed,6,cell/s,이동속도,조작!B6
+player.accel_time,0.06,s,가속 시간,조작!B7
+player.decel_time,0.04,s,감속 시간,조작!B8
+player.attack_move_ratio,40%,,공격 중 이동속도,조작!B9
+player.collision_radius,0.3,cell,캐릭터 충돌 반경,조작!B10
+dash.distance,4,cell,대시 거리,조작!B14
+dash.duration,0.18,s,대시에 걸리는 시간,조작!B15
+dash.iframe,0.2,s,대시 무적 (간파 판정 시간),조작!B17
+dash.charges,1,,기본 충전,조작!B18
+dash.recharge,1,s,재충전 시간,조작!B19
+dash.attack_window,0.15,s,대시 공격 입력 시간,조작!B20
+combo.1.windup,0.08,s,평타 1타 선딜,조작!B25
+combo.1.active,0.06,s,평타 1타 판정,조작!C25
+combo.1.recovery,0.18,s,평타 1타 후딜,조작!D25
+combo.2.windup,0.08,s,평타 2타 선딜,조작!B26
+combo.2.active,0.06,s,평타 2타 판정,조작!C26
+combo.2.recovery,0.18,s,평타 2타 후딜,조작!D26
+combo.3.windup,0.14,s,평타 3타째 선딜,조작!B27
+combo.3.active,0.08,s,평타 3타째 판정,조작!C27
+combo.3.recovery,0.28,s,평타 3타째 후딜,조작!D27
+ultimate.gauge_max,100,,절초 필요 기세,조작!B52
+ultimate.cast_time,1,s,절초 시전 시간,조작!B53
+gauge.basic_hit,2,,평타 1·2타 적중 기세,조작!B55
+gauge.finisher_hit,4,,평타 3타째 적중 기세,조작!B56
+gauge.dash_attack_hit,5,,대시 공격 적중 기세,조작!B57
+gauge.skill_hit,3,,초식 적중 기세,조작!B58
+gauge.hurt,8,,피격 기세,조작!B59
+hurt.iframe,0.6,s,피격 후 무적,조작!B65
+hurt.knockback,0.5,cell,피격 넉백,조작!B66
+hurt.stun,0.15,s,피격 경직,조작!B67
+sword.basic_damage,10,,검 평타 1·2타,무기!B6
+sword.finisher_damage,15,,검 평타 3타째,무기!B7
+sword.skill_damage,40,,회선참,무기!B11
+sword.skill_cooldown,5,s,회선참 쿨타임,무기!B13
+sword.dash_attack_damage,20,,돌진 베기,무기!B14
+knife.shot_damage,8,,비도 한 발,무기!C6
+knife.finisher_count,3,,비도 3타째 발 수,무기!C8
+knife.recall_ratio,25%,,회수 1개당 초식 피해 비율,무기!C11
+knife.recall_max_per_target,6,,회수: 한 적 최대,무기!C12
+knife.skill_cooldown,5,s,회수 쿨타임,무기!C13
+knife.dash_attack_count,4,,대시 공격 비도 수,무기!C15
+knife.lifetime,6,s,남는 비도 시간,무기!C30
+knife.max_count,15,,남는 비도 최대 개수,무기!C31
+knife.return_speed,30,cell/s,회수 비도 속도,무기!C32
+burn.per_stack,15%,,화상 1중첩: 초당 기준 피해 비율,상태이상!B14
+burn.max_stacks,5,,화상 최대 중첩,상태이상!B15
+burn.duration,4,s,화상 지속,상태이상!B16
+burn.tick,0.5,s,화상 피해 간격,상태이상!B17
+slow.per_stack,10%,,둔화 1중첩: 이동·공격 속도 감소,상태이상!B28
+slow.max_stacks,3,,둔화 최대 중첩,상태이상!B29
+slow.duration,3,s,둔화 지속,상태이상!B30
+slow.boss_ratio,50%,,고수·보스 둔화 효과 비율,상태이상!B31
+freeze.slow_stacks,3,,빙결 조건 (둔화 중첩),상태이상!B32
+freeze.normal_duration,2,s,일반 적 빙결 시간,상태이상!B33
+freeze.normal_immunity,3,s,일반 적 빙결 면역,상태이상!B34
+freeze.boss_duration,1,s,고수·보스 빙결 시간,상태이상!B35
+freeze.boss_immunity,10,s,고수·보스 빙결 면역,상태이상!B36
+shock.max_stacks,5,,감전 최대 중첩,상태이상!B47
+shock.duration,5,s,감전 지속,상태이상!B48
+discharge.per_stack,40%,,방전: 중첩당 기준 피해 비율,상태이상!B49
+chain.ratio,25%,,연쇄 번개 1명당 발동 공격 비율,상태이상!B50
+chain.targets,4,,연쇄 번개 대상 수,상태이상!B51
+chain.range,3,cell,연쇄 번개 튀는 거리,상태이상!B52
+lightning.ratio,150%,,낙뢰: 발동 공격 비율,상태이상!B54
+enemy.first_attack_delay,1,s,방에 들어온 뒤 첫 공격 대기,몬스터!B84
+enemy.melee_tokens,2,,동시 공격 (근접),몬스터!B85
+enemy.ranged_tokens,1,,동시 공격 (원거리),몬스터!B86
+enemy.hitstun,0.2,s,일반 적 경직,몬스터!B87
+enemy.hitstun_immunity,0.4,s,경직 뒤 경직 면역,
+enemy.windup_delay_on_hit,0.2,s,예고 중에 맞으면 늦춰지는 시간,몬스터!B88
+elite.hp_mult,3,,정예 체력 배율,몬스터!B139
+elite.atk_mult,1.2,,정예 공격 배율,몬스터!B140
+elite.scale,1.2,,정예 크기 배율,몬스터!B141
+assassin.hp,160,,살수 체력 (죽림),몬스터!B121
+assassin.atk,14,,살수 공격 (죽림),몬스터!B122
+assassin.toughness,2,,살수 강인함,몬스터!B123
+assassin.move_speed,5,cell/s,살수 이동,몬스터!B124

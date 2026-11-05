@@ -1,0 +1,18 @@
+{
+    "name": "AThousandDawns.EditorTools",
+    "rootNamespace": "AThousandDawns.EditorTools",
+    "references": [
+        "AThousandDawns"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

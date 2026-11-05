@@ -1,0 +1,343 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbf29c7c641fa644f9b8f0479671347f, type: 3}
+  m_Name: BalanceConfig
+  m_EditorClassIdentifier: AThousandDawns::AThousandDawns.Data.BalanceConfig
+  entries:
+  - key: world.cell_size
+    value: 1
+    unit: unit
+    note: "1\uCE78 = \uC720\uB2C8\uD2F0 1 \uC720\uB2DB"
+  - key: damage.toughness_floor_ratio
+    value: 0.2
+    unit: 
+    note: "\uAC15\uC778\uD568\uC744 \uBE7C\uB3C4 \uC801\uC6A9 \uC804 \uD53C\uD574\uC758 \uC774 \uBE44\uC728 \uC544\uB798\uB85C\uB294 \uC548 \uB0B4\uB824\uAC10"
+  - key: damage.gongryeok_per_point
+    value: 0.1
+    unit: 
+    note: "\uACF5\uB825 1\uB2F9 \uCD08\uC2DD\xB7\uC808\uCD08 \uD53C\uD574 \uC99D\uAC00"
+  - key: damage.player_multiplier_floor
+    value: 0.4
+    unit: 
+    note: "\uBC1B\uB294 \uD53C\uD574 \uBC30\uC728 \uCD5C\uC800\uCE58"
+  - key: damage.player_defense_constant
+    value: 50
+    unit: 
+    note: "\uBC29\uC5B4 \uAC10\uC18C\uC728 = \uBC29\uC5B4\uB825 / (\uBC29\uC5B4\uB825 + \uC774 \uAC12)"
+  - key: player.move_speed
+    value: 6
+    unit: cell/s
+    note: "\uC774\uB3D9\uC18D\uB3C4"
+  - key: player.accel_time
+    value: 0.06
+    unit: s
+    note: "\uAC00\uC18D \uC2DC\uAC04"
+  - key: player.decel_time
+    value: 0.04
+    unit: s
+    note: "\uAC10\uC18D \uC2DC\uAC04"
+  - key: player.attack_move_ratio
+    value: 0.4
+    unit: 
+    note: "\uACF5\uACA9 \uC911 \uC774\uB3D9\uC18D\uB3C4"
+  - key: player.collision_radius
+    value: 0.3
+    unit: cell
+    note: "\uCE90\uB9AD\uD130 \uCDA9\uB3CC \uBC18\uACBD"
+  - key: dash.distance
+    value: 4
+    unit: cell
+    note: "\uB300\uC2DC \uAC70\uB9AC"
+  - key: dash.duration
+    value: 0.18
+    unit: s
+    note: "\uB300\uC2DC\uC5D0 \uAC78\uB9AC\uB294 \uC2DC\uAC04"
+  - key: dash.iframe
+    value: 0.2
+    unit: s
+    note: "\uB300\uC2DC \uBB34\uC801 (\uAC04\uD30C \uD310\uC815 \uC2DC\uAC04)"
+  - key: dash.charges
+    value: 1
+    unit: 
+    note: "\uAE30\uBCF8 \uCDA9\uC804"
+  - key: dash.recharge
+    value: 1
+    unit: s
+    note: "\uC7AC\uCDA9\uC804 \uC2DC\uAC04"
+  - key: dash.attack_window
+    value: 0.15
+    unit: s
+    note: "\uB300\uC2DC \uACF5\uACA9 \uC785\uB825 \uC2DC\uAC04"
+  - key: combo.1.windup
+    value: 0.08
+    unit: s
+    note: "\uD3C9\uD0C0 1\uD0C0 \uC120\uB51C"
+  - key: combo.1.active
+    value: 0.06
+    unit: s
+    note: "\uD3C9\uD0C0 1\uD0C0 \uD310\uC815"
+  - key: combo.1.recovery
+    value: 0.18
+    unit: s
+    note: "\uD3C9\uD0C0 1\uD0C0 \uD6C4\uB51C"
+  - key: combo.2.windup
+    value: 0.08
+    unit: s
+    note: "\uD3C9\uD0C0 2\uD0C0 \uC120\uB51C"
+  - key: combo.2.active
+    value: 0.06
+    unit: s
+    note: "\uD3C9\uD0C0 2\uD0C0 \uD310\uC815"
+  - key: combo.2.recovery
+    value: 0.18
+    unit: s
+    note: "\uD3C9\uD0C0 2\uD0C0 \uD6C4\uB51C"
+  - key: combo.3.windup
+    value: 0.14
+    unit: s
+    note: "\uD3C9\uD0C0 3\uD0C0\uC9F8 \uC120\uB51C"
+  - key: combo.3.active
+    value: 0.08
+    unit: s
+    note: "\uD3C9\uD0C0 3\uD0C0\uC9F8 \uD310\uC815"
+  - key: combo.3.recovery
+    value: 0.28
+    unit: s
+    note: "\uD3C9\uD0C0 3\uD0C0\uC9F8 \uD6C4\uB51C"
+  - key: ultimate.gauge_max
+    value: 100
+    unit: 
+    note: "\uC808\uCD08 \uD544\uC694 \uAE30\uC138"
+  - key: ultimate.cast_time
+    value: 1
+    unit: s
+    note: "\uC808\uCD08 \uC2DC\uC804 \uC2DC\uAC04"
+  - key: gauge.basic_hit
+    value: 2
+    unit: 
+    note: "\uD3C9\uD0C0 1\xB72\uD0C0 \uC801\uC911 \uAE30\uC138"
+  - key: gauge.finisher_hit
+    value: 4
+    unit: 
+    note: "\uD3C9\uD0C0 3\uD0C0\uC9F8 \uC801\uC911 \uAE30\uC138"
+  - key: gauge.dash_attack_hit
+    value: 5
+    unit: 
+    note: "\uB300\uC2DC \uACF5\uACA9 \uC801\uC911 \uAE30\uC138"
+  - key: gauge.skill_hit
+    value: 3
+    unit: 
+    note: "\uCD08\uC2DD \uC801\uC911 \uAE30\uC138"
+  - key: gauge.hurt
+    value: 8
+    unit: 
+    note: "\uD53C\uACA9 \uAE30\uC138"
+  - key: hurt.iframe
+    value: 0.6
+    unit: s
+    note: "\uD53C\uACA9 \uD6C4 \uBB34\uC801"
+  - key: hurt.knockback
+    value: 0.5
+    unit: cell
+    note: "\uD53C\uACA9 \uB109\uBC31"
+  - key: hurt.stun
+    value: 0.15
+    unit: s
+    note: "\uD53C\uACA9 \uACBD\uC9C1"
+  - key: sword.basic_damage
+    value: 10
+    unit: 
+    note: "\uAC80 \uD3C9\uD0C0 1\xB72\uD0C0"
+  - key: sword.finisher_damage
+    value: 15
+    unit: 
+    note: "\uAC80 \uD3C9\uD0C0 3\uD0C0\uC9F8"
+  - key: sword.skill_damage
+    value: 40
+    unit: 
+    note: "\uD68C\uC120\uCC38"
+  - key: sword.skill_cooldown
+    value: 5
+    unit: s
+    note: "\uD68C\uC120\uCC38 \uCFE8\uD0C0\uC784"
+  - key: sword.dash_attack_damage
+    value: 20
+    unit: 
+    note: "\uB3CC\uC9C4 \uBCA0\uAE30"
+  - key: knife.shot_damage
+    value: 8
+    unit: 
+    note: "\uBE44\uB3C4 \uD55C \uBC1C"
+  - key: knife.finisher_count
+    value: 3
+    unit: 
+    note: "\uBE44\uB3C4 3\uD0C0\uC9F8 \uBC1C \uC218"
+  - key: knife.recall_ratio
+    value: 0.25
+    unit: 
+    note: "\uD68C\uC218 1\uAC1C\uB2F9 \uCD08\uC2DD \uD53C\uD574 \uBE44\uC728"
+  - key: knife.recall_max_per_target
+    value: 6
+    unit: 
+    note: "\uD68C\uC218: \uD55C \uC801 \uCD5C\uB300"
+  - key: knife.skill_cooldown
+    value: 5
+    unit: s
+    note: "\uD68C\uC218 \uCFE8\uD0C0\uC784"
+  - key: knife.dash_attack_count
+    value: 4
+    unit: 
+    note: "\uB300\uC2DC \uACF5\uACA9 \uBE44\uB3C4 \uC218"
+  - key: knife.lifetime
+    value: 6
+    unit: s
+    note: "\uB0A8\uB294 \uBE44\uB3C4 \uC2DC\uAC04"
+  - key: knife.max_count
+    value: 15
+    unit: 
+    note: "\uB0A8\uB294 \uBE44\uB3C4 \uCD5C\uB300 \uAC1C\uC218"
+  - key: knife.return_speed
+    value: 30
+    unit: cell/s
+    note: "\uD68C\uC218 \uBE44\uB3C4 \uC18D\uB3C4"
+  - key: burn.per_stack
+    value: 0.15
+    unit: 
+    note: "\uD654\uC0C1 1\uC911\uCCA9: \uCD08\uB2F9 \uAE30\uC900 \uD53C\uD574 \uBE44\uC728"
+  - key: burn.max_stacks
+    value: 5
+    unit: 
+    note: "\uD654\uC0C1 \uCD5C\uB300 \uC911\uCCA9"
+  - key: burn.duration
+    value: 4
+    unit: s
+    note: "\uD654\uC0C1 \uC9C0\uC18D"
+  - key: burn.tick
+    value: 0.5
+    unit: s
+    note: "\uD654\uC0C1 \uD53C\uD574 \uAC04\uACA9"
+  - key: slow.per_stack
+    value: 0.1
+    unit: 
+    note: "\uB454\uD654 1\uC911\uCCA9: \uC774\uB3D9\xB7\uACF5\uACA9 \uC18D\uB3C4 \uAC10\uC18C"
+  - key: slow.max_stacks
+    value: 3
+    unit: 
+    note: "\uB454\uD654 \uCD5C\uB300 \uC911\uCCA9"
+  - key: slow.duration
+    value: 3
+    unit: s
+    note: "\uB454\uD654 \uC9C0\uC18D"
+  - key: slow.boss_ratio
+    value: 0.5
+    unit: 
+    note: "\uACE0\uC218\xB7\uBCF4\uC2A4 \uB454\uD654 \uD6A8\uACFC \uBE44\uC728"
+  - key: freeze.slow_stacks
+    value: 3
+    unit: 
+    note: "\uBE59\uACB0 \uC870\uAC74 (\uB454\uD654 \uC911\uCCA9)"
+  - key: freeze.normal_duration
+    value: 2
+    unit: s
+    note: "\uC77C\uBC18 \uC801 \uBE59\uACB0 \uC2DC\uAC04"
+  - key: freeze.normal_immunity
+    value: 3
+    unit: s
+    note: "\uC77C\uBC18 \uC801 \uBE59\uACB0 \uBA74\uC5ED"
+  - key: freeze.boss_duration
+    value: 1
+    unit: s
+    note: "\uACE0\uC218\xB7\uBCF4\uC2A4 \uBE59\uACB0 \uC2DC\uAC04"
+  - key: freeze.boss_immunity
+    value: 10
+    unit: s
+    note: "\uACE0\uC218\xB7\uBCF4\uC2A4 \uBE59\uACB0 \uBA74\uC5ED"
+  - key: shock.max_stacks
+    value: 5
+    unit: 
+    note: "\uAC10\uC804 \uCD5C\uB300 \uC911\uCCA9"
+  - key: shock.duration
+    value: 5
+    unit: s
+    note: "\uAC10\uC804 \uC9C0\uC18D"
+  - key: discharge.per_stack
+    value: 0.4
+    unit: 
+    note: "\uBC29\uC804: \uC911\uCCA9\uB2F9 \uAE30\uC900 \uD53C\uD574 \uBE44\uC728"
+  - key: chain.ratio
+    value: 0.25
+    unit: 
+    note: "\uC5F0\uC1C4 \uBC88\uAC1C 1\uBA85\uB2F9 \uBC1C\uB3D9 \uACF5\uACA9 \uBE44\uC728"
+  - key: chain.targets
+    value: 4
+    unit: 
+    note: "\uC5F0\uC1C4 \uBC88\uAC1C \uB300\uC0C1 \uC218"
+  - key: chain.range
+    value: 3
+    unit: cell
+    note: "\uC5F0\uC1C4 \uBC88\uAC1C \uD280\uB294 \uAC70\uB9AC"
+  - key: lightning.ratio
+    value: 1.5
+    unit: 
+    note: "\uB099\uB8B0: \uBC1C\uB3D9 \uACF5\uACA9 \uBE44\uC728"
+  - key: enemy.first_attack_delay
+    value: 1
+    unit: s
+    note: "\uBC29\uC5D0 \uB4E4\uC5B4\uC628 \uB4A4 \uCCAB \uACF5\uACA9 \uB300\uAE30"
+  - key: enemy.melee_tokens
+    value: 2
+    unit: 
+    note: "\uB3D9\uC2DC \uACF5\uACA9 (\uADFC\uC811)"
+  - key: enemy.ranged_tokens
+    value: 1
+    unit: 
+    note: "\uB3D9\uC2DC \uACF5\uACA9 (\uC6D0\uAC70\uB9AC)"
+  - key: enemy.hitstun
+    value: 0.2
+    unit: s
+    note: "\uC77C\uBC18 \uC801 \uACBD\uC9C1"
+  - key: enemy.hitstun_immunity
+    value: 0.4
+    unit: s
+    note: "\uACBD\uC9C1 \uB4A4 \uACBD\uC9C1 \uBA74\uC5ED"
+  - key: enemy.windup_delay_on_hit
+    value: 0.2
+    unit: s
+    note: "\uC608\uACE0 \uC911\uC5D0 \uB9DE\uC73C\uBA74 \uB2A6\uCDB0\uC9C0\uB294 \uC2DC\uAC04"
+  - key: elite.hp_mult
+    value: 3
+    unit: 
+    note: "\uC815\uC608 \uCCB4\uB825 \uBC30\uC728"
+  - key: elite.atk_mult
+    value: 1.2
+    unit: 
+    note: "\uC815\uC608 \uACF5\uACA9 \uBC30\uC728"
+  - key: elite.scale
+    value: 1.2
+    unit: 
+    note: "\uC815\uC608 \uD06C\uAE30 \uBC30\uC728"
+  - key: assassin.hp
+    value: 160
+    unit: 
+    note: "\uC0B4\uC218 \uCCB4\uB825 (\uC8FD\uB9BC)"
+  - key: assassin.atk
+    value: 14
+    unit: 
+    note: "\uC0B4\uC218 \uACF5\uACA9 (\uC8FD\uB9BC)"
+  - key: assassin.toughness
+    value: 2
+    unit: 
+    note: "\uC0B4\uC218 \uAC15\uC778\uD568"
+  - key: assassin.move_speed
+    value: 5
+    unit: cell/s
+    note: "\uC0B4\uC218 \uC774\uB3D9"
