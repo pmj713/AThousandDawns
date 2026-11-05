@@ -78,7 +78,9 @@ namespace AThousandDawns.Combat
             return AtLeastOne(afterToughness * (1f - defenseRate));
         }
 
-        // 시트의 ROUND와 같게 0.5는 0에서 먼 쪽으로 반올림해요.
-        static int AtLeastOne(float value) => Math.Max(1, (int)Math.Round(value, MidpointRounding.AwayFromZero));
+        // 시트의 ROUND와 같게 0.5는 올려요. float 오차로 4.5가 4.4999…가 되는 경우를 위해 아주 작은 여유를 줘요.
+        const float RoundingSlack = 1e-4f;
+
+        static int AtLeastOne(float value) => Math.Max(1, (int)Math.Floor(Math.Max(0f, value) + 0.5f + RoundingSlack));
     }
 }

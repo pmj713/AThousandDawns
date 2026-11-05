@@ -1,7 +1,9 @@
 {
     "name": "AThousandDawns",
     "rootNamespace": "AThousandDawns",
-    "references": [],
+    "references": [
+        "Unity.InputSystem"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

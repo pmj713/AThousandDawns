@@ -1,0 +1,249 @@
+using System.IO;
+using AThousandDawns.Combat;
+using AThousandDawns.Core;
+using AThousandDawns.Data;
+using AThousandDawns.Player;
+using AThousandDawns.Prototype;
+using Unity.Cinemachine;
+using Unity.Cinemachine.TargetTracking;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+
+namespace AThousandDawns.EditorTools
+{
+    // 시험판 전투 씬을 코드로 다시 만들어요. 손으로 고친 씬이 있으면 덮어쓰니 주의.
+    public static class PrototypeSceneBuilder
+    {
+        public const string ScenePath = "Assets/_Game/Scenes/Prototype_Combat.unity";
+        const string MaterialFolder = "Assets/_Game/Prototype/Materials";
+
+        // 죽림 1층 팔레트 (색감 시트)
+        const string FloorColor = "#CFE0C8";
+        const string WallColor = "#2F5A44";
+        const string BambooColor = "#3E9C74";
+        const string PlayerColor = "#C8463C";
+        const string DummyColor = "#B8913A";
+        const string FlashColor = "#FFF6D8";
+
+        static readonly Vector3 CameraOffset = new Vector3(0f, 13.1f, -9.2f); // 거리 16, 55°
+
+        [MenuItem("AThousandDawns/시험판 씬 만들기")]
+        public static void BuildFromMenu()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            Build();
+        }
+
+        // 배치 모드: -executeMethod AThousandDawns.EditorTools.PrototypeSceneBuilder.BuildBatch
+        public static void BuildBatch()
+        {
+            Build();
+            EditorApplication.Exit(0);
+        }
+
+        public static void Build()
+        {
+            SheetImporter.ImportBalance();
+            var balance = AssetDatabase.LoadAssetAtPath<BalanceConfig>(SheetImporter.BalanceAssetPath);
+
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
+
+            var floorMat = GetMaterial("Floor", FloorColor, false);
+            var wallMat = GetMaterial("Wall", WallColor, false);
+            var bambooMat = GetMaterial("Bamboo", BambooColor, false);
+            var playerMat = GetMaterial("Player", PlayerColor, false);
+            var dummyMat = GetMaterial("Dummy", DummyColor, false);
+            var flashMat = GetMaterial("SwingFlash", FlashColor, true);
+
+            BuildRoom(floorMat, wallMat, bambooMat);
+
+            var config = new GameObject("GameConfig").AddComponent<GameConfig>();
+            SetRef(config, "balance", balance);
+
+            var player = BuildPlayer(playerMat, wallMat, flashMat);
+            var dummyA = BuildDummy("목인장 (강인함 0)", new Vector3(-2.5f, 0f, 2f), 0f, 0f, dummyMat);
+            var dummyB = BuildDummy("목인장 (녹림왕: 강인함 5, 방어 10%)", new Vector3(2.5f, 0f, 2f), 5f, 0.1f, dummyMat);
+
+            BuildCamera(player.transform);
+
+            var light = Object.FindFirstObjectByType<Light>();
+            if (light != null) light.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
+
+            var hud = new GameObject("PrototypeHud").AddComponent<PrototypeHud>();
+            SetRef(hud, "player", player);
+            var so = new SerializedObject(hud);
+            var arr = so.FindProperty("dummies");
+            arr.arraySize = 2;
+            arr.GetArrayElementAtIndex(0).objectReferenceValue = dummyA;
+            arr.GetArrayElementAtIndex(1).objectReferenceValue = dummyB;
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            EnsureFolder(Path.GetDirectoryName(ScenePath).Replace('\\', '/'));
+            EditorSceneManager.SaveScene(scene, ScenePath);
+            EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[시험판 씬] {ScenePath} 를 만들었어요.");
+        }
+
+        static void BuildRoom(Material floorMat, Material wallMat, Material bambooMat)
+        {
+            var room = new GameObject("Room").transform;
+            Box("Floor", room, new Vector3(0f, -0.1f, 0f), new Vector3(16f, 0.2f, 12f), floorMat);
+            Box("Wall_N", room, new Vector3(0f, 0.75f, 6.25f), new Vector3(17f, 1.5f, 0.5f), wallMat);
+            Box("Wall_S", room, new Vector3(0f, 0.75f, -6.25f), new Vector3(17f, 1.5f, 0.5f), wallMat);
+            Box("Wall_W", room, new Vector3(-8.25f, 0.75f, 0f), new Vector3(0.5f, 1.5f, 12f), wallMat);
+            Box("Wall_E", room, new Vector3(8.25f, 0.75f, 0f), new Vector3(0.5f, 1.5f, 12f), wallMat);
+
+            Vector3[] bamboo = { new Vector3(-5f, 0f, 3.5f), new Vector3(5.5f, 0f, -3f), new Vector3(-4.5f, 0f, -4f), new Vector3(5f, 0f, 4f) };
+            for (int i = 0; i < bamboo.Length; i++)
+            {
+                var b = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                b.name = $"Bamboo_{i + 1}";
+                b.transform.SetParent(room, false);
+                b.transform.localPosition = bamboo[i] + Vector3.up * 1.5f;
+                b.transform.localScale = new Vector3(0.6f, 1.5f, 0.6f);
+                b.GetComponent<Renderer>().sharedMaterial = bambooMat;
+            }
+        }
+
+        static PlayerController BuildPlayer(Material bodyMat, Material noseMat, Material flashMat)
+        {
+            var root = new GameObject("Player");
+            root.transform.position = new Vector3(0f, 0f, -3f);
+            var cc = root.AddComponent<CharacterController>();
+            cc.radius = 0.3f;
+            cc.height = 1.6f;
+            cc.center = new Vector3(0f, 0.8f, 0f);
+            cc.skinWidth = 0.02f;
+
+            var visual = new GameObject("Visual").transform;
+            visual.SetParent(root.transform, false);
+
+            var body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            body.name = "Body";
+            Object.DestroyImmediate(body.GetComponent<Collider>());
+            body.transform.SetParent(visual, false);
+            body.transform.localPosition = new Vector3(0f, 0.8f, 0f);
+            body.transform.localScale = new Vector3(0.6f, 0.8f, 0.6f);
+            body.GetComponent<Renderer>().sharedMaterial = bodyMat;
+
+            var nose = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            nose.name = "Facing";
+            Object.DestroyImmediate(nose.GetComponent<Collider>());
+            nose.transform.SetParent(visual, false);
+            nose.transform.localPosition = new Vector3(0f, 1.1f, 0.35f);
+            nose.transform.localScale = new Vector3(0.15f, 0.15f, 0.3f);
+            nose.GetComponent<Renderer>().sharedMaterial = noseMat;
+
+            var flashGo = new GameObject("SwingFlash", typeof(MeshFilter), typeof(MeshRenderer));
+            flashGo.GetComponent<MeshRenderer>().sharedMaterial = flashMat;
+            flashGo.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            var flash = flashGo.AddComponent<SwingFlash>();
+
+            root.AddComponent<PlayerInputReader>();
+            var controller = root.AddComponent<PlayerController>();
+            SetRef(controller, "visual", visual);
+            SetRef(controller, "swingFlash", flash);
+            return controller;
+        }
+
+        static TrainingDummy BuildDummy(string label, Vector3 position, float toughness, float defense, Material mat)
+        {
+            var root = new GameObject(label);
+            root.transform.position = position;
+            var col = root.AddComponent<CapsuleCollider>();
+            col.center = new Vector3(0f, 1f, 0f);
+            col.radius = 0.4f;
+            col.height = 2f;
+
+            var visual = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            visual.name = "Visual";
+            Object.DestroyImmediate(visual.GetComponent<Collider>());
+            visual.transform.SetParent(root.transform, false);
+            visual.transform.localPosition = new Vector3(0f, 1f, 0f);
+            visual.transform.localScale = new Vector3(0.8f, 1f, 0.8f);
+            var renderer = visual.GetComponent<Renderer>();
+            renderer.sharedMaterial = mat;
+
+            var damageable = root.AddComponent<Damageable>();
+            var so = new SerializedObject(damageable);
+            so.FindProperty("toughness").floatValue = toughness;
+            so.FindProperty("defense").floatValue = defense;
+            so.FindProperty("invincible").boolValue = true;
+            so.FindProperty("bodyRadius").floatValue = 0.4f;
+            so.FindProperty("flashRenderer").objectReferenceValue = renderer;
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            var dummy = root.AddComponent<TrainingDummy>();
+            var dso = new SerializedObject(dummy);
+            dso.FindProperty("label").stringValue = label;
+            dso.ApplyModifiedPropertiesWithoutUndo();
+            return dummy;
+        }
+
+        static void BuildCamera(Transform target)
+        {
+            var cam = Camera.main;
+            if (cam != null && cam.GetComponent<CinemachineBrain>() == null) cam.gameObject.AddComponent<CinemachineBrain>();
+
+            var go = new GameObject("CM QuarterView");
+            go.transform.SetPositionAndRotation(target.position + CameraOffset, Quaternion.Euler(55f, 0f, 0f));
+            var vcam = go.AddComponent<CinemachineCamera>();
+            vcam.Follow = target;
+            var lens = vcam.Lens;
+            lens.FieldOfView = 40f;
+            vcam.Lens = lens;
+
+            var follow = go.AddComponent<CinemachineFollow>();
+            follow.FollowOffset = CameraOffset;
+            var tracker = follow.TrackerSettings;
+            tracker.BindingMode = BindingMode.WorldSpace;
+            tracker.PositionDamping = new Vector3(0.3f, 0.3f, 0.3f);
+            follow.TrackerSettings = tracker;
+        }
+
+        static void Box(string name, Transform parent, Vector3 position, Vector3 scale, Material mat)
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.name = name;
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = position;
+            go.transform.localScale = scale;
+            go.GetComponent<Renderer>().sharedMaterial = mat;
+        }
+
+        static Material GetMaterial(string name, string hex, bool unlit)
+        {
+            EnsureFolder(MaterialFolder);
+            string path = $"{MaterialFolder}/{name}.mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            var shader = Shader.Find(unlit ? "Universal Render Pipeline/Unlit" : "Universal Render Pipeline/Lit");
+            if (mat == null)
+            {
+                mat = new Material(shader);
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            else if (shader != null) mat.shader = shader;
+            ColorUtility.TryParseHtmlString(hex, out Color color);
+            mat.SetColor("_BaseColor", color);
+            EditorUtility.SetDirty(mat);
+            return mat;
+        }
+
+        static void SetRef(Object target, string field, Object value)
+        {
+            var so = new SerializedObject(target);
+            so.FindProperty(field).objectReferenceValue = value;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        static void EnsureFolder(string path)
+        {
+            if (AssetDatabase.IsValidFolder(path)) return;
+            string parent = Path.GetDirectoryName(path).Replace('\\', '/');
+            EnsureFolder(parent);
+            AssetDatabase.CreateFolder(parent, Path.GetFileName(path));
+        }
+    }
+}

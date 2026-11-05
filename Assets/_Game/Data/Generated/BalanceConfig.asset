@@ -341,3 +341,39 @@ MonoBehaviour:
     value: 5
     unit: cell/s
     note: "\uC0B4\uC218 \uC774\uB3D9"
+  - key: combo.chain_window
+    value: 0.25
+    unit: s
+    note: "\uD6C4\uB51C\uC774 \uB05D\uB09C \uB4A4 \uB2E4\uC74C \uD0C0\uB85C \uC774\uC5B4\uC9C0\uB294 \uC2DC\uAC04 (\uC870\uC791 \uC2DC\uD2B8 \uC5F0\uACB0 \uADDC\uCE59)"
+  - key: combo.input_buffer
+    value: 0.12
+    unit: s
+    note: "\uD3C9\uD0C0\xB7\uB300\uC2DC\uB97C \uBA3C\uC800 \uB20C\uB7EC\uB3C4 \uC774\uC5B4\uC9C0\uB294 \uC2DC\uAC04 (\uC870\uC791 \uC2DC\uD2B8 \uC5F0\uACB0 \uADDC\uCE59)"
+  - key: combo.1.radius
+    value: 1.6
+    unit: cell
+    note: "\uD3C9\uD0C0 1\xB72\uD0C0 \uBD80\uCC44\uAF34 \uBC18\uACBD (\uC870\uC791 \uC2DC\uD2B8 \uD3C9\uD0C0 \uBC94\uC704)"
+  - key: combo.1.angle
+    value: 100
+    unit: deg
+    note: "\uD3C9\uD0C0 1\xB72\uD0C0 \uBD80\uCC44\uAF34 \uAC01\uB3C4"
+  - key: combo.3.radius
+    value: 2
+    unit: cell
+    note: "\uD3C9\uD0C0 3\uD0C0\uC9F8 \uBD80\uCC44\uAF34 \uBC18\uACBD"
+  - key: combo.3.angle
+    value: 160
+    unit: deg
+    note: "\uD3C9\uD0C0 3\uD0C0\uC9F8 \uBD80\uCC44\uAF34 \uAC01\uB3C4"
+  - key: combo.3.lunge
+    value: 0.5
+    unit: cell
+    note: "\uD3C9\uD0C0 3\uD0C0\uC9F8 \uC804\uC9C4 \uAC70\uB9AC"
+  - key: sword.dash_attack_radius
+    value: 2
+    unit: cell
+    note: "\uB3CC\uC9C4 \uBCA0\uAE30 \uBC18\uACBD (\uC784\uC2DC)"
+  - key: sword.dash_attack_angle
+    value: 120
+    unit: deg
+    note: "\uB3CC\uC9C4 \uBCA0\uAE30 \uAC01\uB3C4 (\uC784\uC2DC)"

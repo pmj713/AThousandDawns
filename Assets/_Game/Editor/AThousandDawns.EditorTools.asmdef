@@ -2,7 +2,8 @@
     "name": "AThousandDawns.EditorTools",
     "rootNamespace": "AThousandDawns.EditorTools",
     "references": [
-        "AThousandDawns"
+        "AThousandDawns",
+        "Unity.Cinemachine"
     ],
     "includePlatforms": [
         "Editor"

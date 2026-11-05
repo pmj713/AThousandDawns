@@ -67,6 +67,16 @@ namespace AThousandDawns.Tests
         }
 
         [Test]
+        public void 반올림은_시트처럼_0_5를_올림()
+        {
+            // 10 − 강인함 5 = 5, × (1 − 0.1) = 4.5 → 시트 ROUND는 5
+            var hit = HitDamageInput.Of(10f);
+            hit.Toughness = 5f;
+            hit.Defense = 0.1f;
+            Assert.AreEqual(5, DamageFormula.ToEnemy(hit, Rules));
+        }
+
+        [Test]
         public void 받는피해_배율은_40퍼센트_아래로_내려가지_않음()
         {
             var p = new PlayerHitInput { EnemyAttack = 20f, DamageReduction = 0.9f };
