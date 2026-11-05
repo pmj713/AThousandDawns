@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using AThousandDawns.Combat;
 using AThousandDawns.Core;
@@ -5,12 +6,15 @@ using UnityEngine;
 
 namespace AThousandDawns.Player
 {
-    // 시험판 플레이어: 이동, 대시(무적), 평타 3연타(누르고 있기), 대시 공격. 수치는 전부 data_balance에서 읽어요.
+    // 시험판 플레이어: 이동, 대시(무적), 평타 3연타(누르고 있기), 대시 공격, 피격. 수치는 전부 data_balance에서 읽어요.
     [RequireComponent(typeof(CharacterController), typeof(PlayerInputReader))]
     public sealed class PlayerController : MonoBehaviour
     {
+        static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+
         [SerializeField] Transform visual;
         [SerializeField] SwingFlash swingFlash;
+        [SerializeField] Renderer bodyRenderer;
 
         CharacterController _controller;
         PlayerInputReader _input;
@@ -23,9 +27,14 @@ namespace AThousandDawns.Player
         float _basicDamage, _finisherDamage, _dashAttackDamage, _dashAttackRadius, _dashAttackAngle;
         float[] _hitRadius, _hitAngle;
         float _finisherLunge, _finisherActive;
-        float _gaugeMax, _gaugeBasic, _gaugeFinisher, _gaugeDashAttack;
+        float _gaugeMax, _gaugeBasic, _gaugeFinisher, _gaugeDashAttack, _gaugeHurt;
+        float _maxHealth, _hurtIframe, _hurtKnockback, _hurtStun;
 
         Vector3 _velocity;
+        Vector3 _knockbackVelocity;
+        float _stunTimer, _flashTimer;
+        MaterialPropertyBlock _block;
+        Color _bodyColor = Color.white;
         Vector3 _facing = Vector3.forward;
         Vector3 _dashDirection;
         float _dashTimer, _invulnerableTimer, _dashAttackTimer, _lungeRemaining;
@@ -41,12 +50,27 @@ namespace AThousandDawns.Player
         public float GaugeMax => _gaugeMax;
         public bool IsDashing => _dashTimer > 0f;
         public bool IsInvulnerable => _invulnerableTimer > 0f;
+        public bool IsStunned => _stunTimer > 0f;
+        public float Health { get; private set; }
+        public float MaxHealth => _maxHealth;
+        public bool IsDead => Health <= 0f;
+        public float BodyRadius => _controller != null ? _controller.radius : 0.3f;
+        public CharacterController Body => _controller;
+
+        // 지금은 기물이 없어서 0. 기물이 붙으면 여기로 들어와요.
+        public float Toughness { get; set; }
+        public float Defense { get; set; }
+
+        public event Action<int> Hurt;
 
         void Awake()
         {
             _controller = GetComponent<CharacterController>();
             _input = GetComponent<PlayerInputReader>();
             ReadTuning();
+            Health = _maxHealth;
+            if (bodyRenderer != null && bodyRenderer.sharedMaterial != null && bodyRenderer.sharedMaterial.HasProperty(BaseColorId))
+                _bodyColor = bodyRenderer.sharedMaterial.GetColor(BaseColorId);
         }
 
         void ReadTuning()
@@ -89,6 +113,12 @@ namespace AThousandDawns.Player
             _gaugeBasic = GameConfig.Get("gauge.basic_hit", 2f);
             _gaugeFinisher = GameConfig.Get("gauge.finisher_hit", 4f);
             _gaugeDashAttack = GameConfig.Get("gauge.dash_attack_hit", 5f);
+            _gaugeHurt = GameConfig.Get("gauge.hurt", 8f);
+
+            _maxHealth = GameConfig.Get("player.max_health", 100f);
+            _hurtIframe = GameConfig.Get("hurt.iframe", 0.6f);
+            _hurtKnockback = GameConfig.Get("hurt.knockback", 0.5f);
+            _hurtStun = GameConfig.Get("hurt.stun", 0.15f);
 
             _rules = new DamageRules(
                 GameConfig.Get("damage.toughness_floor_ratio", 0.2f),
@@ -100,12 +130,23 @@ namespace AThousandDawns.Player
         void Update()
         {
             float dt = Time.deltaTime;
+            UpdateFlash(dt);
+            if (IsDead) return;
+
             _sinceDashPress = _input.DashPressed ? 0f : _sinceDashPress + dt;
             _sinceAttackPress = _input.AttackPressed ? 0f : _sinceAttackPress + dt;
             if (_input.AttackPressed) _combo.Press();
 
             _dash.Tick(dt);
             if (_invulnerableTimer > 0f) _invulnerableTimer -= dt;
+
+            if (IsStunned)
+            {
+                float step = Mathf.Min(dt, _stunTimer);
+                _controller.Move(_knockbackVelocity * step);
+                _stunTimer -= dt;
+                return;
+            }
 
             if (IsDashing)
             {
@@ -134,6 +175,44 @@ namespace AThousandDawns.Player
 
             _combo.Tick(dt, _input.AttackHeld);
             UpdateMovement(dt);
+        }
+
+        // 적 공격이 닿았을 때. 무적(대시·피격 후)이면 false를 돌려줘요. 화살은 이때 그대로 지나가요.
+        public bool TryReceiveHit(float enemyAttack, Vector3 source)
+        {
+            if (IsDead || IsInvulnerable) return false;
+
+            var hit = new PlayerHitInput { EnemyAttack = enemyAttack, Toughness = Toughness, Defense = Defense };
+            int damage = DamageFormula.ToPlayer(hit, _rules);
+            Health = Mathf.Max(0f, Health - damage);
+
+            _invulnerableTimer = Mathf.Max(_invulnerableTimer, _hurtIframe);
+            _stunTimer = _hurtStun;
+            Vector3 away = transform.position - source;
+            away.y = 0f;
+            if (away.sqrMagnitude < 1e-4f) away = -_facing;
+            _knockbackVelocity = away.normalized * (_hurtKnockback / Mathf.Max(0.01f, _hurtStun));
+
+            _combo.Cancel();
+            _velocity = Vector3.zero;
+            _lungeRemaining = 0f;
+            _dashAttackTimer = 0f;
+            Gauge = Mathf.Min(_gaugeMax, Gauge + _gaugeHurt);
+
+            _flashTimer = 0.12f;
+            DamagePopups.Spawn(transform.position + Vector3.up * 2f, damage, true);
+            Hurt?.Invoke(damage);
+            if (IsDead && visual != null) visual.localScale = new Vector3(1.2f, 0.25f, 1.2f); // 시험판용 쓰러짐 표시
+            return true;
+        }
+
+        void UpdateFlash(float dt)
+        {
+            if (bodyRenderer == null || (_flashTimer <= 0f && _block == null)) return;
+            _flashTimer -= dt;
+            _block ??= new MaterialPropertyBlock();
+            _block.SetColor(BaseColorId, _flashTimer > 0f ? Color.white : _bodyColor);
+            bodyRenderer.SetPropertyBlock(_block);
         }
 
         void StartDash()

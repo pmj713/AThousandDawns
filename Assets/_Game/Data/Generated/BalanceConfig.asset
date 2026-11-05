@@ -377,3 +377,167 @@ MonoBehaviour:
     value: 120
     unit: deg
     note: "\uB3CC\uC9C4 \uBCA0\uAE30 \uAC01\uB3C4 (\uC784\uC2DC)"
+  - key: player.max_health
+    value: 100
+    unit: 
+    note: "\uD50C\uB808\uC774\uC5B4 \uCD5C\uB300 \uCCB4\uB825 (\uC2DC\uC791)"
+  - key: enemy.track_move_ratio
+    value: 0.5
+    unit: 
+    note: "\uC608\uACE0 \uC55E \uC808\uBC18 \uC774\uB3D9\uC18D\uB3C4 (\uBAAC\uC2A4\uD130 \uC2DC\uD2B8 \uC608\uACE0 \uC808\uBC18 \uADDC\uCE59)"
+  - key: grunt.hp
+    value: 30
+    unit: 
+    note: "\uC878\uAC1C \uCCB4\uB825 (\uC8FD\uB9BC)"
+  - key: grunt.atk
+    value: 8
+    unit: 
+    note: "\uC878\uAC1C \uACF5\uACA9"
+  - key: grunt.toughness
+    value: 0
+    unit: 
+    note: "\uC878\uAC1C \uAC15\uC778\uD568"
+  - key: grunt.move_speed
+    value: 3.5
+    unit: cell/s
+    note: "\uC878\uAC1C \uC774\uB3D9"
+  - key: grunt.attack_range
+    value: 1.2
+    unit: cell
+    note: "\uC878\uAC1C \uBCA0\uAE30 \uBC18\uACBD"
+  - key: grunt.lunge
+    value: 1.5
+    unit: cell
+    note: "\uC878\uAC1C \uC804\uC9C4 \uAC70\uB9AC"
+  - key: grunt.windup
+    value: 0.6
+    unit: s
+    note: "\uC878\uAC1C \uC608\uACE0"
+  - key: grunt.recovery
+    value: 0.6
+    unit: s
+    note: "\uC878\uAC1C \uBE48\uD2C8"
+  - key: grunt.attack_interval
+    value: 1.8
+    unit: s
+    note: "\uC878\uAC1C \uACF5\uACA9 \uAC04\uACA9"
+  - key: grunt.attack_angle
+    value: 60
+    unit: deg
+    note: "\uC878\uAC1C \uBCA0\uAE30 \uBD80\uCC44\uAF34 \uAC01\uB3C4 (\uBAAC\uC2A4\uD130 K74 \uC124\uBA85)"
+  - key: grunt.lunge_time
+    value: 0.15
+    unit: s
+    note: "\uC878\uAC1C \uC804\uC9C4 \uBCA0\uAE30\uC5D0 \uAC78\uB9AC\uB294 \uC2DC\uAC04 (\uC784\uC2DC)"
+  - key: boar.hp
+    value: 80
+    unit: 
+    note: "\uBA67\uB3FC\uC9C0 \uCCB4\uB825 (\uC8FD\uB9BC)"
+  - key: boar.atk
+    value: 15
+    unit: 
+    note: "\uBA67\uB3FC\uC9C0 \uACF5\uACA9"
+  - key: boar.toughness
+    value: 3
+    unit: 
+    note: "\uBA67\uB3FC\uC9C0 \uAC15\uC778\uD568"
+  - key: boar.move_speed
+    value: 2.5
+    unit: cell/s
+    note: "\uBA67\uB3FC\uC9C0 \uC774\uB3D9"
+  - key: boar.attack_range
+    value: 8
+    unit: cell
+    note: "\uBA67\uB3FC\uC9C0 \uB3CC\uC9C4 \uC2DC\uC791 \uAC70\uB9AC"
+  - key: boar.charge_distance
+    value: 8
+    unit: cell
+    note: "\uBA67\uB3FC\uC9C0 \uB3CC\uC9C4 \uAC70\uB9AC"
+  - key: boar.windup
+    value: 0.8
+    unit: s
+    note: "\uBA67\uB3FC\uC9C0 \uC608\uACE0"
+  - key: boar.recovery
+    value: 1
+    unit: s
+    note: "\uBA67\uB3FC\uC9C0 \uBE48\uD2C8 (\uB3CC\uC9C4 \uB4A4 \uACBD\uC9C1)"
+  - key: boar.attack_interval
+    value: 4
+    unit: s
+    note: "\uBA67\uB3FC\uC9C0 \uACF5\uACA9 \uAC04\uACA9"
+  - key: boar.charge_speed
+    value: 12
+    unit: cell/s
+    note: "\uBA67\uB3FC\uC9C0 \uB3CC\uC9C4 \uC18D\uB3C4 (\uBAAC\uC2A4\uD130 K76 \uC124\uBA85)"
+  - key: boar.wall_stun
+    value: 2
+    unit: s
+    note: "\uBCBD\xB7\uB300\uB098\uBB34\uC5D0 \uBD80\uB52A\uD788\uBA74 \uAE30\uC808 (\uBAAC\uC2A4\uD130 K76 \uC124\uBA85)"
+  - key: boar.charge_width
+    value: 1.2
+    unit: cell
+    note: "\uBA67\uB3FC\uC9C0 \uB3CC\uC9C4 \uD3ED = \uBAB8 \uD3ED (\uC784\uC2DC)"
+  - key: archer.hp
+    value: 25
+    unit: 
+    note: "\uAD81\uC218 \uCCB4\uB825 (\uC8FD\uB9BC)"
+  - key: archer.atk
+    value: 8
+    unit: 
+    note: "\uAD81\uC218 \uACF5\uACA9"
+  - key: archer.toughness
+    value: 0
+    unit: 
+    note: "\uAD81\uC218 \uAC15\uC778\uD568"
+  - key: archer.move_speed
+    value: 3
+    unit: cell/s
+    note: "\uAD81\uC218 \uC774\uB3D9"
+  - key: archer.attack_range
+    value: 10
+    unit: cell
+    note: "\uAD81\uC218 \uC0AC\uAC70\uB9AC"
+  - key: archer.windup
+    value: 0.7
+    unit: s
+    note: "\uAD81\uC218 \uC608\uACE0 (\uC870\uC900)"
+  - key: archer.recovery
+    value: 0.4
+    unit: s
+    note: "\uAD81\uC218 \uBE48\uD2C8"
+  - key: archer.attack_interval
+    value: 2.5
+    unit: s
+    note: "\uAD81\uC218 \uACF5\uACA9 \uAC04\uACA9"
+  - key: archer.keep_min
+    value: 5
+    unit: cell
+    note: "\uAD81\uC218 \uC720\uC9C0 \uAC70\uB9AC \uCD5C\uC18C (\uBAAC\uC2A4\uD130 K77 \uC124\uBA85)"
+  - key: archer.keep_max
+    value: 7
+    unit: cell
+    note: "\uAD81\uC218 \uC720\uC9C0 \uAC70\uB9AC \uCD5C\uB300 (\uBAAC\uC2A4\uD130 K77 \uC124\uBA85)"
+  - key: archer.retreat_distance
+    value: 2
+    unit: cell
+    note: "\uAC00\uAE4C\uC774 \uC624\uBA74 \uBB3C\uB7EC\uB098\uB294 \uAC70\uB9AC (\uBAAC\uC2A4\uD130 K77 \uC124\uBA85)"
+  - key: archer.strafe_speed
+    value: 2
+    unit: cell/s
+    note: "\uC870\uC900 \uC911 \uC606\uAC78\uC74C (\uBAAC\uC2A4\uD130 K77 \uC124\uBA85)"
+  - key: archer.shot_pause
+    value: 0.2
+    unit: s
+    note: "\uC3D8\uB294 \uC21C\uAC04 \uBA48\uCDA4 (\uBAAC\uC2A4\uD130 K77 \uC124\uBA85)"
+  - key: archer.arrow_speed
+    value: 10
+    unit: cell/s
+    note: "\uD654\uC0B4 \uC18D\uB3C4 (\uBAAC\uC2A4\uD130 K77 \uC124\uBA85)"
+  - key: archer.arrow_radius
+    value: 0.2
+    unit: cell
+    note: "\uD654\uC0B4 \uD310\uC815 \uBC18\uACBD (\uC784\uC2DC)"
+  - key: archer.max_per_room
+    value: 2
+    unit: 
+    note: "\uBC29\uB9C8\uB2E4 \uCD5C\uB300 \uAD81\uC218 \uC218 (\uBAAC\uC2A4\uD130 K77 \uC124\uBA85)"

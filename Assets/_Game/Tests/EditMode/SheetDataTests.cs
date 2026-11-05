@@ -45,7 +45,7 @@ namespace AThousandDawns.Tests
 
             var keys = new HashSet<string>();
             foreach (var e in entries) keys.Add(e.key);
-            foreach (var required in new[] { "damage.toughness_floor_ratio", "damage.gongryeok_per_point", "player.move_speed", "dash.iframe", "burn.per_stack", "enemy.hitstun" })
+            foreach (var required in new[] { "damage.toughness_floor_ratio", "damage.gongryeok_per_point", "player.move_speed", "dash.iframe", "burn.per_stack", "enemy.hitstun", "player.max_health", "grunt.hp", "boar.charge_speed", "archer.arrow_speed" })
                 Assert.IsTrue(keys.Contains(required), $"'{required}' 키가 없어요.");
         }
     }

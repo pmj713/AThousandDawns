@@ -3,6 +3,7 @@ using System.Linq;
 using AThousandDawns.Combat;
 using AThousandDawns.Core;
 using AThousandDawns.Player;
+using AThousandDawns.Prototype;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -22,6 +23,13 @@ namespace AThousandDawns.Tests
             base.Setup();
             _keyboard = InputSystem.AddDevice<Keyboard>();
             _mouse = InputSystem.AddDevice<Mouse>();
+            PrototypeArena.AutoSpawn = false; // 적이 끼어들면 목인장 숫자가 흔들려요
+        }
+
+        public override void TearDown()
+        {
+            PrototypeArena.AutoSpawn = true;
+            base.TearDown();
         }
 
         [UnityTest]
@@ -40,6 +48,7 @@ namespace AThousandDawns.Tests
             Release(_keyboard.dKey);
             yield return new WaitForSeconds(0.1f);
             Assert.Greater(player.transform.position.x, start.x + 1.5f, "D를 0.5초 누르면 오른쪽으로 움직여야 해요 (초당 6칸).");
+            Assert.AreEqual(0f, player.GetComponent<CharacterController>().minMoveDistance, "높은 프레임에서도 움직이게");
 
             var dummies = Object.FindObjectsByType<TrainingDummy>(FindObjectsSortMode.None).OrderBy(d => d.transform.position.x).ToArray();
             Assert.AreEqual(2, dummies.Length);

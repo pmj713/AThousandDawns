@@ -31,6 +31,24 @@ namespace AThousandDawns.Combat
         void Awake()
         {
             Health = maxHealth;
+            ReadBaseColor();
+        }
+
+        // 코드로 만드는 적이 쓰는 설정. 체력을 가득 채워요.
+        public void Configure(float newMaxHealth, float newToughness, float newDefense, float newBodyRadius, Renderer newFlashRenderer)
+        {
+            maxHealth = newMaxHealth;
+            toughness = newToughness;
+            defense = newDefense;
+            bodyRadius = newBodyRadius;
+            flashRenderer = newFlashRenderer;
+            invincible = false;
+            Health = maxHealth;
+            ReadBaseColor();
+        }
+
+        void ReadBaseColor()
+        {
             if (flashRenderer != null && flashRenderer.sharedMaterial != null && flashRenderer.sharedMaterial.HasProperty(BaseColorId))
                 _baseColor = flashRenderer.sharedMaterial.GetColor(BaseColorId);
         }

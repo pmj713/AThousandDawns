@@ -2,6 +2,7 @@ using System.IO;
 using AThousandDawns.Combat;
 using AThousandDawns.Core;
 using AThousandDawns.Data;
+using AThousandDawns.Enemies;
 using AThousandDawns.Player;
 using AThousandDawns.Prototype;
 using Unity.Cinemachine;
@@ -25,6 +26,16 @@ namespace AThousandDawns.EditorTools
         const string PlayerColor = "#C8463C";
         const string DummyColor = "#B8913A";
         const string FlashColor = "#FFF6D8";
+
+        // 시험판 적 (임시 색). 예고 색은 색감 시트 #FF9A2E + 흰 테두리, 바탕은 예고 색과 바닥색의 중간
+        const string GruntColor = "#6B4E3D";
+        const string BoarColor = "#3D2F26";
+        const string ArcherColor = "#4A5560";
+        const string EnemyAccentColor = "#EFE6D2";
+        const string ArrowColor = "#1E1C1A";
+        const string TelegraphBaseColor = "#E7BD7B";
+        const string TelegraphFillColor = "#FF9A2E";
+        const string TelegraphOutlineColor = "#FFFFFF";
 
         static readonly Vector3 CameraOffset = new Vector3(0f, 13.1f, -9.2f); // 거리 16, 55°
 
@@ -70,8 +81,14 @@ namespace AThousandDawns.EditorTools
             var light = Object.FindFirstObjectByType<Light>();
             if (light != null) light.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
 
+            var director = BuildDirector(player);
+            var arena = new GameObject("PrototypeArena").AddComponent<PrototypeArena>();
+            SetRef(arena, "director", director);
+
             var hud = new GameObject("PrototypeHud").AddComponent<PrototypeHud>();
             SetRef(hud, "player", player);
+            SetRef(hud, "director", director);
+            SetRef(hud, "arena", arena);
             var so = new SerializedObject(hud);
             var arr = so.FindProperty("dummies");
             arr.arraySize = 2;
@@ -116,6 +133,7 @@ namespace AThousandDawns.EditorTools
             cc.height = 1.6f;
             cc.center = new Vector3(0f, 0.8f, 0f);
             cc.skinWidth = 0.02f;
+            cc.minMoveDistance = 0f; // 기본값 0.001이면 프레임이 아주 높을 때 한 프레임 이동이 버려져요
 
             var visual = new GameObject("Visual").transform;
             visual.SetParent(root.transform, false);
@@ -145,7 +163,26 @@ namespace AThousandDawns.EditorTools
             var controller = root.AddComponent<PlayerController>();
             SetRef(controller, "visual", visual);
             SetRef(controller, "swingFlash", flash);
+            SetRef(controller, "bodyRenderer", body.GetComponent<Renderer>());
             return controller;
+        }
+
+        static EnemyDirector BuildDirector(PlayerController player)
+        {
+            var director = new GameObject("EnemyDirector").AddComponent<EnemyDirector>();
+            var so = new SerializedObject(director);
+            so.FindProperty("player").objectReferenceValue = player;
+            var v = so.FindProperty("visuals");
+            v.FindPropertyRelative("grunt").objectReferenceValue = GetMaterial("Enemy_Grunt", GruntColor, false);
+            v.FindPropertyRelative("boar").objectReferenceValue = GetMaterial("Enemy_Boar", BoarColor, false);
+            v.FindPropertyRelative("archer").objectReferenceValue = GetMaterial("Enemy_Archer", ArcherColor, false);
+            v.FindPropertyRelative("accent").objectReferenceValue = GetMaterial("Enemy_Accent", EnemyAccentColor, false);
+            v.FindPropertyRelative("arrow").objectReferenceValue = GetMaterial("Arrow", ArrowColor, false);
+            v.FindPropertyRelative("telegraphBase").objectReferenceValue = GetMaterial("Telegraph_Base", TelegraphBaseColor, true);
+            v.FindPropertyRelative("telegraphFill").objectReferenceValue = GetMaterial("Telegraph_Fill", TelegraphFillColor, true);
+            v.FindPropertyRelative("telegraphOutline").objectReferenceValue = GetMaterial("Telegraph_Outline", TelegraphOutlineColor, true);
+            so.ApplyModifiedPropertiesWithoutUndo();
+            return director;
         }
 
         static TrainingDummy BuildDummy(string label, Vector3 position, float toughness, float defense, Material mat)

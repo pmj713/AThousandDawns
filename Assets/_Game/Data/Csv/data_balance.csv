@@ -90,3 +90,44 @@ combo.3.angle,160,deg,평타 3타째 부채꼴 각도,
 combo.3.lunge,0.5,cell,평타 3타째 전진 거리,
 sword.dash_attack_radius,2,cell,돌진 베기 반경 (임시),
 sword.dash_attack_angle,120,deg,돌진 베기 각도 (임시),
+player.max_health,100,,플레이어 최대 체력 (시작),몬스터!B4
+enemy.track_move_ratio,0.5,,예고 앞 절반 이동속도 (몬스터 시트 예고 절반 규칙),
+grunt.hp,30,,졸개 체력 (죽림),몬스터!B22
+grunt.atk,8,,졸개 공격,몬스터!C22
+grunt.toughness,0,,졸개 강인함,몬스터!D22
+grunt.move_speed,3.5,cell/s,졸개 이동,몬스터!C74
+grunt.attack_range,1.2,cell,졸개 베기 반경,몬스터!D74
+grunt.lunge,1.5,cell,졸개 전진 거리,몬스터!E74
+grunt.windup,0.6,s,졸개 예고,몬스터!F74
+grunt.recovery,0.6,s,졸개 빈틈,몬스터!G74
+grunt.attack_interval,1.8,s,졸개 공격 간격,몬스터!H74
+grunt.attack_angle,60,deg,졸개 베기 부채꼴 각도 (몬스터 K74 설명),
+grunt.lunge_time,0.15,s,졸개 전진 베기에 걸리는 시간 (임시),
+boar.hp,80,,멧돼지 체력 (죽림),몬스터!B24
+boar.atk,15,,멧돼지 공격,몬스터!C24
+boar.toughness,3,,멧돼지 강인함,몬스터!D24
+boar.move_speed,2.5,cell/s,멧돼지 이동,몬스터!C76
+boar.attack_range,8,cell,멧돼지 돌진 시작 거리,몬스터!D76
+boar.charge_distance,8,cell,멧돼지 돌진 거리,몬스터!E76
+boar.windup,0.8,s,멧돼지 예고,몬스터!F76
+boar.recovery,1,s,멧돼지 빈틈 (돌진 뒤 경직),몬스터!G76
+boar.attack_interval,4,s,멧돼지 공격 간격,몬스터!H76
+boar.charge_speed,12,cell/s,멧돼지 돌진 속도 (몬스터 K76 설명),
+boar.wall_stun,2,s,벽·대나무에 부딪히면 기절 (몬스터 K76 설명),
+boar.charge_width,1.2,cell,멧돼지 돌진 폭 = 몸 폭 (임시),
+archer.hp,25,,궁수 체력 (죽림),몬스터!B25
+archer.atk,8,,궁수 공격,몬스터!C25
+archer.toughness,0,,궁수 강인함,몬스터!D25
+archer.move_speed,3,cell/s,궁수 이동,몬스터!C77
+archer.attack_range,10,cell,궁수 사거리,몬스터!D77
+archer.windup,0.7,s,궁수 예고 (조준),몬스터!F77
+archer.recovery,0.4,s,궁수 빈틈,몬스터!G77
+archer.attack_interval,2.5,s,궁수 공격 간격,몬스터!H77
+archer.keep_min,5,cell,궁수 유지 거리 최소 (몬스터 K77 설명),
+archer.keep_max,7,cell,궁수 유지 거리 최대 (몬스터 K77 설명),
+archer.retreat_distance,2,cell,가까이 오면 물러나는 거리 (몬스터 K77 설명),
+archer.strafe_speed,2,cell/s,조준 중 옆걸음 (몬스터 K77 설명),
+archer.shot_pause,0.2,s,쏘는 순간 멈춤 (몬스터 K77 설명),
+archer.arrow_speed,10,cell/s,화살 속도 (몬스터 K77 설명),
+archer.arrow_radius,0.2,cell,화살 판정 반경 (임시),
+archer.max_per_room,2,,방마다 최대 궁수 수 (몬스터 K77 설명),
