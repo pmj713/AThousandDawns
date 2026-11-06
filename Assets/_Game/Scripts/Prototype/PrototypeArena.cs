@@ -18,7 +18,7 @@ namespace AThousandDawns.Prototype
     // 기물이 생기기 전까지 키워드 개수를 0 → 2 → 4 → 6 → 0 으로 돌려요: F1 #열양 · F2 #빙백 · F3 #뇌정 · F4 #강기 · F6 #금강 · F7 #경공 · F8 #마도 · F9 #정종
     // 기물 상태별 개수는 0 → 5 → 0: F10 기 부족 · F11 운기 · F12 주화입마 (#경공·#마도·#정종이 읽어요)
     // 기물 (간이 방식, 경맥도 전): 들판의 무리나 녹림왕을 다 쓰러뜨리면 3개 중 하나 고르기 (1·2·3, Esc 넘기기, 고르는 동안 시간 정지).
-    // I 기물 고르기 바로 열기 · ↑↓ 가진 기물 고르기 · ←→ 그 기물의 기 −/+ (기 부족 · 운기 · 주화입마와 레벨이 바뀜)
+    // I 기물 고르기 바로 열기 · E 경맥도 (MeridianScreen: 고른 기물은 경맥도 빈 칸에 왼쪽 위부터 놓이고, 가득 차면 보관함으로)
     public sealed class PrototypeArena : MonoBehaviour
     {
         [Serializable]
@@ -66,9 +66,13 @@ namespace AThousandDawns.Prototype
         public bool IsChoosing => _offer != null;
         public IReadOnlyList<ItemDefinition> Offer => _offer;
         public int PendingOffers => _pendingOffers;
+        public MeridianScreen Meridian => _meridian;
+        MeridianScreen _meridian;
 
         void Start()
         {
+            if (!TryGetComponent(out _meridian)) _meridian = gameObject.AddComponent<MeridianScreen>();
+            _meridian.Init(director, this);
             _archerLimit = Mathf.RoundToInt(GameConfig.Get("archer.max_per_room", 2f));
             _wakeRadius = GameConfig.Get("enemy.wake_radius", 7f);
             _choiceCount = Mathf.Max(1, Mathf.RoundToInt(GameConfig.Get("item.choice_count", 3f)));
@@ -90,6 +94,7 @@ namespace AThousandDawns.Prototype
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
                 return;
             }
+            if (_meridian != null && _meridian.IsOpen) return; // 경맥도를 보는 동안은 다른 키를 받지 않아요
             if (UpdateItemChoice(keyboard)) return; // 기물을 고르는 동안은 다른 키를 받지 않아요
             if (keyboard != null)
             {
@@ -103,6 +108,7 @@ namespace AThousandDawns.Prototype
                 if (keyboard.digit8Key.wasPressedThisFrame) SpawnNearPlayer(EnemyKind.Snake);
                 if (keyboard.digit9Key.wasPressedThisFrame) SpawnBoss();
                 if (keyboard.gKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.FillGauge();
+                if (keyboard.lKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.GainLevelForTest(); // 시험용 레벨업
                 if (director != null && director.Player != null && director.Player.Keywords != null)
                 {
                     if (keyboard.f1Key.wasPressedThisFrame) director.Player.Keywords.CycleStage(Keyword.Yeolyang);
@@ -183,7 +189,7 @@ namespace AThousandDawns.Prototype
             _bossWasAlive = bossAlive;
         }
 
-        // 고르는 중이면 true. 1·2·3 (또는 화면 클릭) 고르기 · Esc 넘기기 · I 하나 열기 · ↑↓ 가진 기물 · ←→ 그 기물의 기 −/+
+        // 고르는 중이면 true. 1·2·3 (또는 화면 클릭) 고르기 · Esc 넘기기 · I 하나 열기
         bool UpdateItemChoice(Keyboard keyboard)
         {
             var player = director != null ? director.Player : null;
@@ -202,10 +208,6 @@ namespace AThousandDawns.Prototype
             if (keyboard != null)
             {
                 if (keyboard.iKey.wasPressedThisFrame) _pendingOffers++;
-                if (keyboard.upArrowKey.wasPressedThisFrame) player.Items.Select(-1);
-                if (keyboard.downArrowKey.wasPressedThisFrame) player.Items.Select(1);
-                if (keyboard.leftArrowKey.wasPressedThisFrame) player.Items.AdjustSelectedQi(-1);
-                if (keyboard.rightArrowKey.wasPressedThisFrame) player.Items.AdjustSelectedQi(1);
             }
             if (_pendingOffers > 0 && !player.IsDead) OpenOffer(player);
             return IsChoosing;

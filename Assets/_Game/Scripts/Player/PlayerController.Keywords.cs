@@ -91,7 +91,7 @@ namespace AThousandDawns.Player
         void OnKeywordsChanged()
         {
             int bonus = K(Keyword.Gyeonggong) >= 2 ? _gyeonggongDashBonus : 0;
-            _dash.SetMaxCharges(_baseDashCharges + bonus - Mathf.RoundToInt(Side("dash_count")));
+            _dash.SetMaxCharges(_baseDashCharges + bonus + ItemDashBonus - Mathf.RoundToInt(Side("dash_count"))); // + 비연 깃털
             RefreshItems();
         }
 
@@ -121,25 +121,25 @@ namespace AThousandDawns.Player
         }
 
         // #정종 4단계: 주화입마 기물이 0개면 받는 피해 −15%
-        float DamageReductionTotal => K(Keyword.Jeongjong) >= 4 && Qi(QiState.Deviated) == 0 ? _jeongjongReduction : 0f;
+        float DamageReductionTotal => (K(Keyword.Jeongjong) >= 4 && Qi(QiState.Deviated) == 0 ? _jeongjongReduction : 0f) + ItemDamageReduction; // + 쇠사슬 · 금빛 가사
 
         // #마도 각인: 절초 사용 후 3초간 받는 피해 +30%
         float TakenIncreaseTotal => (_madoPenaltyTimer > 0f ? _madoImprintTaken : 0f) + Side("taken"); // + 기물 부작용
 
         // #금강 2단계: 보호막이 있는 동안 강인함 +2
-        float EffectiveToughness => Toughness + (K(Keyword.Geumgang) >= 2 && _shields.Any ? _geumgangToughness : 0);
+        float EffectiveToughness => Toughness + (K(Keyword.Geumgang) >= 2 && _shields.Any ? _geumgangToughness : 0) + ItemToughness; // + 거북 등껍질
 
         // #강기 2단계: 평타 속도 +15%
-        float AttackSpeedMultiplier => (K(Keyword.Ganggi) >= 2 ? 1f + _ganggiAttackSpeed : 1f) * Mathf.Max(0.1f, 1f - Side("attack_speed")); // × 기물 부작용
+        float AttackSpeedMultiplier => (1f + (K(Keyword.Ganggi) >= 2 ? _ganggiAttackSpeed : 0f) + ItemAttackSpeedBonus) * Mathf.Max(0.1f, 1f - Side("attack_speed")); // + 기물 · × 기물 부작용
 
         // #경공 2단계: 기 부족 기물 1개당 이동속도 +4% (최대 +20%)
-        float MoveSpeedBonus => (K(Keyword.Gyeonggong) >= 2 ? Mathf.Min(_gyeonggongLackMoveMax, Qi(QiState.Lacking) * _gyeonggongLackMove) : 0f) - Side("move_speed"); // − 기물 부작용
+        float MoveSpeedBonus => (K(Keyword.Gyeonggong) >= 2 ? Mathf.Min(_gyeonggongLackMoveMax, Qi(QiState.Lacking) * _gyeonggongLackMove) : 0f) + ItemMoveSpeedBonus - Side("move_speed"); // + 기물 − 기물 부작용
 
         // 플레이어 공격 한 번의 피해 입력. 간파 보너스는 다음 공격 한 번에 쓰여요.
         HitDamageInput PlayerHit(float baseDamage)
         {
             var hit = HitDamageInput.Of(baseDamage);
-            hit.AttackIncrease = AttackIncreaseTotal;
+            hit.AttackIncrease = AttackIncreaseTotal + ConsumeCloakBonus(); // + 흑풍 망토 주화입마 (대시 후 첫 공격)
             if (_perfectBonusTimer > 0f)
             {
                 hit.AttackIncrease += _perfectBonusRatio;
@@ -168,7 +168,16 @@ namespace AThousandDawns.Player
             float damage = DamageFormula.BeforeToughness(swing) * ratio;
             bool stage6 = K(Keyword.Ganggi) >= 6;
             if (stage6) damage *= DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
-            GanggiBolt.Fire(transform.position + Vector3.up + _facing * 0.5f, _facing, _ganggiSpeed, _ganggiRange, _ganggiWidth, damage, stage6);
+            FireGanggiBolt(damage, 1f);
+        }
+
+        // 강기 한 발 (혈수 붕대 파편도). 6단계면 모든 적 관통, 아니면 강기 구슬만큼 관통 (주화입마면 맞은 자리에서 터짐)
+        void FireGanggiBolt(float damage, float widthScale)
+        {
+            int pierce = K(Keyword.Ganggi) >= 6 ? GanggiBolt.PierceAll : C("ganggi_bead", 1);
+            bool burst = Deviated("ganggi_bead");
+            GanggiBolt.Fire(transform.position + Vector3.up + _facing * 0.5f, _facing, _ganggiSpeed, _ganggiRange, _ganggiWidth * widthScale, damage, pierce,
+                burst ? V("ganggi_bead", 2) : 0f, burst ? V("ganggi_bead", 3) : 0f);
         }
 
         // ── #금강 (보호막)
@@ -176,6 +185,7 @@ namespace AThousandDawns.Player
         // 2단계: 방에 들어갈 때마다 보호막 (최대 체력의 10%). 시험판에선 배치가 새로 나올 때, 결투장이 닫힐 때, 단계를 올릴 때.
         public void EnterRoom()
         {
+            _tabletUsed = false; // 불괴 호패: 전투(방)마다 1회
             if (K(Keyword.Geumgang) >= 2) _shields.Add(Mathf.RoundToInt(_maxHealth * _geumgangRoomShield), 0f, ShieldCap);
         }
 

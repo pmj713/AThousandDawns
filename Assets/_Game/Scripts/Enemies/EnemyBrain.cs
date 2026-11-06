@@ -8,6 +8,9 @@ namespace AThousandDawns.Enemies
 {
     public enum EnemyKind { Grunt, Boar, Archer, Hound, Shield, Horn, Bomber, Snake, Nokrim }
 
+    // 적 등급 (수련치 탭: 일반 1 · 정예 5 · 살수 5 · 고수 15 · 보스 30)
+    public enum EnemyRank { Normal, Elite, Assassin, Master, Boss }
+
     // 일반 적 공통: 첫 공격 대기, 공격 토큰, 공격 간격, 예고 절반 규칙, 경직. 종류별 움직임과 공격은 하위 클래스가 정해요.
     [RequireComponent(typeof(CharacterController), typeof(Damageable))]
     public abstract class EnemyBrain : MonoBehaviour
@@ -43,6 +46,7 @@ namespace AThousandDawns.Enemies
         protected virtual float HitKnockback => -1f;         // 플레이어를 미는 거리. 음수면 기본 넉백
         protected virtual float DeathDelay => 0.25f;         // 쓰러진 뒤 사라지기까지
         protected virtual bool IsBoss => false;              // 고수·보스: 둔화 효과 50%, 빙결 1초 + 면역 10초
+        public virtual EnemyRank Rank => EnemyRank.Normal;    // 쓰러뜨리면 받는 수련치
         protected virtual bool FreezeBlocked => false;       // 보스 페이즈 전환 연출 중엔 빙결이 안 걸림
 
         public string DisplayName { get; private set; }
@@ -279,6 +283,14 @@ namespace AThousandDawns.Enemies
             IsHidden = hidden;
             Body.Targetable = !hidden;
             if (_visual != null) _visual.gameObject.SetActive(!hidden);
+        }
+
+        // 기물이 적을 밀거나 끌어요 (금강저 넉백, 잔영 가면). 보스·숨은 적·빙결된 적은 그대로예요. 벽에는 막혀요.
+        public void Displace(Vector3 offset)
+        {
+            if (!_initialized || _dead || IsBoss || IsHidden || Status.IsFrozen) return;
+            offset.y = 0f;
+            Controller.Move(offset);
         }
 
         // CharacterController는 위치를 직접 바꾸려면 잠깐 꺼야 해요.

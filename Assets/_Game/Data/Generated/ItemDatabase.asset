@@ -583,3 +583,573 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uBC29\uC804 \uD53C\uD574 +25%. \uC751\uC9D1\uB41C \uBC88\uAC1C\uB85C \uBC29\uC804\uD558\uBA74 \uAC10\uC804 \uC911\uCCA9\uC744 2\uBC30\uB85C \uC148"
     sideText: "10\uCD08\uB9C8\uB2E4 \uAE30\uC138 -10%"
+  - id: breeze_tassel
+    keyword: 3
+    name: "\uCCAD\uD48D \uAC80\uC218"
+    grade: 0
+    aux: 
+    minQi: 1
+    maxQi: 2
+    v1: 0.05
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.05
+    effectText: "\uD3C9\uD0C0 \uACF5\uACA9 \uC18D\uB3C4 +5%"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +5%"
+  - id: whetstone
+    keyword: 3
+    name: "\uC5F0\uB9C8\uC11D"
+    grade: 0
+    aux: 
+    minQi: 1
+    maxQi: 2
+    v1: 0.15
+    v2: 3
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: dash_recharge
+    sideValue: 0.1
+    effectText: "\uCD08\uC2DD\uC744 \uC4F4 \uC9C1\uD6C4 \uD3C9\uD0C0 3\uD68C\uC758 \uD53C\uD574 +15%"
+    sideText: "\uB300\uC2DC \uD68C\uBCF5 -10%"
+  - id: leather_bracer
+    keyword: 3
+    name: "\uAC00\uC8FD \uC190\uBAA9\uB300"
+    grade: 0
+    aux: 
+    minQi: 1
+    maxQi: 2
+    v1: 0.08
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: move_speed
+    sideValue: 0.05
+    effectText: "\uD3C9\uD0C0 \uC0AC\uAC70\uB9AC +8%"
+    sideText: "\uC774\uB3D9\uC18D\uB3C4 -5%"
+  - id: wooden_sword
+    keyword: 3
+    name: "\uBAA9\uAC80"
+    grade: 0
+    aux: "\uC815\uC885"
+    minQi: 2
+    maxQi: 3
+    v1: 0.06
+    v2: 2
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: attack_speed
+    sideValue: 0.05
+    effectText: "\uD3C9\uD0C0 \uD53C\uD574 +6%. 0\uAC1C\uBA74 2\uBC30"
+    sideText: "\uACF5\uACA9 \uC18D\uB3C4 -5%"
+  - id: ink_scabbard
+    keyword: 3
+    name: "\uBB35\uCCA0 \uCE7C\uC9D1"
+    grade: 1
+    aux: "\uC815\uC885"
+    minQi: 1
+    maxQi: 3
+    v1: 0.2
+    v2: 0.3
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 1
+    v3Scales: 0
+    v4Scales: 0
+    side: attack_speed
+    sideValue: 0.1
+    effectText: "\uD3C9\uD0C0 3\uD0C0\uC9F8 \uD53C\uD574 +20%. 0\uAC1C\uBA74 3\uD0C0\uC9F8 \uBC94\uC704 +30%"
+    sideText: "\uACF5\uACA9 \uC18D\uB3C4 -10%"
+  - id: iron_sandbag
+    keyword: 3
+    name: "\uCCA0\uC7A5 \uBAA8\uB798\uC8FC\uBA38\uB2C8"
+    grade: 1
+    aux: 
+    minQi: 1
+    maxQi: 3
+    v1: 0.25
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: dash_recharge
+    sideValue: 0.15
+    effectText: "\uD3C9\uD0C0\uB85C \uC801\uC744 \uCC98\uCE58\uD558\uBA74 \uB2E4\uC74C \uD3C9\uD0C0 \uD53C\uD574 +25%"
+    sideText: "\uB300\uC2DC \uD68C\uBCF5 -15%"
+  - id: blood_bandage
+    keyword: 3
+    name: "\uD608\uC218 \uBD95\uB300"
+    grade: 1
+    aux: "\uB9C8\uB3C4"
+    minQi: 2
+    maxQi: 3
+    v1: 0.1
+    v2: 1
+    v3: 0.3
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.15
+    effectText: "\uD3C9\uD0C0 \uD53C\uD574 +10%. \uC8FC\uD654\uC785\uB9C8\uBA74 \uD3C9\uD0C0 \uC801\uC911 \uC2DC \uAC15\uAE30 \uD30C\uD3B8 1\uAC1C"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +15%"
+  - id: ganggi_bead
+    keyword: 3
+    name: "\uAC15\uAE30 \uAD6C\uC2AC"
+    grade: 2
+    aux: "\uB9C8\uB3C4"
+    minQi: 2
+    maxQi: 4
+    v1: 1
+    v2: 0.5
+    v3: 1.5
+    v4: 0
+    v1Scales: 0
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.15
+    effectText: "\uAC15\uAE30 \uAD00\uD1B5 +1. \uC8FC\uD654\uC785\uB9C8\uBA74 \uAC15\uAE30\uAC00 \uD130\uC9C0\uBA70 \uC8FC\uBCC0\uC5D0 \uD53C\uD574"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +15%"
+  - id: sword_manual
+    keyword: 3
+    name: "\uAC80\uBCF4 \uC870\uAC01"
+    grade: 2
+    aux: 
+    minQi: 2
+    maxQi: 4
+    v1: 0.5
+    v2: 0.3
+    v3: 0
+    v4: 0
+    v1Scales: 0
+    v2Scales: 1
+    v3Scales: 0
+    v4Scales: 0
+    side: skill_cooldown
+    sideValue: 0.2
+    effectText: "3\uD0C0\uC9F8 \uD6C4 0.5\uCD08 \uC548\uC5D0 \uB2E4\uC2DC \uACF5\uACA9\uD558\uBA74 4\uD0C0\uC9F8 \uCD94\uAC00 (\uD53C\uD574 +30%)"
+    sideText: "\uCD08\uC2DD \uCFE8\uD0C0\uC784 +20%"
+  - id: broken_blade
+    keyword: 3
+    name: "\uBD80\uB7EC\uC9C4 \uAC80\uB0A0"
+    grade: 3
+    aux: 
+    minQi: 3
+    maxQi: 6
+    v1: 0.01
+    v2: 0.1
+    v3: 3
+    v4: 0
+    v1Scales: 1
+    v2Scales: 1
+    v3Scales: 0
+    v4Scales: 0
+    side: hurt_reset_stacks
+    sideValue: 1
+    effectText: "\uD3C9\uD0C0 \uC801\uC911\uB9C8\uB2E4 \uACF5\uACA9 \uC18D\uB3C4 +1% \uC911\uCCA9 (\uCD5C\uB300\uCE58 +10%). 3\uCD08 \uC26C\uBA74 \uCD08\uAE30\uD654"
+    sideText: "\uD53C\uACA9 \uC2DC \uC911\uCCA9 \uCD08\uAE30\uD654"
+  - id: guardian_norigae
+    keyword: 4
+    name: "\uC218\uD638 \uB178\uB9AC\uAC1C"
+    grade: 0
+    aux: 
+    minQi: 1
+    maxQi: 2
+    v1: 0.03
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: attack_speed
+    sideValue: 0.05
+    effectText: "\uCD08\uC2DD \uC0AC\uC6A9 \uC2DC \uBCF4\uD638\uB9C9 (\uCD5C\uB300 \uCCB4\uB825\uC758 3%)"
+    sideText: "\uACF5\uACA9 \uC18D\uB3C4 -5%"
+  - id: turtle_shell
+    keyword: 4
+    name: "\uAC70\uBD81 \uB4F1\uAECD\uC9C8"
+    grade: 0
+    aux: "\uC815\uC885"
+    minQi: 1
+    maxQi: 2
+    v1: 2
+    v2: 2
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: move_speed
+    sideValue: 0.1
+    effectText: "\uAC15\uC778\uD568 +2. 0\uAC1C\uBA74 2\uBC30"
+    sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+  - id: wooden_figure
+    keyword: 4
+    name: "\uBAA9\uC778 \uC870\uAC01"
+    grade: 0
+    aux: 
+    minQi: 1
+    maxQi: 2
+    v1: 8
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: attack_speed
+    sideValue: 0.05
+    effectText: "\uCD5C\uB300 \uCCB4\uB825 +8"
+    sideText: "\uACF5\uACA9 \uC18D\uB3C4 -5%"
+  - id: bamboo_armor
+    keyword: 4
+    name: "\uC8FD\uAC11 \uC870\uAC01"
+    grade: 0
+    aux: 
+    minQi: 2
+    maxQi: 3
+    v1: 3
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: move_speed
+    sideValue: 0.1
+    effectText: "\uBC29\uC5B4\uB825 +3"
+    sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+  - id: iron_bracelet
+    keyword: 4
+    name: "\uCCA0\uAC11 \uD314\uCC0C"
+    grade: 1
+    aux: 
+    minQi: 1
+    maxQi: 3
+    v1: 0.04
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: move_speed
+    sideValue: 0.1
+    effectText: "\uB300\uC2DC \uACF5\uACA9 \uC801\uC911 \uC2DC \uBCF4\uD638\uB9C9 (\uCD5C\uB300 \uCCB4\uB825\uC758 4%)"
+    sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+  - id: iron_chain
+    keyword: 4
+    name: "\uC1E0\uC0AC\uC2AC"
+    grade: 1
+    aux: 
+    minQi: 1
+    maxQi: 3
+    v1: 0.15
+    v2: 1
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: dash_distance
+    sideValue: 0.1
+    effectText: "\uD53C\uACA9 \uD6C4 1\uCD08\uAC04 \uBC1B\uB294 \uD53C\uD574 -15%"
+    sideText: "\uB300\uC2DC \uAC70\uB9AC -10%"
+  - id: blood_stone
+    keyword: 4
+    name: "\uD608\uC11D"
+    grade: 1
+    aux: "\uB9C8\uB3C4"
+    minQi: 2
+    maxQi: 3
+    v1: 1
+    v2: 2
+    v3: 0
+    v4: 0
+    v1Scales: 0
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: max_hp
+    sideValue: 0.1
+    effectText: "\uC801 \uCC98\uCE58 \uC2DC \uCCB4\uB825 +1. \uC8FC\uD654\uC785\uB9C8\uBA74 +2"
+    sideText: "\uCD5C\uB300 \uCCB4\uB825 -10%"
+  - id: vajra
+    keyword: 4
+    name: "\uAE08\uAC15\uC800"
+    grade: 2
+    aux: "\uB9C8\uB3C4"
+    minQi: 2
+    maxQi: 4
+    v1: 0.25
+    v2: 0.05
+    v3: 2
+    v4: 1
+    v1Scales: 1
+    v2Scales: 1
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.1
+    effectText: "\uD53C\uACA9 \uC2DC \uCDA9\uACA9\uD30C (\uD53C\uD574 +25%)\uC640 \uAE30\uC138 +5%. \uC8FC\uD654\uC785\uB9C8\uBA74 \uB109\uBC31 \uCD94\uAC00"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+  - id: golden_kasaya
+    keyword: 4
+    name: "\uAE08\uBE5B \uAC00\uC0AC"
+    grade: 2
+    aux: "\uC815\uC885"
+    minQi: 2
+    maxQi: 4
+    v1: 0.1
+    v2: 2
+    v3: 0.5
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: attack_speed
+    sideValue: 0.1
+    effectText: "\uCCB4\uB825 50% \uC774\uD558\uC77C \uB54C \uBC1B\uB294 \uD53C\uD574 -10%. 0\uAC1C\uBA74 2\uBC30"
+    sideText: "\uACF5\uACA9 \uC18D\uB3C4 -10%"
+  - id: unbreakable_tablet
+    keyword: 4
+    name: "\uBD88\uAD34 \uD638\uD328"
+    grade: 3
+    aux: 
+    minQi: 3
+    maxQi: 6
+    v1: 0.5
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: max_hp
+    sideValue: 0.1
+    effectText: "\uC4F0\uB7EC\uC9C8 \uD53C\uD574\uB97C \uBC1B\uC73C\uBA74 \uCCB4\uB825 1\uB85C \uBC84\uD2F0\uACE0 \uBB34\uC801 0.5\uCD08 (\uC804\uD22C\uB2F9 1\uD68C)"
+    sideText: "\uCD5C\uB300 \uCCB4\uB825 -10%"
+  - id: straw_sandals
+    keyword: 5
+    name: "\uC9DA\uC2E0"
+    grade: 0
+    aux: 
+    minQi: 1
+    maxQi: 2
+    v1: 0.05
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: max_hp
+    sideValue: 0.05
+    effectText: "\uC774\uB3D9\uC18D\uB3C4 +5%"
+    sideText: "\uCD5C\uB300 \uCCB4\uB825 -5%"
+  - id: wind_knot
+    keyword: 5
+    name: "\uBC14\uB78C \uB9E4\uB4ED"
+    grade: 0
+    aux: "\uB9C8\uB3C4"
+    minQi: 1
+    maxQi: 2
+    v1: 0.15
+    v2: 0.5
+    v3: 0.5
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: dash_distance
+    sideValue: 0.2
+    effectText: "\uB300\uC2DC \uD68C\uBCF5 +15%. \uC8FC\uD654\uC785\uB9C8\uBA74 \uB300\uC2DC \uD6C4 0.5\uCD08\uAC04 \uACF5\uACA9 \uC18D\uB3C4 +50%"
+    sideText: "\uB300\uC2DC \uAC70\uB9AC -20%"
+  - id: leggings
+    keyword: 5
+    name: "\uAC01\uBC18"
+    grade: 0
+    aux: 
+    minQi: 1
+    maxQi: 2
+    v1: 0.1
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.05
+    effectText: "\uB300\uC2DC \uAC70\uB9AC +10%"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +5%"
+  - id: pinwheel
+    keyword: 5
+    name: "\uBC14\uB78C\uAC1C\uBE44"
+    grade: 0
+    aux: "\uC815\uC885"
+    minQi: 2
+    maxQi: 3
+    v1: 0.03
+    v2: 2
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: attack_speed
+    sideValue: 0.05
+    effectText: "\uB300\uC2DC \uBB34\uC801 \uC2DC\uAC04 +0.03\uCD08. 0\uAC1C\uBA74 2\uBC30"
+    sideText: "\uACF5\uACA9 \uC18D\uB3C4 -5%"
+  - id: swallow_feather
+    keyword: 5
+    name: "\uBE44\uC5F0 \uAE43\uD138"
+    grade: 1
+    aux: 
+    minQi: 1
+    maxQi: 3
+    v1: 0.15
+    v2: 3
+    v3: 1
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.1
+    effectText: "\uB300\uC2DC \uACF5\uACA9 \uD53C\uD574 +15%. 3\uB808\uBCA8\uC774\uBA74 \uB300\uC2DC +1"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+  - id: willow_dart
+    keyword: 5
+    name: "\uBC84\uB4E4\uC78E \uD45C\uCC3D"
+    grade: 1
+    aux: 
+    minQi: 1
+    maxQi: 3
+    v1: 0.2
+    v2: 1
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: dash_recharge
+    sideValue: 0.15
+    effectText: "\uB300\uC2DC\uD560 \uB54C \uC55E\uC73C\uB85C \uD45C\uCC3D 1\uAC1C \uBC1C\uC0AC (\uD53C\uD574 +20%)"
+    sideText: "\uB300\uC2DC \uD68C\uBCF5 -15%"
+  - id: black_wind_cloak
+    keyword: 5
+    name: "\uD751\uD48D \uB9DD\uD1A0"
+    grade: 1
+    aux: "\uB9C8\uB3C4"
+    minQi: 2
+    maxQi: 3
+    v1: 0.15
+    v2: 1
+    v3: 0.5
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.15
+    effectText: "\uB300\uC2DC \uD6C4 1\uCD08\uAC04 \uC774\uB3D9\uC18D\uB3C4 +15%. \uC8FC\uD654\uC785\uB9C8\uBA74 \uB300\uC2DC \uD6C4 \uCCAB \uACF5\uACA9 \uD53C\uD574 +50%"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +15%"
+  - id: afterimage_mask
+    keyword: 5
+    name: "\uC794\uC601 \uAC00\uBA74"
+    grade: 2
+    aux: "\uC815\uC885"
+    minQi: 2
+    maxQi: 4
+    v1: 0.5
+    v2: 3
+    v3: 1
+    v4: 1.5
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: dash_count
+    sideValue: 1
+    effectText: "\uB300\uC2DC\uD558\uBA74 \uC794\uC0C1\uC774 \uB0A8\uC544 \uC801\uC744 \uB04C\uC5B4\uB4E4\uC784 (+0.5\uCD08). 0\uAC1C\uBA74 \uC794\uC0C1\uC774 \uD130\uC9C0\uBA70 \uD53C\uD574"
+    sideText: "\uB300\uC2DC \uD69F\uC218 -1"
+  - id: cloud_dragon_belt
+    keyword: 5
+    name: "\uC6B4\uB8E1 \uD5C8\uB9AC\uB760"
+    grade: 2
+    aux: 
+    minQi: 2
+    maxQi: 4
+    v1: 0.2
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: max_hp
+    sideValue: 0.05
+    effectText: "\uB300\uC2DC \uACF5\uACA9\uC774 \uACBD\uB85C\uC758 \uBAA8\uB4E0 \uC801\uC744 \uAD00\uD1B5, \uD53C\uD574 +20%"
+    sideText: "\uCD5C\uB300 \uCCB4\uB825 -5%"
+  - id: cloud_silk
+    keyword: 5
+    name: "\uAD6C\uB984 \uBE44\uB2E8"
+    grade: 3
+    aux: 
+    minQi: 3
+    maxQi: 6
+    v1: 0.5
+    v2: 0.03
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 1
+    v3Scales: 0
+    v4Scales: 0
+    side: dash_iframe
+    sideValue: 0.5
+    effectText: "\uB300\uC2DC\uAC00 \uC9C0\uB098\uAC04 \uC801\uC5D0\uAC8C \uD53C\uD574 (+50%). \uB300\uC2DC \uACF5\uACA9 \uC801\uC911 \uC2DC \uAE30\uC138 +3%"
+    sideText: "\uB300\uC2DC \uBB34\uC801 \uC2DC\uAC04 \uC808\uBC18"

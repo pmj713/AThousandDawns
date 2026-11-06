@@ -311,3 +311,19 @@ item_grade.legendary,2%,,기물 등급 확률 전설 (죽림),등급확률!E11
 item.self_slow_ratio,25%,,설련 향낭 부작용: 피격 시 자신 둔화 (이동속도 감소),상태이상!B65
 item.gauge_drain_interval,10,s,뇌정 옥새 부작용: 기세가 줄어드는 간격 (기물 탭 부작용 글),
 item.frost_trail_width,1,cell,한철 비녀 서리 길 너비 (임시),
+item.shield_duration,3,s,"기물 보호막 지속 (수호 노리개·철갑 팔찌, 임시: #금강 4단계와 같게)",
+item.afterimage_pull_speed,4,cell/s,잔영 가면: 잔상이 적을 끌어들이는 빠르기 (임시),
+item.dash_path_width,1.2,cell,"대시 길 판정 너비 (운룡 허리띠 관통, 구름 비단, 임시)",
+meridian.width,5,cell,경맥도 가로 칸 수,경맥도!B17
+meridian.height,4,cell,경맥도 세로 칸 수,경맥도!B18
+meridian.max_danjeon,3,,단전 최대 개수 (하단전·중단전·상단전),경맥도!B19
+meridian.gihyeol_qi,1,,혈자리 기혈: 그 칸의 기 +,경맥도!C28
+meridian.hanhyeol_max_qi,1,,혈자리 한혈: 그 칸 기물의 최대 기 +,경맥도!C30
+level.max_health,5,,레벨업마다 최대 체력 + (현재 체력도 같이),경맥도!C31
+level.base_need,25,,다음 레벨까지 필요한 수련치 = 기본 필요량 + 지금 레벨 × 레벨당 증가,수련치!B12
+level.need_per_level,3,,레벨당 증가 (위 식),수련치!B13
+xp.normal,1,,일반 적 처치 수련치,수련치!B4
+xp.elite,5,,정예 처치 수련치,수련치!B5
+xp.assassin,5,,살수 처치 수련치,수련치!B6
+xp.master,15,,고수 처치 수련치,수련치!B7
+xp.boss,30,,보스 처치 수련치,수련치!B8

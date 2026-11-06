@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace AThousandDawns.Player
 {
-    // 기물 효과와 부작용 (기물 탭 #열양·#빙백·#뇌정 30종, data_items).
+    // 기물 효과와 부작용 (기물 탭 #열양·#빙백·#뇌정 30종, data_items). #강기·#금강·#경공은 PlayerController.ItemsMartial.cs.
     // 상태이상 쪽에 더하는 값은 ElementalMods로 모아 적의 StatusEffects·Lightning이 읽고, 때(적중·피격·처치·절초)마다 생기는 효과는 여기서 걸어요.
     // 부작용은 주화입마인 기물만: 이동속도·공격 속도·받는 피해·초식 쿨타임·대시(회복·거리·횟수)·최대 체력·자신 둔화·기세 감소·절초 뒤 대시 불가·화상 없는 적 피해.
     public sealed partial class PlayerController
@@ -45,6 +45,7 @@ namespace AThousandDawns.Player
         void InitItems()
         {
             if (!TryGetComponent(out _items)) _items = gameObject.AddComponent<PlayerItems>();
+            _items.SetPower(Gongryeok); // 경맥도 단전 출력 = 공력
             Damageable.AnyDied += OnAnyEnemyDied;
             StatusEffects.AnyFrozen += OnAnyFrozen;
             RefreshItems();
@@ -54,6 +55,7 @@ namespace AThousandDawns.Player
         {
             Damageable.AnyDied -= OnAnyEnemyDied;
             StatusEffects.AnyFrozen -= OnAnyFrozen;
+            Damageable.AnyDied -= GainXpFromKill;
             ElementalMods.Current = new ElementalMods();
         }
 
@@ -92,10 +94,14 @@ namespace AThousandDawns.Player
                 Reshock = Deviated("hawk_talon") ? C("hawk_talon", 2) : 0,
             };
 
-            // 부작용: 최대 체력 −% · 대시 회복 −%
-            _maxHealth = _baseMaxHealth * Mathf.Max(0.1f, 1f - Side("max_hp"));
+            // 최대 체력: 목인 조각 +, 부작용 −%. 늘어나면 늘어난 만큼 채워요.
+            float newMax = (_baseMaxHealth + V("wooden_figure", 1)) * Mathf.Max(0.1f, 1f - Side("max_hp"));
+            if (newMax > _maxHealth && !IsDead) Health += newMax - _maxHealth;
+            _maxHealth = newMax;
             Health = Mathf.Min(Health, _maxHealth);
-            _dash.RechargeSpeed = Mathf.Max(0.1f, 1f - Side("dash_recharge"));
+            // 대시 회복: 바람 매듭 +, 부작용 −%
+            _dash.RechargeSpeed = Mathf.Max(0.1f, (1f + V("wind_knot", 1)) * (1f - Side("dash_recharge")));
+            RefreshMartialItems();
         }
 
         void TickItemTimers(float dt)
@@ -237,6 +243,7 @@ namespace AThousandDawns.Player
         void OnAnyEnemyDied(Damageable dead)
         {
             if (_items == null || _items.Items.Count == 0 || IsDead) return;
+            OnEnemyDiedForMartialItems(); // 혈석
 
             // 염화 호리병: 화상 중인 적이 죽은 자리에 불길. 안에 있는 적은 간격마다 화상 1중첩 (0개면 불길 크기 +50%)
             if (Has("fire_gourd") && dead.TryGetComponent(out StatusEffects deadStatus) && deadStatus.BurnStacks > 0)

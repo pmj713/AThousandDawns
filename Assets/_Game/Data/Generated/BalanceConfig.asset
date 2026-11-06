@@ -1261,3 +1261,67 @@ MonoBehaviour:
     value: 1
     unit: cell
     note: "\uD55C\uCCA0 \uBE44\uB140 \uC11C\uB9AC \uAE38 \uB108\uBE44 (\uC784\uC2DC)"
+  - key: item.shield_duration
+    value: 3
+    unit: s
+    note: "\uAE30\uBB3C \uBCF4\uD638\uB9C9 \uC9C0\uC18D (\uC218\uD638 \uB178\uB9AC\uAC1C\xB7\uCCA0\uAC11 \uD314\uCC0C, \uC784\uC2DC: #\uAE08\uAC15 4\uB2E8\uACC4\uC640 \uAC19\uAC8C)"
+  - key: item.afterimage_pull_speed
+    value: 4
+    unit: cell/s
+    note: "\uC794\uC601 \uAC00\uBA74: \uC794\uC0C1\uC774 \uC801\uC744 \uB04C\uC5B4\uB4E4\uC774\uB294 \uBE60\uB974\uAE30 (\uC784\uC2DC)"
+  - key: item.dash_path_width
+    value: 1.2
+    unit: cell
+    note: "\uB300\uC2DC \uAE38 \uD310\uC815 \uB108\uBE44 (\uC6B4\uB8E1 \uD5C8\uB9AC\uB760 \uAD00\uD1B5, \uAD6C\uB984 \uBE44\uB2E8, \uC784\uC2DC)"
+  - key: meridian.width
+    value: 5
+    unit: cell
+    note: "\uACBD\uB9E5\uB3C4 \uAC00\uB85C \uCE78 \uC218"
+  - key: meridian.height
+    value: 4
+    unit: cell
+    note: "\uACBD\uB9E5\uB3C4 \uC138\uB85C \uCE78 \uC218"
+  - key: meridian.max_danjeon
+    value: 3
+    unit: 
+    note: "\uB2E8\uC804 \uCD5C\uB300 \uAC1C\uC218 (\uD558\uB2E8\uC804\xB7\uC911\uB2E8\uC804\xB7\uC0C1\uB2E8\uC804)"
+  - key: meridian.gihyeol_qi
+    value: 1
+    unit: 
+    note: "\uD608\uC790\uB9AC \uAE30\uD608: \uADF8 \uCE78\uC758 \uAE30 +"
+  - key: meridian.hanhyeol_max_qi
+    value: 1
+    unit: 
+    note: "\uD608\uC790\uB9AC \uD55C\uD608: \uADF8 \uCE78 \uAE30\uBB3C\uC758 \uCD5C\uB300 \uAE30 +"
+  - key: level.max_health
+    value: 5
+    unit: 
+    note: "\uB808\uBCA8\uC5C5\uB9C8\uB2E4 \uCD5C\uB300 \uCCB4\uB825 + (\uD604\uC7AC \uCCB4\uB825\uB3C4 \uAC19\uC774)"
+  - key: level.base_need
+    value: 25
+    unit: 
+    note: "\uB2E4\uC74C \uB808\uBCA8\uAE4C\uC9C0 \uD544\uC694\uD55C \uC218\uB828\uCE58 = \uAE30\uBCF8 \uD544\uC694\uB7C9 + \uC9C0\uAE08 \uB808\uBCA8 \xD7 \uB808\uBCA8\uB2F9 \uC99D\uAC00"
+  - key: level.need_per_level
+    value: 3
+    unit: 
+    note: "\uB808\uBCA8\uB2F9 \uC99D\uAC00 (\uC704 \uC2DD)"
+  - key: xp.normal
+    value: 1
+    unit: 
+    note: "\uC77C\uBC18 \uC801 \uCC98\uCE58 \uC218\uB828\uCE58"
+  - key: xp.elite
+    value: 5
+    unit: 
+    note: "\uC815\uC608 \uCC98\uCE58 \uC218\uB828\uCE58"
+  - key: xp.assassin
+    value: 5
+    unit: 
+    note: "\uC0B4\uC218 \uCC98\uCE58 \uC218\uB828\uCE58"
+  - key: xp.master
+    value: 15
+    unit: 
+    note: "\uACE0\uC218 \uCC98\uCE58 \uC218\uB828\uCE58"
+  - key: xp.boss
+    value: 30
+    unit: 
+    note: "\uBCF4\uC2A4 \uCC98\uCE58 \uC218\uB828\uCE58"

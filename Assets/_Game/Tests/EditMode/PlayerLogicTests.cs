@@ -62,6 +62,40 @@ namespace AThousandDawns.Tests
             Assert.AreEqual(0, combo.HitIndex);
         }
 
+        // 검보 조각: 3타째 뒤 0.5초 안에 다시 공격하면 4타째 (누르고 있으면 항상), 그 뒤 1타로
+        [Test]
+        public void 검보_조각이_있으면_누르고_있을_때_4타째가_붙음()
+        {
+            var combo = NewCombo();
+            combo.SetExtraHit(new ComboTimeline.HitTiming(0.14f, 0.08f, 0.28f), 0.5f);
+            var swings = new List<int>();
+            combo.SwingStarted += swings.Add;
+            Run(combo, 1.14f + 0.5f + 0.01f, true);
+            CollectionAssert.AreEqual(new[] { 0, 1, 2, 3, 0 }, swings);
+        }
+
+        [Test]
+        public void 검보_조각의_4타째는_0_5초_안에만()
+        {
+            var combo = NewCombo();
+            combo.SetExtraHit(new ComboTimeline.HitTiming(0.14f, 0.08f, 0.28f), 0.5f);
+            var swings = new List<int>();
+            combo.SwingStarted += swings.Add;
+            Run(combo, 1.10f, true);   // 3타째 후딜 중에 손을 뗌 (1.14초에 3타째 끝)
+            Run(combo, 0.4f, false);   // 3타째가 끝나고 0.36초: 0.25초는 넘었지만 0.5초 안
+            combo.Press();
+            combo.Tick(0.01f, false);
+            Assert.AreEqual(3, swings[swings.Count - 1]);
+
+            combo.Cancel();
+            swings.Clear();
+            Run(combo, 1.10f, true);
+            Run(combo, 0.6f, false);   // 0.56초: 0.5초를 넘기면 1타부터
+            combo.Press();
+            combo.Tick(0.01f, false);
+            Assert.AreEqual(0, swings[swings.Count - 1]);
+        }
+
         [Test]
         public void 연결_시간_안에_누르면_2타()
         {

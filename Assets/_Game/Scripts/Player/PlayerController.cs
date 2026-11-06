@@ -81,7 +81,17 @@ namespace AThousandDawns.Player
         // 지금은 기물이 없어서 0. 기물이 붙으면 여기로 들어와요.
         public float Toughness { get; set; }
         public float Defense { get; set; }
-        public int Gongryeok { get; set; } // 공력: 초식·절초 피해 배율 (영약·흡성으로 오름)
+        // 공력: 초식·절초 피해 배율이자 경맥도 모든 단전의 출력 (영약·흡성으로 오름)
+        public int Gongryeok
+        {
+            get => _gongryeok;
+            set
+            {
+                _gongryeok = Mathf.Max(0, value);
+                if (_items != null) _items.SetPower(_gongryeok);
+            }
+        }
+        int _gongryeok;
 
         public bool IsCastingSkill => _skillElapsed >= 0f;
         public bool IsCastingUltimate => _ultimateTimer > 0f;
@@ -123,14 +133,14 @@ namespace AThousandDawns.Player
             while (_burnTickTimer >= _burnTick && !IsDead)
             {
                 _burnTickTimer -= _burnTick;
-                float defenseRate = Defense / (Defense + _rules.PlayerDefenseConstant);
+                float defenseRate = EffectiveDefense / (EffectiveDefense + _rules.PlayerDefenseConstant);
                 TakeDirectDamage(Mathf.Max(1, Mathf.RoundToInt(_burnStacks * _burnPerStack * _burnTick * (1f - defenseRate))));
             }
         }
 
         void TakeDirectDamage(int damage)
         {
-            damage = _shields.Absorb(damage);
+            damage = SurviveLethal(_shields.Absorb(damage)); // 불괴 호패
             if (damage <= 0) return;
             Health = Mathf.Max(0f, Health - damage);
             DamagePopups.Spawn(transform.position + Vector3.up * 2f, damage, PopupStyle.Player);
@@ -154,6 +164,7 @@ namespace AThousandDawns.Player
             if (!TryGetComponent(out _keywords)) _keywords = gameObject.AddComponent<PlayerKeywords>();
             InitKeywords();
             InitItems();
+            InitLevel();
             if (bodyRenderer != null && bodyRenderer.sharedMaterial != null && bodyRenderer.sharedMaterial.HasProperty(BaseColorId))
                 _bodyColor = bodyRenderer.sharedMaterial.GetColor(BaseColorId);
         }
@@ -179,6 +190,7 @@ namespace AThousandDawns.Player
                 hits[i] = new ComboTimeline.HitTiming(GameConfig.Get(k + "windup", 0.08f), GameConfig.Get(k + "active", 0.06f), GameConfig.Get(k + "recovery", 0.18f));
             }
             _combo = new ComboTimeline(hits, GameConfig.Get("combo.chain_window", 0.25f), _inputBuffer);
+            _finisherTiming = hits[2];
             _combo.SwingStarted += OnSwingStarted;
             _combo.HitFrame += OnHitFrame;
 
@@ -240,6 +252,7 @@ namespace AThousandDawns.Player
             _hurtKnockback = GameConfig.Get("hurt.knockback", 0.5f);
             _hurtStun = GameConfig.Get("hurt.stun", 0.15f);
             ReadItemTuning();
+            ReadMartialItemTuning();
 
             _rules = new DamageRules(
                 GameConfig.Get("damage.toughness_floor_ratio", 0.2f),
@@ -266,6 +279,7 @@ namespace AThousandDawns.Player
             if (_slowTimer > 0f) _slowTimer -= dt;
             TickKeywordTimers(dt);
             TickItemTimers(dt);
+            TickMartialItemTimers(dt);
             TickBurn(dt);
             if (IsDead) return;
 
@@ -347,15 +361,16 @@ namespace AThousandDawns.Player
             {
                 EnemyAttack = enemyAttack,
                 Toughness = EffectiveToughness,
-                Defense = Defense,
+                Defense = EffectiveDefense,
                 TakenIncrease = TakenIncreaseTotal,
                 DamageReduction = DamageReductionTotal,
             };
             int damage = DamageFormula.ToPlayer(hit, _rules);
-            int dealt = _shields.Absorb(damage); // 피해 공식을 다 계산한 뒤 보호막부터 깎음
+            int dealt = SurviveLethal(_shields.Absorb(damage)); // 피해 공식을 다 계산한 뒤 보호막부터 깎음 (불괴 호패는 그 뒤)
             Health = Mathf.Max(0f, Health - dealt);
             OnHurtForShield(damage);
             OnHurtForItems();
+            OnHurtForMartialItems();
 
             _invulnerableTimer = Mathf.Max(_invulnerableTimer, _hurtIframe);
             _stunTimer = _hurtStun;
@@ -428,6 +443,7 @@ namespace AThousandDawns.Player
                 dir.y = 0f;
                 if (dir.sqrMagnitude > 0.01f) _facing = dir.normalized;
             }
+            OnSkillStartedForItems(); // 연마석 · 수호 노리개
         }
 
         void TickSkill(float dt)
@@ -527,15 +543,16 @@ namespace AThousandDawns.Player
             _combo.Cancel();
             _skillElapsed = -1f;
             _dashTimer = _dashDuration;
-            _invulnerableTimer = Mathf.Max(_invulnerableTimer, _dashIframe);
-            _dashIframeTimer = _dashIframe; // 간파 판정 시간
+            _invulnerableTimer = Mathf.Max(_invulnerableTimer, DashIframe);
+            _dashIframeTimer = DashIframe; // 간파 판정 시간
             _dashStart = transform.position;
             _perfectDodgeUsed = false;
             _sinceDashPress = float.PositiveInfinity;
             _lungeRemaining = 0f;
+            OnDashStartedForItems(); // 버들잎 표창 · 잔영 가면 · 구름 비단
         }
 
-        float DashDistance => _dashDistance * Mathf.Max(0.1f, 1f - Side("dash_distance")); // 기물 부작용: 대시 거리 −%
+        float DashDistance => _dashDistance * (1f + V("leggings", 1)) * Mathf.Max(0.1f, 1f - Side("dash_distance")); // 각반 · 기물 부작용
 
         void UpdateDash(float dt)
         {
@@ -544,7 +561,10 @@ namespace AThousandDawns.Player
             _dashTimer -= dt;
             _velocity = Vector3.zero;
             ApplyFacing();
-            if (_dashTimer <= 0f) _dashAttackTimer = _dashAttackWindow;
+            TouchDuringDash(); // 구름 비단
+            if (_dashTimer > 0f) return;
+            _dashAttackTimer = _dashAttackWindow;
+            OnDashEndedForItems();
         }
 
         void UpdateMovement(float dt)
@@ -586,26 +606,33 @@ namespace AThousandDawns.Player
             _hitThisSwing.Clear();
         }
 
+        // 3타째와 검보 조각의 4타째는 마무리 타 (3타째 범위·돌진·키워드·기물 효과를 같이 받아요)
         void OnHitFrame(int index)
         {
-            bool finisher = index == _combo.HitCount - 1;
+            bool extra = _combo.IsExtraHit(index);
+            bool finisher = index >= _combo.BaseHitCount - 1;
             if (finisher) _lungeRemaining = _finisherLunge;
-            float radius = _hitRadius[Mathf.Min(index, _hitRadius.Length - 1)];
+            float radius = _hitRadius[Mathf.Min(index, _hitRadius.Length - 1)] * BasicRangeMultiplier(finisher);
             float angle = _hitAngle[Mathf.Min(index, _hitAngle.Length - 1)];
             if (swingFlash != null) swingFlash.Show(transform.position, _facing, radius, angle, _combo.HitCount > 0 ? 0.1f : 0f);
             var hit = PlayerHit(finisher ? _finisherDamage : _basicDamage);
+            hit.AttackIncrease += BasicSwingBonus(finisher, extra);
             int count = HitSector(radius, angle, hit, finisher ? HitTag.Finisher : HitTag.Basic);
             Gauge = Mathf.Min(_gaugeMax, Gauge + count * (finisher ? _gaugeFinisher : _gaugeBasic));
             FireGanggiOnSwing(finisher, hit);
+            AfterBasicSwing(count, hit);
         }
 
         void DoDashAttack()
         {
             _hitThisSwing.Clear();
             if (swingFlash != null) swingFlash.Show(transform.position, _facing, _dashAttackRadius, _dashAttackAngle, 0.12f);
-            int count = HitSector(_dashAttackRadius, _dashAttackAngle, PlayerHit(_dashAttackDamage), HitTag.DashAttack);
+            var hit = PlayerHit(_dashAttackDamage);
+            hit.AttackIncrease += DashAttackBonus; // 비연 깃털 · 운룡 허리띠
+            int count = HitSector(_dashAttackRadius, _dashAttackAngle, hit, HitTag.DashAttack);
             Gauge = Mathf.Min(_gaugeMax, Gauge + count * _gaugeDashAttack);
             LeaveFrostTrail(); // 한철 비녀
+            AfterDashAttack(count, hit);
         }
 
         // template의 피해·배율을 그대로 쓰고, 대상마다 강인함·방어력·상황 배율(방패 정면 등)만 채워요.
@@ -614,24 +641,31 @@ namespace AThousandDawns.Player
             int found = Physics.OverlapSphereNonAlloc(transform.position, radius + 1f, _overlap, ~0, QueryTriggerInteraction.Collide);
             int hits = 0;
             _firstHit = null;
+            _swingKills = 0;
             for (int i = 0; i < found; i++)
             {
                 var target = _overlap[i].GetComponentInParent<Damageable>();
-                if (target == null || target.IsDead || !target.Targetable || !_hitThisSwing.Add(target)) continue;
+                if (target == null || target.IsDead || !target.Targetable || _hitThisSwing.Contains(target)) continue;
                 if (!HitShapes.InSector(transform.position, _facing, radius, angle, target.transform.position, target.BodyRadius)) continue;
-
-                var hit = template;
-                hit.Toughness = target.Toughness;
-                hit.Defense = target.Defense;
-                hit.Situational *= target.ResolveSituational(transform.position, tag) * UnburnedMultiplier(target);
-                target.ApplyHit(DamageFormula.ToEnemy(hit, _rules));
-                ApplyItemsOnHit(target, tag);
-                ApplyKeywordsOnHit(target, tag);
-                if (_firstHit == null) _firstHit = target;
+                _hitThisSwing.Add(target);
+                HitTarget(target, template, tag);
                 hits++;
             }
             TrackFlint(hits); // 부싯돌
             return hits;
+        }
+
+        void HitTarget(Damageable target, HitDamageInput template, HitTag tag)
+        {
+            var hit = template;
+            hit.Toughness = target.Toughness;
+            hit.Defense = target.Defense;
+            hit.Situational *= target.ResolveSituational(transform.position, tag) * UnburnedMultiplier(target);
+            target.ApplyHit(DamageFormula.ToEnemy(hit, _rules));
+            if (target.IsDead) _swingKills++;
+            ApplyItemsOnHit(target, tag);
+            ApplyKeywordsOnHit(target, tag);
+            if (_firstHit == null) _firstHit = target;
         }
     }
 }

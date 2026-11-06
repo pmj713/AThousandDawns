@@ -47,6 +47,7 @@ namespace AThousandDawns.Enemies
         protected override bool UsesToken => false;
         protected override bool SuperArmor => true;
         protected override bool IsBoss => true;
+        public override EnemyRank Rank => EnemyRank.Boss;
         protected override bool FreezeBlocked => IsTransitioning; // 페이즈 전환 연출 중에는 빙결이 안 걸림
         protected override bool RadialTelegraph => _pattern == Pattern.Summon || _pattern == Pattern.Spin;
         protected override float DeathDelay => 1f;
