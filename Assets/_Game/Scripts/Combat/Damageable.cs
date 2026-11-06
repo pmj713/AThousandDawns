@@ -39,6 +39,7 @@ namespace AThousandDawns.Combat
             SituationalResolver != null ? SituationalResolver(attackerPosition, tag) : 1f;
 
         public event Action<Damageable, int> Damaged;
+        public static event Action<Damageable> AnyDied; // 처치 시 효과 (염화 호리병, 구리 동전)
 
         void Awake()
         {
@@ -74,6 +75,7 @@ namespace AThousandDawns.Combat
             DamagePopups.Spawn(transform.position + Vector3.up * 2.2f, amount, style);
             LastHitReacts = reacts;
             Damaged?.Invoke(this, amount);
+            if (IsDead) AnyDied?.Invoke(this);
         }
 
         public bool LastHitReacts { get; private set; } = true;

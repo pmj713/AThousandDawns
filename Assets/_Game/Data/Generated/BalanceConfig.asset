@@ -553,10 +553,10 @@ MonoBehaviour:
     value: 0.12
     unit: s
     note: "\uD68C\uC120\uCC38 \uBCA0\uB294 \uC21C\uAC04, \uC2DC\uC804 \uC2DC\uC791\uBD80\uD130 (\uC784\uC2DC)"
-  - key: ultimate.radius
-    value: 0
+  - key: ultimate.range_width
+    value: 20
     unit: cell
-    note: "\uB9CC\uAC80\uADC0\uC885 \uBC94\uC704 \uBC18\uACBD. 0 = \uB9F5 \uC804\uCCB4 (\uBB34\uAE30 B45)"
+    note: "\uB9CC\uAC80\uADC0\uC885 \uBC94\uC704 \uAC00\uB85C = \uBC29 \uD558\uB098 (\uC870\uC791 A2 \uC124\uBA85, \uBB34\uAE30 B45)"
   - key: ultimate.sword_count
     value: 8
     unit: 
@@ -1081,3 +1081,183 @@ MonoBehaviour:
     value: 3
     unit: s
     note: "\uD50C\uB808\uC774\uC5B4 \uD654\uC0C1 \uC9C0\uC18D (\uC0C1\uD0DC\uC774\uC0C1 D64 \uC124\uBA85)"
+  - key: ganggi.ratio
+    value: 0.6
+    unit: 
+    note: "#\uAC15\uAE30 \uAC15\uAE30 \uD53C\uD574 = \uBC1C\uB3D9 \uD3C9\uD0C0 \uD53C\uD574 \xD7 \uC774 \uBE44\uC728 (\uD30C\uC0DD \uD53C\uD574)"
+  - key: ganggi.speed
+    value: 14
+    unit: cell/s
+    note: "\uAC15\uAE30 \uB0A0\uC544\uAC00\uB294 \uC18D\uB3C4"
+  - key: ganggi.range
+    value: 5
+    unit: cell
+    note: "\uAC15\uAE30 \uC0AC\uAC70\uB9AC"
+  - key: ganggi.width
+    value: 0.8
+    unit: cell
+    note: "\uAC15\uAE30 \uD3ED"
+  - key: ganggi.stage2_attack_speed
+    value: 0.15
+    unit: 
+    note: "#\uAC15\uAE30 2\uB2E8\uACC4: \uD3C9\uD0C0 \uC18D\uB3C4 \uC99D\uAC00"
+  - key: ganggi.stage4_count
+    value: 1
+    unit: 
+    note: "#\uAC15\uAE30 4\uB2E8\uACC4: \uD3C9\uD0C0 3\uD0C0\uC9F8 \uAC15\uAE30 \uBC1C \uC218"
+  - key: imprint.ganggi_duration
+    value: 3
+    unit: s
+    note: "\uC808\uCD08 #\uAC15\uAE30 \uAC01\uC778: \uB05D\uB09C \uB4A4 \uBAA8\uB4E0 \uD3C9\uD0C0\uAC00 \uAC15\uAE30 \uBC1C\uC0AC\uD558\uB294 \uC2DC\uAC04"
+  - key: imprint.ganggi_ratio
+    value: 0.6
+    unit: 
+    note: "\uC808\uCD08 #\uAC15\uAE30 \uAC01\uC778: \uAC15\uAE30 \uD55C \uBC1C = \uADF8 \uD3C9\uD0C0 \uD53C\uD574 \xD7 \uC774 \uBE44\uC728"
+  - key: geumgang.room_shield
+    value: 0.1
+    unit: 
+    note: "#\uAE08\uAC15 2\uB2E8\uACC4: \uBC29\uC5D0 \uB4E4\uC5B4\uAC08 \uB54C \uBCF4\uD638\uB9C9 (\uCD5C\uB300 \uCCB4\uB825 \uBE44\uC728)"
+  - key: geumgang.shield_toughness
+    value: 2
+    unit: 
+    note: "#\uAE08\uAC15 2\uB2E8\uACC4: \uBCF4\uD638\uB9C9\uC774 \uC788\uB294 \uB3D9\uC548 \uAC15\uC778\uD568 (\uD0A4\uC6CC\uB4DC D36 \uC124\uBA85)"
+  - key: geumgang.hit_shield_ratio
+    value: 0.5
+    unit: 
+    note: "#\uAE08\uAC15 4\uB2E8\uACC4: \uD53C\uACA9\uD558\uBA74 \uBC1B\uC740 \uD53C\uD574 \xD7 \uC774 \uBE44\uC728\uB9CC\uD07C \uBCF4\uD638\uB9C9"
+  - key: geumgang.hit_shield_duration
+    value: 3
+    unit: s
+    note: "#\uAE08\uAC15 4\uB2E8\uACC4 \uBCF4\uD638\uB9C9 \uC9C0\uC18D (\uD0A4\uC6CC\uB4DC D37 \uC124\uBA85)"
+  - key: geumgang.hit_shield_cooldown
+    value: 6
+    unit: s
+    note: "#\uAE08\uAC15 4\uB2E8\uACC4 \uBCF4\uD638\uB9C9 \uC7AC\uC0AC\uC6A9 (\uD0A4\uC6CC\uB4DC D37 \uC124\uBA85)"
+  - key: geumgang.shockwave_ratio
+    value: 2
+    unit: 
+    note: "#\uAE08\uAC15 6\uB2E8\uACC4: \uCDA9\uACA9\uD30C = \uAE68\uC9C4 \uBCF4\uD638\uB9C9 \uCD5C\uB300\uCE58 \xD7 \uC774 \uBE44\uC728 (\uD30C\uC0DD \uD53C\uD574)"
+  - key: geumgang.shockwave_radius
+    value: 2
+    unit: cell
+    note: "#\uAE08\uAC15 6\uB2E8\uACC4 \uCDA9\uACA9\uD30C \uBC18\uACBD (\uD0A4\uC6CC\uB4DC D38 \uC124\uBA85)"
+  - key: shield.max_ratio
+    value: 0.3
+    unit: 
+    note: "\uBAA8\uB4E0 \uBCF4\uD638\uB9C9 \uD569 \uCD5C\uB300 (\uCD5C\uB300 \uCCB4\uB825 \uBE44\uC728)"
+  - key: imprint.geumgang_shield
+    value: 0.2
+    unit: 
+    note: "\uC808\uCD08 #\uAE08\uAC15 \uAC01\uC778: \uC2DC\uC804\uC774 \uB05D\uB098\uBA74 \uBCF4\uD638\uB9C9 (\uCD5C\uB300 \uCCB4\uB825 \uBE44\uC728)"
+  - key: imprint.geumgang_duration
+    value: 5
+    unit: s
+    note: "\uC808\uCD08 #\uAE08\uAC15 \uAC01\uC778 \uBCF4\uD638\uB9C9 \uC9C0\uC18D"
+  - key: gyeonggong.dash_bonus
+    value: 1
+    unit: 
+    note: "#\uACBD\uACF5 2\uB2E8\uACC4: \uB300\uC2DC \uD69F\uC218 \uC99D\uAC00"
+  - key: gyeonggong.lack_move_per
+    value: 0.04
+    unit: 
+    note: "#\uACBD\uACF5 2\uB2E8\uACC4: \uAE30 \uBD80\uC871 \uAE30\uBB3C 1\uAC1C\uB2F9 \uC774\uB3D9\uC18D\uB3C4 (\uD0A4\uC6CC\uB4DC D39 \uC124\uBA85)"
+  - key: gyeonggong.lack_move_max
+    value: 0.2
+    unit: 
+    note: "#\uACBD\uACF5 2\uB2E8\uACC4 \uC774\uB3D9\uC18D\uB3C4 \uCD5C\uB300 (\uD0A4\uC6CC\uB4DC D39 \uC124\uBA85)"
+  - key: gyeonggong.perfect_bonus
+    value: 0.3
+    unit: 
+    note: "#\uACBD\uACF5 4\uB2E8\uACC4: \uAC04\uD30C \uB4A4 \uB2E4\uC74C \uACF5\uACA9 \uD53C\uD574 \uC99D\uAC00"
+  - key: gyeonggong.perfect_window
+    value: 1.5
+    unit: s
+    note: "#\uACBD\uACF5 4\uB2E8\uACC4: \uAC04\uD30C \uBCF4\uB108\uC2A4\uAC00 \uB0A8\uB294 \uC2DC\uAC04 (\uD0A4\uC6CC\uB4DC D40 \uC124\uBA85)"
+  - key: gyeonggong.counter_ratio
+    value: 2
+    unit: 
+    note: "#\uACBD\uACF5 6\uB2E8\uACC4: \uC794\uC0C1 \uBC18\uACA9 = \uAE30\uC900 \uD53C\uD574 \xD7 \uC774 \uBE44\uC728 (\uD30C\uC0DD \uD53C\uD574)"
+  - key: ultimate.range_depth
+    value: 12
+    unit: cell
+    note: "\uB9CC\uAC80\uADC0\uC885 \uBC94\uC704 \uC138\uB85C = \uBC29 \uD558\uB098 (\uC870\uC791 A2 \uC124\uBA85, \uBB34\uAE30 B45)"
+  - key: gyeonggong.perfect_bonus6
+    value: 0.6
+    unit: 
+    note: "#\uACBD\uACF5 6\uB2E8\uACC4: \uAC04\uD30C \uD53C\uD574 \uBCF4\uB108\uC2A4 (\uD0A4\uC6CC\uB4DC D41 \uC124\uBA85)"
+  - key: mado.per_deviated
+    value: 0.04
+    unit: 
+    note: "#\uB9C8\uB3C4 2\uB2E8\uACC4: \uC8FC\uD654\uC785\uB9C8 \uAE30\uBB3C 1\uAC1C\uB2F9 \uBAA8\uB4E0 \uD53C\uD574 \uC99D\uAC00"
+  - key: mado.per_deviated_max
+    value: 0.2
+    unit: 
+    note: "#\uB9C8\uB3C4 2\uB2E8\uACC4 \uCD5C\uB300 (\uD0A4\uC6CC\uB4DC D42 \uC124\uBA85)"
+  - key: imprint.mado_power
+    value: 1.6
+    unit: 
+    note: "\uC808\uCD08 #\uB9C8\uB3C4 \uAC01\uC778: \uC704\uB825 \uBC30\uC728 (\u2463 \uACF1\uD558\uAE30 \uD6A8\uACFC)"
+  - key: imprint.mado_taken
+    value: 0.3
+    unit: 
+    note: "\uC808\uCD08 #\uB9C8\uB3C4 \uAC01\uC778: \uC0AC\uC6A9 \uD6C4 \uBC1B\uB294 \uD53C\uD574 \uC99D\uAC00"
+  - key: imprint.mado_duration
+    value: 3
+    unit: s
+    note: "\uC808\uCD08 #\uB9C8\uB3C4 \uAC01\uC778: \uBC1B\uB294 \uD53C\uD574 \uC99D\uAC00 \uC2DC\uAC04"
+  - key: jeongjong.per_circulating
+    value: 0.03
+    unit: 
+    note: "#\uC815\uC885 2\uB2E8\uACC4: \uC6B4\uAE30 \uAE30\uBB3C 1\uAC1C\uB2F9 \uD53C\uD574 \uC99D\uAC00"
+  - key: jeongjong.stage4_reduction
+    value: 0.15
+    unit: 
+    note: "#\uC815\uC885 4\uB2E8\uACC4: \uC8FC\uD654\uC785\uB9C8 \uAE30\uBB3C 0\uAC1C\uBA74 \uBC1B\uB294 \uD53C\uD574 \uAC10\uC18C"
+  - key: jeongjong.stage6_bonus
+    value: 0.3
+    unit: 
+    note: "#\uC815\uC885 6\uB2E8\uACC4: \uAE30 \uBD80\uC871 0\uAC1C, \uC8FC\uD654\uC785\uB9C8 0\uAC1C\uBA74 \uBAA8\uB4E0 \uD53C\uD574 \uC99D\uAC00"
+  - key: imprint.jeongjong_gauge
+    value: 0.3
+    unit: 
+    note: "\uC808\uCD08 #\uC815\uC885 \uAC01\uC778: \uC0AC\uC6A9 \uD6C4 \uB3CC\uB824\uBC1B\uB294 \uAE30\uC138 (\uCD5C\uB300 \uBE44\uC728)"
+  - key: item.choice_count
+    value: 3
+    unit: 
+    note: "\uAE30\uBB3C \uACE0\uB974\uAE30: \uBB34\uB9AC\uB97C \uB2E4 \uC4F0\uB7EC\uB728\uB9AC\uBA74 \uBCF4\uC5EC \uC8FC\uB294 \uD6C4\uBCF4 \uC218 (\uAC04\uC774 \uBC29\uC2DD, \uACBD\uB9E5\uB3C4 \uC804)"
+  - key: item.deviation_multiplier
+    value: 1.5
+    unit: 
+    note: "\uC8FC\uD654\uC785\uB9C8 \uD6A8\uACFC \uBC30\uC728 (\uBE44\uC728\xB7\uC2DC\uAC04\xB7\uAC70\uB9AC \uC218\uCE58\uC5D0\uB9CC, \uAE30\uBB3C \uD0ED \uACF5\uD1B5 \uADDC\uCE59)"
+  - key: mado.stage4_deviation
+    value: 1.8
+    unit: 
+    note: "#\uB9C8\uB3C4 4\uB2E8\uACC4: \uC8FC\uD654\uC785\uB9C8 \uD6A8\uACFC \uBC30\uC728 \xD71.5 \u2192 \uC774 \uAC12"
+  - key: item_grade.common
+    value: 0.58
+    unit: 
+    note: "\uAE30\uBB3C \uB4F1\uAE09 \uD655\uB960 \uC77C\uBC18 (\uC8FD\uB9BC)"
+  - key: item_grade.uncommon
+    value: 0.3
+    unit: 
+    note: "\uAE30\uBB3C \uB4F1\uAE09 \uD655\uB960 \uACE0\uAE09 (\uC8FD\uB9BC)"
+  - key: item_grade.rare
+    value: 0.1
+    unit: 
+    note: "\uAE30\uBB3C \uB4F1\uAE09 \uD655\uB960 \uD76C\uADC0 (\uC8FD\uB9BC)"
+  - key: item_grade.legendary
+    value: 0.02
+    unit: 
+    note: "\uAE30\uBB3C \uB4F1\uAE09 \uD655\uB960 \uC804\uC124 (\uC8FD\uB9BC)"
+  - key: item.self_slow_ratio
+    value: 0.25
+    unit: 
+    note: "\uC124\uB828 \uD5A5\uB0AD \uBD80\uC791\uC6A9: \uD53C\uACA9 \uC2DC \uC790\uC2E0 \uB454\uD654 (\uC774\uB3D9\uC18D\uB3C4 \uAC10\uC18C)"
+  - key: item.gauge_drain_interval
+    value: 10
+    unit: s
+    note: "\uB1CC\uC815 \uC625\uC0C8 \uBD80\uC791\uC6A9: \uAE30\uC138\uAC00 \uC904\uC5B4\uB4DC\uB294 \uAC04\uACA9 (\uAE30\uBB3C \uD0ED \uBD80\uC791\uC6A9 \uAE00)"
+  - key: item.frost_trail_width
+    value: 1
+    unit: cell
+    note: "\uD55C\uCCA0 \uBE44\uB140 \uC11C\uB9AC \uAE38 \uB108\uBE44 (\uC784\uC2DC)"

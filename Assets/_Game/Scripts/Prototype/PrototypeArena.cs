@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using AThousandDawns.Core;
 using AThousandDawns.Enemies;
+using AThousandDawns.Items;
 using AThousandDawns.Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -13,7 +15,10 @@ namespace AThousandDawns.Prototype
     // 결투장에 들어가 녹림왕이 깨어나면 입구가 결계로 막히고, 녹림왕이 쓰러지면 열려요. 다 쓰러뜨리면 잠시 뒤 다시 놓아요.
     // 1 졸개 · 2 멧돼지 · 3 궁수 (방마다 최대 2명) · 4 들개 둘 · 5 방패 산적 · 6 나팔수 · 7 화약 산적 · 8 청죽사 는 플레이어 근처에 바로 깨어 있는 채로,
     // 9 녹림왕은 결투장에 불러요. G로 기세를 채우고, F5로 처음부터 다시 해요. (R은 조작 시트에서 금창약 키라 비워 둬요)
-    // 기물이 생기기 전까지 F1 #열양 · F2 #빙백 · F3 #뇌정 키워드 개수를 0 → 2 → 4 → 6 → 0 으로 돌려요.
+    // 기물이 생기기 전까지 키워드 개수를 0 → 2 → 4 → 6 → 0 으로 돌려요: F1 #열양 · F2 #빙백 · F3 #뇌정 · F4 #강기 · F6 #금강 · F7 #경공 · F8 #마도 · F9 #정종
+    // 기물 상태별 개수는 0 → 5 → 0: F10 기 부족 · F11 운기 · F12 주화입마 (#경공·#마도·#정종이 읽어요)
+    // 기물 (간이 방식, 경맥도 전): 들판의 무리나 녹림왕을 다 쓰러뜨리면 3개 중 하나 고르기 (1·2·3, Esc 넘기기, 고르는 동안 시간 정지).
+    // I 기물 고르기 바로 열기 · ↑↓ 가진 기물 고르기 · ←→ 그 기물의 기 −/+ (기 부족 · 운기 · 주화입마와 레벨이 바뀜)
     public sealed class PrototypeArena : MonoBehaviour
     {
         [Serializable]
@@ -51,13 +56,27 @@ namespace AThousandDawns.Prototype
         int _archerLimit;
         NokrimBrain _boss;
 
+        int _choiceCount, _pendingOffers, _lastField;
+        float[] _gradeWeights;
+        bool _bossWasAlive;
+        List<ItemDefinition> _offer;
+
         public int RoundNumber { get; private set; }
         public NokrimBrain Boss => _boss;
+        public bool IsChoosing => _offer != null;
+        public IReadOnlyList<ItemDefinition> Offer => _offer;
+        public int PendingOffers => _pendingOffers;
 
         void Start()
         {
             _archerLimit = Mathf.RoundToInt(GameConfig.Get("archer.max_per_room", 2f));
             _wakeRadius = GameConfig.Get("enemy.wake_radius", 7f);
+            _choiceCount = Mathf.Max(1, Mathf.RoundToInt(GameConfig.Get("item.choice_count", 3f)));
+            _gradeWeights = new[]
+            {
+                GameConfig.Get("item_grade.common", 0.58f), GameConfig.Get("item_grade.uncommon", 0.3f),
+                GameConfig.Get("item_grade.rare", 0.1f), GameConfig.Get("item_grade.legendary", 0.02f),
+            };
             SetGate(false);
             if (AutoSpawn) SpawnLayout();
         }
@@ -65,13 +84,15 @@ namespace AThousandDawns.Prototype
         void Update()
         {
             var keyboard = Keyboard.current;
+            if (keyboard != null && keyboard.f5Key.wasPressedThisFrame)
+            {
+                Time.timeScale = 1f;
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                return;
+            }
+            if (UpdateItemChoice(keyboard)) return; // 기물을 고르는 동안은 다른 키를 받지 않아요
             if (keyboard != null)
             {
-                if (keyboard.f5Key.wasPressedThisFrame)
-                {
-                    SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-                    return;
-                }
                 if (keyboard.digit1Key.wasPressedThisFrame) SpawnNearPlayer(EnemyKind.Grunt);
                 if (keyboard.digit2Key.wasPressedThisFrame) SpawnNearPlayer(EnemyKind.Boar);
                 if (keyboard.digit3Key.wasPressedThisFrame) SpawnNearPlayer(EnemyKind.Archer);
@@ -86,7 +107,16 @@ namespace AThousandDawns.Prototype
                 {
                     if (keyboard.f1Key.wasPressedThisFrame) director.Player.Keywords.CycleStage(Keyword.Yeolyang);
                     if (keyboard.f2Key.wasPressedThisFrame) director.Player.Keywords.CycleStage(Keyword.Bingbaek);
-                    if (keyboard.f3Key.wasPressedThisFrame) director.Player.Keywords.CycleStage(Keyword.Noejeong);
+                    var keywords = director.Player.Keywords;
+                    if (keyboard.f3Key.wasPressedThisFrame) keywords.CycleStage(Keyword.Noejeong);
+                    if (keyboard.f4Key.wasPressedThisFrame) keywords.CycleStage(Keyword.Ganggi);
+                    if (keyboard.f6Key.wasPressedThisFrame && keywords.CycleStage(Keyword.Geumgang) >= 2) director.Player.EnterRoom(); // 바로 시험할 수 있게 방 보호막도
+                    if (keyboard.f7Key.wasPressedThisFrame) keywords.CycleStage(Keyword.Gyeonggong);
+                    if (keyboard.f8Key.wasPressedThisFrame) keywords.CycleStage(Keyword.Mado);
+                    if (keyboard.f9Key.wasPressedThisFrame) keywords.CycleStage(Keyword.Jeongjong);
+                    if (keyboard.f10Key.wasPressedThisFrame) keywords.CycleQi(QiState.Lacking);
+                    if (keyboard.f11Key.wasPressedThisFrame) keywords.CycleQi(QiState.Circulating);
+                    if (keyboard.f12Key.wasPressedThisFrame) keywords.CycleQi(QiState.Deviated);
                 }
             }
 
@@ -94,6 +124,7 @@ namespace AThousandDawns.Prototype
             if (bossGate != null && bossGate.activeSelf && (_boss == null || _boss.IsDead)) SetGate(false);
 
             if (!AutoSpawn || director == null) return;
+            DetectClears();
             if (director.Enemies.Count > 0)
             {
                 _respawnTimer = -1f;
@@ -114,6 +145,7 @@ namespace AThousandDawns.Prototype
                 enemy.WakeRadius = _wakeRadius;
             }
             SpawnBoss();
+            if (director.Player != null) director.Player.EnterRoom(); // #금강 2단계: 방에 들어갈 때마다 보호막
         }
 
         public NokrimBrain SpawnBoss()
@@ -122,13 +154,96 @@ namespace AThousandDawns.Prototype
             _boss = (NokrimBrain)director.Spawn(EnemyKind.Nokrim, bossZoneCenter + new Vector3(0f, 0f, 2f));
             _boss.SetZone(bossZoneCenter, new Vector2(GameConfig.Get("nokrim.arena_width", 16f), GameConfig.Get("nokrim.arena_depth", 12f)));
             _boss.WakeRadius = 1f; // SetZone이 있으면 결투장 안에 들어와야 깨어나요
-            _boss.Woke += _ => SetGate(true);
+            _boss.Woke += _ =>
+            {
+                SetGate(true);
+                if (director.Player != null) director.Player.EnterRoom(); // 결투장도 방
+            };
             return _boss;
         }
 
         void SetGate(bool closed)
         {
             if (bossGate != null) bossGate.SetActive(closed);
+        }
+
+        // ── 기물 고르기 (간이 방식, 경맥도 전)
+
+        // 들판의 무리(녹림왕 말고 전부)를 다 쓰러뜨리거나 녹림왕을 쓰러뜨리면 하나씩 쌓여요. 녹림왕과 싸우는 동안 부하는 세지 않아요.
+        void DetectClears()
+        {
+            bool bossAlive = _boss != null && !_boss.IsDead;
+            bool bossFight = bossAlive && _boss.IsAwake;
+            int field = 0;
+            foreach (var e in director.Enemies)
+                if (e != null && e != _boss && !e.IsDead) field++;
+            if (!bossFight && _lastField > 0 && field == 0) _pendingOffers++;
+            _lastField = bossFight ? 0 : field;
+            if (_bossWasAlive && !bossAlive) _pendingOffers++;
+            _bossWasAlive = bossAlive;
+        }
+
+        // 고르는 중이면 true. 1·2·3 (또는 화면 클릭) 고르기 · Esc 넘기기 · I 하나 열기 · ↑↓ 가진 기물 · ←→ 그 기물의 기 −/+
+        bool UpdateItemChoice(Keyboard keyboard)
+        {
+            var player = director != null ? director.Player : null;
+            if (player == null || player.Items == null) return false;
+
+            if (IsChoosing)
+            {
+                if (keyboard == null) return true;
+                if (keyboard.digit1Key.wasPressedThisFrame) Choose(0);
+                else if (keyboard.digit2Key.wasPressedThisFrame) Choose(1);
+                else if (keyboard.digit3Key.wasPressedThisFrame) Choose(2);
+                else if (keyboard.escapeKey.wasPressedThisFrame) CloseOffer();
+                return true;
+            }
+
+            if (keyboard != null)
+            {
+                if (keyboard.iKey.wasPressedThisFrame) _pendingOffers++;
+                if (keyboard.upArrowKey.wasPressedThisFrame) player.Items.Select(-1);
+                if (keyboard.downArrowKey.wasPressedThisFrame) player.Items.Select(1);
+                if (keyboard.leftArrowKey.wasPressedThisFrame) player.Items.AdjustSelectedQi(-1);
+                if (keyboard.rightArrowKey.wasPressedThisFrame) player.Items.AdjustSelectedQi(1);
+            }
+            if (_pendingOffers > 0 && !player.IsDead) OpenOffer(player);
+            return IsChoosing;
+        }
+
+        void OpenOffer(PlayerController player)
+        {
+            var db = GameConfig.Items;
+            _offer = db == null ? null : ItemOffer.Roll(db.Items, player.Items.Has, _choiceCount, _gradeWeights, () => UnityEngine.Random.value);
+            if (_offer == null || _offer.Count == 0)
+            {
+                _offer = null;
+                _pendingOffers = 0; // 더 얻을 기물이 없어요
+                return;
+            }
+            Time.timeScale = 0f;
+            player.enabled = false; // 고르는 클릭이 평타로 남지 않게
+        }
+
+        public void Choose(int index)
+        {
+            if (!IsChoosing || index < 0 || index >= _offer.Count) return;
+            director.Player.Items.Add(_offer[index]);
+            CloseOffer();
+        }
+
+        public void CloseOffer()
+        {
+            if (!IsChoosing) return;
+            _offer = null;
+            _pendingOffers = Mathf.Max(0, _pendingOffers - 1);
+            Time.timeScale = 1f;
+            if (director != null && director.Player != null) director.Player.enabled = true;
+        }
+
+        void OnDestroy()
+        {
+            if (IsChoosing) Time.timeScale = 1f;
         }
 
         // 플레이어 둘레(6칸)에서 벽·대나무와 겹치지 않는 자리에 바로 깨어 있는 채로 불러요.

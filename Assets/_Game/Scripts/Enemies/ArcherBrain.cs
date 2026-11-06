@@ -94,7 +94,7 @@ namespace AThousandDawns.Enemies
         {
             AimAtPoint();
             Vector3 origin = transform.position + Vector3.up * ShotHeight;
-            Director.SpawnArrow(origin, AimDirection, _arrowSpeed, AttackRange, _arrowRadius, AttackPower);
+            Director.SpawnArrow(origin, AimDirection, _arrowSpeed, AttackRange, _arrowRadius, AttackPower, Body);
         }
 
         protected override void TickActive(float dt) { } // 쏘는 순간 멈춤

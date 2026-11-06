@@ -8,7 +8,7 @@ namespace AThousandDawns.Player
 {
     // 시험판 플레이어: 이동, 대시(무적), 평타 3연타(누르고 있기), 대시 공격, 초식(회선참), 절초(만검귀종), 피격. 수치는 전부 data_balance에서 읽어요.
     [RequireComponent(typeof(CharacterController), typeof(PlayerInputReader))]
-    public sealed class PlayerController : MonoBehaviour
+    public sealed partial class PlayerController : MonoBehaviour
     {
         static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
@@ -37,7 +37,8 @@ namespace AThousandDawns.Player
         bool _skillHitDone;
         float _sinceSkillPress = float.PositiveInfinity;
 
-        float _ultimateCastTime, _ultimateRadius, _ultimateSwordDamage, _ultimateFallTime;
+        float _ultimateCastTime, _ultimateSwordDamage, _ultimateFallTime;
+        Vector2 _ultimateArea; // 방 하나 크기 (가로 × 세로)
         int _ultimateSwordCount;
         float _ultimateTimer;
         float _sinceUltimatePress = float.PositiveInfinity;
@@ -129,12 +130,14 @@ namespace AThousandDawns.Player
 
         void TakeDirectDamage(int damage)
         {
+            damage = _shields.Absorb(damage);
+            if (damage <= 0) return;
             Health = Mathf.Max(0f, Health - damage);
             DamagePopups.Spawn(transform.position + Vector3.up * 2f, damage, PopupStyle.Player);
             Hurt?.Invoke(damage);
             if (IsDead && visual != null) visual.localScale = new Vector3(1.2f, 0.25f, 1.2f);
         }
-        public float SkillCooldown => _skillCooldown;
+        public float SkillCooldown => _skillCooldown * (1f + Side("skill_cooldown")); // 기물 부작용: 초식 쿨타임 +%
         public float SkillCooldownLeft => Mathf.Max(0f, _skillCooldownLeft);
 
         public event Action<int> Hurt;
@@ -149,6 +152,8 @@ namespace AThousandDawns.Player
             swordRain.SwordLanded += OnSwordLanded;
             swordRain.Finished += OnSwordRainFinished;
             if (!TryGetComponent(out _keywords)) _keywords = gameObject.AddComponent<PlayerKeywords>();
+            InitKeywords();
+            InitItems();
             if (bodyRenderer != null && bodyRenderer.sharedMaterial != null && bodyRenderer.sharedMaterial.HasProperty(BaseColorId))
                 _bodyColor = bodyRenderer.sharedMaterial.GetColor(BaseColorId);
         }
@@ -197,7 +202,7 @@ namespace AThousandDawns.Player
             _gaugeSkill = GameConfig.Get("gauge.skill_hit", 3f);
 
             _ultimateCastTime = GameConfig.Get("ultimate.cast_time", 1f);
-            _ultimateRadius = GameConfig.Get("ultimate.radius", 3f);
+            _ultimateArea = new Vector2(GameConfig.Get("ultimate.range_width", 20f), GameConfig.Get("ultimate.range_depth", 12f));
             _ultimateSwordCount = Mathf.RoundToInt(GameConfig.Get("ultimate.sword_count", 8f));
             _ultimateSwordDamage = GameConfig.Get("ultimate.sword_damage", 18f);
             _ultimateFallTime = GameConfig.Get("ultimate.sword_fall_time", 0.15f);
@@ -222,6 +227,7 @@ namespace AThousandDawns.Player
             _firePatchRadius = GameConfig.Get("imprint.fire_patch_radius", 1f);
             _thunderImprintChains = Mathf.RoundToInt(GameConfig.Get("imprint.thunder_chains", 4f));
             _thunderImprintRatio = GameConfig.Get("imprint.thunder_ratio", 0.1f);
+            ReadKeywordTuning();
 
             _gaugeMax = GameConfig.Get("ultimate.gauge_max", 100f);
             _gaugeBasic = GameConfig.Get("gauge.basic_hit", 2f);
@@ -233,6 +239,7 @@ namespace AThousandDawns.Player
             _hurtIframe = GameConfig.Get("hurt.iframe", 0.6f);
             _hurtKnockback = GameConfig.Get("hurt.knockback", 0.5f);
             _hurtStun = GameConfig.Get("hurt.stun", 0.15f);
+            ReadItemTuning();
 
             _rules = new DamageRules(
                 GameConfig.Get("damage.toughness_floor_ratio", 0.2f),
@@ -257,6 +264,8 @@ namespace AThousandDawns.Player
             if (_invulnerableTimer > 0f) _invulnerableTimer -= dt;
             if (_skillCooldownLeft > 0f) _skillCooldownLeft -= dt;
             if (_slowTimer > 0f) _slowTimer -= dt;
+            TickKeywordTimers(dt);
+            TickItemTimers(dt);
             TickBurn(dt);
             if (IsDead) return;
 
@@ -268,12 +277,8 @@ namespace AThousandDawns.Player
                 return;
             }
 
-            // 절초 시전 중: 제자리 고정, 무적 (조작 시트)
-            if (IsCastingUltimate)
-            {
-                _ultimateTimer -= dt;
-                return;
-            }
+            // 절초 시전 중: 제자리 고정, 무적 (조작 시트). #경공 각인이면 이동·대시 가능
+            if (TickUltimateCast(dt)) return;
 
             if (IsDashing)
             {
@@ -290,7 +295,7 @@ namespace AThousandDawns.Player
 
             // 대시로 끊기: 평타는 후딜 중에만, 회선참은 베고 난 뒤에만
             bool canCancel = _combo.CanDashCancel && (!IsCastingSkill || _skillHitDone);
-            if (_sinceDashPress <= _inputBuffer && canCancel && _dash.TryConsume())
+            if (_sinceDashPress <= _inputBuffer && canCancel && TryConsumeDash())
             {
                 StartDash();
                 UpdateDash(dt);
@@ -321,19 +326,36 @@ namespace AThousandDawns.Player
                 }
             }
 
-            _combo.Tick(dt, _input.AttackHeld);
+            _combo.Tick(dt * AttackSpeedMultiplier, _input.AttackHeld); // #강기 2단계: 평타 속도 +15%
             UpdateMovement(dt);
         }
 
         // 적 공격이 닿았을 때. 무적(대시·피격 후)이면 false를 돌려줘요. 화살은 이때 그대로 지나가요.
         // knockback을 주면 기본 넉백(0.5칸) 대신 그만큼 밀려요 (방패 산적 1칸).
-        public bool TryReceiveHit(float enemyAttack, Vector3 source, float knockback = -1f)
+        // attacker를 주면 #경공 6단계 간파 반격이 그 적에게 가요.
+        public bool TryReceiveHit(float enemyAttack, Vector3 source, float knockback = -1f, Damageable attacker = null)
         {
-            if (IsDead || IsInvulnerable) return false;
+            if (IsDead) return false;
+            if (IsDashInvulnerable)
+            {
+                TryPerfectDodge(attacker); // 간파 (#경공 4단계)
+                return false;
+            }
+            if (IsInvulnerable) return false;
 
-            var hit = new PlayerHitInput { EnemyAttack = enemyAttack, Toughness = Toughness, Defense = Defense };
+            var hit = new PlayerHitInput
+            {
+                EnemyAttack = enemyAttack,
+                Toughness = EffectiveToughness,
+                Defense = Defense,
+                TakenIncrease = TakenIncreaseTotal,
+                DamageReduction = DamageReductionTotal,
+            };
             int damage = DamageFormula.ToPlayer(hit, _rules);
-            Health = Mathf.Max(0f, Health - damage);
+            int dealt = _shields.Absorb(damage); // 피해 공식을 다 계산한 뒤 보호막부터 깎음
+            Health = Mathf.Max(0f, Health - dealt);
+            OnHurtForShield(damage);
+            OnHurtForItems();
 
             _invulnerableTimer = Mathf.Max(_invulnerableTimer, _hurtIframe);
             _stunTimer = _hurtStun;
@@ -350,8 +372,8 @@ namespace AThousandDawns.Player
             Gauge = Mathf.Min(_gaugeMax, Gauge + _gaugeHurt);
 
             _flashTimer = 0.12f;
-            DamagePopups.Spawn(transform.position + Vector3.up * 2f, damage, PopupStyle.Player);
-            Hurt?.Invoke(damage);
+            if (dealt > 0) DamagePopups.Spawn(transform.position + Vector3.up * 2f, dealt, PopupStyle.Player); // 보호막이 다 막으면 숫자 없음
+            Hurt?.Invoke(dealt);
             if (IsDead && visual != null) visual.localScale = new Vector3(1.2f, 0.25f, 1.2f); // 시험판용 쓰러짐 표시
             return true;
         }
@@ -365,7 +387,7 @@ namespace AThousandDawns.Player
             bodyRenderer.SetPropertyBlock(_block);
         }
 
-        // 만검귀종 (하단전): 1초 동안 맵 전체 적에게 검 8자루가 고르게 떨어져요 (ultimate.radius 0 = 맵 전체). 기세를 모두 써요.
+        // 만검귀종 (하단전): 1초 동안 방 하나 크기(20×12칸, 나를 가운데로) 안 적에게 검 8자루가 고르게 떨어져요. 기세를 모두 써요.
         void StartUltimate()
         {
             _sinceUltimatePress = float.PositiveInfinity;
@@ -380,10 +402,11 @@ namespace AThousandDawns.Player
             _dashAttackTimer = 0f;
             ApplyFacing();
 
-            if (swingFlash != null && _ultimateRadius > 0f) swingFlash.Show(transform.position, _facing, _ultimateRadius, 360f, 0.2f); // 0이면 맵 전체라 범위 표시 없음
-            var hit = HitDamageInput.Of(_ultimateSwordDamage);
+            var hit = PlayerHit(_ultimateSwordDamage);
             hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
-            swordRain.Begin(transform.position, _ultimateRadius, _ultimateSwordCount, _ultimateCastTime, _ultimateFallTime, hit, _rules);
+            if (K(Keyword.Mado) >= 4) hit.SpecialMultiplier *= _madoImprintPower; // #마도 각인: 위력 ×1.6
+            _ultimateEndPending = true;
+            swordRain.Begin(transform.position, _ultimateArea, _ultimateSwordCount, _ultimateCastTime, _ultimateFallTime, hit, _rules);
         }
 
         // 시험판용: G 키로 기세를 가득 채워요.
@@ -393,7 +416,7 @@ namespace AThousandDawns.Player
         void StartSkill()
         {
             _sinceSkillPress = float.PositiveInfinity;
-            _skillCooldownLeft = _skillCooldown;
+            _skillCooldownLeft = SkillCooldown;
             _skillElapsed = 0f;
             _skillHitDone = false;
             _combo.Cancel();
@@ -415,7 +438,7 @@ namespace AThousandDawns.Player
                 _skillHitDone = true;
                 _hitThisSwing.Clear();
                 if (swingFlash != null) swingFlash.Show(transform.position, _facing, _skillRadius, 360f, 0.15f);
-                var hit = HitDamageInput.Of(_skillDamage);
+                var hit = PlayerHit(_skillDamage);
                 hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
                 int count = HitSector(_skillRadius, 360f, hit, HitTag.Skill);
                 Gauge = Mathf.Min(_gaugeMax, Gauge + count * _gaugeSkill);
@@ -423,13 +446,18 @@ namespace AThousandDawns.Player
                 // #뇌정 2단계: 초식이 적중하면 처음 맞은 적부터 연쇄 번개 (발동 공격 = 초식 피해, 강인함 빼기 전)
                 int thunder = _keywords.Count(Keyword.Noejeong);
                 if (count > 0 && thunder >= 2)
-                    Lightning.Chain(_firstHit, transform.position + Vector3.up, DamageFormula.BeforeToughness(hit), ChainRatio(thunder), _chainTargets, _chainRange, DischargePerStack(thunder));
+                {
+                    float trigger = DamageFormula.BeforeToughness(hit);
+                    var first = _firstHit;
+                    Lightning.Chain(first, transform.position + Vector3.up, trigger, ChainRatio(thunder), _chainTargets, _chainRange, DischargePerStack(thunder));
+                    StrikeAfterSkillChain(first, trigger, thunder); // 뇌운 부적
+                }
             }
         }
 
         // ── 키워드 단계 (상태이상 탭). 기준 피해 = 지금 평타 1타 피해 (강인함·방어력 빼기 전)
 
-        float BaseDamage => _basicDamage;
+        float BaseDamage => _basicDamage * (1f + AttackIncreaseTotal); // 공격 증가(②)를 받은 평타 1타
         float BurnPerStackDps(int fire) => BaseDamage * _burnPerStackRatio * (fire >= 4 ? 1f + _burnStage4Bonus : 1f);
         float DischargePerStack(int thunder) => BaseDamage * _dischargePerStack * (thunder >= 4 ? 1f + _dischargeStage4Bonus : 1f);
         float ChainRatio(int thunder) => thunder >= 6 ? _chainStage6Ratio : _chainRatio;
@@ -460,16 +488,18 @@ namespace AThousandDawns.Player
         }
 
         // #뇌정 각인: 절초가 끝나는 순간 연쇄 번개 4번 한꺼번에. 번개를 일으키는 피해 = 절초 피해 합 × 10%
+        // 뇌정 방울: 절초 연쇄 번개 +2회 (각인이 없어도 그 횟수만큼)
         void OnSwordRainFinished(int totalDamage)
         {
             int thunder = _keywords.Count(Keyword.Noejeong);
-            if (thunder < 4 || totalDamage <= 0) return;
+            int chains = (thunder >= 4 ? _thunderImprintChains : 0) + BellChains;
+            if (chains <= 0 || totalDamage <= 0) return;
             var starts = new List<Damageable>();
             foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
-                if (!d.IsDead && d.Targetable) starts.Add(d);
+                if (!d.IsDead && d.Targetable && SwordRain.InArea(transform.position, _ultimateArea, d)) starts.Add(d); // 절초 범위(방 하나) 안에서
             if (starts.Count == 0) return;
             starts.Sort((a, b) => (a.transform.position - transform.position).sqrMagnitude.CompareTo((b.transform.position - transform.position).sqrMagnitude));
-            for (int i = 0; i < _thunderImprintChains; i++)
+            for (int i = 0; i < chains; i++)
                 Lightning.Chain(starts[i % starts.Count], transform.position + Vector3.up * 3f, totalDamage * _thunderImprintRatio, ChainRatio(thunder), _chainTargets, _chainRange, DischargePerStack(thunder));
         }
 
@@ -497,15 +527,20 @@ namespace AThousandDawns.Player
             _combo.Cancel();
             _skillElapsed = -1f;
             _dashTimer = _dashDuration;
-            _invulnerableTimer = _dashIframe;
+            _invulnerableTimer = Mathf.Max(_invulnerableTimer, _dashIframe);
+            _dashIframeTimer = _dashIframe; // 간파 판정 시간
+            _dashStart = transform.position;
+            _perfectDodgeUsed = false;
             _sinceDashPress = float.PositiveInfinity;
             _lungeRemaining = 0f;
         }
 
+        float DashDistance => _dashDistance * Mathf.Max(0.1f, 1f - Side("dash_distance")); // 기물 부작용: 대시 거리 −%
+
         void UpdateDash(float dt)
         {
             float step = Mathf.Min(dt, _dashTimer);
-            _controller.Move(_dashDirection * (_dashDistance / _dashDuration) * step);
+            _controller.Move(_dashDirection * (DashDistance / _dashDuration) * step);
             _dashTimer -= dt;
             _velocity = Vector3.zero;
             ApplyFacing();
@@ -516,7 +551,7 @@ namespace AThousandDawns.Player
         {
             Vector2 move = Vector2.ClampMagnitude(_input.Move, 1f);
             bool attacking = _combo.IsAttacking || IsCastingSkill;
-            float speed = _moveSpeed * (attacking ? _attackMoveRatio : 1f) * (1f - SlowRatio);
+            float speed = _moveSpeed * (attacking ? _attackMoveRatio : 1f) * (1f - SlowRatio) * (1f + MoveSpeedBonus);
             Vector3 desired = new Vector3(move.x, 0f, move.y) * speed;
             float rate = desired.sqrMagnitude >= _velocity.sqrMagnitude ? _moveSpeed / Mathf.Max(0.001f, _accelTime) : _moveSpeed / Mathf.Max(0.001f, _decelTime);
             _velocity = Vector3.MoveTowards(_velocity, desired, rate * dt);
@@ -524,7 +559,7 @@ namespace AThousandDawns.Player
             Vector3 displacement = _velocity * dt;
             if (_lungeRemaining > 0f)
             {
-                float lungeStep = Mathf.Min(_lungeRemaining, _finisherLunge / Mathf.Max(0.01f, _finisherActive) * dt);
+                float lungeStep = Mathf.Min(_lungeRemaining, _finisherLunge / Mathf.Max(0.01f, _finisherActive) * AttackSpeedMultiplier * dt);
                 displacement += _facing * lungeStep;
                 _lungeRemaining -= lungeStep;
             }
@@ -558,16 +593,19 @@ namespace AThousandDawns.Player
             float radius = _hitRadius[Mathf.Min(index, _hitRadius.Length - 1)];
             float angle = _hitAngle[Mathf.Min(index, _hitAngle.Length - 1)];
             if (swingFlash != null) swingFlash.Show(transform.position, _facing, radius, angle, _combo.HitCount > 0 ? 0.1f : 0f);
-            int count = HitSector(radius, angle, HitDamageInput.Of(finisher ? _finisherDamage : _basicDamage), finisher ? HitTag.Finisher : HitTag.Basic);
+            var hit = PlayerHit(finisher ? _finisherDamage : _basicDamage);
+            int count = HitSector(radius, angle, hit, finisher ? HitTag.Finisher : HitTag.Basic);
             Gauge = Mathf.Min(_gaugeMax, Gauge + count * (finisher ? _gaugeFinisher : _gaugeBasic));
+            FireGanggiOnSwing(finisher, hit);
         }
 
         void DoDashAttack()
         {
             _hitThisSwing.Clear();
             if (swingFlash != null) swingFlash.Show(transform.position, _facing, _dashAttackRadius, _dashAttackAngle, 0.12f);
-            int count = HitSector(_dashAttackRadius, _dashAttackAngle, HitDamageInput.Of(_dashAttackDamage), HitTag.DashAttack);
+            int count = HitSector(_dashAttackRadius, _dashAttackAngle, PlayerHit(_dashAttackDamage), HitTag.DashAttack);
             Gauge = Mathf.Min(_gaugeMax, Gauge + count * _gaugeDashAttack);
+            LeaveFrostTrail(); // 한철 비녀
         }
 
         // template의 피해·배율을 그대로 쓰고, 대상마다 강인함·방어력·상황 배율(방패 정면 등)만 채워요.
@@ -585,12 +623,14 @@ namespace AThousandDawns.Player
                 var hit = template;
                 hit.Toughness = target.Toughness;
                 hit.Defense = target.Defense;
-                hit.Situational *= target.ResolveSituational(transform.position, tag);
+                hit.Situational *= target.ResolveSituational(transform.position, tag) * UnburnedMultiplier(target);
                 target.ApplyHit(DamageFormula.ToEnemy(hit, _rules));
+                ApplyItemsOnHit(target, tag);
                 ApplyKeywordsOnHit(target, tag);
                 if (_firstHit == null) _firstHit = target;
                 hits++;
             }
+            TrackFlint(hits); // 부싯돌
             return hits;
         }
     }

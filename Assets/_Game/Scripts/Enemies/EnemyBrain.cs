@@ -140,11 +140,12 @@ namespace AThousandDawns.Enemies
         // 빙결: 모든 행동 정지 (소환·시전 포함). 하던 공격은 취소해요 (보스는 진행 중인 패턴 취소).
         void OnFrozen()
         {
-            if (Attack.IsAttacking) CancelAttack();
-            OnFreezeStarted();
+            bool cancelled = Attack.IsAttacking;
+            if (cancelled) CancelAttack();
+            OnFreezeStarted(cancelled);
         }
 
-        protected virtual void OnFreezeStarted() { }
+        protected virtual void OnFreezeStarted(bool cancelledAttack) { }
 
         void Update()
         {
@@ -199,7 +200,7 @@ namespace AThousandDawns.Enemies
             Vector3 to = ToPlayer();
             if (TurnSpeed <= 0f && to.sqrMagnitude > 1e-4f) FaceToward(to); // 천천히 도는 적은 지금 보는 방향 그대로
             AimDirection = Facing;
-            Attack.Start(WindupTime, ActiveTime, RecoveryTime);
+            Attack.Start(WindupTime + Status.WindupExtra, ActiveTime, RecoveryTime); // 눈송이 수정: 둔화 3중첩이면 예고가 길어짐
             OnAttackStarted();
             Telegraph.Show(TelegraphShape(), RadialTelegraph);
             UpdateTelegraph();
@@ -314,7 +315,7 @@ namespace AThousandDawns.Enemies
             return free >= distance - 0.05f;
         }
 
-        protected bool TryHitPlayer() => Player.TryReceiveHit(AttackPower, transform.position, HitKnockback);
+        protected bool TryHitPlayer() => Player.TryReceiveHit(AttackPower, transform.position, HitKnockback, Body);
 
         Vector3 Separation()
         {

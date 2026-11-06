@@ -6,7 +6,7 @@ namespace AThousandDawns.Combat
 {
     // 만검귀종 (검 절초): 시전 시간 동안 검이 범위 안 적에게 고르게 나뉘어 떨어져요. 적이 1명이면 전부 그 적에게.
     // 검은 떨어지는 동안 대상을 따라가서 반드시 맞고, 강인함을 무시해요 (방어력은 적용). 범위에 적이 없으면 빈 땅에 꽂혀요.
-    // 반경이 0 이하면 맵 전체 (멀리서 자고 있던 적도 맞고 깨어나요).
+    // 범위는 방 하나 크기 (가로 20 × 세로 12칸, 조작 탭), 시전한 자리가 가운데예요.
     public sealed class SwordRain : MonoBehaviour
     {
         const float DropHeight = 7f;
@@ -14,7 +14,10 @@ namespace AThousandDawns.Combat
         const float Linger = 0.35f;
         const float EmptyScatter = 3f;  // 맞힐 적이 없을 때 검이 꽂히는 범위 (플레이어 둘레)
 
-        bool WholeMap => _radius <= 0f;
+        // 가운데가 center인 가로 size.x × 세로 size.y 사각형 안 (몸이 걸쳐도 들어감)
+        public static bool InArea(Vector3 center, Vector2 size, Damageable d) =>
+            Mathf.Abs(d.transform.position.x - center.x) <= size.x * 0.5f + d.BodyRadius
+            && Mathf.Abs(d.transform.position.z - center.z) <= size.y * 0.5f + d.BodyRadius;
 
         [SerializeField] Material swordMaterial;
 
@@ -30,10 +33,10 @@ namespace AThousandDawns.Combat
         readonly List<Sword> _swords = new List<Sword>();
         readonly Dictionary<Damageable, int> _counts = new Dictionary<Damageable, int>();
         readonly List<Damageable> _candidates = new List<Damageable>();
-        readonly Collider[] _overlap = new Collider[64];
 
         Vector3 _center;
-        float _radius, _interval, _fallTime, _elapsed;
+        Vector2 _area;
+        float _interval, _fallTime, _elapsed;
         int _remaining, _spawned;
         HitDamageInput _hit;
         DamageRules _rules;
@@ -47,10 +50,10 @@ namespace AThousandDawns.Combat
         bool _finishPending;
         int _landed;
 
-        public void Begin(Vector3 center, float radius, int count, float duration, float fallTime, HitDamageInput hit, in DamageRules rules)
+        public void Begin(Vector3 center, Vector2 area, int count, float duration, float fallTime, HitDamageInput hit, in DamageRules rules)
         {
             _center = new Vector3(center.x, 0f, center.z);
-            _radius = radius;
+            _area = area;
             _remaining = count;
             _spawned = 0;
             _interval = count > 0 ? duration / count : duration;
@@ -121,7 +124,7 @@ namespace AThousandDawns.Combat
             }
             else
             {
-                Vector2 r = UnityEngine.Random.insideUnitCircle * (WholeMap ? EmptyScatter : _radius);
+                Vector2 r = UnityEngine.Random.insideUnitCircle * EmptyScatter;
                 point = _center + new Vector3(r.x, 0f, r.y);
             }
 
@@ -136,22 +139,8 @@ namespace AThousandDawns.Combat
         Damageable PickTarget()
         {
             _candidates.Clear();
-            if (WholeMap)
-            {
-                foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
-                    if (!d.IsDead && d.Targetable) _candidates.Add(d);
-            }
-            else
-            {
-                int found = Physics.OverlapSphereNonAlloc(_center, _radius + 1f, _overlap, ~0, QueryTriggerInteraction.Collide);
-                for (int i = 0; i < found; i++)
-                {
-                    var d = _overlap[i].GetComponentInParent<Damageable>();
-                    if (d == null || d.IsDead || !d.Targetable || _candidates.Contains(d)) continue;
-                    if (DistanceXZ(_center, d.transform.position) > _radius + d.BodyRadius) continue;
-                    _candidates.Add(d);
-                }
-            }
+            foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+                if (!d.IsDead && d.Targetable && InArea(_center, _area, d)) _candidates.Add(d);
 
             Damageable best = null;
             int bestCount = int.MaxValue;

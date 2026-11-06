@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using AThousandDawns.Data;
+using AThousandDawns.Items;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,11 +14,13 @@ namespace AThousandDawns.EditorTools
         public const string GeneratedFolder = "Assets/_Game/Data/Generated";
         public const string BalanceCsvPath = CsvFolder + "/data_balance.csv";
         public const string BalanceAssetPath = GeneratedFolder + "/BalanceConfig.asset";
+        public const string ItemsCsvPath = CsvFolder + "/data_items.csv";
+        public const string ItemsAssetPath = GeneratedFolder + "/ItemDatabase.asset";
 
         [MenuItem("AThousandDawns/시트 가져오기")]
         public static void ImportAll()
         {
-            bool ok = ImportBalance();
+            bool ok = ImportBalance() & ImportItems();
             AssetDatabase.SaveAssets();
             if (ok) Debug.Log("[시트 가져오기] 끝났어요.");
         }
@@ -26,7 +29,7 @@ namespace AThousandDawns.EditorTools
         public static void ImportAllBatch()
         {
             AssetDatabase.Refresh();
-            bool ok = ImportBalance();
+            bool ok = ImportBalance() & ImportItems();
             AssetDatabase.SaveAssets();
             EditorApplication.Exit(ok ? 0 : 1);
         }
@@ -57,6 +60,32 @@ namespace AThousandDawns.EditorTools
             return true;
         }
 
+        public static bool ImportItems()
+        {
+            if (!File.Exists(ItemsCsvPath))
+            {
+                Debug.LogWarning($"[시트 가져오기] {ItemsCsvPath} 파일이 없어요. 시트의 data_items 탭을 CSV로 내려받아 넣어 주세요.");
+                return false;
+            }
+
+            var errors = new List<string>();
+            var items = ItemTable.Read(File.ReadAllText(ItemsCsvPath), errors);
+            foreach (var e in errors) Debug.LogError($"[시트 가져오기] {e}");
+            if (errors.Count > 0) return false;
+
+            EnsureFolder(GeneratedFolder);
+            var asset = AssetDatabase.LoadAssetAtPath<ItemDatabase>(ItemsAssetPath);
+            if (asset == null)
+            {
+                asset = ScriptableObject.CreateInstance<ItemDatabase>();
+                AssetDatabase.CreateAsset(asset, ItemsAssetPath);
+            }
+            asset.SetItems(items);
+            EditorUtility.SetDirty(asset);
+            Debug.Log($"[시트 가져오기] data_items: 기물 {items.Count}개");
+            return true;
+        }
+
         static void EnsureFolder(string path)
         {
             if (AssetDatabase.IsValidFolder(path)) return;
@@ -74,7 +103,7 @@ namespace AThousandDawns.EditorTools
             if (Application.isBatchMode) return; // 배치 모드는 ImportAllBatch·씬 만들기가 직접 가져와요
             foreach (var path in importedAssets)
             {
-                if (path != SheetImporter.BalanceCsvPath) continue;
+                if (path != SheetImporter.BalanceCsvPath && path != SheetImporter.ItemsCsvPath) continue;
                 EditorApplication.delayCall += SheetImporter.ImportAll; // 가져오기 도중에 에셋을 만들지 않게 한 박자 늦춰요
                 return;
             }

@@ -75,7 +75,7 @@ namespace AThousandDawns.Enemies
             return enemy;
         }
 
-        public Arrow SpawnArrow(Vector3 origin, Vector3 direction, float speed, float range, float radius, float attack)
+        public Arrow SpawnArrow(Vector3 origin, Vector3 direction, float speed, float range, float radius, float attack, Damageable owner = null)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = "Arrow";
@@ -86,7 +86,7 @@ namespace AThousandDawns.Enemies
             if (visuals.arrow != null) renderer.sharedMaterial = visuals.arrow;
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             var arrow = go.AddComponent<Arrow>();
-            arrow.Launch(player, direction, speed, range, radius, attack);
+            arrow.Launch(player, direction, speed, range, radius, attack, owner);
             return arrow;
         }
 

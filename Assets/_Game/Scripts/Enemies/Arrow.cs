@@ -1,3 +1,4 @@
+using AThousandDawns.Combat;
 using AThousandDawns.Player;
 using UnityEngine;
 
@@ -10,8 +11,9 @@ namespace AThousandDawns.Enemies
         PlayerController _target;
         Vector3 _direction;
         float _speed, _remaining, _radius, _attack;
+        Damageable _owner; // 쏜 궁수 (#경공 6단계 간파 반격 대상)
 
-        public void Launch(PlayerController target, Vector3 direction, float speed, float range, float radius, float attack)
+        public void Launch(PlayerController target, Vector3 direction, float speed, float range, float radius, float attack, Damageable owner = null)
         {
             _target = target;
             _direction = new Vector3(direction.x, 0f, direction.z).normalized;
@@ -19,6 +21,7 @@ namespace AThousandDawns.Enemies
             _remaining = range;
             _radius = radius;
             _attack = attack;
+            _owner = owner;
             transform.rotation = Quaternion.LookRotation(_direction);
         }
 
@@ -31,7 +34,7 @@ namespace AThousandDawns.Enemies
             Vector3 to = from + _direction * (blocked ? free : step);
 
             if (_target != null && !_target.IsDead && DistanceXZ(from, to, _target.transform.position) <= _radius + _target.BodyRadius
-                && _target.TryReceiveHit(_attack, from))
+                && _target.TryReceiveHit(_attack, from, -1f, _owner))
             {
                 Destroy(gameObject);
                 return;

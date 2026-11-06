@@ -67,7 +67,9 @@ namespace AThousandDawns.EditorTools
         public static void Build()
         {
             SheetImporter.ImportBalance();
+            SheetImporter.ImportItems();
             var balance = AssetDatabase.LoadAssetAtPath<BalanceConfig>(SheetImporter.BalanceAssetPath);
+            var itemDb = AssetDatabase.LoadAssetAtPath<AThousandDawns.Items.ItemDatabase>(SheetImporter.ItemsAssetPath);
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
 
@@ -83,6 +85,7 @@ namespace AThousandDawns.EditorTools
 
             var config = new GameObject("GameConfig").AddComponent<GameConfig>();
             SetRef(config, "balance", balance);
+            SetRef(config, "items", itemDb);
 
             var swordMat = GetMaterial("UltimateSword", UltimateSwordColor, false);
             var player = BuildPlayer(playerMat, wallMat, flashMat, swordMat);

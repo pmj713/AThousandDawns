@@ -134,7 +134,7 @@ archer.max_per_room,2,,방마다 최대 궁수 수 (몬스터 K77 설명),
 sword.skill_cast_time,0.35,s,회선참 시전 시간,조작!B47
 sword.skill_radius,2.2,cell,회선참 주변 원형 반경 (조작 B48 설명),
 sword.skill_hit_time,0.12,s,"회선참 베는 순간, 시전 시작부터 (임시)",
-ultimate.radius,0,cell,만검귀종 범위 반경. 0 = 맵 전체 (무기 B45),
+ultimate.range_width,20,cell,"만검귀종 범위 가로 = 방 하나 (조작 A2 설명, 무기 B45)",
 ultimate.sword_count,8,,만검귀종 검 자루 수 (하단전),무기!B55
 ultimate.sword_damage,18,,만검귀종 검 한 자루 피해,무기!B56
 ultimate.sword_fall_time,0.15,s,검이 하늘에서 떨어지는 시간 (임시),
@@ -266,3 +266,48 @@ imprint.thunder_ratio,10%,,절초 #뇌정 각인: 번개를 일으키는 피해 
 player_burn.damage,2,,플레이어 화상 1중첩 초당 피해 (지역 공격 배율을 곱함),상태이상!B64
 player_burn.max_stacks,3,,플레이어 화상 최대 중첩 (상태이상 D64 설명),
 player_burn.duration,3,s,플레이어 화상 지속 (상태이상 D64 설명),
+ganggi.ratio,60%,,#강기 강기 피해 = 발동 평타 피해 × 이 비율 (파생 피해),무기!B113
+ganggi.speed,14,cell/s,강기 날아가는 속도,무기!B114
+ganggi.range,5,cell,강기 사거리,무기!B115
+ganggi.width,0.8,cell,강기 폭,무기!B116
+ganggi.stage2_attack_speed,15%,,#강기 2단계: 평타 속도 증가,무기!C122
+ganggi.stage4_count,1,,#강기 4단계: 평타 3타째 강기 발 수,무기!C123
+imprint.ganggi_duration,3,s,절초 #강기 각인: 끝난 뒤 모든 평타가 강기 발사하는 시간,무기!B80
+imprint.ganggi_ratio,60%,,절초 #강기 각인: 강기 한 발 = 그 평타 피해 × 이 비율,무기!C80
+geumgang.room_shield,10%,,#금강 2단계: 방에 들어갈 때 보호막 (최대 체력 비율),키워드!E36
+geumgang.shield_toughness,2,,#금강 2단계: 보호막이 있는 동안 강인함 (키워드 D36 설명),
+geumgang.hit_shield_ratio,50%,,#금강 4단계: 피격하면 받은 피해 × 이 비율만큼 보호막,키워드!E37
+geumgang.hit_shield_duration,3,s,#금강 4단계 보호막 지속 (키워드 D37 설명),
+geumgang.hit_shield_cooldown,6,s,#금강 4단계 보호막 재사용 (키워드 D37 설명),
+geumgang.shockwave_ratio,200%,,#금강 6단계: 충격파 = 깨진 보호막 최대치 × 이 비율 (파생 피해),키워드!E38
+geumgang.shockwave_radius,2,cell,#금강 6단계 충격파 반경 (키워드 D38 설명),
+shield.max_ratio,30%,,모든 보호막 합 최대 (최대 체력 비율),키워드!B53
+imprint.geumgang_shield,20%,,절초 #금강 각인: 시전이 끝나면 보호막 (최대 체력 비율),무기!B82
+imprint.geumgang_duration,5,s,절초 #금강 각인 보호막 지속,무기!C82
+gyeonggong.dash_bonus,1,,#경공 2단계: 대시 횟수 증가,키워드!E39
+gyeonggong.lack_move_per,0.04,,#경공 2단계: 기 부족 기물 1개당 이동속도 (키워드 D39 설명),
+gyeonggong.lack_move_max,0.2,,#경공 2단계 이동속도 최대 (키워드 D39 설명),
+gyeonggong.perfect_bonus,30%,,#경공 4단계: 간파 뒤 다음 공격 피해 증가,키워드!E40
+gyeonggong.perfect_window,1.5,s,#경공 4단계: 간파 보너스가 남는 시간 (키워드 D40 설명),
+gyeonggong.counter_ratio,200%,,#경공 6단계: 잔상 반격 = 기준 피해 × 이 비율 (파생 피해),키워드!E41
+ultimate.range_depth,12,cell,"만검귀종 범위 세로 = 방 하나 (조작 A2 설명, 무기 B45)",
+gyeonggong.perfect_bonus6,0.6,,#경공 6단계: 간파 피해 보너스 (키워드 D41 설명),
+mado.per_deviated,4%,,#마도 2단계: 주화입마 기물 1개당 모든 피해 증가,키워드!E42
+mado.per_deviated_max,0.2,,#마도 2단계 최대 (키워드 D42 설명),
+imprint.mado_power,1.6,,절초 #마도 각인: 위력 배율 (④ 곱하기 효과),무기!B83
+imprint.mado_taken,30%,,절초 #마도 각인: 사용 후 받는 피해 증가,무기!C83
+imprint.mado_duration,3,s,절초 #마도 각인: 받는 피해 증가 시간,무기!D83
+jeongjong.per_circulating,3%,,#정종 2단계: 운기 기물 1개당 피해 증가,키워드!E45
+jeongjong.stage4_reduction,15%,,#정종 4단계: 주화입마 기물 0개면 받는 피해 감소,키워드!E46
+jeongjong.stage6_bonus,30%,,"#정종 6단계: 기 부족 0개, 주화입마 0개면 모든 피해 증가",키워드!E47
+imprint.jeongjong_gauge,30%,,절초 #정종 각인: 사용 후 돌려받는 기세 (최대 비율),무기!B84
+item.choice_count,3,,"기물 고르기: 무리를 다 쓰러뜨리면 보여 주는 후보 수 (간이 방식, 경맥도 전)",
+item.deviation_multiplier,1.5,,"주화입마 효과 배율 (비율·시간·거리 수치에만, 기물 탭 공통 규칙)",
+mado.stage4_deviation,1.8,,#마도 4단계: 주화입마 효과 배율 ×1.5 → 이 값,키워드!E43
+item_grade.common,58%,,기물 등급 확률 일반 (죽림),등급확률!B11
+item_grade.uncommon,30%,,기물 등급 확률 고급 (죽림),등급확률!C11
+item_grade.rare,10%,,기물 등급 확률 희귀 (죽림),등급확률!D11
+item_grade.legendary,2%,,기물 등급 확률 전설 (죽림),등급확률!E11
+item.self_slow_ratio,25%,,설련 향낭 부작용: 피격 시 자신 둔화 (이동속도 감소),상태이상!B65
+item.gauge_drain_interval,10,s,뇌정 옥새 부작용: 기세가 줄어드는 간격 (기물 탭 부작용 글),
+item.frost_trail_width,1,cell,한철 비녀 서리 길 너비 (임시),

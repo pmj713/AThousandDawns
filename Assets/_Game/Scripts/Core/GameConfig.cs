@@ -1,17 +1,24 @@
 using AThousandDawns.Data;
+using AThousandDawns.Items;
 using UnityEngine;
 
 namespace AThousandDawns.Core
 {
-    // 씬에 하나 두고 BalanceConfig를 연결해요. 다른 스크립트는 GameConfig.Balance로 읽어요.
+    // 씬에 하나 두고 BalanceConfig·ItemDatabase를 연결해요. 다른 스크립트는 GameConfig.Balance·GameConfig.Items로 읽어요.
     [DefaultExecutionOrder(-1000)]
     public sealed class GameConfig : MonoBehaviour
     {
         [SerializeField] BalanceConfig balance;
+        [SerializeField] ItemDatabase items;
 
         public static BalanceConfig Balance { get; private set; }
+        public static ItemDatabase Items { get; private set; }
 
-        void Awake() => Balance = balance;
+        void Awake()
+        {
+            Balance = balance;
+            Items = items;
+        }
 
         // 시트에 칸이 비어 있는 게 정상인 값 (예: 화약 산적은 공격 간격이 없음). 경고 없이 기본값을 써요.
         public static float GetOptional(string key, float fallback) =>

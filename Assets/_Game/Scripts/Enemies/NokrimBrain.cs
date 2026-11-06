@@ -38,6 +38,7 @@ namespace AThousandDawns.Enemies
         float _lungeRemaining, _traveled, _plannedLength, _spinElapsed;
         Vector3 _slamPoint; // 내려찍기 원 자리 (돌진이 끝나는 곳, 월드 좌표)
         bool _hitPlayer;
+        readonly float[] _banTimers = new float[5]; // 패턴마다 다시 나오지 않는 남은 시간 (설련 향낭)
         readonly List<EnemyBrain> _minions = new List<EnemyBrain>();
         BurningGrove _grove;
 
@@ -178,7 +179,7 @@ namespace AThousandDawns.Enemies
 
         Pattern Choose(float distance)
         {
-            if (Phase == 1 && SummonReady()) return Pattern.Summon;
+            if (Phase == 1 && !Banned(Pattern.Summon) && SummonReady()) return Pattern.Summon;
 
             Pattern want;
             if (distance <= _closeDistance) want = Phase == 2 && Random.value < 0.5f ? Pattern.Spin : Pattern.Sweep;
@@ -190,7 +191,9 @@ namespace AThousandDawns.Enemies
                 if (want == Pattern.Charge) return Pattern.None; // 다가가서 다른 패턴으로
                 want = Phase == 2 ? (want == Pattern.Spin ? Pattern.Sweep : Pattern.Spin) : Pattern.Charge;
             }
-            return want;
+            // 봉인된 패턴이면 2페이즈 근접은 다른 근접 패턴으로, 아니면 잠시 다가가기만
+            if (Banned(want) && Phase == 2 && want != Pattern.Charge) want = want == Pattern.Spin ? Pattern.Sweep : Pattern.Spin;
+            return Banned(want) ? Pattern.None : want;
         }
 
         bool SummonReady()
@@ -359,16 +362,21 @@ namespace AThousandDawns.Enemies
         }
 
         // 피해 = 배율 × 최종 공격
-        bool HitPlayer(float ratio) => Player.TryReceiveHit(AttackPower * ratio, transform.position, HitKnockback);
+        bool HitPlayer(float ratio) => Player.TryReceiveHit(AttackPower * ratio, transform.position, HitKnockback, Body);
 
         protected override void OnAttackFinished() => _decisionTimer = _decisionPause;
 
-        // 빙결 1초: 진행 중인 패턴이 취소돼요 (공격 취소는 기본 동작)
-        protected override void OnFreezeStarted()
+        // 빙결 1초: 진행 중인 패턴이 취소돼요 (공격 취소는 기본 동작).
+        // 설련 향낭: 빙결로 취소된 패턴은 잠시 다시 나오지 않아요.
+        protected override void OnFreezeStarted(bool cancelledAttack)
         {
+            float ban = ElementalMods.Current.PatternBan;
+            if (cancelledAttack && ban > 0f && _pattern != Pattern.None) _banTimers[(int)_pattern] = ban;
             _pattern = Pattern.None;
             _decisionTimer = _decisionPause;
         }
+
+        bool Banned(Pattern pattern) => _banTimers[(int)pattern] > 0f;
 
         // ── 페이즈
 
@@ -391,6 +399,8 @@ namespace AThousandDawns.Enemies
             float dt = Time.deltaTime;
             if (_decisionTimer > 0f) _decisionTimer -= dt;
             if (_summonCooldown > 0f) _summonCooldown -= dt;
+            for (int i = 0; i < _banTimers.Length; i++)
+                if (_banTimers[i] > 0f) _banTimers[i] -= dt;
             if (_transitionTimer > 0f)
             {
                 _transitionTimer -= dt;

@@ -1,5 +1,6 @@
 using AThousandDawns.Combat;
 using AThousandDawns.Enemies;
+using AThousandDawns.Items;
 using AThousandDawns.Player;
 using UnityEngine;
 
@@ -21,31 +22,44 @@ namespace AThousandDawns.Prototype
         static readonly Color SlowDot = new Color(0.55f, 0.82f, 0.98f);  // 하늘색
         static readonly Color ShockDot = new Color(1f, 0.89f, 0.3f);     // 노랑
 
-        GUIStyle _label, _popup, _dummy, _big, _bossLabel, _popupSmall, _popupBig, _statusLabel;
+        GUIStyle _label, _wrapLabel, _popup, _dummy, _big, _bossLabel, _popupSmall, _popupBig, _statusLabel, _card, _itemLine;
         Camera _camera;
 
         void Update() => DamagePopups.Tick(Time.deltaTime);
 
         void OnGUI()
         {
+            DrawHud();
+            DrawOffer(); // 기물 카드는 맨 위에
+        }
+
+        void DrawHud()
+        {
             EnsureStyles();
             if (_camera == null) _camera = Camera.main;
 
-            GUILayout.BeginArea(new Rect(16, 16, 640, 350), GUI.skin.box);
+            GUILayout.BeginArea(new Rect(16, 16, 700, 440), GUI.skin.box);
             GUILayout.Label("일조천회 시험판 · 전투", _label);
             GUILayout.Label("WASD 이동 · 좌클릭(누르고 있기) 평타 · 우클릭 회선참 · Q 만검귀종 · Space 대시", _label);
             GUILayout.Label("부르기 (바로 옆): 1 졸개 · 2 멧돼지 · 3 궁수 · 4 들개 · 5 방패 · 6 나팔수 · 7 화약 · 8 청죽사 · 9 녹림왕 (결투장)", _label);
-            GUILayout.Label("G 기세 채우기 · F1 #열양 · F2 #빙백 · F3 #뇌정 단계 (0→2→4→6) · F5 처음부터", _label);
+            GUILayout.Label("G 기세 채우기 · F5 처음부터 · 키워드 F1 열양 F2 빙백 F3 뇌정 F4 강기 F6 금강 F7 경공 F8 마도 F9 정종 · 기물 상태 F10 기 부족 F11 운기 F12 주화입마 · I 기물 고르기 · ↑↓ 기물 · ←→ 기", _wrapLabel);
             if (player != null)
             {
                 GUILayout.Label($"체력 {player.Health:0}/{player.MaxHealth:0}", _label);
                 Rect bar = GUILayoutUtility.GetRect(300, 10);
                 bar.width = 300;
                 DrawBar(bar, player.MaxHealth > 0f ? player.Health / player.MaxHealth : 0f, HealthColor);
+                int shield = player.Shields.Total;
+                if (shield > 0) DrawBar(new Rect(bar.x, bar.y - 5f, bar.width, 4f), shield / Mathf.Max(1f, player.MaxHealth), Color.white); // 보호막: 체력바 위 흰 막대
 
                 var combo = player.Combo;
                 string slow = player.SlowLeft > 0f ? $"  · 둔화 {player.SlowRatio:0%} {player.SlowLeft:0.0}초" : "";
                 if (player.BurnStacks > 0) slow += $"  · 화상 {player.BurnStacks}중첩";
+                if (shield > 0) slow += $"  · 보호막 {shield}";
+                if (player.PerfectBonusLeft > 0f) slow += $"  · 간파 다음 공격 +{player.PerfectBonusRatio:0%}";
+                if (player.MadoPenaltyLeft > 0f) slow += $"  · 받는 피해 +30% {player.MadoPenaltyLeft:0.0}초";
+                if (player.GanggiImprintLeft > 0f) slow += $"  · 강기 각인 {player.GanggiImprintLeft:0.0}초";
+                if (player.NoDashLeft > 0f) slow += $"  · 대시 불가 {player.NoDashLeft:0.0}초";
                 GUILayout.Label($"대시 {player.Dash.Charges}/{player.Dash.MaxCharges}  {(player.IsInvulnerable ? "(무적)" : "")}{slow}", _label);
                 string ultimate = player.IsCastingUltimate ? "  · 만검귀종!" : player.UltimateReady ? "  · Q 만검귀종 준비" : "";
                 GUILayout.Label($"기세 {player.Gauge:0}/{player.GaugeMax:0}{ultimate}", _label);
@@ -54,7 +68,17 @@ namespace AThousandDawns.Prototype
                 if (combo != null) GUILayout.Label($"평타 {combo.HitIndex + 1}타 · {combo.CurrentPhase}", _label);
                 var keywords = player.Keywords;
                 if (keywords != null)
-                    GUILayout.Label($"#열양 {keywords.Count(Keyword.Yeolyang)} · #빙백 {keywords.Count(Keyword.Bingbaek)} · #뇌정 {keywords.Count(Keyword.Noejeong)}  (2·4·6에서 단계 효과, 4면 절초 각인)", _label);
+                {
+                    var sb = new System.Text.StringBuilder();
+                    for (int i = 0; i < PlayerKeywords.KeywordCount; i++)
+                    {
+                        var k = (Keyword)i;
+                        if (i > 0) sb.Append(" · ");
+                        sb.Append(PlayerKeywords.Label(k)).Append(' ').Append(keywords.Count(k));
+                    }
+                    GUILayout.Label(sb.ToString(), _label);
+                    GUILayout.Label($"기물 상태: 기 부족 {keywords.Qi(QiState.Lacking)} · 운기 {keywords.Qi(QiState.Circulating)} · 주화입마 {keywords.Qi(QiState.Deviated)}   (2·4·6에서 단계 효과, 4면 절초 각인)", _label);
+                }
             }
             if (director != null && director.MeleeTokens != null)
             {
@@ -62,6 +86,8 @@ namespace AThousandDawns.Prototype
                 GUILayout.Label($"{wave}적 {director.Enemies.Count}  ·  공격 중 근접 {director.MeleeTokens.InUse}/{director.MeleeTokens.Capacity}, 원거리 {director.RangedTokens.InUse}/{director.RangedTokens.Capacity}", _label);
             }
             GUILayout.EndArea();
+
+            DrawOwnedItems();
 
             if (player != null && player.IsDead)
                 GUI.Label(new Rect(0, Screen.height * 0.4f, Screen.width, 60), "쓰러졌어요 · F5 키로 다시 시작", _big);
@@ -129,6 +155,83 @@ namespace AThousandDawns.Prototype
             }
         }
 
+        // 가진 기물 (오른쪽 위): 이름 · 키워드 · 기 (최소–최대) · 상태와 레벨. ↑↓로 고른 줄에 ▶, ←→로 그 기물의 기를 바꿔요.
+        void DrawOwnedItems()
+        {
+            var items = player != null ? player.Items : null;
+            if (items == null) return;
+            float width = 380f;
+            int rows = Mathf.Max(1, items.Items.Count);
+            GUILayout.BeginArea(new Rect(Screen.width - width - 16f, 16f, width, 64f + rows * 44f), GUI.skin.box);
+            string pending = arena != null && arena.PendingOffers > 0 && !arena.IsChoosing ? $" · 고르기 {arena.PendingOffers}개 남음" : "";
+            GUILayout.Label($"기물 {items.Items.Count}개{pending}", _label);
+            if (items.Items.Count == 0) GUILayout.Label("무리를 다 쓰러뜨리면 3개 중 하나를 골라요 (I: 바로 고르기)", _itemLine);
+            for (int i = 0; i < items.Items.Count; i++)
+            {
+                var item = items.Items[i];
+                var def = item.Def;
+                var state = PlayerItems.StateOf(item);
+                string stateText = state == QiState.Lacking ? "<color=#9a9a9a>기 부족 (효과 없음)</color>"
+                    : state == QiState.Circulating ? $"운기 {PlayerItems.LevelOf(item)}레벨"
+                    : $"<color=#ff6a5a>주화입마 {PlayerItems.LevelOf(item)}레벨 · {def.sideText}</color>";
+                string mark = i == items.Selected ? "▶ " : "   ";
+                GUILayout.Label($"{mark}<b>{def.name}</b> {Colored(def.keyword)} · 기 {item.Qi} ({def.minQi}–{def.maxQi})\n     {stateText}", _itemLine);
+            }
+            GUILayout.EndArea();
+        }
+
+        // 기물 고르기 카드 3장 (시간이 멈춰 있어요). 1·2·3 또는 클릭, Esc 넘기기
+        void DrawOffer()
+        {
+            if (arena == null || !arena.IsChoosing) return;
+            EnsureStyles();
+            var offer = arena.Offer;
+            var old = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.6f);
+            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
+            GUI.color = old;
+
+            const float cardW = 320f, cardH = 260f, gap = 20f;
+            float total = offer.Count * cardW + (offer.Count - 1) * gap;
+            float x = (Screen.width - total) * 0.5f, y = (Screen.height - cardH) * 0.5f;
+            GUI.Label(new Rect(0, y - 56f, Screen.width, 40f), "기물 고르기 · 1 2 3 또는 클릭 · Esc 넘기기", _big);
+            for (int i = 0; i < offer.Count; i++)
+            {
+                var def = offer[i];
+                string aux = string.IsNullOrEmpty(def.aux) ? "" : $" · 보조 #{def.aux}";
+                string text = $"<size=13>[{i + 1}]</size>  <b><size=19>{def.name}</size></b>\n" +
+                              $"{Colored(def.keyword)} · {GradeColored(def.grade)}{aux}\n" +
+                              $"기 {def.minQi}–{def.maxQi} (얻으면 기 {def.minQi}, 운기 1레벨)\n\n" +
+                              $"{def.effectText}\n\n" +
+                              $"<color=#ff8a7a>주화입마 부작용: {def.sideText}</color>";
+                if (GUI.Button(new Rect(x + i * (cardW + gap), y, cardW, cardH), text, _card)) arena.Choose(i);
+            }
+        }
+
+        static string Colored(Keyword keyword)
+        {
+            string color = keyword switch
+            {
+                Keyword.Yeolyang => "#ff9a4a",
+                Keyword.Bingbaek => "#8fd3ff",
+                Keyword.Noejeong => "#ffe45c",
+                _ => "#dddddd",
+            };
+            return $"<color={color}>{PlayerKeywords.Label(keyword)}</color>";
+        }
+
+        static string GradeColored(ItemGrade grade)
+        {
+            string color = grade switch
+            {
+                ItemGrade.Common => "#d8d8d8",
+                ItemGrade.Uncommon => "#7fd67f",
+                ItemGrade.Rare => "#6fa8ff",
+                _ => "#ffb347",
+            };
+            return $"<color={color}>{ItemDefinition.GradeLabel(grade)}</color>";
+        }
+
         // 상태이상 점 (상태이상 탭 표시): 화상 = 진한 주홍 점 (중첩 수만큼), 둔화 = 하늘색 점 3개, 감전 = 노란 점 5개, 빙결 = 글자.
         // below면 y 아래로, 아니면 y 위로 쌓아요.
         void DrawStatus(float centerX, float y, StatusEffects s, bool below)
@@ -170,6 +273,7 @@ namespace AThousandDawns.Prototype
             if (_label != null) return;
             _label = new GUIStyle(GUI.skin.label) { fontSize = 16 };
             _label.normal.textColor = Color.white;
+            _wrapLabel = new GUIStyle(_label) { wordWrap = true };
             _popup = new GUIStyle(GUI.skin.label) { fontSize = 22, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             _dummy = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleCenter };
             _dummy.normal.textColor = Color.black;
@@ -181,6 +285,9 @@ namespace AThousandDawns.Prototype
             _popupBig = new GUIStyle(GUI.skin.label) { fontSize = 32, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             _statusLabel = new GUIStyle(GUI.skin.label) { fontSize = 13, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             _statusLabel.normal.textColor = SlowDot;
+            _card = new GUIStyle(GUI.skin.button) { fontSize = 15, wordWrap = true, richText = true, alignment = TextAnchor.UpperLeft, padding = new RectOffset(14, 14, 12, 12) };
+            _card.normal.textColor = _card.hover.textColor = Color.white;
+            _itemLine = new GUIStyle(_label) { fontSize = 15, richText = true, wordWrap = true };
         }
     }
 }
