@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace AThousandDawns.Combat
 {
+    // 피해 숫자 모양 (상태이상 탭 표시 규칙: 화상은 작고 흐리게, 방전은 크고 굵게)
+    public enum PopupStyle { Normal, Player, Dot, Burst }
+
     // 시험판용 피해 숫자. 나중에 월드 UI로 바꿀 자리예요.
     public static class DamagePopups
     {
@@ -11,7 +14,8 @@ namespace AThousandDawns.Combat
             public Vector3 Position;
             public int Amount;
             public float Age;
-            public bool OnPlayer; // 플레이어가 받은 피해 (빨간 숫자)
+            public PopupStyle Style;
+            public bool OnPlayer => Style == PopupStyle.Player; // 플레이어가 받은 피해 (빨간 숫자)
         }
 
         public const float Lifetime = 0.8f;
@@ -19,10 +23,10 @@ namespace AThousandDawns.Combat
 
         public static IReadOnlyList<Popup> Current => Active;
 
-        public static void Spawn(Vector3 position, int amount, bool onPlayer = false)
+        public static void Spawn(Vector3 position, int amount, PopupStyle style = PopupStyle.Normal)
         {
             Vector3 jitter = new Vector3(Random.Range(-0.3f, 0.3f), 0f, Random.Range(-0.2f, 0.2f));
-            Active.Add(new Popup { Position = position + jitter, Amount = amount, OnPlayer = onPlayer });
+            Active.Add(new Popup { Position = position + jitter, Amount = amount, Style = style });
         }
 
         public static void Tick(float dt)

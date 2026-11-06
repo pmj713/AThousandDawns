@@ -42,6 +42,11 @@ namespace AThousandDawns.Player
         float _ultimateTimer;
         float _sinceUltimatePress = float.PositiveInfinity;
         float _slowTimer, _slowRatio;
+        float _burnPerStackRatio, _burnStage4Bonus, _slowStage4Bonus, _dischargePerStack, _dischargeStage4Bonus;
+        float _chainRatio, _chainStage6Ratio, _chainRange, _firePatchDuration, _firePatchRadius, _thunderImprintRatio;
+        int _burnStage6Extra, _chainTargets, _thunderImprintChains;
+        PlayerKeywords _keywords;
+        Damageable _firstHit; // 이번 휘두르기에서 처음 맞은 적 (연쇄 번개 시작점)
         int _burnStacks, _burnMaxStacks;
         float _burnTimer, _burnTickTimer, _burnPerStack, _burnDuration, _burnTick;
 
@@ -92,8 +97,8 @@ namespace AThousandDawns.Player
             _slowTimer = Mathf.Max(_slowTimer, duration);
         }
 
-        // 화상 (녹림왕 불타는 죽림): 1중첩씩 쌓이고(최대 5), 쌓일 때마다 지속 4초가 새로 시작돼요.
-        // 0.5초마다 중첩 × perStackPerSecond × 0.5 만큼 피해. 무적·경직과 상관없는 지속 피해예요.
+        // 플레이어 화상 (상태이상 탭 "플레이어가 걸릴 때"): 1중첩 초당 2 × 지역 공격 배율, 최대 3중첩, 3초.
+        // 쌓일 때마다 지속이 새로 시작되고, 0.5초마다 들어와요. 강인함 무시, 방어력 적용, 무적·경직과 상관없는 지속 피해.
         public int BurnStacks => _burnTimer > 0f ? _burnStacks : 0;
 
         public void AddBurnStack(float perStackPerSecond)
@@ -117,14 +122,15 @@ namespace AThousandDawns.Player
             while (_burnTickTimer >= _burnTick && !IsDead)
             {
                 _burnTickTimer -= _burnTick;
-                TakeDirectDamage(Mathf.Max(1, Mathf.RoundToInt(_burnStacks * _burnPerStack * _burnTick)));
+                float defenseRate = Defense / (Defense + _rules.PlayerDefenseConstant);
+                TakeDirectDamage(Mathf.Max(1, Mathf.RoundToInt(_burnStacks * _burnPerStack * _burnTick * (1f - defenseRate))));
             }
         }
 
         void TakeDirectDamage(int damage)
         {
             Health = Mathf.Max(0f, Health - damage);
-            DamagePopups.Spawn(transform.position + Vector3.up * 2f, damage, true);
+            DamagePopups.Spawn(transform.position + Vector3.up * 2f, damage, PopupStyle.Player);
             Hurt?.Invoke(damage);
             if (IsDead && visual != null) visual.localScale = new Vector3(1.2f, 0.25f, 1.2f);
         }
@@ -140,6 +146,9 @@ namespace AThousandDawns.Player
             ReadTuning();
             Health = _maxHealth;
             if (swordRain == null) swordRain = gameObject.AddComponent<SwordRain>(); // 씬을 다시 만들기 전에도 쓸 수 있게
+            swordRain.SwordLanded += OnSwordLanded;
+            swordRain.Finished += OnSwordRainFinished;
+            if (!TryGetComponent(out _keywords)) _keywords = gameObject.AddComponent<PlayerKeywords>();
             if (bodyRenderer != null && bodyRenderer.sharedMaterial != null && bodyRenderer.sharedMaterial.HasProperty(BaseColorId))
                 _bodyColor = bodyRenderer.sharedMaterial.GetColor(BaseColorId);
         }
@@ -194,9 +203,25 @@ namespace AThousandDawns.Player
             _ultimateFallTime = GameConfig.Get("ultimate.sword_fall_time", 0.15f);
             Gongryeok = Mathf.RoundToInt(GameConfig.Get("player.gongryeok", 0f));
 
-            _burnMaxStacks = Mathf.RoundToInt(GameConfig.Get("burn.max_stacks", 5f));
-            _burnDuration = GameConfig.Get("burn.duration", 4f);
+            _burnMaxStacks = Mathf.RoundToInt(GameConfig.Get("player_burn.max_stacks", 3f));
+            _burnDuration = GameConfig.Get("player_burn.duration", 3f);
             _burnTick = Mathf.Max(0.05f, GameConfig.Get("burn.tick", 0.5f));
+
+            // 상태이상과 키워드 단계 (상태이상 탭, 무기 탭 절초 각인)
+            _burnPerStackRatio = GameConfig.Get("burn.per_stack", 0.15f);
+            _burnStage4Bonus = GameConfig.Get("burn.stage4_bonus", 0.5f);
+            _burnStage6Extra = Mathf.RoundToInt(GameConfig.Get("burn.stage6_extra_stacks", 2f));
+            _slowStage4Bonus = GameConfig.Get("slow.stage4_bonus", 0.3f);
+            _dischargePerStack = GameConfig.Get("discharge.per_stack", 0.4f);
+            _dischargeStage4Bonus = GameConfig.Get("discharge.stage4_bonus", 0.5f);
+            _chainRatio = GameConfig.Get("chain.ratio", 0.25f);
+            _chainStage6Ratio = GameConfig.Get("chain.stage6_ratio", 0.4f);
+            _chainTargets = Mathf.RoundToInt(GameConfig.Get("chain.targets", 4f));
+            _chainRange = GameConfig.Get("chain.range", 3f);
+            _firePatchDuration = GameConfig.Get("imprint.fire_patch_duration", 4f);
+            _firePatchRadius = GameConfig.Get("imprint.fire_patch_radius", 1f);
+            _thunderImprintChains = Mathf.RoundToInt(GameConfig.Get("imprint.thunder_chains", 4f));
+            _thunderImprintRatio = GameConfig.Get("imprint.thunder_ratio", 0.1f);
 
             _gaugeMax = GameConfig.Get("ultimate.gauge_max", 100f);
             _gaugeBasic = GameConfig.Get("gauge.basic_hit", 2f);
@@ -325,7 +350,7 @@ namespace AThousandDawns.Player
             Gauge = Mathf.Min(_gaugeMax, Gauge + _gaugeHurt);
 
             _flashTimer = 0.12f;
-            DamagePopups.Spawn(transform.position + Vector3.up * 2f, damage, true);
+            DamagePopups.Spawn(transform.position + Vector3.up * 2f, damage, PopupStyle.Player);
             Hurt?.Invoke(damage);
             if (IsDead && visual != null) visual.localScale = new Vector3(1.2f, 0.25f, 1.2f); // 시험판용 쓰러짐 표시
             return true;
@@ -394,8 +419,61 @@ namespace AThousandDawns.Player
                 hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
                 int count = HitSector(_skillRadius, 360f, hit, HitTag.Skill);
                 Gauge = Mathf.Min(_gaugeMax, Gauge + count * _gaugeSkill);
+
+                // #뇌정 2단계: 초식이 적중하면 처음 맞은 적부터 연쇄 번개 (발동 공격 = 초식 피해, 강인함 빼기 전)
+                int thunder = _keywords.Count(Keyword.Noejeong);
+                if (count > 0 && thunder >= 2)
+                    Lightning.Chain(_firstHit, transform.position + Vector3.up, DamageFormula.BeforeToughness(hit), ChainRatio(thunder), _chainTargets, _chainRange, DischargePerStack(thunder));
             }
         }
+
+        // ── 키워드 단계 (상태이상 탭). 기준 피해 = 지금 평타 1타 피해 (강인함·방어력 빼기 전)
+
+        float BaseDamage => _basicDamage;
+        float BurnPerStackDps(int fire) => BaseDamage * _burnPerStackRatio * (fire >= 4 ? 1f + _burnStage4Bonus : 1f);
+        float DischargePerStack(int thunder) => BaseDamage * _dischargePerStack * (thunder >= 4 ? 1f + _dischargeStage4Bonus : 1f);
+        float ChainRatio(int thunder) => thunder >= 6 ? _chainStage6Ratio : _chainRatio;
+
+        // 2단계: 평타 3타째·초식·대시 공격이 적중하면 화상 1중첩 (#열양), 둔화 1중첩 (#빙백). 평타 3타째는 감전 1중첩 (#뇌정).
+        void ApplyKeywordsOnHit(Damageable target, HitTag tag)
+        {
+            if (target.IsDead || (tag != HitTag.Finisher && tag != HitTag.Skill && tag != HitTag.DashAttack)) return;
+            var status = StatusEffects.For(target);
+            int fire = _keywords.Count(Keyword.Yeolyang), frost = _keywords.Count(Keyword.Bingbaek), thunder = _keywords.Count(Keyword.Noejeong);
+            if (fire >= 2) status.AddBurn(BurnPerStackDps(fire), fire >= 6 ? _burnStage6Extra : 0);
+            if (frost >= 2) status.AddSlow(frost >= 4 ? _slowStage4Bonus : 0f, frost >= 6);
+            if (thunder >= 2 && tag == HitTag.Finisher) status.AddShock();
+        }
+
+        // 절초 각인 (키워드 4단계, 무기 탭): 검이 떨어질 때마다
+        void OnSwordLanded(Damageable target, Vector3 point)
+        {
+            int fire = _keywords.Count(Keyword.Yeolyang), frost = _keywords.Count(Keyword.Bingbaek);
+            if (fire >= 4)
+            {
+                // #열양: 맞은 적의 화상이 최대 중첩까지 바로 참 + 떨어진 자리에 불길 4초
+                if (target != null && !target.IsDead) StatusEffects.For(target).FillBurn(BurnPerStackDps(fire), fire >= 6 ? _burnStage6Extra : 0);
+                FirePatch.Create(point, _firePatchRadius, _firePatchDuration, _burnTick);
+            }
+            // #빙백: 맞은 적이 즉시 빙결 (보스가 빙결 면역이면 대신 둔화 3중첩)
+            if (frost >= 4 && target != null && !target.IsDead) StatusEffects.For(target).ImprintFreeze(_slowStage4Bonus);
+        }
+
+        // #뇌정 각인: 절초가 끝나는 순간 연쇄 번개 4번 한꺼번에. 번개를 일으키는 피해 = 절초 피해 합 × 10%
+        void OnSwordRainFinished(int totalDamage)
+        {
+            int thunder = _keywords.Count(Keyword.Noejeong);
+            if (thunder < 4 || totalDamage <= 0) return;
+            var starts = new List<Damageable>();
+            foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+                if (!d.IsDead && d.Targetable) starts.Add(d);
+            if (starts.Count == 0) return;
+            starts.Sort((a, b) => (a.transform.position - transform.position).sqrMagnitude.CompareTo((b.transform.position - transform.position).sqrMagnitude));
+            for (int i = 0; i < _thunderImprintChains; i++)
+                Lightning.Chain(starts[i % starts.Count], transform.position + Vector3.up * 3f, totalDamage * _thunderImprintRatio, ChainRatio(thunder), _chainTargets, _chainRange, DischargePerStack(thunder));
+        }
+
+        public PlayerKeywords Keywords => _keywords;
 
         // 베는 동안 몸을 한 바퀴 돌려요 (시험판용 표시). 시전이 끝나면 원래 방향.
         void ApplySkillSpin()
@@ -497,6 +575,7 @@ namespace AThousandDawns.Player
         {
             int found = Physics.OverlapSphereNonAlloc(transform.position, radius + 1f, _overlap, ~0, QueryTriggerInteraction.Collide);
             int hits = 0;
+            _firstHit = null;
             for (int i = 0; i < found; i++)
             {
                 var target = _overlap[i].GetComponentInParent<Damageable>();
@@ -508,6 +587,8 @@ namespace AThousandDawns.Player
                 hit.Defense = target.Defense;
                 hit.Situational *= target.ResolveSituational(transform.position, tag);
                 target.ApplyHit(DamageFormula.ToEnemy(hit, _rules));
+                ApplyKeywordsOnHit(target, tag);
+                if (_firstHit == null) _firstHit = target;
                 hits++;
             }
             return hits;

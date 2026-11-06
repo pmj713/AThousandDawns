@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -39,6 +40,13 @@ namespace AThousandDawns.Combat
 
         public bool IsRaining => _remaining > 0 || _swords.Count > 0;
 
+        // 절초 각인용: 검이 땅에 닿을 때 (맞힌 적, 없으면 null · 떨어진 자리), 마지막 검까지 닿았을 때 (피해 합)
+        public event Action<Damageable, Vector3> SwordLanded;
+        public event Action<int> Finished;
+        int _totalDamage;
+        bool _finishPending;
+        int _landed;
+
         public void Begin(Vector3 center, float radius, int count, float duration, float fallTime, HitDamageInput hit, in DamageRules rules)
         {
             _center = new Vector3(center.x, 0f, center.z);
@@ -52,6 +60,9 @@ namespace AThousandDawns.Combat
             _hit.IgnoreToughness = true;
             _rules = rules;
             _counts.Clear();
+            _totalDamage = 0;
+            _finishPending = count > 0;
+            _landed = 0;
         }
 
         void Update()
@@ -78,6 +89,8 @@ namespace AThousandDawns.Combat
                         s.Landed = true;
                         s.Age = 0f;
                         Land(s.Target);
+                        _landed++;
+                        SwordLanded?.Invoke(s.Target, s.Point);
                     }
                 }
                 else if (s.Age >= Linger)
@@ -87,6 +100,13 @@ namespace AThousandDawns.Combat
                     continue;
                 }
                 _swords[i] = s;
+            }
+
+            // 마지막 검까지 땅에 닿으면 한 번 (절초 #뇌정 각인: 피해 합으로 연쇄 번개)
+            if (_finishPending && _remaining == 0 && _landed >= _spawned)
+            {
+                _finishPending = false;
+                Finished?.Invoke(_totalDamage);
             }
         }
 
@@ -101,7 +121,7 @@ namespace AThousandDawns.Combat
             }
             else
             {
-                Vector2 r = Random.insideUnitCircle * (WholeMap ? EmptyScatter : _radius);
+                Vector2 r = UnityEngine.Random.insideUnitCircle * (WholeMap ? EmptyScatter : _radius);
                 point = _center + new Vector3(r.x, 0f, r.y);
             }
 
@@ -156,7 +176,9 @@ namespace AThousandDawns.Combat
             var hit = _hit;
             hit.Toughness = target.Toughness;
             hit.Defense = target.Defense;
-            target.ApplyHit(DamageFormula.ToEnemy(hit, _rules));
+            int damage = DamageFormula.ToEnemy(hit, _rules);
+            target.ApplyHit(damage);
+            _totalDamage += damage;
         }
 
         // 칼끝이 원점(아래)에 오는 검: 날 + 코등이 + 손잡이

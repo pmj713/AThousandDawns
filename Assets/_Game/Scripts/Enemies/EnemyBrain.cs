@@ -13,6 +13,7 @@ namespace AThousandDawns.Enemies
     public abstract class EnemyBrain : MonoBehaviour
     {
         protected Damageable Body;
+        protected StatusEffects Status; // 화상·둔화·빙결·감전
         protected CharacterController Controller;
         protected EnemyDirector Director;
         protected PlayerController Player;
@@ -41,6 +42,8 @@ namespace AThousandDawns.Enemies
         protected virtual bool RadialTelegraph => false;     // 원형 예고는 가운데부터 차올라요
         protected virtual float HitKnockback => -1f;         // 플레이어를 미는 거리. 음수면 기본 넉백
         protected virtual float DeathDelay => 0.25f;         // 쓰러진 뒤 사라지기까지
+        protected virtual bool IsBoss => false;              // 고수·보스: 둔화 효과 50%, 빙결 1초 + 면역 10초
+        protected virtual bool FreezeBlocked => false;       // 보스 페이즈 전환 연출 중엔 빙결이 안 걸림
 
         public string DisplayName { get; private set; }
         public Damageable Damageable => Body;
@@ -58,6 +61,7 @@ namespace AThousandDawns.Enemies
         public event System.Action<EnemyBrain> Woke;
         bool _awake;
         public bool TelegraphVisible => Telegraph != null && Telegraph.IsVisible;
+        public StatusEffects Statuses => Status;
 
         protected float PlayerRadius => Player != null ? Player.BodyRadius : 0.3f;
         protected float BodyRadius => Body.BodyRadius;
@@ -84,6 +88,11 @@ namespace AThousandDawns.Enemies
 
             Body.Configure(Tuning("hp", 30f), Tuning("toughness", 0f), GameConfig.GetOptional($"{Key}.defense", 0f), Controller.radius, flashRenderer);
             Body.Damaged += OnDamaged;
+
+            Status = StatusEffects.For(Body);
+            Status.IsBoss = IsBoss;
+            Status.FreezeBlocked = () => FreezeBlocked;
+            Status.Frozen += OnFrozen;
 
             _reaction = new HitReaction(
                 GameConfig.Get("enemy.hitstun", 0.2f),
@@ -128,10 +137,20 @@ namespace AThousandDawns.Enemies
             Woke?.Invoke(this);
         }
 
+        // 빙결: 모든 행동 정지 (소환·시전 포함). 하던 공격은 취소해요 (보스는 진행 중인 패턴 취소).
+        void OnFrozen()
+        {
+            if (Attack.IsAttacking) CancelAttack();
+            OnFreezeStarted();
+        }
+
+        protected virtual void OnFreezeStarted() { }
+
         void Update()
         {
-            if (!_initialized || _dead) return;
-            float dt = Time.deltaTime;
+            if (!_initialized || _dead || Status.IsFrozen) return;
+            // 둔화: 이동과 공격(예고·빈틈 포함)이 함께 느려져요 (1중첩당 10%, 보스는 효과 50%)
+            float dt = Time.deltaTime * Status.SpeedMultiplier;
             _reaction.Tick(dt);
             if (_cooldown > 0f) _cooldown -= dt;
             TickStrafeFlip(dt);
@@ -337,6 +356,13 @@ namespace AThousandDawns.Enemies
             }
 
             Wake(); // 멀리서 맞아도 깨어나요
+
+            // 화상·번개 같은 파생 피해는 경직·늦춰짐·나팔 끊기를 일으키지 않아요 (맞은 것으로는 쳐요)
+            if (!Body.LastHitReacts)
+            {
+                OnHitTaken();
+                return;
+            }
 
             if (InterruptibleWindup && Attack.Current == EnemyAttackTimeline.Phase.Windup)
             {

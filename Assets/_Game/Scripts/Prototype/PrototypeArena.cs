@@ -1,6 +1,7 @@
 using System;
 using AThousandDawns.Core;
 using AThousandDawns.Enemies;
+using AThousandDawns.Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -12,6 +13,7 @@ namespace AThousandDawns.Prototype
     // 결투장에 들어가 녹림왕이 깨어나면 입구가 결계로 막히고, 녹림왕이 쓰러지면 열려요. 다 쓰러뜨리면 잠시 뒤 다시 놓아요.
     // 1 졸개 · 2 멧돼지 · 3 궁수 (방마다 최대 2명) · 4 들개 둘 · 5 방패 산적 · 6 나팔수 · 7 화약 산적 · 8 청죽사 는 플레이어 근처에 바로 깨어 있는 채로,
     // 9 녹림왕은 결투장에 불러요. G로 기세를 채우고, F5로 처음부터 다시 해요. (R은 조작 시트에서 금창약 키라 비워 둬요)
+    // 기물이 생기기 전까지 F1 #열양 · F2 #빙백 · F3 #뇌정 키워드 개수를 0 → 2 → 4 → 6 → 0 으로 돌려요.
     public sealed class PrototypeArena : MonoBehaviour
     {
         [Serializable]
@@ -80,6 +82,12 @@ namespace AThousandDawns.Prototype
                 if (keyboard.digit8Key.wasPressedThisFrame) SpawnNearPlayer(EnemyKind.Snake);
                 if (keyboard.digit9Key.wasPressedThisFrame) SpawnBoss();
                 if (keyboard.gKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.FillGauge();
+                if (director != null && director.Player != null && director.Player.Keywords != null)
+                {
+                    if (keyboard.f1Key.wasPressedThisFrame) director.Player.Keywords.CycleStage(Keyword.Yeolyang);
+                    if (keyboard.f2Key.wasPressedThisFrame) director.Player.Keywords.CycleStage(Keyword.Bingbaek);
+                    if (keyboard.f3Key.wasPressedThisFrame) director.Player.Keywords.CycleStage(Keyword.Noejeong);
+                }
             }
 
             // 녹림왕이 쓰러지면 결계가 풀려요

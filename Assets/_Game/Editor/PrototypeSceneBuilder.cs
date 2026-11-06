@@ -86,8 +86,8 @@ namespace AThousandDawns.EditorTools
 
             var swordMat = GetMaterial("UltimateSword", UltimateSwordColor, false);
             var player = BuildPlayer(playerMat, wallMat, flashMat, swordMat);
-            var dummyA = BuildDummy("목인장 (강인함 0)", new Vector3(-2.5f, 0f, 2f), 0f, 0f, dummyMat);
-            var dummyB = BuildDummy("목인장 (녹림왕: 강인함 5, 방어 10%)", new Vector3(2.5f, 0f, 2f), 5f, 0.1f, dummyMat);
+            var dummyA = BuildDummy("목인장 (강인함 0)", new Vector3(-2.5f, 0f, 2f), 0f, 0f, false, dummyMat);
+            var dummyB = BuildDummy("목인장 (녹림왕: 강인함 5, 방어 10%)", new Vector3(2.5f, 0f, 2f), 5f, 0.1f, true, dummyMat);
 
             BuildCamera(player.transform);
 
@@ -265,7 +265,7 @@ namespace AThousandDawns.EditorTools
             return director;
         }
 
-        static TrainingDummy BuildDummy(string label, Vector3 position, float toughness, float defense, Material mat)
+        static TrainingDummy BuildDummy(string label, Vector3 position, float toughness, float defense, bool isBoss, Material mat)
         {
             var root = new GameObject(label);
             root.transform.position = position;
@@ -291,6 +291,12 @@ namespace AThousandDawns.EditorTools
             so.FindProperty("bodyRadius").floatValue = 0.4f;
             so.FindProperty("flashRenderer").objectReferenceValue = renderer;
             so.ApplyModifiedPropertiesWithoutUndo();
+
+            // 상태이상 (녹림왕 목인장은 보스로: 둔화 효과 50%, 빙결 1초 + 면역 10초)
+            var status = root.AddComponent<StatusEffects>();
+            var sso = new SerializedObject(status);
+            sso.FindProperty("isBoss").boolValue = isBoss;
+            sso.ApplyModifiedPropertiesWithoutUndo();
 
             var dummy = root.AddComponent<TrainingDummy>();
             var dso = new SerializedObject(dummy);

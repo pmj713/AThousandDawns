@@ -1014,9 +1014,9 @@ MonoBehaviour:
     unit: 
     note: "\uD68C\uC804\uBCA0\uAE30 \uD69F\uC218 (\uBAAC\uC2A4\uD130 H101 \uC124\uBA85)"
   - key: nokrim.spin_interval
-    value: 0.4
+    value: 0.65
     unit: s
-    note: "\uD68C\uC804\uBCA0\uAE30 \uAC04\uACA9 (\uBAAC\uC2A4\uD130 H101 \uC124\uBA85)"
+    note: "\uD68C\uC804\uBCA0\uAE30 \uAC04\uACA9, \uD53C\uACA9 \uBB34\uC801 0.6\uCD08\uBCF4\uB2E4 \uAE38\uAC8C (\uBAAC\uC2A4\uD130 H101 \uC124\uBA85)"
   - key: nokrim.spin_move_speed
     value: 2.5
     unit: cell/s
@@ -1033,3 +1033,51 @@ MonoBehaviour:
     value: 1.2
     unit: s
     note: "2\uD398\uC774\uC988 \uB0B4\uB824\uCC0D\uAE30 \uBE48\uD2C8 (\uBAAC\uC2A4\uD130 H102 \uC124\uBA85)"
+  - key: burn.stage4_bonus
+    value: 0.5
+    unit: 
+    note: "#\uC5F4\uC591 4\uB2E8\uACC4: \uD654\uC0C1 \uD53C\uD574 \uC99D\uAC00"
+  - key: burn.stage6_extra_stacks
+    value: 2
+    unit: 
+    note: "#\uC5F4\uC591 6\uB2E8\uACC4: \uD654\uC0C1 \uCD5C\uB300 \uC911\uCCA9 +2"
+  - key: slow.stage4_bonus
+    value: 0.3
+    unit: 
+    note: "#\uBE59\uBC31 4\uB2E8\uACC4: \uB454\uD654 \uD6A8\uACFC \uC99D\uAC00"
+  - key: discharge.stage4_bonus
+    value: 0.5
+    unit: 
+    note: "#\uB1CC\uC815 4\uB2E8\uACC4: \uBC29\uC804 \uD53C\uD574 \uC99D\uAC00"
+  - key: chain.stage6_ratio
+    value: 0.4
+    unit: 
+    note: "#\uB1CC\uC815 6\uB2E8\uACC4: \uC5F0\uC1C4 \uBC88\uAC1C 1\uBA85\uB2F9 \uBC1C\uB3D9 \uACF5\uACA9 \uBE44\uC728"
+  - key: imprint.fire_patch_duration
+    value: 4
+    unit: s
+    note: "\uC808\uCD08 #\uC5F4\uC591 \uAC01\uC778: \uB099\uD558 \uC9C0\uC810 \uBD88\uAE38 \uC2DC\uAC04"
+  - key: imprint.fire_patch_radius
+    value: 1
+    unit: cell
+    note: "\uC808\uCD08 #\uC5F4\uC591 \uAC01\uC778: \uBD88\uAE38 \uBC18\uACBD (\uC784\uC2DC)"
+  - key: imprint.thunder_chains
+    value: 4
+    unit: 
+    note: "\uC808\uCD08 #\uB1CC\uC815 \uAC01\uC778: \uB05D\uB0A0 \uB54C \uC5F0\uC1C4 \uBC88\uAC1C \uC218 (\uD558\uB2E8\uC804)"
+  - key: imprint.thunder_ratio
+    value: 0.1
+    unit: 
+    note: "\uC808\uCD08 #\uB1CC\uC815 \uAC01\uC778: \uBC88\uAC1C\uB97C \uC77C\uC73C\uD0A4\uB294 \uD53C\uD574 = \uC808\uCD08 \uD53C\uD574 \uD569 \xD7 \uC774 \uBE44\uC728"
+  - key: player_burn.damage
+    value: 2
+    unit: 
+    note: "\uD50C\uB808\uC774\uC5B4 \uD654\uC0C1 1\uC911\uCCA9 \uCD08\uB2F9 \uD53C\uD574 (\uC9C0\uC5ED \uACF5\uACA9 \uBC30\uC728\uC744 \uACF1\uD568)"
+  - key: player_burn.max_stacks
+    value: 3
+    unit: 
+    note: "\uD50C\uB808\uC774\uC5B4 \uD654\uC0C1 \uCD5C\uB300 \uC911\uCCA9 (\uC0C1\uD0DC\uC774\uC0C1 D64 \uC124\uBA85)"
+  - key: player_burn.duration
+    value: 3
+    unit: s
+    note: "\uD50C\uB808\uC774\uC5B4 \uD654\uC0C1 \uC9C0\uC18D (\uC0C1\uD0DC\uC774\uC0C1 D64 \uC124\uBA85)"

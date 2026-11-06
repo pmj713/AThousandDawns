@@ -65,14 +65,27 @@ namespace AThousandDawns.Combat
                 _baseColor = flashRenderer.sharedMaterial.GetColor(BaseColorId);
         }
 
-        public void ApplyHit(int amount)
+        // reacts = false: 화상·번개 같은 파생 피해. 경직을 일으키지 않아요 (적이 LastHitReacts로 확인).
+        public void ApplyHit(int amount, bool reacts = true, PopupStyle style = PopupStyle.Normal)
         {
             if (IsDead) return;
             if (!invincible) Health = Mathf.Max(0f, Health - amount);
-            _flashTimer = 0.08f;
-            DamagePopups.Spawn(transform.position + Vector3.up * 2.2f, amount);
+            if (reacts) _flashTimer = 0.08f;
+            DamagePopups.Spawn(transform.position + Vector3.up * 2.2f, amount, style);
+            LastHitReacts = reacts;
             Damaged?.Invoke(this, amount);
         }
+
+        public bool LastHitReacts { get; private set; } = true;
+
+        // 빙결처럼 몸 색을 바꿔 둘 때 (null이면 원래 색)
+        public void SetTint(Color? tint)
+        {
+            _tint = tint;
+            _block ??= new MaterialPropertyBlock();
+        }
+
+        Color? _tint;
 
         void Update()
         {
@@ -80,7 +93,7 @@ namespace AThousandDawns.Combat
             if (_flashTimer <= 0f && _block == null) return;
             _flashTimer -= Time.deltaTime;
             _block ??= new MaterialPropertyBlock();
-            _block.SetColor(BaseColorId, _flashTimer > 0f ? Color.white : _baseColor);
+            _block.SetColor(BaseColorId, _flashTimer > 0f ? Color.white : _tint ?? _baseColor);
             flashRenderer.SetPropertyBlock(_block);
         }
     }

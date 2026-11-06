@@ -45,6 +45,8 @@ namespace AThousandDawns.Enemies
         protected override string Key => "nokrim";
         protected override bool UsesToken => false;
         protected override bool SuperArmor => true;
+        protected override bool IsBoss => true;
+        protected override bool FreezeBlocked => IsTransitioning; // 페이즈 전환 연출 중에는 빙결이 안 걸림
         protected override bool RadialTelegraph => _pattern == Pattern.Summon || _pattern == Pattern.Spin;
         protected override float DeathDelay => 1f;
         protected override float TrackStopDistance => _pattern == Pattern.Charge ? _farDistance : _sweepRadius * 0.6f;
@@ -111,7 +113,7 @@ namespace AThousandDawns.Enemies
             _spinRatio = Tuning("spin_ratio", 0.6f);
             _spinRadius = Tuning("spin_radius", 2.5f);
             _spinCount = Mathf.Max(1, Mathf.RoundToInt(Tuning("spin_count", 3f)));
-            _spinInterval = Tuning("spin_interval", 0.4f);
+            _spinInterval = Tuning("spin_interval", 0.65f);
             _spinMoveSpeed = Tuning("spin_move_speed", 2.5f);
 
             _fireWindup = Tuning("fire_windup", 2f);
@@ -361,6 +363,13 @@ namespace AThousandDawns.Enemies
 
         protected override void OnAttackFinished() => _decisionTimer = _decisionPause;
 
+        // 빙결 1초: 진행 중인 패턴이 취소돼요 (공격 취소는 기본 동작)
+        protected override void OnFreezeStarted()
+        {
+            _pattern = Pattern.None;
+            _decisionTimer = _decisionPause;
+        }
+
         // ── 페이즈
 
         protected override void OnHitTaken()
@@ -396,7 +405,7 @@ namespace AThousandDawns.Enemies
             _decisionTimer = _decisionPause;
             _repeat = 0;
             var visuals = Director.Visuals;
-            float burnPerStack = GameConfig.Get("burn.per_stack", 0.15f) * AttackPower; // 화상 1중첩: 초당 녹림왕 공격의 15%
+            float burnPerStack = GameConfig.Get("player_burn.damage", 2f); // 플레이어 화상 1중첩 초당 피해 (상태이상 탭, 죽림 지역 배율 1)
             _grove = BurningGrove.Create(_zoneCenter, _zoneSize, _fireBand, _fireWindup, _fireShrinkInterval, _fireShrinkStep,
                 _fireMinSafe, _fireTick, burnPerStack, Player, visuals.telegraphFill, visuals.fire);
         }

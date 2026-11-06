@@ -17,7 +17,11 @@ namespace AThousandDawns.Prototype
         [SerializeField] EnemyDirector director;
         [SerializeField] PrototypeArena arena;
 
-        GUIStyle _label, _popup, _dummy, _big, _bossLabel;
+        static readonly Color BurnDot = new Color(0.85f, 0.28f, 0.06f);  // 진한 주홍 (예고 #FF9A2E와 구분)
+        static readonly Color SlowDot = new Color(0.55f, 0.82f, 0.98f);  // 하늘색
+        static readonly Color ShockDot = new Color(1f, 0.89f, 0.3f);     // 노랑
+
+        GUIStyle _label, _popup, _dummy, _big, _bossLabel, _popupSmall, _popupBig, _statusLabel;
         Camera _camera;
 
         void Update() => DamagePopups.Tick(Time.deltaTime);
@@ -27,11 +31,11 @@ namespace AThousandDawns.Prototype
             EnsureStyles();
             if (_camera == null) _camera = Camera.main;
 
-            GUILayout.BeginArea(new Rect(16, 16, 640, 320), GUI.skin.box);
+            GUILayout.BeginArea(new Rect(16, 16, 640, 350), GUI.skin.box);
             GUILayout.Label("일조천회 시험판 · 전투", _label);
             GUILayout.Label("WASD 이동 · 좌클릭(누르고 있기) 평타 · 우클릭 회선참 · Q 만검귀종 · Space 대시", _label);
             GUILayout.Label("부르기 (바로 옆): 1 졸개 · 2 멧돼지 · 3 궁수 · 4 들개 · 5 방패 · 6 나팔수 · 7 화약 · 8 청죽사 · 9 녹림왕 (결투장)", _label);
-            GUILayout.Label("G 기세 채우기 · F5 처음부터", _label);
+            GUILayout.Label("G 기세 채우기 · F1 #열양 · F2 #빙백 · F3 #뇌정 단계 (0→2→4→6) · F5 처음부터", _label);
             if (player != null)
             {
                 GUILayout.Label($"체력 {player.Health:0}/{player.MaxHealth:0}", _label);
@@ -48,6 +52,9 @@ namespace AThousandDawns.Prototype
                 string skill = player.IsCastingSkill ? "베는 중" : player.SkillCooldownLeft > 0f ? $"{player.SkillCooldownLeft:0.0}초" : "준비";
                 GUILayout.Label($"회선참 {skill}", _label);
                 if (combo != null) GUILayout.Label($"평타 {combo.HitIndex + 1}타 · {combo.CurrentPhase}", _label);
+                var keywords = player.Keywords;
+                if (keywords != null)
+                    GUILayout.Label($"#열양 {keywords.Count(Keyword.Yeolyang)} · #빙백 {keywords.Count(Keyword.Bingbaek)} · #뇌정 {keywords.Count(Keyword.Noejeong)}  (2·4·6에서 단계 효과, 4면 절초 각인)", _label);
             }
             if (director != null && director.MeleeTokens != null)
             {
@@ -66,6 +73,9 @@ namespace AThousandDawns.Prototype
                 float width = Mathf.Min(560f, Screen.width - 40f);
                 var area = new Rect((Screen.width - width) * 0.5f, Screen.height - 64f, width, 18f);
                 string state = boss.IsTransitioning ? " · 전환 중 (무적)" : boss.Grove != null && boss.Grove.IsBurning ? " · 불타는 죽림" : "";
+                var bossStatus = boss.Statuses;
+                if (bossStatus != null && bossStatus.IsFrozen) state += " · 빙결";
+                else if (bossStatus != null && bossStatus.FreezeImmunityLeft > 0f) state += $" · 서리 {bossStatus.FreezeImmunityLeft:0}초";
                 GUI.Label(new Rect(area.x, area.y, area.width, 24f), $"녹림왕 · {boss.Phase}페이즈{state}   {boss.Damageable.Health:0}/{boss.Damageable.MaxHealth:0}", _bossLabel);
                 DrawBar(new Rect(area.x, area.y + 26f, area.width, 12f), boss.Damageable.Health / Mathf.Max(1f, boss.Damageable.MaxHealth), HealthColor);
             }
@@ -83,6 +93,7 @@ namespace AThousandDawns.Prototype
                     string text = $"{d.Label}\nDPS {d.Dps:0.0}  ({d.Elapsed:0.0}초, 합계 {d.Total}, {state})";
                     var rect = new Rect(sp.x - 160, Screen.height - sp.y - 40, 320, 44);
                     GUI.Label(rect, text, _dummy);
+                    if (d.TryGetComponent(out StatusEffects dummyStatus)) DrawStatus(sp.x, Screen.height - sp.y + 18f, dummyStatus, true);
                 }
             }
 
@@ -95,18 +106,53 @@ namespace AThousandDawns.Prototype
                     if (sp.z <= 0f) continue;
                     var dmg = e.Damageable;
                     DrawBar(new Rect(sp.x - 25, Screen.height - sp.y, 50, 6), dmg.MaxHealth > 0f ? dmg.Health / dmg.MaxHealth : 0f, EnemyHealthColor);
+                    DrawStatus(sp.x, Screen.height - sp.y, e.Statuses, false);
                 }
             }
 
+            // 피해 숫자: 화상은 작고 흐리게, 방전은 크고 굵게 (상태이상 탭 표시 규칙)
             foreach (var p in DamagePopups.Current)
             {
                 Vector3 sp = _camera.WorldToScreenPoint(p.Position);
                 if (sp.z <= 0f) continue;
-                Color c = p.OnPlayer ? new Color(1f, 0.35f, 0.3f) : new Color(1f, 0.95f, 0.8f);
-                c.a = 1f - p.Age / DamagePopups.Lifetime;
-                _popup.normal.textColor = c;
-                GUI.Label(new Rect(sp.x - 40, Screen.height - sp.y - 15, 80, 30), p.Amount.ToString(), _popup);
+                Color c = p.Style switch
+                {
+                    PopupStyle.Player => new Color(1f, 0.35f, 0.3f),
+                    PopupStyle.Dot => new Color(1f, 0.6f, 0.4f, 0.75f),
+                    PopupStyle.Burst => new Color(1f, 0.9f, 0.3f),
+                    _ => new Color(1f, 0.95f, 0.8f),
+                };
+                c.a *= 1f - p.Age / DamagePopups.Lifetime;
+                var style = p.Style == PopupStyle.Dot ? _popupSmall : p.Style == PopupStyle.Burst ? _popupBig : _popup;
+                style.normal.textColor = c;
+                GUI.Label(new Rect(sp.x - 50, Screen.height - sp.y - 20, 100, 40), p.Amount.ToString(), style);
             }
+        }
+
+        // 상태이상 점 (상태이상 탭 표시): 화상 = 진한 주홍 점 (중첩 수만큼), 둔화 = 하늘색 점 3개, 감전 = 노란 점 5개, 빙결 = 글자.
+        // below면 y 아래로, 아니면 y 위로 쌓아요.
+        void DrawStatus(float centerX, float y, StatusEffects s, bool below)
+        {
+            if (s == null) return;
+            float step = below ? 8f : -8f;
+            float row = below ? y : y - 8f;
+            if (s.BurnStacks > 0) { DrawDots(centerX, row, s.BurnStacks, s.BurnStacks, BurnDot); row += step; }
+            if (s.SlowStacks > 0) { DrawDots(centerX, row, s.SlowStacks, s.SlowMax, SlowDot); row += step; }
+            if (s.ShockStacks > 0) { DrawDots(centerX, row, s.ShockStacks, s.ShockMax, ShockDot); row += step; }
+            if (s.IsFrozen) GUI.Label(new Rect(centerX - 40f, below ? row : row - 14f, 80f, 20f), "빙결", _statusLabel);
+        }
+
+        static void DrawDots(float centerX, float y, int filled, int slots, Color color)
+        {
+            const float size = 5f, gap = 2f;
+            float x = centerX - (slots * (size + gap) - gap) * 0.5f;
+            var old = GUI.color;
+            for (int i = 0; i < slots; i++)
+            {
+                GUI.color = i < filled ? color : new Color(color.r, color.g, color.b, 0.3f);
+                GUI.DrawTexture(new Rect(x + i * (size + gap), y, size, size), Texture2D.whiteTexture);
+            }
+            GUI.color = old;
         }
 
         static void DrawBar(Rect rect, float ratio, Color fill)
@@ -131,6 +177,10 @@ namespace AThousandDawns.Prototype
             _big.normal.textColor = Color.white;
             _bossLabel = new GUIStyle(GUI.skin.label) { fontSize = 18, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             _bossLabel.normal.textColor = Color.white;
+            _popupSmall = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleCenter };
+            _popupBig = new GUIStyle(GUI.skin.label) { fontSize = 32, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+            _statusLabel = new GUIStyle(GUI.skin.label) { fontSize = 13, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+            _statusLabel.normal.textColor = SlowDot;
         }
     }
 }

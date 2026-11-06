@@ -249,8 +249,20 @@ nokrim.spin_recovery,1.5,s,회전베기 3연속 빈틈,몬스터!E101
 nokrim.spin_ratio,0.6,,회전베기 한 번 피해 배율,몬스터!F101
 nokrim.spin_radius,2.5,cell,회전베기 원 반경 (몬스터 H101 설명),
 nokrim.spin_count,3,,회전베기 횟수 (몬스터 H101 설명),
-nokrim.spin_interval,0.4,s,회전베기 간격 (몬스터 H101 설명),
+nokrim.spin_interval,0.65,s,"회전베기 간격, 피격 무적 0.6초보다 길게 (몬스터 H101 설명)",
 nokrim.spin_move_speed,2.5,cell/s,돌면서 다가오는 속도 (몬스터 H101 설명),
 nokrim.p2_sweep_windup,0.6,s,2페이즈 휘두르기 예고,몬스터!D102
 nokrim.p2_sweep_recovery,0.8,s,2페이즈 휘두르기 빈틈,몬스터!E102
 nokrim.p2_slam_recovery,1.2,s,2페이즈 내려찍기 빈틈 (몬스터 H102 설명),
+burn.stage4_bonus,50%,,#열양 4단계: 화상 피해 증가,상태이상!C23
+burn.stage6_extra_stacks,2,,#열양 6단계: 화상 최대 중첩 +2,상태이상!C24
+slow.stage4_bonus,30%,,#빙백 4단계: 둔화 효과 증가,상태이상!C42
+discharge.stage4_bonus,50%,,#뇌정 4단계: 방전 피해 증가,상태이상!C59
+chain.stage6_ratio,40%,,#뇌정 6단계: 연쇄 번개 1명당 발동 공격 비율,상태이상!C60
+imprint.fire_patch_duration,4,s,절초 #열양 각인: 낙하 지점 불길 시간,무기!B77
+imprint.fire_patch_radius,1,cell,절초 #열양 각인: 불길 반경 (임시),
+imprint.thunder_chains,4,,절초 #뇌정 각인: 끝날 때 연쇄 번개 수 (하단전),무기!B79
+imprint.thunder_ratio,10%,,절초 #뇌정 각인: 번개를 일으키는 피해 = 절초 피해 합 × 이 비율,무기!B85
+player_burn.damage,2,,플레이어 화상 1중첩 초당 피해 (지역 공격 배율을 곱함),상태이상!B64
+player_burn.max_stacks,3,,플레이어 화상 최대 중첩 (상태이상 D64 설명),
+player_burn.duration,3,s,플레이어 화상 지속 (상태이상 D64 설명),

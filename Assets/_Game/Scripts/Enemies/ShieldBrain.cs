@@ -22,7 +22,7 @@ namespace AThousandDawns.Enemies
         protected override float ApproachSpeed => GuardUp ? _guardMoveSpeed : MoveSpeed;
 
         public bool ShieldBroken => _broken;
-        bool GuardUp => !_broken && Attack.Current != EnemyAttackTimeline.Phase.Recovery;
+        bool GuardUp => !_broken && Attack.Current != EnemyAttackTimeline.Phase.Recovery && !Status.IsFrozen; // 빙결 중엔 방패 정면 방어 해제
 
         public void SetShieldVisual(Transform shield) => _shield = shield;
 
