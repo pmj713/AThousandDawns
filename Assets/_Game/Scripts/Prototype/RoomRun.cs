@@ -21,7 +21,7 @@ namespace AThousandDawns.Prototype
     // 녹림왕을 쓰러뜨리면 기물 하나 + 경맥도 5×4 → 6×4, 판 끝. 같은 시드면 같은 갈림길·배치·적 구성 (버그 재현용).
     public sealed partial class RoomRun : MonoBehaviour
     {
-        public enum Phase { None, Fork, Floor, Master, Inn, Rest, Boss, Done }
+        public enum Phase { None, Fork, Floor, Master, Inn, Rest, Boss, Done, Village }
         public enum RewardKind { Item, Heal, Part, Forge }
 
         public struct Path
@@ -114,7 +114,11 @@ namespace AThousandDawns.Prototype
             PlaceCrack(null);
             PlaceJars(null);
             ApplyBook();
-            if (PrototypeArena.AutoSpawn) BeginFork(1);
+            if (PrototypeArena.AutoSpawn)
+            {
+                if (StartsInVillage()) EnterVillage(); // 첫 사망 뒤부터 마을에서
+                else BeginFork(1);
+            }
         }
 
         void Update()
@@ -156,6 +160,7 @@ namespace AThousandDawns.Prototype
                     else TickFloorExits();
                     break;
                 case Phase.Rest: TickRestExit(); break;
+                case Phase.Village: TickVillage(); break;
                 case Phase.Boss:
                     var b = arena.Boss;
                     if (b != null && b.IsDead) FinishRun();

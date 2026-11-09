@@ -111,6 +111,8 @@ namespace AThousandDawns.EditorTools
             Box("Stone_N", ironRoom, IronMasterCenter + new Vector3(0f, 1f, 5.25f), new Vector3(15f, 2f, 0.5f), stoneMat);
             Box("Stone_S", ironRoom, IronMasterCenter + new Vector3(0f, 1f, -5.25f), new Vector3(15f, 2f, 0.5f), stoneMat);
 
+            BuildVillage(floorMat, wallMat);
+
             // 정비실: 12×10, 북쪽 문은 늘 열려 있어요
             BuildShell("Room_Rest", RestCenter, new Vector2(12f, 10f), floorMat, wallMat);
 
@@ -165,6 +167,7 @@ namespace AThousandDawns.EditorTools
             SetSite(runSo.FindProperty("inn"), InnCenter, new Vector2(12f, 10f), new Vector3(0f, 0f, -3.5f), new Vector3(0f, 0f, 6.6f));
             SetSite(runSo.FindProperty("rest"), RestCenter, new Vector2(12f, 10f), new Vector3(0f, 0f, -3.5f), new Vector3(0f, 0f, 6.6f));
             SetSite(runSo.FindProperty("boss"), BossCenter, new Vector2(16f, 12f), new Vector3(0f, 0f, -4.5f), new Vector3(0f, 0f, 99f));
+            SetSite(runSo.FindProperty("village"), VillageCenter, VillageSize, VillageEntry, VillageExit);
             runSo.ApplyModifiedPropertiesWithoutUndo();
 
             var hud = new GameObject("PrototypeHud").AddComponent<PrototypeHud>();
@@ -260,6 +263,69 @@ namespace AThousandDawns.EditorTools
             Box("Corridor_W", room, center + new Vector3(-1.75f, 0.75f, hz + 1.5f), new Vector3(0.5f, 1.5f, 2.5f), wallMat);
             Box("Corridor_E", room, center + new Vector3(1.75f, 0.75f, hz + 1.5f), new Vector3(0.5f, 1.5f, 2.5f), wallMat);
             Box("Corridor_N", room, center + new Vector3(0f, 0.75f, hz + 2.75f), new Vector3(4f, 1.5f, 0.5f), wallMat);
+        }
+
+        // ── 마을 (24×16): 객잔 마루(시작) · 매화나무(회귀록) · 뒷산 동굴(면벽수련) · 사당(유품록) · 마을 어귀(무기 거치대, 출발)
+        static readonly Vector3 VillageCenter = new Vector3(360f, 0f, 0f);
+        static readonly Vector2 VillageSize = new Vector2(24f, 16f);
+        static readonly Vector3 VillageEntry = new Vector3(-7f, 0f, 0f);  // 객잔 마루
+        static readonly Vector3 VillageExit = new Vector3(5f, 0f, -7.6f); // 마을 어귀 (남쪽 문)
+        const string VillageFloorColor = "#EFE6D2"; // 색감 시트 마을 바탕
+        const string VillageInkColor = "#4A4540";   // 마을 그림자
+        const string PlumColor = "#C8463C";         // 매화 홍
+        const string CaveColor = "#2E2B28";
+
+        static void BuildVillage(Material floorMat, Material wallMat)
+        {
+            var root = new GameObject("Village").transform;
+            var c = VillageCenter;
+            float hx = VillageSize.x * 0.5f, hz = VillageSize.y * 0.5f;
+            var ground = GetMaterial("VillageGround", VillageFloorColor, false);
+            var ink = GetMaterial("VillageInk", VillageInkColor, false);
+            var wood = GetMaterial("Wood", WoodColor, false);
+
+            Box("Floor", root, c + new Vector3(0f, -0.1f, 0f), new Vector3(VillageSize.x + 1f, 0.2f, VillageSize.y + 1f), ground);
+            Box("Wall_N", root, c + new Vector3(0f, 0.75f, hz + 0.25f), new Vector3(VillageSize.x + 1f, 1.5f, 0.5f), wallMat);
+            Box("Wall_W", root, c + new Vector3(-hx - 0.25f, 0.75f, 0f), new Vector3(0.5f, 1.5f, VillageSize.y + 1f), wallMat);
+            Box("Wall_E", root, c + new Vector3(hx + 0.25f, 0.75f, 0f), new Vector3(0.5f, 1.5f, VillageSize.y + 1f), wallMat);
+            // 남쪽 벽: 마을 어귀(x = 5) 자리 3칸만 비워요
+            float gx = VillageExit.x, left = gx - 1.5f + hx, right = hx - (gx + 1.5f);
+            Box("Wall_S_West", root, c + new Vector3(-hx + left * 0.5f, 0.75f, -hz - 0.25f), new Vector3(left + 0.5f, 1.5f, 0.5f), wallMat);
+            Box("Wall_S_East", root, c + new Vector3(hx - right * 0.5f, 0.75f, -hz - 0.25f), new Vector3(right + 0.5f, 1.5f, 0.5f), wallMat);
+            Box("Gate_Post_W", root, c + new Vector3(gx - 1.7f, 1.5f, -hz - 0.25f), new Vector3(0.4f, 3f, 0.4f), wood);
+            Box("Gate_Post_E", root, c + new Vector3(gx + 1.7f, 1.5f, -hz - 0.25f), new Vector3(0.4f, 3f, 0.4f), wood);
+            Box("Gate_Beam", root, c + new Vector3(gx, 3f, -hz - 0.25f), new Vector3(4f, 0.3f, 0.5f), wood);
+
+            // 객잔 마루 (서쪽): 건물 벽과 마루
+            Box("Inn_Building", root, c + new Vector3(-hx + 1.5f, 1.5f, 0f), new Vector3(3f, 3f, 6f), wood);
+            Box("Inn_Porch", root, c + new Vector3(-hx + 3.6f, 0.05f, 0f), new Vector3(1.4f, 0.1f, 4f), wood);
+
+            // 매화나무 (객잔 입구 바로 앞)
+            var tree = c + RoomRun.TreeOffset;
+            var trunk = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            trunk.name = "Plum_Trunk";
+            trunk.transform.SetParent(root, false);
+            trunk.transform.localPosition = tree + new Vector3(0f, 1f, 1f);
+            trunk.transform.localScale = new Vector3(0.35f, 1f, 0.35f);
+            trunk.GetComponent<Renderer>().sharedMaterial = ink;
+            var crown = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            crown.name = "Plum_Blossom";
+            Object.DestroyImmediate(crown.GetComponent<Collider>());
+            crown.transform.SetParent(root, false);
+            crown.transform.localPosition = tree + new Vector3(0f, 2.4f, 1f);
+            crown.transform.localScale = new Vector3(2.4f, 1.4f, 2.4f);
+            crown.GetComponent<Renderer>().sharedMaterial = GetMaterial("Plum", PlumColor, false);
+
+            // 뒷산 동굴 (북쪽): 산자락과 어두운 입구
+            Box("Hill", root, c + RoomRun.CaveOffset + new Vector3(0f, 1.5f, 1.4f), new Vector3(6f, 3f, 1.2f), wallMat);
+            Box("Cave_Mouth", root, c + RoomRun.CaveOffset + new Vector3(0f, 0.9f, 0.75f), new Vector3(1.8f, 1.8f, 0.2f), GetMaterial("Cave", CaveColor, false));
+
+            // 사당 (어귀 옆, 남서쪽)
+            Box("Shrine", root, c + RoomRun.ShrineOffset + new Vector3(-1f, 0.9f, -1f), new Vector3(1.6f, 1.8f, 1.2f), wood);
+            Box("Shrine_Roof", root, c + RoomRun.ShrineOffset + new Vector3(-1f, 1.95f, -1f), new Vector3(2.2f, 0.3f, 1.8f), ink);
+
+            // 무기 거치대 (어귀 앞)
+            Box("Weapon_Rack", root, c + RoomRun.RackOffset + new Vector3(0f, 0.6f, -0.6f), new Vector3(1.6f, 1.2f, 0.25f), wood);
         }
 
         // entry·exit은 방 가운데 기준

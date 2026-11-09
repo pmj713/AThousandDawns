@@ -106,6 +106,7 @@ namespace AThousandDawns.Prototype
             Phase.Master => $"죽림 2층 관문 ({(_master != null ? _master.DisplayName : "고수")})",
             Phase.Inn => "객잔",
             Phase.Rest => "정비실",
+            Phase.Village => "마을",
             Phase.Boss => "녹림왕 앞",
             _ => "죽림",
         };

@@ -126,6 +126,8 @@ namespace AThousandDawns.Prototype
             if (banner != null) GUI.Label(new Rect(0, UiScale.Height * 0.3f, UiScale.Width, 50), banner, _big);
             if (run != null && run.AtCounter)
                 GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), "F 점소이에게 말 걸기", _big);
+            if (run != null && run.InVillage && run.NearSpot != RoomRun.VillageSpot.None && (run.Book == null || !run.Book.IsOpen))
+                GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), run.SpotPrompt(run.NearSpot), _big);
             if (run != null && run.AtGate && !run.IsForking)
                 GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), $"F 다음 층으로 · 남은 전투 방 {run.Map.FightsLeft()} · 추적도 {run.Tracking}", _big);
             if (run != null && run.NearCrack)

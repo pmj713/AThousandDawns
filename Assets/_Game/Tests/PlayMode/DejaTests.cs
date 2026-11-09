@@ -40,6 +40,7 @@ namespace AThousandDawns.Tests
         IEnumerator Load(int runs)
         {
             new MetaSave { runs = runs }.Save();
+            RoomRun.SkipVillage = true; // 회차가 있어도 바로 판으로
             yield return SceneManager.LoadSceneAsync("Prototype_Run", LoadSceneMode.Single);
             yield return null;
             _run = Object.FindFirstObjectByType<RoomRun>();

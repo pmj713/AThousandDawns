@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using AThousandDawns.Core;
 using AThousandDawns.Enemies;
 using AThousandDawns.Player;
 using AThousandDawns.Prototype;
@@ -22,6 +23,7 @@ namespace AThousandDawns.Tests
         public override void Setup()
         {
             base.Setup();
+            MetaSave.PathOverride = System.IO.Path.Combine(Application.temporaryCachePath, $"meta_test_{System.Guid.NewGuid():N}.json"); // 진짜 저장을 건드리지 않게 (회차 0이라 마을 없이 시작)
             InputSystem.AddDevice<Keyboard>();
             _mouse = InputSystem.AddDevice<Mouse>();
             RoomRun.SeedOverride = 2024;
@@ -33,6 +35,8 @@ namespace AThousandDawns.Tests
             RoomRun.MasterOverride = null;
             PrototypeArena.AutoSpawn = true;
             Time.timeScale = 1f;
+            if (MetaSave.PathOverride != null && System.IO.File.Exists(MetaSave.PathOverride)) System.IO.File.Delete(MetaSave.PathOverride);
+            MetaSave.PathOverride = null;
             base.TearDown();
         }
 
