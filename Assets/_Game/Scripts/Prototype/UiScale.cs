@@ -14,7 +14,14 @@ namespace AThousandDawns.Prototype
         public static float Height => Screen.height / Factor;
 
         // 이 뒤로 그리는 IMGUI가 배율을 받아요 (마우스 위치도 같은 단위로 바뀌어요).
-        public static void Apply() => GUI.matrix = Matrix4x4.Scale(new Vector3(Factor, Factor, 1f));
+        // 글자는 상자보다 커도 잘리지 않고 넘쳐 보여요 (기본 스킨을 바꿔 두면 거기서 만든 스타일도 그대로 따라요).
+        public static void Apply()
+        {
+            GUI.matrix = Matrix4x4.Scale(new Vector3(Factor, Factor, 1f));
+            GUI.skin.label.clipping = TextClipping.Overflow;
+            GUI.skin.button.clipping = TextClipping.Overflow;
+            GUI.skin.box.clipping = TextClipping.Overflow;
+        }
 
         // WorldToScreenPoint 결과(픽셀, 아래가 0)를 GUI 좌표(기준 단위, 위가 0)로
         public static Vector2 FromScreen(Vector3 screenPoint) =>

@@ -23,7 +23,7 @@ namespace AThousandDawns.Prototype
         static readonly Color SlowDot = new Color(0.55f, 0.82f, 0.98f);  // 하늘색
         static readonly Color ShockDot = new Color(1f, 0.89f, 0.3f);     // 노랑
 
-        GUIStyle _label, _wrapLabel, _popup, _dummy, _big, _bossLabel, _popupSmall, _popupBig, _statusLabel, _card, _itemLine, _itemSmall;
+        [System.NonSerialized] GUIStyle _label, _wrapLabel, _popup, _dummy, _big, _bossLabel, _popupSmall, _popupBig, _statusLabel, _card, _itemLine, _itemSmall;
         Camera _camera;
         int _lastLevel = 1;
         float _levelUpTimer;

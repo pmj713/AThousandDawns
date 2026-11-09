@@ -40,7 +40,7 @@ namespace AThousandDawns.Prototype
         PartKind _placingPart; // 놓으려고 고른 부품 (부품 줄에서 고르고 빈 칸을 눌러요)
         bool _autoArmed, _wasInCombat;
         int _lastPending;
-        GUIStyle _title, _cellName, _small, _bagButton, _noticeStyle, _detail, _tag, _button;
+        [System.NonSerialized] GUIStyle _title, _cellName, _small, _bagButton, _noticeStyle, _detail, _tag, _button;
 
         public bool IsOpen { get; private set; }
 

@@ -67,7 +67,7 @@ namespace AThousandDawns.EditorTools
             EditorApplication.Exit(0);
         }
 
-        // 시험판 씬 둘: 판 구조(Prototype_Run, 처음 씬)와 넓은 맵 샌드박스(Prototype_Combat).
+        // 시험판 씬 셋: 시작 화면(Title, 처음 씬) · 판 구조(Prototype_Run) · 넓은 맵 샌드박스(Prototype_Combat).
         public static void Build()
         {
             SheetImporter.ImportBalance();
@@ -75,12 +75,33 @@ namespace AThousandDawns.EditorTools
             // 새 씬을 열면 앞에서 불러 둔 에셋 참조가 풀려요. 씬마다 다시 불러요.
             BuildSandbox(LoadBalance(), LoadItems());
             BuildRun(LoadBalance(), LoadItems());
-            EditorBuildSettings.scenes = new[]
+            BuildTitle();
+            // 시작 화면이 처음 씬. 그 밖에 따로 더한 씬(수묵 시험판 등)은 뒤에 그대로 둬요.
+            var scenes = new System.Collections.Generic.List<EditorBuildSettingsScene>
             {
+                new EditorBuildSettingsScene(TitleScenePath, true),
                 new EditorBuildSettingsScene(RunScenePath, true),
                 new EditorBuildSettingsScene(ScenePath, true),
             };
+            foreach (var s in EditorBuildSettings.scenes)
+                if (s.path != TitleScenePath && s.path != RunScenePath && s.path != ScenePath) scenes.Add(s);
+            EditorBuildSettings.scenes = scenes.ToArray();
             AssetDatabase.SaveAssets();
+        }
+
+        public const string TitleScenePath = "Assets/_Game/Scenes/Title.unity";
+
+        // 시작 화면: 카메라와 TitleScreen 하나 (그림이 없어서 IMGUI로 다 그려요)
+        static void BuildTitle()
+        {
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            var cam = new GameObject("Main Camera").AddComponent<Camera>();
+            cam.tag = "MainCamera";
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = new Color32(0xEF, 0xE6, 0xD2, 0xFF);
+            new GameObject("TitleScreen").AddComponent<AThousandDawns.Prototype.TitleScreen>();
+            EditorSceneManager.SaveScene(scene, TitleScenePath);
+            Debug.Log($"[시험판 씬] {TitleScenePath} 를 만들었어요.");
         }
 
         static BalanceConfig LoadBalance() => AssetDatabase.LoadAssetAtPath<BalanceConfig>(SheetImporter.BalanceAssetPath);

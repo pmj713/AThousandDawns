@@ -59,7 +59,7 @@ namespace AThousandDawns.Prototype
         bool _meditation; // 면벽수련 화면
         string _selected, _notice;
         float _noticeTimer;
-        GUIStyle _title, _label, _small, _node, _button;
+        [System.NonSerialized] GUIStyle _title, _label, _small, _node, _button;
 
         public bool IsOpen { get; private set; }
         public MetaSave Meta => _meta;
