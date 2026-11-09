@@ -65,11 +65,25 @@ namespace AThousandDawns.EditorTools
             ApplyPaperAtmosphere(cam);
         }
 
-        // 한지색 배경 + 원근 안개 (카메라 위치는 그대로)
+        const string InkPaperMaterialPath = "Assets/_Game/Art/PostFX/InkPaperScreen.mat";
+
+        // 한지색 배경 + 원근 안개 + 화면 전체 한지 질감 후처리 (카메라 위치는 그대로)
         static void ApplyPaperAtmosphere(Camera cam)
         {
             ColorUtility.TryParseHtmlString("#E9E4D8", out Color paper);
             cam.backgroundColor = paper;
+
+            // 화면 전체 수묵 질감: 이 카메라에만 붙는 후처리 (재질 값은 인스펙터에서 조절해도 씬을 다시 만들 때 남아요)
+            var paperMat = AssetDatabase.LoadAssetAtPath<Material>(InkPaperMaterialPath);
+            if (paperMat == null)
+            {
+                EnsureFolder("Assets/_Game/Art/PostFX");
+                paperMat = new Material(Shader.Find("AThousandDawns/InkPaperScreen"));
+                AssetDatabase.CreateAsset(paperMat, InkPaperMaterialPath);
+            }
+            var fx = cam.GetComponent<AThousandDawns.Art.InkPaperPostFX>();
+            if (fx == null) fx = cam.gameObject.AddComponent<AThousandDawns.Art.InkPaperPostFX>();
+            SetRef(fx, "material", paperMat);
 
             // 수묵화처럼 먼 것일수록 한지색 안개로 옅어져요. 방 가운데까지(카메라에서 약 16)는 거의 그대로, 벽 너머 숲부터 옅어져요
             RenderSettings.fog = true;

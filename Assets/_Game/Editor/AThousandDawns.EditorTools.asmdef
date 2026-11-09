@@ -3,6 +3,7 @@
     "rootNamespace": "AThousandDawns.EditorTools",
     "references": [
         "AThousandDawns",
+        "AThousandDawns.Art",
         "Unity.Cinemachine"
     ],
     "includePlatforms": [
