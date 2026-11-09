@@ -112,6 +112,7 @@ namespace AThousandDawns.Prototype
                 if (keyboard.digit7Key.wasPressedThisFrame) SpawnKey(EnemyKind.Bomber, elite);
                 if (keyboard.digit8Key.wasPressedThisFrame) SpawnKey(EnemyKind.Snake, elite);
                 if (keyboard.digit9Key.wasPressedThisFrame) SpawnBoss();
+                if (keyboard.digit0Key.wasPressedThisFrame) SpawnKey(EnemyKind.Assassin, false); // 마교 살수
                 if (keyboard.gKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.FillGauge();
                 if (keyboard.lKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.GainLevelForTest(); // 시험용 레벨업
                 if (director != null && director.Player != null && director.Player.Keywords != null)

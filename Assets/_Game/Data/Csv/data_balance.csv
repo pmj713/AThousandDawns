@@ -390,3 +390,42 @@ potion.heal,40%,,금창약 회복량 (최대 체력 비율),조작!B73
 potion.move_ratio,50%,,금창약 누르는 동안 이동속도,조작!B74
 potion.reuse,1,s,금창약 다시 마실 수 있기까지,조작!B76
 interact.range,1.2,cell,상호작용 범위 (점소이),조작!B80
+tracking.per_room,1,,전투 방을 비울 때마다 추적도 +,기획 대화 (추적도)
+tracking.assassin1,5,,추적도 이 값 이상이면 다음 층에 살수 1명,몬스터!C126 설명
+tracking.assassin2,10,,추적도 이 값 이상이면 살수 2명 + 보스 체력 증가,몬스터!C126 설명
+tracking.boss_hp,1.15,,추적도 높을 때 보스 체력 배율 (+15%),몬스터!C126 설명
+tracking.kill_reduce,2,,살수 처치 시 추적도 −,몬스터!C129 설명
+tracking.inn_ratio,50%,,객잔에 들르면 추적도 비율 (절반),기획 대화 (객잔 규칙)
+assassin.appear_rooms,2,,층에 들어와 이만큼 방을 지나면 첫째 살수가 나타남,몬스터!C126 설명
+assassin.step_time,6,s,살수가 방 하나를 쫓아오는 시간 (임시),
+assassin.warning,1.5,s,따라잡혔을 때 난입·결투 경고,몬스터!C127 설명
+assassin.stagger_every,3,,살수 경직 저항: 이만큼 맞을 때마다 1번 경직,몬스터!C125 설명
+assassin.twin_windup,0.4,s,쌍검 2연격 예고,몬스터!D132
+assassin.twin_recovery,0.6,s,쌍검 2연격 빈틈,몬스터!E132
+assassin.twin_ratio,0.7,,쌍검 2연격 피해 배율 (1번당),몬스터!F132
+assassin.twin_range,1.5,cell,쌍검 2연격 부채꼴 반경,몬스터!H132 설명
+assassin.twin_angle,90,deg,쌍검 2연격 부채꼴 각도 (은신 습격도 같이 씀),몬스터!H132 설명
+assassin.twin_gap,0.25,s,쌍검 2연격 두 번 사이 간격,몬스터!H132 설명
+assassin.shuriken_windup,0.6,s,표창 3연발 예고,몬스터!D133
+assassin.shuriken_recovery,0.4,s,표창 3연발 빈틈,몬스터!E133
+assassin.shuriken_ratio,0.6,,표창 1발 피해 배율,몬스터!F133
+assassin.shuriken_spread,30,deg,표창 사이 각도,몬스터!H133 설명
+assassin.shuriken_speed,12,cell/s,표창 속도,몬스터!H133 설명
+assassin.shuriken_range,9,cell,표창 사거리,몬스터!H133 설명
+assassin.shuriken_interval,3,s,표창 3연발 간격,몬스터!H133 설명
+assassin.shuriken_pause,0.2,s,표창 던지는 순간 멈춤,몬스터!H133 설명
+assassin.ambush_windup,0.6,s,은신 습격: 나타나기 전 그림자,몬스터!D134
+assassin.ambush_recovery,0.8,s,은신 습격 빈틈,몬스터!E134
+assassin.ambush_ratio,1.2,,은신 습격 피해 배율,몬스터!F134
+assassin.ambush_vanish,1,s,은신 습격: 사라져 있는 시간,몬스터!H134 설명
+assassin.ambush_range,1.5,cell,은신 습격 부채꼴 반경,몬스터!H134 설명
+assassin.ambush_interval,6,s,은신 습격 간격,몬스터!H134 설명
+assassin.smoke_windup,0.5,s,연막탄이 날아가는 시간,몬스터!D135
+assassin.smoke_radius,2.5,cell,연막 반경,몬스터!H135 설명
+assassin.smoke_life,4,s,연막 지속,몬스터!H135 설명
+assassin.smoke_hp,50%,,연막을 쓰기 시작하는 체력 비율,몬스터!H135 설명
+assassin.smoke_interval,12,s,연막 간격,몬스터!H135 설명
+item_grade_special.common,30%,,보스·살수 보상 등급 확률 일반,등급확률!B16
+item_grade_special.uncommon,32%,,보스·살수 보상 등급 확률 고급,등급확률!C16
+item_grade_special.rare,26%,,보스·살수 보상 등급 확률 희귀,등급확률!D16
+item_grade_special.legendary,12%,,보스·살수 보상 등급 확률 전설,등급확률!E16

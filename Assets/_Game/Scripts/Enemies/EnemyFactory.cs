@@ -1,4 +1,4 @@
-using AThousandDawns.Combat;
+﻿using AThousandDawns.Combat;
 using UnityEngine;
 
 namespace AThousandDawns.Enemies
@@ -59,6 +59,12 @@ namespace AThousandDawns.Enemies
                 BodyPosition = new Vector3(0f, 0.15f, 0f), BodyScale = new Vector3(0.35f, 0.25f, 1.2f),
                 MarkPosition = new Vector3(0f, 0.22f, 0.7f), MarkScale = new Vector3(0.3f, 0.2f, 0.3f),
             },
+            EnemyKind.Assassin => new Shape
+            {
+                Name = "마교 살수", Radius = 0.35f, Height = 1.7f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.85f, 0f), BodyScale = new Vector3(0.55f, 0.85f, 0.55f),
+                MarkPosition = new Vector3(0f, 0.9f, 0.35f), MarkScale = new Vector3(0.7f, 0.06f, 0.06f), // 쌍검
+            },
             EnemyKind.Nokrim => new Shape
             {
                 Name = "녹림왕", Radius = 0.7f, Height = 2.4f, Primitive = PrimitiveType.Capsule,
@@ -83,6 +89,7 @@ namespace AThousandDawns.Enemies
             EnemyKind.Bomber => v.bomber,
             EnemyKind.Snake => v.snake,
             EnemyKind.Nokrim => v.nokrim,
+            EnemyKind.Assassin => v.assassin,
             _ => v.grunt,
         };
 
@@ -134,6 +141,7 @@ namespace AThousandDawns.Enemies
                 EnemyKind.Bomber => root.AddComponent<BomberBrain>(),
                 EnemyKind.Snake => root.AddComponent<SnakeBrain>(),
                 EnemyKind.Nokrim => root.AddComponent<NokrimBrain>(),
+                EnemyKind.Assassin => root.AddComponent<AssassinBrain>(),
                 _ => root.AddComponent<GruntBrain>(),
             };
             if (brain is ShieldBrain shieldBrain) shieldBrain.SetShieldVisual(mark.transform);

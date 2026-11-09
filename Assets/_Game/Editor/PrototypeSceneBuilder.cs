@@ -39,6 +39,7 @@ namespace AThousandDawns.EditorTools
         const string SnakeColor = "#4F8F3A";
         const string BushColor = "#5E9E5A";
         const string NokrimColor = "#8A3324";
+        const string AssassinColor = "#2B2433";   // 마교 살수 (임시, 검보라)
         const string FireColor = "#E25822";       // 불타는 죽림 (임시)
         const string GateColor = "#B7322C";       // 결계 부적 (잠긴 문), 색감 시트
         const string EnemyAccentColor = "#EFE6D2";
@@ -270,6 +271,7 @@ namespace AThousandDawns.EditorTools
             v.FindPropertyRelative("bomber").objectReferenceValue = GetMaterial("Enemy_Bomber", BomberColor, false);
             v.FindPropertyRelative("snake").objectReferenceValue = GetMaterial("Enemy_Snake", SnakeColor, false);
             v.FindPropertyRelative("nokrim").objectReferenceValue = GetMaterial("Enemy_Nokrim", NokrimColor, false);
+            v.FindPropertyRelative("assassin").objectReferenceValue = GetMaterial("Enemy_Assassin", AssassinColor, false);
             v.FindPropertyRelative("fire").objectReferenceValue = GetMaterial("Fire", FireColor, true);
             v.FindPropertyRelative("accent").objectReferenceValue = GetMaterial("Enemy_Accent", EnemyAccentColor, false);
             v.FindPropertyRelative("arrow").objectReferenceValue = GetMaterial("Arrow", ArrowColor, false);

@@ -19,7 +19,7 @@ namespace AThousandDawns.Prototype
     // 객잔: 지역마다 한 번, 일반 층을 다 지난 뒤 (은자 시트 가정). 점소이 앞에서 F를 누르면 진열대 (InnShop).
     // 정비실: 목인장 두 개. 나갈 때 기세와 회선참 쿨타임을 들어올 때로 되돌려요.
     // 녹림왕을 쓰러뜨리면 기물 하나 + 경맥도 5×4 → 6×4, 판 끝. 같은 시드면 같은 갈림길·배치·적 구성 (버그 재현용).
-    public sealed class RoomRun : MonoBehaviour
+    public sealed partial class RoomRun : MonoBehaviour
     {
         public enum Phase { None, Fork, Floor, Inn, Rest, Boss, Done }
         public enum RewardKind { Item, Heal }
@@ -140,6 +140,7 @@ namespace AThousandDawns.Prototype
             {
                 case Phase.Inn: TickInn(); break;
                 case Phase.Floor:
+                    TickHunt(Time.deltaTime);
                     if (_fighting) TickFight();
                     else TickFloorExits();
                     break;
@@ -190,8 +191,9 @@ namespace AThousandDawns.Prototype
                 Mathf.RoundToInt(GameConfig.Get("room.path_rooms", 3f)),
                 Mathf.RoundToInt(GameConfig.Get("room.optional_rooms", 2f)));
             _phase = Phase.Floor;
-            Enter(_map.Start, -1);
             ShowBanner($"죽림 {_floor}층 · {PathLabel(_path)}");
+            BeginHunt();
+            Enter(_map.Start, -1);
         }
 
         public static string RewardLabel(RewardKind kind) => kind == RewardKind.Item ? "기물" : "운기조식";
@@ -246,6 +248,7 @@ namespace AThousandDawns.Prototype
                 _waves = null;
                 if (room.Kind == FloorRoomKind.Gate) ShowBanner("관문 · 가운데에서 F를 누르면 다음 층");
             }
+            OnHuntEnter(room);
         }
 
         Vector3 EntryFrom(int movedDirection)
@@ -284,6 +287,7 @@ namespace AThousandDawns.Prototype
         public void LeaveFloor()
         {
             ClearPending();
+            EndHunt();
             _fighting = false;
             SetLocks(false);
             SetGateMarker(false);
@@ -385,6 +389,12 @@ namespace AThousandDawns.Prototype
                 return;
             }
             foreach (var e in director.Enemies) if (e != null && !e.IsDead) return;
+            if (AssassinIncoming) return; // 살수가 들어오는 중
+            if (_duel)
+            {
+                EndDuel();
+                return;
+            }
             StartNextWave();
         }
 
@@ -416,6 +426,7 @@ namespace AThousandDawns.Prototype
             _fighting = false;
             _room.Cleared = true;
             SetLocks(false);
+            AddTracking(Mathf.RoundToInt(GameConfig.Get("tracking.per_room", 1f)));
             float mult = _path.Dense ? DenseMultiplier : 1f;
             int silver = Mathf.RoundToInt(GameConfig.Get("silver.room", 18f) * mult) + _elitesThisRoom * Mathf.RoundToInt(GameConfig.Get("silver.elite", 15f));
             Silver += silver;
@@ -456,7 +467,9 @@ namespace AThousandDawns.Prototype
             director.ResetRoom();
             var db = GameConfig.Items;
             Shop = db == null ? null : InnShop.Stock(db.Items, Player.Items, RegionGradeWeights(), _rng);
-            ShowBanner("객잔 · 점소이 앞에서 F로 진열대 (북쪽 문: 정비실)");
+            int before = Tracking;
+            Tracking = Mathf.FloorToInt(Tracking * GameConfig.Get("tracking.inn_ratio", 0.5f)); // 객잔에 들르면 추적도 절반
+            ShowBanner($"객잔 · 점소이 앞에서 F로 진열대 (북쪽 문: 정비실) · 추적도 {before} → {Tracking}");
         }
 
         // 객잔 진열: 그 지역 등급표 (등급확률 시트 죽림 줄)
@@ -550,8 +563,10 @@ namespace AThousandDawns.Prototype
             MovePlayer(boss.entry);
             director.ResetRoom();
             Player.EnterRoom();
-            arena.SpawnBoss();
-            ShowBanner("녹림왕");
+            var nokrim = arena.SpawnBoss();
+            bool hunted = Tracking >= Mathf.RoundToInt(GameConfig.Get("tracking.assassin2", 10f));
+            if (hunted && nokrim != null) nokrim.Damageable.ScaleMaxHealth(GameConfig.Get("tracking.boss_hp", 1.15f)); // 추적도 10 이상: 보스 체력 +15%
+            ShowBanner(hunted ? $"녹림왕 · 추적도 {Tracking}: 체력 +15%" : "녹림왕");
         }
 
         void FinishRun()
@@ -559,7 +574,7 @@ namespace AThousandDawns.Prototype
             _phase = Phase.Done;
             int silver = Mathf.RoundToInt(GameConfig.Get("silver.boss", 50f));
             Silver += silver;
-            arena.GrantOffer();
+            arena.GrantOffer(SpecialGradeWeights()); // 보스·살수 특별 보상 표
             var items = Player.Items;
             if (items != null)
                 items.ExpandBoard(
@@ -652,7 +667,7 @@ namespace AThousandDawns.Prototype
                     default: where = IsForking ? $"죽림 {_floor}층 갈림길" : ""; break;
                 }
                 if (IsForking) where = $"죽림 {_floor}층 갈림길";
-                return $"{where} · 은자 {Silver} · 시드 {Seed}";
+                return $"{where} · 은자 {Silver} · 추적도 {Tracking} · 시드 {Seed}";
             }
         }
     }

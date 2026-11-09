@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace AThousandDawns.Enemies
 {
-    public enum EnemyKind { Grunt, Boar, Archer, Hound, Shield, Horn, Bomber, Snake, Nokrim }
+    public enum EnemyKind { Grunt, Boar, Archer, Hound, Shield, Horn, Bomber, Snake, Nokrim, Assassin }
 
     // 적 등급 (수련치 탭: 일반 1 · 정예 5 · 살수 5 · 고수 15 · 보스 30)
     public enum EnemyRank { Normal, Elite, Assassin, Master, Boss }
@@ -126,6 +126,7 @@ namespace AThousandDawns.Enemies
         protected float Tuning(string field, float fallback) => GameConfig.Get($"{Key}.{field}", fallback);
 
         protected virtual void ReadTuning() { }
+        protected virtual void TickAlways(float dt) { } // 경직·공격 중에도 매 프레임 (살수 연막·패턴 간격)
         protected virtual void OnInitialized() { }
         protected virtual void OnWoke() { }
 
@@ -158,6 +159,7 @@ namespace AThousandDawns.Enemies
             float dt = Time.deltaTime * Status.SpeedMultiplier;
             _reaction.Tick(dt);
             TickElite(Time.deltaTime);
+            TickAlways(dt);
             if (_cooldown > 0f) _cooldown -= dt;
             TickStrafeFlip(dt);
 
@@ -301,6 +303,7 @@ namespace AThousandDawns.Enemies
             Controller.enabled = false;
             transform.position = new Vector3(position.x, 0f, position.z);
             Controller.enabled = true;
+            if (_initialized) Director.RestoreIgnores(this); // 충돌체를 껐다 켜면 서로 무시하던 것이 풀려요
         }
 
         // 다른 적과 겹치지 않게 살짝 밀어내면서 움직여요. 벽에 막히면 옆걸음 방향을 바꿔요.

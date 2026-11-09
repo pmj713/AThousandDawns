@@ -57,7 +57,7 @@ namespace AThousandDawns.Prototype
             GUILayout.BeginArea(new Rect(16, 16, 700, 466), GUI.skin.box);
             GUILayout.Label("일조천회 시험판 · 전투", _label);
             GUILayout.Label("WASD 이동 · 좌클릭(누르고 있기) 평타 · 우클릭 회선참 · Q 만검귀종 · Space 대시 · R 금창약(누르고 있기)", _label);
-            GUILayout.Label("부르기 (바로 옆): 1 졸개 · 2 멧돼지 · 3 궁수 · 4 들개 · 5 방패 · 6 나팔수 · 7 화약 · 8 청죽사 · 9 녹림왕 (결투장) · Shift+숫자 정예", _label);
+            GUILayout.Label("부르기 (바로 옆): 1 졸개 · 2 멧돼지 · 3 궁수 · 4 들개 · 5 방패 · 6 나팔수 · 7 화약 · 8 청죽사 · 9 녹림왕 (결투장) · 0 살수 · Shift+숫자 정예", _label);
             GUILayout.Label("G 기세 채우기 · F5 처음부터 · 키워드 F1 열양 F2 빙백 F3 뇌정 F4 강기 F6 금강 F7 경공 F8 마도 F9 정종 · 기물 상태 F10 기 부족 F11 운기 F12 주화입마 · I 기물 고르기 · E 경맥도 · L 레벨업", _wrapLabel);
             if (player != null)
             {
@@ -119,7 +119,7 @@ namespace AThousandDawns.Prototype
             if (run != null && run.AtCounter)
                 GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), "F 점소이에게 말 걸기", _big);
             if (run != null && run.AtGate && !run.IsForking)
-                GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), $"F 다음 층으로 · 남은 전투 방 {run.Map.FightsLeft()}", _big);
+                GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), $"F 다음 층으로 · 남은 전투 방 {run.Map.FightsLeft()} · 추적도 {run.Tracking}", _big);
 
             if (player != null && player.IsDead)
                 GUI.Label(new Rect(0, UiScale.Height * 0.4f, UiScale.Width, 60), "쓰러졌어요 · F5 키로 다시 시작", _big);
@@ -166,7 +166,7 @@ namespace AThousandDawns.Prototype
                     if (sp.z <= 0f) continue;
                     var dmg = e.Damageable;
                     DrawBar(new Rect(g.x - 25, g.y, 50, 6), dmg.MaxHealth > 0f ? dmg.Health / dmg.MaxHealth : 0f, EnemyHealthColor);
-                    if (e.IsElite) GUI.Label(new Rect(g.x - 90, g.y - 40, 180, 22), e.DisplayName, _statusLabel); // 정예: 이름 앞에 특성
+                    if (e.IsElite || e.Rank == EnemyRank.Assassin) GUI.Label(new Rect(g.x - 90, g.y - 40, 180, 22), e.DisplayName, _statusLabel); // 정예: 이름 앞에 특성
                     DrawStatus(g.x, g.y, e.Statuses, false);
                 }
             }
@@ -249,6 +249,18 @@ namespace AThousandDawns.Prototype
                 GUI.color = Color.white;
                 string mark = r.Kind == FloorRoomKind.Start ? "시" : r.Kind == FloorRoomKind.Reward ? "보" : r.Kind == FloorRoomKind.Gate ? "관" : r.Visited && r.HasFight && !r.Cleared ? "!" : "";
                 if (mark != "") GUI.Label(rect, mark, _statusLabel);
+                // 살수가 있는 방은 붉은 테두리
+                foreach (var hunter in run.Hunters)
+                {
+                    if (hunter.Dead || hunter.Engaged || hunter.Room != r) continue;
+                    GUI.color = new Color(0.9f, 0.15f, 0.15f);
+                    const float t = 4f;
+                    GUI.DrawTexture(new Rect(rect.x - t, rect.y - t, rect.width + 2 * t, t), Texture2D.whiteTexture);
+                    GUI.DrawTexture(new Rect(rect.x - t, rect.yMax, rect.width + 2 * t, t), Texture2D.whiteTexture);
+                    GUI.DrawTexture(new Rect(rect.x - t, rect.y, t, rect.height), Texture2D.whiteTexture);
+                    GUI.DrawTexture(new Rect(rect.xMax, rect.y, t, rect.height), Texture2D.whiteTexture);
+                    GUI.color = Color.white;
+                }
             }
             GUI.color = old;
         }

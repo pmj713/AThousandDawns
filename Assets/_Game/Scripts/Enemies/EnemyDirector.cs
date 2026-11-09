@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using AThousandDawns.Combat;
 using AThousandDawns.Core;
@@ -19,6 +19,7 @@ namespace AThousandDawns.Enemies
         public Material bomber;
         public Material snake;
         public Material nokrim;
+        public Material assassin;
         public Material fire;
         public Material accent;
         public Material arrow;
@@ -69,10 +70,17 @@ namespace AThousandDawns.Enemies
         public EnemyBrain Spawn(EnemyKind kind, Vector3 position)
         {
             var enemy = EnemyFactory.Create(this, kind, new Vector3(position.x, 0f, position.z), visuals);
-            foreach (var other in _enemies) Physics.IgnoreCollision(enemy.BodyCollider, other.BodyCollider);
-            if (player != null && player.Body != null) Physics.IgnoreCollision(enemy.BodyCollider, player.Body);
+            RestoreIgnores(enemy);
             _enemies.Add(enemy);
             return enemy;
+        }
+
+        // 적끼리, 적과 플레이어는 서로 밀지 않아요 (거리는 각자 Separation으로 유지)
+        public void RestoreIgnores(EnemyBrain enemy)
+        {
+            foreach (var other in _enemies)
+                if (other != null && other != enemy) Physics.IgnoreCollision(enemy.BodyCollider, other.BodyCollider);
+            if (player != null && player.Body != null) Physics.IgnoreCollision(enemy.BodyCollider, player.Body);
         }
 
         public Arrow SpawnArrow(Vector3 origin, Vector3 direction, float speed, float range, float radius, float attack, Damageable owner = null)
