@@ -627,3 +627,6 @@ event.tomb_grade.common,0%,,검이 꽂힌 무덤 보상 일반 확률 (전설이
 event.tomb_grade.uncommon,30%,,검이 꽂힌 무덤 보상 고급 확률 (임시),
 event.tomb_grade.rare,40%,,검이 꽂힌 무덤 보상 희귀 확률 (임시),
 event.tomb_grade.legendary,30%,,검이 꽂힌 무덤 보상 전설 확률 (임시),
+memory.deja,5,,회귀의 기억: 기시감 노인에게 전생 이야기를 들음 (소량 임시),기획 대화 (이벤트 10 기시감)
+event.deja_runs,3,회,기시감이 나오기 시작하는 회차,기획 대화 (이벤트 10 기시감)
+event.deja_boss_gauge,50%,,기시감 천마에 대해 묻기: 마지막 보스전 시작 기세 (지금은 녹림왕),기획 대화 (이벤트 10 기시감)

@@ -652,6 +652,7 @@ namespace AThousandDawns.Prototype
             Player.EnterRoom();
             var nokrim = arena.SpawnBoss();
             OnFightStart();
+            if (_bossGauge > 0f) Player.RaiseGaugeTo(_bossGauge); // 기시감: 천마에 대해 물음 (마지막 보스전 = 지금은 녹림왕)
             bool hunted = Tracking >= Mathf.RoundToInt(GameConfig.Get("tracking.assassin2", 10f));
             if (hunted && nokrim != null) nokrim.Damageable.ScaleMaxHealth(GameConfig.Get("tracking.boss_hp", 1.15f)); // 추적도 10 이상: 보스 체력 +15%
             ShowBanner(hunted ? $"녹림왕 · 추적도 {Tracking}: 체력 +15%" : "녹림왕");

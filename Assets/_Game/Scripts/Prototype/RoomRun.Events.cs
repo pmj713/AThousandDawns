@@ -10,7 +10,7 @@ using UnityEngine.InputSystem.Controls;
 
 namespace AThousandDawns.Prototype
 {
-    // 이벤트 방 (기획 대화 이벤트 10종 중 죽림 9개: 첫 버전 6개 + 서툰 대장장이 · 표국 행렬 · 검이 꽂힌 무덤). 층마다 0~1개 (은자 시트 등장 확률 50%), 비전투 막다른 방.
+    // 이벤트 방 (기획 대화 이벤트 10종 모두: 첫 버전 6개 + 서툰 대장장이 · 표국 행렬 · 검이 꽂힌 무덤 · 기시감 (회귀 3회 이상)). 층마다 0~1개 (은자 시트 등장 확률 50%), 비전투 막다른 방.
     // 같은 판에서 같은 이벤트는 한 번만. 모든 이벤트에 대가 없는 선택지가 있어요.
     // 조건부 선택지(🔒)는 조건이 안 되면 흐리게 조건만 보여 줘요. 그림은 아직 없고 글만 있어요.
     public sealed partial class RoomRun
@@ -28,7 +28,7 @@ namespace AThousandDawns.Prototype
             public List<EventChoice> Choices = new List<EventChoice>();
         }
 
-        public static readonly string[] EventIds = { "doctor", "pharmacy", "gambler", "captive", "shrine", "scripture", "escort", "smith", "tomb" };
+        public static readonly string[] EventIds = { "doctor", "pharmacy", "gambler", "captive", "shrine", "scripture", "escort", "smith", "tomb", "deja" };
 
         readonly HashSet<string> _usedEvents = new HashSet<string>();
         int _floorPower;           // 원기단: 이번 층 동안 공력 +1
@@ -314,6 +314,31 @@ namespace AThousandDawns.Prototype
                     });
                     break;
 
+                case "deja":
+                    v.Title = "기시감";
+                    v.Text = "처음 보는 노인이 말을 건다. \"또 왔구먼. 이번이 몇 번째인가?\"";
+                    int dejaMemory = Price("memory.deja", 5f);
+                    int bossGauge = Mathf.RoundToInt(GameConfig.Get("event.deja_boss_gauge", 0.5f) * 100f);
+                    v.Choices.Add(new EventChoice
+                    {
+                        Label = $"전생의 이야기를 듣는다 · 회귀의 기억 +{dejaMemory}, 이야기 조각 하나",
+                        Act = () =>
+                        {
+                            _record.Deja++;
+                            return $"{NextStoryFragment()}\n\n(판이 끝나면 회귀의 기억 +{dejaMemory})";
+                        },
+                    });
+                    v.Choices.Add(new EventChoice
+                    {
+                        Label = $"천마에 대해 묻는다 · 이번 판 마지막 보스전을 기세 {bossGauge}%로 시작",
+                        Act = () =>
+                        {
+                            _bossGauge = Mathf.Max(_bossGauge, bossGauge / 100f);
+                            return "\"그자의 검은 첫수가 가장 무겁지. 먼저 기세를 쥐고 들어가게.\"";
+                        },
+                    });
+                    break;
+
                 case "scripture":
                     v.Title = "벽에 새긴 검결";
                     v.Text = "무너진 수련 동굴 벽에 누군가 검술 요결을 새겨 두었다.";
@@ -411,6 +436,33 @@ namespace AThousandDawns.Prototype
             if (Player.Items.Add(won) == null && Player.Items.Pending == won)
                 return $"이겼어요! {won.name} · 둘 곳이 없어 하나를 버려야 받아요.";
             return $"이겼어요! {won.name}을(를) 얻었어요.";
+        }
+
+        // ── 기시감 (회귀 3회 이상부터): 노인이 이야기를 조금씩 풀어 줘요. 들은 조각 수는 회귀해도 남아요 (MetaSave).
+        // 이야기는 서사 초안이에요 (나중에 시나리오가 정해지면 바꿔요).
+        float _bossGauge; // 천마에 대해 묻기: 마지막 보스전 시작 기세 (지금은 녹림왕)
+        public float BossGauge => _bossGauge;
+
+        public static readonly string[] StoryFragments =
+        {
+            "\"자네 눈빛, 처음 보는 게 아니야. 저번엔 대숲에서 쓰러졌지. 그 전엔… 기억이 흐리군.\"",
+            "\"천 번의 새벽이라… 누군가 그런 말을 했었지. 끝나지 않는 밤을 끊으려면 같은 새벽을 천 번 맞아야 한다고.\"",
+            "\"마교의 그자도 한때는 목검을 든 아이였네. 자네처럼 말이야.\"",
+            "\"나도 한때는 돌아오는 자였지. 몇 번째에서 멈췄는지는 묻지 말게.\"",
+            "\"다음에 만나면 내 이름을 알려 주지. 자네가 기억한다면 말일세.\"",
+        };
+
+        public int StoryRevealed => Mathf.Min(MetaSave.Load().storyFragments, StoryFragments.Length);
+
+        string NextStoryFragment()
+        {
+            var meta = MetaSave.Load();
+            if (meta.storyFragments >= StoryFragments.Length)
+                return "노인은 말없이 웃기만 해요. 이미 다 들은 이야기예요.";
+            string text = StoryFragments[meta.storyFragments];
+            meta.storyFragments++;
+            meta.Save();
+            return $"{text}\n<size=13>(이야기 조각 {meta.storyFragments}/{StoryFragments.Length})</size>";
         }
 
         // ── 서툰 대장장이: 등급을 올릴 수 있는 기물 (전설이 아니고, 한 단계 위 기물이 남아 있음)

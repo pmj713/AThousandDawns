@@ -18,6 +18,7 @@ namespace AThousandDawns.Core
         public int finalBossKills; // 천마 격파 수 (유품 가지가 열려요)
         public List<string> bloomed = new List<string>(); // 회귀록에서 피운 봉우리
         public int[] meditation = new int[6]; // 면벽수련 심법별 포인트 (쾌 강 맥 오 은 기)
+        public int storyFragments; // 기시감 노인에게 들은 이야기 조각 수
 
         // 테스트에서 실제 저장 파일을 건드리지 않게 바꿔요
         public static string PathOverride;
