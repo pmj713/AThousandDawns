@@ -2133,3 +2133,143 @@ MonoBehaviour:
     value: 2
     unit: cell
     note: "\uBE44\uAE09 \uBD95\uC0B0\uAD8C: \uBC00\uC5B4\uB0B4\uB294 \uAC70\uB9AC (\uACE0\uC218\uC640 \uAC19\uAC8C)"
+  - key: memory.per_floor
+    value: 3
+    unit: 
+    note: "\uD68C\uADC0\uC758 \uAE30\uC5B5: \uB3CC\uD30C\uD55C \uCE35 1\uAC1C\uB2F9"
+  - key: memory.normal
+    value: 0.1
+    unit: 
+    note: "\uD68C\uADC0\uC758 \uAE30\uC5B5: \uC77C\uBC18 \uC801 1\uB9C8\uB9AC\uB2F9"
+  - key: memory.elite
+    value: 1
+    unit: 
+    note: "\uD68C\uADC0\uC758 \uAE30\uC5B5: \uC815\uC608"
+  - key: memory.assassin
+    value: 3
+    unit: 
+    note: "\uD68C\uADC0\uC758 \uAE30\uC5B5: \uC0B4\uC218"
+  - key: memory.master
+    value: 5
+    unit: 
+    note: "\uD68C\uADC0\uC758 \uAE30\uC5B5: \uACE0\uC218"
+  - key: memory.boss
+    value: 10
+    unit: 
+    note: "\uD68C\uADC0\uC758 \uAE30\uC5B5: \uBCF4\uC2A4"
+  - key: memory.hidden_room
+    value: 5
+    unit: 
+    note: "\uD68C\uADC0\uC758 \uAE30\uC5B5: \uAE30\uC5F0 \uBC29 \uBC1C\uACAC"
+  - key: memory.final_boss
+    value: 30
+    unit: 
+    note: "\uD68C\uADC0\uC758 \uAE30\uC5B5: \uCC9C\uB9C8 \uACA9\uD30C"
+  - key: result.death_delay
+    value: 1.5
+    unit: s
+    note: "\uC4F0\uB7EC\uC9C4 \uB4A4 \uACB0\uACFC \uD654\uBA74\uC774 \uB728\uAE30\uAE4C\uC9C0 (\uC784\uC2DC)"
+  - key: bag.base_slots
+    value: 4
+    unit: 
+    note: "\uC8FC\uBA38\uB2C8\uB97C \uC5F4\uC5C8\uC744 \uB54C \uCE78 \uC218"
+  - key: bag.plus_slots
+    value: 2
+    unit: 
+    note: "\uC8FC\uBA38\uB2C8 \uD655\uC7A5 1\uBC88\uC5D0 \uB298\uC5B4\uB098\uB294 \uCE78"
+  - key: book.bag
+    value: 30
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uC8FC\uBA38\uB2C8 (\uBFCC\uB9AC \uBC14\uB85C \uC704)"
+  - key: book.bag_plus1
+    value: 90
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uC8FC\uBA38\uB2C8 \uD655\uC7A5 1\uCC28 (\uC784\uC2DC)"
+  - key: book.bag_plus2
+    value: 160
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uC8FC\uBA38\uB2C8 \uD655\uC7A5 2\uCC28 (\uC784\uC2DC)"
+  - key: book.tongmaek
+    value: 40
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uD1B5\uB9E5"
+  - key: book.jeomhyeol
+    value: 70
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uC810\uD608"
+  - key: book.hanok
+    value: 110
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uD55C\uC625"
+  - key: book.forge
+    value: 140
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uB300\uC7A5\uAC04"
+  - key: book.meditation
+    value: 180
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uBA74\uBCBD\uC218\uB828"
+  - key: book.potion_kit
+    value: 220
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uAE08\uCC3D\uC57D \uC9C0\uCC38"
+  - key: book.insight1
+    value: 180
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uC2EC\uB4DD +5 (1\uCC28)"
+  - key: book.flying_dagger
+    value: 270
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uBE44\uB3C4"
+  - key: book.inn_stock
+    value: 230
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uAC1D\uC794 \uC9C4\uC5F4 +1"
+  - key: book.item_pack1
+    value: 180
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uC0C8 \uAE30\uBB3C \uBB36\uC74C 1"
+  - key: book.insight2
+    value: 270
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uC2EC\uB4DD +5 (2\uCC28)"
+  - key: book.item_pack2
+    value: 320
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uC0C8 \uAE30\uBB3C \uBB36\uC74C 2"
+  - key: book.insight3
+    value: 360
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uC2EC\uB4DD +5 (3\uCC28)"
+  - key: book.insight4
+    value: 450
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uC2EC\uB4DD +5 (4\uCC28)"
+  - key: book.insight5
+    value: 540
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uC2EC\uB4DD +5 (5\uCC28)"
+  - key: book.relic1
+    value: 110
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uAE30\uC5B5 \uC6A9\uB7C9 +1 (1\uCC28)"
+  - key: book.relic2
+    value: 160
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uAE30\uC5B5 \uC6A9\uB7C9 +1 (2\uCC28)"
+  - key: book.relic3
+    value: 220
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uAE30\uC5B5 \uC6A9\uB7C9 +1 (3\uCC28)"
+  - key: book.relic4
+    value: 270
+    unit: "\uAE30\uC5B5"
+    note: "\uD68C\uADC0\uB85D \uAE30\uC5B5 \uC6A9\uB7C9 +1 (4\uCC28)"
+  - key: part.hanok_max_qi
+    value: 2
+    unit: 
+    note: "\uBD80\uD488 \uD55C\uC625: \uBD99\uC5B4 \uC788\uB294 \uAE30\uBB3C\uC758 \uCD5C\uB300 \uAE30 +"
+  - key: price.part
+    value: 100
+    unit: "\uC740\uC790"
+    note: "\uAC1D\uC794 \uBD80\uD488 \uAC00\uACA9 (\uD574\uAE08\uB41C \uC885\uB958 \uC911 \uBB34\uC791\uC704)"

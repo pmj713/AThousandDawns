@@ -97,6 +97,7 @@ namespace AThousandDawns.Prototype
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
                 return;
             }
+            if (UpdateDiscard(keyboard)) return; // 둘 곳이 없는 새 기물: 버릴 기물 고르기 (갈림길·객잔·이벤트 위에도 떠요)
             if (Blocked) return;
             if (_meridian != null && _meridian.IsOpen) return; // 경맥도를 보는 동안은 다른 키를 받지 않아요
             if (UpdateItemChoice(keyboard)) return; // 기물을 고르는 동안은 다른 키를 받지 않아요
@@ -117,6 +118,13 @@ namespace AThousandDawns.Prototype
                 if (keyboard.equalsKey.wasPressedThisFrame) SpawnMaster(EnemyKind.IronFist); // 고수 철권 마웅
                 if (keyboard.gKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.FillGauge();
                 if (keyboard.lKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.GainLevelForTest(); // 시험용 레벨업
+                if (keyboard.kKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.KillForTest(); // 시험용: 바로 쓰러지기
+                if (keyboard.pKey.wasPressedThisFrame && director != null && director.Player != null && director.Player.Items != null) // 시험용: 부품 셋
+                {
+                    director.Player.Items.AddPart(PartKind.Tongmaek);
+                    director.Player.Items.AddPart(PartKind.Jeomhyeol);
+                    director.Player.Items.AddPart(PartKind.Hanok);
+                }
                 if (director != null && director.Player != null && director.Player.Keywords != null)
                 {
                     if (keyboard.f1Key.wasPressedThisFrame) director.Player.Keywords.CycleStage(Keyword.Yeolyang);
@@ -195,6 +203,60 @@ namespace AThousandDawns.Prototype
             _lastField = bossFight ? 0 : field;
             if (_bossWasAlive && !bossAlive) _pendingOffers++;
             _bossWasAlive = bossAlive;
+        }
+
+        // ── 버릴 기물 고르기 (경맥도도 주머니도 가득일 때 새 기물을 받으면)
+
+        bool _discardPaused, _discardPrevEnabled;
+        float _discardPrevScale;
+
+        public ItemDefinition PendingItem => director != null && director.Player != null && director.Player.Items != null ? director.Player.Items.Pending : null;
+
+        // 고르는 중이면 true. 1~9 가진 기물을 버리고 받기 · Esc 새 기물 포기
+        bool UpdateDiscard(Keyboard keyboard)
+        {
+            var player = director != null ? director.Player : null;
+            if (PendingItem == null)
+            {
+                if (_discardPaused)
+                {
+                    _discardPaused = false;
+                    Time.timeScale = _discardPrevScale;
+                    if (player != null) player.enabled = _discardPrevEnabled;
+                }
+                return false;
+            }
+            if (!_discardPaused)
+            {
+                _discardPaused = true;
+                _discardPrevScale = Time.timeScale;
+                _discardPrevEnabled = player.enabled;
+                Time.timeScale = 0f;
+                player.enabled = false;
+            }
+            if (keyboard == null) return true;
+            if (keyboard.escapeKey.wasPressedThisFrame) DeclinePending();
+            else
+                for (int i = 0; i < 9 && i < player.Items.Items.Count; i++)
+                    if (((UnityEngine.InputSystem.Controls.KeyControl)keyboard[(Key)((int)Key.Digit1 + i)]).wasPressedThisFrame)
+                    {
+                        Discard(i);
+                        break;
+                    }
+            return true;
+        }
+
+        public void Discard(int index)
+        {
+            var items = director.Player.Items;
+            if (items.Pending == null || index < 0 || index >= items.Items.Count) return;
+            items.ResolvePending(items.Items[index]);
+        }
+
+        public void DeclinePending()
+        {
+            var items = director.Player.Items;
+            if (items.Pending != null) items.ResolvePending(null);
         }
 
         // 판 구조: 방을 비우거나 녹림왕을 쓰러뜨리면 RoomRun이 불러요.

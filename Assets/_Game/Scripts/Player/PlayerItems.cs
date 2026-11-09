@@ -9,11 +9,19 @@ namespace AThousandDawns.Player
     public sealed class OwnedItem
     {
         public ItemDefinition Def;
-        public bool OnBoard;   // 경맥도에 놓였는가. 아니면 보관함 (효과·키워드·상태 개수 없음)
+        public bool OnBoard;   // 경맥도에 놓였는가. 아니면 주머니 (효과·키워드·상태 개수 없음)
         public Vector2Int Cell;
-        public int Qi;         // 놓인 칸의 기 (보관함이면 0)
+        public int Qi;         // 놓인 칸의 기 (주머니면 0)
         public int MaxQiBonus; // 놓인 칸의 한혈 (최대 기 +)
         public int MaxQi => Def.maxQi + MaxQiBonus;
+    }
+
+    // 부품 하나 (판에 놓였거나 부품 주머니에). 부품 주머니는 칸 제한이 없어요.
+    public sealed class OwnedPart
+    {
+        public PartKind Kind;
+        public bool OnBoard;
+        public Vector2Int Cell;
     }
 
     // 가진 기물과 경맥도 (기물 탭 공통 규칙, 경맥도 탭):
@@ -30,6 +38,8 @@ namespace AThousandDawns.Player
         float _deviationMultiplier, _madoDeviation;
 
         public IReadOnlyList<OwnedItem> Items => _items;
+        readonly List<OwnedPart> _parts = new List<OwnedPart>();
+        public IReadOnlyList<OwnedPart> Parts => _parts;
         public MeridianBoard Board => _board;
         public event Action Changed;
 
@@ -43,6 +53,15 @@ namespace AThousandDawns.Player
             }
         }
 
+        // 주머니 칸 수: −1이면 제한 없음 (샌드박스). 판 구조는 회귀록에서 연 만큼 (주머니 없음 0 → 4 → 6 → 8).
+        public int BagCapacity { get; set; } = -1;
+        public bool HasBag => BagCapacity != 0;
+        public bool BagFull => BagCapacity >= 0 && BagCount >= BagCapacity;
+
+        // 둘 곳이 없어 버릴 기물을 고르는 중인 새 기물 (경맥도도 주머니도 가득)
+        public ItemDefinition Pending { get; private set; }
+        Action<bool> _pendingResolved;
+
         void Awake()
         {
             if (!TryGetComponent(out _keywords)) _keywords = gameObject.AddComponent<PlayerKeywords>();
@@ -55,6 +74,7 @@ namespace AThousandDawns.Player
             {
                 GihyeolQi = Mathf.RoundToInt(GameConfig.Get("meridian.gihyeol_qi", 1f)),
                 HanhyeolMaxQi = Mathf.RoundToInt(GameConfig.Get("meridian.hanhyeol_max_qi", 1f)),
+                HanokMaxQi = Mathf.RoundToInt(GameConfig.Get("part.hanok_max_qi", 2f)),
             };
         }
 
@@ -72,18 +92,48 @@ namespace AThousandDawns.Player
             return null;
         }
 
-        // 새 기물은 경맥도 빈 칸에 왼쪽 위부터 (한 줄씩 오른쪽으로) 차례로 놓여요. 가득 차면 보관함으로.
-        public OwnedItem Add(ItemDefinition def)
+        // 새 기물은 경맥도 빈 칸에 왼쪽 위부터 (한 줄씩 오른쪽으로) 차례로 놓여요. 가득 차면 주머니로.
+        // 주머니도 없거나 가득이면 null을 돌려주고 Pending에 남겨요: 가진 기물 하나를 버리고 받거나 (ResolvePending) 포기해요.
+        // resolved: 결국 받았는지 (객잔은 포기하면 은자를 돌려줘요)
+        public OwnedItem Add(ItemDefinition def, Action<bool> resolved = null)
         {
             if (def == null || Has(def.id)) return null;
-            var item = new OwnedItem { Def = def };
-            _items.Add(item);
-            if (TryFindEmptyCell(out var cell))
+            bool onBoard = TryFindEmptyCell(out var cell);
+            if (!onBoard && BagFull)
             {
-                item.OnBoard = true;
-                item.Cell = cell;
+                Pending = def;
+                _pendingResolved = resolved;
+                Changed?.Invoke();
+                return null;
             }
+            var item = new OwnedItem { Def = def, OnBoard = onBoard, Cell = cell };
+            _items.Add(item);
             Recount();
+            resolved?.Invoke(true);
+            return item;
+        }
+
+        // 이미 대기 중인 새 기물에 결과 알림을 붙여요 (객잔: 포기하면 은자 돌려주기)
+        public void OnPendingResolved(Action<bool> resolved) => _pendingResolved += resolved;
+
+        // discard를 버리고 그 자리에 새 기물을 놓아요. null이면 새 기물을 포기해요.
+        public OwnedItem ResolvePending(OwnedItem discard)
+        {
+            var def = Pending;
+            var resolved = _pendingResolved;
+            Pending = null;
+            _pendingResolved = null;
+            if (def == null) return null;
+            if (discard == null || !_items.Remove(discard))
+            {
+                Recount();
+                resolved?.Invoke(false);
+                return null;
+            }
+            var item = new OwnedItem { Def = def, OnBoard = discard.OnBoard, Cell = discard.Cell };
+            _items.Add(item);
+            Recount();
+            resolved?.Invoke(true);
             return item;
         }
 
@@ -110,16 +160,16 @@ namespace AThousandDawns.Player
             for (int x = 0; x < _board.Width; x++)
             {
                 cell = new Vector2Int(x, y);
-                if (At(cell) == null) return true;
+                if (At(cell) == null && _board.PartAt(cell) == PartKind.None) return true;
             }
             cell = default;
             return false;
         }
 
-        // 칸에 놓아요. 그 칸에 다른 기물이 있으면 자리를 바꾸고 (보관함에서 왔으면 그 기물이 보관함으로).
+        // 칸에 놓아요. 그 칸에 다른 기물이 있으면 자리를 바꾸고 (주머니에서 왔으면 그 기물이 주머니로).
         public void Place(OwnedItem item, Vector2Int cell)
         {
-            if (item == null || !_board.Contains(cell)) return;
+            if (item == null || !_board.Contains(cell) || _board.PartAt(cell) != PartKind.None) return; // 부품 칸에는 기물을 못 놓아요
             var other = At(cell);
             if (other == item) return;
             if (other != null)
@@ -132,12 +182,72 @@ namespace AThousandDawns.Player
             Recount();
         }
 
-        public void ToBag(OwnedItem item)
+        // 주머니가 없거나 가득이면 false
+        public bool ToBag(OwnedItem item)
         {
-            if (item == null || !item.OnBoard) return;
+            if (item == null || !item.OnBoard || BagFull) return false;
             item.OnBoard = false;
             Recount();
+            return true;
         }
+
+        // ── 부품
+
+        public OwnedPart AddPart(PartKind kind)
+        {
+            if (kind == PartKind.None) return null;
+            var part = new OwnedPart { Kind = kind };
+            _parts.Add(part);
+            Changed?.Invoke();
+            return part;
+        }
+
+        public OwnedPart PartAt(Vector2Int cell)
+        {
+            foreach (var p in _parts) if (p.OnBoard && p.Cell == cell) return p;
+            return null;
+        }
+
+        // 부품을 칸에 놓아요. 기물·다른 부품·단전이 있는 칸이면 false (옮기는 중이면 원래 칸은 비워요)
+        public bool PlacePart(OwnedPart part, Vector2Int cell)
+        {
+            if (part == null || !_board.Contains(cell) || At(cell) != null) return false;
+            var other = PartAt(cell);
+            if (other != null && other != part) return false;
+            if (part.OnBoard) _board.ClearPart(part.Cell);
+            if (!_board.SetPart(cell, part.Kind))
+            {
+                if (part.OnBoard) _board.SetPart(part.Cell, part.Kind); // 되돌리기
+                return false;
+            }
+            part.OnBoard = true;
+            part.Cell = cell;
+            Recount();
+            return true;
+        }
+
+        public void RemovePart(OwnedPart part)
+        {
+            if (part == null || !part.OnBoard) return;
+            _board.ClearPart(part.Cell);
+            part.OnBoard = false;
+            Recount();
+        }
+
+        public int CountParts(PartKind kind, bool onlyLoose = false)
+        {
+            int n = 0;
+            foreach (var p in _parts) if (p.Kind == kind && (!onlyLoose || !p.OnBoard)) n++;
+            return n;
+        }
+
+        public static string PartLabel(PartKind kind) => kind switch
+        {
+            PartKind.Tongmaek => "통맥",
+            PartKind.Jeomhyeol => "점혈",
+            PartKind.Hanok => "한옥",
+            _ => "",
+        };
 
         // 경맥도 확장 (녹림왕 처치 5×4 → 6×4)
         public void ExpandBoard(int width, int height)

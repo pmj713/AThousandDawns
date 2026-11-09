@@ -529,3 +529,38 @@ ironfist.rock_fall,0.8,s,낙석 예고 시간 (임시),
 skill_quake.ratio,100%,,비급 붕산권: 피해 (회선참 피해 비율 임시),
 skill_quake.radius,3,cell,비급 붕산권: 충격파 반경 (고수와 같게),몬스터!H108 설명
 skill_quake.knockback,2,cell,비급 붕산권: 밀어내는 거리 (고수와 같게),몬스터!H108 설명
+memory.per_floor,3,,회귀의 기억: 돌파한 층 1개당,기억!B4
+memory.normal,0.1,,회귀의 기억: 일반 적 1마리당,기억!B5
+memory.elite,1,,회귀의 기억: 정예,기억!B6
+memory.assassin,3,,회귀의 기억: 살수,기억!B7
+memory.master,5,,회귀의 기억: 고수,기억!B8
+memory.boss,10,,회귀의 기억: 보스,기억!B9
+memory.hidden_room,5,,회귀의 기억: 기연 방 발견,기억!B10
+memory.final_boss,30,,회귀의 기억: 천마 격파,기억!B11
+result.death_delay,1.5,s,쓰러진 뒤 결과 화면이 뜨기까지 (임시),
+bag.base_slots,4,,주머니를 열었을 때 칸 수,기획 대화 (주머니 4칸)
+bag.plus_slots,2,,주머니 확장 1번에 늘어나는 칸,기획 대화 (+2씩)
+book.bag,30,기억,회귀록 주머니 (뿌리 바로 위),기획 대화 (비용 30)
+book.bag_plus1,90,기억,회귀록 주머니 확장 1차 (임시),
+book.bag_plus2,160,기억,회귀록 주머니 확장 2차 (임시),
+book.tongmaek,40,기억,회귀록 통맥,회귀록!E7
+book.jeomhyeol,70,기억,회귀록 점혈,회귀록!E8
+book.hanok,110,기억,회귀록 한옥,회귀록!E9
+book.forge,140,기억,회귀록 대장간,회귀록!E10
+book.meditation,180,기억,회귀록 면벽수련,회귀록!E11
+book.potion_kit,220,기억,회귀록 금창약 지참,회귀록!E12
+book.insight1,180,기억,회귀록 심득 +5 (1차),회귀록!E13
+book.flying_dagger,270,기억,회귀록 비도,회귀록!E14
+book.inn_stock,230,기억,회귀록 객잔 진열 +1,회귀록!E15
+book.item_pack1,180,기억,회귀록 새 기물 묶음 1,회귀록!E16
+book.insight2,270,기억,회귀록 심득 +5 (2차),회귀록!E17
+book.item_pack2,320,기억,회귀록 새 기물 묶음 2,회귀록!E18
+book.insight3,360,기억,회귀록 심득 +5 (3차),회귀록!E19
+book.insight4,450,기억,회귀록 심득 +5 (4차),회귀록!E20
+book.insight5,540,기억,회귀록 심득 +5 (5차),회귀록!E21
+book.relic1,110,기억,회귀록 기억 용량 +1 (1차),회귀록!E22
+book.relic2,160,기억,회귀록 기억 용량 +1 (2차),회귀록!E23
+book.relic3,220,기억,회귀록 기억 용량 +1 (3차),회귀록!E24
+book.relic4,270,기억,회귀록 기억 용량 +1 (4차),회귀록!E25
+part.hanok_max_qi,2,,부품 한옥: 붙어 있는 기물의 최대 기 +,기획 대화 (냉각기 +2)
+price.part,100,은자,객잔 부품 가격 (해금된 종류 중 무작위),은자!B23

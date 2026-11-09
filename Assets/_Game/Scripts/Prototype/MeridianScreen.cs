@@ -1,4 +1,4 @@
-using AThousandDawns.Enemies;
+﻿using AThousandDawns.Enemies;
 using AThousandDawns.Items;
 using AThousandDawns.Player;
 using UnityEngine;
@@ -36,6 +36,7 @@ namespace AThousandDawns.Prototype
         float _noticeTimer, _autoDelay, _panelTop;
         string _notice;
         Acupoint _acupoint; // 열려고 고른 혈자리
+        PartKind _placingPart; // 놓으려고 고른 부품 (부품 줄에서 고르고 빈 칸을 눌러요)
         bool _autoArmed, _wasInCombat;
         int _lastPending;
         GUIStyle _title, _cellName, _small, _bagButton, _noticeStyle, _detail, _tag, _button;
@@ -180,7 +181,9 @@ namespace AThousandDawns.Prototype
             float boardH = board.Height * (CellSize + Gap) - Gap;
             bool picking = Player.Level != null && Player.Level.Pending > 0 && board.Danjeons.Count > 0;
             if (!picking) _acupoint = Acupoint.None;
-            float header = HeaderHeight + (picking ? AcupointRowHeight : 0f);
+            bool hasParts = items.Parts.Count > 0;
+            if (!hasParts) _placingPart = PartKind.None;
+            float header = HeaderHeight + (picking ? AcupointRowHeight : 0f) + (hasParts ? AcupointRowHeight : 0f);
             float totalW = boardW + 24f * K + BagWidth;
             float totalH = header + boardH + 16f * K + DetailHeight;
             float left = (UiScale.Width - totalW) * 0.5f;
@@ -189,6 +192,7 @@ namespace AThousandDawns.Prototype
 
             DrawHeader(items, new Rect(left, top, totalW, HeaderHeight));
             if (picking) DrawAcupointRow(new Rect(left, top + HeaderHeight, totalW, AcupointRowHeight - 6f * K));
+            if (hasParts) DrawPartRow(items, new Rect(left, top + HeaderHeight + (picking ? AcupointRowHeight : 0f), totalW, AcupointRowHeight - 6f * K));
 
             float boardTop = top + header;
             for (int y = 0; y < board.Height; y++)
@@ -209,7 +213,7 @@ namespace AThousandDawns.Prototype
         {
             var board = items.Board;
             GUI.Label(new Rect(area.x, area.y, area.width, 28f * K),
-                $"경맥도 · 공력 {board.Power} · 단전 {board.Danjeons.Count}/{board.MaxDanjeons}   (E 닫기 · 끌어서 옮기기 · 오른쪽 클릭 보관함 · Shift+클릭 단전 시험)", _small);
+                $"경맥도 · 공력 {board.Power} · 단전 {board.Danjeons.Count}/{board.MaxDanjeons}   (E 닫기 · 끌어서 옮기기 · 오른쪽 클릭 주머니 · Shift+클릭 단전 시험)", _small);
             string guide = board.Danjeons.Count == 0
                 ? "<color=#ffd27a><b>하단전을 열 칸을 고르세요.</b> 한 번 고르면 바뀌지 않아요. 칸의 기 = 단전마다 (공력 − 거리)</color>"
                 : "칸의 기 = 단전마다 (공력 − 거리)의 합. 거리는 상하좌우로 센 칸 수예요.";
@@ -244,6 +248,37 @@ namespace AThousandDawns.Prototype
             }
         }
 
+        // 부품: 종류마다 남은 개수. 고르고 빈 칸을 누르면 놓여요 · 판의 부품은 오른쪽 클릭으로 거둬요
+        void DrawPartRow(PlayerItems items, Rect area)
+        {
+            Fill(area, new Color(0.12f, 0.18f, 0.22f, 0.9f));
+            GUI.Label(new Rect(area.x + 8f * K, area.y + 8f * K, 250f * K, 24f * K), "<color=#9fd4ff><b>부품</b> · 고르고 빈 칸 · 오른쪽 클릭 거두기</color>", _small);
+            PartKind[] kinds = { PartKind.Tongmaek, PartKind.Jeomhyeol, PartKind.Hanok };
+            string[] hints = { "지나는 기가 줄지 않음", "기를 막음", $"붙은 기물 최대 기 +{items.Board.HanokMaxQi}" };
+            float x = area.x + 260f * K;
+            float w = (area.xMax - x - 8f * K) / 3f;
+            for (int i = 0; i < 3; i++)
+            {
+                var kind = kinds[i];
+                int loose = items.CountParts(kind, true), total = items.CountParts(kind);
+                var rect = new Rect(x + i * w, area.y + 4f * K, w - 6f * K, area.height - 8f * K);
+                bool chosen = _placingPart == kind;
+                GUI.enabled = total > 0;
+                if (GUI.Button(rect, $"{(chosen ? "▶ " : "")}{PlayerItems.PartLabel(kind)} {loose}/{total} · {hints[i]}", _button))
+                    _placingPart = chosen || loose == 0 ? PartKind.None : kind;
+                GUI.enabled = true;
+                if (chosen) Outline(rect, new Color(0.6f, 0.85f, 1f), 2f);
+            }
+        }
+
+        static string PartMark(PartKind kind) => kind switch
+        {
+            PartKind.Tongmaek => "<color=#9fd4ff><b>━ 통맥</b></color>",
+            PartKind.Jeomhyeol => "<color=#ff8a7a><b>✕ 점혈</b></color>",
+            PartKind.Hanok => "<color=#c8f0ff><b>◆ 한옥</b></color>",
+            _ => "",
+        };
+
         void DrawCell(PlayerItems items, Vector2Int cell, Rect rect)
         {
             var board = items.Board;
@@ -269,11 +304,18 @@ namespace AThousandDawns.Prototype
             if (point != Acupoint.None) tags = tags.Length > 0 ? $"{tags} {AcupointTag(point)}" : AcupointTag(point);
             if (tags.Length > 0) GUI.Label(new Rect(rect.x + 30f * K, rect.y + 4f * K, rect.width - 34f * K, 18f * K), tags, _tag); // 오른쪽 위: 단전 · 혈자리 (겹치지 않게 한 줄로)
 
+            var part = board.PartAt(cell);
+            if (part != PartKind.None)
+            {
+                Fill(new Rect(rect.x + 6f * K, rect.y + 24f * K, rect.width - 12f * K, rect.height - 34f * K), new Color(0.08f, 0.1f, 0.14f, 0.85f));
+                GUI.Label(new Rect(rect.x, rect.y + 30f * K, rect.width, 40f * K), PartMark(part), _cellName);
+            }
             if (item != null && item != _dragged) DrawItemInCell(item, rect);
             else if (item != null) GUI.Label(new Rect(rect.x, rect.y + 30f * K, rect.width, 40f * K), "<color=#9a9a9a>(옮기는 중)</color>", _cellName);
 
             // 끌고 있으면 이 칸에 놓았을 때의 상태. 혈자리를 고르는 중이면 열 수 있는 칸만 밝게.
-            if (_acupoint != Acupoint.None) Outline(rect, point == Acupoint.None ? new Color(1f, 0.85f, 0.4f, hover ? 1f : 0.35f) : new Color(0.4f, 0.4f, 0.4f), hover ? 3f : 1f);
+            if (_placingPart != PartKind.None) Outline(rect, item == null && part == PartKind.None && !board.IsDanjeon(cell) ? new Color(0.6f, 0.85f, 1f, hover ? 1f : 0.35f) : new Color(0.4f, 0.4f, 0.4f), hover ? 3f : 1f);
+            else if (_acupoint != Acupoint.None) Outline(rect, point == Acupoint.None ? new Color(1f, 0.85f, 0.4f, hover ? 1f : 0.35f) : new Color(0.4f, 0.4f, 0.4f), hover ? 3f : 1f);
             else if (_dragged != null) Outline(rect, StateColor(Preview(_dragged.Def, qi, board.MaxQiBonusAt(cell))), 3f);
             else if (hover) Outline(rect, Color.white, 1f);
 
@@ -312,8 +354,9 @@ namespace AThousandDawns.Prototype
             GUI.Box(area, GUIContent.none);
             if (_dragged != null && _dragged.OnBoard)
                 Outline(area, new Color(1f, 0.85f, 0.4f, area.Contains(Event.current.mousePosition) ? 1f : 0.4f), 2f); // 여기로 놓을 수 있어요
-            GUI.Label(new Rect(area.x + 8f * K, area.y + 4f * K, area.width - 16f * K, 22f * K), $"<b>보관함</b> {items.BagCount}개  (놓지 않은 기물은 효과 없음)", _small);
-            GUI.Label(new Rect(area.x + 8f * K, area.y + 24f * K, area.width - 16f * K, 20f * K), "<color=#9a9a9a>판의 기물을 여기로 끌어 놓으면 보관함으로</color>", _small);
+            string cap = !items.HasBag ? "없음" : items.BagCapacity < 0 ? $"{items.BagCount}개" : $"{items.BagCount}/{items.BagCapacity}칸";
+            GUI.Label(new Rect(area.x + 8f * K, area.y + 4f * K, area.width - 16f * K, 22f * K), $"<b>주머니</b> {cap}  (놓지 않은 기물은 효과 없음)", _small);
+            GUI.Label(new Rect(area.x + 8f * K, area.y + 24f * K, area.width - 16f * K, 20f * K), items.HasBag ? "<color=#9a9a9a>판의 기물을 여기로 끌어 놓으면 주머니로</color>" : "<color=#9a9a9a>회귀록에서 주머니를 열어야 넣을 수 있어요</color>", _small);
             float y = area.y + 48f * K;
 
             int count = items.BagCount;
@@ -352,7 +395,7 @@ namespace AThousandDawns.Prototype
             var e = Event.current;
             if (_dragged == null || e.rawType != EventType.MouseUp) return;
             if (_hoveredCell.HasValue) items.Place(_dragged, _hoveredCell.Value);
-            else if (_bagRect.Contains(e.mousePosition)) items.ToBag(_dragged);
+            else if (_bagRect.Contains(e.mousePosition) && !items.ToBag(_dragged)) Notice(items.HasBag ? "주머니가 가득해요" : "주머니가 없어요 · 회귀록에서 열어요");
             _dragged = null;
             if (e.type == EventType.MouseUp) e.Use();
         }
@@ -423,6 +466,22 @@ namespace AThousandDawns.Prototype
                 items.AddDanjeon(cell); // 첫 하단전
                 return;
             }
+            // 부품: 오른쪽 클릭이면 거두고, 고른 부품이 있으면 빈 칸에 놓아요
+            var placed = items.PartAt(cell);
+            if (button == 1 && placed != null)
+            {
+                items.RemovePart(placed);
+                return;
+            }
+            if (_placingPart != PartKind.None && button == 0)
+            {
+                OwnedPart loose = null;
+                foreach (var p in items.Parts) if (p.Kind == _placingPart && !p.OnBoard) { loose = p; break; }
+                if (loose == null) _placingPart = PartKind.None;
+                else if (!items.PlacePart(loose, cell)) Notice("기물·부품·단전이 없는 빈 칸에만 놓을 수 있어요");
+                else if (items.CountParts(_placingPart, true) == 0) _placingPart = PartKind.None;
+                return;
+            }
             if (_acupoint != Acupoint.None)
             {
                 if (button != 0) return;
@@ -434,7 +493,7 @@ namespace AThousandDawns.Prototype
             var item = items.At(cell);
             if (button == 1)
             {
-                if (item != null) items.ToBag(item);
+                if (item != null && !items.ToBag(item)) Notice(items.HasBag ? "주머니가 가득해요" : "주머니가 없어요 · 회귀록에서 열어요");
                 if (item == _dragged) _dragged = null;
                 return;
             }

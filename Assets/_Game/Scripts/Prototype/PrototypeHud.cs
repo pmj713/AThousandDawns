@@ -47,7 +47,9 @@ namespace AThousandDawns.Prototype
             DrawFork();
             DrawShop();
             DrawEvent();
+            DrawResult();
             DrawOffer(); // 기물 카드는 맨 위에
+            DrawDiscard(); // 둘 곳이 없을 때 버릴 기물 고르기는 그보다 위에
         }
 
         void DrawHud()
@@ -59,7 +61,7 @@ namespace AThousandDawns.Prototype
             GUILayout.Label("일조천회 시험판 · 전투", _label);
             GUILayout.Label("WASD 이동 · 좌클릭(누르고 있기) 평타 · 우클릭 회선참 · Q 만검귀종 · Space 대시 · R 금창약(누르고 있기)", _label);
             GUILayout.Label("부르기 (바로 옆): 1 졸개 · 2 멧돼지 · 3 궁수 · 4 들개 · 5 방패 · 6 나팔수 · 7 화약 · 8 청죽사 · 9 녹림왕 (결투장) · 0 살수 · - 청죽객 · = 철권 마웅 · Shift+숫자 정예", _label);
-            GUILayout.Label("G 기세 채우기 · F5 처음부터 · 키워드 F1 열양 F2 빙백 F3 뇌정 F4 강기 F6 금강 F7 경공 F8 마도 F9 정종 · 기물 상태 F10 기 부족 F11 운기 F12 주화입마 · I 기물 고르기 · E 경맥도 · L 레벨업", _wrapLabel);
+            GUILayout.Label("G 기세 채우기 · F5 처음부터 · 키워드 F1 열양 F2 빙백 F3 뇌정 F4 강기 F6 금강 F7 경공 F8 마도 F9 정종 · 기물 상태 F10 기 부족 F11 운기 F12 주화입마 · I 기물 고르기 · E 경맥도 · L 레벨업 · K 쓰러지기 · P 부품 셋", _wrapLabel);
             if (player != null)
             {
                 GUILayout.Label($"체력 {player.Health:0}/{player.MaxHealth:0}", _label);
@@ -122,7 +124,7 @@ namespace AThousandDawns.Prototype
             if (run != null && run.AtGate && !run.IsForking)
                 GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), $"F 다음 층으로 · 남은 전투 방 {run.Map.FightsLeft()} · 추적도 {run.Tracking}", _big);
 
-            if (player != null && player.IsDead)
+            if (player != null && player.IsDead && run == null) // 판 구조 씬은 결과 화면이 대신 떠요
                 GUI.Label(new Rect(0, UiScale.Height * 0.4f, UiScale.Width, 60), "쓰러졌어요 · F5 키로 다시 시작", _big);
 
             // 녹림왕이 깨어나면 화면 아래쪽 가운데에 큰 체력바 (왼쪽 위 도움말과 겹치지 않게)
@@ -220,15 +222,16 @@ namespace AThousandDawns.Prototype
             int bag = items.BagCount;
             GUILayout.BeginArea(new Rect(UiScale.Width - width - 16f, 16f, width, 64f + Mathf.Max(1, count) * 21f + (bag > 0 ? 24f : 0f)), GUI.skin.box);
             string pending = arena != null && arena.PendingOffers > 0 && !arena.IsChoosing ? $" · 고르기 {arena.PendingOffers}개 남음" : "";
-            GUILayout.Label($"기물 {count}개 (경맥도 {count - bag} · 보관함 {bag}){pending}", _label);
+            string bagText = !items.HasBag ? "주머니 없음" : items.BagCapacity < 0 ? $"주머니 {bag}" : $"주머니 {bag}/{items.BagCapacity}";
+            GUILayout.Label($"기물 {count}개 (경맥도 {count - bag} · {bagText}){pending}", _label);
             if (count == 0) GUILayout.Label(run != null ? "기물 길의 보상 방에서 3개 중 하나를 골라요 (I: 바로 고르기)" : "무리를 다 쓰러뜨리면 3개 중 하나를 골라요 (I: 바로 고르기)", _itemLine);
-            if (bag > 0) GUILayout.Label("<color=#ffd27a>보관함의 기물은 효과가 없어요 · E로 경맥도에 놓기</color>", _itemSmall);
+            if (bag > 0) GUILayout.Label("<color=#ffd27a>주머니의 기물은 효과가 없어요 · E로 경맥도에 놓기</color>", _itemSmall);
             foreach (var item in items.Items)
             {
                 var def = item.Def;
                 var state = PlayerItems.StateOf(item);
                 int level = PlayerItems.LevelOf(item);
-                string stateText = !item.OnBoard ? "<color=#9a9a9a>보관함</color>"
+                string stateText = !item.OnBoard ? "<color=#9a9a9a>주머니</color>"
                     : state == QiState.Lacking ? "<color=#9a9a9a>기 부족</color>"
                     : state == QiState.Circulating ? $"운기 {level}레벨"
                     : $"<color=#ff6a5a>주화입마 {level}레벨</color>";
@@ -308,6 +311,7 @@ namespace AThousandDawns.Prototype
                 {
                     InnShop.SlotKind.Item => $"<b>{s.Item.name}</b>  {Colored(s.Item.keyword)} · {GradeColored(s.Item.grade)} · 기 {s.Item.minQi}–{s.Item.maxQi}\n<size=13>{s.Item.effectText}</size>",
                     InnShop.SlotKind.Potion => $"<b>금창약</b>  최대 체력 40% 회복 (R 누르고 있기)\n<size=13>지금 {player.Potions}/{player.PotionMax}개</size>",
+                    InnShop.SlotKind.Part => $"<b>부품 {PlayerItems.PartLabel(s.Part)}</b>\n<size=13>경맥도 칸에 놓는 부품 (E · 부품 줄)</size>",
                     _ => "<b>숙박</b>  지금 바로 체력 30% 회복",
                 };
                 string text = $"<size=13>[{i + 1}]</size>  {body}\n<size=13>은자 {price}{(blocker != null && !s.Sold ? $"  <color=#9a9a9a>· {blocker}</color>" : "")}</size>";
@@ -317,6 +321,35 @@ namespace AThousandDawns.Prototype
             }
             if (!string.IsNullOrEmpty(run.ShopNotice))
                 GUI.Label(new Rect(0, y + slots.Count * (rowH + 6f) + 10f, UiScale.Width, 40f), run.ShopNotice, _big);
+        }
+
+        // 판 결과 (쓰러짐 · 녹림왕 격파): 기록 → 회귀의 기억. Enter·F5로 다시 회귀
+        void DrawResult()
+        {
+            if (run == null || !run.IsShowingResult) return;
+            EnsureStyles();
+            var r = run.Result;
+            var old = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.82f);
+            GUI.DrawTexture(new Rect(0, 0, UiScale.Width, UiScale.Height), Texture2D.whiteTexture);
+            GUI.color = old;
+
+            const float w = 620f;
+            float x = (UiScale.Width - w) * 0.5f, y = UiScale.Height * 0.16f;
+            GUI.Label(new Rect(0, y, UiScale.Width, 50f), r.Victory ? "죽림을 돌파했어요" : "쓰러졌어요 · 첫날 아침으로 회귀해요", _big);
+            GUI.Label(new Rect(0, y + 52f, UiScale.Width, 30f), $"<color=#cfcfcf>{r.Where} · {r.Runs}번째 회귀</color>", _bossLabel);
+            float row = y + 110f;
+            foreach (var line in r.Lines)
+            {
+                if (line.count <= 0f) continue;
+                GUI.Label(new Rect(x, row, w * 0.55f, 30f), line.label, _label);
+                GUI.Label(new Rect(x + w * 0.45f, row, w * 0.25f, 30f), $"{line.count:0}", _label);
+                GUI.Label(new Rect(x + w * 0.7f, row, w * 0.3f, 30f), $"<color=#ffd27a>기억 +{line.memory:0.#}</color>", _label);
+                row += 32f;
+            }
+            row += 10f;
+            GUI.Label(new Rect(x, row, w, 34f), $"<b>회귀의 기억 +{r.Memory}</b>   <color=#cfcfcf>(가진 기억 {r.StoredMemory})</color>", _big);
+            GUI.Label(new Rect(0, row + 60f, UiScale.Width, 30f), "<color=#cfcfcf>B 회귀록 · Enter · F5 다시 회귀</color>", _bossLabel);
         }
 
         // 이벤트 (시간이 멈춰 있어요): 제목 · 글 · 선택지. 🔒 선택지는 조건이 안 되면 흐리게 이유만.
@@ -376,6 +409,35 @@ namespace AThousandDawns.Prototype
             }
         }
 
+        // 버릴 기물 고르기: 경맥도도 주머니도 가득일 때 새 기물을 받으려면 가진 기물 하나를 버려요 (그 자리에 새 기물). Esc 포기
+        void DrawDiscard()
+        {
+            var pending = arena != null ? arena.PendingItem : null;
+            if (pending == null || player == null || player.Items == null) return;
+            EnsureStyles();
+            var old = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.75f);
+            GUI.DrawTexture(new Rect(0, 0, UiScale.Width, UiScale.Height), Texture2D.whiteTexture);
+            GUI.color = old;
+
+            var items = player.Items;
+            string why = items.HasBag ? $"경맥도도 주머니({items.BagCapacity}칸)도 가득해요" : "경맥도가 가득하고 주머니가 없어요 (회귀록에서 열어요)";
+            float w = 760f, rowH = 40f;
+            float x = (UiScale.Width - w) * 0.5f, y = UiScale.Height * 0.12f;
+            GUI.Label(new Rect(0, y, UiScale.Width, 44f), $"새 기물: {pending.name}  {Colored(pending.keyword)} · {GradeColored(pending.grade)}", _big);
+            GUI.Label(new Rect(0, y + 46f, UiScale.Width, 28f), $"<color=#cfcfcf>{why} · 버릴 기물을 고르면 그 자리에 놓여요 · Esc 포기</color>", _bossLabel);
+            float row = y + 92f;
+            for (int i = 0; i < items.Items.Count; i++)
+            {
+                var it = items.Items[i];
+                string where = it.OnBoard ? $"경맥도 ({it.Cell.x + 1},{it.Cell.y + 1})" : "주머니";
+                string text = $"<size=13>[{(i < 9 ? (i + 1).ToString() : "-")}]</size>  버리기 · <b>{it.Def.name}</b>  {Colored(it.Def.keyword)} · {GradeColored(it.Def.grade)} · {where}";
+                if (GUI.Button(new Rect(x, row, w, rowH), text, _card)) arena.Discard(i);
+                row += rowH + 4f;
+            }
+            if (GUI.Button(new Rect(x, row + 8f, w, rowH), "포기 · 새 기물을 받지 않아요 (Esc)", _card)) arena.DeclinePending();
+        }
+
         // 기물 고르기 카드 3장 (시간이 멈춰 있어요). 1·2·3 또는 클릭, Esc 넘기기
         void DrawOffer()
         {
@@ -397,7 +459,7 @@ namespace AThousandDawns.Prototype
                 string aux = string.IsNullOrEmpty(def.aux) ? "" : $" · 보조 #{def.aux}";
                 string text = $"<size=13>[{i + 1}]</size>  <b><size=19>{def.name}</size></b>\n" +
                               $"{Colored(def.keyword)} · {GradeColored(def.grade)}{aux}\n" +
-                              $"기 {def.minQi}–{def.maxQi} · 경맥도 빈 칸에 왼쪽 위부터 놓여요 (가득 차면 보관함)\n\n" +
+                              $"기 {def.minQi}–{def.maxQi} · 경맥도 빈 칸에 왼쪽 위부터 놓여요 (가득 차면 주머니)\n\n" +
                               $"{def.effectText}\n\n" +
                               $"<color=#ff8a7a>주화입마 부작용: {def.sideText}</color>";
                 if (GUI.Button(new Rect(x + i * (cardW + gap), y, cardW, cardH), text, _card)) arena.Choose(i);

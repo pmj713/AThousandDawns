@@ -354,7 +354,8 @@ namespace AThousandDawns.Prototype
                     if (def != null && def.grade == item.Def.grade && !Player.Items.Has(def.id)) same.Add(def);
             if (same.Count == 0) return "이겼지만 같은 등급 기물이 남아 있지 않아요.";
             var won = same[_rng.Next(same.Count)];
-            Player.Items.Add(won);
+            if (Player.Items.Add(won) == null && Player.Items.Pending == won)
+                return $"이겼어요! {won.name} · 둘 곳이 없어 하나를 버려야 받아요.";
             return $"이겼어요! {won.name}을(를) 얻었어요.";
         }
 

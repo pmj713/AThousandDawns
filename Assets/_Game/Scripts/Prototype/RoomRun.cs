@@ -22,7 +22,7 @@ namespace AThousandDawns.Prototype
     public sealed partial class RoomRun : MonoBehaviour
     {
         public enum Phase { None, Fork, Floor, Master, Inn, Rest, Boss, Done }
-        public enum RewardKind { Item, Heal }
+        public enum RewardKind { Item, Heal, Part }
 
         public struct Path
         {
@@ -111,6 +111,7 @@ namespace AThousandDawns.Prototype
             _minSpawnDistance = GameConfig.Get("room.spawn_min_distance", 5f);
             _floors = Mathf.Max(1, Mathf.RoundToInt(GameConfig.Get("room.floors", 3f)));
             SetGateMarker(false);
+            ApplyBook();
             if (PrototypeArena.AutoSpawn) BeginFork(1);
         }
 
@@ -118,6 +119,7 @@ namespace AThousandDawns.Prototype
         {
             if (_bannerTimer > 0f) _bannerTimer -= Time.unscaledDeltaTime;
             if (Player == null) return;
+            if (TickResult()) return; // 쓰러짐·판 끝 → 결과 화면
 
             if (IsForking)
             {
@@ -130,14 +132,15 @@ namespace AThousandDawns.Prototype
             }
             if (Player.IsDead) return;
 
+            bool discarding = Player.Items != null && Player.Items.Pending != null; // 버릴 기물을 고르는 중 (PrototypeArena)
             if (IsShopping)
             {
-                TickShopKeys();
+                if (!discarding) TickShopKeys();
                 return;
             }
             if (IsInEvent)
             {
-                TickEventKeys();
+                if (!discarding) TickEventKeys();
                 return;
             }
 
@@ -177,6 +180,7 @@ namespace AThousandDawns.Prototype
             float dense = GameConfig.Get("room.fork_dense_chance", 0.4f);
             // 한 갈림길에 같은 보상 종류는 한 번만 (기물 옅은 길 + 기물 짙은 길 같이 안 나옴)
             var kinds = new List<RewardKind>((RewardKind[])Enum.GetValues(typeof(RewardKind)));
+            if (_unlockedParts.Count == 0) kinds.Remove(RewardKind.Part); // 부품 길은 회귀록에서 부품을 연 뒤부터
             for (int i = kinds.Count - 1; i > 0; i--)
             {
                 int j = _rng.Next(i + 1);
@@ -207,7 +211,7 @@ namespace AThousandDawns.Prototype
             Enter(_map.Start, -1);
         }
 
-        public static string RewardLabel(RewardKind kind) => kind == RewardKind.Item ? "기물" : "운기조식";
+        public static string RewardLabel(RewardKind kind) => kind == RewardKind.Item ? "기물" : kind == RewardKind.Part ? "부품" : "운기조식";
         public static string PathLabel(Path p) => $"{RewardLabel(p.Reward)} · 기운 {(p.Dense ? "짙음" : "옅음")}";
 
         public string PathDetail(Path p)
@@ -215,6 +219,8 @@ namespace AThousandDawns.Prototype
             float mult = p.Dense ? DenseMultiplier : 1f;
             string reward = p.Reward == RewardKind.Item
                 ? (p.Dense ? "기물 3개 중 하나 (한 단계 위 등급표)" : "기물 3개 중 하나")
+                : p.Reward == RewardKind.Part
+                ? (p.Dense ? "부품 둘 고르기" : "부품 하나 고르기") + $" ({PartNames()})"
                 : $"체력 {GameConfig.Get("room.heal_ratio", 0.3f) * mult:0%} 회복";
             string enemies = p.Dense ? $"적 체력 +{GameConfig.Get("room.dense_health", 1.3f) - 1f:0%} · 방마다 정예 1명" : "적 보통";
             return $"{reward}\n{enemies} · 방마다 은자 {Mathf.RoundToInt(GameConfig.Get("silver.room", 18f) * mult)}";
@@ -301,6 +307,7 @@ namespace AThousandDawns.Prototype
             ClearPending();
             EndHunt();
             EndFloorEffects();
+            _record.FloorsCleared++; // 관문을 지나면 그 층 돌파
             _fighting = false;
             SetLocks(false);
             SetGateMarker(false);
@@ -458,6 +465,11 @@ namespace AThousandDawns.Prototype
                     arena.GrantOffer(_path.Dense ? DenseGradeWeights() : null);
                     text += " · 기물 고르기";
                 }
+                else if (_path.Reward == RewardKind.Part)
+                {
+                    OpenPartChoice(_path.Dense ? 2 : 1);
+                    text += " · 부품 고르기";
+                }
                 else
                 {
                     float heal = Player.MaxHealth * GameConfig.Get("room.heal_ratio", 0.3f) * mult;
@@ -486,7 +498,7 @@ namespace AThousandDawns.Prototype
             MovePlayer(inn.entry);
             director.ResetRoom();
             var db = GameConfig.Items;
-            Shop = db == null ? null : InnShop.Stock(db.Items, Player.Items, RegionGradeWeights(), _rng);
+            Shop = db == null ? null : InnShop.Stock(db.Items, Player.Items, RegionGradeWeights(), _rng, _innStockBonus, _unlockedParts);
             int before = Tracking;
             Tracking = Mathf.FloorToInt(Tracking * GameConfig.Get("tracking.inn_ratio", 0.5f)); // 객잔에 들르면 추적도 절반
             ShowBanner($"객잔 · 점소이 앞에서 F로 진열대 (북쪽 문: 정비실) · 추적도 {before} → {Tracking}");
@@ -553,8 +565,18 @@ namespace AThousandDawns.Prototype
                 ShopNotice = blocker;
                 return false;
             }
-            Silver -= Shop.Buy(index, Player, Silver);
+            var slot = Shop.Slots[index];
+            int paid = Shop.Buy(index, Player, Silver);
+            Silver -= paid;
             ShopNotice = null;
+            // 둘 곳이 없으면 버릴 기물을 고르고, 포기하면 은자를 돌려받아요
+            if (slot.Kind == InnShop.SlotKind.Item && Player.Items.Pending == slot.Item)
+                Player.Items.OnPendingResolved(taken =>
+                {
+                    if (taken) return;
+                    Silver += paid;
+                    slot.Sold = false;
+                });
             return true;
         }
 
@@ -592,6 +614,7 @@ namespace AThousandDawns.Prototype
         void FinishRun()
         {
             _phase = Phase.Done;
+            _record.FloorsCleared++; // 보스 층 돌파
             int silver = Mathf.RoundToInt(GameConfig.Get("silver.boss", 50f));
             Silver += silver;
             arena.GrantOffer(SpecialGradeWeights()); // 보스·살수 특별 보상 표
@@ -665,6 +688,7 @@ namespace AThousandDawns.Prototype
         void OnDestroy()
         {
             if (IsForking || IsShopping || IsInEvent) Time.timeScale = 1f;
+            AThousandDawns.Combat.Damageable.AnyDied -= OnAnyDied;
         }
 
         // HUD 한 줄

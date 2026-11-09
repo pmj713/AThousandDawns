@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Linq;
 using AThousandDawns.Player;
@@ -47,11 +47,21 @@ namespace AThousandDawns.Tests
             var run = Object.FindFirstObjectByType<RoomRun>();
             var player = Object.FindFirstObjectByType<PlayerController>();
             run.ChooseFork(0);
-            while (run.Floor < run.Floors)
+            for (int guard = 0; run.Floor < run.Floors && guard < 10; guard++)
             {
                 run.LeaveFloor();
+                if (run.CurrentPhase == RoomRun.Phase.Master) // 2층 관문: 고수를 쓰러뜨리고 흡성 (은자는 그대로)
+                {
+                    run.Master.Damageable.ApplyHit(Mathf.CeilToInt(run.Master.Damageable.MaxHealth * 0.55f));
+                    yield return WaitUntil(() => run.MasterInfo.Phase == 2 && !run.MasterInfo.IsTransitioning, 4f);
+                    run.Master.Damageable.ApplyHit(99999);
+                    yield return WaitUntil(() => run.IsInEvent, 3f);
+                    run.ChooseEvent(1);
+                    run.CloseEvent();
+                }
                 run.ChooseFork(0);
             }
+            Assert.AreEqual(run.Floors, run.Floor);
             run.LeaveFloor();
             Assert.AreEqual(RoomRun.Phase.Inn, run.CurrentPhase, "마지막 층 관문 → 객잔");
 
