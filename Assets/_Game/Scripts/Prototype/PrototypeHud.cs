@@ -83,7 +83,7 @@ namespace AThousandDawns.Prototype
                 if (player.TabletUsed) slow += "  · 불괴 호패 씀";
                 GUILayout.Label($"대시 {player.Dash.Charges}/{player.Dash.MaxCharges}  {(player.IsInvulnerable ? "(무적)" : "")}{slow}", _label);
                 string ultimate = player.IsCastingUltimate ? "  · 만검귀종!" : player.UltimateReady ? "  · Q 만검귀종 준비" : "";
-                GUILayout.Label($"기세 {player.Gauge:0}/{player.GaugeMax:0}{ultimate}", _label);
+                GUILayout.Label($"기세 {player.Gauge:0}/{player.GaugeCap:0}{ultimate}", _label);
                 string drink = player.IsDrinking ? $"  · 마시는 중 {player.PotionProgress:0%}" : "";
                 GUILayout.Label($"금창약 {player.Potions}/{player.PotionMax}{drink}", _label);
                 var level = player.Level;

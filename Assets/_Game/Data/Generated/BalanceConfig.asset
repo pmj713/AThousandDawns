@@ -2281,10 +2281,10 @@ MonoBehaviour:
     value: 0.01
     unit: 
     note: "\uCF8C: \uD3EC\uC778\uD2B8\uB2F9 \uACF5\uACA9 \uC18D\uB3C4"
-  - key: meditation.swift_dash_attack
+  - key: meditation.swift_opener_speed
     value: 0.15
     unit: 
-    note: "\uCF8C 10: \uB300\uC2DC \uACF5\uACA9 \uD53C\uD574 +"
+    note: "\uCF8C 5: \uD3C9\uD0C0 1\xB72\uD0C0 \uACF5\uACA9 \uC18D\uB3C4 +"
   - key: meditation.iron_per_point
     value: 2
     unit: 
@@ -2441,3 +2441,31 @@ MonoBehaviour:
     value: 0.9
     unit: "\uCE78"
     note: "\uD56D\uC544\uB9AC\uC5D0 \uBD80\uB52A\uD788\uB294 \uAC70\uB9AC (\uC784\uC2DC)"
+  - key: meditation.swift_finisher_recovery_cut
+    value: 0.5
+    unit: 
+    note: "\uCF8C 10: 3\uD0C0\uC9F8 \uB4A4 \uC26C\uB294 \uD2C8 \u2212"
+  - key: meditation.swift_echo_ratio
+    value: 0.5
+    unit: 
+    note: "\uCF8C 20: 3\uD0C0\uC9F8 \uC794\uC0C1 \uD53C\uD574 (3\uD0C0 \uD53C\uD574 \xD7)"
+  - key: meditation.swift_echo_delay
+    value: 0.12
+    unit: "\uCD08"
+    note: "\uCF8C 20: 3\uD0C0\uC9F8 \uB4A4 \uC794\uC0C1\uC774 \uBCA0\uAE30\uAE4C\uC9C0 (\uC784\uC2DC)"
+  - key: meditation.iron_room_heal
+    value: 0.04
+    unit: 
+    note: "\uAC15 10: \uC804\uD22C \uBC29\uC744 \uBE44\uC6B8 \uB54C \uCCB4\uB825 \uD68C\uBCF5 (\uCD5C\uB300 \uCCB4\uB825 \uBE44\uC728)"
+  - key: meditation.meridian_power_cut
+    value: 1
+    unit: 
+    note: "\uB9E5 20: \uB2E8\uC804 2\uAC1C\uB85C \uC2DC\uC791\uD558\uB294 \uB300\uC2E0 \uACF5\uB825 \u2212"
+  - key: meditation.shadow_inn_interest
+    value: 0.2
+    unit: 
+    note: "\uC740 20: \uAC1D\uC794\uC5D0 \uB4E4\uB97C \uB54C \uAC00\uC9C4 \uC740\uC790 \uC774\uC790"
+  - key: meditation.shadow_inn_interest_max
+    value: 100
+    unit: "\uC740\uC790"
+    note: "\uC740 20: \uC774\uC790 \uCD5C\uB300"

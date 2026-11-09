@@ -2,7 +2,7 @@ namespace AThousandDawns.Core
 {
     // 면벽수련 (기획 대화): 회귀록에서 얻은 심득을 심법 6종에 나눠 넣어요. 언제든 무료로 다시 나눌 수 있어요.
     // 심득 = 면벽수련 5 + 심득 +5 봉우리마다 5 (최대 30, 회귀록 시트 심득 합계).
-    // 포인트당 작은 보너스 + 5·10·20 단계 보상. Ready = false인 단계는 바탕 콘텐츠가 아직 없어서 "준비 중".
+    // 포인트당 작은 보너스 + 5·10·20 단계 보상. Ready = false인 단계는 바탕 콘텐츠가 아직 없어서 "준비 중" (지금은 모두 준비됨).
     public static class Meditation
     {
         public enum Art { Swift, Iron, Meridian, Insight, Shadow, Qi } // 쾌 강 맥 오 은 기
@@ -18,18 +18,18 @@ namespace AThousandDawns.Core
 
         public static readonly ArtInfo[] Arts =
         {
-            new ArtInfo { Name = "쾌(快)", Theme = "속도", PerPoint = "공격 속도 +1%",
-                Milestones = new[] { "대시 +1회", "대시 공격 피해 +15%", "대시 중에 초식 사용" }, Ready = new[] { true, true, false } },
+            new ArtInfo { Name = "쾌(快)", Theme = "평타 속도", PerPoint = "공격 속도 +1%",
+                Milestones = new[] { "평타 1·2타 공격 속도 +15%", "3타째 뒤 다음 콤보까지 쉬는 틈 −50%", "3타째를 잔상이 한 번 더 벰 (피해 50%)" }, Ready = new[] { true, true, true } },
             new ArtInfo { Name = "강(剛)", Theme = "생존", PerPoint = "최대 체력 +2",
-                Milestones = new[] { "강인함 +3", "층마다 첫 피격 무효", "한 판에 한 번 기사회생 (체력 40%)" }, Ready = new[] { true, true, true } },
+                Milestones = new[] { "강인함 +3", "전투 방을 비울 때마다 체력 4% 회복", "한 판에 한 번 기사회생 (체력 40%)" }, Ready = new[] { true, true, true } },
             new ArtInfo { Name = "맥(脈)", Theme = "경맥", PerPoint = "수련치 +2%",
-                Milestones = new[] { "시작 시 혈자리 1개", "시작 시 부품 1개 고르기", "단전 2개로 시작, 대신 공력 −1" }, Ready = new[] { true, true, false } },
+                Milestones = new[] { "시작 시 혈자리 1개", "시작 시 부품 1개 고르기", "단전 2개로 시작, 대신 공력 −1" }, Ready = new[] { true, true, true } },
             new ArtInfo { Name = "오(悟)", Theme = "탐험", PerPoint = "행운 +1 (기물 등급)",
                 Milestones = new[] { "기연 감지 조건 공력 4 → 3", "갈림길 선택지 +1", "고수 처치 후 3가지 중 2가지" }, Ready = new[] { true, true, true } },
             new ArtInfo { Name = "은(隱)", Theme = "잠행·경제", PerPoint = "은자 획득 +2%",
-                Milestones = new[] { "시작 은자 +50", "객잔 가격 −15%", "추적도 오르는 속도 절반" }, Ready = new[] { true, true, true } },
+                Milestones = new[] { "시작 은자 +50", "객잔 가격 −15%", "객잔에 들를 때 은자 이자 20% (최대 100)" }, Ready = new[] { true, true, true } },
             new ArtInfo { Name = "기(氣)", Theme = "내공", PerPoint = "기세 충전 +1%",
-                Milestones = new[] { "초식 쿨타임 −10%", "전투 시작 시 기세 30%", "기세를 200%까지 저장 (절초 2회)" }, Ready = new[] { true, true, false } },
+                Milestones = new[] { "초식 쿨타임 −10%", "전투 시작 시 기세 30%", "기세를 200%까지 저장 (절초 2회)" }, Ready = new[] { true, true, true } },
         };
 
         // 회귀록에서 얻은 심득 합계

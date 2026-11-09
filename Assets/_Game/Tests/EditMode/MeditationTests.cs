@@ -38,13 +38,15 @@ namespace AThousandDawns.Tests
         }
 
         [Test]
-        public void 준비_중인_단계는_도달해도_켜지지_않음()
+        public void 모든_단계가_준비되어_도달하면_켜짐()
         {
+            foreach (var art in Meditation.Arts)
+                CollectionAssert.AreEqual(new[] { true, true, true }, art.Ready, $"{art.Name}: 준비 중인 단계가 없어요");
             var meta = WithBuds("meditation", "insight1", "insight2", "insight3");
-            for (int i = 0; i < 20; i++) Meditation.Add(meta, MArt.Swift, 1);
-            Assert.IsTrue(Meditation.Reached(meta, MArt.Swift, 2));
-            Assert.IsFalse(Meditation.Active(meta, MArt.Swift, 2), "쾌 20 (대시 중 초식)은 준비 중");
-            Assert.IsTrue(Meditation.Active(meta, MArt.Swift, 1));
+            for (int i = 0; i < 19; i++) Meditation.Add(meta, MArt.Swift, 1);
+            Assert.IsFalse(Meditation.Active(meta, MArt.Swift, 2), "19면 아직");
+            Meditation.Add(meta, MArt.Swift, 1);
+            Assert.IsTrue(Meditation.Active(meta, MArt.Swift, 2), "쾌 20: 잔상");
         }
 
         [Test]

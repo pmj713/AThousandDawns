@@ -14,7 +14,7 @@ using MArt = AThousandDawns.Core.Meditation.Art;
 
 namespace AThousandDawns.Tests
 {
-    // 면벽수련이 판 시작에 적용되는지 (강·은·기·쾌)와 강 10·20 (첫 피격 무효, 기사회생).
+    // 면벽수련이 판 시작에 적용되는지 (강·은·기·쾌·맥)와 강 10·20 (방 회복, 기사회생), 기 20·맥 20·은 20.
     public class MeditationRunTests : InputTestFixture
     {
         string _savePath;
@@ -63,10 +63,57 @@ namespace AThousandDawns.Tests
             Assert.AreEqual(5f * 0.9f, player.SkillCooldown, 1e-3f, "기 5: 초식 쿨타임 −10%");
 
             run.ChooseFork(0);
-            Assert.IsTrue(player.FloorGuard, "강 10: 층에 들어가면 첫 피격 무효");
-            Assert.IsFalse(player.TryReceiveHit(30f, player.transform.position + Vector3.forward), "첫 피격은 막아요");
-            Assert.AreEqual(player.MaxHealth, player.Health);
-            Assert.IsFalse(player.FloorGuard);
+            var director = Object.FindFirstObjectByType<AThousandDawns.Enemies.EnemyDirector>();
+            var room = System.Linq.Enumerable.First(run.Map.Rooms, r => r.Kind == FloorRoomKind.Combat);
+            run.Enter(room, -1);
+            Assert.IsTrue(player.TryReceiveHit(40f, player.transform.position + Vector3.forward));
+            float hurt = player.Health;
+            Assert.Less(hurt, player.MaxHealth);
+            float end = Time.realtimeSinceStartup + 20f;
+            while (run.IsFighting && Time.realtimeSinceStartup < end)
+            {
+                for (int i = director.Enemies.Count - 1; i >= 0; i--) director.Enemies[i].Damageable.ApplyHit(99999);
+                yield return null;
+            }
+            Assert.IsFalse(run.IsFighting);
+            Assert.AreEqual(Mathf.Min(player.MaxHealth, hurt + player.MaxHealth * 0.04f), player.Health, 0.5f, "강 10: 방을 비우면 체력 4%");
+        }
+
+        [UnityTest]
+        public IEnumerator 기_20_맥_20_은_20()
+        {
+            Meta((MArt.Qi, 20), (MArt.Meridian, 10));
+            yield return SceneManager.LoadSceneAsync("Prototype_Run", LoadSceneMode.Single);
+            yield return null;
+            var run = Object.FindFirstObjectByType<RoomRun>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            Assert.IsTrue(player.DoubleGauge);
+            Assert.AreEqual(player.GaugeMax * 2f, player.GaugeCap);
+            player.FillGauge();
+            Assert.AreEqual(player.GaugeMax * 2f, player.Gauge, "기 20: 기세 200%");
+            Assert.IsTrue(player.UltimateReady);
+            Assert.AreEqual(1, player.Items.StartDanjeons, "맥 10만 찍었으면 단전 1개");
+
+            Meta((MArt.Meridian, 20), (MArt.Shadow, 10));
+            yield return SceneManager.LoadSceneAsync("Prototype_Run", LoadSceneMode.Single);
+            yield return null;
+            run = Object.FindFirstObjectByType<RoomRun>();
+            player = Object.FindFirstObjectByType<PlayerController>();
+            Assert.AreEqual(2, player.Items.StartDanjeons, "맥 20: 단전 2개");
+            Assert.AreEqual(Mathf.RoundToInt(GameConfig.Get("player.gongryeok", 3f)) - 1, player.Gongryeok, "대신 공력 −1");
+            Assert.IsFalse(player.DoubleGauge);
+        }
+
+        [UnityTest]
+        public IEnumerator 은_20이면_객잔에서_이자()
+        {
+            Meta((MArt.Shadow, 20));
+            yield return SceneManager.LoadSceneAsync("Prototype_Run", LoadSceneMode.Single);
+            yield return null;
+            var run = Object.FindFirstObjectByType<RoomRun>();
+            Assert.AreEqual(50, run.Silver, "은 5: 시작 은자 50");
+            run.EnterInn();
+            Assert.AreEqual(60, run.Silver, "은 20: 50의 20% = 10");
         }
 
         [UnityTest]
@@ -78,7 +125,6 @@ namespace AThousandDawns.Tests
             var run = Object.FindFirstObjectByType<RoomRun>();
             var player = Object.FindFirstObjectByType<PlayerController>();
             run.ChooseFork(0);
-            player.FloorGuard = false;
             Assert.IsTrue(player.ReviveReady);
             player.TryReceiveHit(99999f, player.transform.position + Vector3.forward);
             Assert.IsFalse(player.IsDead, "기사회생");

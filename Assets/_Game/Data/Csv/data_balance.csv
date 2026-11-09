@@ -566,7 +566,7 @@ part.hanok_max_qi,2,,부품 한옥: 붙어 있는 기물의 최대 기 +,기획 
 price.part,100,은자,객잔 부품 가격 (해금된 종류 중 무작위),은자!B23
 meditation.points_per_bud,5,,면벽수련·심득 봉우리 하나당 심득,회귀록!G11 (심득 지급)
 meditation.swift_per_point,1%,,쾌: 포인트당 공격 속도,기획 대화 (면벽수련)
-meditation.swift_dash_attack,15%,,쾌 10: 대시 공격 피해 +,기획 대화 (면벽수련)
+meditation.swift_opener_speed,15%,,쾌 5: 평타 1·2타 공격 속도 +,기획 대화 (면벽수련 재조정)
 meditation.iron_per_point,2,,강: 포인트당 최대 체력,기획 대화 (면벽수련)
 meditation.iron_toughness,3,,강 5: 강인함 +,기획 대화 (면벽수련)
 meditation.iron_revive,40%,,강 20: 기사회생 체력 비율,기획 대화 (면벽수련)
@@ -606,3 +606,10 @@ room.hidden_crack_radius,2,칸,금 간 벽 앞에서 F를 누를 수 있는 거�
 jar.per_room,3,,전투 방마다 항아리 수 (부딪히면 깨짐),은자!C4
 jar.silver,1,은자,항아리 하나 은자 (방당 3),은자!C4
 jar.break_radius,0.9,칸,항아리에 부딪히는 거리 (임시),
+meditation.swift_finisher_recovery_cut,50%,,쾌 10: 3타째 뒤 쉬는 틈 −,기획 대화 (면벽수련 재조정)
+meditation.swift_echo_ratio,50%,,쾌 20: 3타째 잔상 피해 (3타 피해 ×),기획 대화 (면벽수련 재조정)
+meditation.swift_echo_delay,0.12,초,쾌 20: 3타째 뒤 잔상이 베기까지 (임시),
+meditation.iron_room_heal,4%,,강 10: 전투 방을 비울 때 체력 회복 (최대 체력 비율),기획 대화 (면벽수련 재조정)
+meditation.meridian_power_cut,1,,맥 20: 단전 2개로 시작하는 대신 공력 −,기획 대화 (면벽수련)
+meditation.shadow_inn_interest,20%,,은 20: 객잔에 들를 때 가진 은자 이자,기획 대화 (면벽수련 재조정)
+meditation.shadow_inn_interest_max,100,은자,은 20: 이자 최대,기획 대화 (면벽수련 재조정)

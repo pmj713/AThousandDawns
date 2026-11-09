@@ -153,7 +153,7 @@ namespace AThousandDawns.Player
             if (Has("cloud_dragon_belt")) hits += HitPath(_dashStart, transform.position, _dashPathWidth * 0.5f, hit, HitTag.DashAttack);
             if (hits <= 0) return;
             AddItemShield(V("iron_bracelet", 1)); // 철갑 팔찌
-            Gauge = Mathf.Min(_gaugeMax, Gauge + _gaugeMax * V("cloud_silk", 2)); // 구름 비단
+            Gauge = Mathf.Min(GaugeCap, Gauge + _gaugeMax * V("cloud_silk", 2)); // 구름 비단
         }
 
         // 대시 공격 판정과 같은 방식으로, from → to 선분에서 halfWidth 안의 적 (이미 맞은 적 빼고)
@@ -274,7 +274,7 @@ namespace AThousandDawns.Player
                         if (away.sqrMagnitude > 1e-4f) brain.Displace(away.normalized * push);
                     }
                 });
-                Gauge = Mathf.Min(_gaugeMax, Gauge + _gaugeMax * V("vajra", 2));
+                Gauge = Mathf.Min(GaugeCap, Gauge + _gaugeMax * V("vajra", 2));
                 if (swingFlash != null) swingFlash.Show(center, _facing, radius, 360f, 0.15f);
             }
         }

@@ -212,7 +212,6 @@ namespace AThousandDawns.Prototype
             _phase = Phase.Floor;
             ShowBanner($"죽림 {_floor}층 · {PathLabel(_path)}");
             BeginHunt();
-            Player.FloorGuard = _floorGuard; // 면벽수련 강 10: 층마다 첫 피격 무효
             Enter(_map.Start, -1);
             if (_startPartPick) // 면벽수련 맥 10: 시작 시 부품 고르기
             {
@@ -472,6 +471,12 @@ namespace AThousandDawns.Prototype
             int silver = BoostSilver(Mathf.RoundToInt(GameConfig.Get("silver.room", 18f) * mult) + _elitesThisRoom * Mathf.RoundToInt(GameConfig.Get("silver.elite", 15f)));
             Silver += silver;
             string text = $"방을 비웠어요 · 은자 +{silver}";
+            if (_roomHeal > 0f && !Player.IsDead) // 면벽수련 강 10: 방을 비우면 체력 회복
+            {
+                float heal = Player.MaxHealth * _roomHeal;
+                Player.Heal(heal);
+                text += $" · 체력 +{heal:0}";
+            }
             if (_rescueFight)
             {
                 _rescueFight = false;
@@ -526,7 +531,9 @@ namespace AThousandDawns.Prototype
             Shop = db == null ? null : InnShop.Stock(db.Items, Player.Items, ApplyLuck(RegionGradeWeights(), _luck), _rng, _innStockBonus, _unlockedParts, _innPriceScale);
             int before = Tracking;
             Tracking = Mathf.FloorToInt(Tracking * GameConfig.Get("tracking.inn_ratio", 0.5f)); // 객잔에 들르면 추적도 절반
-            ShowBanner($"객잔 · 점소이 앞에서 F로 진열대 (북쪽 문: 정비실) · 추적도 {before} → {Tracking}");
+            int interest = InnInterest(); // 면벽수련 은 20
+            Silver += interest;
+            ShowBanner($"객잔 · 점소이 앞에서 F로 진열대 (북쪽 문: 정비실) · 추적도 {before} → {Tracking}{(interest > 0 ? $" · 은자 이자 +{interest}" : "")}");
         }
 
         // 객잔 진열: 그 지역 등급표 (등급확률 시트 죽림 줄)

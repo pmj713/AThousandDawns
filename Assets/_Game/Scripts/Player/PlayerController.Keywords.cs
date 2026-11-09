@@ -91,7 +91,7 @@ namespace AThousandDawns.Player
         void OnKeywordsChanged()
         {
             int bonus = K(Keyword.Gyeonggong) >= 2 ? _gyeonggongDashBonus : 0;
-            _dash.SetMaxCharges(_baseDashCharges + bonus + ItemDashBonus + RunDashBonus - Mathf.RoundToInt(Side("dash_count"))); // + 비연 깃털 + 면벽수련 쾌 5
+            _dash.SetMaxCharges(_baseDashCharges + bonus + ItemDashBonus - Mathf.RoundToInt(Side("dash_count"))); // + 비연 깃털
             RefreshItems();
         }
 
@@ -267,7 +267,7 @@ namespace AThousandDawns.Player
             _ultimateEndPending = false;
             if (K(Keyword.Geumgang) >= 4) _shields.Add(Mathf.RoundToInt(_maxHealth * _geumgangImprintShield), _geumgangImprintTime, ShieldCap);
             if (K(Keyword.Mado) >= 4) _madoPenaltyTimer = _madoImprintTime;
-            if (K(Keyword.Jeongjong) >= 4) Gauge = Mathf.Min(_gaugeMax, Gauge + _gaugeMax * _jeongjongImprintGauge);
+            if (K(Keyword.Jeongjong) >= 4) Gauge = Mathf.Min(GaugeCap, Gauge + _gaugeMax * _jeongjongImprintGauge);
             if (K(Keyword.Ganggi) >= 4) _ganggiImprintTimer = _ganggiImprintTime;
             _noDashTimer = Side("no_dash_after_ultimate"); // 뇌정 방울 부작용
         }

@@ -37,7 +37,7 @@ namespace AThousandDawns.Player
             var hit = PlayerHit(_skillDamage * GameConfig.Get("skill_quake.ratio", 1f));
             hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
             int count = HitSector(radius, 360f, hit, HitTag.Skill);
-            Gauge = Mathf.Min(_gaugeMax, Gauge + count * _gaugeSkill * GaugeGainMultiplier);
+            Gauge = Mathf.Min(GaugeCap, Gauge + count * _gaugeSkill * GaugeGainMultiplier);
             float push = GameConfig.Get("skill_quake.knockback", 2f);
             foreach (var target in _hitThisSwing)
             {
@@ -101,7 +101,7 @@ namespace AThousandDawns.Player
             var hit = PlayerHit(_skillDamage * GameConfig.Get("skill_flash.ratio", 0.5f));
             hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
             int count = HitLine(from, end, width, hit, HitTag.Skill);
-            Gauge = Mathf.Min(_gaugeMax, Gauge + count * _gaugeSkill * GaugeGainMultiplier);
+            Gauge = Mathf.Min(GaugeCap, Gauge + count * _gaugeSkill * GaugeGainMultiplier);
 
             // #뇌정 2단계: 초식이 적중하면 연쇄 번개 (시전마다 한 번)
             int thunder = _keywords.Count(Keyword.Noejeong);

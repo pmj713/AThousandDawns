@@ -263,6 +263,9 @@ namespace AThousandDawns.Player
             Recount();
         }
 
+        // 판을 시작할 때 고르는 단전 수 (면벽수련 맥 20이면 2)
+        public int StartDanjeons { get; set; } = 1;
+
         public bool AddDanjeon(Vector2Int cell)
         {
             if (!_board.AddDanjeon(cell)) return false;

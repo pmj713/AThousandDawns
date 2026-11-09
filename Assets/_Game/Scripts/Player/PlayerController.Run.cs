@@ -11,20 +11,26 @@
 
         // 면벽수련 (판을 시작할 때 RoomRun이 정해요)
         public float RunAttackSpeedBonus { get; private set; }  // 쾌: 공격 속도 +
-        public int RunDashBonus { get; private set; }           // 쾌 5: 대시 +1
-        public float RunDashAttackBonus { get; private set; }   // 쾌 10: 대시 공격 +15%
+        public float RunOpenerSpeed { get; private set; }       // 쾌 5: 평타 1·2타 공격 속도 +
+        public float RunFinisherRecoveryCut { get; private set; } // 쾌 10: 3타째 뒤 쉬는 틈 −
+        public float RunEchoRatio { get; private set; }         // 쾌 20: 3타째 잔상 피해 비율
         public float RunMaxHealthFlat { get; private set; }     // 강: 최대 체력 +
         public float RunXpBonus { get; private set; }           // 맥: 수련치 +
         public float RunSkillCooldownCut { get; private set; }  // 기 5: 초식 쿨타임 −
-        public bool FloorGuard { get; set; }                    // 강 10: 층마다 첫 피격 무효 (층에 들어갈 때 켜요)
         public bool ReviveReady { get; private set; }           // 강 20: 한 판에 한 번 기사회생
+        public bool DoubleGauge { get; private set; }           // 기 20: 기세를 200%까지 (절초 2회)
         float _reviveRatio;
 
-        public void ApplyMeditation(float attackSpeed, int dash, float dashAttack, float maxHealth, float toughness, float xp, float gauge, float skillCooldownCut, float reviveRatio)
+        // 기세 상한 (절초 한 번 = GaugeMax)
+        public float GaugeCap => _gaugeMax * (DoubleGauge ? 2f : 1f);
+
+        public void ApplyMeditation(float attackSpeed, float openerSpeed, float finisherRecoveryCut, float echoRatio,
+            float maxHealth, float toughness, float xp, float gauge, float skillCooldownCut, float reviveRatio, bool doubleGauge)
         {
             RunAttackSpeedBonus = attackSpeed;
-            RunDashBonus = dash;
-            RunDashAttackBonus = dashAttack;
+            RunOpenerSpeed = openerSpeed;
+            RunFinisherRecoveryCut = finisherRecoveryCut;
+            RunEchoRatio = echoRatio;
             RunMaxHealthFlat = maxHealth;
             Toughness += toughness;
             RunXpBonus = xp;
@@ -32,8 +38,55 @@
             RunSkillCooldownCut = skillCooldownCut;
             ReviveReady = reviveRatio > 0f;
             _reviveRatio = reviveRatio;
-            OnKeywordsChanged(); // 대시 횟수·최대 체력 다시 계산
+            DoubleGauge = doubleGauge;
+            OnKeywordsChanged(); // 최대 체력 다시 계산
             if (!IsDead) Health = MaxHealth; // 판 시작: 가득
+        }
+
+        // 쾌 5: 1·2타를 휘두르는 동안 빠르게 · 쾌 10: 3타째 후딜을 줄여요 (속도를 올려 같은 효과)
+        float MeditationComboSpeed
+        {
+            get
+            {
+                int last = _combo.BaseHitCount - 1;
+                if (RunFinisherRecoveryCut > 0f && _combo.HitIndex == last && _combo.CurrentPhase == ComboTimeline.Phase.Recovery)
+                    return 1f / UnityEngine.Mathf.Max(0.1f, 1f - RunFinisherRecoveryCut);
+                if (RunOpenerSpeed > 0f && _combo.HitIndex < last && _combo.IsAttacking) return 1f + RunOpenerSpeed;
+                return 1f;
+            }
+        }
+
+        // 쾌 20: 3타째를 잔상이 한 번 더 베요 (잠시 뒤, 같은 방향·범위, 피해 비율만큼, 평타로 쳐요)
+        float _echoTimer = -1f, _echoRadius, _echoAngle;
+        UnityEngine.Vector3 _echoFacing;
+        AThousandDawns.Combat.HitDamageInput _echoHit;
+
+        public int EchoHits { get; private set; } // 테스트용: 잔상이 맞힌 수
+
+        void QueueEcho(float radius, float angle, AThousandDawns.Combat.HitDamageInput hit)
+        {
+            if (RunEchoRatio <= 0f) return;
+            _echoRadius = radius;
+            _echoAngle = angle;
+            _echoFacing = _facing;
+            _echoHit = hit;
+            _echoHit.BaseDamage *= RunEchoRatio;
+            _echoTimer = AThousandDawns.Core.GameConfig.GetOptional("meditation.swift_echo_delay", 0.12f);
+        }
+
+        void TickEcho(float dt)
+        {
+            if (_echoTimer < 0f) return;
+            _echoTimer -= dt;
+            if (_echoTimer > 0f) return;
+            _echoTimer = -1f;
+            if (IsDead) return;
+            var facing = _facing;
+            _facing = _echoFacing;
+            _hitThisSwing.Clear();
+            if (swingFlash != null) swingFlash.Show(transform.position, _facing, _echoRadius, _echoAngle, 0.1f);
+            EchoHits = HitSector(_echoRadius, _echoAngle, _echoHit, AThousandDawns.Combat.HitTag.Basic);
+            _facing = facing;
         }
 
         // 기 10: 전투가 시작되면 기세를 적어도 이만큼

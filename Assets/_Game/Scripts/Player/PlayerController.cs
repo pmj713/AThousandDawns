@@ -281,6 +281,7 @@ namespace AThousandDawns.Player
             TickKeywordTimers(dt);
             TickItemTimers(dt);
             TickMartialItemTimers(dt);
+            TickEcho(dt); // 면벽수련 쾌 20: 잔상
             TickBurn(dt);
             if (IsDead) return;
 
@@ -344,7 +345,7 @@ namespace AThousandDawns.Player
                 }
             }
 
-            _combo.Tick(dt * AttackSpeedMultiplier, _input.AttackHeld); // #강기 2단계: 평타 속도 +15%
+            _combo.Tick(dt * AttackSpeedMultiplier * MeditationComboSpeed, _input.AttackHeld); // #강기 2단계: 평타 속도 +15% · 면벽수련 쾌 5·10
             UpdateMovement(dt);
         }
 
@@ -360,13 +361,6 @@ namespace AThousandDawns.Player
                 return false;
             }
             if (IsInvulnerable) return false;
-            if (FloorGuard) // 면벽수련 강 10: 층마다 첫 피격 무효
-            {
-                FloorGuard = false;
-                _invulnerableTimer = Mathf.Max(_invulnerableTimer, _hurtIframe);
-                _flashTimer = 0.12f;
-                return false;
-            }
 
             var hit = new PlayerHitInput
             {
@@ -396,7 +390,7 @@ namespace AThousandDawns.Player
             _velocity = Vector3.zero;
             _lungeRemaining = 0f;
             _dashAttackTimer = 0f;
-            Gauge = Mathf.Min(_gaugeMax, Gauge + _gaugeHurt * GaugeGainMultiplier);
+            Gauge = Mathf.Min(GaugeCap, Gauge + _gaugeHurt * GaugeGainMultiplier);
 
             _flashTimer = 0.12f;
             if (dealt > 0) DamagePopups.Spawn(transform.position + Vector3.up * 2f, dealt, PopupStyle.Player); // 보호막이 다 막으면 숫자 없음
@@ -441,12 +435,12 @@ namespace AThousandDawns.Player
         }
 
         // 시험판용: G 키로 기세를 가득 채워요.
-        public void FillGauge() => Gauge = _gaugeMax;
+        public void FillGauge() => Gauge = GaugeCap;
 
         // 정비실을 나갈 때: 목인장에 쓴 기세를 들어올 때 값으로 되돌리고 회선참 쿨타임을 비워요.
         public void RestoreAfterTraining(float gauge)
         {
-            Gauge = Mathf.Clamp(gauge, 0f, _gaugeMax);
+            Gauge = Mathf.Clamp(gauge, 0f, GaugeCap);
             _skillCooldownLeft = 0f;
         }
 
@@ -490,7 +484,7 @@ namespace AThousandDawns.Player
                 var hit = PlayerHit(_skillDamage);
                 hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
                 int count = HitSector(_skillRadius, 360f, hit, HitTag.Skill);
-                Gauge = Mathf.Min(_gaugeMax, Gauge + count * _gaugeSkill * GaugeGainMultiplier);
+                Gauge = Mathf.Min(GaugeCap, Gauge + count * _gaugeSkill * GaugeGainMultiplier);
 
                 // #뇌정 2단계: 초식이 적중하면 처음 맞은 적부터 연쇄 번개 (발동 공격 = 초식 피해, 강인함 빼기 전)
                 int thunder = _keywords.Count(Keyword.Noejeong);
@@ -658,8 +652,9 @@ namespace AThousandDawns.Player
             var hit = PlayerHit(finisher ? _finisherDamage : _basicDamage);
             hit.AttackIncrease += BasicSwingBonus(finisher, extra);
             int count = HitSector(radius, angle, hit, finisher ? HitTag.Finisher : HitTag.Basic);
-            Gauge = Mathf.Min(_gaugeMax, Gauge + count * (finisher ? _gaugeFinisher : _gaugeBasic) * GaugeGainMultiplier);
+            Gauge = Mathf.Min(GaugeCap, Gauge + count * (finisher ? _gaugeFinisher : _gaugeBasic) * GaugeGainMultiplier);
             FireGanggiOnSwing(finisher, hit);
+            if (finisher && !extra) QueueEcho(radius, angle, hit); // 면벽수련 쾌 20
             AfterBasicSwing(count, hit);
             if (finisher) ForgeAfterFinisher(count); // 대장간 금강
         }
@@ -669,10 +664,10 @@ namespace AThousandDawns.Player
             FaceAim(); // 대시 방향이 아니라 커서 쪽으로 베요
             _hitThisSwing.Clear();
             if (swingFlash != null) swingFlash.Show(transform.position, _facing, _dashAttackRadius, _dashAttackAngle, 0.12f);
-            var hit = PlayerHit(_dashAttackDamage * (1f + RunDashAttackBonus)); // 면벽수련 쾌 10
+            var hit = PlayerHit(_dashAttackDamage);
             hit.AttackIncrease += DashAttackBonus; // 비연 깃털 · 운룡 허리띠
             int count = HitSector(_dashAttackRadius, _dashAttackAngle, hit, HitTag.DashAttack);
-            Gauge = Mathf.Min(_gaugeMax, Gauge + count * _gaugeDashAttack * GaugeGainMultiplier);
+            Gauge = Mathf.Min(GaugeCap, Gauge + count * _gaugeDashAttack * GaugeGainMultiplier);
             LeaveFrostTrail(); // 한철 비녀
             AfterDashAttack(count, hit);
             ForgeAfterDashAttack(count); // 대장간 경공
