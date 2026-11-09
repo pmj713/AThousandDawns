@@ -13,7 +13,7 @@ using Object = UnityEngine.Object;
 
 namespace AThousandDawns.Tests
 {
-    // 이벤트 방 7개 (첫 버전 6개 + 표국 행렬): 선택지가 조건대로 잠기고, 결과가 은자·금창약·추적도·혈자리·전투에 반영돼요.
+    // 이벤트 방 9개 (첫 버전 6개 + 서툰 대장장이 · 표국 행렬 · 검이 꽂힌 무덤): 선택지가 조건대로 잠기고, 결과가 은자·금창약·추적도·혈자리·전투에 반영돼요.
     public class EventTests : InputTestFixture
     {
         RoomRun _run;
@@ -140,6 +140,67 @@ namespace AThousandDawns.Tests
             Assert.IsTrue(_run.ChooseEvent(Index("짐을 턴다")));
             Assert.AreEqual(100, _run.Silver);
             Assert.AreEqual(tracking + 3, _run.Tracking);
+        }
+
+        [UnityTest]
+        public IEnumerator 서툰_대장장이는_삯을_받고_등급을_올리거나_망가뜨림()
+        {
+            yield return Load();
+            _run.OpenEventForTest("smith");
+            Assert.AreEqual("은자가 모자라요", _run.CurrentEvent.Choices[Index("기물을 맡긴다")].Locked);
+            _run.CloseEvent();
+
+            _run.GiveSilver(60 * 20);
+            var common = AThousandDawns.Core.GameConfig.Items.Items.Where(d => d.grade == AThousandDawns.Items.ItemGrade.Common).Take(20).ToList();
+            int up = 0, broken = 0;
+            foreach (var def in common)
+            {
+                foreach (var owned in _player.Items.Items.ToList()) _player.Items.Remove(owned);
+                var item = _player.Items.Add(def);
+                var cell = item.Cell;
+                _run.OpenEventForTest("smith");
+                Assert.IsTrue(_run.ChooseEvent(Index("기물을 맡긴다")));
+                Assert.AreEqual("smith_pick", _run.CurrentEvent.Id);
+                Assert.IsTrue(_run.ChooseEvent(0));
+                _run.CloseEvent();
+                if (_player.Items.Items.Count == 0) { broken++; continue; }
+                var now = _player.Items.Items[0];
+                Assert.AreEqual(AThousandDawns.Items.ItemGrade.Uncommon, now.Def.grade, "한 단계 위");
+                Assert.AreEqual(cell, now.Cell, "같은 자리");
+                up++;
+            }
+            Assert.AreEqual(60 * 20 - 60 * common.Count, _run.Silver, "삯 60씩");
+            Assert.Greater(up, 0);
+            Assert.Greater(broken, 0);
+        }
+
+        [UnityTest]
+        public IEnumerator 검이_꽂힌_무덤_망령을_이기면_기물_고르기_절하면_수련치()
+        {
+            yield return Load();
+            _run.OpenEventForTest("tomb");
+            Assert.IsTrue(_run.ChooseEvent(Index("검을 뽑는다")));
+            Assert.IsTrue(_run.IsFighting);
+            int elites = 0;
+            yield return WaitUntil(() =>
+            {
+                for (int i = _director.Enemies.Count - 1; i >= 0; i--)
+                {
+                    if (_director.Enemies[i].IsElite) elites++;
+                    _director.Enemies[i].Damageable.ApplyHit(99999);
+                }
+                return !_run.IsFighting;
+            }, 20f);
+            Assert.AreEqual(1, elites, "망령 (정예) 하나");
+            yield return WaitUntil(() => _arena.IsChoosing, 2f);
+            Assert.IsTrue(_arena.IsChoosing);
+            Assert.IsFalse(_arena.Offer.Any(d => d.grade == AThousandDawns.Items.ItemGrade.Common), "일반은 안 나와요");
+
+            yield return Load();
+            int xp = _player.Level.Xp, level = _player.Level.Level;
+            _run.OpenEventForTest("tomb");
+            Assert.IsTrue(_run.ChooseEvent(Index("절하고 간다")));
+            Assert.IsTrue(_player.Level.Level > level || _player.Level.Xp == xp + 10, "수련치 +10");
         }
 
         [UnityTest]

@@ -620,3 +620,10 @@ event.escort_silver,150,은자,표국 행렬: 호위 성공 보상,기획 대화
 event.escort_waves,3,,표국 행렬: 호위 전투 웨이브 수,기획 대화 (이벤트 8 표국 행렬)
 event.rob_silver,100,은자,표국 행렬: 짐을 털면 은자,기획 대화 (이벤트 8 표국 행렬)
 event.rob_tracking,3,,표국 행렬: 짐을 털면 추적도 +,기획 대화 (이벤트 8 표국 행렬)
+price.smith_fee,60,은자,서툰 대장장이 삯,은자!B30
+event.smith_success,50%,,서툰 대장장이: 등급 한 단계 위 확률 (나머지는 망가짐),기획 대화 (이벤트 7 서툰 대장장이)
+event.tomb_xp,10,,검이 꽂힌 무덤: 절하면 수련치,기획 대화 (이벤트 9 검이 꽂힌 무덤)
+event.tomb_grade.common,0%,,검이 꽂힌 무덤 보상 일반 확률 (전설이 잘 나옴 임시),
+event.tomb_grade.uncommon,30%,,검이 꽂힌 무덤 보상 고급 확률 (임시),
+event.tomb_grade.rare,40%,,검이 꽂힌 무덤 보상 희귀 확률 (임시),
+event.tomb_grade.legendary,30%,,검이 꽂힌 무덤 보상 전설 확률 (임시),

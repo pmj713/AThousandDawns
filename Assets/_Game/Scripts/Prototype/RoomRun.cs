@@ -483,6 +483,12 @@ namespace AThousandDawns.Prototype
                 arena.GrantOffer(RareOnlyWeights()); // 붙잡힌 무인 구출 보상
                 text += " · 무인을 구했어요, 희귀 기물";
             }
+            if (_tombFight)
+            {
+                _tombFight = false;
+                arena.GrantOffer(TombWeights()); // 검이 꽂힌 무덤: 전설이 잘 나와요
+                text += " · 망령이 흩어지고 검이 빛나요, 기물 고르기";
+            }
             if (_escortFight)
             {
                 _escortFight = false;

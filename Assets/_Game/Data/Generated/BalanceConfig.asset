@@ -2497,3 +2497,31 @@ MonoBehaviour:
     value: 3
     unit: 
     note: "\uD45C\uAD6D \uD589\uB82C: \uC9D0\uC744 \uD138\uBA74 \uCD94\uC801\uB3C4 +"
+  - key: price.smith_fee
+    value: 60
+    unit: "\uC740\uC790"
+    note: "\uC11C\uD230 \uB300\uC7A5\uC7A5\uC774 \uC0AF"
+  - key: event.smith_success
+    value: 0.5
+    unit: 
+    note: "\uC11C\uD230 \uB300\uC7A5\uC7A5\uC774: \uB4F1\uAE09 \uD55C \uB2E8\uACC4 \uC704 \uD655\uB960 (\uB098\uBA38\uC9C0\uB294 \uB9DD\uAC00\uC9D0)"
+  - key: event.tomb_xp
+    value: 10
+    unit: 
+    note: "\uAC80\uC774 \uAF42\uD78C \uBB34\uB364: \uC808\uD558\uBA74 \uC218\uB828\uCE58"
+  - key: event.tomb_grade.common
+    value: 0
+    unit: 
+    note: "\uAC80\uC774 \uAF42\uD78C \uBB34\uB364 \uBCF4\uC0C1 \uC77C\uBC18 \uD655\uB960 (\uC804\uC124\uC774 \uC798 \uB098\uC634 \uC784\uC2DC)"
+  - key: event.tomb_grade.uncommon
+    value: 0.3
+    unit: 
+    note: "\uAC80\uC774 \uAF42\uD78C \uBB34\uB364 \uBCF4\uC0C1 \uACE0\uAE09 \uD655\uB960 (\uC784\uC2DC)"
+  - key: event.tomb_grade.rare
+    value: 0.4
+    unit: 
+    note: "\uAC80\uC774 \uAF42\uD78C \uBB34\uB364 \uBCF4\uC0C1 \uD76C\uADC0 \uD655\uB960 (\uC784\uC2DC)"
+  - key: event.tomb_grade.legendary
+    value: 0.3
+    unit: 
+    note: "\uAC80\uC774 \uAF42\uD78C \uBB34\uB364 \uBCF4\uC0C1 \uC804\uC124 \uD655\uB960 (\uC784\uC2DC)"

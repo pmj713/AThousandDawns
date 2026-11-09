@@ -154,6 +154,16 @@ namespace AThousandDawns.Player
             return true;
         }
 
+        // 서툰 대장장이: 그 자리 (경맥도 칸이나 주머니) 그대로 다른 기물로 바꿔요
+        public OwnedItem Replace(OwnedItem item, ItemDefinition def)
+        {
+            if (item == null || def == null || Has(def.id) || !_items.Contains(item)) return null;
+            var next = new OwnedItem { Def = def, OnBoard = item.OnBoard, Cell = item.Cell };
+            _items[_items.IndexOf(item)] = next;
+            Recount();
+            return next;
+        }
+
         public bool TryFindEmptyCell(out Vector2Int cell)
         {
             for (int y = 0; y < _board.Height; y++)

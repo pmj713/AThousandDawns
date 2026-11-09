@@ -10,7 +10,7 @@ using UnityEngine.InputSystem.Controls;
 
 namespace AThousandDawns.Prototype
 {
-    // 이벤트 방 (기획 대화 이벤트 10종 중 죽림 7개: 첫 버전 6개 + 표국 행렬). 층마다 0~1개 (은자 시트 등장 확률 50%), 비전투 막다른 방.
+    // 이벤트 방 (기획 대화 이벤트 10종 중 죽림 9개: 첫 버전 6개 + 서툰 대장장이 · 표국 행렬 · 검이 꽂힌 무덤). 층마다 0~1개 (은자 시트 등장 확률 50%), 비전투 막다른 방.
     // 같은 판에서 같은 이벤트는 한 번만. 모든 이벤트에 대가 없는 선택지가 있어요.
     // 조건부 선택지(🔒)는 조건이 안 되면 흐리게 조건만 보여 줘요. 그림은 아직 없고 글만 있어요.
     public sealed partial class RoomRun
@@ -28,7 +28,7 @@ namespace AThousandDawns.Prototype
             public List<EventChoice> Choices = new List<EventChoice>();
         }
 
-        public static readonly string[] EventIds = { "doctor", "pharmacy", "gambler", "captive", "shrine", "scripture", "escort" };
+        public static readonly string[] EventIds = { "doctor", "pharmacy", "gambler", "captive", "shrine", "scripture", "escort", "smith", "tomb" };
 
         readonly HashSet<string> _usedEvents = new HashSet<string>();
         int _floorPower;           // 원기단: 이번 층 동안 공력 +1
@@ -285,6 +285,35 @@ namespace AThousandDawns.Prototype
                     v.Choices.Add(Pass("지나간다"));
                     break;
 
+                case "smith":
+                    v.Title = "서툰 대장장이";
+                    v.Text = "대장간 견습생이 실력을 시험해 보고 싶어 한다.";
+                    int fee = Price("price.smith_fee", 60f);
+                    v.Choices.Add(new EventChoice
+                    {
+                        Label = $"기물을 맡긴다 · 삯 {fee} · 반반: 등급 한 단계 위 / 망가져 사라짐",
+                        Locked = Silver < fee ? "은자가 모자라요" : SmithCandidates().Count == 0 ? "맡길 기물이 없어요 (전설은 더 못 올려요)" : null,
+                        Act = () => { OpenSmithPick(fee); return null; },
+                    });
+                    v.Choices.Add(Pass("지나간다"));
+                    break;
+
+                case "tomb":
+                    v.Title = "검이 꽂힌 무덤";
+                    v.Text = "이름 없는 무덤 위에 녹슨 검 한 자루가 꽂혀 있다.";
+                    int bowXp = Price("event.tomb_xp", 10f);
+                    v.Choices.Add(new EventChoice
+                    {
+                        Label = "검을 뽑는다 · 무덤 주인의 망령(정예)과 전투, 이기면 전설이 잘 나오는 기물 고르기",
+                        Act = () => { CloseEvent(); StartTombFight(); return null; },
+                    });
+                    v.Choices.Add(new EventChoice
+                    {
+                        Label = $"절하고 간다 · 수련치 +{bowXp}",
+                        Act = () => { Player.Level.Add(bowXp); return $"고개를 숙이자 검결 한 줄이 떠올라요. 수련치 +{bowXp}"; },
+                    });
+                    break;
+
                 case "scripture":
                     v.Title = "벽에 새긴 검결";
                     v.Text = "무너진 수련 동굴 벽에 누군가 검술 요결을 새겨 두었다.";
@@ -383,6 +412,92 @@ namespace AThousandDawns.Prototype
                 return $"이겼어요! {won.name} · 둘 곳이 없어 하나를 버려야 받아요.";
             return $"이겼어요! {won.name}을(를) 얻었어요.";
         }
+
+        // ── 서툰 대장장이: 등급을 올릴 수 있는 기물 (전설이 아니고, 한 단계 위 기물이 남아 있음)
+
+        List<OwnedItem> SmithCandidates()
+        {
+            var list = new List<OwnedItem>();
+            foreach (var item in Player.Items.Items)
+                if (item.Def.grade < ItemGrade.Legendary && UpgradeOf(item.Def, false) != null) list.Add(item);
+            return list;
+        }
+
+        // 한 단계 위 등급 기물: 같은 주 키워드가 있으면 그중에서, 없으면 아무 키워드나 (아직 안 가진 것)
+        ItemDefinition UpgradeOf(ItemDefinition def, bool pick = true)
+        {
+            var db = GameConfig.Items;
+            if (db == null) return null;
+            var same = new List<ItemDefinition>();
+            var any = new List<ItemDefinition>();
+            foreach (var d in db.Items)
+            {
+                if (d == null || d.grade != def.grade + 1 || Player.Items.Has(d.id)) continue;
+                any.Add(d);
+                if (d.keyword == def.keyword) same.Add(d);
+            }
+            var pool = same.Count > 0 ? same : any;
+            return pool.Count == 0 ? null : pool[pick ? _rng.Next(pool.Count) : 0]; // 고르지 않으면 있는지만 (난수를 안 써요)
+        }
+
+        void OpenSmithPick(int fee)
+        {
+            var v = new EventView { Id = "smith_pick", Title = "서툰 대장장이", Text = $"어느 기물을 맡길까? (삯 {fee})" };
+            int shown = 0;
+            foreach (var owned in SmithCandidates())
+            {
+                if (shown++ >= 8) break;
+                var item = owned;
+                v.Choices.Add(new EventChoice
+                {
+                    Label = $"{item.Def.name} · {ItemDefinition.GradeLabel(item.Def.grade)} → {ItemDefinition.GradeLabel(item.Def.grade + 1)}",
+                    Act = () => Smith(item, fee),
+                });
+            }
+            v.Choices.Add(new EventChoice { Label = "그만둔다", Act = () => "견습생이 아쉬워해요." });
+            OpenEventView(v, null);
+        }
+
+        string Smith(OwnedItem item, int fee)
+        {
+            Silver -= fee;
+            if (_rng.NextDouble() >= GameConfig.Get("event.smith_success", 0.5f))
+            {
+                Player.Items.Remove(item);
+                return $"쨍! {item.Def.name}이(가) 두 동강 났어요.";
+            }
+            var up = UpgradeOf(item.Def);
+            if (up == null || Player.Items.Replace(item, up) == null) return $"{item.Def.name}을(를) 두드려 봤지만 그대로예요.";
+            return $"성공! {item.Def.name} → {up.name} ({ItemDefinition.GradeLabel(up.grade)})";
+        }
+
+        // ── 검이 꽂힌 무덤: 망령 (정예) 하나, 이기면 전설이 잘 나오는 기물 고르기 (ClearRoom에서)
+        bool _tombFight;
+
+        void StartTombFight()
+        {
+            _tombFight = true;
+            _fighting = true;
+            SetLocks(true);
+            Player.EnterRoom();
+            OnFightStart();
+            _waves = new List<List<EnemyKind>> { new List<EnemyKind>() };
+            _wave = -1;
+            _elitesThisRoom = 0;
+            _eliteWave = 0;
+            _eliteKind = EnemyKind.Grunt;
+            var traits = new List<EliteTrait>();
+            foreach (EliteTrait t in Enum.GetValues(typeof(EliteTrait)))
+                if (EnemyBrain.Allows(EnemyKind.Grunt, t)) traits.Add(t);
+            _eliteTrait = traits[_rng.Next(traits.Count)];
+            StartNextWave();
+        }
+
+        static float[] TombWeights() => new[]
+        {
+            GameConfig.Get("event.tomb_grade.common", 0f), GameConfig.Get("event.tomb_grade.uncommon", 0.3f),
+            GameConfig.Get("event.tomb_grade.rare", 0.4f), GameConfig.Get("event.tomb_grade.legendary", 0.3f),
+        };
 
         // 붙잡힌 무인 구출: 정예 졸개 1 + 졸개 둘, 이기면 희귀 기물 (ClearRoom에서)
         void StartEventFight()
