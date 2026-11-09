@@ -300,6 +300,8 @@ namespace AThousandDawns.Player
                 return;
             }
 
+            if (TickPotion(dt)) return; // 금창약 마시는 중
+
             // 절초는 기세가 가득이면 평타·초식 중에도 바로 나가요 (몰릴 때 뒤집는 수단)
             if (_sinceUltimatePress <= _inputBuffer && UltimateReady)
             {
@@ -380,6 +382,7 @@ namespace AThousandDawns.Player
             _knockbackVelocity = away.normalized * ((knockback >= 0f ? knockback : _hurtKnockback) / Mathf.Max(0.01f, _hurtStun));
 
             _combo.Cancel();
+            CancelPotion(); // 맞으면 금창약도 끊겨요 (소모되지 않음)
             _skillElapsed = -1f; // 맞으면 회선참도 끊겨요 (쿨타임은 그대로 돎)
             _velocity = Vector3.zero;
             _lungeRemaining = 0f;
@@ -581,7 +584,7 @@ namespace AThousandDawns.Player
         {
             Vector2 move = Vector2.ClampMagnitude(_input.Move, 1f);
             bool attacking = _combo.IsAttacking || IsCastingSkill;
-            float speed = _moveSpeed * (attacking ? _attackMoveRatio : 1f) * (1f - SlowRatio) * (1f + MoveSpeedBonus);
+            float speed = _moveSpeed * (attacking ? _attackMoveRatio : IsDrinking ? _potionMove : 1f) * (1f - SlowRatio) * (1f + MoveSpeedBonus);
             Vector3 desired = new Vector3(move.x, 0f, move.y) * speed;
             float rate = desired.sqrMagnitude >= _velocity.sqrMagnitude ? _moveSpeed / Mathf.Max(0.001f, _accelTime) : _moveSpeed / Mathf.Max(0.001f, _decelTime);
             _velocity = Vector3.MoveTowards(_velocity, desired, rate * dt);

@@ -1513,3 +1513,67 @@ MonoBehaviour:
     value: 1
     unit: 
     note: "\uC9D9\uC740 \uAE38: \uBC29\uB9C8\uB2E4 \uCD94\uAC00 \uC815\uC608 \uC218"
+  - key: price.item_common
+    value: 120
+    unit: "\uC740\uC790"
+    note: "\uAC1D\uC794 \uC77C\uBC18 \uAE30\uBB3C \uAC00\uACA9"
+  - key: price.item_uncommon
+    value: 300
+    unit: "\uC740\uC790"
+    note: "\uAC1D\uC794 \uACE0\uAE09 \uAE30\uBB3C \uAC00\uACA9"
+  - key: price.item_rare
+    value: 500
+    unit: "\uC740\uC790"
+    note: "\uAC1D\uC794 \uD76C\uADC0 \uAE30\uBB3C \uAC00\uACA9"
+  - key: price.item_legendary
+    value: 900
+    unit: "\uC740\uC790"
+    note: "\uAC1D\uC794 \uC804\uC124 \uAE30\uBB3C \uAC00\uACA9"
+  - key: price.potion
+    value: 60
+    unit: "\uC740\uC790"
+    note: "\uAC1D\uC794 \uAE08\uCC3D\uC57D \uAC00\uACA9"
+  - key: price.lodging
+    value: 40
+    unit: "\uC740\uC790"
+    note: "\uAC1D\uC794 \uC219\uBC15 \uAC00\uACA9"
+  - key: lodging.heal
+    value: 0.3
+    unit: 
+    note: "\uC219\uBC15: \uCCB4\uB825 \uD68C\uBCF5 (\uCD5C\uB300 \uCCB4\uB825 \uBE44\uC728)"
+  - key: inn.item_stock
+    value: 3
+    unit: 
+    note: "\uAC1D\uC794 \uC9C4\uC5F4 \uAE30\uBB3C \uC218 (\uCCAB \uC7A5\uC740 \uC8FC \uD0A4\uC6CC\uB4DC 2\uAC1C \uC911\uC5D0\uC11C)"
+  - key: inn.potion_stock
+    value: 2
+    unit: 
+    note: "\uAC1D\uC794 \uC9C4\uC5F4 \uAE08\uCC3D\uC57D \uC218"
+  - key: potion.max
+    value: 3
+    unit: 
+    note: "\uAE08\uCC3D\uC57D \uCD5C\uB300 \uC18C\uC9C0"
+  - key: potion.start
+    value: 0
+    unit: 
+    note: "\uD310 \uC2DC\uC791 \uAE08\uCC3D\uC57D (\uD68C\uADC0\uB85D \uAE08\uCC3D\uC57D \uC9C0\uCC38 \uD574\uAE08 \uC2DC 1)"
+  - key: potion.hold
+    value: 0.5
+    unit: s
+    note: "\uAE08\uCC3D\uC57D \uB204\uB974\uB294 \uC2DC\uAC04"
+  - key: potion.heal
+    value: 0.4
+    unit: 
+    note: "\uAE08\uCC3D\uC57D \uD68C\uBCF5\uB7C9 (\uCD5C\uB300 \uCCB4\uB825 \uBE44\uC728)"
+  - key: potion.move_ratio
+    value: 0.5
+    unit: 
+    note: "\uAE08\uCC3D\uC57D \uB204\uB974\uB294 \uB3D9\uC548 \uC774\uB3D9\uC18D\uB3C4"
+  - key: potion.reuse
+    value: 1
+    unit: s
+    note: "\uAE08\uCC3D\uC57D \uB2E4\uC2DC \uB9C8\uC2E4 \uC218 \uC788\uAE30\uAE4C\uC9C0"
+  - key: interact.range
+    value: 1.2
+    unit: cell
+    note: "\uC0C1\uD638\uC791\uC6A9 \uBC94\uC704 (\uC810\uC18C\uC774)"

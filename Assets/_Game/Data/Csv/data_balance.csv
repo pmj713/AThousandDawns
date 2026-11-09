@@ -374,3 +374,19 @@ elite.blaze_fire_tick,0.5,s,정예 열화: 불길 안에서 화상 1중첩 간�
 elite.blaze_burn_taken,50%,,정예 열화: 자신이 받는 화상 피해 비율,몬스터!C150 설명
 silver.elite,15,,정예 처치 은자,몬스터!C143 설명
 room.dense_elites,1,,짙은 길: 방마다 추가 정예 수,기획 대화 (기운의 세기)
+price.item_common,120,은자,객잔 일반 기물 가격,은자!B18
+price.item_uncommon,300,은자,객잔 고급 기물 가격,은자!B19
+price.item_rare,500,은자,객잔 희귀 기물 가격,은자!B20
+price.item_legendary,900,은자,객잔 전설 기물 가격,은자!B21
+price.potion,60,은자,객잔 금창약 가격,은자!B24
+price.lodging,40,은자,객잔 숙박 가격,은자!B25
+lodging.heal,30%,,숙박: 체력 회복 (최대 체력 비율),은자!C25 설명
+inn.item_stock,3,,객잔 진열 기물 수 (첫 장은 주 키워드 2개 중에서),기획 대화 (객잔 진열대)
+inn.potion_stock,2,,객잔 진열 금창약 수,기획 대화 (객잔 진열대)
+potion.max,3,,금창약 최대 소지,은자!C24 설명
+potion.start,0,,판 시작 금창약 (회귀록 금창약 지참 해금 시 1),기획 대화
+potion.hold,0.5,s,금창약 누르는 시간,조작!B72
+potion.heal,40%,,금창약 회복량 (최대 체력 비율),조작!B73
+potion.move_ratio,50%,,금창약 누르는 동안 이동속도,조작!B74
+potion.reuse,1,s,금창약 다시 마실 수 있기까지,조작!B76
+interact.range,1.2,cell,상호작용 범위 (점소이),조작!B80

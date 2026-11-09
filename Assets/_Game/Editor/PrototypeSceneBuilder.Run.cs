@@ -18,6 +18,9 @@ namespace AThousandDawns.EditorTools
 
         static readonly Vector3 CombatCenter = Vector3.zero;
         static readonly Vector3 RestCenter = new Vector3(60f, 0f, 0f);
+        static readonly Vector3 InnCenter = new Vector3(180f, 0f, 0f);
+        const string WoodColor = "#7A5536";   // 객잔 계산대 (임시)
+        const string ClerkColor = "#D9C9A8";  // 점소이 (임시)
         static readonly Vector3 BossCenter = new Vector3(120f, 0f, 0f);
         static readonly Vector2 CombatSize = new Vector2(20f, 12f);
 
@@ -62,6 +65,17 @@ namespace AThousandDawns.EditorTools
             portal.transform.localScale = new Vector3(2.4f, 0.03f, 2.4f);
             portal.GetComponent<Renderer>().sharedMaterial = GetMaterial("Gate_Portal", PortalColor, false);
             portal.SetActive(false);
+
+            // 객잔: 12×10, 왼쪽 위에 계산대와 점소이. 가운데 길(입구 → 북쪽 문)은 비워 둬요
+            BuildShell("Room_Inn", InnCenter, new Vector2(12f, 10f), floorMat, wallMat);
+            var innRoom = GameObject.Find("Room_Inn").transform;
+            Box("Counter", innRoom, InnCenter + new Vector3(-3.5f, 0.5f, 3f), new Vector3(2.5f, 1f, 0.6f), GetMaterial("Wood", WoodColor, false));
+            var clerk = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            clerk.name = "점소이";
+            clerk.transform.SetParent(innRoom, false);
+            clerk.transform.localPosition = InnCenter + new Vector3(-3.5f, 0.8f, 3.9f);
+            clerk.transform.localScale = new Vector3(0.6f, 0.8f, 0.6f);
+            clerk.GetComponent<Renderer>().sharedMaterial = GetMaterial("Clerk", ClerkColor, false);
 
             // 정비실: 12×10, 북쪽 문은 늘 열려 있어요
             BuildShell("Room_Rest", RestCenter, new Vector2(12f, 10f), floorMat, wallMat);
@@ -112,6 +126,7 @@ namespace AThousandDawns.EditorTools
                 lockArr.GetArrayElementAtIndex(d).objectReferenceValue = locks[d];
                 plugArr.GetArrayElementAtIndex(d).objectReferenceValue = plugs[d];
             }
+            SetSite(runSo.FindProperty("inn"), InnCenter, new Vector2(12f, 10f), new Vector3(0f, 0f, -3.5f), new Vector3(0f, 0f, 6.6f));
             SetSite(runSo.FindProperty("rest"), RestCenter, new Vector2(12f, 10f), new Vector3(0f, 0f, -3.5f), new Vector3(0f, 0f, 6.6f));
             SetSite(runSo.FindProperty("boss"), BossCenter, new Vector2(16f, 12f), new Vector3(0f, 0f, -4.5f), new Vector3(0f, 0f, 99f));
             runSo.ApplyModifiedPropertiesWithoutUndo();

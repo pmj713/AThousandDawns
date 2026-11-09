@@ -6,20 +6,22 @@ using AThousandDawns.Player;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 
 namespace AThousandDawns.Prototype
 {
-    // 판 구조 시험판: 죽림 일반 층마다 갈림길 → 층 탐색 → 관문, 마지막 층 관문 뒤 정비실 → 녹림왕.
+    // 판 구조 시험판: 죽림 일반 층마다 갈림길 → 층 탐색 → 관문, 마지막 층 관문 뒤 객잔 → 정비실 → 녹림왕.
     // 갈림길: 길 2~3갈래. 길마다 보상 종류(기물·운기조식)와 기운(옅음·짙음).
     //   짙은 길: 적 체력 +30%, 방마다 정예 1명 추가 (특성 무작위), 보상은 한 단계 위 (기물은 다음 지역 등급표, 은자·회복 ×1.5).
     // 층: 격자에 방이 무작위로 놓여요 (FloorMap). 들어간 방의 옆방만 지도에 드러나요.
     //   전투 방은 들어가면 문이 잠기고 예산으로 뽑은 웨이브가 나와요. 비우면 은자. 보상 방은 전투 뒤 고른 보상.
     //   관문 방 가운데에서 F를 누르면 다음 층 (남은 방은 그냥 두고 가도 돼요).
+    // 객잔: 지역마다 한 번, 일반 층을 다 지난 뒤 (은자 시트 가정). 점소이 앞에서 F를 누르면 진열대 (InnShop).
     // 정비실: 목인장 두 개. 나갈 때 기세와 회선참 쿨타임을 들어올 때로 되돌려요.
     // 녹림왕을 쓰러뜨리면 기물 하나 + 경맥도 5×4 → 6×4, 판 끝. 같은 시드면 같은 갈림길·배치·적 구성 (버그 재현용).
     public sealed class RoomRun : MonoBehaviour
     {
-        public enum Phase { None, Fork, Floor, Rest, Boss, Done }
+        public enum Phase { None, Fork, Floor, Inn, Rest, Boss, Done }
         public enum RewardKind { Item, Heal }
 
         public struct Path
@@ -56,6 +58,7 @@ namespace AThousandDawns.Prototype
         [SerializeField] EnemyDirector director;
         [SerializeField] PrototypeArena arena;
         [SerializeField] CombatSite combat = new CombatSite();
+        [SerializeField] Site inn = new Site();
         [SerializeField] Site rest = new Site();
         [SerializeField] Site boss = new Site();
 
@@ -88,7 +91,12 @@ namespace AThousandDawns.Prototype
         public bool IsDone => _phase == Phase.Done;
         public int Wave => _wave;
         public int WaveCount => _waves != null ? _waves.Count : 0;
-        public int Silver { get; private set; } // 은자 (객잔이 생기면 플레이어 쪽으로)
+        public int Silver { get; private set; } // 은자 (판 안 재화, 죽으면 사라짐)
+        public InnShop Shop { get; private set; }
+        public bool IsShopping { get; private set; }
+        public string ShopNotice { get; private set; }
+        public Vector3 InnCounter => inn.center + new Vector3(-3.5f, 0f, 2f); // 점소이 앞 (계산대 왼쪽 위, 문 가는 길은 비워 둠)
+        public bool AtCounter => _phase == Phase.Inn && !IsShopping && Flat(Player.transform.position - InnCounter).magnitude <= GameConfig.Get("interact.range", 1.2f) + 0.8f;
         public string Banner => _bannerTimer > 0f ? _banner : null;
         public bool AtGate => _phase == Phase.Floor && _room != null && _room.Kind == FloorRoomKind.Gate && !_fighting && Flat(Player.transform.position - combat.center).magnitude < 1.6f;
 
@@ -122,8 +130,15 @@ namespace AThousandDawns.Prototype
             }
             if (Player.IsDead) return;
 
+            if (IsShopping)
+            {
+                TickShopKeys();
+                return;
+            }
+
             switch (_phase)
             {
+                case Phase.Inn: TickInn(); break;
                 case Phase.Floor:
                     if (_fighting) TickFight();
                     else TickFloorExits();
@@ -273,7 +288,7 @@ namespace AThousandDawns.Prototype
             SetLocks(false);
             SetGateMarker(false);
             if (_floor < _floors) BeginFork(_floor + 1);
-            else EnterRest();
+            else EnterInn();
         }
 
         public List<List<EnemyKind>> PlanRoom(int floor)
@@ -429,6 +444,90 @@ namespace AThousandDawns.Prototype
             GameConfig.Get("item_grade_dense.rare", 0.14f), GameConfig.Get("item_grade_dense.legendary", 0.04f),
         };
 
+        // ── 객잔
+
+        public void EnterInn()
+        {
+            ClearPending();
+            _phase = Phase.Inn;
+            _room = null;
+            _fighting = false;
+            MovePlayer(inn.entry);
+            director.ResetRoom();
+            var db = GameConfig.Items;
+            Shop = db == null ? null : InnShop.Stock(db.Items, Player.Items, RegionGradeWeights(), _rng);
+            ShowBanner("객잔 · 점소이 앞에서 F로 진열대 (북쪽 문: 정비실)");
+        }
+
+        // 객잔 진열: 그 지역 등급표 (등급확률 시트 죽림 줄)
+        static float[] RegionGradeWeights() => new[]
+        {
+            GameConfig.Get("item_grade.common", 0.58f), GameConfig.Get("item_grade.uncommon", 0.3f),
+            GameConfig.Get("item_grade.rare", 0.1f), GameConfig.Get("item_grade.legendary", 0.02f),
+        };
+
+        void TickInn()
+        {
+            var keyboard = Keyboard.current;
+            if (AtCounter && Shop != null && keyboard != null && keyboard.fKey.wasPressedThisFrame)
+            {
+                OpenShop();
+                return;
+            }
+            if (OffersOpen || Flat(Player.transform.position - inn.exit).magnitude > inn.exitRadius) return;
+            EnterRest();
+        }
+
+        public void OpenShop()
+        {
+            if (Shop == null) return;
+            IsShopping = true;
+            ShopNotice = null;
+            arena.Blocked = true;
+            Player.enabled = false;
+            Time.timeScale = 0f;
+        }
+
+        public void CloseShop()
+        {
+            if (!IsShopping) return;
+            IsShopping = false;
+            arena.Blocked = false;
+            Player.enabled = true;
+            Time.timeScale = 1f;
+        }
+
+        // 1~9로 사기, F·Esc 닫기
+        void TickShopKeys()
+        {
+            var keyboard = Keyboard.current;
+            if (keyboard == null) return;
+            if (keyboard.escapeKey.wasPressedThisFrame || keyboard.fKey.wasPressedThisFrame)
+            {
+                CloseShop();
+                return;
+            }
+            for (int i = 0; i < Shop.Slots.Count && i < 9; i++)
+                if (((KeyControl)keyboard[(Key)((int)Key.Digit1 + i)]).wasPressedThisFrame) Buy(i);
+        }
+
+        public bool Buy(int index)
+        {
+            if (Shop == null) return false;
+            string blocker = Shop.Blocker(index, Player, Silver);
+            if (blocker != null)
+            {
+                ShopNotice = blocker;
+                return false;
+            }
+            Silver -= Shop.Buy(index, Player, Silver);
+            ShopNotice = null;
+            return true;
+        }
+
+        // 테스트용
+        public void GiveSilver(int amount) => Silver += amount;
+
         // ── 정비실과 녹림왕
 
         public void EnterRest()
@@ -530,7 +629,7 @@ namespace AThousandDawns.Prototype
 
         void OnDestroy()
         {
-            if (IsForking) Time.timeScale = 1f;
+            if (IsForking || IsShopping) Time.timeScale = 1f;
         }
 
         // HUD 한 줄
@@ -546,6 +645,7 @@ namespace AThousandDawns.Prototype
                         string wave = _fighting && _waves != null ? $" · 웨이브 {Mathf.Clamp(_wave + 1, 1, _waves.Count)}/{_waves.Count}" : "";
                         where = $"죽림 {_floor}층 · {PathLabel(_path)} · 남은 전투 방 {_map.FightsLeft()}{wave}";
                         break;
+                    case Phase.Inn: where = "죽림 · 객잔"; break;
                     case Phase.Rest: where = "죽림 보스 층 · 정비실"; break;
                     case Phase.Boss: where = "죽림 보스 층 · 녹림왕"; break;
                     case Phase.Done: where = "판 끝"; break;

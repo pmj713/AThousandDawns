@@ -1,9 +1,9 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace AThousandDawns.Player
 {
-    // 시험판 입력: WASD 이동, 좌클릭 평타(누르고 있기), 우클릭 초식, Q 절초, Space 대시. 조준은 마우스가 가리키는 바닥.
+    // 시험판 입력: WASD 이동, 좌클릭 평타(누르고 있기), 우클릭 초식, Q 절초, Space 대시, R 금창약(누르고 있기). 조준은 마우스가 가리키는 바닥.
     public sealed class PlayerInputReader : MonoBehaviour
     {
         InputAction _move;
@@ -11,6 +11,7 @@ namespace AThousandDawns.Player
         InputAction _dash;
         InputAction _skill;
         InputAction _ultimate;
+        InputAction _potion;
         Camera _camera;
 
         public Vector2 Move => _move.ReadValue<Vector2>();
@@ -19,6 +20,8 @@ namespace AThousandDawns.Player
         public bool DashPressed => _dash.WasPressedThisFrame();
         public bool SkillPressed => _skill.WasPressedThisFrame();
         public bool UltimatePressed => _ultimate.WasPressedThisFrame();
+        public bool PotionPressed => _potion.WasPressedThisFrame();
+        public bool PotionHeld => _potion.IsPressed();
 
         void Awake()
         {
@@ -41,6 +44,9 @@ namespace AThousandDawns.Player
 
             _ultimate = new InputAction("Ultimate", InputActionType.Button, "<Keyboard>/q");
             _ultimate.AddBinding("<Gamepad>/rightShoulder");
+
+            _potion = new InputAction("Potion", InputActionType.Button, "<Keyboard>/r");
+            _potion.AddBinding("<Gamepad>/leftShoulder");
         }
 
         void OnEnable()
@@ -50,6 +56,7 @@ namespace AThousandDawns.Player
             _dash.Enable();
             _skill.Enable();
             _ultimate.Enable();
+            _potion.Enable();
         }
 
         void OnDisable()
@@ -59,6 +66,7 @@ namespace AThousandDawns.Player
             _dash.Disable();
             _skill.Disable();
             _ultimate.Disable();
+            _potion.Disable();
         }
 
         void OnDestroy()
@@ -68,6 +76,7 @@ namespace AThousandDawns.Player
             _dash.Dispose();
             _skill.Dispose();
             _ultimate.Dispose();
+            _potion.Dispose();
         }
 
         // 마우스가 가리키는 바닥(y = 0) 위치
