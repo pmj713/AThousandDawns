@@ -46,6 +46,7 @@ namespace AThousandDawns.Prototype
             DrawMinimap();
             DrawFork();
             DrawShop();
+            DrawEvent();
             DrawOffer(); // 기물 카드는 맨 위에
         }
 
@@ -247,7 +248,7 @@ namespace AThousandDawns.Prototype
                 GUI.color = here ? new Color(0.78f, 0.27f, 0.24f) : r.Visited ? new Color(0.85f, 0.85f, 0.8f, r.Cleared || !r.HasFight ? 0.55f : 0.9f) : new Color(1f, 1f, 1f, 0.15f);
                 GUI.DrawTexture(rect, Texture2D.whiteTexture);
                 GUI.color = Color.white;
-                string mark = r.Kind == FloorRoomKind.Start ? "시" : r.Kind == FloorRoomKind.Reward ? "보" : r.Kind == FloorRoomKind.Gate ? "관" : r.Visited && r.HasFight && !r.Cleared ? "!" : "";
+                string mark = r.Kind == FloorRoomKind.Start ? "시" : r.Kind == FloorRoomKind.Reward ? "보" : r.Kind == FloorRoomKind.Gate ? "관" : r.Kind == FloorRoomKind.Event ? "사" : r.Visited && r.HasFight && !r.Cleared ? "!" : "";
                 if (mark != "") GUI.Label(rect, mark, _statusLabel);
                 // 살수가 있는 방은 붉은 테두리
                 foreach (var hunter in run.Hunters)
@@ -298,6 +299,39 @@ namespace AThousandDawns.Prototype
             }
             if (!string.IsNullOrEmpty(run.ShopNotice))
                 GUI.Label(new Rect(0, y + slots.Count * (rowH + 6f) + 10f, UiScale.Width, 40f), run.ShopNotice, _big);
+        }
+
+        // 이벤트 (시간이 멈춰 있어요): 제목 · 글 · 선택지. 🔒 선택지는 조건이 안 되면 흐리게 이유만.
+        void DrawEvent()
+        {
+            if (run == null || !run.IsInEvent) return;
+            EnsureStyles();
+            var ev = run.CurrentEvent;
+            var old = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.7f);
+            GUI.DrawTexture(new Rect(0, 0, UiScale.Width, UiScale.Height), Texture2D.whiteTexture);
+            GUI.color = old;
+
+            const float w = 760f, rowH = 52f;
+            int rows = ev.Result != null ? 1 : ev.Choices.Count;
+            float h = 150f + rows * (rowH + 6f);
+            float x = (UiScale.Width - w) * 0.5f, y = (UiScale.Height - h) * 0.5f;
+            GUI.Label(new Rect(0, y - 56f, UiScale.Width, 40f), ev.Title, _big);
+            GUI.Label(new Rect(x, y, w, 60f), $"<i>{ev.Text}</i>", _wrapLabel);
+            float top = y + 70f;
+            if (ev.Result != null)
+            {
+                if (GUI.Button(new Rect(x, top, w, rowH), $"{ev.Result}\n<size=13>[1] 닫기</size>", _card)) run.CloseEvent();
+                return;
+            }
+            for (int i = 0; i < ev.Choices.Count; i++)
+            {
+                var c = ev.Choices[i];
+                string text = c.Locked == null ? $"<size=13>[{i + 1}]</size>  {c.Label}" : $"<color=#8a8a8a><size=13>[{i + 1}]</size>  {c.Label}  · {c.Locked}</color>";
+                GUI.enabled = c.Locked == null;
+                if (GUI.Button(new Rect(x, top + i * (rowH + 6f), w, rowH), text, _card)) run.ChooseEvent(i);
+                GUI.enabled = true;
+            }
         }
 
         // 갈림길 카드 (시간이 멈춰 있어요). 1·2·3 또는 클릭

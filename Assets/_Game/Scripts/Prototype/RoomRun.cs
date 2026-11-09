@@ -135,6 +135,11 @@ namespace AThousandDawns.Prototype
                 TickShopKeys();
                 return;
             }
+            if (IsInEvent)
+            {
+                TickEventKeys();
+                return;
+            }
 
             switch (_phase)
             {
@@ -169,13 +174,16 @@ namespace AThousandDawns.Prototype
             int min = Mathf.RoundToInt(GameConfig.Get("room.fork_min", 2f));
             int max = Mathf.RoundToInt(GameConfig.Get("room.fork_max", 3f));
             float dense = GameConfig.Get("room.fork_dense_chance", 0.4f);
-            int count = _rng.Next(min, Mathf.Max(min, max) + 1);
-            var options = new List<Path>();
-            for (int tries = 0; options.Count < count && tries < 50; tries++)
+            // 한 갈림길에 같은 보상 종류는 한 번만 (기물 옅은 길 + 기물 짙은 길 같이 안 나옴)
+            var kinds = new List<RewardKind>((RewardKind[])Enum.GetValues(typeof(RewardKind)));
+            for (int i = kinds.Count - 1; i > 0; i--)
             {
-                var p = new Path { Reward = (RewardKind)_rng.Next(2), Dense = _rng.NextDouble() < dense };
-                if (!options.Contains(p)) options.Add(p);
+                int j = _rng.Next(i + 1);
+                (kinds[i], kinds[j]) = (kinds[j], kinds[i]);
             }
+            int count = Mathf.Min(kinds.Count, _rng.Next(min, Mathf.Max(min, max) + 1));
+            var options = new List<Path>();
+            for (int i = 0; i < count; i++) options.Add(new Path { Reward = kinds[i], Dense = _rng.NextDouble() < dense });
             return options;
         }
 
@@ -187,9 +195,11 @@ namespace AThousandDawns.Prototype
             arena.Blocked = false;
             Player.enabled = true;
             Time.timeScale = 1f;
+            int events = RollEventRooms();
             _map = FloorMap.Generate(_rng,
                 Mathf.RoundToInt(GameConfig.Get("room.path_rooms", 3f)),
-                Mathf.RoundToInt(GameConfig.Get("room.optional_rooms", 2f)));
+                Mathf.RoundToInt(GameConfig.Get("room.optional_rooms", 2f)), events);
+            AssignEvents();
             _phase = Phase.Floor;
             ShowBanner($"죽림 {_floor}층 · {PathLabel(_path)}");
             BeginHunt();
@@ -247,6 +257,7 @@ namespace AThousandDawns.Prototype
                 _fighting = false;
                 _waves = null;
                 if (room.Kind == FloorRoomKind.Gate) ShowBanner("관문 · 가운데에서 F를 누르면 다음 층");
+                if (room.Kind == FloorRoomKind.Event && !room.Cleared) OpenEvent(room, room.EventId);
             }
             OnHuntEnter(room);
         }
@@ -288,6 +299,7 @@ namespace AThousandDawns.Prototype
         {
             ClearPending();
             EndHunt();
+            EndFloorEffects();
             _fighting = false;
             SetLocks(false);
             SetGateMarker(false);
@@ -431,6 +443,12 @@ namespace AThousandDawns.Prototype
             int silver = Mathf.RoundToInt(GameConfig.Get("silver.room", 18f) * mult) + _elitesThisRoom * Mathf.RoundToInt(GameConfig.Get("silver.elite", 15f));
             Silver += silver;
             string text = $"방을 비웠어요 · 은자 +{silver}";
+            if (_rescueFight)
+            {
+                _rescueFight = false;
+                arena.GrantOffer(RareOnlyWeights()); // 붙잡힌 무인 구출 보상
+                text += " · 무인을 구했어요, 희귀 기물";
+            }
             if (_room.Kind == FloorRoomKind.Reward)
             {
                 if (_path.Reward == RewardKind.Item)
@@ -644,7 +662,7 @@ namespace AThousandDawns.Prototype
 
         void OnDestroy()
         {
-            if (IsForking || IsShopping) Time.timeScale = 1f;
+            if (IsForking || IsShopping || IsInEvent) Time.timeScale = 1f;
         }
 
         // HUD 한 줄

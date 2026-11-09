@@ -387,7 +387,7 @@ namespace AThousandDawns.Player
             _velocity = Vector3.zero;
             _lungeRemaining = 0f;
             _dashAttackTimer = 0f;
-            Gauge = Mathf.Min(_gaugeMax, Gauge + _gaugeHurt);
+            Gauge = Mathf.Min(_gaugeMax, Gauge + _gaugeHurt * GaugeGainMultiplier);
 
             _flashTimer = 0.12f;
             if (dealt > 0) DamagePopups.Spawn(transform.position + Vector3.up * 2f, dealt, PopupStyle.Player); // 보호막이 다 막으면 숫자 없음
@@ -470,7 +470,7 @@ namespace AThousandDawns.Player
                 var hit = PlayerHit(_skillDamage);
                 hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
                 int count = HitSector(_skillRadius, 360f, hit, HitTag.Skill);
-                Gauge = Mathf.Min(_gaugeMax, Gauge + count * _gaugeSkill);
+                Gauge = Mathf.Min(_gaugeMax, Gauge + count * _gaugeSkill * GaugeGainMultiplier);
 
                 // #뇌정 2단계: 초식이 적중하면 처음 맞은 적부터 연쇄 번개 (발동 공격 = 초식 피해, 강인함 빼기 전)
                 int thunder = _keywords.Count(Keyword.Noejeong);
@@ -631,7 +631,7 @@ namespace AThousandDawns.Player
             var hit = PlayerHit(finisher ? _finisherDamage : _basicDamage);
             hit.AttackIncrease += BasicSwingBonus(finisher, extra);
             int count = HitSector(radius, angle, hit, finisher ? HitTag.Finisher : HitTag.Basic);
-            Gauge = Mathf.Min(_gaugeMax, Gauge + count * (finisher ? _gaugeFinisher : _gaugeBasic));
+            Gauge = Mathf.Min(_gaugeMax, Gauge + count * (finisher ? _gaugeFinisher : _gaugeBasic) * GaugeGainMultiplier);
             FireGanggiOnSwing(finisher, hit);
             AfterBasicSwing(count, hit);
         }
@@ -643,7 +643,7 @@ namespace AThousandDawns.Player
             var hit = PlayerHit(_dashAttackDamage);
             hit.AttackIncrease += DashAttackBonus; // 비연 깃털 · 운룡 허리띠
             int count = HitSector(_dashAttackRadius, _dashAttackAngle, hit, HitTag.DashAttack);
-            Gauge = Mathf.Min(_gaugeMax, Gauge + count * _gaugeDashAttack);
+            Gauge = Mathf.Min(_gaugeMax, Gauge + count * _gaugeDashAttack * GaugeGainMultiplier);
             LeaveFrostTrail(); // 한철 비녀
             AfterDashAttack(count, hit);
         }

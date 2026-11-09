@@ -75,6 +75,8 @@ namespace AThousandDawns.Tests
             yield return Load();
             Assert.IsTrue(_run.IsForking, "판을 시작하면 갈림길부터");
             Assert.That(_run.ForkOptions.Count, Is.InRange(2, 3));
+            for (int i = 0; i < 20; i++, _run.BeginFork(1))
+                Assert.AreEqual(_run.ForkOptions.Count, _run.ForkOptions.Select(p => p.Reward).Distinct().Count(), "같은 보상 종류는 한 갈림길에 한 번만");
             Assert.AreEqual(0f, Time.timeScale, "고르는 동안 시간 정지");
             Assert.AreEqual(1, _run.Floor);
 

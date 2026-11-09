@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace AThousandDawns.Prototype
 {
-    public enum FloorRoomKind { Start, Combat, Reward, Gate }
+    public enum FloorRoomKind { Start, Combat, Reward, Gate, Event }
 
     public sealed class FloorRoom
     {
@@ -12,6 +12,7 @@ namespace AThousandDawns.Prototype
         public FloorRoomKind Kind;
         public bool Optional;  // 최소 경로 밖 선택 방
         public bool Visited, Revealed, Cleared;
+        public string EventId; // 이벤트 방 (RoomEvents)
 
         public bool HasFight => Kind == FloorRoomKind.Combat || Kind == FloorRoomKind.Reward; // 보상 방은 앞에 전투가 한 번 붙어요
     }
@@ -36,17 +37,18 @@ namespace AThousandDawns.Prototype
 
         public static int Opposite(int direction) => (direction + 2) % 4;
 
-        public static FloorMap Generate(System.Random rng, int pathRooms, int optionalRooms)
+        // eventRooms: 이벤트 방 (비전투, 막다른 곳). 시작 방이나 전투 방에 매달려요.
+        public static FloorMap Generate(System.Random rng, int pathRooms, int optionalRooms, int eventRooms = 0)
         {
             for (int attempt = 0; attempt < 100; attempt++)
             {
                 var map = new FloorMap();
-                if (map.TryBuild(rng, Math.Max(1, pathRooms), Math.Max(0, optionalRooms))) return map;
+                if (map.TryBuild(rng, Math.Max(1, pathRooms), Math.Max(0, optionalRooms), Math.Max(0, eventRooms))) return map;
             }
             throw new InvalidOperationException("층 배치를 만들지 못했어요");
         }
 
-        bool TryBuild(System.Random rng, int pathRooms, int optionalRooms)
+        bool TryBuild(System.Random rng, int pathRooms, int optionalRooms, int eventRooms)
         {
             var start = Add(Vector2Int.zero, FloorRoomKind.Start, false);
 
@@ -69,6 +71,12 @@ namespace AThousandDawns.Prototype
             {
                 var anchors = _rooms.FindAll(r => r.Kind == FloorRoomKind.Start || r.Kind == FloorRoomKind.Combat);
                 if (!GrowFromAny(anchors, FloorRoomKind.Combat, true, rng)) return false;
+            }
+
+            for (int i = 0; i < eventRooms; i++)
+            {
+                var anchors = _rooms.FindAll(r => r.Kind == FloorRoomKind.Start || r.Kind == FloorRoomKind.Combat);
+                if (!GrowFromAny(anchors, FloorRoomKind.Event, true, rng)) return false;
             }
             return true;
         }

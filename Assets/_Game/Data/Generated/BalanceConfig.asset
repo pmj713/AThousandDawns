@@ -1733,3 +1733,87 @@ MonoBehaviour:
     value: 0.12
     unit: 
     note: "\uBCF4\uC2A4\xB7\uC0B4\uC218 \uBCF4\uC0C1 \uB4F1\uAE09 \uD655\uB960 \uC804\uC124"
+  - key: event.chance
+    value: 0.5
+    unit: 
+    note: "\uCE35\uB9C8\uB2E4 \uC774\uBCA4\uD2B8 \uBC29\uC774 \uC0DD\uAE38 \uD655\uB960"
+  - key: price.doctor_potion
+    value: 50
+    unit: "\uC740\uC790"
+    note: "\uB5A0\uB3CC\uC774 \uC758\uC6D0: \uAE08\uCC3D\uC57D"
+  - key: price.doctor_needle
+    value: 40
+    unit: "\uC740\uC790"
+    note: "\uB5A0\uB3CC\uC774 \uC758\uC6D0: \uCE68"
+  - key: event.needle_heal
+    value: 0.25
+    unit: 
+    note: "\uB5A0\uB3CC\uC774 \uC758\uC6D0 \uCE68: \uCCB4\uB825 \uD68C\uBCF5 \uBE44\uC728"
+  - key: event.bottle_potion
+    value: 0.6
+    unit: 
+    note: "\uBC84\uB824\uC9C4 \uC57D\uBC29 \uC544\uBB34 \uBCD1: \uAE08\uCC3D\uC57D \uD655\uB960"
+  - key: event.bottle_pill
+    value: 0.25
+    unit: 
+    note: "\uBC84\uB824\uC9C4 \uC57D\uBC29 \uC544\uBB34 \uBCD1: \uC6D0\uAE30\uB2E8 \uD655\uB960 (\uC774\uBC88 \uCE35 \uACF5\uB825 +1)"
+  - key: event.poison_damage
+    value: 0.15
+    unit: 
+    note: "\uBC84\uB824\uC9C4 \uC57D\uBC29 \uB3C5\uC57D: \uCCB4\uB825 \uAC10\uC18C (\uCD5C\uB300 \uCCB4\uB825 \uBE44\uC728)"
+  - key: event.search_tracking
+    value: 1
+    unit: 
+    note: "\uBC84\uB824\uC9C4 \uC57D\uBC29 \uC0C5\uC0C5\uC774 \uB4A4\uC9C0\uAE30: \uCD94\uC801\uB3C4 +"
+  - key: price.gamble_stake
+    value: 50
+    unit: "\uC740\uC790"
+    note: "\uD22C\uC804\uD310 \uD310\uB3C8"
+  - key: event.gamble_win
+    value: 0.5
+    unit: 
+    note: "\uD22C\uC804\uD310 \uC774\uAE38 \uD655\uB960"
+  - key: event.gamble_power
+    value: 4
+    unit: 
+    note: "\uD22C\uC804\uD310 \uC18D\uC784\uC218 \uAFF0\uB6AB\uAE30: \uD544\uC694\uD55C \uACF5\uB825"
+  - key: event.rescue_geumgang
+    value: 4
+    unit: 
+    note: "\uBD99\uC7A1\uD78C \uBB34\uC778 \uAE30\uC138\uB85C \uBB3C\uB9AC\uCE58\uAE30: \uD544\uC694\uD55C #\uAE08\uAC15 \uB2E8\uACC4"
+  - key: event.rescue_grunts
+    value: 2
+    unit: 
+    note: "\uBD99\uC7A1\uD78C \uBB34\uC778 \uAD6C\uCD9C \uC804\uD22C: \uC815\uC608\uC640 \uD568\uAED8 \uB098\uC624\uB294 \uC878\uAC1C \uC218 (\uC784\uC2DC)"
+  - key: event.ignore_tracking
+    value: 1
+    unit: 
+    note: "\uBD99\uC7A1\uD78C \uBB34\uC778 \uBABB \uBCF8 \uCC99: \uCD94\uC801\uB3C4 \u2212"
+  - key: price.shrine_incense
+    value: 20
+    unit: "\uC740\uC790"
+    note: "\uC0B0\uC2E0\uB2F9 \uD5A5"
+  - key: event.shrine_move
+    value: 0.1
+    unit: 
+    note: "\uC0B0\uC2E0\uB2F9 \uCD95\uBCF5: \uC774\uB3D9\uC18D\uB3C4 +"
+  - key: event.shrine_gauge
+    value: 0.15
+    unit: 
+    note: "\uC0B0\uC2E0\uB2F9 \uCD95\uBCF5: \uAE30\uC138 \uCDA9\uC804 +"
+  - key: event.offering_silver
+    value: 80
+    unit: "\uC740\uC790"
+    note: "\uC0B0\uC2E0\uB2F9 \uACF5\uBB3C \uCC59\uAE30\uAE30: \uC740\uC790 +"
+  - key: event.offering_taken
+    value: 0.15
+    unit: 
+    note: "\uC0B0\uC2E0\uC758 \uB178\uC5EC\uC6C0: \uC774\uBC88 \uCE35 \uBC1B\uB294 \uD53C\uD574 +"
+  - key: event.scripture_xp
+    value: 15
+    unit: 
+    note: "\uBCBD\uC5D0 \uC0C8\uAE34 \uAC80\uACB0 \uD6D1\uC5B4\uBCF4\uAE30: \uC218\uB828\uCE58 +"
+  - key: event.scripture_tracking
+    value: 2
+    unit: 
+    note: "\uBCBD\uC5D0 \uC0C8\uAE34 \uAC80\uACB0 \uAE4A\uC774 \uCC38\uC624: \uCD94\uC801\uB3C4 +"

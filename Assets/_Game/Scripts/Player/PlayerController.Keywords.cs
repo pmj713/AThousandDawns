@@ -1,4 +1,4 @@
-using AThousandDawns.Combat;
+﻿using AThousandDawns.Combat;
 using AThousandDawns.Core;
 using UnityEngine;
 
@@ -124,7 +124,7 @@ namespace AThousandDawns.Player
         float DamageReductionTotal => (K(Keyword.Jeongjong) >= 4 && Qi(QiState.Deviated) == 0 ? _jeongjongReduction : 0f) + ItemDamageReduction; // + 쇠사슬 · 금빛 가사
 
         // #마도 각인: 절초 사용 후 3초간 받는 피해 +30%
-        float TakenIncreaseTotal => (_madoPenaltyTimer > 0f ? _madoImprintTaken : 0f) + Side("taken"); // + 기물 부작용
+        float TakenIncreaseTotal => (_madoPenaltyTimer > 0f ? _madoImprintTaken : 0f) + Side("taken") + RunTakenIncrease; // + 기물 부작용 + 산신의 노여움
 
         // #금강 2단계: 보호막이 있는 동안 강인함 +2
         float EffectiveToughness => Toughness + (K(Keyword.Geumgang) >= 2 && _shields.Any ? _geumgangToughness : 0) + ItemToughness; // + 거북 등껍질
@@ -133,7 +133,7 @@ namespace AThousandDawns.Player
         float AttackSpeedMultiplier => (1f + (K(Keyword.Ganggi) >= 2 ? _ganggiAttackSpeed : 0f) + ItemAttackSpeedBonus) * Mathf.Max(0.1f, 1f - Side("attack_speed")); // + 기물 · × 기물 부작용
 
         // #경공 2단계: 기 부족 기물 1개당 이동속도 +4% (최대 +20%)
-        float MoveSpeedBonus => (K(Keyword.Gyeonggong) >= 2 ? Mathf.Min(_gyeonggongLackMoveMax, Qi(QiState.Lacking) * _gyeonggongLackMove) : 0f) + ItemMoveSpeedBonus - Side("move_speed"); // + 기물 − 기물 부작용
+        float MoveSpeedBonus => (K(Keyword.Gyeonggong) >= 2 ? Mathf.Min(_gyeonggongLackMoveMax, Qi(QiState.Lacking) * _gyeonggongLackMove) : 0f) + ItemMoveSpeedBonus - Side("move_speed") + RunMoveBonus; // + 기물 − 기물 부작용 + 산신당 축복
 
         // 플레이어 공격 한 번의 피해 입력. 간파 보너스는 다음 공격 한 번에 쓰여요.
         HitDamageInput PlayerHit(float baseDamage)

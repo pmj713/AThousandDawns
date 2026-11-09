@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using AThousandDawns.Core;
 using AThousandDawns.Items;
@@ -85,6 +85,14 @@ namespace AThousandDawns.Player
             }
             Recount();
             return item;
+        }
+
+        // 투전판에서 잃었을 때처럼 기물을 내놓아요
+        public bool Remove(OwnedItem item)
+        {
+            if (item == null || !_items.Remove(item)) return false;
+            Recount();
+            return true;
         }
 
         public bool TryFindEmptyCell(out Vector2Int cell)

@@ -429,3 +429,24 @@ item_grade_special.common,30%,,보스·살수 보상 등급 확률 일반,등급
 item_grade_special.uncommon,32%,,보스·살수 보상 등급 확률 고급,등급확률!C16
 item_grade_special.rare,26%,,보스·살수 보상 등급 확률 희귀,등급확률!D16
 item_grade_special.legendary,12%,,보스·살수 보상 등급 확률 전설,등급확률!E16
+event.chance,50%,,층마다 이벤트 방이 생길 확률,은자!B13
+price.doctor_potion,50,은자,떠돌이 의원: 금창약,은자!B28
+price.doctor_needle,40,은자,떠돌이 의원: 침,은자!B29
+event.needle_heal,25%,,떠돌이 의원 침: 체력 회복 비율,은자!C29 설명
+event.bottle_potion,60%,,버려진 약방 아무 병: 금창약 확률,기획 대화 (이벤트)
+event.bottle_pill,25%,,버려진 약방 아무 병: 원기단 확률 (이번 층 공력 +1),기획 대화 (이벤트)
+event.poison_damage,15%,,버려진 약방 독약: 체력 감소 (최대 체력 비율),기획 대화 (이벤트)
+event.search_tracking,1,,버려진 약방 샅샅이 뒤지기: 추적도 +,기획 대화 (이벤트)
+price.gamble_stake,50,은자,투전판 판돈,은자!B32
+event.gamble_win,50%,,투전판 이길 확률,기획 대화 (이벤트)
+event.gamble_power,4,,투전판 속임수 꿰뚫기: 필요한 공력,기획 대화 (이벤트)
+event.rescue_geumgang,4,,붙잡힌 무인 기세로 물리치기: 필요한 #금강 단계,기획 대화 (이벤트)
+event.rescue_grunts,2,,붙잡힌 무인 구출 전투: 정예와 함께 나오는 졸개 수 (임시),
+event.ignore_tracking,1,,붙잡힌 무인 못 본 척: 추적도 −,기획 대화 (이벤트)
+price.shrine_incense,20,은자,산신당 향,은자!B31
+event.shrine_move,10%,,산신당 축복: 이동속도 +,기획 대화 (이벤트 예시)
+event.shrine_gauge,15%,,산신당 축복: 기세 충전 +,기획 대화 (이벤트 예시)
+event.offering_silver,80,은자,산신당 공물 챙기기: 은자 +,기획 대화 (이벤트)
+event.offering_taken,15%,,산신의 노여움: 이번 층 받는 피해 +,기획 대화 (이벤트)
+event.scripture_xp,15,,벽에 새긴 검결 훑어보기: 수련치 +,기획 대화 (이벤트)
+event.scripture_tracking,2,,벽에 새긴 검결 깊이 참오: 추적도 +,기획 대화 (이벤트)

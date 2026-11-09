@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace AThousandDawns.Player
@@ -39,6 +39,9 @@ namespace AThousandDawns.Player
             }
             return ups;
         }
+
+        // 벽에 새긴 검결 (깊이 참오): 레벨업 없이 혈자리 하나
+        public void GrantPending() => Pending++;
 
         public bool ConsumePending()
         {

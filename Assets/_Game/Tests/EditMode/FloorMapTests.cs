@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using AThousandDawns.Prototype;
 using NUnit.Framework;
@@ -57,6 +57,20 @@ namespace AThousandDawns.Tests
                 var needed = new HashSet<FloorRoom>(PathTo(map, gate).Concat(PathTo(map, reward)));
                 Assert.AreEqual(3, needed.Count(r => r.HasFight), $"시드 {seed}");
                 Assert.IsFalse(needed.Any(r => r.Optional), $"시드 {seed}: 선택 방은 지나가지 않아도 돼요");
+            }
+        }
+
+        [Test]
+        public void 이벤트_방은_싸우지_않는_막다른_방()
+        {
+            for (int seed = 1; seed <= 200; seed++)
+            {
+                var map = FloorMap.Generate(new System.Random(seed), 3, 2, 1);
+                var ev = map.Rooms.Single(r => r.Kind == FloorRoomKind.Event);
+                Assert.IsFalse(ev.HasFight);
+                Assert.AreEqual(1, Neighbors(map, ev).Count, $"시드 {seed}: 막다른 곳");
+                Assert.AreEqual(map.Rooms.Count - 1, map.Rooms.Sum(r => Neighbors(map, r).Count) / 2, "지름길 없음");
+                Assert.AreEqual(5, map.FightsLeft(), "이벤트 방은 남은 전투 방에 안 들어가요");
             }
         }
 
