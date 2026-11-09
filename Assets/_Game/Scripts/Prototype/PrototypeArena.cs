@@ -113,6 +113,7 @@ namespace AThousandDawns.Prototype
                 if (keyboard.digit8Key.wasPressedThisFrame) SpawnKey(EnemyKind.Snake, elite);
                 if (keyboard.digit9Key.wasPressedThisFrame) SpawnBoss();
                 if (keyboard.digit0Key.wasPressedThisFrame) SpawnKey(EnemyKind.Assassin, false); // 마교 살수
+                if (keyboard.minusKey.wasPressedThisFrame) SpawnMaster(); // 고수 청죽객
                 if (keyboard.gKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.FillGauge();
                 if (keyboard.lKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.GainLevelForTest(); // 시험용 레벨업
                 if (director != null && director.Player != null && director.Player.Keywords != null)
@@ -262,6 +263,19 @@ namespace AThousandDawns.Prototype
         void OnDestroy()
         {
             if (IsChoosing) Time.timeScale = 1f;
+        }
+
+        // 고수 청죽객: 플레이어 둘레에 바로 깨어 있는 채로. 죽림섬·대나무 끝점은 지금 맵(넓은 죽림이면 들판) 안으로 당겨요.
+        [SerializeField] Vector3 masterZoneCenter = new Vector3(0f, 0f, -2f);
+        [SerializeField] Vector2 masterZoneSize = new Vector2(40f, 24f);
+
+        public QingzhuBrain SpawnMaster()
+        {
+            foreach (var e in director.Enemies)
+                if (e is QingzhuBrain alive && !alive.IsDead) return alive; // 한 번에 하나
+            var master = SpawnNearPlayer(EnemyKind.Qingzhu) as QingzhuBrain;
+            if (master != null) master.SetZone(masterZoneCenter, masterZoneSize);
+            return master;
         }
 
         void SpawnKey(EnemyKind kind, bool elite)

@@ -1817,3 +1817,167 @@ MonoBehaviour:
     value: 2
     unit: 
     note: "\uBCBD\uC5D0 \uC0C8\uAE34 \uAC80\uACB0 \uAE4A\uC774 \uCC38\uC624: \uCD94\uC801\uB3C4 +"
+  - key: room.master_floor
+    value: 2
+    unit: 
+    note: "\uACE0\uC218\uAC00 \uC9C0\uD0A4\uB294 \uAD00\uBB38 \uCE35"
+  - key: master.spare_silver
+    value: 50
+    unit: "\uC740\uC790"
+    note: "\uACE0\uC218 \uBC29\uBA74: \uC740\uC790 + (\uC784\uC2DC)"
+  - key: qingzhu.hp
+    value: 1100
+    unit: 
+    note: "\uCCAD\uC8FD\uAC1D \uCCB4\uB825 (\uC8FD\uB9BC)"
+  - key: qingzhu.atk
+    value: 18
+    unit: 
+    note: "\uCCAD\uC8FD\uAC1D \uACF5\uACA9 (\uC8FD\uB9BC)"
+  - key: qingzhu.toughness
+    value: 0
+    unit: 
+    note: "\uCCAD\uC8FD\uAC1D \uAC15\uC778\uD568"
+  - key: qingzhu.move_speed
+    value: 5
+    unit: cell/s
+    note: "\uCCAD\uC8FD\uAC1D \uC774\uB3D9"
+  - key: qingzhu.keep_min
+    value: 3
+    unit: cell
+    note: "\uCCAD\uC8FD\uAC1D \uC720\uC9C0 \uAC70\uB9AC \uD558\uD55C"
+  - key: qingzhu.keep_max
+    value: 4
+    unit: cell
+    note: "\uCCAD\uC8FD\uAC1D \uC720\uC9C0 \uAC70\uB9AC \uC0C1\uD55C"
+  - key: qingzhu.transition_time
+    value: 1.5
+    unit: s
+    note: "\uACE0\uC218 \uCCB4\uB825 50% \uC804\uD658 \uC5F0\uCD9C (\uBB34\uC801)"
+  - key: qingzhu.phase2_hp_ratio
+    value: 0.5
+    unit: 
+    note: "2\uD398\uC774\uC988\uB85C \uB118\uC5B4\uAC00\uB294 \uCCB4\uB825 \uBE44\uC728"
+  - key: qingzhu.max_repeat
+    value: 2
+    unit: 
+    note: "\uAC19\uC740 \uD328\uD134 \uC5F0\uC18D \uCD5C\uB300"
+  - key: qingzhu.decision_pause
+    value: 0.4
+    unit: s
+    note: "\uD328\uD134 \uC0AC\uC774 \uC26C\uB294 \uC2DC\uAC04 (\uB179\uB9BC\uC655\uACFC \uAC19\uAC8C \uC784\uC2DC)"
+  - key: qingzhu.combo_windup
+    value: 0.5
+    unit: s
+    note: "\uCF8C\uAC80 3\uC5F0\uACA9 \uC608\uACE0"
+  - key: qingzhu.combo_recovery
+    value: 0.8
+    unit: s
+    note: "\uCF8C\uAC80 3\uC5F0\uACA9 \uBE48\uD2C8"
+  - key: qingzhu.combo_ratio
+    value: 0.6
+    unit: 
+    note: "\uCF8C\uAC80 3\uC5F0\uACA9 \uD53C\uD574 \uBC30\uC728 (1\uBC88\uB2F9)"
+  - key: qingzhu.combo_radius
+    value: 2
+    unit: cell
+    note: "\uCF8C\uAC80 \uBD80\uCC44\uAF34 \uBC18\uACBD"
+  - key: qingzhu.combo_angle
+    value: 90
+    unit: deg
+    note: "\uCF8C\uAC80 \uBD80\uCC44\uAF34 \uAC01\uB3C4"
+  - key: qingzhu.combo_gap
+    value: 0.3
+    unit: s
+    note: "\uCF8C\uAC80 3\uC5F0\uACA9 \uAC04\uACA9"
+  - key: qingzhu.p2_combo_gap
+    value: 0.25
+    unit: s
+    note: "2\uD398\uC774\uC988 \uCF8C\uAC80 \uAC04\uACA9"
+  - key: qingzhu.combo_lunge
+    value: 0.8
+    unit: cell
+    note: "\uCF8C\uAC80 \uD55C \uBC88\uC5D0 \uC804\uC9C4"
+  - key: qingzhu.flash_windup
+    value: 0.6
+    unit: s
+    note: "\uC8FD\uB9BC\uC12C \uC608\uACE0"
+  - key: qingzhu.flash_recovery
+    value: 1.2
+    unit: s
+    note: "\uC8FD\uB9BC\uC12C \uBE48\uD2C8"
+  - key: qingzhu.flash_ratio
+    value: 0.8
+    unit: 
+    note: "\uC8FD\uB9BC\uC12C \uD53C\uD574 \uBC30\uC728"
+  - key: qingzhu.flash_length
+    value: 4
+    unit: cell
+    note: "\uC8FD\uB9BC\uC12C \uC9C1\uC120 \uAE38\uC774"
+  - key: qingzhu.flash_width
+    value: 1
+    unit: cell
+    note: "\uC8FD\uB9BC\uC12C \uC9C1\uC120 \uD3ED (\uC784\uC2DC)"
+  - key: qingzhu.flash_gap
+    value: 0.25
+    unit: s
+    note: "\uC8FD\uB9BC\uC12C \uC21C\uAC04\uC774\uB3D9 \uAC04\uACA9"
+  - key: qingzhu.flash_interval
+    value: 8
+    unit: s
+    note: "\uC8FD\uB9BC\uC12C \uAC04\uACA9"
+  - key: qingzhu.p2_flash_interval
+    value: 6
+    unit: s
+    note: "2\uD398\uC774\uC988 \uC8FD\uB9BC\uC12C \uAC04\uACA9 (4\uBC88)"
+  - key: qingzhu.bamboo_windup
+    value: 1
+    unit: s
+    note: "\uB300\uB098\uBB34 \uBCA0\uAE30 \uC608\uACE0"
+  - key: qingzhu.bamboo_recovery
+    value: 0.6
+    unit: s
+    note: "\uB300\uB098\uBB34 \uBCA0\uAE30 \uBE48\uD2C8 (\uC2DC\uD2B8 \uBE48\uCE78 \uC784\uC2DC)"
+  - key: qingzhu.bamboo_ratio
+    value: 1
+    unit: 
+    note: "\uB300\uB098\uBB34 \uBCA0\uAE30 \uD53C\uD574 \uBC30\uC728"
+  - key: qingzhu.bamboo_length
+    value: 5
+    unit: cell
+    note: "\uB300\uB098\uBB34 \uBCA0\uAE30 \uC9C1\uC120 \uAE38\uC774"
+  - key: qingzhu.bamboo_width
+    value: 1
+    unit: cell
+    note: "\uB300\uB098\uBB34 \uBCA0\uAE30 \uD3ED"
+  - key: qingzhu.bamboo_interval
+    value: 10
+    unit: s
+    note: "\uB300\uB098\uBB34 \uBCA0\uAE30 \uAC04\uACA9"
+  - key: qingzhu.bamboo_life
+    value: 6
+    unit: s
+    note: "\uC4F0\uB7EC\uC9C4 \uB300\uB098\uBB34\uAC00 \uBCBD\uC73C\uB85C \uB0A8\uB294 \uC2DC\uAC04"
+  - key: qingzhu.bamboo_spread
+    value: 25
+    unit: deg
+    note: "2\uD398\uC774\uC988 \uB300\uB098\uBB34 \uB450 \uADF8\uB8E8 \uC0AC\uC774 \uBC18\uAC01 (\uC784\uC2DC)"
+  - key: skill_flash.ratio
+    value: 0.5
+    unit: 
+    note: "\uBE44\uAE09 \uC8FD\uB9BC\uC12C: 1\uBC88 \uBCA0\uAE30 \uD53C\uD574 (\uD68C\uC120\uCC38 \uD53C\uD574 \uBE44\uC728 \uC784\uC2DC)"
+  - key: skill_flash.count
+    value: 3
+    unit: 
+    note: "\uBE44\uAE09 \uC8FD\uB9BC\uC12C: \uC21C\uAC04\uC774\uB3D9 \uBCA0\uAE30 \uD69F\uC218"
+  - key: skill_flash.gap
+    value: 0.25
+    unit: s
+    note: "\uBE44\uAE09 \uC8FD\uB9BC\uC12C: \uBCA0\uAE30 \uAC04\uACA9 (\uCCAD\uC8FD\uAC1D\uACFC \uAC19\uAC8C)"
+  - key: skill_flash.range
+    value: 6
+    unit: cell
+    note: "\uBE44\uAE09 \uC8FD\uB9BC\uC12C: \uC801\uC744 \uCC3E\uB294 \uAC70\uB9AC (\uC784\uC2DC)"
+  - key: skill_flash.width
+    value: 1.2
+    unit: cell
+    note: "\uBE44\uAE09 \uC8FD\uB9BC\uC12C: \uBCA0\uB294 \uC9C1\uC120 \uD3ED (\uC784\uC2DC)"

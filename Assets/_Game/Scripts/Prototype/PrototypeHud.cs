@@ -58,7 +58,7 @@ namespace AThousandDawns.Prototype
             GUILayout.BeginArea(new Rect(16, 16, 700, 466), GUI.skin.box);
             GUILayout.Label("일조천회 시험판 · 전투", _label);
             GUILayout.Label("WASD 이동 · 좌클릭(누르고 있기) 평타 · 우클릭 회선참 · Q 만검귀종 · Space 대시 · R 금창약(누르고 있기)", _label);
-            GUILayout.Label("부르기 (바로 옆): 1 졸개 · 2 멧돼지 · 3 궁수 · 4 들개 · 5 방패 · 6 나팔수 · 7 화약 · 8 청죽사 · 9 녹림왕 (결투장) · 0 살수 · Shift+숫자 정예", _label);
+            GUILayout.Label("부르기 (바로 옆): 1 졸개 · 2 멧돼지 · 3 궁수 · 4 들개 · 5 방패 · 6 나팔수 · 7 화약 · 8 청죽사 · 9 녹림왕 (결투장) · 0 살수 · - 청죽객 · Shift+숫자 정예", _label);
             GUILayout.Label("G 기세 채우기 · F5 처음부터 · 키워드 F1 열양 F2 빙백 F3 뇌정 F4 강기 F6 금강 F7 경공 F8 마도 F9 정종 · 기물 상태 F10 기 부족 F11 운기 F12 주화입마 · I 기물 고르기 · E 경맥도 · L 레벨업", _wrapLabel);
             if (player != null)
             {
@@ -87,7 +87,7 @@ namespace AThousandDawns.Prototype
                 var level = player.Level;
                 if (level != null) GUILayout.Label($"레벨 {level.Level} · 수련치 {level.Xp}/{level.NeedForNext}{(level.Pending > 0 ? $"  <color=#ffd27a>· 개혈 대기 {level.Pending}</color>" : "")}", _label);
                 string skill = player.IsCastingSkill ? "베는 중" : player.SkillCooldownLeft > 0f ? $"{player.SkillCooldownLeft:0.0}초" : "준비";
-                GUILayout.Label($"회선참 {skill}", _label);
+                GUILayout.Label($"{player.SkillName} {skill}", _label);
                 if (combo != null) GUILayout.Label($"평타 {combo.HitIndex + 1}타 · {combo.CurrentPhase}", _label);
                 var keywords = player.Keywords;
                 if (keywords != null)
@@ -126,6 +126,22 @@ namespace AThousandDawns.Prototype
                 GUI.Label(new Rect(0, UiScale.Height * 0.4f, UiScale.Width, 60), "쓰러졌어요 · F5 키로 다시 시작", _big);
 
             // 녹림왕이 깨어나면 화면 아래쪽 가운데에 큰 체력바 (왼쪽 위 도움말과 겹치지 않게)
+            QingzhuBrain master = null; // 고수 (판 구조 결투장이든 샌드박스 - 키든)
+            if (director != null)
+                foreach (var e in director.Enemies)
+                    if (e is QingzhuBrain q && !q.IsDead)
+                    {
+                        master = q;
+                        break;
+                    }
+            if (master != null && !master.IsDead && master.IsAwake && master.Damageable != null)
+            {
+                float width = Mathf.Min(560f, UiScale.Width - 40f);
+                var area = new Rect((UiScale.Width - width) * 0.5f, UiScale.Height - 64f, width, 18f);
+                string state = master.IsTransitioning ? " · 전환 중 (무적)" : master.Statuses != null && master.Statuses.IsFrozen ? " · 빙결" : "";
+                GUI.Label(new Rect(area.x, area.y, area.width, 24f), $"고수 청죽객 · {master.Phase}페이즈{state}   {master.Damageable.Health:0}/{master.Damageable.MaxHealth:0}", _bossLabel);
+                DrawBar(new Rect(area.x, area.y + 26f, area.width, 12f), master.Damageable.Health / Mathf.Max(1f, master.Damageable.MaxHealth), HealthColor);
+            }
             var boss = arena != null ? arena.Boss : null;
             if (boss != null && !boss.IsDead && boss.IsAwake && boss.Damageable != null)
             {

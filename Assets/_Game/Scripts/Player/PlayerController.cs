@@ -325,6 +325,7 @@ namespace AThousandDawns.Player
             if (IsCastingSkill)
             {
                 TickSkill(dt);
+                if (Skill == SkillKind.BambooFlash) return; // 죽림섬은 순간이동으로만 움직여요
                 UpdateMovement(dt);
                 ApplySkillSpin();
                 return;
@@ -462,6 +463,11 @@ namespace AThousandDawns.Player
         void TickSkill(float dt)
         {
             _skillElapsed += dt;
+            if (Skill == SkillKind.BambooFlash)
+            {
+                TickBambooFlash();
+                return;
+            }
             if (!_skillHitDone && _skillElapsed >= _skillHitTime)
             {
                 _skillHitDone = true;

@@ -70,9 +70,14 @@ namespace AThousandDawns.Prototype
             OpenEvent(_room, id);
         }
 
-        void OpenEvent(FloorRoom room, string id)
+        Action _afterEvent; // 창을 닫은 뒤 (고수 선택 → 다음 갈림길)
+
+        void OpenEvent(FloorRoom room, string id) => OpenEventView(BuildEvent(room, id), null);
+
+        void OpenEventView(EventView view, Action after)
         {
-            CurrentEvent = BuildEvent(room, id);
+            CurrentEvent = view;
+            _afterEvent = after;
             if (CurrentEvent == null) return;
             arena.Blocked = true;
             Player.enabled = false;
@@ -86,6 +91,9 @@ namespace AThousandDawns.Prototype
             arena.Blocked = false;
             Player.enabled = true;
             Time.timeScale = 1f;
+            var after = _afterEvent;
+            _afterEvent = null;
+            after?.Invoke();
         }
 
         // 결과가 나온 뒤엔 아무 숫자·F·Enter로 닫아요

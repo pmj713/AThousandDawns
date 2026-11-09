@@ -19,6 +19,7 @@ namespace AThousandDawns.EditorTools
         static readonly Vector3 CombatCenter = Vector3.zero;
         static readonly Vector3 RestCenter = new Vector3(60f, 0f, 0f);
         static readonly Vector3 InnCenter = new Vector3(180f, 0f, 0f);
+        static readonly Vector3 MasterCenter = new Vector3(240f, 0f, 0f);
         const string WoodColor = "#7A5536";   // 객잔 계산대 (임시)
         const string ClerkColor = "#D9C9A8";  // 점소이 (임시)
         static readonly Vector3 BossCenter = new Vector3(120f, 0f, 0f);
@@ -77,6 +78,28 @@ namespace AThousandDawns.EditorTools
             clerk.transform.localScale = new Vector3(0.6f, 0.8f, 0.6f);
             clerk.GetComponent<Renderer>().sharedMaterial = GetMaterial("Clerk", ClerkColor, false);
 
+            // 고수 결투장 (청죽객): 14×10, 테두리 대나무 숲, 안에 대나무 기둥 6그루 (몬스터 시트 115행)
+            var masterRoom = new GameObject("Room_Master").transform;
+            Box("Floor", masterRoom, MasterCenter + new Vector3(0f, -0.1f, 0f), new Vector3(15f, 0.2f, 11f), floorMat);
+            Box("Bamboo_W", masterRoom, MasterCenter + new Vector3(-7.25f, 1.25f, 0f), new Vector3(0.5f, 2.5f, 10.5f), bambooMat);
+            Box("Bamboo_E", masterRoom, MasterCenter + new Vector3(7.25f, 1.25f, 0f), new Vector3(0.5f, 2.5f, 10.5f), bambooMat);
+            Box("Bamboo_N", masterRoom, MasterCenter + new Vector3(0f, 1.25f, 5.25f), new Vector3(15f, 2.5f, 0.5f), bambooMat);
+            Box("Bamboo_S", masterRoom, MasterCenter + new Vector3(0f, 1.25f, -5.25f), new Vector3(15f, 2.5f, 0.5f), bambooMat);
+            Vector3[] masterPillars =
+            {
+                new Vector3(-4f, 0f, 2.5f), new Vector3(4f, 0f, 2.5f), new Vector3(-4f, 0f, -2.5f),
+                new Vector3(4f, 0f, -2.5f), new Vector3(-5.5f, 0f, 0f), new Vector3(5.5f, 0f, 0f),
+            };
+            for (int i = 0; i < masterPillars.Length; i++)
+            {
+                var b = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                b.name = $"Bamboo_{i + 1}";
+                b.transform.SetParent(masterRoom, false);
+                b.transform.localPosition = MasterCenter + masterPillars[i] + Vector3.up * 1.5f;
+                b.transform.localScale = new Vector3(0.6f, 1.5f, 0.6f);
+                b.GetComponent<Renderer>().sharedMaterial = bambooMat;
+            }
+
             // 정비실: 12×10, 북쪽 문은 늘 열려 있어요
             BuildShell("Room_Rest", RestCenter, new Vector2(12f, 10f), floorMat, wallMat);
 
@@ -126,6 +149,7 @@ namespace AThousandDawns.EditorTools
                 lockArr.GetArrayElementAtIndex(d).objectReferenceValue = locks[d];
                 plugArr.GetArrayElementAtIndex(d).objectReferenceValue = plugs[d];
             }
+            SetSite(runSo.FindProperty("master"), MasterCenter, new Vector2(14f, 10f), new Vector3(0f, 0f, -3.5f), new Vector3(0f, 0f, 99f));
             SetSite(runSo.FindProperty("inn"), InnCenter, new Vector2(12f, 10f), new Vector3(0f, 0f, -3.5f), new Vector3(0f, 0f, 6.6f));
             SetSite(runSo.FindProperty("rest"), RestCenter, new Vector2(12f, 10f), new Vector3(0f, 0f, -3.5f), new Vector3(0f, 0f, 6.6f));
             SetSite(runSo.FindProperty("boss"), BossCenter, new Vector2(16f, 12f), new Vector3(0f, 0f, -4.5f), new Vector3(0f, 0f, 99f));

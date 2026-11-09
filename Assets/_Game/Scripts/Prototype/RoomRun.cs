@@ -21,7 +21,7 @@ namespace AThousandDawns.Prototype
     // 녹림왕을 쓰러뜨리면 기물 하나 + 경맥도 5×4 → 6×4, 판 끝. 같은 시드면 같은 갈림길·배치·적 구성 (버그 재현용).
     public sealed partial class RoomRun : MonoBehaviour
     {
-        public enum Phase { None, Fork, Floor, Inn, Rest, Boss, Done }
+        public enum Phase { None, Fork, Floor, Master, Inn, Rest, Boss, Done }
         public enum RewardKind { Item, Heal }
 
         public struct Path
@@ -144,6 +144,7 @@ namespace AThousandDawns.Prototype
             switch (_phase)
             {
                 case Phase.Inn: TickInn(); break;
+                case Phase.Master: TickMaster(); break;
                 case Phase.Floor:
                     TickHunt(Time.deltaTime);
                     if (_fighting) TickFight();
@@ -303,7 +304,8 @@ namespace AThousandDawns.Prototype
             _fighting = false;
             SetLocks(false);
             SetGateMarker(false);
-            if (_floor < _floors) BeginFork(_floor + 1);
+            if (_floor == MasterFloor && !_masterDone && _floor < _floors) EnterMaster(); // 2층 관문: 고수
+            else if (_floor < _floors) BeginFork(_floor + 1);
             else EnterInn();
         }
 
@@ -679,6 +681,7 @@ namespace AThousandDawns.Prototype
                         where = $"죽림 {_floor}층 · {PathLabel(_path)} · 남은 전투 방 {_map.FightsLeft()}{wave}";
                         break;
                     case Phase.Inn: where = "죽림 · 객잔"; break;
+                    case Phase.Master: where = "죽림 2층 관문 · 고수"; break;
                     case Phase.Rest: where = "죽림 보스 층 · 정비실"; break;
                     case Phase.Boss: where = "죽림 보스 층 · 녹림왕"; break;
                     case Phase.Done: where = "판 끝"; break;

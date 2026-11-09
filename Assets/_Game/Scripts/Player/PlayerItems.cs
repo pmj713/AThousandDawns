@@ -87,6 +87,15 @@ namespace AThousandDawns.Player
             return item;
         }
 
+        // 흡성: 이번 지역 동안 모든 기물의 최대 기 −1 (이질적인 기운)
+        public int GlobalMaxQiBonus { get; private set; }
+
+        public void SetGlobalMaxQiBonus(int bonus)
+        {
+            GlobalMaxQiBonus = bonus;
+            Recount();
+        }
+
         // 투전판에서 잃었을 때처럼 기물을 내놓아요
         public bool Remove(OwnedItem item)
         {
@@ -228,7 +237,7 @@ namespace AThousandDawns.Player
             foreach (var item in _items)
             {
                 item.Qi = item.OnBoard ? _board.QiAt(item.Cell) : 0;
-                item.MaxQiBonus = item.OnBoard ? _board.MaxQiBonusAt(item.Cell) : 0;
+                item.MaxQiBonus = (item.OnBoard ? _board.MaxQiBonusAt(item.Cell) : 0) + GlobalMaxQiBonus;
                 if (!item.OnBoard) continue;
                 var state = StateOf(item);
                 _qiCounts[(int)state]++;

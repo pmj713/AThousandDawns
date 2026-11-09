@@ -450,3 +450,44 @@ event.offering_silver,80,은자,산신당 공물 챙기기: 은자 +,기획 대�
 event.offering_taken,15%,,산신의 노여움: 이번 층 받는 피해 +,기획 대화 (이벤트)
 event.scripture_xp,15,,벽에 새긴 검결 훑어보기: 수련치 +,기획 대화 (이벤트)
 event.scripture_tracking,2,,벽에 새긴 검결 깊이 참오: 추적도 +,기획 대화 (이벤트)
+room.master_floor,2,,고수가 지키는 관문 층,기획 대화 (고수: 각 지역 2층 관문)
+master.spare_silver,50,은자,고수 방면: 은자 + (임시),
+qingzhu.hp,1100,,청죽객 체력 (죽림),몬스터!E60
+qingzhu.atk,18,,청죽객 공격 (죽림),몬스터!G60
+qingzhu.toughness,0,,청죽객 강인함,몬스터!H60
+qingzhu.move_speed,5,cell/s,청죽객 이동,몬스터!C115
+qingzhu.keep_min,3,cell,청죽객 유지 거리 하한,몬스터!H115 설명
+qingzhu.keep_max,4,cell,청죽객 유지 거리 상한,몬스터!H115 설명
+qingzhu.transition_time,1.5,s,고수 체력 50% 전환 연출 (무적),몬스터!A94 설명
+qingzhu.phase2_hp_ratio,50%,,2페이즈로 넘어가는 체력 비율,몬스터!A94 설명
+qingzhu.max_repeat,2,,같은 패턴 연속 최대,몬스터!A94 설명
+qingzhu.decision_pause,0.4,s,패턴 사이 쉬는 시간 (녹림왕과 같게 임시),
+qingzhu.combo_windup,0.5,s,쾌검 3연격 예고,몬스터!D103
+qingzhu.combo_recovery,0.8,s,쾌검 3연격 빈틈,몬스터!E103
+qingzhu.combo_ratio,0.6,,쾌검 3연격 피해 배율 (1번당),몬스터!F103
+qingzhu.combo_radius,2,cell,쾌검 부채꼴 반경,몬스터!H103 설명
+qingzhu.combo_angle,90,deg,쾌검 부채꼴 각도,몬스터!H103 설명
+qingzhu.combo_gap,0.3,s,쾌검 3연격 간격,몬스터!H103 설명
+qingzhu.p2_combo_gap,0.25,s,2페이즈 쾌검 간격,몬스터!H106 설명
+qingzhu.combo_lunge,0.8,cell,쾌검 한 번에 전진,몬스터!H103 설명
+qingzhu.flash_windup,0.6,s,죽림섬 예고,몬스터!D104
+qingzhu.flash_recovery,1.2,s,죽림섬 빈틈,몬스터!E104
+qingzhu.flash_ratio,0.8,,죽림섬 피해 배율,몬스터!F104
+qingzhu.flash_length,4,cell,죽림섬 직선 길이,몬스터!H104 설명
+qingzhu.flash_width,1,cell,죽림섬 직선 폭 (임시),
+qingzhu.flash_gap,0.25,s,죽림섬 순간이동 간격,몬스터!H104 설명
+qingzhu.flash_interval,8,s,죽림섬 간격,몬스터!H104 설명
+qingzhu.p2_flash_interval,6,s,2페이즈 죽림섬 간격 (4번),몬스터!H106 설명
+qingzhu.bamboo_windup,1,s,대나무 베기 예고,몬스터!D105
+qingzhu.bamboo_recovery,0.6,s,대나무 베기 빈틈 (시트 빈칸 임시),
+qingzhu.bamboo_ratio,1,,대나무 베기 피해 배율,몬스터!F105
+qingzhu.bamboo_length,5,cell,대나무 베기 직선 길이,몬스터!H105 설명
+qingzhu.bamboo_width,1,cell,대나무 베기 폭,몬스터!H105 설명
+qingzhu.bamboo_interval,10,s,대나무 베기 간격,몬스터!H105 설명
+qingzhu.bamboo_life,6,s,쓰러진 대나무가 벽으로 남는 시간,몬스터!H105 설명
+qingzhu.bamboo_spread,25,deg,2페이즈 대나무 두 그루 사이 반각 (임시),
+skill_flash.ratio,50%,,비급 죽림섬: 1번 베기 피해 (회선참 피해 비율 임시),
+skill_flash.count,3,,비급 죽림섬: 순간이동 베기 횟수,기획 대화 (죽림섬: 3번)
+skill_flash.gap,0.25,s,비급 죽림섬: 베기 간격 (청죽객과 같게),몬스터!H104 설명
+skill_flash.range,6,cell,비급 죽림섬: 적을 찾는 거리 (임시),
+skill_flash.width,1.2,cell,비급 죽림섬: 베는 직선 폭 (임시),

@@ -20,6 +20,7 @@ namespace AThousandDawns.Enemies
         public Material snake;
         public Material nokrim;
         public Material assassin;
+        public Material qingzhu;
         public Material fire;
         public Material accent;
         public Material arrow;
