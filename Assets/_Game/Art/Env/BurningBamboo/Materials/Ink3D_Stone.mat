@@ -38,8 +38,8 @@ Material:
     - _OutlineWidth: 2.5
     - _PaperGrain: 0.05
     - _PaperLift: 0.2
-    - _PatchLight: 0
-    - _PatchScale: 0.8
+    - _PatchLight: 0.25
+    - _PatchScale: 0.6
     - _RimInk: 0.35
     - _RimPower: 3
     - _Saturation: 0.1

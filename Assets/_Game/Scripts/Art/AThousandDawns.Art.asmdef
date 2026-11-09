@@ -2,6 +2,7 @@
     "name": "AThousandDawns.Art",
     "rootNamespace": "AThousandDawns.Art",
     "references": [
+        "AThousandDawns",
         "Unity.InputSystem",
         "Unity.RenderPipelines.Core.Runtime",
         "Unity.RenderPipelines.Universal.Runtime"
