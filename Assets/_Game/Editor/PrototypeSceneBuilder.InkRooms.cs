@@ -168,7 +168,7 @@ namespace AThousandDawns.EditorTools
             roof.transform.localScale = new Vector3(0.95f, 0.35f, 0.95f);
             roof.AddComponent<MeshFilter>().sharedMesh = GetRoofCapMesh(true);
             roof.AddComponent<MeshRenderer>().sharedMaterial = roofX;
-            FlameCards(group, new Vector3(0f, 1.32f, -0.29f), 0.36f, 1, 0f); // 화창으로 보이는 불씨
+            FlameCards(group, group.TransformPoint(new Vector3(0f, 1.32f, -0.29f)), 0.36f, 1, 0f); // 화창으로 보이는 불씨 (FlameCards는 월드 위치를 받아요)
         }
 
         // 불꽃 카드 count장을 엇갈려 꽂아요. footWorld는 불꽃 밑동(월드), height는 불꽃 키
