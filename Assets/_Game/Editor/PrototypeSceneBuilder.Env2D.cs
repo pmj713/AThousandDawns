@@ -62,6 +62,12 @@ namespace AThousandDawns.EditorTools
             cam.transform.SetPositionAndRotation(CameraOffset, Quaternion.Euler(CameraPitch, 0f, 0f));
             cam.fieldOfView = 40f;
             cam.clearFlags = CameraClearFlags.SolidColor;
+            ApplyPaperAtmosphere(cam);
+        }
+
+        // 한지색 배경 + 원근 안개 (카메라 위치는 그대로)
+        static void ApplyPaperAtmosphere(Camera cam)
+        {
             ColorUtility.TryParseHtmlString("#E9E4D8", out Color paper);
             cam.backgroundColor = paper;
 

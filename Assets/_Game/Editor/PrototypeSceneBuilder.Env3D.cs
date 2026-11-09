@@ -27,15 +27,42 @@ namespace AThousandDawns.EditorTools
 
         public static void BuildEnv3D()
         {
+            ImportInkArt();
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
+            SetupEnvCameraAndLight();
+
+            var (floorMat, stoneMat, woodMat, bambooMat) = GetInkEnvMaterials();
+
+            float hx = CombatSize.x * 0.5f, hz = CombatSize.y * 0.5f;
+            const float doorHalf = 1.75f;
+            var room = new GameObject("Room_Floor (3D blockout)").transform;
+
+            Block(room, "Floor", PrimitiveType.Cube, new Vector3(0f, -0.1f, 0f), new Vector3(32f, 0.2f, 24f), Quaternion.identity, floorMat);
+            BuildEnv3DWalls(room, hx, hz, stoneMat);
+            BuildEnv3DGate(room, hz, woodMat);
+            BuildEnv3DPalisade(room, hx, hz, doorHalf, woodMat);
+            BuildEnv3DForest(room, hx, hz, doorHalf, bambooMat);
+            BuildEnv3DRest(room, hz, stoneMat, bambooMat);
+
+            BuildInkCharacters();
+
+            EnsureFolder("Assets/_Game/Scenes");
+            EditorSceneManager.SaveScene(scene, Env3DScenePath);
+            AssetDatabase.SaveAssets();
+        }
+
+        static void ImportInkArt()
+        {
             foreach (var name in new[] { "Floor_Ground", "Tex_Stone", "Tex_Wood", "Tex_BambooStalk" })
                 ImportAsTiledTexture($"{Env2DArtFolder}/{name}.png");
             foreach (var name in new[] { "Bush_A", "Bush_B", "LanternPost_A", "BambooLeaves_A", "BambooLeaves_B" })
                 ImportAsSprite($"{Env2DArtFolder}/{name}.png");
             ImportAsSprite($"{Env2DArtFolder}/Source/Backdrop_Ink.png");
+        }
 
-            var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
-            SetupEnvCameraAndLight();
-
+        // 수묵 구조물 재질 넷. 대나무·바닥 값은 코드가 정해요 (씬을 다시 만들면 덮어씀). 메시 캐시도 여기서 비워요
+        static (Material floor, Material stone, Material wood, Material bamboo) GetInkEnvMaterials()
+        {
             var floorMat = GetInkTriplanar("Ink3D_Floor", "Floor_Ground", 4f, 0f);
             var stoneMat = GetInkTriplanar("Ink3D_Stone", "Tex_Stone", 1.5f, 2.5f);
             var woodMat = GetInkTriplanar("Ink3D_Wood", "Tex_Wood", 1f, 2f);
@@ -63,17 +90,12 @@ namespace AThousandDawns.EditorTools
             floorMat.SetFloat("_Saturation", 0f);
             s_bambooStalkMesh = null;
             s_bushBlobMeshes.Clear();
+            return (floorMat, stoneMat, woodMat, bambooMat);
+        }
 
-            float hx = CombatSize.x * 0.5f, hz = CombatSize.y * 0.5f;
-            const float doorHalf = 1.75f;
-            var room = new GameObject("Room_Floor (3D blockout)").transform;
-
-            Block(room, "Floor", PrimitiveType.Cube, new Vector3(0f, -0.1f, 0f), new Vector3(32f, 0.2f, 24f), Quaternion.identity, floorMat);
-            BuildEnv3DWalls(room, hx, hz, stoneMat);
-            BuildEnv3DGate(room, hz, woodMat);
-            BuildEnv3DPalisade(room, hx, hz, doorHalf, woodMat);
-            BuildEnv3DForest(room, hx, hz, doorHalf, bambooMat);
-
+        // 방 안 소품: 대나무 기둥 6개·바위·덤불·등불·먼 풍경
+        static void BuildEnv3DRest(Transform room, float hz, Material stoneMat, Material bambooMat)
+        {
             // 대나무 기둥 6개 (Prototype_Run과 같은 자리): 줄기 두세 개 묶음
             var pillars = new GameObject("Bamboo Pillars (3D)").transform;
             pillars.SetParent(room, false);
@@ -99,12 +121,6 @@ namespace AThousandDawns.EditorTools
             Billboard(flat, "LanternPost_A", $"{Env2DArtFolder}/LanternPost_A.png", new Vector3(-2.6f, 0f, hz + 0.9f), 3.6f);
             Billboard(flat, "LanternPost_A", $"{Env2DArtFolder}/LanternPost_A.png", new Vector3(2.6f, 0f, hz + 0.9f), 3.6f, true);
             Billboard(flat, "Backdrop_Ink", $"{Env2DArtFolder}/Source/Backdrop_Ink.png", new Vector3(0f, 0f, hz + 6f), 22f);
-
-            BuildInkCharacters();
-
-            EnsureFolder("Assets/_Game/Scenes");
-            EditorSceneManager.SaveScene(scene, Env3DScenePath);
-            AssetDatabase.SaveAssets();
         }
 
         // Prototype_Run의 BuildFourDoorRoom과 같은 돌벽 (높이 1.5, 네 변 가운데 폭 3 문은 열어 둠)
@@ -168,7 +184,7 @@ namespace AThousandDawns.EditorTools
         }
 
         // 줄기 2~3개 묶음 + 꼭대기 잎 다발(2D 카드). height는 가장 높은 줄기 키
-        static void BambooCluster(Transform parent, Vector3 foot, float height, int seed, Material mat)
+        static Transform BambooCluster(Transform parent, Vector3 foot, float height, int seed, Material mat)
         {
             var group = new GameObject("Bamboo").transform;
             group.SetParent(parent, false);
@@ -194,6 +210,7 @@ namespace AThousandDawns.EditorTools
             canopy.localPosition = new Vector3(0.05f, tallest * 0.93f, 0.1f);
             canopy.localRotation = Quaternion.Euler(70f, seed * 53f, 0f);
             FoliageCards(canopy, "Card", leaves, Vector3.zero, tallest * 0.4f, 1, 0f);
+            return group;
         }
 
         // 줄기 마디에서 옆으로 삐져나온 작은 잎 가지. 가운데 마디들(꼭대기 잎 다발 아래) 중 몇 곳에만,
@@ -313,7 +330,7 @@ namespace AThousandDawns.EditorTools
         // 풀숲: 비대칭으로 겹친 작은 덩이 2~3개 위에 흩뿌린 작은 카드들 + 가장자리에서 삐져나온 가지 카드들.
         // 카드는 항상 카메라를 정면으로 봐서(InkFoliageCard Billboard) 위에서 내려다봐도 옆면(별 모양)이 안 보여요.
         // 매끈한 공처럼 뭉쳐 보이지 않게 윤곽·간격을 들쭉날쭉하게 해요. 폭 약 2 (시험판 풀숲 1.5보다 조금 큼)
-        static void BushClump(Transform parent, Vector3 foot, int seed)
+        static Transform BushClump(Transform parent, Vector3 foot, int seed)
         {
             var bush = new GameObject("Bush").transform;
             bush.SetParent(parent, false);
@@ -327,6 +344,7 @@ namespace AThousandDawns.EditorTools
             leaves.transform.SetParent(bush, false);
             leaves.AddComponent<MeshFilter>().sharedMesh = GetBushBlobMesh(seed % 3, (float)tex.width / tex.height);
             leaves.AddComponent<MeshRenderer>().sharedMaterial = mat;
+            return bush;
         }
 
         static Material GetFoliageBlobMaterial(string textureName)
