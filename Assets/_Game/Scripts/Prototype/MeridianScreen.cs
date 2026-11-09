@@ -37,6 +37,7 @@ namespace AThousandDawns.Prototype
         string _notice;
         Acupoint _acupoint; // 열려고 고른 혈자리
         Vector2Int? _moveFrom; // 이혈: 옮기려고 고른 단전
+        Vector2Int? _confirmCell; // 설정 "확인 창": 단전을 열거나 옮길 칸 (한 번 더 누르면 확정)
         PartKind _placingPart; // 놓으려고 고른 부품 (부품 줄에서 고르고 빈 칸을 눌러요)
         bool _autoArmed, _wasInCombat;
         int _lastPending;
@@ -304,7 +305,9 @@ namespace AThousandDawns.Prototype
                 Outline(new Rect(rect.x + 4f * K, rect.y + 4f * K, rect.width - 8f * K, rect.height - 8f * K), new Color(1f, 0.85f, 0.4f), 2f);
                 tags = _moveFrom == cell ? "<color=#ff8a7a><b>옮길 단전</b></color>" : "<b>단전</b>";
             }
-            GUI.Label(new Rect(rect.x + 6f * K, rect.y + 4f * K, 50f * K, 18f * K), $"기 <b>{qi}</b>", _small);
+            if (hover || AThousandDawns.Core.GameSettings.Current.qiNumbers == AThousandDawns.Core.GameSettings.QiNumbers.Always) // 설정: 기 숫자
+                GUI.Label(new Rect(rect.x + 6f * K, rect.y + 4f * K, 50f * K, 18f * K), $"기 <b>{qi}</b>", _small);
+            if (_confirmCell == cell) Outline(new Rect(rect.x + 2f * K, rect.y + 2f * K, rect.width - 4f * K, rect.height - 4f * K), new Color(1f, 0.55f, 0.45f), 3f); // 확인 대기
             var point = board.AcupointAt(cell);
             if (point != Acupoint.None) tags = tags.Length > 0 ? $"{tags} {AcupointTag(point)}" : AcupointTag(point);
             if (tags.Length > 0) GUI.Label(new Rect(rect.x + 30f * K, rect.y + 4f * K, rect.width - 34f * K, 18f * K), tags, _tag); // 오른쪽 위: 단전 · 혈자리 (겹치지 않게 한 줄로)
@@ -456,8 +459,22 @@ namespace AThousandDawns.Prototype
             GUI.Label(new Rect(area.x + 10f * K, area.y + 8f * K, area.width - 20f * K, area.height - 16f * K), text, _detail);
         }
 
+        // 설정 "확인 창"이 켜져 있으면 같은 칸을 두 번 눌러야 해요. 아직 확인 전이면 true (알림을 띄우고 멈춤)
+        bool NeedsConfirm(Vector2Int cell, string message)
+        {
+            if (!AThousandDawns.Core.GameSettings.Current.confirmDialogs || _confirmCell == cell)
+            {
+                _confirmCell = null;
+                return false;
+            }
+            _confirmCell = cell;
+            Notice(message);
+            return true;
+        }
+
         void OnCellClicked(PlayerItems items, Vector2Int cell, int button, bool shift)
         {
+            if (_confirmCell.HasValue && _confirmCell != cell) _confirmCell = null; // 다른 칸을 누르면 확인 취소
             var board = items.Board;
             if (shift && button == 0)
             {
@@ -468,6 +485,7 @@ namespace AThousandDawns.Prototype
             }
             if (board.Danjeons.Count < items.StartDanjeons && !board.IsDanjeon(cell))
             {
+                if (NeedsConfirm(cell, "한 번 더 누르면 여기에 단전을 열어요 (바꿀 수 없어요)")) return;
                 items.AddDanjeon(cell); // 첫 하단전 (맥 20이면 둘째 단전까지)
                 return;
             }
@@ -486,6 +504,7 @@ namespace AThousandDawns.Prototype
                 else
                 {
                     if (cell == _moveFrom.Value || board.IsDanjeon(cell)) _moveFrom = board.IsDanjeon(cell) && cell != _moveFrom.Value ? cell : (Vector2Int?)null;
+                    else if (board.PartAt(cell) == PartKind.None && NeedsConfirm(cell, "한 번 더 누르면 단전을 이 칸으로 옮겨요 (이혈 1번 사용)")) return;
                     else if (items.MoveDanjeon(_moveFrom.Value, cell)) { _moveFrom = null; Notice("단전을 옮겼어요"); }
                     else Notice("부품이 있는 칸에는 단전을 못 옮겨요");
                     return;

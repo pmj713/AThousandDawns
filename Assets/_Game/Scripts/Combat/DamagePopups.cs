@@ -25,6 +25,7 @@ namespace AThousandDawns.Combat
 
         public static void Spawn(Vector3 position, int amount, PopupStyle style = PopupStyle.Normal)
         {
+            if (!AThousandDawns.Core.GameSettings.Current.damageNumbers) return; // 설정: 피해 숫자 끄기
             Vector3 jitter = new Vector3(Random.Range(-0.3f, 0.3f), 0f, Random.Range(-0.2f, 0.2f));
             Active.Add(new Popup { Position = position + jitter, Amount = amount, Style = style });
         }

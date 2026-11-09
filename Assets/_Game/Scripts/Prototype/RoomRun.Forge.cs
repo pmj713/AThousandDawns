@@ -56,14 +56,35 @@ namespace AThousandDawns.Prototype
                     Label = $"{slot + 1}번 홈 · {(old.HasValue ? $"{PlayerKeywords.Label(old.Value)} → {PlayerKeywords.Label(k)} 바꾸기" : "비어 있음")}",
                     Act = () =>
                     {
-                        Player.Items.Fuse(item, slot);
-                        bool strong = Player.Items.ForgeLevel(k) >= 2;
-                        return $"{item.Def.name}이(가) 녹아 검에 {PlayerKeywords.Label(k)}이(가) 새겨졌어요{(strong ? " · 강화판!" : "")}.\n{ForgeEffect(k, strong)}";
+                        if (!AThousandDawns.Core.GameSettings.Current.confirmDialogs) return Melt(item, slot);
+                        OpenForgeConfirm(item, slot, count); // 설정 "확인 창": 녹이기 전에 묻기
+                        return null;
                     },
                 });
             }
             v.Choices.Add(new EventChoice { Label = "뒤로", Act = () => { OpenForge(count); return null; } });
             OpenEventView(v, count > 1 ? () => OpenForge(count - 1) : (System.Action)null);
+        }
+
+        void OpenForgeConfirm(OwnedItem item, int slot, int count)
+        {
+            var v = new EventView
+            {
+                Id = "forge_confirm",
+                Title = $"{item.Def.name}을(를) 녹일까요?",
+                Text = "녹인 기물은 돌아오지 않아요.",
+            };
+            v.Choices.Add(new EventChoice { Label = $"녹인다 · {slot + 1}번 홈에 {PlayerKeywords.Label(item.Def.keyword)}", Act = () => Melt(item, slot) });
+            v.Choices.Add(new EventChoice { Label = "뒤로", Act = () => { OpenForgeSlot(item, count); return null; } });
+            OpenEventView(v, count > 1 ? () => OpenForge(count - 1) : (System.Action)null);
+        }
+
+        string Melt(OwnedItem item, int slot)
+        {
+            var k = item.Def.keyword;
+            Player.Items.Fuse(item, slot);
+            bool strong = Player.Items.ForgeLevel(k) >= 2;
+            return $"{item.Def.name}이(가) 녹아 검에 {PlayerKeywords.Label(k)}이(가) 새겨졌어요{(strong ? " · 강화판!" : "")}.\n{ForgeEffect(k, strong)}";
         }
 
         string SlotText(int slot)

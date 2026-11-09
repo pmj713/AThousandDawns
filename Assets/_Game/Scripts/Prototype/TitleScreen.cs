@@ -10,7 +10,7 @@ namespace AThousandDawns.Prototype
     //   오른쪽 위: 一朝千回 세로쓰기 + 붉은 낙관 + A THOUSAND DAWNS · 왼쪽 아래: 버튼 4개 · 오른쪽 아래: 버전
     //   이어하기 (저장이 있을 때, 처음에 선택) → 판 구조 씬 (회차가 있으면 마을부터)
     //   시작하기 (저장이 없을 때) → 프롤로그 (글 4장, 넘기기 가능) → 첫 판
-    //   설정 · 크레딧 · 종료 (확인 없이)
+    //   설정 (SettingsPanel, 일시정지 메뉴와 같은 창) · 크레딧 · 종료 (확인 없이)
     // 마우스·키보드(위아래·Enter·Esc)·게임패드(십자·A·B) 모두 돼요.
     public sealed class TitleScreen : MonoBehaviour
     {
@@ -39,6 +39,7 @@ namespace AThousandDawns.Prototype
         public bool HasSave { get; private set; }
 
         MetaSave _meta;
+        public SettingsPanel Settings { get; } = new SettingsPanel();
         [System.NonSerialized] GUIStyle _titleBig, _titleSmall, _subtitle, _hint, _menu, _menuOn, _info, _small, _body, _sealText;
 
         void Awake()
@@ -81,6 +82,9 @@ namespace AThousandDawns.Prototype
                 case View.Prologue:
                     if (ok || (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)) NextPage();
                     if (back) StartRun(); // 넘기기
+                    break;
+                case View.Settings:
+                    if (Settings.TickKeys()) Current = View.Menu;
                     break;
                 default:
                     if (back || ok) Current = View.Menu;
@@ -156,6 +160,7 @@ namespace AThousandDawns.Prototype
             GUI.Label(new Rect(tx - 130f, ty + 692f, 400f, 30f), "같은 아침을, 천 번.", _small);
 
             if (Current == View.Menu) DrawMenu(h);
+            else if (Current == View.Settings) { if (Settings.Draw(new Rect(80f, (h - 680f) * 0.5f, 900f, 680f))) Current = View.Menu; }
             else DrawPanel(w, h);
 
             GUI.Label(new Rect(w - 260f, h - 50f, 230f, 30f), $"v{Application.version} 시험판", _small);

@@ -134,6 +134,8 @@ namespace AThousandDawns.Tests
             run.ChooseEvent(index);
             Assert.AreEqual("forge_slot", run.CurrentEvent.Id, "다음은 홈 고르기");
             run.ChooseEvent(0);
+            Assert.AreEqual("forge_confirm", run.CurrentEvent.Id, "확인 창 (기본 켜기): 녹이기 전에 묻기");
+            run.ChooseEvent(0);
             Assert.IsNotNull(run.CurrentEvent.Result);
             run.CloseEvent();
             Assert.AreEqual(Keyword.Gyeonggong, player.Items.ForgeSlot(0));

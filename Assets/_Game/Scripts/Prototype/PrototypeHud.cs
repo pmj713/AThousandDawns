@@ -50,6 +50,7 @@ namespace AThousandDawns.Prototype
             DrawResult();
             DrawOffer(); // 기물 카드는 맨 위에
             DrawDiscard(); // 둘 곳이 없을 때 버릴 기물 고르기는 그보다 위에
+            DrawPause(); // 일시정지는 맨 위
         }
 
         void DrawHud()
@@ -195,7 +196,9 @@ namespace AThousandDawns.Prototype
                     var g = UiScale.FromScreen(sp);
                     if (sp.z <= 0f) continue;
                     var dmg = e.Damageable;
-                    DrawBar(new Rect(g.x - 25, g.y, 50, 6), dmg.MaxHealth > 0f ? dmg.Health / dmg.MaxHealth : 0f, EnemyHealthColor);
+                    var bars = AThousandDawns.Core.GameSettings.Current.enemyBars; // 설정: 적 체력바
+                    if (bars == AThousandDawns.Core.GameSettings.EnemyBars.Always || (bars == AThousandDawns.Core.GameSettings.EnemyBars.Damaged && dmg.Health < dmg.MaxHealth))
+                        DrawBar(new Rect(g.x - 25, g.y, 50, 6), dmg.MaxHealth > 0f ? dmg.Health / dmg.MaxHealth : 0f, EnemyHealthColor);
                     if (e.IsElite || e.Rank == EnemyRank.Assassin) GUI.Label(new Rect(g.x - 90, g.y - 40, 180, 22), e.DisplayName, _statusLabel); // 정예: 이름 앞에 특성
                     DrawStatus(g.x, g.y, e.Statuses, false);
                 }
@@ -295,6 +298,38 @@ namespace AThousandDawns.Prototype
                 }
             }
             GUI.color = old;
+        }
+
+        // 일시정지 (Esc): 계속하기 · 설정 · 시작 화면으로
+        void DrawPause()
+        {
+            if (run == null || !run.IsPaused) return;
+            EnsureStyles();
+            var old = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.6f);
+            GUI.DrawTexture(new Rect(0, 0, UiScale.Width, UiScale.Height), Texture2D.whiteTexture);
+            GUI.color = old;
+            if (run.PauseSettingsOpen)
+            {
+                if (run.PauseSettings.Draw(new Rect((UiScale.Width - 900f) * 0.5f, (UiScale.Height - 680f) * 0.5f, 900f, 680f))) run.SetPauseSettings(false);
+                return;
+            }
+            float w = 420f, x = (UiScale.Width - w) * 0.5f, y = UiScale.Height * 0.32f;
+            GUI.Label(new Rect(0, y - 70f, UiScale.Width, 50f), "일시정지", _big);
+            string[] labels =
+            {
+                "계속하기",
+                "설정",
+                run.ConfirmTitle ? "한 번 더 누르면 시작 화면으로 (이번 판은 사라져요)" : "시작 화면으로",
+            };
+            for (int i = 0; i < labels.Length; i++)
+            {
+                var rect = new Rect(x, y + i * 70f, w, 58f);
+                bool on = run.PauseSelected == i;
+                string text = on ? $"<b>▸ {labels[i]}</b>" : labels[i];
+                if (GUI.Button(rect, text, _card)) run.ChoosePause((RoomRun.PauseItem)i);
+            }
+            GUI.Label(new Rect(0, y + 3 * 70f + 10f, UiScale.Width, 30f), "위아래 · Enter · Esc 돌아가기", _dummy);
         }
 
         // 객잔 진열대 (시간이 멈춰 있어요). 숫자 키 또는 클릭으로 사기, F·Esc 닫기

@@ -567,6 +567,12 @@ namespace AThousandDawns.Player
         {
             Vector2 move = _input.Move;
             _dashDirection = move.sqrMagnitude > 0.01f ? new Vector3(move.x, 0f, move.y).normalized : _facing;
+            if (GameSettings.Current.dash == GameSettings.DashDir.Aim && _input.TryGetAimPoint(out Vector3 aim)) // 설정: 대시 = 조준 방향
+            {
+                Vector3 toAim = aim - transform.position;
+                toAim.y = 0f;
+                if (toAim.sqrMagnitude > 0.01f) _dashDirection = toAim.normalized;
+            }
             _facing = _dashDirection;
             _combo.Cancel();
             _skillElapsed = -1f;

@@ -126,6 +126,7 @@ namespace AThousandDawns.Prototype
             if (_bannerTimer > 0f) _bannerTimer -= Time.unscaledDeltaTime;
             if (Player == null) return;
             if (TickResult()) return; // 쓰러짐·판 끝 → 결과 화면
+            if (TickPause()) return;  // Esc 일시정지
 
             if (IsForking)
             {

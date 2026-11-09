@@ -83,6 +83,7 @@ namespace AThousandDawns.Player
         public bool TryGetAimPoint(out Vector3 point)
         {
             point = default;
+            if (AThousandDawns.Core.GameSettings.Current.aim == AThousandDawns.Core.GameSettings.AimMode.Move) return false; // 설정: 조준 = 이동 방향 (바라보는 쪽 그대로)
             if (_camera == null) _camera = Camera.main;
             var mouse = Mouse.current;
             if (_camera == null || mouse == null) return false;
