@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace AThousandDawns.Combat
@@ -58,6 +58,16 @@ namespace AThousandDawns.Combat
             invincible = false;
             Health = maxHealth;
             ReadBaseColor();
+        }
+
+        // 정예 철포삼: 강인함 +2
+        public void AddToughness(float amount) => toughness += amount;
+
+        // 정예 회춘
+        public void Heal(float amount)
+        {
+            if (IsDead || amount <= 0f) return;
+            Health = Mathf.Min(maxHealth, Health + amount);
         }
 
         // 짙은 길: 적 체력 +30% 처럼 최대 체력에 곱하고 가득 채워요.

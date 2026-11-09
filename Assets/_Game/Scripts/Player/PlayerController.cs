@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using AThousandDawns.Combat;
 using AThousandDawns.Core;
@@ -389,6 +389,9 @@ namespace AThousandDawns.Player
             _flashTimer = 0.12f;
             if (dealt > 0) DamagePopups.Spawn(transform.position + Vector3.up * 2f, dealt, PopupStyle.Player); // 보호막이 다 막으면 숫자 없음
             Hurt?.Invoke(dealt);
+            // 열화 정예: 맞을 때마다 화상 (화살·폭발처럼 주인이 있는 공격 포함)
+            if (attacker != null && attacker.TryGetComponent(out AThousandDawns.Enemies.EnemyBrain brain) && brain.IsBlaze)
+                for (int i = Mathf.RoundToInt(GameConfig.Get("elite.blaze_stacks", 1f)); i > 0; i--) AddBurnStack(GameConfig.Get("player_burn.damage", 2f));
             if (IsDead && visual != null) visual.localScale = new Vector3(1.2f, 0.25f, 1.2f); // 시험판용 쓰러짐 표시
             return true;
         }

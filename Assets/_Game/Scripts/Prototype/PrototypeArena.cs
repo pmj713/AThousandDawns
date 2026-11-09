@@ -102,14 +102,15 @@ namespace AThousandDawns.Prototype
             if (UpdateItemChoice(keyboard)) return; // 기물을 고르는 동안은 다른 키를 받지 않아요
             if (keyboard != null)
             {
-                if (keyboard.digit1Key.wasPressedThisFrame) SpawnNearPlayer(EnemyKind.Grunt);
-                if (keyboard.digit2Key.wasPressedThisFrame) SpawnNearPlayer(EnemyKind.Boar);
-                if (keyboard.digit3Key.wasPressedThisFrame) SpawnNearPlayer(EnemyKind.Archer);
-                if (keyboard.digit4Key.wasPressedThisFrame) { SpawnNearPlayer(EnemyKind.Hound); SpawnNearPlayer(EnemyKind.Hound); } // 들개는 무리로
-                if (keyboard.digit5Key.wasPressedThisFrame) SpawnNearPlayer(EnemyKind.Shield);
-                if (keyboard.digit6Key.wasPressedThisFrame) SpawnNearPlayer(EnemyKind.Horn);
-                if (keyboard.digit7Key.wasPressedThisFrame) SpawnNearPlayer(EnemyKind.Bomber);
-                if (keyboard.digit8Key.wasPressedThisFrame) SpawnNearPlayer(EnemyKind.Snake);
+                bool elite = keyboard.shiftKey.isPressed; // Shift + 숫자: 정예 (특성은 무작위)
+                if (keyboard.digit1Key.wasPressedThisFrame) SpawnKey(EnemyKind.Grunt, elite);
+                if (keyboard.digit2Key.wasPressedThisFrame) SpawnKey(EnemyKind.Boar, elite);
+                if (keyboard.digit3Key.wasPressedThisFrame) SpawnKey(EnemyKind.Archer, elite);
+                if (keyboard.digit4Key.wasPressedThisFrame) { SpawnKey(EnemyKind.Hound, elite); SpawnKey(EnemyKind.Hound, elite); } // 들개는 무리로
+                if (keyboard.digit5Key.wasPressedThisFrame) SpawnKey(EnemyKind.Shield, elite);
+                if (keyboard.digit6Key.wasPressedThisFrame) SpawnKey(EnemyKind.Horn, elite);
+                if (keyboard.digit7Key.wasPressedThisFrame) SpawnKey(EnemyKind.Bomber, elite);
+                if (keyboard.digit8Key.wasPressedThisFrame) SpawnKey(EnemyKind.Snake, elite);
                 if (keyboard.digit9Key.wasPressedThisFrame) SpawnBoss();
                 if (keyboard.gKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.FillGauge();
                 if (keyboard.lKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.GainLevelForTest(); // 시험용 레벨업
@@ -260,6 +261,16 @@ namespace AThousandDawns.Prototype
         void OnDestroy()
         {
             if (IsChoosing) Time.timeScale = 1f;
+        }
+
+        void SpawnKey(EnemyKind kind, bool elite)
+        {
+            var enemy = SpawnNearPlayer(kind);
+            if (enemy == null || !elite) return;
+            var traits = new List<EliteTrait>();
+            foreach (EliteTrait t in Enum.GetValues(typeof(EliteTrait)))
+                if (EnemyBrain.Allows(kind, t)) traits.Add(t);
+            if (traits.Count > 0) enemy.MakeElite(traits[UnityEngine.Random.Range(0, traits.Count)]);
         }
 
         // 플레이어 둘레(6칸)에서 벽·대나무와 겹치지 않는 자리에 바로 깨어 있는 채로 불러요.

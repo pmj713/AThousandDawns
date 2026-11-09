@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Linq;
 using AThousandDawns.Enemies;
@@ -112,8 +112,9 @@ namespace AThousandDawns.Tests
 
             yield return ClearFight();
             Assert.IsTrue(first.Cleared);
-            int silver = path.Dense ? 27 : 18;
-            Assert.AreEqual(silver, _run.Silver, "죽림 전투 방 은자 18 (짙은 길 ×1.5)");
+            int silver = (path.Dense ? 27 : 18) + (_run.RoomHasElite ? 15 : 0);
+            Assert.AreEqual(silver, _run.Silver, "죽림 전투 방 은자 18 (짙은 길 ×1.5, 정예 +15)");
+            Assert.AreEqual(path.Dense, _run.RoomHasElite, "짙은 길이면 방마다 정예 1명");
             if (first.Kind == FloorRoomKind.Reward)
             {
                 yield return WaitUntil(() => _arena.IsChoosing, 2f);
@@ -144,6 +145,38 @@ namespace AThousandDawns.Tests
             _run.LeaveFloor();
             Assert.IsTrue(_run.IsForking);
             Assert.AreEqual(2, _run.Floor);
+        }
+
+        // 짙은 길: 전투 방마다 정예 1명 (체력 ×3에 짙은 길 +30%), 비우면 은자 18 × 1.5 + 정예 15
+        [UnityTest]
+        public IEnumerator 짙은_길_전투_방에는_정예가_하나_나옴()
+        {
+            yield return Load();
+            for (int i = 0; i < 30 && !_run.ForkOptions.Any(p => p.Dense); i++) _run.BeginFork(1); // 짙은 길이 나올 때까지 다시 뽑기
+            int pick = Enumerable.Range(0, _run.ForkOptions.Count).First(i => _run.ForkOptions[i].Dense);
+            _run.ChooseFork(pick);
+            var map = _run.Map;
+            int d = Enumerable.Range(0, 4).First(i => map.Neighbor(map.Start, i) != null && map.Neighbor(map.Start, i).HasFight);
+            _run.Enter(map.Neighbor(map.Start, d), d);
+            Assert.IsTrue(_run.RoomHasElite);
+
+            int elites = 0;
+            yield return WaitUntil(() =>
+            {
+                for (int i = _director.Enemies.Count - 1; i >= 0; i--)
+                {
+                    var e = _director.Enemies[i];
+                    if (e.IsElite)
+                    {
+                        elites++;
+                        Assert.AreNotEqual(EliteTrait.None, e.Trait);
+                    }
+                    e.Damageable.ApplyHit(99999);
+                }
+                return !_run.IsFighting;
+            }, 20f);
+            Assert.AreEqual(1, elites, "방마다 정예 1명");
+            Assert.AreEqual(27 + 15, _run.Silver);
         }
 
         // 마지막 층 관문 → 정비실 → 녹림왕 방. 녹림왕을 쓰러뜨리면 기물 하나와 경맥도 6×4.

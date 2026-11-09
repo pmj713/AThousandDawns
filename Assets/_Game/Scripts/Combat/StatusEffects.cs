@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using AThousandDawns.Core;
 using UnityEngine;
 
@@ -27,6 +27,7 @@ namespace AThousandDawns.Combat
         static ElementalMods Mods => ElementalMods.Current;
 
         public bool IsBoss { get => isBoss; set => isBoss = value; }
+        public float BurnTakenMultiplier { get; set; } = 1f; // 열화 정예: 자신이 받는 화상 피해 절반
         public Func<bool> FreezeBlocked { get; set; } // 보스 페이즈 전환 연출 중에는 안 걸림
         public event Action Frozen;
         public static event Action<StatusEffects> AnyFrozen; // 한기 호박 주화입마: 빙결될 때 주변 적 둔화
@@ -210,7 +211,7 @@ namespace AThousandDawns.Combat
             while (_burnTickTimer >= _burnTick)
             {
                 _burnTickTimer -= _burnTick;
-                _burnCarry += _burnStacks * _burnDps * BurnDamageMultiplier * _burnTick * (1f - _body.Defense);
+                _burnCarry += _burnStacks * _burnDps * BurnDamageMultiplier * BurnTakenMultiplier * _burnTick * (1f - _body.Defense);
                 int whole = Mathf.FloorToInt(_burnCarry);
                 if (whole <= 0 || _body.IsDead) continue;
                 _burnCarry -= whole;

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using AThousandDawns.Combat;
 using AThousandDawns.Core;
 using AThousandDawns.Player;
@@ -13,7 +13,7 @@ namespace AThousandDawns.Enemies
 
     // 일반 적 공통: 첫 공격 대기, 공격 토큰, 공격 간격, 예고 절반 규칙, 경직. 종류별 움직임과 공격은 하위 클래스가 정해요.
     [RequireComponent(typeof(CharacterController), typeof(Damageable))]
-    public abstract class EnemyBrain : MonoBehaviour
+    public abstract partial class EnemyBrain : MonoBehaviour
     {
         protected Damageable Body;
         protected StatusEffects Status; // 화상·둔화·빙결·감전
@@ -46,7 +46,7 @@ namespace AThousandDawns.Enemies
         protected virtual float HitKnockback => -1f;         // 플레이어를 미는 거리. 음수면 기본 넉백
         protected virtual float DeathDelay => 0.25f;         // 쓰러진 뒤 사라지기까지
         protected virtual bool IsBoss => false;              // 고수·보스: 둔화 효과 50%, 빙결 1초 + 면역 10초
-        public virtual EnemyRank Rank => EnemyRank.Normal;    // 쓰러뜨리면 받는 수련치
+        public virtual EnemyRank Rank => IsElite ? EnemyRank.Elite : EnemyRank.Normal; // 쓰러뜨리면 받는 수련치
         protected virtual bool FreezeBlocked => false;       // 보스 페이즈 전환 연출 중엔 빙결이 안 걸림
 
         public string DisplayName { get; private set; }
@@ -157,6 +157,7 @@ namespace AThousandDawns.Enemies
             // 둔화: 이동과 공격(예고·빈틈 포함)이 함께 느려져요 (1중첩당 10%, 보스는 효과 50%)
             float dt = Time.deltaTime * Status.SpeedMultiplier;
             _reaction.Tick(dt);
+            TickElite(Time.deltaTime);
             if (_cooldown > 0f) _cooldown -= dt;
             TickStrafeFlip(dt);
 
@@ -362,6 +363,7 @@ namespace AThousandDawns.Enemies
         void OnDamaged(Damageable _, int amount)
         {
             if (_dead) return;
+            _sinceHit = 0f; // 회춘: 맞으면 회복이 멈춰요 (화상 같은 지속 피해도)
             if (Body.IsDead)
             {
                 Die();
@@ -377,7 +379,7 @@ namespace AThousandDawns.Enemies
                 return;
             }
 
-            if (InterruptibleWindup && Attack.Current == EnemyAttackTimeline.Phase.Windup)
+            if (InterruptibleWindup && !IsIronShirt && Attack.Current == EnemyAttackTimeline.Phase.Windup)
             {
                 CancelAttack();
                 _stunTimer = _reaction.Hitstun;
@@ -386,7 +388,7 @@ namespace AThousandDawns.Enemies
                 return;
             }
 
-            switch (_reaction.OnHit(Attack.Current, SuperArmor))
+            switch (_reaction.OnHit(Attack.Current, SuperArmor || IsIronShirt)) // 철포삼: 경직·늦춰짐 없음
             {
                 case HitResponse.Stun:
                     _stunTimer = _reaction.Hitstun;
@@ -410,6 +412,7 @@ namespace AThousandDawns.Enemies
             Director.Unregister(this);
             Controller.enabled = false;
             if (_visual != null) _visual.localScale = new Vector3(1.1f, 0.3f, 1.1f);
+            OnEliteDied();
             OnDied();
             Destroy(gameObject, DeathDelay);
         }

@@ -1473,3 +1473,43 @@ MonoBehaviour:
     value: 0.04
     unit: 
     note: "\uC9D9\uC740 \uAE38 \uAE30\uBB3C \uB4F1\uAE09 \uD655\uB960 \uC804\uC124"
+  - key: elite.iron_toughness
+    value: 2
+    unit: 
+    note: "\uC815\uC608 \uCCA0\uD3EC\uC0BC: \uAC15\uC778\uD568 +"
+  - key: elite.rejuv_ratio
+    value: 0.1
+    unit: 
+    note: "\uC815\uC608 \uD68C\uCD98: \uCD08\uB2F9 \uCD5C\uB300 \uCCB4\uB825 \uD68C\uBCF5 \uBE44\uC728"
+  - key: elite.rejuv_delay
+    value: 3
+    unit: s
+    note: "\uC815\uC608 \uD68C\uCD98: \uB9C8\uC9C0\uB9C9\uC73C\uB85C \uB9DE\uACE0 \uC774 \uC2DC\uAC04 \uB4A4\uBD80\uD130 \uD68C\uBCF5"
+  - key: elite.blaze_stacks
+    value: 1
+    unit: 
+    note: "\uC815\uC608 \uC5F4\uD654: \uB9DE\uD790 \uB54C\uB9C8\uB2E4 \uD50C\uB808\uC774\uC5B4 \uD654\uC0C1 \uC911\uCCA9"
+  - key: elite.blaze_fire_radius
+    value: 1.5
+    unit: cell
+    note: "\uC815\uC608 \uC5F4\uD654: \uC8FD\uC740 \uC790\uB9AC \uBD88\uAE38 \uBC18\uACBD"
+  - key: elite.blaze_fire_life
+    value: 4
+    unit: s
+    note: "\uC815\uC608 \uC5F4\uD654: \uBD88\uAE38 \uC9C0\uC18D"
+  - key: elite.blaze_fire_tick
+    value: 0.5
+    unit: s
+    note: "\uC815\uC608 \uC5F4\uD654: \uBD88\uAE38 \uC548\uC5D0\uC11C \uD654\uC0C1 1\uC911\uCCA9 \uAC04\uACA9"
+  - key: elite.blaze_burn_taken
+    value: 0.5
+    unit: 
+    note: "\uC815\uC608 \uC5F4\uD654: \uC790\uC2E0\uC774 \uBC1B\uB294 \uD654\uC0C1 \uD53C\uD574 \uBE44\uC728"
+  - key: silver.elite
+    value: 15
+    unit: 
+    note: "\uC815\uC608 \uCC98\uCE58 \uC740\uC790"
+  - key: room.dense_elites
+    value: 1
+    unit: 
+    note: "\uC9D9\uC740 \uAE38: \uBC29\uB9C8\uB2E4 \uCD94\uAC00 \uC815\uC608 \uC218"

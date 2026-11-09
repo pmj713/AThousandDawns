@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using AThousandDawns.Core;
 using AThousandDawns.Enemies;
@@ -11,7 +11,7 @@ namespace AThousandDawns.Prototype
 {
     // 판 구조 시험판: 죽림 일반 층마다 갈림길 → 층 탐색 → 관문, 마지막 층 관문 뒤 정비실 → 녹림왕.
     // 갈림길: 길 2~3갈래. 길마다 보상 종류(기물·운기조식)와 기운(옅음·짙음).
-    //   짙은 길: 적 체력 +30%, 보상은 한 단계 위 (기물은 다음 지역 등급표, 은자·회복 ×1.5). 정예 추가는 정예 특성을 만들 때.
+    //   짙은 길: 적 체력 +30%, 방마다 정예 1명 추가 (특성 무작위), 보상은 한 단계 위 (기물은 다음 지역 등급표, 은자·회복 ×1.5).
     // 층: 격자에 방이 무작위로 놓여요 (FloorMap). 들어간 방의 옆방만 지도에 드러나요.
     //   전투 방은 들어가면 문이 잠기고 예산으로 뽑은 웨이브가 나와요. 비우면 은자. 보상 방은 전투 뒤 고른 보상.
     //   관문 방 가운데에서 F를 누르면 다음 층 (남은 방은 그냥 두고 가도 돼요).
@@ -59,7 +59,7 @@ namespace AThousandDawns.Prototype
         [SerializeField] Site rest = new Site();
         [SerializeField] Site boss = new Site();
 
-        readonly List<(EnemyKind kind, Vector3 position, Telegraph marker)> _pending = new List<(EnemyKind, Vector3, Telegraph)>();
+        readonly List<(EnemyKind kind, Vector3 position, Telegraph marker, bool elite)> _pending = new List<(EnemyKind, Vector3, Telegraph, bool)>();
         List<List<EnemyKind>> _waves;
         List<Path> _forkOptions;
         System.Random _rng;
@@ -68,7 +68,9 @@ namespace AThousandDawns.Prototype
         FloorRoom _room;
         Path _path;
         bool _fighting, _warning;
-        int _floor, _floors, _wave;
+        int _floor, _floors, _wave, _eliteWave = -1, _elitesThisRoom;
+        EnemyKind _eliteKind;
+        EliteTrait _eliteTrait;
         float _timer, _warningTime, _minSpawnDistance, _restGauge;
         string _banner;
         float _bannerTimer;
@@ -186,7 +188,7 @@ namespace AThousandDawns.Prototype
             string reward = p.Reward == RewardKind.Item
                 ? (p.Dense ? "기물 3개 중 하나 (한 단계 위 등급표)" : "기물 3개 중 하나")
                 : $"체력 {GameConfig.Get("room.heal_ratio", 0.3f) * mult:0%} 회복";
-            string enemies = p.Dense ? $"적 체력 +{GameConfig.Get("room.dense_health", 1.3f) - 1f:0%}" : "적 보통";
+            string enemies = p.Dense ? $"적 체력 +{GameConfig.Get("room.dense_health", 1.3f) - 1f:0%} · 방마다 정예 1명" : "적 보통";
             return $"{reward}\n{enemies} · 방마다 은자 {Mathf.RoundToInt(GameConfig.Get("silver.room", 18f) * mult)}";
         }
 
@@ -217,6 +219,9 @@ namespace AThousandDawns.Prototype
                 Player.EnterRoom(); // #금강 2단계: 싸우는 방에 들어갈 때마다 보호막
                 _waves = PlanRoom(_floor);
                 _wave = -1;
+                _elitesThisRoom = 0;
+                _eliteWave = -1;
+                if (_path.Dense && Mathf.RoundToInt(GameConfig.Get("room.dense_elites", 1f)) > 0) PlanElite();
                 StartNextWave();
             }
             else
@@ -289,6 +294,31 @@ namespace AThousandDawns.Prototype
             return RoomBudget.Plan(budget, waves, RoomBudget.Bamboo, RoomBudget.Cost, limits, _rng);
         }
 
+        // 짙은 길: 무작위 웨이브에 정예 하나 (방마다 제한은 일반 적과 같이 세요)
+        void PlanElite()
+        {
+            var all = new List<EnemyKind>();
+            foreach (var w in _waves) all.AddRange(w);
+            int Count(EnemyKind k) => all.FindAll(x => x == k).Count;
+            var kinds = new List<EnemyKind>();
+            foreach (var k in RoomBudget.Bamboo)
+            {
+                if (k == EnemyKind.Archer && Count(k) >= Mathf.RoundToInt(GameConfig.Get("archer.max_per_room", 2f))) continue;
+                if (k == EnemyKind.Horn && Count(k) >= Mathf.RoundToInt(GameConfig.Get("room.horn_max", 1f))) continue;
+                if (k == EnemyKind.Snake && Count(k) >= Mathf.RoundToInt(GameConfig.Get("room.snake_max", 2f))) continue;
+                kinds.Add(k);
+            }
+            if (kinds.Count == 0 || _waves.Count == 0) return;
+            _eliteKind = kinds[_rng.Next(kinds.Count)];
+            var traits = new List<EliteTrait>();
+            foreach (EliteTrait t in Enum.GetValues(typeof(EliteTrait)))
+                if (EnemyBrain.Allows(_eliteKind, t)) traits.Add(t);
+            _eliteTrait = traits[_rng.Next(traits.Count)];
+            _eliteWave = _rng.Next(_waves.Count);
+        }
+
+        public bool RoomHasElite => _eliteWave >= 0;
+
         // ── 웨이브
 
         void StartNextWave()
@@ -313,7 +343,16 @@ namespace AThousandDawns.Prototype
                 marker.Show(TelegraphShapes.Circle(0.6f), true);
                 marker.SetPose(p, Vector3.forward);
                 marker.SetProgress(0f);
-                _pending.Add((kind, p, marker));
+                _pending.Add((kind, p, marker, false));
+            }
+            if (_wave == _eliteWave)
+            {
+                Vector3 p = PickSpot();
+                var marker = Telegraph.Create(null, director.Visuals.telegraphBase, director.Visuals.telegraphFill, director.Visuals.telegraphOutline);
+                marker.Show(TelegraphShapes.Circle(0.85f), true); // 정예는 예고 원이 조금 더 커요
+                marker.SetPose(p, Vector3.forward);
+                marker.SetProgress(0f);
+                _pending.Add((_eliteKind, p, marker, true));
             }
             _timer = _warningTime;
             _warning = true;
@@ -345,7 +384,13 @@ namespace AThousandDawns.Prototype
                 if (p.kind == EnemyKind.Archer && archers >= archerLimit) continue; // 앞 웨이브 궁수가 살아 있으면 건너뜀
                 if (p.kind == EnemyKind.Archer) archers++;
                 var enemy = director.Spawn(p.kind, p.position);
-                if (health != 1f && enemy != null) enemy.Damageable.ScaleMaxHealth(health);
+                if (enemy == null) continue;
+                if (p.elite)
+                {
+                    enemy.MakeElite(_eliteTrait);
+                    _elitesThisRoom++;
+                }
+                if (health != 1f) enemy.Damageable.ScaleMaxHealth(health);
             }
             _pending.Clear();
             _warning = false;
@@ -357,7 +402,7 @@ namespace AThousandDawns.Prototype
             _room.Cleared = true;
             SetLocks(false);
             float mult = _path.Dense ? DenseMultiplier : 1f;
-            int silver = Mathf.RoundToInt(GameConfig.Get("silver.room", 18f) * mult);
+            int silver = Mathf.RoundToInt(GameConfig.Get("silver.room", 18f) * mult) + _elitesThisRoom * Mathf.RoundToInt(GameConfig.Get("silver.elite", 15f));
             Silver += silver;
             string text = $"방을 비웠어요 · 은자 +{silver}";
             if (_room.Kind == FloorRoomKind.Reward)

@@ -364,3 +364,13 @@ item_grade_dense.common,52%,,짙은 길 기물 등급 확률 일반 (다음 지�
 item_grade_dense.uncommon,30%,,짙은 길 기물 등급 확률 고급,등급확률!C12
 item_grade_dense.rare,14%,,짙은 길 기물 등급 확률 희귀,등급확률!D12
 item_grade_dense.legendary,4%,,짙은 길 기물 등급 확률 전설,등급확률!E12
+elite.iron_toughness,2,,정예 철포삼: 강인함 +,몬스터!B148
+elite.rejuv_ratio,10%,,정예 회춘: 초당 최대 체력 회복 비율,몬스터!B149
+elite.rejuv_delay,3,s,정예 회춘: 마지막으로 맞고 이 시간 뒤부터 회복,몬스터!C149 설명
+elite.blaze_stacks,1,,정예 열화: 맞힐 때마다 플레이어 화상 중첩,몬스터!B150
+elite.blaze_fire_radius,1.5,cell,정예 열화: 죽은 자리 불길 반경,몬스터!C150 설명
+elite.blaze_fire_life,4,s,정예 열화: 불길 지속,몬스터!C150 설명
+elite.blaze_fire_tick,0.5,s,정예 열화: 불길 안에서 화상 1중첩 간격,몬스터!C150 설명
+elite.blaze_burn_taken,50%,,정예 열화: 자신이 받는 화상 피해 비율,몬스터!C150 설명
+silver.elite,15,,정예 처치 은자,몬스터!C143 설명
+room.dense_elites,1,,짙은 길: 방마다 추가 정예 수,기획 대화 (기운의 세기)
