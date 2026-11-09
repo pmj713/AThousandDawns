@@ -38,6 +38,8 @@ namespace AThousandDawns.Prototype
         Acupoint _acupoint; // 열려고 고른 혈자리
         Vector2Int? _moveFrom; // 이혈: 옮기려고 고른 단전
         Vector2Int? _confirmCell; // 설정 "확인 창": 단전을 열거나 옮길 칸 (한 번 더 누르면 확정)
+        RoomRun _run;
+        bool InTutorial => (_run != null || (_run = FindFirstObjectByType<RoomRun>()) != null) && _run.InTutorialFloor;
         PartKind _placingPart; // 놓으려고 고른 부품 (부품 줄에서 고르고 빈 칸을 눌러요)
         bool _autoArmed, _wasInCombat;
         int _lastPending;
@@ -308,6 +310,12 @@ namespace AThousandDawns.Prototype
             if (hover || AThousandDawns.Core.GameSettings.Current.qiNumbers == AThousandDawns.Core.GameSettings.QiNumbers.Always) // 설정: 기 숫자
                 GUI.Label(new Rect(rect.x + 6f * K, rect.y + 4f * K, 50f * K, 18f * K), $"기 <b>{qi}</b>", _small);
             if (_confirmCell == cell) Outline(new Rect(rect.x + 2f * K, rect.y + 2f * K, rect.width - 4f * K, rect.height - 4f * K), new Color(1f, 0.55f, 0.45f), 3f); // 확인 대기
+            if (board.Danjeons.Count == 0 && InTutorial && cell == new Vector2Int(board.Width / 2, board.Height / 2)) // 입문: 가운데 칸 추천
+            {
+                float pulse = 0.6f + 0.4f * Mathf.Sin(Time.unscaledTime * 4f);
+                Outline(new Rect(rect.x + 2f * K, rect.y + 2f * K, rect.width - 4f * K, rect.height - 4f * K), new Color(1f, 0.85f, 0.4f, pulse), 4f);
+                GUI.Label(new Rect(rect.x, rect.yMax - 22f * K, rect.width, 18f * K), "<b>추천</b>", _tag);
+            }
             var point = board.AcupointAt(cell);
             if (point != Acupoint.None) tags = tags.Length > 0 ? $"{tags} {AcupointTag(point)}" : AcupointTag(point);
             if (tags.Length > 0) GUI.Label(new Rect(rect.x + 30f * K, rect.y + 4f * K, rect.width - 34f * K, 18f * K), tags, _tag); // 오른쪽 위: 단전 · 혈자리 (겹치지 않게 한 줄로)

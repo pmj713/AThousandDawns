@@ -73,7 +73,11 @@ namespace AThousandDawns.Prototype
 
         Action _afterEvent; // 창을 닫은 뒤 (고수 선택 → 다음 갈림길)
 
-        void OpenEvent(FloorRoom room, string id) => OpenEventView(BuildEvent(room, id), null);
+        void OpenEvent(FloorRoom room, string id)
+        {
+            Notify("event", "이벤트 방: 고르는 대로 결과가 달라요 · 대가 없는 선택지도 늘 있어요");
+            OpenEventView(BuildEvent(room, id), null);
+        }
 
         void OpenEventView(EventView view, Action after)
         {

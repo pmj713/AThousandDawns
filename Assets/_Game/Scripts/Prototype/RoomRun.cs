@@ -117,6 +117,7 @@ namespace AThousandDawns.Prototype
             if (PrototypeArena.AutoSpawn)
             {
                 if (StartsInVillage()) EnterVillage(); // 첫 사망 뒤부터 마을에서
+                else if (StartsTutorial()) BeginTutorialFloor(); // 처음엔 입문 죽림
                 else BeginFork(1);
             }
         }
@@ -127,6 +128,7 @@ namespace AThousandDawns.Prototype
             if (Player == null) return;
             if (TickResult()) return; // 쓰러짐·판 끝 → 결과 화면
             if (TickPause()) return;  // Esc 일시정지
+            TickTutorial();
 
             if (IsForking)
             {
@@ -183,6 +185,7 @@ namespace AThousandDawns.Prototype
 
         List<Path> RollFork()
         {
+            if (_tutorialFork) return TutorialFork(); // 입문 뒤 첫 갈림길
             int min = Mathf.RoundToInt(GameConfig.Get("room.fork_min", 2f));
             int max = Mathf.RoundToInt(GameConfig.Get("room.fork_max", 3f));
             float dense = GameConfig.Get("room.fork_dense_chance", 0.4f);
@@ -271,7 +274,7 @@ namespace AThousandDawns.Prototype
                 _fighting = true;
                 Player.EnterRoom(); // #금강 2단계: 싸우는 방에 들어갈 때마다 보호막
                 OnFightStart();
-                _waves = PlanRoom(_floor);
+                _waves = room.FixedWaves ?? PlanRoom(_floor); // 입문 죽림은 손으로 짠 구성
                 _wave = -1;
                 _elitesThisRoom = 0;
                 _eliteWave = -1;
@@ -288,6 +291,7 @@ namespace AThousandDawns.Prototype
                 if (room.Kind == FloorRoomKind.Hidden && !room.Cleared) OpenHiddenRoom(room);
             }
             OnHuntEnter(room);
+            OnTutorialEnter(room);
         }
 
         Vector3 EntryFrom(int movedDirection)
@@ -327,6 +331,7 @@ namespace AThousandDawns.Prototype
 
         public void LeaveFloor()
         {
+            OnTutorialFloorLeft();
             ClearPending();
             EndHunt();
             EndFloorEffects();
@@ -504,7 +509,8 @@ namespace AThousandDawns.Prototype
             }
             if (_room.Kind == FloorRoomKind.Reward)
             {
-                if (_path.Reward == RewardKind.Item)
+                if (GrantTutorialReward()) text += " · 첫 기물";
+                else if (_path.Reward == RewardKind.Item)
                 {
                     arena.GrantOffer(_path.Dense ? DenseGradeWeights() : null);
                     text += " · 기물 고르기";
@@ -552,6 +558,7 @@ namespace AThousandDawns.Prototype
             Tracking = Mathf.FloorToInt(Tracking * GameConfig.Get("tracking.inn_ratio", 0.5f)); // 객잔에 들르면 추적도 절반
             int interest = InnInterest(); // 면벽수련 은 20
             Silver += interest;
+            Notify("inn", "객잔: 점소이(F)에게 기물·금창약을 사요 · 들르면 추적도 절반 · 북쪽 문은 정비실");
             ShowBanner($"객잔 · 점소이 앞에서 F로 진열대 (북쪽 문: 정비실) · 추적도 {before} → {Tracking}{(interest > 0 ? $" · 은자 이자 +{interest}" : "")}");
         }
 
@@ -645,6 +652,7 @@ namespace AThousandDawns.Prototype
             MovePlayer(rest.entry);
             director.ResetRoom();
             _restGauge = Player.Gauge;
+            Notify("rest", "정비실: 보스 전 마지막 정비 · 목인장으로 지금 빌드를 시험해 봐요");
             ShowBanner("정비실 · 목인장으로 시험해 봐요 (나가면 기세·쿨타임이 돌아와요)");
         }
 

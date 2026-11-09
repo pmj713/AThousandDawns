@@ -15,6 +15,7 @@ namespace AThousandDawns.Prototype
         public bool Found;     // 기연 방: 벽을 부숴 찾았는가 (찾기 전엔 문이 벽으로 막혀 있어요)
         public string EventId; // 이벤트 방 (RoomEvents)
         public int Jars = -1;  // 남은 항아리 (−1이면 아직 안 놓음)
+        public List<List<AThousandDawns.Enemies.EnemyKind>> FixedWaves; // 입문 죽림: 손으로 짠 적 구성 (없으면 무작위)
 
         public bool HasFight => Kind == FloorRoomKind.Combat || Kind == FloorRoomKind.Reward; // 보상 방은 앞에 전투가 한 번 붙어요
     }
@@ -49,6 +50,14 @@ namespace AThousandDawns.Prototype
                 if (map.TryBuild(rng, Math.Max(1, pathRooms), Math.Max(0, optionalRooms), Math.Max(0, eventRooms), hidden)) return map;
             }
             throw new InvalidOperationException("층 배치를 만들지 못했어요");
+        }
+
+        // 입문 죽림: 손으로 짠 일자 길 (서 → 동으로 한 칸씩)
+        public static FloorMap Line(params FloorRoomKind[] kinds)
+        {
+            var map = new FloorMap();
+            for (int i = 0; i < kinds.Length; i++) map.Add(new Vector2Int(i, 0), kinds[i], false);
+            return map;
         }
 
         bool TryBuild(System.Random rng, int pathRooms, int optionalRooms, int eventRooms, bool hidden)

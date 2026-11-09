@@ -27,6 +27,7 @@ namespace AThousandDawns.Prototype
         public IReadOnlyList<Row> AllRows => _rows;
 
         static GameSettings S => GameSettings.Current;
+        static bool _tutorialReset;
 
         static T Cycle<T>(T value, int step) where T : Enum
         {
@@ -110,6 +111,12 @@ namespace AThousandDawns.Prototype
             new Row { Section = "게임플레이", Label = "경맥도 기 숫자", Value = () => S.qiNumbers == GameSettings.QiNumbers.Always ? "항상" : "마우스를 올렸을 때만", Step = d => S.qiNumbers = Cycle(S.qiNumbers, d) },
             new Row { Section = "게임플레이", Label = "확인 창", Value = () => S.confirmDialogs ? "켜기 (녹이기 · 단전 · 이혈 전에 묻기)" : "끄기", Step = d => S.confirmDialogs = !S.confirmDialogs },
             new Row { Section = "접근성", Label = "화면 흔들림", Value = () => $"{S.screenShake}%", Step = d => S.screenShake = Mathf.Clamp(S.screenShake + d * 10, 0, 100) },
+            new Row
+            {
+                Section = "기타", Label = "튜토리얼 다시 보기",
+                Value = () => _tutorialReset ? "다음 판부터 처음 안내를 다시 봐요" : "좌우를 누르면 첫 안내 기록을 지워요",
+                Step = d => { RoomRun.ResetTutorial(); _tutorialReset = true; },
+            },
         };
 
         public void Change(int row, int step)

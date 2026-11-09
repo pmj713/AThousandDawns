@@ -23,7 +23,7 @@ namespace AThousandDawns.Prototype
         static readonly Color SlowDot = new Color(0.55f, 0.82f, 0.98f);  // 하늘색
         static readonly Color ShockDot = new Color(1f, 0.89f, 0.3f);     // 노랑
 
-        [System.NonSerialized] GUIStyle _label, _wrapLabel, _popup, _dummy, _big, _bossLabel, _popupSmall, _popupBig, _statusLabel, _card, _itemLine, _itemSmall;
+        [System.NonSerialized] GUIStyle _hintLabel, _label, _wrapLabel, _popup, _dummy, _big, _bossLabel, _popupSmall, _popupBig, _statusLabel, _card, _itemLine, _itemSmall;
         Camera _camera;
         int _lastLevel = 1;
         float _levelUpTimer;
@@ -127,6 +127,25 @@ namespace AThousandDawns.Prototype
             if (banner != null) GUI.Label(new Rect(0, UiScale.Height * 0.3f, UiScale.Width, 50), banner, _big);
             if (run != null && run.AtCounter)
                 GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), "F 점소이에게 말 걸기", _big);
+            // 튜토리얼: 조작 안내는 아래 가운데, 상황별 첫 안내는 오른쪽 위 한 줄
+            if (run != null && !string.IsNullOrEmpty(run.Hint) && !run.IsPaused)
+            {
+                var hintRect = new Rect(UiScale.Width * 0.5f - 560f, UiScale.Height - 150f, 1120f, 52f);
+                var oldHint = GUI.color;
+                GUI.color = new Color(0f, 0f, 0f, 0.55f);
+                GUI.DrawTexture(hintRect, Texture2D.whiteTexture);
+                GUI.color = oldHint;
+                GUI.Label(hintRect, $"<size=24>{run.Hint}</size>", _hintLabel);
+            }
+            if (run != null && !string.IsNullOrEmpty(run.HintNotice) && !run.IsPaused)
+            {
+                var noteRect = new Rect(UiScale.Width - 760f, 20f, 740f, 44f);
+                var oldNote = GUI.color;
+                GUI.color = new Color(0.1f, 0.08f, 0.05f, 0.7f);
+                GUI.DrawTexture(noteRect, Texture2D.whiteTexture);
+                GUI.color = oldNote;
+                GUI.Label(noteRect, $"<size=18><color=#ffd27a>안내</color>  {run.HintNotice}</size>", _hintLabel);
+            }
             if (run != null && run.InVillage && run.NearSpot != RoomRun.VillageSpot.None && (run.Book == null || !run.Book.IsOpen))
                 GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), run.SpotPrompt(run.NearSpot), _big);
             if (run != null && run.AtGate && !run.IsForking)
@@ -311,7 +330,7 @@ namespace AThousandDawns.Prototype
             GUI.color = old;
             if (run.PauseSettingsOpen)
             {
-                if (run.PauseSettings.Draw(new Rect((UiScale.Width - 900f) * 0.5f, (UiScale.Height - 680f) * 0.5f, 900f, 680f))) run.SetPauseSettings(false);
+                if (run.PauseSettings.Draw(new Rect((UiScale.Width - 900f) * 0.5f, (UiScale.Height - 760f) * 0.5f, 900f, 760f))) run.SetPauseSettings(false);
                 return;
             }
             float w = 420f, x = (UiScale.Width - w) * 0.5f, y = UiScale.Height * 0.32f;
@@ -593,6 +612,7 @@ namespace AThousandDawns.Prototype
             _popupSmall = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleCenter };
             _popupBig = new GUIStyle(GUI.skin.label) { fontSize = 32, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             _statusLabel = new GUIStyle(GUI.skin.label) { fontSize = 13, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+            _hintLabel = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.MiddleCenter, richText = true };
             _statusLabel.normal.textColor = SlowDot;
             _card = new GUIStyle(GUI.skin.button) { fontSize = 15, wordWrap = true, richText = true, alignment = TextAnchor.UpperLeft, padding = new RectOffset(14, 14, 12, 12) };
             _card.normal.textColor = _card.hover.textColor = Color.white;

@@ -160,7 +160,7 @@ namespace AThousandDawns.Prototype
             GUI.Label(new Rect(tx - 130f, ty + 692f, 400f, 30f), "같은 아침을, 천 번.", _small);
 
             if (Current == View.Menu) DrawMenu(h);
-            else if (Current == View.Settings) { if (Settings.Draw(new Rect(80f, (h - 680f) * 0.5f, 900f, 680f))) Current = View.Menu; }
+            else if (Current == View.Settings) { if (Settings.Draw(new Rect(80f, (h - 760f) * 0.5f, 900f, 760f))) Current = View.Menu; }
             else DrawPanel(w, h);
 
             GUI.Label(new Rect(w - 260f, h - 50f, 230f, 30f), $"v{Application.version} 시험판", _small);

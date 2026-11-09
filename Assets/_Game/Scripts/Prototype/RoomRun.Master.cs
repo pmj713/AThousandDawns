@@ -51,6 +51,7 @@ namespace AThousandDawns.Prototype
         {
             if (_master == null || !_master.IsDead || _masterChoiceShown || OffersOpen) return;
             _masterChoiceShown = true;
+            Notify("master", "고수를 꺾었어요: 비급 전수(초식이 바뀜) · 흡성(공력 +1) · 방면(추적도 0) 중 하나");
             OpenMasterChoice(_masterPicks, new System.Collections.Generic.HashSet<int>());
         }
 
