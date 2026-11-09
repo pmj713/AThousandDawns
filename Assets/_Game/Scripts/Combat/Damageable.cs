@@ -60,6 +60,13 @@ namespace AThousandDawns.Combat
             ReadBaseColor();
         }
 
+        // 짙은 길: 적 체력 +30% 처럼 최대 체력에 곱하고 가득 채워요.
+        public void ScaleMaxHealth(float multiplier)
+        {
+            maxHealth *= multiplier;
+            Health = maxHealth;
+        }
+
         void ReadBaseColor()
         {
             if (flashRenderer != null && flashRenderer.sharedMaterial != null && flashRenderer.sharedMaterial.HasProperty(BaseColorId))

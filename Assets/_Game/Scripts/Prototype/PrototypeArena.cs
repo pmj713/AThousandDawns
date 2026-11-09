@@ -61,6 +61,7 @@ namespace AThousandDawns.Prototype
         float[] _gradeWeights;
         bool _bossWasAlive;
         List<ItemDefinition> _offer;
+        readonly Queue<float[]> _offerWeights = new Queue<float[]>(); // 짙은 길 보상처럼 등급표가 다른 고르기
 
         public int RoundNumber { get; private set; }
         public NokrimBrain Boss => _boss;
@@ -68,6 +69,7 @@ namespace AThousandDawns.Prototype
         public IReadOnlyList<ItemDefinition> Offer => _offer;
         public int PendingOffers => _pendingOffers;
         public MeridianScreen Meridian => _meridian;
+        public bool Blocked { get; set; } // 갈림길 화면처럼 다른 창이 떠 있으면 시험 키를 받지 않아요
         MeridianScreen _meridian;
 
         void Start()
@@ -95,6 +97,7 @@ namespace AThousandDawns.Prototype
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
                 return;
             }
+            if (Blocked) return;
             if (_meridian != null && _meridian.IsOpen) return; // 경맥도를 보는 동안은 다른 키를 받지 않아요
             if (UpdateItemChoice(keyboard)) return; // 기물을 고르는 동안은 다른 키를 받지 않아요
             if (keyboard != null)
@@ -191,7 +194,12 @@ namespace AThousandDawns.Prototype
         }
 
         // 판 구조: 방을 비우거나 녹림왕을 쓰러뜨리면 RoomRun이 불러요.
-        public void GrantOffer() => _pendingOffers++;
+        // gradeWeights가 없으면 이 지역 등급표 (등급확률 시트)
+        public void GrantOffer(float[] gradeWeights = null)
+        {
+            _offerWeights.Enqueue(gradeWeights ?? _gradeWeights);
+            _pendingOffers++;
+        }
 
         // 고르는 중이면 true. 1·2·3 (또는 화면 클릭) 고르기 · Esc 넘기기 · I 하나 열기
         bool UpdateItemChoice(Keyboard keyboard)
@@ -220,11 +228,13 @@ namespace AThousandDawns.Prototype
         void OpenOffer(PlayerController player)
         {
             var db = GameConfig.Items;
-            _offer = db == null ? null : ItemOffer.Roll(db.Items, player.Items.Has, _choiceCount, _gradeWeights, () => UnityEngine.Random.value);
+            var weights = _offerWeights.Count > 0 ? _offerWeights.Dequeue() : _gradeWeights;
+            _offer = db == null ? null : ItemOffer.Roll(db.Items, player.Items.Has, _choiceCount, weights, () => UnityEngine.Random.value);
             if (_offer == null || _offer.Count == 0)
             {
                 _offer = null;
                 _pendingOffers = 0; // 더 얻을 기물이 없어요
+                _offerWeights.Clear();
                 return;
             }
             Time.timeScale = 0f;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using AThousandDawns.Enemies;
 using AThousandDawns.Player;
 using AThousandDawns.Prototype;
@@ -12,9 +13,14 @@ using Object = UnityEngine.Object;
 
 namespace AThousandDawns.Tests
 {
-    // 판 구조 씬: 방에 들어가면 문이 잠기고, 웨이브를 다 쓰러뜨리면 문이 열리고 기물 고르기, 문으로 나가면 다음 방.
+    // 판 구조 씬: 갈림길 → 층 탐색 (전투 방을 비우면 은자, 보상 방에서 고른 보상) → 관문 → 다음 갈림길, 마지막엔 정비실 → 녹림왕.
     public class RoomRunTests : InputTestFixture
     {
+        RoomRun _run;
+        PrototypeArena _arena;
+        EnemyDirector _director;
+        PlayerController _player;
+
         public override void Setup()
         {
             base.Setup();
@@ -30,92 +36,146 @@ namespace AThousandDawns.Tests
             base.TearDown();
         }
 
-        // 시간이 멈춰도 (기물 고르기) 끝나도록 실제 시간으로 기다려요
+        // 시간이 멈춰도 (갈림길·기물 고르기) 끝나도록 실제 시간으로 기다려요
         static IEnumerator WaitUntil(Func<bool> condition, float timeout)
         {
             float end = Time.realtimeSinceStartup + timeout;
             while (!condition() && Time.realtimeSinceStartup < end) yield return null;
         }
 
-        [UnityTest]
-        public IEnumerator 방을_비우면_문이_열리고_기물을_고른_뒤_다음_방()
+        IEnumerator Load()
         {
             yield return SceneManager.LoadSceneAsync("Prototype_Run", LoadSceneMode.Single);
             yield return null;
-            var run = Object.FindFirstObjectByType<RoomRun>();
-            var arena = Object.FindFirstObjectByType<PrototypeArena>();
-            var director = Object.FindFirstObjectByType<EnemyDirector>();
-            var player = Object.FindFirstObjectByType<PlayerController>();
-            Assert.IsNotNull(run);
-            Assert.AreEqual(0, run.StepIndex);
-            Assert.AreEqual(1, run.Current.Floor);
-            Assert.That(run.WaveCount, Is.InRange(2, 3));
-            var door = GameObject.Find("Door (결계)");
-            Assert.IsNotNull(door, "들어오면 문이 잠겨요");
-
-            // 나오는 대로 쓰러뜨려요 (플레이어는 입구에 가만히)
-            int maxSeen = 0;
-            yield return WaitUntil(() =>
-            {
-                maxSeen = Mathf.Max(maxSeen, director.Enemies.Count);
-                for (int i = director.Enemies.Count - 1; i >= 0; i--)
-                    director.Enemies[i].Damageable.ApplyHit(99999);
-                return run.DoorOpen;
-            }, 20f);
-            Assert.IsTrue(run.DoorOpen, "웨이브를 다 비우면 문이 열려요");
-            Assert.Greater(maxSeen, 0, "적이 나왔어야 해요");
-            Assert.IsFalse(door.activeSelf);
-
-            yield return WaitUntil(() => arena.IsChoosing, 2f);
-            Assert.IsTrue(arena.IsChoosing, $"방을 비우면 기물 3개 중 하나 (남은 고르기 {arena.PendingOffers}, 체력 {player.Health}, 기물 DB {AThousandDawns.Core.GameConfig.Items != null}, 적 {director.Enemies.Count})");
-            arena.Choose(0);
-            Assert.AreEqual(1, player.Items.Items.Count);
-
-            var cc = player.GetComponent<CharacterController>();
-            cc.enabled = false;
-            player.transform.position = new Vector3(0f, 0f, 7.6f); // 북쪽 문 너머 통로
-            cc.enabled = true;
-            yield return WaitUntil(() => run.StepIndex == 1, 2f);
-            Assert.AreEqual(1, run.StepIndex);
-            Assert.AreEqual(2, run.Current.Room);
-            Assert.IsTrue(door.activeSelf, "다음 방에 들어가면 다시 잠겨요");
-            Assert.Less(player.transform.position.z, -3f, "남쪽 입구로 옮겨져요");
+            _run = Object.FindFirstObjectByType<RoomRun>();
+            _arena = Object.FindFirstObjectByType<PrototypeArena>();
+            _director = Object.FindFirstObjectByType<EnemyDirector>();
+            _player = Object.FindFirstObjectByType<PlayerController>();
+            Assert.IsNotNull(_run);
         }
 
-        // 정비실 → 녹림왕 방. 녹림왕을 쓰러뜨리면 기물 하나와 경맥도 6×4.
+        // 나오는 대로 쓰러뜨려요 (플레이어는 가만히)
+        IEnumerator ClearFight()
+        {
+            yield return WaitUntil(() =>
+            {
+                for (int i = _director.Enemies.Count - 1; i >= 0; i--)
+                    _director.Enemies[i].Damageable.ApplyHit(99999);
+                return !_run.IsFighting;
+            }, 20f);
+            Assert.IsFalse(_run.IsFighting, "웨이브를 다 비워야 해요");
+        }
+
+        static int DirectionTo(FloorMap map, FloorRoom from, FloorRoom to) =>
+            Enumerable.Range(0, 4).First(d => map.Neighbor(from, d) == to);
+
+        [UnityTest]
+        public IEnumerator 갈림길에서_길을_고르면_층_입구에서_시작()
+        {
+            yield return Load();
+            Assert.IsTrue(_run.IsForking, "판을 시작하면 갈림길부터");
+            Assert.That(_run.ForkOptions.Count, Is.InRange(2, 3));
+            Assert.AreEqual(0f, Time.timeScale, "고르는 동안 시간 정지");
+            Assert.AreEqual(1, _run.Floor);
+
+            _run.ChooseFork(0);
+            Assert.IsFalse(_run.IsForking);
+            Assert.AreEqual(1f, Time.timeScale);
+            Assert.AreEqual(RoomRun.Phase.Floor, _run.CurrentPhase);
+            Assert.AreEqual(FloorRoomKind.Start, _run.Room.Kind);
+            Assert.IsFalse(_run.IsFighting, "시작 방은 싸우지 않아요");
+            Assert.Less(Vector3.Distance(_player.transform.position, Vector3.zero), 0.5f, "층 입구는 방 가운데");
+        }
+
+        [UnityTest]
+        public IEnumerator 전투_방을_비우면_은자_보상_방에서_고른_보상_관문으로_다음_갈림길()
+        {
+            yield return Load();
+            int pick = Enumerable.Range(0, _run.ForkOptions.Count).FirstOrDefault(i => _run.ForkOptions[i].Reward == RoomRun.RewardKind.Item);
+            var path = _run.ForkOptions[pick];
+            _run.ChooseFork(pick);
+            var map = _run.Map;
+
+            // 시작 방 옆 전투 방으로 걸어 들어가요 (통로 끝)
+            var start = map.Start;
+            int d = Enumerable.Range(0, 4).First(i => map.Neighbor(start, i) != null && map.Neighbor(start, i).HasFight);
+            var first = map.Neighbor(start, d);
+            var dir = FloorMap.Directions[d];
+            var cc = _player.GetComponent<CharacterController>();
+            cc.enabled = false;
+            _player.transform.position = new Vector3(dir.x * 11.6f, 0f, dir.y * 7.6f);
+            cc.enabled = true;
+            yield return WaitUntil(() => _run.Room == first, 2f);
+            Assert.AreEqual(first, _run.Room, "통로 끝에 서면 옆방으로");
+            Assert.IsTrue(_run.IsFighting, "전투 방에 들어가면 문이 잠기고 웨이브");
+            Assert.That(_run.WaveCount, Is.InRange(2, 3));
+
+            yield return ClearFight();
+            Assert.IsTrue(first.Cleared);
+            int silver = path.Dense ? 27 : 18;
+            Assert.AreEqual(silver, _run.Silver, "죽림 전투 방 은자 18 (짙은 길 ×1.5)");
+            if (first.Kind == FloorRoomKind.Reward)
+            {
+                yield return WaitUntil(() => _arena.IsChoosing, 2f);
+                _arena.Choose(0);
+            }
+
+            // 보상 방
+            var reward = map.Rooms.First(r => r.Kind == FloorRoomKind.Reward);
+            if (!reward.Cleared)
+            {
+                _run.Enter(reward, 0);
+                yield return ClearFight();
+                yield return WaitUntil(() => _arena.IsChoosing, 2f);
+                Assert.IsTrue(_arena.IsChoosing, "기물 길 보상 방: 기물 3개 중 하나");
+                _arena.Choose(0);
+            }
+            Assert.AreEqual(1, _player.Items.Items.Count);
+
+            // 관문에서 나가면 2층 갈림길
+            var gate = map.Rooms.First(r => r.Kind == FloorRoomKind.Gate);
+            _run.Enter(gate, 0);
+            Assert.IsFalse(_run.IsFighting, "관문 방은 싸우지 않아요");
+            Assert.IsFalse(_run.AtGate, "남쪽 입구에 서 있어서 아직 관문 밖");
+            cc.enabled = false;
+            _player.transform.position = Vector3.zero; // 관문 가운데
+            cc.enabled = true;
+            Assert.IsTrue(_run.AtGate);
+            _run.LeaveFloor();
+            Assert.IsTrue(_run.IsForking);
+            Assert.AreEqual(2, _run.Floor);
+        }
+
+        // 마지막 층 관문 → 정비실 → 녹림왕 방. 녹림왕을 쓰러뜨리면 기물 하나와 경맥도 6×4.
         [UnityTest]
         public IEnumerator 정비실을_지나_녹림왕을_쓰러뜨리면_경맥도가_넓어짐()
         {
-            yield return SceneManager.LoadSceneAsync("Prototype_Run", LoadSceneMode.Single);
-            yield return null;
-            var run = Object.FindFirstObjectByType<RoomRun>();
-            var arena = Object.FindFirstObjectByType<PrototypeArena>();
-            var player = Object.FindFirstObjectByType<PlayerController>();
+            yield return Load();
+            _run.ChooseFork(0);
+            _run.EnterRest();
+            Assert.AreEqual(RoomRun.Phase.Rest, _run.CurrentPhase);
+            _player.FillGauge();
 
-            run.Enter(run.Steps.Count - 2);
-            Assert.AreEqual(RoomRun.StepKind.Rest, run.Current.Kind);
-            Assert.IsTrue(run.DoorOpen, "정비실 문은 처음부터 열려 있어요");
-            player.FillGauge();
-
-            var cc = player.GetComponent<CharacterController>();
+            var cc = _player.GetComponent<CharacterController>();
             cc.enabled = false;
-            player.transform.position = new Vector3(60f, 0f, 6.6f);
+            _player.transform.position = new Vector3(60f, 0f, 6.6f);
             cc.enabled = true;
-            yield return WaitUntil(() => run.Current.Kind == RoomRun.StepKind.Boss, 2f);
-            Assert.AreEqual(RoomRun.StepKind.Boss, run.Current.Kind);
-            Assert.AreEqual(0f, player.Gauge, "정비실에서 채운 기세는 나갈 때 들어올 때 값으로");
+            yield return WaitUntil(() => _run.CurrentPhase == RoomRun.Phase.Boss, 2f);
+            Assert.AreEqual(RoomRun.Phase.Boss, _run.CurrentPhase);
+            Assert.AreEqual(0f, _player.Gauge, "정비실에서 채운 기세는 나갈 때 들어올 때 값으로");
 
-            yield return WaitUntil(() => arena.Boss != null && arena.Boss.IsAwake, 2f);
-            Assert.IsTrue(arena.Boss.IsAwake, "들어오면 바로 결투");
-            var boss = arena.Boss;
+            yield return WaitUntil(() => _arena.Boss != null && _arena.Boss.IsAwake, 2f);
+            Assert.IsTrue(_arena.Boss.IsAwake, "들어오면 바로 결투");
+            var boss = _arena.Boss;
             boss.Damageable.ApplyHit(Mathf.CeilToInt(boss.Damageable.MaxHealth * 0.55f));
             yield return WaitUntil(() => boss.Phase == 2 && !boss.IsTransitioning, 4f);
             boss.Damageable.ApplyHit(99999);
-            yield return WaitUntil(() => run.IsDone, 3f);
-            Assert.IsTrue(run.IsDone);
-            Assert.AreEqual(6, player.Items.Board.Width);
-            yield return WaitUntil(() => arena.IsChoosing, 2f);
-            Assert.IsTrue(arena.IsChoosing, "녹림왕 보상 기물");
+            yield return WaitUntil(() => _run.IsDone, 3f);
+            Assert.IsTrue(_run.IsDone);
+            Assert.AreEqual(6, _player.Items.Board.Width);
+            Assert.AreEqual(50, _run.Silver, "보스 은자 50");
+            yield return WaitUntil(() => _arena.IsChoosing, 2f);
+            Assert.IsTrue(_arena.IsChoosing, "녹림왕 보상 기물");
         }
     }
 }

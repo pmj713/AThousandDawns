@@ -5,25 +5,27 @@ using AThousandDawns.Enemies;
 using AThousandDawns.Player;
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace AThousandDawns.Prototype
 {
-    // 판 구조 시험판: 죽림 일반 층(층마다 최소 경로 전투 방) → 정비실 → 녹림왕 방.
-    // 전투 방: 들어오면 문이 잠기고, 방 난이도 예산으로 뽑은 적이 웨이브로 나와요 (나오기 전 바닥에 예고 원).
-    // 마지막 웨이브까지 쓰러뜨리면 문이 열리고 기물 3개 중 하나. 북쪽 문으로 나가면 다음 방.
-    // 정비실: 목인장 두 개, 문은 처음부터 열려 있음. 나갈 때 기세와 회선참 쿨타임을 들어올 때로 되돌려요.
-    // 녹림왕을 쓰러뜨리면 기물 하나 + 경맥도 5×4 → 6×4, 판 끝.
-    // 같은 시드면 같은 방 구성이 나와요 (버그 재현용). 갈림길·선택 방·이벤트·객잔은 아직 없어요.
+    // 판 구조 시험판: 죽림 일반 층마다 갈림길 → 층 탐색 → 관문, 마지막 층 관문 뒤 정비실 → 녹림왕.
+    // 갈림길: 길 2~3갈래. 길마다 보상 종류(기물·운기조식)와 기운(옅음·짙음).
+    //   짙은 길: 적 체력 +30%, 보상은 한 단계 위 (기물은 다음 지역 등급표, 은자·회복 ×1.5). 정예 추가는 정예 특성을 만들 때.
+    // 층: 격자에 방이 무작위로 놓여요 (FloorMap). 들어간 방의 옆방만 지도에 드러나요.
+    //   전투 방은 들어가면 문이 잠기고 예산으로 뽑은 웨이브가 나와요. 비우면 은자. 보상 방은 전투 뒤 고른 보상.
+    //   관문 방 가운데에서 F를 누르면 다음 층 (남은 방은 그냥 두고 가도 돼요).
+    // 정비실: 목인장 두 개. 나갈 때 기세와 회선참 쿨타임을 들어올 때로 되돌려요.
+    // 녹림왕을 쓰러뜨리면 기물 하나 + 경맥도 5×4 → 6×4, 판 끝. 같은 시드면 같은 갈림길·배치·적 구성 (버그 재현용).
     public sealed class RoomRun : MonoBehaviour
     {
-        public enum StepKind { Combat, Rest, Boss }
+        public enum Phase { None, Fork, Floor, Rest, Boss, Done }
+        public enum RewardKind { Item, Heal }
 
-        public struct Step
+        public struct Path
         {
-            public StepKind Kind;
-            public int Floor;  // 1부터 (보스 층은 일반 층 수 + 1)
-            public int Room;   // 그 층에서 몇 번째 방 (1부터)
-            public int Rooms;  // 그 층의 방 수
+            public RewardKind Reward;
+            public bool Dense;
         }
 
         [Serializable]
@@ -32,115 +34,241 @@ namespace AThousandDawns.Prototype
             public Vector3 center;
             public Vector2 size = new Vector2(20f, 12f);
             public Vector3 entry;         // 들어왔을 때 서는 자리
-            public Vector3 exit;          // 이 근처에 오면 다음 방 (문이 열려 있을 때)
+            public Vector3 exit;          // 이 근처에 오면 다음 방
             public float exitRadius = 1.3f;
-            public GameObject door;       // 켜져 있으면 잠김
         }
 
-        enum State { Idle, Warning, Fighting, Cleared, Done }
+        // 층의 모든 방이 같이 쓰는 방 하나 (20×12). 문은 북·동·남·서, 옆방이 없으면 막고 싸우는 동안 잠가요.
+        [Serializable]
+        public sealed class CombatSite
+        {
+            public Vector3 center;
+            public Vector2 size = new Vector2(20f, 12f);
+            public GameObject[] locks = new GameObject[4]; // 결계 (싸우는 동안)
+            public GameObject[] plugs = new GameObject[4]; // 벽 (옆방이 없는 쪽)
+            public GameObject gateMarker;                  // 관문
+            public float exitRadius = 1.3f;
+        }
 
         // 테스트에서 고정해요. 0이면 시간으로 정해요.
         public static int SeedOverride;
 
         [SerializeField] EnemyDirector director;
         [SerializeField] PrototypeArena arena;
-        [SerializeField] Site combat = new Site();
+        [SerializeField] CombatSite combat = new CombatSite();
         [SerializeField] Site rest = new Site();
         [SerializeField] Site boss = new Site();
 
-        readonly List<Step> _steps = new List<Step>();
         readonly List<(EnemyKind kind, Vector3 position, Telegraph marker)> _pending = new List<(EnemyKind, Vector3, Telegraph)>();
         List<List<EnemyKind>> _waves;
+        List<Path> _forkOptions;
         System.Random _rng;
-        State _state;
-        int _stepIndex = -1, _wave;
-        float _timer, _warning, _minSpawnDistance, _restGauge;
+        Phase _phase;
+        FloorMap _map;
+        FloorRoom _room;
+        Path _path;
+        bool _fighting, _warning;
+        int _floor, _floors, _wave;
+        float _timer, _warningTime, _minSpawnDistance, _restGauge;
         string _banner;
         float _bannerTimer;
 
         public int Seed { get; private set; }
-        public IReadOnlyList<Step> Steps => _steps;
-        public int StepIndex => _stepIndex;
-        public Step Current => _stepIndex >= 0 && _stepIndex < _steps.Count ? _steps[_stepIndex] : default;
+        public Phase CurrentPhase => _phase;
+        public int Floor => _floor;
+        public int Floors => _floors;
+        public FloorMap Map => _map;
+        public FloorRoom Room => _room;
+        public Path CurrentPath => _path;
+        public IReadOnlyList<Path> ForkOptions => _forkOptions;
+        public bool IsForking => _forkOptions != null;
+        public bool IsFighting => _fighting;
+        public bool IsDone => _phase == Phase.Done;
         public int Wave => _wave;
         public int WaveCount => _waves != null ? _waves.Count : 0;
-        public bool DoorOpen => _state == State.Cleared;
-        public bool IsDone => _state == State.Done;
+        public int Silver { get; private set; } // 은자 (객잔이 생기면 플레이어 쪽으로)
         public string Banner => _bannerTimer > 0f ? _banner : null;
-        public IReadOnlyList<List<EnemyKind>> Waves => _waves;
+        public bool AtGate => _phase == Phase.Floor && _room != null && _room.Kind == FloorRoomKind.Gate && !_fighting && Flat(Player.transform.position - combat.center).magnitude < 1.6f;
 
         PlayerController Player => director != null ? director.Player : null;
+        bool OffersOpen => arena.IsChoosing || arena.PendingOffers > 0;
 
         void Start()
         {
             Seed = SeedOverride != 0 ? SeedOverride : Environment.TickCount & 0x7fffffff;
             _rng = new System.Random(Seed);
-            _warning = GameConfig.Get("room.spawn_warning", 0.8f);
+            _warningTime = GameConfig.Get("room.spawn_warning", 0.8f);
             _minSpawnDistance = GameConfig.Get("room.spawn_min_distance", 5f);
-            BuildSteps();
-            if (PrototypeArena.AutoSpawn) Enter(0);
-        }
-
-        void BuildSteps()
-        {
-            _steps.Clear();
-            int floors = Mathf.Max(1, Mathf.RoundToInt(GameConfig.Get("room.floors", 3f)));
-            int rooms = Mathf.Max(1, Mathf.RoundToInt(GameConfig.Get("room.path_rooms", 3f)));
-            for (int f = 1; f <= floors; f++)
-                for (int r = 1; r <= rooms; r++)
-                    _steps.Add(new Step { Kind = StepKind.Combat, Floor = f, Room = r, Rooms = rooms });
-            _steps.Add(new Step { Kind = StepKind.Rest, Floor = floors + 1, Room = 1, Rooms = 2 });
-            _steps.Add(new Step { Kind = StepKind.Boss, Floor = floors + 1, Room = 2, Rooms = 2 });
+            _floors = Mathf.Max(1, Mathf.RoundToInt(GameConfig.Get("room.floors", 3f)));
+            SetGateMarker(false);
+            if (PrototypeArena.AutoSpawn) BeginFork(1);
         }
 
         void Update()
         {
-            if (_bannerTimer > 0f) _bannerTimer -= Time.deltaTime;
-            if (_stepIndex < 0 || Player == null || Player.IsDead) return;
+            if (_bannerTimer > 0f) _bannerTimer -= Time.unscaledDeltaTime;
+            if (Player == null) return;
 
-            switch (_state)
+            if (IsForking)
             {
-                case State.Warning: TickWarning(); break;
-                case State.Fighting: TickFight(); break;
-                case State.Cleared: TickExit(); break;
+                var keyboard = Keyboard.current;
+                if (keyboard == null) return;
+                if (keyboard.digit1Key.wasPressedThisFrame) ChooseFork(0);
+                else if (keyboard.digit2Key.wasPressedThisFrame) ChooseFork(1);
+                else if (keyboard.digit3Key.wasPressedThisFrame) ChooseFork(2);
+                return;
+            }
+            if (Player.IsDead) return;
+
+            switch (_phase)
+            {
+                case Phase.Floor:
+                    if (_fighting) TickFight();
+                    else TickFloorExits();
+                    break;
+                case Phase.Rest: TickRestExit(); break;
+                case Phase.Boss:
+                    var b = arena.Boss;
+                    if (b != null && b.IsDead) FinishRun();
+                    break;
             }
         }
 
-        // ── 방 들어가기
+        // ── 갈림길
 
-        public void Enter(int index)
+        public void BeginFork(int floor)
+        {
+            _floor = floor;
+            _forkOptions = RollFork();
+            arena.Blocked = true;
+            Player.enabled = false; // 고르는 클릭이 평타로 남지 않게
+            Time.timeScale = 0f;
+            ShowBanner($"죽림 {floor}층 · 갈림길");
+        }
+
+        List<Path> RollFork()
+        {
+            int min = Mathf.RoundToInt(GameConfig.Get("room.fork_min", 2f));
+            int max = Mathf.RoundToInt(GameConfig.Get("room.fork_max", 3f));
+            float dense = GameConfig.Get("room.fork_dense_chance", 0.4f);
+            int count = _rng.Next(min, Mathf.Max(min, max) + 1);
+            var options = new List<Path>();
+            for (int tries = 0; options.Count < count && tries < 50; tries++)
+            {
+                var p = new Path { Reward = (RewardKind)_rng.Next(2), Dense = _rng.NextDouble() < dense };
+                if (!options.Contains(p)) options.Add(p);
+            }
+            return options;
+        }
+
+        public void ChooseFork(int index)
+        {
+            if (!IsForking || index < 0 || index >= _forkOptions.Count) return;
+            _path = _forkOptions[index];
+            _forkOptions = null;
+            arena.Blocked = false;
+            Player.enabled = true;
+            Time.timeScale = 1f;
+            _map = FloorMap.Generate(_rng,
+                Mathf.RoundToInt(GameConfig.Get("room.path_rooms", 3f)),
+                Mathf.RoundToInt(GameConfig.Get("room.optional_rooms", 2f)));
+            _phase = Phase.Floor;
+            Enter(_map.Start, -1);
+            ShowBanner($"죽림 {_floor}층 · {PathLabel(_path)}");
+        }
+
+        public static string RewardLabel(RewardKind kind) => kind == RewardKind.Item ? "기물" : "운기조식";
+        public static string PathLabel(Path p) => $"{RewardLabel(p.Reward)} · 기운 {(p.Dense ? "짙음" : "옅음")}";
+
+        public string PathDetail(Path p)
+        {
+            float mult = p.Dense ? DenseMultiplier : 1f;
+            string reward = p.Reward == RewardKind.Item
+                ? (p.Dense ? "기물 3개 중 하나 (한 단계 위 등급표)" : "기물 3개 중 하나")
+                : $"체력 {GameConfig.Get("room.heal_ratio", 0.3f) * mult:0%} 회복";
+            string enemies = p.Dense ? $"적 체력 +{GameConfig.Get("room.dense_health", 1.3f) - 1f:0%}" : "적 보통";
+            return $"{reward}\n{enemies} · 방마다 은자 {Mathf.RoundToInt(GameConfig.Get("silver.room", 18f) * mult)}";
+        }
+
+        float DenseMultiplier => GameConfig.Get("room.dense_reward_multiplier", 1.5f);
+
+        // ── 층 안의 방
+
+        // movedDirection: 옆방에서 이 방향으로 넘어왔어요 (−1이면 층 입구, 가운데에 서요).
+        public void Enter(FloorRoom room, int movedDirection)
         {
             ClearPending();
-            _stepIndex = index;
-            var step = _steps[index];
-            var site = SiteOf(step.Kind);
-            MovePlayer(site.entry);
+            _room = room;
+            _map.Visit(room);
+            _phase = Phase.Floor;
+            MovePlayer(movedDirection < 0 ? combat.center : EntryFrom(movedDirection));
             director.ResetRoom();
-            Player.EnterRoom(); // #금강 2단계: 방에 들어갈 때마다 보호막
-
-            switch (step.Kind)
+            for (int d = 0; d < 4; d++)
             {
-                case StepKind.Combat:
-                    SetDoor(site, true);
-                    _waves = PlanRoom(step.Floor);
-                    _wave = -1;
-                    if (step.Room == 1) ShowBanner($"죽림 {step.Floor}층");
-                    StartNextWave();
-                    break;
-                case StepKind.Rest:
-                    SetDoor(site, false);
-                    _waves = null;
-                    _restGauge = Player.Gauge;
-                    _state = State.Cleared;
-                    ShowBanner("정비실 · 목인장으로 시험해 봐요 (나가면 기세·쿨타임이 돌아와요)");
-                    break;
-                case StepKind.Boss:
-                    _waves = null;
-                    arena.SpawnBoss();
-                    _state = State.Fighting;
-                    ShowBanner("녹림왕");
-                    break;
+                bool open = _map.Neighbor(room, d) != null;
+                if (combat.plugs[d] != null) combat.plugs[d].SetActive(!open);
             }
+            SetGateMarker(room.Kind == FloorRoomKind.Gate);
+
+            if (room.HasFight && !room.Cleared)
+            {
+                SetLocks(true);
+                _fighting = true;
+                Player.EnterRoom(); // #금강 2단계: 싸우는 방에 들어갈 때마다 보호막
+                _waves = PlanRoom(_floor);
+                _wave = -1;
+                StartNextWave();
+            }
+            else
+            {
+                SetLocks(false);
+                _fighting = false;
+                _waves = null;
+                if (room.Kind == FloorRoomKind.Gate) ShowBanner("관문 · 가운데에서 F를 누르면 다음 층");
+            }
+        }
+
+        Vector3 EntryFrom(int movedDirection)
+        {
+            var dir = FloorMap.Directions[FloorMap.Opposite(movedDirection)];
+            float inset = dir.x != 0 ? combat.size.x * 0.5f - 1.5f : combat.size.y * 0.5f - 1.5f;
+            return combat.center + new Vector3(dir.x, 0f, dir.y) * inset;
+        }
+
+        Vector3 ExitPoint(int direction)
+        {
+            var dir = FloorMap.Directions[direction];
+            float reach = dir.x != 0 ? combat.size.x * 0.5f + 1.6f : combat.size.y * 0.5f + 1.6f;
+            return combat.center + new Vector3(dir.x, 0f, dir.y) * reach;
+        }
+
+        void TickFloorExits()
+        {
+            if (OffersOpen) return; // 기물을 고른 뒤에 움직여요
+            var keyboard = Keyboard.current;
+            if (AtGate && keyboard != null && keyboard.fKey.wasPressedThisFrame)
+            {
+                LeaveFloor();
+                return;
+            }
+            Vector3 p = Player.transform.position;
+            for (int d = 0; d < 4; d++)
+            {
+                var next = _map.Neighbor(_room, d);
+                if (next == null || Flat(p - ExitPoint(d)).magnitude > combat.exitRadius) continue;
+                Enter(next, d);
+                return;
+            }
+        }
+
+        public void LeaveFloor()
+        {
+            ClearPending();
+            _fighting = false;
+            SetLocks(false);
+            SetGateMarker(false);
+            if (_floor < _floors) BeginFork(_floor + 1);
+            else EnterRest();
         }
 
         public List<List<EnemyKind>> PlanRoom(int floor)
@@ -171,14 +299,11 @@ namespace AThousandDawns.Prototype
                 ClearRoom();
                 return;
             }
-            var site = combat;
             Vector3 houndSpot = Vector3.zero;
             bool houndPaired = false;
             foreach (var kind in _waves[_wave])
             {
-                Vector3 p;
-                if (kind == EnemyKind.Hound && houndPaired) p = director.FindFreeSpot(houndSpot, 1.2f); // 들개 무리는 붙어서
-                else p = PickSpot(site);
+                Vector3 p = kind == EnemyKind.Hound && houndPaired ? director.FindFreeSpot(houndSpot, 1.2f) : PickSpot(); // 들개 무리는 붙어서
                 if (kind == EnemyKind.Hound)
                 {
                     houndPaired = !houndPaired;
@@ -190,109 +315,148 @@ namespace AThousandDawns.Prototype
                 marker.SetProgress(0f);
                 _pending.Add((kind, p, marker));
             }
-            _timer = _warning;
-            _state = State.Warning;
+            _timer = _warningTime;
+            _warning = true;
         }
 
-        void TickWarning()
+        void TickFight()
         {
-            _timer -= Time.deltaTime;
-            float t = _warning > 0f ? 1f - Mathf.Clamp01(_timer / _warning) : 1f;
-            foreach (var p in _pending) if (p.marker != null) p.marker.SetProgress(t);
-            if (_timer > 0f) return;
+            if (_warning)
+            {
+                _timer -= Time.deltaTime;
+                float t = _warningTime > 0f ? 1f - Mathf.Clamp01(_timer / _warningTime) : 1f;
+                foreach (var p in _pending) if (p.marker != null) p.marker.SetProgress(t);
+                if (_timer > 0f) return;
+                SpawnPending();
+                return;
+            }
+            foreach (var e in director.Enemies) if (e != null && !e.IsDead) return;
+            StartNextWave();
+        }
 
+        void SpawnPending()
+        {
             int archers = director.Count(EnemyKind.Archer);
             int archerLimit = Mathf.RoundToInt(GameConfig.Get("archer.max_per_room", 2f));
+            float health = _path.Dense ? GameConfig.Get("room.dense_health", 1.3f) : 1f;
             foreach (var p in _pending)
             {
                 if (p.marker != null) Destroy(p.marker.gameObject);
                 if (p.kind == EnemyKind.Archer && archers >= archerLimit) continue; // 앞 웨이브 궁수가 살아 있으면 건너뜀
                 if (p.kind == EnemyKind.Archer) archers++;
-                director.Spawn(p.kind, p.position);
+                var enemy = director.Spawn(p.kind, p.position);
+                if (health != 1f && enemy != null) enemy.Damageable.ScaleMaxHealth(health);
             }
             _pending.Clear();
-            _state = State.Fighting;
-        }
-
-        void TickFight()
-        {
-            var step = Current;
-            if (step.Kind == StepKind.Boss)
-            {
-                var b = arena.Boss;
-                if (b != null && b.IsDead) FinishRun();
-                return;
-            }
-            if (AliveCount() > 0) return;
-            StartNextWave();
-        }
-
-        int AliveCount()
-        {
-            int n = 0;
-            foreach (var e in director.Enemies) if (e != null && !e.IsDead) n++;
-            return n;
+            _warning = false;
         }
 
         void ClearRoom()
         {
-            SetDoor(combat, false);
-            _state = State.Cleared;
-            arena.GrantOffer();
-            ShowBanner("문이 열렸어요 · 북쪽 문으로");
+            _fighting = false;
+            _room.Cleared = true;
+            SetLocks(false);
+            float mult = _path.Dense ? DenseMultiplier : 1f;
+            int silver = Mathf.RoundToInt(GameConfig.Get("silver.room", 18f) * mult);
+            Silver += silver;
+            string text = $"방을 비웠어요 · 은자 +{silver}";
+            if (_room.Kind == FloorRoomKind.Reward)
+            {
+                if (_path.Reward == RewardKind.Item)
+                {
+                    arena.GrantOffer(_path.Dense ? DenseGradeWeights() : null);
+                    text += " · 기물 고르기";
+                }
+                else
+                {
+                    float heal = Player.MaxHealth * GameConfig.Get("room.heal_ratio", 0.3f) * mult;
+                    Player.Heal(heal);
+                    text += $" · 운기조식 체력 +{heal:0}";
+                }
+            }
+            ShowBanner(text);
+        }
+
+        // 짙은 길 기물: 다음 지역(폐사찰) 등급표 (등급확률 시트)
+        static float[] DenseGradeWeights() => new[]
+        {
+            GameConfig.Get("item_grade_dense.common", 0.52f), GameConfig.Get("item_grade_dense.uncommon", 0.3f),
+            GameConfig.Get("item_grade_dense.rare", 0.14f), GameConfig.Get("item_grade_dense.legendary", 0.04f),
+        };
+
+        // ── 정비실과 녹림왕
+
+        public void EnterRest()
+        {
+            ClearPending();
+            _phase = Phase.Rest;
+            _room = null;
+            _fighting = false;
+            MovePlayer(rest.entry);
+            director.ResetRoom();
+            _restGauge = Player.Gauge;
+            ShowBanner("정비실 · 목인장으로 시험해 봐요 (나가면 기세·쿨타임이 돌아와요)");
+        }
+
+        void TickRestExit()
+        {
+            if (OffersOpen || Flat(Player.transform.position - rest.exit).magnitude > rest.exitRadius) return;
+            Player.RestoreAfterTraining(_restGauge);
+            _phase = Phase.Boss;
+            MovePlayer(boss.entry);
+            director.ResetRoom();
+            Player.EnterRoom();
+            arena.SpawnBoss();
+            ShowBanner("녹림왕");
         }
 
         void FinishRun()
         {
-            _state = State.Done;
+            _phase = Phase.Done;
+            int silver = Mathf.RoundToInt(GameConfig.Get("silver.boss", 50f));
+            Silver += silver;
             arena.GrantOffer();
             var items = Player.Items;
             if (items != null)
                 items.ExpandBoard(
                     Mathf.RoundToInt(GameConfig.Get("meridian.width_after_boss1", 6f)),
                     Mathf.RoundToInt(GameConfig.Get("meridian.height_after_boss1", 4f)));
-            ShowBanner("녹림왕 격파! 경맥도가 넓어졌어요 (6×4) · F5 새 판", 6f);
-        }
-
-        // ── 나가기
-
-        void TickExit()
-        {
-            var step = Current;
-            var site = SiteOf(step.Kind);
-            Vector3 d = Player.transform.position - site.exit;
-            d.y = 0f;
-            if (d.magnitude > site.exitRadius) return;
-            if (arena.IsChoosing || arena.PendingOffers > 0) return; // 기물을 고른 뒤에 넘어가요
-            if (step.Kind == StepKind.Rest) Player.RestoreAfterTraining(_restGauge);
-            if (_stepIndex + 1 < _steps.Count) Enter(_stepIndex + 1);
+            ShowBanner($"녹림왕 격파! 은자 +{silver} · 경맥도가 넓어졌어요 (6×4) · F5 새 판", 6f);
         }
 
         // ── 도움
 
-        Site SiteOf(StepKind kind) => kind == StepKind.Combat ? combat : kind == StepKind.Rest ? rest : boss;
-
-        static void SetDoor(Site site, bool closed)
+        void SetLocks(bool locked)
         {
-            if (site.door != null) site.door.SetActive(closed);
+            for (int d = 0; d < 4; d++)
+                if (combat.locks[d] != null) combat.locks[d].SetActive(locked && _map != null && _room != null && _map.Neighbor(_room, d) != null);
         }
 
-        Vector3 PickSpot(Site site)
+        void SetGateMarker(bool on)
+        {
+            if (combat.gateMarker != null) combat.gateMarker.SetActive(on);
+        }
+
+        static Vector3 Flat(Vector3 v)
+        {
+            v.y = 0f;
+            return v;
+        }
+
+        Vector3 PickSpot()
         {
             Vector3 player = Player.transform.position;
-            float halfX = site.size.x * 0.5f - 1.5f, halfZ = site.size.y * 0.5f - 1.5f;
+            float halfX = combat.size.x * 0.5f - 1.5f, halfZ = combat.size.y * 0.5f - 1.5f;
             for (int i = 0; i < 40; i++)
             {
-                var p = site.center + new Vector3(((float)_rng.NextDouble() * 2f - 1f) * halfX, 0f, ((float)_rng.NextDouble() * 2f - 1f) * halfZ);
-                Vector3 off = p - player;
-                off.y = 0f;
-                if (off.magnitude < _minSpawnDistance) continue;
+                var p = combat.center + new Vector3(((float)_rng.NextDouble() * 2f - 1f) * halfX, 0f, ((float)_rng.NextDouble() * 2f - 1f) * halfZ);
+                if (Flat(p - player).magnitude < _minSpawnDistance) continue;
                 bool nearOther = false;
                 foreach (var q in _pending) if ((q.position - p).sqrMagnitude < 1.2f * 1.2f) nearOther = true;
                 if (nearOther || !director.IsFree(p, 0.45f)) continue;
                 return p;
             }
-            return director.FindFreeSpot(site.center, 3f);
+            return director.FindFreeSpot(combat.center, 3f);
         }
 
         void MovePlayer(Vector3 to)
@@ -310,6 +474,7 @@ namespace AThousandDawns.Prototype
         {
             foreach (var p in _pending) if (p.marker != null) Destroy(p.marker.gameObject);
             _pending.Clear();
+            _warning = false;
         }
 
         void ShowBanner(string text, float seconds = 2.5f)
@@ -318,19 +483,31 @@ namespace AThousandDawns.Prototype
             _bannerTimer = seconds;
         }
 
+        void OnDestroy()
+        {
+            if (IsForking) Time.timeScale = 1f;
+        }
+
         // HUD 한 줄
         public string StatusText
         {
             get
             {
-                if (_stepIndex < 0) return $"시드 {Seed}";
-                var step = Current;
-                string where = step.Kind == StepKind.Combat ? $"죽림 {step.Floor}층 · 방 {step.Room}/{step.Rooms}"
-                    : step.Kind == StepKind.Rest ? "죽림 보스 층 · 정비실" : "죽림 보스 층 · 녹림왕";
-                string wave = step.Kind == StepKind.Combat && _waves != null && _state != State.Cleared
-                    ? $" · 웨이브 {Mathf.Min(_wave + 1, _waves.Count)}/{_waves.Count}" : "";
-                string door = _state == State.Cleared ? " · 문 열림" : _state == State.Done ? " · 판 끝" : "";
-                return $"{where}{wave}{door} · 시드 {Seed}";
+                string where;
+                switch (_phase)
+                {
+                    case Phase.Fork: where = $"죽림 {_floor}층 갈림길"; break;
+                    case Phase.Floor:
+                        string wave = _fighting && _waves != null ? $" · 웨이브 {Mathf.Clamp(_wave + 1, 1, _waves.Count)}/{_waves.Count}" : "";
+                        where = $"죽림 {_floor}층 · {PathLabel(_path)} · 남은 전투 방 {_map.FightsLeft()}{wave}";
+                        break;
+                    case Phase.Rest: where = "죽림 보스 층 · 정비실"; break;
+                    case Phase.Boss: where = "죽림 보스 층 · 녹림왕"; break;
+                    case Phase.Done: where = "판 끝"; break;
+                    default: where = IsForking ? $"죽림 {_floor}층 갈림길" : ""; break;
+                }
+                if (IsForking) where = $"죽림 {_floor}층 갈림길";
+                return $"{where} · 은자 {Silver} · 시드 {Seed}";
             }
         }
     }

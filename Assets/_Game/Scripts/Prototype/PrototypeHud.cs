@@ -43,6 +43,8 @@ namespace AThousandDawns.Prototype
         {
             UiScale.Apply(); // 기준 1920×1080, 어떤 창 크기에도 같은 비율
             DrawHud();
+            DrawMinimap();
+            DrawFork();
             DrawOffer(); // 기물 카드는 맨 위에
         }
 
@@ -111,6 +113,8 @@ namespace AThousandDawns.Prototype
 
             string banner = run != null ? run.Banner : null;
             if (banner != null) GUI.Label(new Rect(0, UiScale.Height * 0.3f, UiScale.Width, 50), banner, _big);
+            if (run != null && run.AtGate && !run.IsForking)
+                GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), $"F 다음 층으로 · 남은 전투 방 {run.Map.FightsLeft()}", _big);
 
             if (player != null && player.IsDead)
                 GUI.Label(new Rect(0, UiScale.Height * 0.4f, UiScale.Width, 60), "쓰러졌어요 · F5 키로 다시 시작", _big);
@@ -192,7 +196,7 @@ namespace AThousandDawns.Prototype
             GUILayout.BeginArea(new Rect(UiScale.Width - width - 16f, 16f, width, 64f + Mathf.Max(1, count) * 21f + (bag > 0 ? 24f : 0f)), GUI.skin.box);
             string pending = arena != null && arena.PendingOffers > 0 && !arena.IsChoosing ? $" · 고르기 {arena.PendingOffers}개 남음" : "";
             GUILayout.Label($"기물 {count}개 (경맥도 {count - bag} · 보관함 {bag}){pending}", _label);
-            if (count == 0) GUILayout.Label("무리를 다 쓰러뜨리면 3개 중 하나를 골라요 (I: 바로 고르기)", _itemLine);
+            if (count == 0) GUILayout.Label(run != null ? "기물 길의 보상 방에서 3개 중 하나를 골라요 (I: 바로 고르기)" : "무리를 다 쓰러뜨리면 3개 중 하나를 골라요 (I: 바로 고르기)", _itemLine);
             if (bag > 0) GUILayout.Label("<color=#ffd27a>보관함의 기물은 효과가 없어요 · E로 경맥도에 놓기</color>", _itemSmall);
             foreach (var item in items.Items)
             {
@@ -207,6 +211,64 @@ namespace AThousandDawns.Prototype
                 GUILayout.Label($"<b>{def.name}</b> {Colored(def.keyword)} · {qi}({def.minQi}–{def.maxQi}) · {stateText}", _itemSmall);
             }
             GUILayout.EndArea();
+        }
+
+        // 층 지도 (오른쪽 아래): 지금 방은 붉게, 가 본 방은 밝게, 옆방은 흐리게. 시 = 시작, 보 = 보상 방, 관 = 관문, ! = 아직 싸우는 중
+        void DrawMinimap()
+        {
+            if (run == null || run.Map == null || run.CurrentPhase != RoomRun.Phase.Floor || run.IsForking) return;
+            EnsureStyles();
+            var map = run.Map;
+            int minX = int.MaxValue, maxX = int.MinValue, minY = int.MaxValue, maxY = int.MinValue;
+            foreach (var r in map.Rooms)
+            {
+                if (!r.Revealed) continue;
+                minX = Mathf.Min(minX, r.Cell.x); maxX = Mathf.Max(maxX, r.Cell.x);
+                minY = Mathf.Min(minY, r.Cell.y); maxY = Mathf.Max(maxY, r.Cell.y);
+            }
+            if (minX > maxX) return;
+            const float cell = 34f, gap = 6f;
+            float w = (maxX - minX + 1) * (cell + gap) - gap, h = (maxY - minY + 1) * (cell + gap) - gap;
+            float ox = UiScale.Width - w - 24f, oy = UiScale.Height - h - 24f;
+            var old = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.45f);
+            GUI.DrawTexture(new Rect(ox - 8f, oy - 8f, w + 16f, h + 16f), Texture2D.whiteTexture);
+            foreach (var r in map.Rooms)
+            {
+                if (!r.Revealed) continue;
+                var rect = new Rect(ox + (r.Cell.x - minX) * (cell + gap), oy + (maxY - r.Cell.y) * (cell + gap), cell, cell);
+                bool here = r == run.Room;
+                GUI.color = here ? new Color(0.78f, 0.27f, 0.24f) : r.Visited ? new Color(0.85f, 0.85f, 0.8f, r.Cleared || !r.HasFight ? 0.55f : 0.9f) : new Color(1f, 1f, 1f, 0.15f);
+                GUI.DrawTexture(rect, Texture2D.whiteTexture);
+                GUI.color = Color.white;
+                string mark = r.Kind == FloorRoomKind.Start ? "시" : r.Kind == FloorRoomKind.Reward ? "보" : r.Kind == FloorRoomKind.Gate ? "관" : r.Visited && r.HasFight && !r.Cleared ? "!" : "";
+                if (mark != "") GUI.Label(rect, mark, _statusLabel);
+            }
+            GUI.color = old;
+        }
+
+        // 갈림길 카드 (시간이 멈춰 있어요). 1·2·3 또는 클릭
+        void DrawFork()
+        {
+            if (run == null || !run.IsForking) return;
+            EnsureStyles();
+            var options = run.ForkOptions;
+            var old = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.7f);
+            GUI.DrawTexture(new Rect(0, 0, UiScale.Width, UiScale.Height), Texture2D.whiteTexture);
+            GUI.color = old;
+
+            const float cardW = 320f, cardH = 200f, gap = 20f;
+            float total = options.Count * cardW + (options.Count - 1) * gap;
+            float x = (UiScale.Width - total) * 0.5f, y = (UiScale.Height - cardH) * 0.5f;
+            GUI.Label(new Rect(0, y - 56f, UiScale.Width, 40f), $"죽림 {run.Floor}층 갈림길 · 1 2 3 또는 클릭", _big);
+            for (int i = 0; i < options.Count; i++)
+            {
+                var p = options[i];
+                string qi = p.Dense ? "<color=#ff6a5a>기운 짙음</color>" : "<color=#bfe3c0>기운 옅음</color>";
+                string text = $"<size=13>[{i + 1}]</size>  <b><size=21>{RoomRun.RewardLabel(p.Reward)}</size></b>\n{qi}\n\n{run.PathDetail(p)}";
+                if (GUI.Button(new Rect(x + i * (cardW + gap), y, cardW, cardH), text, _card)) run.ChooseFork(i);
+            }
         }
 
         // 기물 고르기 카드 3장 (시간이 멈춰 있어요). 1·2·3 또는 클릭, Esc 넘기기
