@@ -29,6 +29,13 @@ Shader "AThousandDawns/InkTriplanar"
         _OutlineJitter ("Outline Brush Jitter", Range(0, 1)) = 0.7
         _OutlineNoiseScale ("Outline Noise Scale", Float) = 2
         _OutlineFromCenter ("Outline From Center (각진 물체는 1)", Range(0, 1)) = 1
+        _VertexInk ("Vertex Color Ink (버텍스 색 빨강 = 먹, 초록 = 종이색 틈. 대나무 마디 등)", Range(0, 1)) = 0
+
+        [Header(Dry Brush)]
+        _StreakLight ("Streak Light (세로 마른 붓 결)", Range(0, 1)) = 0
+        _StreakScale ("Streak Scale", Float) = 6
+        _PatchLight ("Patch Light (군데군데 옅은 얼룩)", Range(0, 1)) = 0
+        _PatchScale ("Patch Scale", Float) = 0.8
     }
 
     SubShader
@@ -61,6 +68,11 @@ Shader "AThousandDawns/InkTriplanar"
             half _OutlineJitter;
             float _OutlineNoiseScale;
             half _OutlineFromCenter;
+            half _VertexInk;
+            half _StreakLight;
+            float _StreakScale;
+            half _PatchLight;
+            float _PatchScale;
         CBUFFER_END
 
         float Hash13(float3 p)
@@ -106,6 +118,7 @@ Shader "AThousandDawns/InkTriplanar"
             {
                 float4 positionOS : POSITION;
                 float3 normalOS : NORMAL;
+                half4 color : COLOR;
             };
 
             struct Varyings
@@ -114,6 +127,7 @@ Shader "AThousandDawns/InkTriplanar"
                 float3 positionWS : TEXCOORD0;
                 float3 normalWS : TEXCOORD1;
                 half fogFactor : TEXCOORD2;
+                half2 vertexInk : TEXCOORD3; // x = 먹, y = 종이색
             };
 
             Varyings Vert(Attributes input)
@@ -124,6 +138,7 @@ Shader "AThousandDawns/InkTriplanar"
                 output.positionWS = pos.positionWS;
                 output.normalWS = TransformObjectToWorldNormal(input.normalOS);
                 output.fogFactor = ComputeFogFactor(pos.positionCS.z);
+                output.vertexInk = input.color.rg * _VertexInk;
                 return output;
             }
 
@@ -162,7 +177,16 @@ Shader "AThousandDawns/InkTriplanar"
                 half3 albedo = SampleTriplanar(input.positionWS, n) * _BaseColor.rgb;
                 albedo = lerp(Luminance(albedo).xxx, albedo, _Saturation);
                 albedo = lerp(albedo, _PaperColor.rgb, _PaperLift);
-                half3 color = lerp(_InkColor.rgb, albedo, tone);
+                half3 color = lerp(_InkColor.rgb, albedo, tone * (1.0 - input.vertexInk.x));
+
+                // 마른 붓: 세로로 길게 늘인 노이즈로 옅은 결, 낮은 주파수 노이즈로 군데군데 옅은 얼룩 (월드 기준이라 물체마다 달라요)
+                float3 p = input.positionWS;
+                float streak = ValueNoise(float3(p.x * _StreakScale, p.y * _StreakScale * 0.08, p.z * _StreakScale));
+                float patch = ValueNoise(p * _PatchScale + 13.7);
+                half dry = saturate(smoothstep(0.5, 0.85, streak) * _StreakLight + smoothstep(0.45, 0.8, patch) * _PatchLight);
+                color = lerp(color, _PaperColor.rgb, dry * 0.7);
+
+                color = lerp(color, _PaperColor.rgb, input.vertexInk.y);
 
                 float grain = Hash13(float3(floor(input.positionCS.xy * 0.5), 7.0));
                 color *= 1.0 - (grain - 0.5) * _PaperGrain;

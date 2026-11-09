@@ -37,12 +37,17 @@ Material:
     - _OutlineNoiseScale: 2
     - _OutlineWidth: 0
     - _PaperGrain: 0.05
-    - _PaperLift: 0.2
+    - _PaperLift: 0.55
+    - _PatchLight: 0
+    - _PatchScale: 0.8
     - _RimInk: 0.35
     - _RimPower: 3
-    - _Saturation: 0.1
+    - _Saturation: 0
     - _ShadowInk: 0.5
+    - _StreakLight: 0
+    - _StreakScale: 6
     - _TileSize: 4
+    - _VertexInk: 0
     - _WashNoiseScale: 1.5
     - _WashNoiseStrength: 0.25
     m_Colors:

@@ -29,25 +29,30 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _BandSoftness: 0.15
+    - _BandSoftness: 0.3
     - _Bands: 3
     - _BlendSharpness: 6
-    - _OutlineFromCenter: 1
+    - _OutlineFromCenter: 0
     - _OutlineJitter: 0.7
     - _OutlineNoiseScale: 2
-    - _OutlineWidth: 2
+    - _OutlineWidth: 1
     - _PaperGrain: 0.05
-    - _PaperLift: 0.2
-    - _RimInk: 0.35
-    - _RimPower: 3
-    - _Saturation: 0.1
+    - _PaperLift: 0
+    - _PatchLight: 0.45
+    - _PatchScale: 0.9
+    - _RimInk: 0.55
+    - _RimPower: 2
+    - _Saturation: 0
     - _ShadowInk: 0.5
+    - _StreakLight: 0.6
+    - _StreakScale: 8
     - _TileSize: 1.2
+    - _VertexInk: 1
     - _WashNoiseScale: 1.5
     - _WashNoiseStrength: 0.25
     m_Colors:
-    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _InkColor: {r: 0.06999998, g: 0.06999998, b: 0.079999976, a: 1}
+    - _BaseColor: {r: 0.48, g: 0.48, b: 0.48, a: 1}
+    - _InkColor: {r: 0.08, g: 0.1, b: 0.1, a: 1}
     - _PaperColor: {r: 0.93, g: 0.91, b: 0.86, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

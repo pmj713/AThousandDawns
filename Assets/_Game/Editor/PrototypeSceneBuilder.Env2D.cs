@@ -64,6 +64,13 @@ namespace AThousandDawns.EditorTools
             cam.clearFlags = CameraClearFlags.SolidColor;
             ColorUtility.TryParseHtmlString("#E9E4D8", out Color paper);
             cam.backgroundColor = paper;
+
+            // 수묵화처럼 먼 것일수록 한지색 안개로 옅어져요. 방 가운데까지(카메라에서 약 16)는 거의 그대로, 벽 너머 숲부터 옅어져요
+            RenderSettings.fog = true;
+            RenderSettings.fogMode = FogMode.Linear;
+            RenderSettings.fogColor = paper;
+            RenderSettings.fogStartDistance = 17f;
+            RenderSettings.fogEndDistance = 40f;
         }
 
         // Prototype_Run의 층 방(CombatSize 20×12, 네 변 가운데 폭 3 문)과 같은 자리에 2D 그림을 둬요.
@@ -145,8 +152,12 @@ namespace AThousandDawns.EditorTools
         {
             var group = new GameObject("Characters (ink test)").transform;
 
-            InkPrimitive(group, "Player (Ink)", PrimitiveType.Capsule, new Vector3(0f, 1f, -3f), Vector3.one,
-                GetInkMaterial("Ink_Player", PlayerColor, 0.75f));
+            // 플레이어 캡슐은 WASD로 걸려 볼 수 있어요 (카메라가 따라와요). 앞쪽 작은 공은 바라보는 방향 표시
+            var playerMat = GetInkMaterial("Ink_Player", PlayerColor, 0.75f);
+            var player = InkPrimitive(group, "Player (Ink, WASD)", PrimitiveType.Capsule, new Vector3(0f, 1f, -3f), Vector3.one, playerMat);
+            InkPrimitive(player.transform, "Facing", PrimitiveType.Sphere, new Vector3(0f, 0.45f, 0.45f), Vector3.one * 0.3f, playerMat);
+            player.AddComponent<CharacterController>();
+            player.AddComponent<AThousandDawns.Art.ArtTestWalker>();
             InkPrimitive(group, "Grunt (Ink)", PrimitiveType.Capsule, new Vector3(-2.2f, 1f, -1.2f), Vector3.one,
                 GetInkMaterial("Ink_Grunt", GruntColor, 0.1f));
             InkPrimitive(group, "Boar (Ink)", PrimitiveType.Sphere, new Vector3(2.4f, 0.55f, -1.2f), new Vector3(1.3f, 1.1f, 1.9f),
@@ -156,7 +167,7 @@ namespace AThousandDawns.EditorTools
                 GetMaterial("Player", PlayerColor, false));
         }
 
-        static void InkPrimitive(Transform parent, string name, PrimitiveType type, Vector3 position, Vector3 scale, Material mat)
+        static GameObject InkPrimitive(Transform parent, string name, PrimitiveType type, Vector3 position, Vector3 scale, Material mat)
         {
             var go = GameObject.CreatePrimitive(type);
             go.name = name;
@@ -165,6 +176,7 @@ namespace AThousandDawns.EditorTools
             go.transform.localScale = scale;
             Object.DestroyImmediate(go.GetComponent<Collider>());
             go.GetComponent<Renderer>().sharedMaterial = mat;
+            return go;
         }
 
         static Material GetInkMaterial(string name, string hex, float saturation)
