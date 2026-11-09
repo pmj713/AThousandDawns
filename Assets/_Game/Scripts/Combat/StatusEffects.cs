@@ -105,6 +105,12 @@ namespace AThousandDawns.Combat
             if (BurnStacks > 0) _burnTimer = BurnDuration;
         }
 
+        // 대장간 열양: 걸려 있는 화상의 남은 시간 +초 (최대 cap초)
+        public void ExtendBurn(float seconds, float cap)
+        {
+            if (BurnStacks > 0 && _burnTimer < cap) _burnTimer = Mathf.Min(cap, _burnTimer + seconds);
+        }
+
         // 지금 중첩을 돌려주고 지속 시간을 처음으로. 새로 붙는 화상이면 등잔·화룡 비늘 기록도 처음부터.
         int BeginBurn(float perStackDps, int extraMax)
         {
@@ -146,6 +152,26 @@ namespace AThousandDawns.Combat
             return true;
         }
 
+        // 대장간 빙백: 빙결을 깨요. 바로 풀리고 둔화 0중첩, 그 뒤 면역은 immunityCut초 짧게.
+        public bool BreakFreeze(float immunityCut)
+        {
+            if (!IsFrozen) return false;
+            _freezeTimer = 0f;
+            EndFreeze();
+            _freezeImmunity = Mathf.Max(0f, _freezeImmunity - immunityCut);
+            return true;
+        }
+
+        void EndFreeze()
+        {
+            // 빙결이 끝나면 둔화 0중첩, 그 뒤 면역 (면역 중에도 둔화는 걸림)
+            float immunity = isBoss ? _freezeBossImmunity - Mods.BossFreezeImmunityReduction : _freezeNormalImmunity;
+            _freezeImmunity = Mathf.Max(0f, immunity * Mods.FreezeImmunityMultiplier);
+            _slowStacks = 0;
+            _slowTimer = 0f;
+            _body.SetTint(null);
+        }
+
         // 절초 #빙백 각인: 즉시 빙결. 보스가 빙결 면역 중이면 대신 둔화 3중첩
         public void ImprintFreeze(float slowBonus)
         {
@@ -178,15 +204,7 @@ namespace AThousandDawns.Combat
             if (_freezeTimer > 0f)
             {
                 _freezeTimer -= dt;
-                if (_freezeTimer <= 0f)
-                {
-                    // 빙결이 끝나면 둔화 0중첩, 그 뒤 면역 (면역 중에도 둔화는 걸림)
-                    float immunity = isBoss ? _freezeBossImmunity - Mods.BossFreezeImmunityReduction : _freezeNormalImmunity;
-                    _freezeImmunity = Mathf.Max(0f, immunity * Mods.FreezeImmunityMultiplier);
-                    _slowStacks = 0;
-                    _slowTimer = 0f;
-                    _body.SetTint(null);
-                }
+                if (_freezeTimer <= 0f) EndFreeze();
             }
             else if (_freezeImmunity > 0f) _freezeImmunity -= dt;
 
@@ -208,10 +226,11 @@ namespace AThousandDawns.Combat
             _burnTimer -= dt;
             _burnUptime += dt;
             _burnTickTimer += dt;
-            while (_burnTickTimer >= _burnTick)
+            float tick = Mods.BurnTick > 0f ? Mods.BurnTick : _burnTick; // 대장간 열양 강화판: 0.5 → 0.4초
+            while (_burnTickTimer >= tick)
             {
-                _burnTickTimer -= _burnTick;
-                _burnCarry += _burnStacks * _burnDps * BurnDamageMultiplier * BurnTakenMultiplier * _burnTick * (1f - _body.Defense);
+                _burnTickTimer -= tick;
+                _burnCarry += _burnStacks * _burnDps * BurnDamageMultiplier * BurnTakenMultiplier * tick * (1f - _body.Defense);
                 int whole = Mathf.FloorToInt(_burnCarry);
                 if (whole <= 0 || _body.IsDead) continue;
                 _burnCarry -= whole;

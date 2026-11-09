@@ -38,6 +38,7 @@ namespace AThousandDawns.Prototype
             if (On(MArt.Meridian, 0)) Player.Level.GrantPending();       // 시작 혈자리
             _startPartPick = On(MArt.Meridian, 1) && _unlockedParts.Count > 0; // 1층에서 부품 고르기
             _luck = P(MArt.Insight);
+            _hiddenSenseCut = On(MArt.Insight, 0) ? 1 : 0;      // 오 5: 기연 감지 공력 4 → 3
             arena.Luck = _luck;
             _forkBonus = On(MArt.Insight, 1) ? 1 : 0;
             _masterPicks = On(MArt.Insight, 2) ? 2 : 1;

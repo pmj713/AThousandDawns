@@ -61,7 +61,7 @@ namespace AThousandDawns.Prototype
             GUILayout.Label("일조천회 시험판 · 전투", _label);
             GUILayout.Label("WASD 이동 · 좌클릭(누르고 있기) 평타 · 우클릭 회선참 · Q 만검귀종 · Space 대시 · R 금창약(누르고 있기)", _label);
             GUILayout.Label("부르기 (바로 옆): 1 졸개 · 2 멧돼지 · 3 궁수 · 4 들개 · 5 방패 · 6 나팔수 · 7 화약 · 8 청죽사 · 9 녹림왕 (결투장) · 0 살수 · - 청죽객 · = 철권 마웅 · Shift+숫자 정예", _label);
-            GUILayout.Label("G 기세 채우기 · F5 처음부터 · 키워드 F1 열양 F2 빙백 F3 뇌정 F4 강기 F6 금강 F7 경공 F8 마도 F9 정종 · 기물 상태 F10 기 부족 F11 운기 F12 주화입마 · I 기물 고르기 · E 경맥도 · L 레벨업 · K 쓰러지기 · P 부품 셋", _wrapLabel);
+            GUILayout.Label("G 기세 채우기 · F5 처음부터 · 키워드 F1 열양 F2 빙백 F3 뇌정 F4 강기 F6 금강 F7 경공 F8 마도 F9 정종 · 기물 상태 F10 기 부족 F11 운기 F12 주화입마 · I 기물 고르기 · E 경맥도 · L 레벨업 · K 쓰러지기 · P 부품 셋 · O / Shift+O 무기 홈 1 / 2 바꾸기", _wrapLabel);
             if (player != null)
             {
                 GUILayout.Label($"체력 {player.Health:0}/{player.MaxHealth:0}", _label);
@@ -102,6 +102,11 @@ namespace AThousandDawns.Prototype
                         sb.Append(PlayerKeywords.Label(k)).Append(' ').Append(keywords.Count(k));
                     }
                     GUILayout.Label(sb.ToString(), _label);
+                    if (player.Items != null && (player.Items.ForgeSlot(0).HasValue || player.Items.ForgeSlot(1).HasValue))
+                    {
+                        string Slot(int s) => player.Items.ForgeSlot(s) is Keyword fk ? PlayerKeywords.Label(fk) : "빈 홈";
+                        GUILayout.Label($"무기 홈: {Slot(0)} · {Slot(1)}{(player.Items.ForgeSlot(0).HasValue && player.Items.ForgeSlot(0) == player.Items.ForgeSlot(1) ? " <color=#ffd27a>(강화판)</color>" : "")}", _label);
+                    }
                     GUILayout.Label($"기물 상태: 기 부족 {keywords.Qi(QiState.Lacking)} · 운기 {keywords.Qi(QiState.Circulating)} · 주화입마 {keywords.Qi(QiState.Deviated)}   (2·4·6에서 단계 효과, 4면 절초 각인)", _label);
                 }
             }
@@ -123,6 +128,8 @@ namespace AThousandDawns.Prototype
                 GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), "F 점소이에게 말 걸기", _big);
             if (run != null && run.AtGate && !run.IsForking)
                 GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), $"F 다음 층으로 · 남은 전투 방 {run.Map.FightsLeft()} · 추적도 {run.Tracking}", _big);
+            if (run != null && run.NearCrack)
+                GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), "벽에 금이 가 있어요 · F 벽을 부수기", _big);
 
             if (player != null && player.IsDead && run == null) // 판 구조 씬은 결과 화면이 대신 떠요
                 GUI.Label(new Rect(0, UiScale.Height * 0.4f, UiScale.Width, 60), "쓰러졌어요 · F5 키로 다시 시작", _big);
@@ -241,7 +248,7 @@ namespace AThousandDawns.Prototype
             GUILayout.EndArea();
         }
 
-        // 층 지도 (오른쪽 아래): 지금 방은 붉게, 가 본 방은 밝게, 옆방은 흐리게. 시 = 시작, 보 = 보상 방, 관 = 관문, ! = 아직 싸우는 중
+        // 층 지도 (오른쪽 아래): 지금 방은 붉게, 가 본 방은 밝게, 옆방은 흐리게. 시 = 시작, 보 = 보상 방, 관 = 관문, 기 = 기연 방 (? = 느껴지는 기연), ! = 아직 싸우는 중
         void DrawMinimap()
         {
             if (run == null || run.Map == null || run.CurrentPhase != RoomRun.Phase.Floor || run.IsForking) return;
@@ -267,9 +274,10 @@ namespace AThousandDawns.Prototype
                 var rect = new Rect(ox + (r.Cell.x - minX) * (cell + gap), oy + (maxY - r.Cell.y) * (cell + gap), cell, cell);
                 bool here = r == run.Room;
                 GUI.color = here ? new Color(0.78f, 0.27f, 0.24f) : r.Visited ? new Color(0.85f, 0.85f, 0.8f, r.Cleared || !r.HasFight ? 0.55f : 0.9f) : new Color(1f, 1f, 1f, 0.15f);
+                if (!here && r.Kind == FloorRoomKind.Hidden && !r.Found) GUI.color = new Color(0.75f, 0.6f, 1f, 0.25f); // 느껴지는 기연 방
                 GUI.DrawTexture(rect, Texture2D.whiteTexture);
                 GUI.color = Color.white;
-                string mark = r.Kind == FloorRoomKind.Start ? "시" : r.Kind == FloorRoomKind.Reward ? "보" : r.Kind == FloorRoomKind.Gate ? "관" : r.Kind == FloorRoomKind.Event ? "사" : r.Visited && r.HasFight && !r.Cleared ? "!" : "";
+                string mark = r.Kind == FloorRoomKind.Start ? "시" : r.Kind == FloorRoomKind.Reward ? "보" : r.Kind == FloorRoomKind.Gate ? "관" : r.Kind == FloorRoomKind.Event ? "사" : r.Kind == FloorRoomKind.Hidden ? (r.Found ? "기" : "?") : r.Visited && r.HasFight && !r.Cleared ? "!" : "";
                 if (mark != "") GUI.Label(rect, mark, _statusLabel);
                 // 살수가 있는 방은 붉은 테두리
                 foreach (var hunter in run.Hunters)

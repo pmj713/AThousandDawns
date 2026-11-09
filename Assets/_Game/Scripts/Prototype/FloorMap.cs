@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace AThousandDawns.Prototype
 {
-    public enum FloorRoomKind { Start, Combat, Reward, Gate, Event }
+    public enum FloorRoomKind { Start, Combat, Reward, Gate, Event, Hidden }
 
     public sealed class FloorRoom
     {
@@ -12,7 +12,9 @@ namespace AThousandDawns.Prototype
         public FloorRoomKind Kind;
         public bool Optional;  // 최소 경로 밖 선택 방
         public bool Visited, Revealed, Cleared;
+        public bool Found;     // 기연 방: 벽을 부숴 찾았는가 (찾기 전엔 문이 벽으로 막혀 있어요)
         public string EventId; // 이벤트 방 (RoomEvents)
+        public int Jars = -1;  // 남은 항아리 (−1이면 아직 안 놓음)
 
         public bool HasFight => Kind == FloorRoomKind.Combat || Kind == FloorRoomKind.Reward; // 보상 방은 앞에 전투가 한 번 붙어요
     }
@@ -38,17 +40,18 @@ namespace AThousandDawns.Prototype
         public static int Opposite(int direction) => (direction + 2) % 4;
 
         // eventRooms: 이벤트 방 (비전투, 막다른 곳). 시작 방이나 전투 방에 매달려요.
-        public static FloorMap Generate(System.Random rng, int pathRooms, int optionalRooms, int eventRooms = 0)
+        // hidden: 기연 방 하나 (숨은 막다른 방). 시작 방이나 전투 방에 매달려요.
+        public static FloorMap Generate(System.Random rng, int pathRooms, int optionalRooms, int eventRooms = 0, bool hidden = false)
         {
             for (int attempt = 0; attempt < 100; attempt++)
             {
                 var map = new FloorMap();
-                if (map.TryBuild(rng, Math.Max(1, pathRooms), Math.Max(0, optionalRooms), Math.Max(0, eventRooms))) return map;
+                if (map.TryBuild(rng, Math.Max(1, pathRooms), Math.Max(0, optionalRooms), Math.Max(0, eventRooms), hidden)) return map;
             }
             throw new InvalidOperationException("층 배치를 만들지 못했어요");
         }
 
-        bool TryBuild(System.Random rng, int pathRooms, int optionalRooms, int eventRooms)
+        bool TryBuild(System.Random rng, int pathRooms, int optionalRooms, int eventRooms, bool hidden)
         {
             var start = Add(Vector2Int.zero, FloorRoomKind.Start, false);
 
@@ -77,6 +80,12 @@ namespace AThousandDawns.Prototype
             {
                 var anchors = _rooms.FindAll(r => r.Kind == FloorRoomKind.Start || r.Kind == FloorRoomKind.Combat);
                 if (!GrowFromAny(anchors, FloorRoomKind.Event, true, rng)) return false;
+            }
+
+            if (hidden)
+            {
+                var anchors = _rooms.FindAll(r => r.Kind == FloorRoomKind.Start || r.Kind == FloorRoomKind.Combat);
+                if (!GrowFromAny(anchors, FloorRoomKind.Hidden, true, rng)) return false;
             }
             return true;
         }
@@ -125,7 +134,7 @@ namespace AThousandDawns.Prototype
             }
         }
 
-        // 들어간 방과 그 옆방이 지도에 드러나요
+        // 들어간 방과 그 옆방이 지도에 드러나요 (찾지 못한 기연 방은 빼고)
         public void Visit(FloorRoom room)
         {
             room.Visited = true;
@@ -133,9 +142,14 @@ namespace AThousandDawns.Prototype
             for (int d = 0; d < 4; d++)
             {
                 var n = Neighbor(room, d);
-                if (n != null) n.Revealed = true;
+                if (n != null && IsOpen(n)) n.Revealed = true;
             }
         }
+
+        // 지나갈 수 있는 방인가 (찾지 못한 기연 방은 벽 너머)
+        public static bool IsOpen(FloorRoom room) => room != null && (room.Kind != FloorRoomKind.Hidden || room.Found);
+
+        public FloorRoom Hidden => _rooms.Find(r => r.Kind == FloorRoomKind.Hidden);
 
         public int FightsLeft()
         {

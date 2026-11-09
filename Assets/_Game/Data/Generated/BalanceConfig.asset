@@ -2341,3 +2341,103 @@ MonoBehaviour:
     value: 0.1
     unit: 
     note: "\uD589\uC6B4\uC73C\uB85C \uC904\uC778 \uC77C\uBC18 \uD655\uB960 \uC911 \uC804\uC124 \uBAAB"
+  - key: forge.yeolyang_extend
+    value: 1
+    unit: "\uCD08"
+    note: "\uB300\uC7A5\uAC04 \uC5F4\uC591: \uD3C9\uD0C0\uB85C \uD654\uC0C1 \uC911\uC778 \uC801\uC744 \uB9DE\uD788\uBA74 \uD654\uC0C1 \uC2DC\uAC04 +"
+  - key: forge.yeolyang_cap
+    value: 8
+    unit: "\uCD08"
+    note: "\uB300\uC7A5\uAC04 \uC5F4\uC591: \uB298\uB9B0 \uD654\uC0C1 \uC2DC\uAC04 \uCD5C\uB300"
+  - key: forge.yeolyang_tick_strong
+    value: 0.4
+    unit: "\uCD08"
+    note: "\uB300\uC7A5\uAC04 \uC5F4\uC591 \uAC15\uD654\uD310: \uD654\uC0C1 \uD53C\uD574 \uAC04\uACA9 (\uAE30\uBCF8 0.5)"
+  - key: forge.bingbaek_immunity_cut
+    value: 3
+    unit: "\uCD08"
+    note: "\uB300\uC7A5\uAC04 \uBE59\uBC31: 3\uD0C0\uB85C \uBE59\uACB0\uC744 \uAE68\uBA74 \uBE59\uACB0 \uBA74\uC5ED \u2212"
+  - key: forge.bingbaek_immunity_cut_strong
+    value: 5
+    unit: "\uCD08"
+    note: "\uB300\uC7A5\uAC04 \uBE59\uBC31 \uAC15\uD654\uD310: \uBE59\uACB0 \uBA74\uC5ED \u2212"
+  - key: forge.bingbaek_slow
+    value: 2
+    unit: "\uC911\uCCA9"
+    note: "\uB300\uC7A5\uAC04 \uBE59\uBC31: \uAE6C \uC801 \uC8FC\uBCC0 \uB454\uD654"
+  - key: forge.bingbaek_slow_strong
+    value: 3
+    unit: "\uC911\uCCA9"
+    note: "\uB300\uC7A5\uAC04 \uBE59\uBC31 \uAC15\uD654\uD310: \uAE6C \uC801 \uC8FC\uBCC0 \uB454\uD654"
+  - key: forge.bingbaek_radius
+    value: 2
+    unit: "\uCE78"
+    note: "\uB300\uC7A5\uAC04 \uBE59\uBC31: \uB454\uD654 \uBC18\uACBD"
+  - key: forge.noejeong_ratio
+    value: 1.5
+    unit: 
+    note: "\uB300\uC7A5\uAC04 \uB1CC\uC815: \uAC10\uC804 \uCD5C\uB300\uC778 \uC801\uC744 3\uD0C0\uB85C \uB9DE\uD788\uBA74 \uB099\uB8B0 (3\uD0C0 \uD53C\uD574 \xD7)"
+  - key: forge.noejeong_strikes_strong
+    value: 3
+    unit: "\uD68C"
+    note: "\uB300\uC7A5\uAC04 \uB1CC\uC815 \uAC15\uD654\uD310: \uB099\uB8B0 \uD69F\uC218"
+  - key: forge.ganggi_range
+    value: 0.3
+    unit: 
+    note: "\uB300\uC7A5\uAC04 \uAC15\uAE30: \uD3C9\uD0C0 \uBC94\uC704 +"
+  - key: forge.ganggi_range_strong
+    value: 0.6
+    unit: 
+    note: "\uB300\uC7A5\uAC04 \uAC15\uAE30 \uAC15\uD654\uD310: \uD3C9\uD0C0 \uBC94\uC704 +"
+  - key: forge.gyeonggong_refill
+    value: 1
+    unit: "\uD68C"
+    note: "\uB300\uC7A5\uAC04 \uACBD\uACF5: \uB300\uC2DC \uACF5\uACA9 \uC801\uC911 \uC2DC \uB300\uC2DC \uD68C\uBCF5"
+  - key: forge.gyeonggong_refill_strong
+    value: 2
+    unit: "\uD68C"
+    note: "\uB300\uC7A5\uAC04 \uACBD\uACF5 \uAC15\uD654\uD310: \uB300\uC2DC \uD68C\uBCF5"
+  - key: forge.geumgang_shield
+    value: 0.02
+    unit: 
+    note: "\uB300\uC7A5\uAC04 \uAE08\uAC15: 3\uD0C0 \uC801\uC911\uB9C8\uB2E4 \uBCF4\uD638\uB9C9 (\uCD5C\uB300 \uCCB4\uB825 \xD7)"
+  - key: forge.geumgang_cap
+    value: 0.1
+    unit: 
+    note: "\uB300\uC7A5\uAC04 \uAE08\uAC15: \uC735\uD569 \uBCF4\uD638\uB9C9 \uCD5C\uB300 (\uCD5C\uB300 \uCCB4\uB825 \xD7)"
+  - key: forge.geumgang_shield_strong
+    value: 0.03
+    unit: 
+    note: "\uB300\uC7A5\uAC04 \uAE08\uAC15 \uAC15\uD654\uD310: \uBCF4\uD638\uB9C9"
+  - key: forge.geumgang_cap_strong
+    value: 0.15
+    unit: 
+    note: "\uB300\uC7A5\uAC04 \uAE08\uAC15 \uAC15\uD654\uD310: \uC735\uD569 \uBCF4\uD638\uB9C9 \uCD5C\uB300"
+  - key: forge.geumgang_duration
+    value: 0
+    unit: "\uCD08"
+    note: "\uB300\uC7A5\uAC04 \uAE08\uAC15: \uBCF4\uD638\uB9C9 \uC9C0\uC18D (0\uC774\uBA74 \uAE68\uC9C8 \uB54C\uAE4C\uC9C0)"
+  - key: room.hidden_chance
+    value: 0.15
+    unit: 
+    note: "\uCE35\uB9C8\uB2E4 \uAE30\uC5F0 \uBC29\uC774 \uC0DD\uAE38 \uD655\uB960"
+  - key: room.hidden_sense_power
+    value: 4
+    unit: 
+    note: "\uAE30\uC5F0 \uBC29\uC744 \uC9C0\uB3C4\uC5D0\uC11C \uB290\uB07C\uB294 \uACF5\uB825 (\uBA74\uBCBD\uC218\uB828 \uC624 5\uBA74 \u22121)"
+  - key: room.hidden_crack_radius
+    value: 2
+    unit: "\uCE78"
+    note: "\uAE08 \uAC04 \uBCBD \uC55E\uC5D0\uC11C F\uB97C \uB204\uB97C \uC218 \uC788\uB294 \uAC70\uB9AC (\uC784\uC2DC)"
+  - key: jar.per_room
+    value: 3
+    unit: 
+    note: "\uC804\uD22C \uBC29\uB9C8\uB2E4 \uD56D\uC544\uB9AC \uC218 (\uBD80\uB52A\uD788\uBA74 \uAE68\uC9D0)"
+  - key: jar.silver
+    value: 1
+    unit: "\uC740\uC790"
+    note: "\uD56D\uC544\uB9AC \uD558\uB098 \uC740\uC790 (\uBC29\uB2F9 3)"
+  - key: jar.break_radius
+    value: 0.9
+    unit: "\uCE78"
+    note: "\uD56D\uC544\uB9AC\uC5D0 \uBD80\uB52A\uD788\uB294 \uAC70\uB9AC (\uC784\uC2DC)"

@@ -646,7 +646,7 @@ namespace AThousandDawns.Player
             bool extra = _combo.IsExtraHit(index);
             bool finisher = index >= _combo.BaseHitCount - 1;
             if (finisher) _lungeRemaining = _finisherLunge;
-            float radius = _hitRadius[Mathf.Min(index, _hitRadius.Length - 1)] * BasicRangeMultiplier(finisher);
+            float radius = _hitRadius[Mathf.Min(index, _hitRadius.Length - 1)] * BasicRangeMultiplier(finisher) * ForgeRangeMultiplier; // 대장간 강기
             float angle = _hitAngle[Mathf.Min(index, _hitAngle.Length - 1)];
             if (swingFlash != null) swingFlash.Show(transform.position, _facing, radius, angle, _combo.HitCount > 0 ? 0.1f : 0f);
             var hit = PlayerHit(finisher ? _finisherDamage : _basicDamage);
@@ -655,6 +655,7 @@ namespace AThousandDawns.Player
             Gauge = Mathf.Min(_gaugeMax, Gauge + count * (finisher ? _gaugeFinisher : _gaugeBasic) * GaugeGainMultiplier);
             FireGanggiOnSwing(finisher, hit);
             AfterBasicSwing(count, hit);
+            if (finisher) ForgeAfterFinisher(count); // 대장간 금강
         }
 
         void DoDashAttack()
@@ -667,6 +668,7 @@ namespace AThousandDawns.Player
             Gauge = Mathf.Min(_gaugeMax, Gauge + count * _gaugeDashAttack * GaugeGainMultiplier);
             LeaveFrostTrail(); // 한철 비녀
             AfterDashAttack(count, hit);
+            ForgeAfterDashAttack(count); // 대장간 경공
         }
 
         // template의 피해·배율을 그대로 쓰고, 대상마다 강인함·방어력·상황 배율(방패 정면 등)만 채워요.
@@ -699,6 +701,7 @@ namespace AThousandDawns.Player
             if (target.IsDead) _swingKills++;
             ApplyItemsOnHit(target, tag);
             ApplyKeywordsOnHit(target, tag);
+            ApplyForgeOnHit(target, hit, tag); // 대장간 열양·빙백·뇌정
             if (_firstHit == null) _firstHit = target;
         }
     }

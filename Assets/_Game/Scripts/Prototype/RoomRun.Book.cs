@@ -19,6 +19,7 @@ namespace AThousandDawns.Prototype
             for (int i = RegressionBook.StartPotions(meta); i > 0; i--) Player.AddPotion();
             _innStockBonus = RegressionBook.InnStockBonus(meta);
             _unlockedParts = RegressionBook.UnlockedParts(meta);
+            _forgeUnlocked = RegressionBook.ForgeUnlocked(meta);
             ApplyMeditation(meta);
         }
     }

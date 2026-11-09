@@ -74,6 +74,7 @@ namespace AThousandDawns.Player
                 BurnRampMax = V("oil_lamp", 2),
                 BurnRampInterval = Has("oil_lamp") ? V("oil_lamp", 3) : 2f,
                 BurnOvercap = C("fire_scale", 1),
+                BurnTick = ForgeBurnTick, // 대장간 열양 강화판
                 // #빙백
                 SlowDurationBonus = V("snow_hood", 1),
                 SlowWindupExtra = V("snowflake_crystal", 1) * (pure ? V("snowflake_crystal", 2) : 1f),

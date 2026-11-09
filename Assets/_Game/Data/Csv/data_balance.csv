@@ -581,3 +581,28 @@ luck.common_cut,1%,,행운 1당 일반 확률 감소,등급확률!B5
 luck.uncommon_share,0.6,,행운으로 줄인 일반 확률 중 고급 몫,등급확률!B6
 luck.rare_share,0.3,,행운으로 줄인 일반 확률 중 희귀 몫,등급확률!B7
 luck.legendary_share,0.1,,행운으로 줄인 일반 확률 중 전설 몫,등급확률!B8
+forge.yeolyang_extend,1,초,대장간 열양: 평타로 화상 중인 적을 맞히면 화상 시간 +,무기 95~109행 (대장간 융합)
+forge.yeolyang_cap,8,초,대장간 열양: 늘린 화상 시간 최대,무기 95~109행 (대장간 융합)
+forge.yeolyang_tick_strong,0.4,초,대장간 열양 강화판: 화상 피해 간격 (기본 0.5),무기 95~109행 (대장간 융합)
+forge.bingbaek_immunity_cut,3,초,대장간 빙백: 3타로 빙결을 깨면 빙결 면역 −,무기 95~109행 (대장간 융합)
+forge.bingbaek_immunity_cut_strong,5,초,대장간 빙백 강화판: 빙결 면역 −,무기 95~109행 (대장간 융합)
+forge.bingbaek_slow,2,중첩,대장간 빙백: 깬 적 주변 둔화,무기 95~109행 (대장간 융합)
+forge.bingbaek_slow_strong,3,중첩,대장간 빙백 강화판: 깬 적 주변 둔화,무기 95~109행 (대장간 융합)
+forge.bingbaek_radius,2,칸,대장간 빙백: 둔화 반경,무기 95~109행 (대장간 융합)
+forge.noejeong_ratio,150%,,대장간 뇌정: 감전 최대인 적을 3타로 맞히면 낙뢰 (3타 피해 ×),무기 95~109행 (대장간 융합)
+forge.noejeong_strikes_strong,3,회,대장간 뇌정 강화판: 낙뢰 횟수,무기 95~109행 (대장간 융합)
+forge.ganggi_range,30%,,대장간 강기: 평타 범위 +,무기 95~109행 (대장간 융합)
+forge.ganggi_range_strong,60%,,대장간 강기 강화판: 평타 범위 +,무기 95~109행 (대장간 융합)
+forge.gyeonggong_refill,1,회,대장간 경공: 대시 공격 적중 시 대시 회복,무기 95~109행 (대장간 융합)
+forge.gyeonggong_refill_strong,2,회,대장간 경공 강화판: 대시 회복,무기 95~109행 (대장간 융합)
+forge.geumgang_shield,2%,,대장간 금강: 3타 적중마다 보호막 (최대 체력 ×),무기 95~109행 (대장간 융합)
+forge.geumgang_cap,10%,,대장간 금강: 융합 보호막 최대 (최대 체력 ×),무기 95~109행 (대장간 융합)
+forge.geumgang_shield_strong,3%,,대장간 금강 강화판: 보호막,무기 95~109행 (대장간 융합)
+forge.geumgang_cap_strong,15%,,대장간 금강 강화판: 융합 보호막 최대,무기 95~109행 (대장간 융합)
+forge.geumgang_duration,0,초,대장간 금강: 보호막 지속 (0이면 깨질 때까지),기획 대화 (대장간)
+room.hidden_chance,15%,,층마다 기연 방이 생길 확률,판구조!B15
+room.hidden_sense_power,4,,기연 방을 지도에서 느끼는 공력 (면벽수련 오 5면 −1),기획 대화 (기연 방 감지)
+room.hidden_crack_radius,2,칸,금 간 벽 앞에서 F를 누를 수 있는 거리 (임시),
+jar.per_room,3,,전투 방마다 항아리 수 (부딪히면 깨짐),은자!C4
+jar.silver,1,은자,항아리 하나 은자 (방당 3),은자!C4
+jar.break_radius,0.9,칸,항아리에 부딪히는 거리 (임시),

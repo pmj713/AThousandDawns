@@ -22,7 +22,7 @@ namespace AThousandDawns.Prototype
     public sealed partial class RoomRun : MonoBehaviour
     {
         public enum Phase { None, Fork, Floor, Master, Inn, Rest, Boss, Done }
-        public enum RewardKind { Item, Heal, Part }
+        public enum RewardKind { Item, Heal, Part, Forge }
 
         public struct Path
         {
@@ -111,6 +111,8 @@ namespace AThousandDawns.Prototype
             _minSpawnDistance = GameConfig.Get("room.spawn_min_distance", 5f);
             _floors = Mathf.Max(1, Mathf.RoundToInt(GameConfig.Get("room.floors", 3f)));
             SetGateMarker(false);
+            PlaceCrack(null);
+            PlaceJars(null);
             ApplyBook();
             if (PrototypeArena.AutoSpawn) BeginFork(1);
         }
@@ -181,6 +183,7 @@ namespace AThousandDawns.Prototype
             // 한 갈림길에 같은 보상 종류는 한 번만 (기물 옅은 길 + 기물 짙은 길 같이 안 나옴)
             var kinds = new List<RewardKind>((RewardKind[])Enum.GetValues(typeof(RewardKind)));
             if (_unlockedParts.Count == 0) kinds.Remove(RewardKind.Part); // 부품 길은 회귀록에서 부품을 연 뒤부터
+            if (!_forgeUnlocked) kinds.Remove(RewardKind.Forge); // 대장간 길은 회귀록에서 대장간을 연 뒤부터
             for (int i = kinds.Count - 1; i > 0; i--)
             {
                 int j = _rng.Next(i + 1);
@@ -203,8 +206,9 @@ namespace AThousandDawns.Prototype
             int events = RollEventRooms();
             _map = FloorMap.Generate(_rng,
                 Mathf.RoundToInt(GameConfig.Get("room.path_rooms", 3f)),
-                Mathf.RoundToInt(GameConfig.Get("room.optional_rooms", 2f)), events);
+                Mathf.RoundToInt(GameConfig.Get("room.optional_rooms", 2f)), events, RollHidden());
             AssignEvents();
+            SenseHidden();
             _phase = Phase.Floor;
             ShowBanner($"죽림 {_floor}층 · {PathLabel(_path)}");
             BeginHunt();
@@ -217,7 +221,7 @@ namespace AThousandDawns.Prototype
             }
         }
 
-        public static string RewardLabel(RewardKind kind) => kind == RewardKind.Item ? "기물" : kind == RewardKind.Part ? "부품" : "운기조식";
+        public static string RewardLabel(RewardKind kind) => kind == RewardKind.Item ? "기물" : kind == RewardKind.Part ? "부품" : kind == RewardKind.Forge ? "대장간" : "운기조식";
         public static string PathLabel(Path p) => $"{RewardLabel(p.Reward)} · 기운 {(p.Dense ? "짙음" : "옅음")}";
 
         public string PathDetail(Path p)
@@ -227,6 +231,8 @@ namespace AThousandDawns.Prototype
                 ? (p.Dense ? "기물 3개 중 하나 (한 단계 위 등급표)" : "기물 3개 중 하나")
                 : p.Reward == RewardKind.Part
                 ? (p.Dense ? "부품 둘 고르기" : "부품 하나 고르기") + $" ({PartNames()})"
+                : p.Reward == RewardKind.Forge
+                ? (p.Dense ? "기물 둘까지 녹여 무기에 넣기" : "기물 하나를 녹여 무기에 넣기")
                 : $"체력 {GameConfig.Get("room.heal_ratio", 0.3f) * mult:0%} 회복";
             string enemies = p.Dense ? $"적 체력 +{GameConfig.Get("room.dense_health", 1.3f) - 1f:0%} · 방마다 정예 1명" : "적 보통";
             return $"{reward}\n{enemies} · 방마다 은자 {Mathf.RoundToInt(GameConfig.Get("silver.room", 18f) * mult)}";
@@ -247,10 +253,12 @@ namespace AThousandDawns.Prototype
             director.ResetRoom();
             for (int d = 0; d < 4; d++)
             {
-                bool open = _map.Neighbor(room, d) != null;
+                bool open = FloorMap.IsOpen(_map.Neighbor(room, d)); // 찾지 못한 기연 방 쪽은 벽
                 if (combat.plugs[d] != null) combat.plugs[d].SetActive(!open);
             }
             SetGateMarker(room.Kind == FloorRoomKind.Gate);
+            PlaceCrack(room);
+            PlaceJars(room);
 
             if (room.HasFight && !room.Cleared)
             {
@@ -272,6 +280,7 @@ namespace AThousandDawns.Prototype
                 _waves = null;
                 if (room.Kind == FloorRoomKind.Gate) ShowBanner("관문 · 가운데에서 F를 누르면 다음 층");
                 if (room.Kind == FloorRoomKind.Event && !room.Cleared) OpenEvent(room, room.EventId);
+                if (room.Kind == FloorRoomKind.Hidden && !room.Cleared) OpenHiddenRoom(room);
             }
             OnHuntEnter(room);
         }
@@ -294,6 +303,8 @@ namespace AThousandDawns.Prototype
         {
             if (OffersOpen) return; // 기물을 고른 뒤에 움직여요
             var keyboard = Keyboard.current;
+            TickJars();
+            if (TickCrack(keyboard)) return; // 금 간 벽 부수기 (기연 방)
             if (AtGate && keyboard != null && keyboard.fKey.wasPressedThisFrame)
             {
                 LeaveFloor();
@@ -303,7 +314,7 @@ namespace AThousandDawns.Prototype
             for (int d = 0; d < 4; d++)
             {
                 var next = _map.Neighbor(_room, d);
-                if (next == null || Flat(p - ExitPoint(d)).magnitude > combat.exitRadius) continue;
+                if (!FloorMap.IsOpen(next) || Flat(p - ExitPoint(d)).magnitude > combat.exitRadius) continue;
                 Enter(next, d);
                 return;
             }
@@ -318,6 +329,8 @@ namespace AThousandDawns.Prototype
             _fighting = false;
             SetLocks(false);
             SetGateMarker(false);
+            PlaceCrack(null);
+            PlaceJars(null);
             if (_floor == MasterFloor && !_masterDone && _floor < _floors) EnterMaster(); // 2층 관문: 고수
             else if (_floor < _floors) BeginFork(_floor + 1);
             else EnterInn();
@@ -471,6 +484,11 @@ namespace AThousandDawns.Prototype
                 {
                     arena.GrantOffer(_path.Dense ? DenseGradeWeights() : null);
                     text += " · 기물 고르기";
+                }
+                else if (_path.Reward == RewardKind.Forge)
+                {
+                    OpenForge(_path.Dense ? 2 : 1);
+                    text += " · 대장간";
                 }
                 else if (_path.Reward == RewardKind.Part)
                 {

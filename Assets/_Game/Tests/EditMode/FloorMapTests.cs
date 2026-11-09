@@ -75,6 +75,27 @@ namespace AThousandDawns.Tests
         }
 
         [Test]
+        public void 기연_방은_찾기_전엔_옆방을_가도_안_드러나는_막다른_방()
+        {
+            for (int seed = 1; seed <= 200; seed++)
+            {
+                var map = FloorMap.Generate(new System.Random(seed), 3, 2, 1, true);
+                var hidden = map.Rooms.Single(r => r.Kind == FloorRoomKind.Hidden);
+                Assert.AreSame(hidden, map.Hidden);
+                Assert.IsFalse(hidden.HasFight);
+                Assert.AreEqual(1, Neighbors(map, hidden).Count, $"시드 {seed}: 막다른 곳");
+                var host = Neighbors(map, hidden)[0];
+                Assert.IsTrue(host.Kind == FloorRoomKind.Start || host.Kind == FloorRoomKind.Combat, "시작 방이나 전투 방에 매달려요");
+                map.Visit(host);
+                Assert.IsFalse(hidden.Revealed, "찾기 전엔 지도에 안 나와요");
+                Assert.IsFalse(FloorMap.IsOpen(hidden));
+                hidden.Found = true;
+                Assert.IsTrue(FloorMap.IsOpen(hidden));
+            }
+            Assert.IsNull(FloorMap.Generate(new System.Random(1), 3, 2).Hidden);
+        }
+
+        [Test]
         public void 같은_시드면_같은_배치()
         {
             var a = FloorMap.Generate(new System.Random(9), 3, 2);

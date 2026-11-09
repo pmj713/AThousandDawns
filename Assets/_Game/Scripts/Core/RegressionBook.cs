@@ -28,7 +28,7 @@ namespace AThousandDawns.Core
             new BookNode { Id = "tongmaek", Name = "통맥", Branch = "경맥", Prereq = Root, DefaultCost = 40, Ready = true, Effect = "부품 통맥: 기가 이 칸을 지날 때 줄지 않아요 (기를 멀리 보냄). 갈림길 부품 길·객잔에서 얻어요." },
             new BookNode { Id = "jeomhyeol", Name = "점혈", Branch = "경맥", Prereq = "tongmaek", DefaultCost = 70, Ready = true, Effect = "부품 점혈: 기가 이 칸을 지나가지 못해요 (넘치는 기를 막음)." },
             new BookNode { Id = "hanok", Name = "한옥", Branch = "경맥", Prereq = "jeomhyeol", DefaultCost = 110, Ready = true, Effect = "부품 한옥: 붙어 있는 기물의 최대 기 +2 (주화입마를 견딤)." },
-            new BookNode { Id = "forge", Name = "대장간", Branch = "무기", Prereq = "hanok", DefaultCost = 140, Effect = "기물을 녹여 무기에 넣는 융합" },
+            new BookNode { Id = "forge", Name = "대장간", Branch = "무기", Prereq = "hanok", DefaultCost = 140, Ready = true, Effect = "갈림길에 대장간 길이 생겨요: 기물을 녹여 주 키워드를 무기 홈(2개)에 넣어요. 홈마다 키워드 +1, 같은 키워드 둘이면 강화판." },
             new BookNode { Id = "flying_dagger", Name = "비도", Branch = "무기", Prereq = "forge", DefaultCost = 270, Effect = "두 번째 무기 비도" },
 
             // 줄기 → 생존 · 견문
@@ -112,5 +112,7 @@ namespace AThousandDawns.Core
         public static int StartPotions(MetaSave meta) => Bloomed(meta, "potion_kit") ? 1 : 0;
 
         public static int InnStockBonus(MetaSave meta) => Bloomed(meta, "inn_stock") ? 1 : 0;
+
+        public static bool ForgeUnlocked(MetaSave meta) => Bloomed(meta, "forge");
     }
 }

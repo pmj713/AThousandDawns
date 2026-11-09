@@ -25,7 +25,7 @@ namespace AThousandDawns.Core
             new ArtInfo { Name = "맥(脈)", Theme = "경맥", PerPoint = "수련치 +2%",
                 Milestones = new[] { "시작 시 혈자리 1개", "시작 시 부품 1개 고르기", "단전 2개로 시작, 대신 공력 −1" }, Ready = new[] { true, true, false } },
             new ArtInfo { Name = "오(悟)", Theme = "탐험", PerPoint = "행운 +1 (기물 등급)",
-                Milestones = new[] { "기연 감지 조건 공력 4 → 3", "갈림길 선택지 +1", "고수 처치 후 3가지 중 2가지" }, Ready = new[] { false, true, true } },
+                Milestones = new[] { "기연 감지 조건 공력 4 → 3", "갈림길 선택지 +1", "고수 처치 후 3가지 중 2가지" }, Ready = new[] { true, true, true } },
             new ArtInfo { Name = "은(隱)", Theme = "잠행·경제", PerPoint = "은자 획득 +2%",
                 Milestones = new[] { "시작 은자 +50", "객잔 가격 −15%", "추적도 오르는 속도 절반" }, Ready = new[] { true, true, true } },
             new ArtInfo { Name = "기(氣)", Theme = "내공", PerPoint = "기세 충전 +1%",

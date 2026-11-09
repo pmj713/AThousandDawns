@@ -340,9 +340,45 @@ namespace AThousandDawns.Player
             return sum;
         }
 
+        // ── 대장간 융합 (무기 탭): 기물을 녹여 주 키워드를 무기 홈 2개 중 하나에 넣어요. 녹인 기물은 사라져요.
+        //   홈마다 그 키워드 개수 +1. 두 홈이 같은 키워드면 강화판. 보조 키워드(#마도·#정종)는 못 넣어요.
+        public const int ForgeSlotCount = 2;
+        readonly Keyword?[] _forge = new Keyword?[ForgeSlotCount];
+
+        public Keyword? ForgeSlot(int slot) => slot >= 0 && slot < ForgeSlotCount ? _forge[slot] : null;
+
+        public static bool CanFuse(Keyword keyword) => keyword != Keyword.Mado && keyword != Keyword.Jeongjong;
+        public static bool CanFuse(OwnedItem item) => item != null && CanFuse(item.Def.keyword);
+
+        // 이 키워드가 들어간 홈 수 (0 · 1 · 2=강화판)
+        public int ForgeLevel(Keyword keyword)
+        {
+            int n = 0;
+            foreach (var k in _forge) if (k == keyword) n++;
+            return n;
+        }
+
+        // 기물을 녹여 홈에 넣어요 (홈에 있던 키워드는 바뀌어요)
+        public bool Fuse(OwnedItem item, int slot)
+        {
+            if (!CanFuse(item) || slot < 0 || slot >= ForgeSlotCount || !_items.Remove(item)) return false;
+            _forge[slot] = item.Def.keyword;
+            Recount();
+            return true;
+        }
+
+        // 테스트·시험 키용
+        public void SetForgeSlot(int slot, Keyword? keyword)
+        {
+            if (slot < 0 || slot >= ForgeSlotCount || (keyword.HasValue && !CanFuse(keyword.Value))) return;
+            _forge[slot] = keyword;
+            Recount();
+        }
+
         void Recount()
         {
             Array.Clear(_keywordCounts, 0, _keywordCounts.Length);
+            foreach (var k in _forge) if (k.HasValue) _keywordCounts[(int)k.Value]++;
             Array.Clear(_qiCounts, 0, _qiCounts.Length);
             foreach (var item in _items)
             {

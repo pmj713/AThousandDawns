@@ -14,6 +14,7 @@ namespace AThousandDawns.Combat
         public float BurnRampPer, BurnRampMax;   // 등잔: 화상이 이어지면 간격마다 그 적의 화상 피해 +% (최대)
         public float BurnRampInterval = 2f;
         public int BurnOvercap;                  // 화룡 비늘: 최대 중첩인 적에게 또 걸면 그 적만 최대 중첩 + (화상이 꺼지면 처음으로)
+        public float BurnTick;                   // 대장간 열양 강화판: 화상 피해 간격 (0이면 기본)
 
         // 둔화·빙결
         public float SlowDurationBonus;          // 빙설 두건: 둔화 지속 +초

@@ -6,7 +6,7 @@ namespace AThousandDawns.Prototype
 {
     // 한 판의 기록과 회귀의 기억 환산 (기억 시트 4~11행).
     // 기억 = 돌파한 층 × 3 + 일반 적 × 0.1 + 정예 × 1 + 살수 × 3 + 고수 × 5 + 보스 × 10 (+ 기연 방 × 5, 천마 격파 30), 반올림.
-    // 업보 단계 보너스와 기연·천마는 아직 없어요.
+    // 업보 단계 보너스와 천마는 아직 없어요. 기연 방은 벽을 부숴 찾을 때 세요.
     public sealed class RunRecord
     {
         public int FloorsCleared;

@@ -120,6 +120,7 @@ namespace AThousandDawns.Prototype
                 if (keyboard.gKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.FillGauge();
                 if (keyboard.lKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.GainLevelForTest(); // 시험용 레벨업
                 if (keyboard.kKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.KillForTest(); // 시험용: 바로 쓰러지기
+                if (keyboard.oKey.wasPressedThisFrame && director != null && director.Player != null && director.Player.Items != null) CycleForge(director.Player.Items, keyboard.shiftKey.isPressed ? 1 : 0); // 시험용: 무기 홈
                 if (keyboard.pKey.wasPressedThisFrame && director != null && director.Player != null && director.Player.Items != null) // 시험용: 부품 셋
                 {
                     director.Player.Items.AddPart(PartKind.Tongmaek);
@@ -340,6 +341,14 @@ namespace AThousandDawns.Prototype
             var master = SpawnNearPlayer(kind);
             if (master is IMasterBrain info) info.SetZone(masterZoneCenter, masterZoneSize);
             return master;
+        }
+
+        // 무기 홈 키워드: 빈 홈 → 열양 → 빙백 → 뇌정 → 강기 → 금강 → 경공 → 빈 홈
+        static void CycleForge(PlayerItems items, int slot)
+        {
+            var cur = items.ForgeSlot(slot);
+            int next = cur.HasValue ? (int)cur.Value + 1 : 0;
+            items.SetForgeSlot(slot, next > (int)Keyword.Gyeonggong ? (Keyword?)null : (Keyword)next);
         }
 
         void SpawnKey(EnemyKind kind, bool elite)
