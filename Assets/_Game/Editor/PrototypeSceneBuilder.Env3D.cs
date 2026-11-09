@@ -32,6 +32,7 @@ namespace AThousandDawns.EditorTools
             SetupEnvCameraAndLight();
 
             var (floorMat, stoneMat, woodMat, bambooMat) = GetInkEnvMaterials();
+            var (roofX, roofZ) = GetInkRoofMaterials();
 
             float hx = CombatSize.x * 0.5f, hz = CombatSize.y * 0.5f;
             const float doorHalf = 1.75f;
@@ -39,7 +40,15 @@ namespace AThousandDawns.EditorTools
 
             Block(room, "Floor", PrimitiveType.Cube, new Vector3(0f, -0.1f, 0f), new Vector3(32f, 0.2f, 24f), Quaternion.identity, floorMat);
             BuildEnv3DWalls(room, hx, hz, stoneMat);
+            foreach (Transform wall in room.Find("Walls (stone)")) AddRoofCap(wall, roofX, roofZ);
             BuildEnv3DGate(room, hz, woodMat);
+            // 문루 위 작은 기와지붕
+            var gateRoof = new GameObject("Gate Roof (기와)");
+            gateRoof.transform.SetParent(room.Find("North Gate (wood)"), false);
+            gateRoof.transform.localPosition = new Vector3(0f, 3.6f, hz + 0.25f);
+            gateRoof.transform.localScale = new Vector3(5.4f, 0.75f, 1.4f);
+            gateRoof.AddComponent<MeshFilter>().sharedMesh = GetRoofCapMesh(true);
+            gateRoof.AddComponent<MeshRenderer>().sharedMaterial = roofX;
             BuildEnv3DPalisade(room, hx, hz, doorHalf, woodMat);
             BuildEnv3DForest(room, hx, hz, doorHalf, bambooMat);
             BuildEnv3DRest(room, hz, stoneMat, bambooMat);
@@ -88,8 +97,10 @@ namespace AThousandDawns.EditorTools
             bambooMat.SetColor("_InkColor", new Color(0.08f, 0.1f, 0.1f, 1f));
             floorMat.SetFloat("_PaperLift", 0.55f);
             floorMat.SetFloat("_Saturation", 0f);
+            TuneInkStoneWood(stoneMat, woodMat);
             s_bambooStalkMesh = null;
             s_bushBlobMeshes.Clear();
+            s_inkPropMeshes.Clear();
             return (floorMat, stoneMat, woodMat, bambooMat);
         }
 
@@ -162,13 +173,19 @@ namespace AThousandDawns.EditorTools
             {
                 if (Mathf.Abs(x) < doorHalf + 0.3f) continue;
                 float h = 2.3f + (i * 37 % 7) * 0.08f;
-                Block(fence, "Log", PrimitiveType.Cylinder, new Vector3(x, h * 0.5f, hz + 0.75f), new Vector3(0.38f, h * 0.5f, 0.38f),
-                    Quaternion.Euler(0f, i * 47f, 0f), mat);
+                var log = new GameObject("Log");
+                log.transform.SetParent(fence, false);
+                log.transform.localPosition = new Vector3(x, 0f, hz + 0.75f);
+                log.transform.localRotation = Quaternion.Euler(0f, i * 47f, 0f);
+                log.transform.localScale = new Vector3(0.38f, h, 0.38f);
+                log.AddComponent<MeshFilter>().sharedMesh = GetSharpLogMesh(); // 끝을 뾰족하게 깎은 통나무
+                log.AddComponent<MeshRenderer>().sharedMaterial = mat;
             }
         }
 
         // 벽 너머 대나무 숲: 줄기 묶음 (동·서·북, 문 자리 비움)
-        static void BuildEnv3DForest(Transform room, float hx, float hz, float doorHalf, Material mat)
+        // minZ: 동·서 숲을 이 높이(방 기준 z)부터만 세워요. 카메라 쪽(남쪽) 모서리를 비울 때 0
+        static void BuildEnv3DForest(Transform room, float hx, float hz, float doorHalf, Material mat, float minZ = float.NegativeInfinity)
         {
             var forest = new GameObject("Forest (3D stalks)").transform;
             forest.SetParent(room, false);
@@ -177,14 +194,15 @@ namespace AThousandDawns.EditorTools
                 if (Mathf.Abs(x) > doorHalf + 0.5f) BambooCluster(forest, new Vector3(x, 0f, hz + 1.8f + (seed % 3) * 0.4f), 6f, seed, mat);
             for (float z = -hz; z <= hz + 1f; z += 1.5f, seed++)
             {
-                if (Mathf.Abs(z) < doorHalf + 0.5f) continue;
+                if (Mathf.Abs(z) < doorHalf + 0.5f || z < minZ) continue;
                 BambooCluster(forest, new Vector3(-hx - 1.3f - (seed % 3) * 0.4f, 0f, z), 6f, seed, mat);
                 BambooCluster(forest, new Vector3(hx + 1.3f + (seed % 3) * 0.4f, 0f, z), 6f, seed + 7, mat);
             }
         }
 
-        // 줄기 2~3개 묶음 + 꼭대기 잎 다발(2D 카드). height는 가장 높은 줄기 키
-        static Transform BambooCluster(Transform parent, Vector3 foot, float height, int seed, Material mat)
+        // 줄기 2~3개 묶음 + 꼭대기 잎 다발(2D 카드). height는 가장 높은 줄기 키.
+        // crownScale: 잎 다발·잎 가지 크기 배율. crownScale = 0 이면 잎 없는 낮은 죽순 줄기(카메라 쪽 울타리용)
+        static Transform BambooCluster(Transform parent, Vector3 foot, float height, int seed, Material mat, float crownScale = 1f)
         {
             var group = new GameObject("Bamboo").transform;
             group.SetParent(parent, false);
@@ -200,24 +218,25 @@ namespace AThousandDawns.EditorTools
                 float h = height * heights[i] * (0.9f + (seed * 13 + i * 7) % 5 * 0.05f);
                 tallest = Mathf.Max(tallest, h);
                 var stalk = Stalk(group, offsets[i], widths[i], h, seed * 31f + i * 90f, mat);
-                StalkSprigs(group, stalk, h, seed * 7 + i * 3, i % 2 == 0 ? "BambooLeaves_B" : "BambooLeaves_A");
+                if (crownScale > 0f) StalkSprigs(group, stalk, h, seed * 7 + i * 3, i % 2 == 0 ? "BambooLeaves_B" : "BambooLeaves_A", crownScale);
             }
+            if (crownScale <= 0f) return group;
 
             // 잎 다발: 줄기 꼭대기를 감싸는 엇갈린 카드 세 장 + 위에서 내려다볼 때 꼭대기를 덮는 눕힌 카드 한 장
-            FoliageCards(group, "Leaves", leaves, new Vector3(0.05f, tallest * 0.8f, 0.1f), tallest * 0.45f, 3, seed * 17f);
+            FoliageCards(group, "Leaves", leaves, new Vector3(0.05f, tallest * 0.8f, 0.1f), tallest * 0.45f * crownScale, 3, seed * 17f);
             var canopy = new GameObject("Canopy").transform;
             canopy.SetParent(group, false);
             canopy.localPosition = new Vector3(0.05f, tallest * 0.93f, 0.1f);
             canopy.localRotation = Quaternion.Euler(70f, seed * 53f, 0f);
-            FoliageCards(canopy, "Card", leaves, Vector3.zero, tallest * 0.4f, 1, 0f);
+            FoliageCards(canopy, "Card", leaves, Vector3.zero, tallest * 0.4f * crownScale, 1, 0f);
             return group;
         }
 
         // 줄기 마디에서 옆으로 삐져나온 작은 잎 가지. 가운데 마디들(꼭대기 잎 다발 아래) 중 몇 곳에만,
         // 마디마다 좌우를 번갈아 달아요. 위치는 줄기 메시의 마디 높이·휨(GetBambooStalkMesh와 같은 값)을 따라가요.
-        static void StalkSprigs(Transform group, Transform stalk, float height, int seed, string leaves)
+        static void StalkSprigs(Transform group, Transform stalk, float height, int seed, string leaves, float scale = 1f)
         {
-            float size = Mathf.Clamp(height * 0.14f, 0.45f, 0.8f);
+            float size = Mathf.Clamp(height * 0.14f, 0.45f, 0.8f) * scale;
             for (int n = 2; n <= BambooNodes - 1; n++)
             {
                 if ((seed + n * 5) % 3 == 0) continue; // 마디 셋 중 둘쯤에만
@@ -496,18 +515,28 @@ namespace AThousandDawns.EditorTools
             return mat;
         }
 
-        // 기울인 상자 세 개를 겹쳐 각진 바위 덩어리를 만들어요
+        // 깎인 바위 큰 것 하나 + 작은 돌 둘 (메시는 GetRockMesh, 변형 셋을 돌려 써요)
         static void RockCluster(Transform parent, Vector3 foot, float size, int seed, Material mat)
         {
             var group = new GameObject("Rock").transform;
             group.SetParent(parent, false);
             group.localPosition = foot;
-            Block(group, "Big", PrimitiveType.Cube, new Vector3(0f, size * 0.35f, 0f), new Vector3(size, size * 0.8f, size * 0.9f),
-                Quaternion.Euler(8f, 25f + seed * 40f, 12f), mat);
-            Block(group, "Mid", PrimitiveType.Cube, new Vector3(size * 0.55f, size * 0.2f, -size * 0.3f), new Vector3(size * 0.6f, size * 0.5f, size * 0.55f),
-                Quaternion.Euler(-10f, 60f + seed * 25f, 6f), mat);
-            Block(group, "Small", PrimitiveType.Cube, new Vector3(-size * 0.5f, size * 0.12f, -size * 0.35f), new Vector3(size * 0.35f, size * 0.3f, size * 0.4f),
-                Quaternion.Euler(15f, -20f + seed * 50f, -8f), mat);
+            Rock(group, "Big", Vector3.zero, size * 1.4f, seed, 25f + seed * 40f, mat, true);
+            Rock(group, "Mid", new Vector3(size * 0.65f, 0f, -size * 0.35f), size * 0.6f, seed + 1, 60f + seed * 25f, mat, false);
+            Rock(group, "Small", new Vector3(-size * 0.55f, 0f, -size * 0.4f), size * 0.35f, seed + 2, -20f + seed * 50f, mat, false);
+        }
+
+        static void Rock(Transform parent, string name, Vector3 localFoot, float size, int variant, float yaw, Material mat, bool collider)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = localFoot;
+            go.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
+            go.transform.localScale = Vector3.one * size;
+            var mesh = GetRockMesh(variant % 3);
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            go.AddComponent<MeshRenderer>().sharedMaterial = mat;
+            if (collider) go.AddComponent<MeshCollider>().sharedMesh = mesh;
         }
 
         static void Block(Transform parent, string name, PrimitiveType type, Vector3 localPos, Vector3 scale, Quaternion rot, Material mat)

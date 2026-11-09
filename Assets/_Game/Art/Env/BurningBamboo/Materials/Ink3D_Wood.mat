@@ -38,14 +38,14 @@ Material:
     - _OutlineWidth: 2
     - _PaperGrain: 0.05
     - _PaperLift: 0.2
-    - _PatchLight: 0
+    - _PatchLight: 0.2
     - _PatchScale: 0.8
     - _RimInk: 0.35
     - _RimPower: 3
     - _Saturation: 0.1
     - _ShadowInk: 0.5
-    - _StreakLight: 0
-    - _StreakScale: 6
+    - _StreakLight: 0.4
+    - _StreakScale: 3
     - _TileSize: 1
     - _VertexInk: 0
     - _WashNoiseScale: 1.5

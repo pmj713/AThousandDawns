@@ -60,20 +60,30 @@ namespace AThousandDawns.EditorTools
                 if (pillar)
                 {
                     var foot = t.parent.InverseTransformPoint(new Vector3(t.position.x, 0f, t.position.z));
-                    StripColliders(BambooCluster(t.parent, foot, 4f, seed++, bambooMat));
+                    StripColliders(BambooCluster(t.parent, foot, 4f, seed++, bambooMat, 0.8f));
                     continue;
                 }
+                // 대나무 울타리(고수 결투장·녹림왕 방): 방향마다 다르게. 카메라 쪽(남쪽)은 잎 없는 낮은 죽순만 둬
+                // 방 안 캐릭터·보스를 가리지 않게 해요. 상자 크기에서 계산하니 방이 커져도 그대로 맞아요
                 Vector3 size = t.lossyScale;
                 bool alongX = size.x >= size.z;
                 float length = alongX ? size.x : size.z;
                 Vector3 axis = alongX ? Vector3.right : Vector3.forward;
                 Vector3 across = alongX ? Vector3.forward : Vector3.right;
                 float thickness = alongX ? size.z : size.x;
-                for (float s = -length * 0.5f + 0.4f; s <= length * 0.5f - 0.3f; s += 0.9f, seed++)
+                var floor = t.parent.Find("Floor");
+                float roomZ = floor != null ? floor.position.z : t.position.z;
+                bool south = alongX && t.position.z < roomZ;
+                bool north = alongX && !south;
+                float step = south ? 0.7f : north ? 1.2f : 1.6f;
+                for (float s = -length * 0.5f + 0.4f; s <= length * 0.5f - 0.3f; s += step, seed++)
                 {
                     float jitter = ((seed * 37 % 10) / 10f - 0.5f) * thickness * 0.6f;
                     var world = new Vector3(t.position.x, 0f, t.position.z) + axis * s + across * jitter;
-                    StripColliders(BambooCluster(t.parent, t.parent.InverseTransformPoint(world), 5f + (seed % 4) * 0.4f, seed, bambooMat));
+                    var local = t.parent.InverseTransformPoint(world);
+                    if (south) StripColliders(BambooCluster(t.parent, local, 1.1f + (seed % 4) * 0.15f, seed, bambooMat, 0f));
+                    else if (north) StripColliders(BambooCluster(t.parent, local, 4.5f + (seed % 4) * 0.33f, seed, bambooMat, 0.75f));
+                    else StripColliders(BambooCluster(t.parent, local, 3.5f + (seed % 4) * 0.23f, seed, bambooMat, 0.6f));
                 }
             }
 
@@ -97,11 +107,27 @@ namespace AThousandDawns.EditorTools
             StripColliders(deco);
             Billboard(deco, "Backdrop_Ink", $"{Env2DArtFolder}/Source/Backdrop_Ink.png", CombatCenter + new Vector3(0f, 0f, hz + 6f), 22f);
 
+            // 3-1) 돌벽·통로 벽·문 막이 위에 기와지붕 (담의 자식이라 문 막이가 켜지고 꺼지면 같이). 플레이어 코는 빼요
+            var (roofX, roofZ) = GetInkRoofMaterials();
+            var playerRoot = Object.FindFirstObjectByType<PlayerController>(FindObjectsInactive.Include);
+            foreach (var r in Object.FindObjectsByType<MeshRenderer>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                var m = r.sharedMaterial;
+                if (m == null || (m.name != "Wall" && m.name != "Stone")) continue;
+                var mf = r.GetComponent<MeshFilter>();
+                if (mf == null || mf.sharedMesh == null || mf.sharedMesh.name != "Cube") continue;
+                if (playerRoot != null && r.transform.IsChildOf(playerRoot.transform)) continue;
+                AddRoofCap(r.transform, roofX, roofZ);
+            }
+
+            // 3-2) 방별 꾸미기: 녹림왕 방(불타는 죽림 불꽃·화톳불·목책), 객잔, 정비실, 방마다 벽 너머 숲
+            DressRoomsInk(stoneMat, woodMat, bambooMat, roofX);
+
             // 4) 재질 바꿔 끼우기: 씬의 모든 재질 참조(렌더러·적 연출 설정 등)를 이름으로 찾아 수묵 재질로.
             //    공격 예고·불·검기·결계·관문은 전투에서 읽혀야 하니 그대로 둬요
             //    시험판 재질 폴더(MaterialFolder)의 것만 바꿔요 (방금 단 수묵 그림·기본 스프라이트 재질은 그대로).
             //    대나무·풀숲 원래 모양은 이미 안 보이게 했으니 건너뛰어요
-            var keep = new HashSet<string> { "Telegraph_Base", "Telegraph_Fill", "Telegraph_Outline", "Fire", "SwingFlash", "UltimateSword", "BossGate", "Gate_Portal", "Bamboo", "Bush" };
+            var keep = new HashSet<string> { "Telegraph_Base", "Telegraph_Fill", "Telegraph_Outline", "SwingFlash", "UltimateSword", "BossGate", "Gate_Portal", "Bamboo", "Bush" };
             var swapped = new Dictionary<Material, Material>();
             Material InkFor(Material m)
             {
@@ -114,6 +140,7 @@ namespace AThousandDawns.EditorTools
                     case "Floor": ink = floorMat; break;
                     case "Wall": case "Stone": ink = stoneMat; break;
                     case "Wood": ink = woodMat; break;
+                    case "Fire": ink = GetInkFireGroundMaterial(); break; // 불타는 죽림 띠·불 장판: 일렁이는 수묵 불길
                     default:
                         // 사람·적·소품: 원래 색을 바탕으로 수묵 캐릭터 재질. 적은 종류가 구분되게 색을 조금 남겨요
                         float saturation = m.name == "Player" ? 0.75f : m.name.StartsWith("Enemy_") ? 0.45f : 0.3f;
