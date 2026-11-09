@@ -630,6 +630,13 @@ namespace AThousandDawns.Player
 
         void OnSwingStarted(int index)
         {
+            FaceAim();
+            _hitThisSwing.Clear();
+        }
+
+        // 마우스 커서 쪽으로 몸을 돌려요 (평타·대시 공격)
+        void FaceAim()
+        {
             if (_input.TryGetAimPoint(out Vector3 aim))
             {
                 Vector3 dir = aim - transform.position;
@@ -637,7 +644,6 @@ namespace AThousandDawns.Player
                 if (dir.sqrMagnitude > 0.01f) _facing = dir.normalized;
             }
             ApplyFacing();
-            _hitThisSwing.Clear();
         }
 
         // 3타째와 검보 조각의 4타째는 마무리 타 (3타째 범위·돌진·키워드·기물 효과를 같이 받아요)
@@ -660,6 +666,7 @@ namespace AThousandDawns.Player
 
         void DoDashAttack()
         {
+            FaceAim(); // 대시 방향이 아니라 커서 쪽으로 베요
             _hitThisSwing.Clear();
             if (swingFlash != null) swingFlash.Show(transform.position, _facing, _dashAttackRadius, _dashAttackAngle, 0.12f);
             var hit = PlayerHit(_dashAttackDamage * (1f + RunDashAttackBonus)); // 면벽수련 쾌 10
