@@ -172,19 +172,71 @@ namespace AThousandDawns.EditorTools
         {
             var group = new GameObject("Characters (ink test)").transform;
 
-            // 플레이어 캡슐은 WASD로 걸려 볼 수 있어요 (카메라가 따라와요). 앞쪽 작은 공은 바라보는 방향 표시
-            var playerMat = GetInkMaterial("Ink_Player", PlayerColor, 0.75f);
-            var player = InkPrimitive(group, "Player (Ink, WASD)", PrimitiveType.Capsule, new Vector3(0f, 1f, -3f), Vector3.one, playerMat);
-            InkPrimitive(player.transform, "Facing", PrimitiveType.Sphere, new Vector3(0f, 0.45f, 0.45f), Vector3.one * 0.3f, playerMat);
-            player.AddComponent<CharacterController>();
+            // 플레이어는 WASD로 걸려 볼 수 있어요 (카메라가 따라와요).
+            // 맨몸 기본 바디 파츠 + 머리카락 모델에 수묵 셰이더를 입혀 세워요. 모델이 없으면 예전 캡슐로 세워요
+            GameObject player;
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(PlayerBodyModel) != null)
+            {
+                player = new GameObject("Player (Ink, WASD)");
+                player.transform.SetParent(group, false);
+                player.transform.localPosition = new Vector3(0f, 0f, -3f);
+                PlayerModel(player.transform, GetInkMaterial("Ink_PlayerSkin", PlayerSkinColor, 0.35f),
+                    GetInkMaterial("Ink_PlayerHair", PlayerHairColor, 0.1f));
+                var controller = player.AddComponent<CharacterController>();
+                controller.height = 1.9f;
+                controller.radius = 0.35f;
+                controller.center = new Vector3(0f, 0.95f, 0f);
+            }
+            else
+            {
+                var playerMat = GetInkMaterial("Ink_Player", PlayerColor, 0.75f);
+                player = InkPrimitive(group, "Player (Ink, WASD)", PrimitiveType.Capsule, new Vector3(0f, 1f, -3f), Vector3.one, playerMat);
+                InkPrimitive(player.transform, "Facing", PrimitiveType.Sphere, new Vector3(0f, 0.45f, 0.45f), Vector3.one * 0.3f, playerMat);
+                player.AddComponent<CharacterController>();
+            }
             player.AddComponent<AThousandDawns.Art.ArtTestWalker>();
             InkPrimitive(group, "Grunt (Ink)", PrimitiveType.Capsule, new Vector3(-2.2f, 1f, -1.2f), Vector3.one,
                 GetInkMaterial("Ink_Grunt", GruntColor, 0.1f));
             InkPrimitive(group, "Boar (Ink)", PrimitiveType.Sphere, new Vector3(2.4f, 0.55f, -1.2f), new Vector3(1.3f, 1.1f, 1.9f),
                 GetInkMaterial("Ink_Boar", BoarColor, 0.1f));
 
-            InkPrimitive(group, "Player (Plain Lit, 비교용)", PrimitiveType.Capsule, new Vector3(1.4f, 1f, -3.6f), Vector3.one,
-                GetMaterial("Player", PlayerColor, false));
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(PlayerBodyModel) != null)
+            {
+                var plain = new GameObject("Player (Plain Lit, 비교용)");
+                plain.transform.SetParent(group, false);
+                plain.transform.localPosition = new Vector3(1.4f, 0f, -3.6f);
+                PlayerModel(plain.transform, GetMaterial("PlayerSkin", PlayerSkinColor, false), GetMaterial("PlayerHair", PlayerHairColor, false));
+            }
+            else
+            {
+                InkPrimitive(group, "Player (Plain Lit, 비교용)", PrimitiveType.Capsule, new Vector3(1.4f, 1f, -3.6f), Vector3.one,
+                    GetMaterial("Player", PlayerColor, false));
+            }
+        }
+
+        const string PlayerPartsFolder = "Assets/_Game/Art/Characters/Player/Parts";
+        const string PlayerBodyModel = PlayerPartsFolder + "/Player_BaseBody_All.fbx";
+        const string PlayerHairModel = PlayerPartsFolder + "/Player_Hair.fbx";
+        const string PlayerSkinColor = "#D8B89A";
+        const string PlayerHairColor = "#1E1C1C";
+
+        // 기본 바디(파츠 12개가 한 FBX에)와 머리카락을 발밑 기준으로 parent 아래에 세워요. 파츠 기준점이 모두 발밑이라 그대로 맞물려요
+        static void PlayerModel(Transform parent, Material skin, Material hair)
+        {
+            var model = new GameObject("Model").transform;
+            model.SetParent(parent, false);
+            foreach (var (path, mat) in new[] { (PlayerBodyModel, skin), (PlayerHairModel, hair) })
+            {
+                var asset = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                if (asset == null) continue;
+                var go = (GameObject)PrefabUtility.InstantiatePrefab(asset, model);
+                foreach (var r in go.GetComponentsInChildren<Renderer>())
+                {
+                    var mats = new Material[r.sharedMaterials.Length];
+                    for (int i = 0; i < mats.Length; i++) mats[i] = mat;
+                    r.sharedMaterials = mats;
+                }
+            }
         }
 
         static GameObject InkPrimitive(Transform parent, string name, PrimitiveType type, Vector3 position, Vector3 scale, Material mat)
