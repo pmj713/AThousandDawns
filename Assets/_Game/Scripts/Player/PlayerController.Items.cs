@@ -1,4 +1,4 @@
-using AThousandDawns.Combat;
+﻿using AThousandDawns.Combat;
 using AThousandDawns.Core;
 using UnityEngine;
 
@@ -95,7 +95,7 @@ namespace AThousandDawns.Player
             };
 
             // 최대 체력: 목인 조각 +, 부작용 −%. 늘어나면 늘어난 만큼 채워요.
-            float newMax = (_baseMaxHealth + V("wooden_figure", 1)) * Mathf.Max(0.1f, 1f - Side("max_hp"));
+            float newMax = (_baseMaxHealth + V("wooden_figure", 1) + RunMaxHealthFlat) * Mathf.Max(0.1f, 1f - Side("max_hp")); // + 면벽수련 강
             if (newMax > _maxHealth && !IsDead) Health += newMax - _maxHealth;
             _maxHealth = newMax;
             Health = Mathf.Min(Health, _maxHealth);

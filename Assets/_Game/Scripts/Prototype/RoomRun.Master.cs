@@ -1,4 +1,4 @@
-using AThousandDawns.Core;
+﻿using AThousandDawns.Core;
 using AThousandDawns.Enemies;
 using AThousandDawns.Player;
 using UnityEngine;
@@ -43,6 +43,7 @@ namespace AThousandDawns.Prototype
             Player.EnterRoom();
             _master = director.Spawn(kind, site.center + new Vector3(0f, 0f, 2.5f));
             ((IMasterBrain)_master).SetZone(site.center, site.size);
+            OnFightStart();
             ShowBanner($"죽림 2층 관문 · 고수 {_master.DisplayName}");
         }
 
@@ -50,10 +51,11 @@ namespace AThousandDawns.Prototype
         {
             if (_master == null || !_master.IsDead || _masterChoiceShown || OffersOpen) return;
             _masterChoiceShown = true;
-            OpenMasterChoice();
+            OpenMasterChoice(_masterPicks, new System.Collections.Generic.HashSet<int>());
         }
 
-        void OpenMasterChoice()
+        // picks: 고를 수 있는 수 (면벽수련 오 20이면 2가지). taken: 이미 고른 것
+        void OpenMasterChoice(int picks, System.Collections.Generic.HashSet<int> taken)
         {
             int spare = Price("master.spare_silver", 50f);
             bool iron = _master.Kind == EnemyKind.IronFist;
@@ -94,8 +96,22 @@ namespace AThousandDawns.Prototype
                     return $"{_master.DisplayName}이(가) 은혜를 갚겠다며 마교의 추적을 따돌려 줘요. 추적도 0 · 은자 +{spare}";
                 },
             });
+            if (picks > 1) v.Title += $" · {picks}가지 중 하나 더";
+            for (int i = 0; i < v.Choices.Count; i++)
+            {
+                int index = i;
+                var choice = v.Choices[i];
+                if (taken.Contains(index)) choice.Locked = "이미 골랐어요";
+                var act = choice.Act;
+                choice.Act = () => { taken.Add(index); return act(); };
+            }
             OpenEventView(v, () =>
             {
+                if (picks > 1)
+                {
+                    OpenMasterChoice(picks - 1, taken); // 오 20: 하나 더
+                    return;
+                }
                 _masterDone = true;
                 BeginFork(_floor + 1);
             });

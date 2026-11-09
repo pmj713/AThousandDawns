@@ -91,7 +91,7 @@ namespace AThousandDawns.Player
         void OnKeywordsChanged()
         {
             int bonus = K(Keyword.Gyeonggong) >= 2 ? _gyeonggongDashBonus : 0;
-            _dash.SetMaxCharges(_baseDashCharges + bonus + ItemDashBonus - Mathf.RoundToInt(Side("dash_count"))); // + 비연 깃털
+            _dash.SetMaxCharges(_baseDashCharges + bonus + ItemDashBonus + RunDashBonus - Mathf.RoundToInt(Side("dash_count"))); // + 비연 깃털 + 면벽수련 쾌 5
             RefreshItems();
         }
 
@@ -130,7 +130,7 @@ namespace AThousandDawns.Player
         float EffectiveToughness => Toughness + (K(Keyword.Geumgang) >= 2 && _shields.Any ? _geumgangToughness : 0) + ItemToughness; // + 거북 등껍질
 
         // #강기 2단계: 평타 속도 +15%
-        float AttackSpeedMultiplier => (1f + (K(Keyword.Ganggi) >= 2 ? _ganggiAttackSpeed : 0f) + ItemAttackSpeedBonus) * Mathf.Max(0.1f, 1f - Side("attack_speed")); // + 기물 · × 기물 부작용
+        float AttackSpeedMultiplier => (1f + (K(Keyword.Ganggi) >= 2 ? _ganggiAttackSpeed : 0f) + ItemAttackSpeedBonus + RunAttackSpeedBonus) * Mathf.Max(0.1f, 1f - Side("attack_speed")); // + 기물 · × 기물 부작용
 
         // #경공 2단계: 기 부족 기물 1개당 이동속도 +4% (최대 +20%)
         float MoveSpeedBonus => (K(Keyword.Gyeonggong) >= 2 ? Mathf.Min(_gyeonggongLackMoveMax, Qi(QiState.Lacking) * _gyeonggongLackMove) : 0f) + ItemMoveSpeedBonus - Side("move_speed") + RunMoveBonus; // + 기물 − 기물 부작용 + 산신당 축복

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using AThousandDawns.Core;
 using AThousandDawns.Enemies;
 using UnityEngine;
@@ -39,7 +39,16 @@ namespace AThousandDawns.Prototype
         // 테스트용
         public void SetTracking(int value) => Tracking = Mathf.Max(0, value);
 
-        void AddTracking(int amount) => Tracking = Mathf.Max(0, Tracking + amount);
+        void AddTracking(int amount)
+        {
+            if (amount > 0 && _trackingHalf) // 면벽수련 은 20: 추적도 오르는 속도 절반
+            {
+                _trackingCarry += amount * 0.5f;
+                amount = Mathf.FloorToInt(_trackingCarry);
+                _trackingCarry -= amount;
+            }
+            Tracking = Mathf.Max(0, Tracking + amount);
+        }
 
         // 층에 들어갈 때 (지도를 만든 뒤, 시작 방에 들어가기 전)
         void BeginHunt()

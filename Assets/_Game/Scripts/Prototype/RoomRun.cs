@@ -186,7 +186,7 @@ namespace AThousandDawns.Prototype
                 int j = _rng.Next(i + 1);
                 (kinds[i], kinds[j]) = (kinds[j], kinds[i]);
             }
-            int count = Mathf.Min(kinds.Count, _rng.Next(min, Mathf.Max(min, max) + 1));
+            int count = Mathf.Min(kinds.Count, _rng.Next(min, Mathf.Max(min, max) + 1) + _forkBonus); // 면벽수련 오 10: 갈림길 +1
             var options = new List<Path>();
             for (int i = 0; i < count; i++) options.Add(new Path { Reward = kinds[i], Dense = _rng.NextDouble() < dense });
             return options;
@@ -208,7 +208,13 @@ namespace AThousandDawns.Prototype
             _phase = Phase.Floor;
             ShowBanner($"죽림 {_floor}층 · {PathLabel(_path)}");
             BeginHunt();
+            Player.FloorGuard = _floorGuard; // 면벽수련 강 10: 층마다 첫 피격 무효
             Enter(_map.Start, -1);
+            if (_startPartPick) // 면벽수련 맥 10: 시작 시 부품 고르기
+            {
+                _startPartPick = false;
+                OpenPartChoice(1);
+            }
         }
 
         public static string RewardLabel(RewardKind kind) => kind == RewardKind.Item ? "기물" : kind == RewardKind.Part ? "부품" : "운기조식";
@@ -251,6 +257,7 @@ namespace AThousandDawns.Prototype
                 SetLocks(true);
                 _fighting = true;
                 Player.EnterRoom(); // #금강 2단계: 싸우는 방에 들어갈 때마다 보호막
+                OnFightStart();
                 _waves = PlanRoom(_floor);
                 _wave = -1;
                 _elitesThisRoom = 0;
@@ -449,7 +456,7 @@ namespace AThousandDawns.Prototype
             SetLocks(false);
             AddTracking(Mathf.RoundToInt(GameConfig.Get("tracking.per_room", 1f)));
             float mult = _path.Dense ? DenseMultiplier : 1f;
-            int silver = Mathf.RoundToInt(GameConfig.Get("silver.room", 18f) * mult) + _elitesThisRoom * Mathf.RoundToInt(GameConfig.Get("silver.elite", 15f));
+            int silver = BoostSilver(Mathf.RoundToInt(GameConfig.Get("silver.room", 18f) * mult) + _elitesThisRoom * Mathf.RoundToInt(GameConfig.Get("silver.elite", 15f)));
             Silver += silver;
             string text = $"방을 비웠어요 · 은자 +{silver}";
             if (_rescueFight)
@@ -498,7 +505,7 @@ namespace AThousandDawns.Prototype
             MovePlayer(inn.entry);
             director.ResetRoom();
             var db = GameConfig.Items;
-            Shop = db == null ? null : InnShop.Stock(db.Items, Player.Items, RegionGradeWeights(), _rng, _innStockBonus, _unlockedParts);
+            Shop = db == null ? null : InnShop.Stock(db.Items, Player.Items, ApplyLuck(RegionGradeWeights(), _luck), _rng, _innStockBonus, _unlockedParts, _innPriceScale);
             int before = Tracking;
             Tracking = Mathf.FloorToInt(Tracking * GameConfig.Get("tracking.inn_ratio", 0.5f)); // 객잔에 들르면 추적도 절반
             ShowBanner($"객잔 · 점소이 앞에서 F로 진열대 (북쪽 문: 정비실) · 추적도 {before} → {Tracking}");
@@ -606,6 +613,7 @@ namespace AThousandDawns.Prototype
             director.ResetRoom();
             Player.EnterRoom();
             var nokrim = arena.SpawnBoss();
+            OnFightStart();
             bool hunted = Tracking >= Mathf.RoundToInt(GameConfig.Get("tracking.assassin2", 10f));
             if (hunted && nokrim != null) nokrim.Damageable.ScaleMaxHealth(GameConfig.Get("tracking.boss_hp", 1.15f)); // 추적도 10 이상: 보스 체력 +15%
             ShowBanner(hunted ? $"녹림왕 · 추적도 {Tracking}: 체력 +15%" : "녹림왕");
@@ -615,7 +623,7 @@ namespace AThousandDawns.Prototype
         {
             _phase = Phase.Done;
             _record.FloorsCleared++; // 보스 층 돌파
-            int silver = Mathf.RoundToInt(GameConfig.Get("silver.boss", 50f));
+            int silver = BoostSilver(Mathf.RoundToInt(GameConfig.Get("silver.boss", 50f)));
             Silver += silver;
             arena.GrantOffer(SpecialGradeWeights()); // 보스·살수 특별 보상 표
             var items = Player.Items;

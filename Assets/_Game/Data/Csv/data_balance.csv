@@ -564,3 +564,20 @@ book.relic3,220,기억,회귀록 기억 용량 +1 (3차),회귀록!E24
 book.relic4,270,기억,회귀록 기억 용량 +1 (4차),회귀록!E25
 part.hanok_max_qi,2,,부품 한옥: 붙어 있는 기물의 최대 기 +,기획 대화 (냉각기 +2)
 price.part,100,은자,객잔 부품 가격 (해금된 종류 중 무작위),은자!B23
+meditation.points_per_bud,5,,면벽수련·심득 봉우리 하나당 심득,회귀록!G11 (심득 지급)
+meditation.swift_per_point,1%,,쾌: 포인트당 공격 속도,기획 대화 (면벽수련)
+meditation.swift_dash_attack,15%,,쾌 10: 대시 공격 피해 +,기획 대화 (면벽수련)
+meditation.iron_per_point,2,,강: 포인트당 최대 체력,기획 대화 (면벽수련)
+meditation.iron_toughness,3,,강 5: 강인함 +,기획 대화 (면벽수련)
+meditation.iron_revive,40%,,강 20: 기사회생 체력 비율,기획 대화 (면벽수련)
+meditation.meridian_per_point,2%,,맥: 포인트당 수련치 +,기획 대화 (면벽수련)
+meditation.shadow_per_point,2%,,은: 포인트당 은자 획득 +,기획 대화 (면벽수련)
+meditation.shadow_start_silver,50,은자,은 5: 시작 은자,기획 대화 (면벽수련)
+meditation.shadow_inn_discount,15%,,은 10: 객잔 가격 −,기획 대화 (면벽수련)
+meditation.qi_per_point,1%,,기: 포인트당 기세 충전 +,기획 대화 (면벽수련)
+meditation.qi_skill_cooldown,10%,,기 5: 초식 쿨타임 −,기획 대화 (면벽수련)
+meditation.qi_fight_gauge,30%,,기 10: 전투 시작 시 기세,기획 대화 (면벽수련)
+luck.common_cut,1%,,행운 1당 일반 확률 감소,등급확률!B5
+luck.uncommon_share,0.6,,행운으로 줄인 일반 확률 중 고급 몫,등급확률!B6
+luck.rare_share,0.3,,행운으로 줄인 일반 확률 중 희귀 몫,등급확률!B7
+luck.legendary_share,0.1,,행운으로 줄인 일반 확률 중 전설 몫,등급확률!B8

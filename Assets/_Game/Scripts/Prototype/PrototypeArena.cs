@@ -69,7 +69,8 @@ namespace AThousandDawns.Prototype
         public IReadOnlyList<ItemDefinition> Offer => _offer;
         public int PendingOffers => _pendingOffers;
         public MeridianScreen Meridian => _meridian;
-        public bool Blocked { get; set; } // 갈림길 화면처럼 다른 창이 떠 있으면 시험 키를 받지 않아요
+        public bool Blocked { get; set; }
+        public int Luck { get; set; } // 면벽수련 오: 기물 등급 행운 // 갈림길 화면처럼 다른 창이 떠 있으면 시험 키를 받지 않아요
         MeridianScreen _meridian;
 
         void Start()
@@ -294,7 +295,7 @@ namespace AThousandDawns.Prototype
         void OpenOffer(PlayerController player)
         {
             var db = GameConfig.Items;
-            var weights = _offerWeights.Count > 0 ? _offerWeights.Dequeue() : _gradeWeights;
+            var weights = RoomRun.ApplyLuck(_offerWeights.Count > 0 ? _offerWeights.Dequeue() : _gradeWeights, Luck);
             _offer = db == null ? null : ItemOffer.Roll(db.Items, player.Items.Has, _choiceCount, weights, () => UnityEngine.Random.value);
             if (_offer == null || _offer.Count == 0)
             {

@@ -59,6 +59,7 @@ namespace AThousandDawns.Prototype
                 if (_deathTimer <= 0f) ShowResult(false);
                 return true;
             }
+            _deathTimer = -1f; // 기사회생했으면 다시 처음부터
             if (_phase == Phase.Done && !OffersOpen) // 녹림왕 보상 기물을 고른 뒤
             {
                 ShowResult(true);

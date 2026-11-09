@@ -147,7 +147,7 @@ namespace AThousandDawns.Player
             Hurt?.Invoke(damage);
             if (IsDead && visual != null) visual.localScale = new Vector3(1.2f, 0.25f, 1.2f);
         }
-        public float SkillCooldown => _skillCooldown * (1f + Side("skill_cooldown")); // 기물 부작용: 초식 쿨타임 +%
+        public float SkillCooldown => _skillCooldown * (1f + Side("skill_cooldown")) * (1f - RunSkillCooldownCut); // 기물 부작용: 초식 쿨타임 +% · 면벽수련 기 5
         public float SkillCooldownLeft => Mathf.Max(0f, _skillCooldownLeft);
 
         public event Action<int> Hurt;
@@ -265,6 +265,7 @@ namespace AThousandDawns.Player
         {
             float dt = Time.deltaTime;
             UpdateFlash(dt);
+            TryRevive(); // 강 20 (화상처럼 맞지 않고 쓰러져도)
             if (IsDead) return;
 
             _sinceDashPress = _input.DashPressed ? 0f : _sinceDashPress + dt;
@@ -359,6 +360,13 @@ namespace AThousandDawns.Player
                 return false;
             }
             if (IsInvulnerable) return false;
+            if (FloorGuard) // 면벽수련 강 10: 층마다 첫 피격 무효
+            {
+                FloorGuard = false;
+                _invulnerableTimer = Mathf.Max(_invulnerableTimer, _hurtIframe);
+                _flashTimer = 0.12f;
+                return false;
+            }
 
             var hit = new PlayerHitInput
             {
@@ -393,6 +401,7 @@ namespace AThousandDawns.Player
             _flashTimer = 0.12f;
             if (dealt > 0) DamagePopups.Spawn(transform.position + Vector3.up * 2f, dealt, PopupStyle.Player); // 보호막이 다 막으면 숫자 없음
             Hurt?.Invoke(dealt);
+            if (TryRevive()) return true;
             // 열화 정예: 맞을 때마다 화상 (화살·폭발처럼 주인이 있는 공격 포함)
             if (attacker != null && attacker.TryGetComponent(out AThousandDawns.Enemies.EnemyBrain brain) && brain.IsBlaze)
                 for (int i = Mathf.RoundToInt(GameConfig.Get("elite.blaze_stacks", 1f)); i > 0; i--) AddBurnStack(GameConfig.Get("player_burn.damage", 2f));
@@ -652,7 +661,7 @@ namespace AThousandDawns.Player
         {
             _hitThisSwing.Clear();
             if (swingFlash != null) swingFlash.Show(transform.position, _facing, _dashAttackRadius, _dashAttackAngle, 0.12f);
-            var hit = PlayerHit(_dashAttackDamage);
+            var hit = PlayerHit(_dashAttackDamage * (1f + RunDashAttackBonus)); // 면벽수련 쾌 10
             hit.AttackIncrease += DashAttackBonus; // 비연 깃털 · 운룡 허리띠
             int count = HitSector(_dashAttackRadius, _dashAttackAngle, hit, HitTag.DashAttack);
             Gauge = Mathf.Min(_gaugeMax, Gauge + count * _gaugeDashAttack * GaugeGainMultiplier);

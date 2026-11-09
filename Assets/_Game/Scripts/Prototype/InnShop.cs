@@ -33,7 +33,7 @@ namespace AThousandDawns.Prototype
             _ => "price.item_legendary",
         }, grade == ItemGrade.Common ? 120f : grade == ItemGrade.Uncommon ? 300f : grade == ItemGrade.Rare ? 500f : 900f));
 
-        public static InnShop Stock(IReadOnlyList<ItemDefinition> pool, PlayerItems owned, IReadOnlyList<float> gradeWeights, Random rng, int extraItems = 0, IReadOnlyList<PartKind> parts = null)
+        public static InnShop Stock(IReadOnlyList<ItemDefinition> pool, PlayerItems owned, IReadOnlyList<float> gradeWeights, Random rng, int extraItems = 0, IReadOnlyList<PartKind> parts = null, float priceScale = 1f)
         {
             var shop = new InnShop();
             int count = (int)Math.Round(GameConfig.Get("inn.item_stock", 3f)) + extraItems; // 회귀록 객잔 진열 +1
@@ -60,6 +60,7 @@ namespace AThousandDawns.Prototype
             int potionPrice = (int)Math.Round(GameConfig.Get("price.potion", 60f));
             for (int i = 0; i < potions; i++) shop._slots.Add(new Slot { Kind = SlotKind.Potion, Price = potionPrice });
             shop._slots.Add(new Slot { Kind = SlotKind.Lodging, Price = (int)Math.Round(GameConfig.Get("price.lodging", 40f)) });
+            if (priceScale != 1f) foreach (var s in shop._slots) s.Price = (int)Math.Round(s.Price * priceScale); // 면벽수련 은 10: 객잔 −15%
             return shop;
         }
 

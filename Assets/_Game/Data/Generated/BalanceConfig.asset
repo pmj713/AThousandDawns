@@ -2273,3 +2273,71 @@ MonoBehaviour:
     value: 100
     unit: "\uC740\uC790"
     note: "\uAC1D\uC794 \uBD80\uD488 \uAC00\uACA9 (\uD574\uAE08\uB41C \uC885\uB958 \uC911 \uBB34\uC791\uC704)"
+  - key: meditation.points_per_bud
+    value: 5
+    unit: 
+    note: "\uBA74\uBCBD\uC218\uB828\xB7\uC2EC\uB4DD \uBD09\uC6B0\uB9AC \uD558\uB098\uB2F9 \uC2EC\uB4DD"
+  - key: meditation.swift_per_point
+    value: 0.01
+    unit: 
+    note: "\uCF8C: \uD3EC\uC778\uD2B8\uB2F9 \uACF5\uACA9 \uC18D\uB3C4"
+  - key: meditation.swift_dash_attack
+    value: 0.15
+    unit: 
+    note: "\uCF8C 10: \uB300\uC2DC \uACF5\uACA9 \uD53C\uD574 +"
+  - key: meditation.iron_per_point
+    value: 2
+    unit: 
+    note: "\uAC15: \uD3EC\uC778\uD2B8\uB2F9 \uCD5C\uB300 \uCCB4\uB825"
+  - key: meditation.iron_toughness
+    value: 3
+    unit: 
+    note: "\uAC15 5: \uAC15\uC778\uD568 +"
+  - key: meditation.iron_revive
+    value: 0.4
+    unit: 
+    note: "\uAC15 20: \uAE30\uC0AC\uD68C\uC0DD \uCCB4\uB825 \uBE44\uC728"
+  - key: meditation.meridian_per_point
+    value: 0.02
+    unit: 
+    note: "\uB9E5: \uD3EC\uC778\uD2B8\uB2F9 \uC218\uB828\uCE58 +"
+  - key: meditation.shadow_per_point
+    value: 0.02
+    unit: 
+    note: "\uC740: \uD3EC\uC778\uD2B8\uB2F9 \uC740\uC790 \uD68D\uB4DD +"
+  - key: meditation.shadow_start_silver
+    value: 50
+    unit: "\uC740\uC790"
+    note: "\uC740 5: \uC2DC\uC791 \uC740\uC790"
+  - key: meditation.shadow_inn_discount
+    value: 0.15
+    unit: 
+    note: "\uC740 10: \uAC1D\uC794 \uAC00\uACA9 \u2212"
+  - key: meditation.qi_per_point
+    value: 0.01
+    unit: 
+    note: "\uAE30: \uD3EC\uC778\uD2B8\uB2F9 \uAE30\uC138 \uCDA9\uC804 +"
+  - key: meditation.qi_skill_cooldown
+    value: 0.1
+    unit: 
+    note: "\uAE30 5: \uCD08\uC2DD \uCFE8\uD0C0\uC784 \u2212"
+  - key: meditation.qi_fight_gauge
+    value: 0.3
+    unit: 
+    note: "\uAE30 10: \uC804\uD22C \uC2DC\uC791 \uC2DC \uAE30\uC138"
+  - key: luck.common_cut
+    value: 0.01
+    unit: 
+    note: "\uD589\uC6B4 1\uB2F9 \uC77C\uBC18 \uD655\uB960 \uAC10\uC18C"
+  - key: luck.uncommon_share
+    value: 0.6
+    unit: 
+    note: "\uD589\uC6B4\uC73C\uB85C \uC904\uC778 \uC77C\uBC18 \uD655\uB960 \uC911 \uACE0\uAE09 \uBAAB"
+  - key: luck.rare_share
+    value: 0.3
+    unit: 
+    note: "\uD589\uC6B4\uC73C\uB85C \uC904\uC778 \uC77C\uBC18 \uD655\uB960 \uC911 \uD76C\uADC0 \uBAAB"
+  - key: luck.legendary_share
+    value: 0.1
+    unit: 
+    note: "\uD589\uC6B4\uC73C\uB85C \uC904\uC778 \uC77C\uBC18 \uD655\uB960 \uC911 \uC804\uC124 \uBAAB"

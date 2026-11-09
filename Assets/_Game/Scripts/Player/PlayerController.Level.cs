@@ -1,4 +1,4 @@
-using AThousandDawns.Combat;
+﻿using AThousandDawns.Combat;
 using AThousandDawns.Core;
 using AThousandDawns.Enemies;
 
@@ -12,6 +12,7 @@ namespace AThousandDawns.Player
         PlayerLevel _level;
         float _levelMaxHealth;
         readonly int[] _xpByRank = new int[5];
+        float _xpCarry; // 면벽수련 맥: 수련치 +%의 소수점은 모아 뒀다가
 
         public PlayerLevel Level => _level;
 
@@ -29,7 +30,10 @@ namespace AThousandDawns.Player
         void GainXpFromKill(Damageable dead)
         {
             if (IsDead || !dead.TryGetComponent(out EnemyBrain enemy)) return; // 허수아비는 수련치 없음
-            _level.Add(_xpByRank[(int)enemy.Rank]);
+            _xpCarry += _xpByRank[(int)enemy.Rank] * (1f + RunXpBonus);
+            int whole = UnityEngine.Mathf.FloorToInt(_xpCarry + 1e-4f);
+            _xpCarry -= whole;
+            _level.Add(whole);
         }
 
         // 시험용 (L): 다음 레벨까지 남은 만큼

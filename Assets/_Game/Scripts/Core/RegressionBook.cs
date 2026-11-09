@@ -32,16 +32,16 @@ namespace AThousandDawns.Core
             new BookNode { Id = "flying_dagger", Name = "비도", Branch = "무기", Prereq = "forge", DefaultCost = 270, Effect = "두 번째 무기 비도" },
 
             // 줄기 → 생존 · 견문
-            new BookNode { Id = "meditation", Name = "면벽수련", Branch = "줄기", Prereq = Root, DefaultCost = 180, Effect = "면벽수련 (기본 심득 5)" },
+            new BookNode { Id = "meditation", Name = "면벽수련", Branch = "줄기", Prereq = Root, DefaultCost = 180, Ready = true, Effect = "면벽수련이 열려요: 심득 5를 심법 6종(쾌·강·맥·오·은·기)에 나눠 넣어요. 회귀록에서 M." },
             new BookNode { Id = "potion_kit", Name = "금창약 지참", Branch = "생존", Prereq = "meditation", DefaultCost = 220, Ready = true, Effect = "판을 금창약 1개를 들고 시작" },
             new BookNode { Id = "inn_stock", Name = "객잔 진열 +1", Branch = "생존", Prereq = "potion_kit", DefaultCost = 230, Ready = true, Effect = "객잔 진열 기물 4개" },
-            new BookNode { Id = "insight1", Name = "심득 +5 (1차)", Branch = "줄기", Prereq = "meditation", DefaultCost = 180, Effect = "면벽수련 심득 +5" },
+            new BookNode { Id = "insight1", Name = "심득 +5 (1차)", Branch = "줄기", Prereq = "meditation", DefaultCost = 180, Ready = true, Effect = "면벽수련 심득 +5" },
             new BookNode { Id = "item_pack1", Name = "새 기물 묶음 1", Branch = "견문", Prereq = "insight1", DefaultCost = 180, Effect = "보상에 새 기물 묶음 추가" },
             new BookNode { Id = "item_pack2", Name = "새 기물 묶음 2", Branch = "견문", Prereq = "item_pack1", DefaultCost = 320, Effect = "보상에 새 기물 묶음 추가" },
-            new BookNode { Id = "insight2", Name = "심득 +5 (2차)", Branch = "줄기", Prereq = "insight1", DefaultCost = 270, Effect = "면벽수련 심득 +5" },
-            new BookNode { Id = "insight3", Name = "심득 +5 (3차)", Branch = "줄기", Prereq = "insight2", DefaultCost = 360, Effect = "면벽수련 심득 +5" },
-            new BookNode { Id = "insight4", Name = "심득 +5 (4차)", Branch = "줄기", Prereq = "insight3", DefaultCost = 450, Effect = "면벽수련 심득 +5" },
-            new BookNode { Id = "insight5", Name = "심득 +5 (5차)", Branch = "줄기", Prereq = "insight4", DefaultCost = 540, Effect = "면벽수련 심득 +5" },
+            new BookNode { Id = "insight2", Name = "심득 +5 (2차)", Branch = "줄기", Prereq = "insight1", DefaultCost = 270, Ready = true, Effect = "면벽수련 심득 +5" },
+            new BookNode { Id = "insight3", Name = "심득 +5 (3차)", Branch = "줄기", Prereq = "insight2", DefaultCost = 360, Ready = true, Effect = "면벽수련 심득 +5" },
+            new BookNode { Id = "insight4", Name = "심득 +5 (4차)", Branch = "줄기", Prereq = "insight3", DefaultCost = 450, Ready = true, Effect = "면벽수련 심득 +5" },
+            new BookNode { Id = "insight5", Name = "심득 +5 (5차)", Branch = "줄기", Prereq = "insight4", DefaultCost = 540, Ready = true, Effect = "면벽수련 심득 +5" },
 
             // 유품 (겨울 가지, 첫 천마 격파 후 개화)
             new BookNode { Id = "relic1", Name = "기억 용량 +1 (1차)", Branch = "유품", Prereq = Root, DefaultCost = 110, Condition = "첫 천마 격파 후", Effect = "전생의 유품 기억 용량 +1" },
