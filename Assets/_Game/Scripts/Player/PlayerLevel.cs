@@ -43,6 +43,14 @@ namespace AThousandDawns.Player
         // 벽에 새긴 검결 (깊이 참오): 레벨업 없이 혈자리 하나
         public void GrantPending() => Pending++;
 
+        // 판 중간 저장에서 되살릴 때
+        public void Restore(int level, int xp, int pending)
+        {
+            Level = Mathf.Max(1, level);
+            Xp = Mathf.Max(0, xp);
+            Pending = Mathf.Max(0, pending);
+        }
+
         public bool ConsumePending()
         {
             if (Pending <= 0) return false;

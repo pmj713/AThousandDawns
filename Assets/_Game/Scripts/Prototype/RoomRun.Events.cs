@@ -92,6 +92,7 @@ namespace AThousandDawns.Prototype
         public void CloseEvent()
         {
             if (!IsInEvent) return;
+            MarkSave();
             CurrentEvent = null;
             arena.Blocked = false;
             Player.enabled = true;

@@ -26,6 +26,14 @@ namespace AThousandDawns.Prototype
         readonly List<Slot> _slots = new List<Slot>();
         public IReadOnlyList<Slot> Slots => _slots;
 
+        // 판 중간 저장에서 되살릴 때 (진열을 다시 뽑지 않게)
+        public static InnShop FromSlots(IEnumerable<Slot> slots)
+        {
+            var shop = new InnShop();
+            shop._slots.AddRange(slots);
+            return shop;
+        }
+
         public static int ItemPrice(ItemGrade grade) => (int)Math.Round(GameConfig.Get(grade switch
         {
             ItemGrade.Common => "price.item_common",

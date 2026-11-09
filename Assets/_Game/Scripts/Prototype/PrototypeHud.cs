@@ -339,7 +339,7 @@ namespace AThousandDawns.Prototype
             {
                 "계속하기",
                 "설정",
-                run.ConfirmTitle ? "한 번 더 누르면 시작 화면으로 (이번 판은 사라져요)" : "시작 화면으로",
+                run.ConfirmTitle ? "한 번 더 누르면 시작 화면으로 (이어하기는 마지막 저장부터)" : "시작 화면으로",
             };
             for (int i = 0; i < labels.Length; i++)
             {

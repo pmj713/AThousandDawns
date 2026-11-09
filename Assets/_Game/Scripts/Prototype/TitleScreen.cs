@@ -8,7 +8,7 @@ namespace AThousandDawns.Prototype
 {
     // 시작 화면 (기획 대화 시작 화면안). 그림이 없어서 글과 색만으로 배치해요 (IMGUI).
     //   오른쪽 위: 一朝千回 세로쓰기 + 붉은 낙관 + A THOUSAND DAWNS · 왼쪽 아래: 버튼 4개 · 오른쪽 아래: 버전
-    //   이어하기 (저장이 있을 때, 처음에 선택) → 판 구조 씬 (회차가 있으면 마을부터)
+    //   이어하기 (저장이 있을 때, 처음에 선택) → 판 중간 저장이 있으면 그 방부터, 없으면 마을
     //   시작하기 (저장이 없을 때) → 프롤로그 (글 4장, 넘기기 가능) → 첫 판
     //   설정 (SettingsPanel, 일시정지 메뉴와 같은 창) · 크레딧 · 종료 (확인 없이)
     // 마우스·키보드(위아래·Enter·Esc)·게임패드(십자·A·B) 모두 돼요.
@@ -44,7 +44,8 @@ namespace AThousandDawns.Prototype
 
         void Awake()
         {
-            HasSave = File.Exists(MetaSave.FilePath);
+            _run = RunSave.Load(); // 판 중간 저장 (있으면 이어하기는 그 방부터)
+            HasSave = File.Exists(MetaSave.FilePath) || _run != null;
             _meta = MetaSave.Load();
             Selected = 0;
             Time.timeScale = 1f;
@@ -58,10 +59,13 @@ namespace AThousandDawns.Prototype
             _ => "종료",
         };
 
-        // 이어하기 옆 진행 정보 (판 중간 저장은 아직 없어서 회차와 기억만)
-        public string ProgressText => HasSave
-            ? $"제{_meta.runs}회 회귀 · 회귀의 기억 {_meta.memory}{(_meta.bestFloors > 0 ? $" · 가장 깊이 {_meta.bestFloors}층" : "")}"
-            : "";
+        // 이어하기 옆 진행 정보: 판 중간 저장이 있으면 위치, 없으면 회차와 기억
+        public string ProgressText => !HasSave ? ""
+            : _run != null ? $"제{_meta.runs}회 회귀 · {_run.WhereText}"
+            : $"제{_meta.runs}회 회귀 · 회귀의 기억 {_meta.memory}{(_meta.bestFloors > 0 ? $" · 가장 깊이 {_meta.bestFloors}층" : "")}";
+
+        public bool HasRunSave => _run != null;
+        RunSave _run;
 
         void Update()
         {
@@ -126,6 +130,7 @@ namespace AThousandDawns.Prototype
         public void StartRun()
         {
             RoomRun.SkipVillage = false;
+            RoomRun.ResumeRun = _run != null; // 이어하기: 저장한 판부터 (없으면 마을)
             SceneManager.LoadScene(RunScene);
         }
 

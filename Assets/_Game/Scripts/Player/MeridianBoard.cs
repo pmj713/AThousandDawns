@@ -59,6 +59,8 @@ namespace AThousandDawns.Player
             return true;
         }
 
+        public IReadOnlyDictionary<Vector2Int, Acupoint> Acupoints => _acupoints; // 판 중간 저장용
+
         public Acupoint AcupointAt(Vector2Int cell) => _acupoints.TryGetValue(cell, out var kind) ? kind : Acupoint.None;
 
         // 혈자리를 열어요. 한 칸에 하나만.

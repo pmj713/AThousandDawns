@@ -52,6 +52,9 @@ namespace AThousandDawns.Prototype
             throw new InvalidOperationException("층 배치를 만들지 못했어요");
         }
 
+        // 판 중간 저장에서 되살릴 때 (저장한 순서 그대로, 첫 방이 시작 방)
+        public FloorRoom AddRestored(Vector2Int cell, FloorRoomKind kind, bool optional) => Add(cell, kind, optional);
+
         // 입문 죽림: 손으로 짠 일자 길 (서 → 동으로 한 칸씩)
         public static FloorMap Line(params FloorRoomKind[] kinds)
         {

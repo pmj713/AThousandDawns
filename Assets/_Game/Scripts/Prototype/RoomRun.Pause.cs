@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 namespace AThousandDawns.Prototype
 {
     // 일시정지 (Esc): 다른 창(진열대·이벤트·기물 고르기·경맥도·회귀록·결과)이 없을 때만 열려요. 시간이 멈춰요.
-    //   계속하기 · 설정 (시작 화면과 같은 설정창) · 시작 화면으로 (판 중간 저장이 아직 없어서 이번 판은 사라져요, 한 번 더 눌러 확인)
+    //   계속하기 · 설정 (시작 화면과 같은 설정창) · 시작 화면으로 (한 번 더 눌러 확인. 이어하기는 마지막 저장부터, RoomRun.Save)
     public sealed partial class RoomRun
     {
         public enum PauseItem { Resume, Settings, Title }
@@ -97,6 +97,7 @@ namespace AThousandDawns.Prototype
                         ConfirmTitle = true; // 한 번 더 누르면 나가요
                         break;
                     }
+                    if (_saveDirty && CanSave(true)) { _saveDirty = false; Capture().Save(); } // 나가기 전에 저장할 수 있으면 저장
                     Time.timeScale = 1f;
                     SceneManager.LoadScene("Title");
                     break;

@@ -80,6 +80,8 @@ namespace AThousandDawns.Prototype
             meta.bestFloors = Mathf.Max(meta.bestFloors, _record.FloorsCleared);
             meta.bossKills += _record.Kills[(int)EnemyRank.Boss];
             meta.Save();
+            RunSave.Delete(); // 판이 끝났으니 이어할 것도 없어요
+            _saveDirty = false;
 
             Result = new ResultView
             {
