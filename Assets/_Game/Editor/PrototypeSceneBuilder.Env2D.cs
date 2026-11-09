@@ -12,8 +12,9 @@ namespace AThousandDawns.EditorTools
         const string Env2DArtFolder = "Assets/_Game/Art/Env/BurningBamboo";
         const string Env2DMaterialFolder = "Assets/_Game/Art/Env/BurningBamboo/Materials";
 
-        const float Env2DFloorWidth = 20f;
-        const float Env2DFloorDepth = 14f;
+        // 바닥은 방(CombatSize 20×12)보다 넓게 깔아 벽 너머 숲 밑동까지 덮어요
+        const float Env2DFloorWidth = 32f;
+        const float Env2DFloorDepth = 24f;
         const float Env2DFloorTileSize = 4f; // 바닥 그림 한 장이 덮는 칸 수
         const float CameraPitch = 55f;
 
@@ -33,13 +34,27 @@ namespace AThousandDawns.EditorTools
 
         public static void BuildEnv2D()
         {
-            string[] sprites = { "Bamboo_A", "Bamboo_B", "Bamboo_C", "Rock_A", "Palisade_A", "LanternPost_A" };
+            string[] sprites = { "Bamboo_A", "Bamboo_B", "Bamboo_C", "Rock_A", "Palisade_A", "LanternPost_A", "Bush_A", "Bush_B" };
             foreach (var name in sprites) ImportAsSprite($"{Env2DArtFolder}/{name}.png");
             ImportAsSprite($"{Env2DArtFolder}/Source/Backdrop_Ink.png");
             ImportAsTiledTexture($"{Env2DArtFolder}/Floor_Ground.png");
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
+            SetupEnvCameraAndLight();
 
+            BuildEnv2DFloor();
+            BuildEnv2DRoom();
+
+            BuildInkCharacters();
+
+            EnsureFolder("Assets/_Game/Scenes");
+            EditorSceneManager.SaveScene(scene, Env2DScenePath);
+            AssetDatabase.SaveAssets();
+        }
+
+        // 시험판과 같은 고정 쿼터뷰 (방 가운데를 봐요), 한지색 배경
+        static void SetupEnvCameraAndLight()
+        {
             var light = Object.FindFirstObjectByType<Light>();
             if (light != null) light.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
 
@@ -49,50 +64,148 @@ namespace AThousandDawns.EditorTools
             cam.clearFlags = CameraClearFlags.SolidColor;
             ColorUtility.TryParseHtmlString("#E9E4D8", out Color paper);
             cam.backgroundColor = paper;
+        }
 
-            BuildEnv2DFloor();
+        // Prototype_Run의 층 방(CombatSize 20×12, 네 변 가운데 폭 3 문)과 같은 자리에 2D 그림을 둬요.
+        // 상자 벽 자리는 숲·목책으로, 대나무 기둥 6개는 대나무 그림으로. 문 앞 십자 길은 비워 둬요.
+        static void BuildEnv2DRoom()
+        {
+            float hx = CombatSize.x * 0.5f, hz = CombatSize.y * 0.5f;
+            const float doorHalf = 1.75f; // 문 폭 3 + 복도 벽 두께
 
-            var props = new GameObject("Props (2D)").transform;
-            // 뒤쪽 먼 풍경: 바닥 끝 너머에 세운 큰 그림
-            Billboard(props, "Backdrop_Ink", $"{Env2DArtFolder}/Source/Backdrop_Ink.png", new Vector3(0f, 0f, Env2DFloorDepth * 0.5f + 0.5f), 11f);
+            var room = new GameObject("Room_Floor (2D)").transform;
+            var north = new GameObject("North (palisade + forest)").transform;
+            var west = new GameObject("West (forest)").transform;
+            var east = new GameObject("East (forest)").transform;
+            var south = new GameObject("South (rocks)").transform;
+            var pillars = new GameObject("Bamboo Pillars").transform;
+            var bushes = new GameObject("Bushes (청죽사)").transform;
+            foreach (var t in new[] { north, west, east, south, pillars, bushes }) t.SetParent(room, false);
 
-            // 왼쪽과 뒤쪽 가장자리를 따라 대나무 숲
-            Vector3[] bambooSpots =
+            // 북쪽 너머 먼 풍경
+            Billboard(room, "Backdrop_Ink", $"{Env2DArtFolder}/Source/Backdrop_Ink.png", new Vector3(0f, 0f, hz + 5f), 22f);
+
+            // 북쪽 벽: 목책 세 칸씩, 문 양옆 등불, 그 뒤로 대나무 두 줄
+            for (int side = -1; side <= 1; side += 2)
             {
-                new Vector3(-9f, 0f, 6f), new Vector3(-7f, 0f, 6.3f), new Vector3(-5.2f, 0f, 5.8f),
-                new Vector3(-9.2f, 0f, 3.5f), new Vector3(-8.6f, 0f, 1f), new Vector3(-9.3f, 0f, -1.5f),
-                new Vector3(-8.4f, 0f, -4f), new Vector3(8.8f, 0f, 5.6f), new Vector3(9.2f, 0f, 2.8f),
-                new Vector3(-3.5f, 0f, 2.5f),
+                for (int i = 0; i < 4; i++)
+                    Billboard(north, "Palisade_A", $"{Env2DArtFolder}/Palisade_A.png",
+                        new Vector3(side * (doorHalf + 1f + i * 1.9f), 0f, hz + 0.3f), 2.6f, (i + side) % 2 == 0);
+                Billboard(north, "LanternPost_A", $"{Env2DArtFolder}/LanternPost_A.png",
+                    new Vector3(side * (doorHalf + 0.2f), 0f, hz + 0.15f), 3.6f, side > 0);
+            }
+            BambooRow(north, -hx - 2f, hx + 2f, hz + 1.3f, 1.4f, true, doorHalf, 0);
+            BambooRow(north, -hx - 1.3f, hx + 1.3f, hz + 2.4f, 1.6f, true, 0f, 3);
+
+            // 동·서 벽: 대나무 두 줄, 문 자리(z = 0)는 비워 둬요
+            BambooRow(west, -hz, hz + 0.5f, -hx - 0.6f, 1.3f, false, doorHalf, 5);
+            BambooRow(west, -hz - 1f, hz + 1f, -hx - 1.7f, 1.5f, false, doorHalf, 8);
+            BambooRow(east, -hz, hz + 0.5f, hx + 0.6f, 1.3f, false, doorHalf, 11);
+            BambooRow(east, -hz - 1f, hz + 1f, hx + 1.7f, 1.5f, false, doorHalf, 14);
+
+            // 남쪽 벽: 카메라 쪽이라 키 큰 그림은 방을 가려요. 낮은 바위만 둬요
+            float[] rockX = { -8.6f, -6.2f, -3.4f, 3.2f, 5.8f, 8.4f };
+            for (int i = 0; i < rockX.Length; i++)
+                Billboard(south, "Rock_A", $"{Env2DArtFolder}/Rock_A.png",
+                    new Vector3(rockX[i], 0f, -hz - 0.4f), 1.2f + (i * 7 % 4) * 0.15f, i % 2 == 1);
+
+            // 대나무 기둥 6개 (Prototype_Run과 같은 자리)
+            Vector3[] pillarSpots =
+            {
+                new Vector3(-5.5f, 0f, 3f), new Vector3(5.5f, 0f, -3f), new Vector3(-7f, 0f, -3.5f),
+                new Vector3(7f, 0f, 3.5f), new Vector3(3.5f, 0f, 3f), new Vector3(-3.5f, 0f, -3f),
             };
-            string[] bamboos = { "Bamboo_A", "Bamboo_B", "Bamboo_C" };
-            for (int i = 0; i < bambooSpots.Length; i++)
+            for (int i = 0; i < pillarSpots.Length; i++)
             {
-                string name = bamboos[i % bamboos.Length];
-                float height = 5.5f + (i * 37 % 10) * 0.12f;
-                Billboard(props, name, $"{Env2DArtFolder}/{name}.png", bambooSpots[i], height, i % 2 == 1);
+                string name = Env2DBamboos[i % Env2DBamboos.Length];
+                Billboard(pillars, name, $"{Env2DArtFolder}/{name}.png", pillarSpots[i], 7f, i % 2 == 0);
             }
 
-            // 뒤쪽 산채 입구: 목책 둘과 등불 둘
-            Billboard(props, "Palisade_A", $"{Env2DArtFolder}/Palisade_A.png", new Vector3(-1.8f, 0f, 6.2f), 2.2f);
-            Billboard(props, "Palisade_A", $"{Env2DArtFolder}/Palisade_A.png", new Vector3(2.6f, 0f, 6.2f), 2.2f, true);
-            Billboard(props, "LanternPost_A", $"{Env2DArtFolder}/LanternPost_A.png", new Vector3(0.4f, 0f, 5.9f), 3.4f);
-            Billboard(props, "LanternPost_A", $"{Env2DArtFolder}/LanternPost_A.png", new Vector3(5.2f, 0f, 1f), 3.4f, true);
+            // 청죽사 풀숲 4곳 (Prototype_Run과 같은 자리). 시험판 풀숲(지름 1.5)보다 조금 넓게 그려요
+            Vector3[] bushSpots =
+            {
+                new Vector3(-7.5f, 0f, 4.3f), new Vector3(7.5f, 0f, -4.3f), new Vector3(-3f, 0f, 4.3f), new Vector3(3f, 0f, -4.3f),
+            };
+            for (int i = 0; i < bushSpots.Length; i++)
+            {
+                string name = i % 2 == 0 ? "Bush_A" : "Bush_B";
+                Billboard(bushes, name, $"{Env2DArtFolder}/{name}.png", bushSpots[i], 1.6f, i >= 2);
+            }
 
-            // 바위 몇 개
-            Billboard(props, "Rock_A", $"{Env2DArtFolder}/Rock_A.png", new Vector3(4.5f, 0f, 3.5f), 1.8f);
-            Billboard(props, "Rock_A", $"{Env2DArtFolder}/Rock_A.png", new Vector3(-5.5f, 0f, -2.5f), 1.3f, true);
-            Billboard(props, "Rock_A", $"{Env2DArtFolder}/Rock_A.png", new Vector3(6.8f, 0f, -4.2f), 1.1f);
+            // 방 안쪽 바위 장식 두 개 (길·기둥과 겹치지 않는 자리)
+            Billboard(room, "Rock_A", $"{Env2DArtFolder}/Rock_A.png", new Vector3(-8.3f, 0f, 1.6f), 1.6f);
+            Billboard(room, "Rock_A", $"{Env2DArtFolder}/Rock_A.png", new Vector3(8.4f, 0f, -1.9f), 1.4f, true);
+        }
 
-            // 크기 비교용 플레이어 자리 (높이 2)
-            var player = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            player.name = "Scale Reference (Player)";
-            player.transform.position = new Vector3(0f, 1f, 0f);
-            Object.DestroyImmediate(player.GetComponent<Collider>());
-            player.GetComponent<Renderer>().sharedMaterial = GetMaterial("Player", PlayerColor, false);
+        const string InkShaderName = "AThousandDawns/InkCharacter";
+        const string InkMaterialFolder = "Assets/_Game/Art/Characters/Materials";
 
-            EnsureFolder("Assets/_Game/Scenes");
-            EditorSceneManager.SaveScene(scene, Env2DScenePath);
-            AssetDatabase.SaveAssets();
+        // 수묵 셰이더 시험: 플레이어(붉은 포인트)·졸개·멧돼지 자리를 수묵으로, 옆에 원래 Lit 캡슐을 비교용으로 둬요.
+        static void BuildInkCharacters()
+        {
+            var group = new GameObject("Characters (ink test)").transform;
+
+            InkPrimitive(group, "Player (Ink)", PrimitiveType.Capsule, new Vector3(0f, 1f, -3f), Vector3.one,
+                GetInkMaterial("Ink_Player", PlayerColor, 0.75f));
+            InkPrimitive(group, "Grunt (Ink)", PrimitiveType.Capsule, new Vector3(-2.2f, 1f, -1.2f), Vector3.one,
+                GetInkMaterial("Ink_Grunt", GruntColor, 0.1f));
+            InkPrimitive(group, "Boar (Ink)", PrimitiveType.Sphere, new Vector3(2.4f, 0.55f, -1.2f), new Vector3(1.3f, 1.1f, 1.9f),
+                GetInkMaterial("Ink_Boar", BoarColor, 0.1f));
+
+            InkPrimitive(group, "Player (Plain Lit, 비교용)", PrimitiveType.Capsule, new Vector3(1.4f, 1f, -3.6f), Vector3.one,
+                GetMaterial("Player", PlayerColor, false));
+        }
+
+        static void InkPrimitive(Transform parent, string name, PrimitiveType type, Vector3 position, Vector3 scale, Material mat)
+        {
+            var go = GameObject.CreatePrimitive(type);
+            go.name = name;
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = position;
+            go.transform.localScale = scale;
+            Object.DestroyImmediate(go.GetComponent<Collider>());
+            go.GetComponent<Renderer>().sharedMaterial = mat;
+        }
+
+        static Material GetInkMaterial(string name, string hex, float saturation)
+        {
+            EnsureFolder(InkMaterialFolder);
+            string path = $"{InkMaterialFolder}/{name}.mat";
+            var shader = Shader.Find(InkShaderName);
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                mat = new Material(shader);
+                AssetDatabase.CreateAsset(mat, path);
+                ColorUtility.TryParseHtmlString(hex, out Color color);
+                mat.SetColor("_BaseColor", color);
+                mat.SetFloat("_Saturation", saturation);
+            }
+            else if (shader != null) mat.shader = shader;
+            EditorUtility.SetDirty(mat);
+            return mat;
+        }
+
+        static readonly string[] Env2DBamboos = { "Bamboo_A", "Bamboo_B", "Bamboo_C" };
+
+        // from~to 구간에 대나무를 한 줄로 세워요. alongX면 x를 따라 (z = line), 아니면 z를 따라 (x = line).
+        // 가운데 |값| < gap 은 문 자리라 비워요. seed로 높이·좌우·흔들림을 다르게 해요.
+        static void BambooRow(Transform parent, float from, float to, float line, float step, bool alongX, float gap, int seed)
+        {
+            int i = 0;
+            for (float t = from; t <= to + 0.01f; t += step, i++)
+            {
+                if (Mathf.Abs(t) < gap) continue;
+                int h = (seed + i) * 2654435 & 0xFFFF;
+                float jitter = ((h & 0xFF) / 255f - 0.5f) * step * 0.5f;
+                float lineJitter = (((h >> 8) & 0xFF) / 255f - 0.5f) * 0.5f;
+                float along = t + jitter;
+                if (Mathf.Abs(along) < gap) along = Mathf.Sign(along) * gap;
+                var foot = alongX ? new Vector3(along, 0f, line + lineJitter) : new Vector3(line + lineJitter, 0f, along);
+                string name = Env2DBamboos[(seed + i) % Env2DBamboos.Length];
+                float height = 8f + (h % 9) * 0.2f;
+                Billboard(parent, name, $"{Env2DArtFolder}/{name}.png", foot, height, (h & 1) == 1);
+            }
         }
 
         static void BuildEnv2DFloor()
@@ -118,18 +231,22 @@ namespace AThousandDawns.EditorTools
             floor.GetComponent<Renderer>().sharedMaterial = mat;
         }
 
-        // 발밑을 바닥에 붙이고 카메라와 같은 각도로 기울여 세워요. 그림에 이미 위에서 본 각도가 들어 있어요.
+        // 3D 캐릭터처럼 바닥에 수직으로 세워요. 그래야 원근 기울기와 앞뒤 가림이 캐릭터와 같아요.
+        // 수직 판은 55° 카메라에서 세로가 cos55°(≈0.57)만큼 납작해 보여요. 그림은 이미 위에서 본 각도로
+        // 그려져 있으니 가로를 cos55°만큼 줄여 화면에서 그림 비율이 그대로 보이게 해요.
+        // height는 월드 키 (플레이어 캡슐 = 2). 화면에서는 같은 키의 3D 물체와 같은 크기로 보여요.
         static void Billboard(Transform parent, string name, string spritePath, Vector3 foot, float height, bool flip = false)
         {
             var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
-            go.transform.SetPositionAndRotation(foot, Quaternion.Euler(CameraPitch, 0f, 0f));
+            go.transform.SetPositionAndRotation(foot, Quaternion.identity);
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = sprite;
             sr.flipX = flip;
             float scale = height / sprite.bounds.size.y;
-            go.transform.localScale = new Vector3(scale, scale, 1f);
+            float foreshorten = Mathf.Cos(CameraPitch * Mathf.Deg2Rad);
+            go.transform.localScale = new Vector3(scale * foreshorten, scale, 1f);
         }
 
         static void ImportAsSprite(string path)
