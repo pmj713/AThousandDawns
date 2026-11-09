@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using AThousandDawns.Core;
 using AThousandDawns.Items;
@@ -32,10 +32,10 @@ namespace AThousandDawns.Prototype
             _ => "price.item_legendary",
         }, grade == ItemGrade.Common ? 120f : grade == ItemGrade.Uncommon ? 300f : grade == ItemGrade.Rare ? 500f : 900f));
 
-        public static InnShop Stock(IReadOnlyList<ItemDefinition> pool, PlayerItems owned, IReadOnlyList<float> gradeWeights, Random rng)
+        public static InnShop Stock(IReadOnlyList<ItemDefinition> pool, PlayerItems owned, IReadOnlyList<float> gradeWeights, Random rng, int extraItems = 0)
         {
             var shop = new InnShop();
-            int count = (int)Math.Round(GameConfig.Get("inn.item_stock", 3f));
+            int count = (int)Math.Round(GameConfig.Get("inn.item_stock", 3f)) + extraItems; // 회귀록 객잔 진열 +1
             Func<float> random = () => (float)rng.NextDouble();
             var picked = new List<ItemDefinition>();
             bool Taken(string id) => (owned != null && owned.Has(id)) || picked.Exists(d => d.id == id);

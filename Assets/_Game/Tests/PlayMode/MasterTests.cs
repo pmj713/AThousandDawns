@@ -110,7 +110,7 @@ namespace AThousandDawns.Tests
             cc.enabled = false;
             player.transform.position = new Vector3(0f, 0f, -12.5f); // 남쪽 벽 바로 앞
             cc.enabled = true;
-            var fist = (IronFistBrain)director.Spawn(EnemyKind.IronFist, new Vector3(0f, 0f, -4f));
+            var fist = (IronFistBrain)director.Spawn(EnemyKind.IronFist, new Vector3(0f, 0f, 6f)); // 첫 공격 대기 1초 동안 걸어와도 돌진 거리(5칸) 밖
             fist.SetZone(new Vector3(0f, 0f, -2f), new Vector2(40f, 24f));
             yield return WaitUntil(() => fist.IsWallStunned, 8f);
             Assert.IsTrue(fist.IsWallStunned, "벽에 부딪혀 기절");
@@ -126,7 +126,7 @@ namespace AThousandDawns.Tests
             var director = Object.FindFirstObjectByType<EnemyDirector>();
             var player = Object.FindFirstObjectByType<PlayerController>();
             player.LearnSkill(SkillKind.Quake);
-            var grunt = director.Spawn(EnemyKind.Grunt, player.transform.position + new Vector3(1.5f, 0f, 0f));
+            var grunt = director.Spawn(EnemyKind.Boar, player.transform.position + new Vector3(1.5f, 0f, 0f)); // 체력 80 (충격파 40에 안 죽음)
             yield return null;
             float before = Vector3.Distance(grunt.transform.position, player.transform.position);
 

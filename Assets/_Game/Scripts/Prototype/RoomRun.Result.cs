@@ -42,7 +42,14 @@ namespace AThousandDawns.Prototype
             if (IsShowingResult)
             {
                 var keyboard = Keyboard.current;
-                if (keyboard != null && keyboard.enterKey.wasPressedThisFrame) Restart();
+                if (keyboard == null) return true;
+                if (_book != null && _book.IsOpen)
+                {
+                    if (keyboard.bKey.wasPressedThisFrame) _book.Close();
+                    return true;
+                }
+                if (keyboard.bKey.wasPressedThisFrame && _book != null) _book.Open(); // 회귀록
+                else if (keyboard.enterKey.wasPressedThisFrame) Restart();
                 return true;
             }
             if (Player.IsDead)

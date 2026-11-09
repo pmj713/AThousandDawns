@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -14,6 +15,8 @@ namespace AThousandDawns.Core
         public int runs;          // 회차 (끝난 판 수)
         public int bestFloors;    // 가장 많이 돌파한 층
         public int bossKills;     // 지역 보스 처치 수
+        public int finalBossKills; // 천마 격파 수 (유품 가지가 열려요)
+        public List<string> bloomed = new List<string>(); // 회귀록에서 피운 봉우리
 
         // 테스트에서 실제 저장 파일을 건드리지 않게 바꿔요
         public static string PathOverride;
@@ -24,7 +27,12 @@ namespace AThousandDawns.Core
         {
             try
             {
-                if (File.Exists(FilePath)) return JsonUtility.FromJson<MetaSave>(File.ReadAllText(FilePath)) ?? new MetaSave();
+                if (File.Exists(FilePath))
+                {
+                    var meta = JsonUtility.FromJson<MetaSave>(File.ReadAllText(FilePath)) ?? new MetaSave();
+                    if (meta.bloomed == null) meta.bloomed = new List<string>();
+                    return meta;
+                }
             }
             catch (Exception e)
             {

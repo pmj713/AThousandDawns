@@ -111,6 +111,7 @@ namespace AThousandDawns.Prototype
             _minSpawnDistance = GameConfig.Get("room.spawn_min_distance", 5f);
             _floors = Mathf.Max(1, Mathf.RoundToInt(GameConfig.Get("room.floors", 3f)));
             SetGateMarker(false);
+            ApplyBook();
             if (PrototypeArena.AutoSpawn) BeginFork(1);
         }
 
@@ -131,14 +132,15 @@ namespace AThousandDawns.Prototype
             }
             if (Player.IsDead) return;
 
+            bool discarding = Player.Items != null && Player.Items.Pending != null; // 버릴 기물을 고르는 중 (PrototypeArena)
             if (IsShopping)
             {
-                TickShopKeys();
+                if (!discarding) TickShopKeys();
                 return;
             }
             if (IsInEvent)
             {
-                TickEventKeys();
+                if (!discarding) TickEventKeys();
                 return;
             }
 
@@ -488,7 +490,7 @@ namespace AThousandDawns.Prototype
             MovePlayer(inn.entry);
             director.ResetRoom();
             var db = GameConfig.Items;
-            Shop = db == null ? null : InnShop.Stock(db.Items, Player.Items, RegionGradeWeights(), _rng);
+            Shop = db == null ? null : InnShop.Stock(db.Items, Player.Items, RegionGradeWeights(), _rng, _innStockBonus);
             int before = Tracking;
             Tracking = Mathf.FloorToInt(Tracking * GameConfig.Get("tracking.inn_ratio", 0.5f)); // 객잔에 들르면 추적도 절반
             ShowBanner($"객잔 · 점소이 앞에서 F로 진열대 (북쪽 문: 정비실) · 추적도 {before} → {Tracking}");
@@ -555,8 +557,18 @@ namespace AThousandDawns.Prototype
                 ShopNotice = blocker;
                 return false;
             }
-            Silver -= Shop.Buy(index, Player, Silver);
+            var slot = Shop.Slots[index];
+            int paid = Shop.Buy(index, Player, Silver);
+            Silver -= paid;
             ShopNotice = null;
+            // 둘 곳이 없으면 버릴 기물을 고르고, 포기하면 은자를 돌려받아요
+            if (slot.Kind == InnShop.SlotKind.Item && Player.Items.Pending == slot.Item)
+                Player.Items.OnPendingResolved(taken =>
+                {
+                    if (taken) return;
+                    Silver += paid;
+                    slot.Sold = false;
+                });
             return true;
         }
 

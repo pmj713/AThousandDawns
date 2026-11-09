@@ -9,9 +9,9 @@ namespace AThousandDawns.Player
     public sealed class OwnedItem
     {
         public ItemDefinition Def;
-        public bool OnBoard;   // 경맥도에 놓였는가. 아니면 보관함 (효과·키워드·상태 개수 없음)
+        public bool OnBoard;   // 경맥도에 놓였는가. 아니면 주머니 (효과·키워드·상태 개수 없음)
         public Vector2Int Cell;
-        public int Qi;         // 놓인 칸의 기 (보관함이면 0)
+        public int Qi;         // 놓인 칸의 기 (주머니면 0)
         public int MaxQiBonus; // 놓인 칸의 한혈 (최대 기 +)
         public int MaxQi => Def.maxQi + MaxQiBonus;
     }
@@ -43,6 +43,15 @@ namespace AThousandDawns.Player
             }
         }
 
+        // 주머니 칸 수: −1이면 제한 없음 (샌드박스). 판 구조는 회귀록에서 연 만큼 (주머니 없음 0 → 4 → 6 → 8).
+        public int BagCapacity { get; set; } = -1;
+        public bool HasBag => BagCapacity != 0;
+        public bool BagFull => BagCapacity >= 0 && BagCount >= BagCapacity;
+
+        // 둘 곳이 없어 버릴 기물을 고르는 중인 새 기물 (경맥도도 주머니도 가득)
+        public ItemDefinition Pending { get; private set; }
+        Action<bool> _pendingResolved;
+
         void Awake()
         {
             if (!TryGetComponent(out _keywords)) _keywords = gameObject.AddComponent<PlayerKeywords>();
@@ -72,18 +81,48 @@ namespace AThousandDawns.Player
             return null;
         }
 
-        // 새 기물은 경맥도 빈 칸에 왼쪽 위부터 (한 줄씩 오른쪽으로) 차례로 놓여요. 가득 차면 보관함으로.
-        public OwnedItem Add(ItemDefinition def)
+        // 새 기물은 경맥도 빈 칸에 왼쪽 위부터 (한 줄씩 오른쪽으로) 차례로 놓여요. 가득 차면 주머니로.
+        // 주머니도 없거나 가득이면 null을 돌려주고 Pending에 남겨요: 가진 기물 하나를 버리고 받거나 (ResolvePending) 포기해요.
+        // resolved: 결국 받았는지 (객잔은 포기하면 은자를 돌려줘요)
+        public OwnedItem Add(ItemDefinition def, Action<bool> resolved = null)
         {
             if (def == null || Has(def.id)) return null;
-            var item = new OwnedItem { Def = def };
-            _items.Add(item);
-            if (TryFindEmptyCell(out var cell))
+            bool onBoard = TryFindEmptyCell(out var cell);
+            if (!onBoard && BagFull)
             {
-                item.OnBoard = true;
-                item.Cell = cell;
+                Pending = def;
+                _pendingResolved = resolved;
+                Changed?.Invoke();
+                return null;
             }
+            var item = new OwnedItem { Def = def, OnBoard = onBoard, Cell = cell };
+            _items.Add(item);
             Recount();
+            resolved?.Invoke(true);
+            return item;
+        }
+
+        // 이미 대기 중인 새 기물에 결과 알림을 붙여요 (객잔: 포기하면 은자 돌려주기)
+        public void OnPendingResolved(Action<bool> resolved) => _pendingResolved += resolved;
+
+        // discard를 버리고 그 자리에 새 기물을 놓아요. null이면 새 기물을 포기해요.
+        public OwnedItem ResolvePending(OwnedItem discard)
+        {
+            var def = Pending;
+            var resolved = _pendingResolved;
+            Pending = null;
+            _pendingResolved = null;
+            if (def == null) return null;
+            if (discard == null || !_items.Remove(discard))
+            {
+                Recount();
+                resolved?.Invoke(false);
+                return null;
+            }
+            var item = new OwnedItem { Def = def, OnBoard = discard.OnBoard, Cell = discard.Cell };
+            _items.Add(item);
+            Recount();
+            resolved?.Invoke(true);
             return item;
         }
 
@@ -116,7 +155,7 @@ namespace AThousandDawns.Player
             return false;
         }
 
-        // 칸에 놓아요. 그 칸에 다른 기물이 있으면 자리를 바꾸고 (보관함에서 왔으면 그 기물이 보관함으로).
+        // 칸에 놓아요. 그 칸에 다른 기물이 있으면 자리를 바꾸고 (주머니에서 왔으면 그 기물이 주머니로).
         public void Place(OwnedItem item, Vector2Int cell)
         {
             if (item == null || !_board.Contains(cell)) return;
@@ -132,11 +171,13 @@ namespace AThousandDawns.Player
             Recount();
         }
 
-        public void ToBag(OwnedItem item)
+        // 주머니가 없거나 가득이면 false
+        public bool ToBag(OwnedItem item)
         {
-            if (item == null || !item.OnBoard) return;
+            if (item == null || !item.OnBoard || BagFull) return false;
             item.OnBoard = false;
             Recount();
+            return true;
         }
 
         // 경맥도 확장 (녹림왕 처치 5×4 → 6×4)

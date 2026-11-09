@@ -49,6 +49,7 @@ namespace AThousandDawns.Prototype
             DrawEvent();
             DrawResult();
             DrawOffer(); // 기물 카드는 맨 위에
+            DrawDiscard(); // 둘 곳이 없을 때 버릴 기물 고르기는 그보다 위에
         }
 
         void DrawHud()
@@ -221,15 +222,16 @@ namespace AThousandDawns.Prototype
             int bag = items.BagCount;
             GUILayout.BeginArea(new Rect(UiScale.Width - width - 16f, 16f, width, 64f + Mathf.Max(1, count) * 21f + (bag > 0 ? 24f : 0f)), GUI.skin.box);
             string pending = arena != null && arena.PendingOffers > 0 && !arena.IsChoosing ? $" · 고르기 {arena.PendingOffers}개 남음" : "";
-            GUILayout.Label($"기물 {count}개 (경맥도 {count - bag} · 보관함 {bag}){pending}", _label);
+            string bagText = !items.HasBag ? "주머니 없음" : items.BagCapacity < 0 ? $"주머니 {bag}" : $"주머니 {bag}/{items.BagCapacity}";
+            GUILayout.Label($"기물 {count}개 (경맥도 {count - bag} · {bagText}){pending}", _label);
             if (count == 0) GUILayout.Label(run != null ? "기물 길의 보상 방에서 3개 중 하나를 골라요 (I: 바로 고르기)" : "무리를 다 쓰러뜨리면 3개 중 하나를 골라요 (I: 바로 고르기)", _itemLine);
-            if (bag > 0) GUILayout.Label("<color=#ffd27a>보관함의 기물은 효과가 없어요 · E로 경맥도에 놓기</color>", _itemSmall);
+            if (bag > 0) GUILayout.Label("<color=#ffd27a>주머니의 기물은 효과가 없어요 · E로 경맥도에 놓기</color>", _itemSmall);
             foreach (var item in items.Items)
             {
                 var def = item.Def;
                 var state = PlayerItems.StateOf(item);
                 int level = PlayerItems.LevelOf(item);
-                string stateText = !item.OnBoard ? "<color=#9a9a9a>보관함</color>"
+                string stateText = !item.OnBoard ? "<color=#9a9a9a>주머니</color>"
                     : state == QiState.Lacking ? "<color=#9a9a9a>기 부족</color>"
                     : state == QiState.Circulating ? $"운기 {level}레벨"
                     : $"<color=#ff6a5a>주화입마 {level}레벨</color>";
@@ -346,7 +348,7 @@ namespace AThousandDawns.Prototype
             }
             row += 10f;
             GUI.Label(new Rect(x, row, w, 34f), $"<b>회귀의 기억 +{r.Memory}</b>   <color=#cfcfcf>(가진 기억 {r.StoredMemory})</color>", _big);
-            GUI.Label(new Rect(0, row + 60f, UiScale.Width, 30f), "<color=#cfcfcf>Enter · F5 다시 회귀 · 회귀록(해금)은 아직 없어요</color>", _bossLabel);
+            GUI.Label(new Rect(0, row + 60f, UiScale.Width, 30f), "<color=#cfcfcf>B 회귀록 · Enter · F5 다시 회귀</color>", _bossLabel);
         }
 
         // 이벤트 (시간이 멈춰 있어요): 제목 · 글 · 선택지. 🔒 선택지는 조건이 안 되면 흐리게 이유만.
@@ -406,6 +408,35 @@ namespace AThousandDawns.Prototype
             }
         }
 
+        // 버릴 기물 고르기: 경맥도도 주머니도 가득일 때 새 기물을 받으려면 가진 기물 하나를 버려요 (그 자리에 새 기물). Esc 포기
+        void DrawDiscard()
+        {
+            var pending = arena != null ? arena.PendingItem : null;
+            if (pending == null || player == null || player.Items == null) return;
+            EnsureStyles();
+            var old = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.75f);
+            GUI.DrawTexture(new Rect(0, 0, UiScale.Width, UiScale.Height), Texture2D.whiteTexture);
+            GUI.color = old;
+
+            var items = player.Items;
+            string why = items.HasBag ? $"경맥도도 주머니({items.BagCapacity}칸)도 가득해요" : "경맥도가 가득하고 주머니가 없어요 (회귀록에서 열어요)";
+            float w = 760f, rowH = 40f;
+            float x = (UiScale.Width - w) * 0.5f, y = UiScale.Height * 0.12f;
+            GUI.Label(new Rect(0, y, UiScale.Width, 44f), $"새 기물: {pending.name}  {Colored(pending.keyword)} · {GradeColored(pending.grade)}", _big);
+            GUI.Label(new Rect(0, y + 46f, UiScale.Width, 28f), $"<color=#cfcfcf>{why} · 버릴 기물을 고르면 그 자리에 놓여요 · Esc 포기</color>", _bossLabel);
+            float row = y + 92f;
+            for (int i = 0; i < items.Items.Count; i++)
+            {
+                var it = items.Items[i];
+                string where = it.OnBoard ? $"경맥도 ({it.Cell.x + 1},{it.Cell.y + 1})" : "주머니";
+                string text = $"<size=13>[{(i < 9 ? (i + 1).ToString() : "-")}]</size>  버리기 · <b>{it.Def.name}</b>  {Colored(it.Def.keyword)} · {GradeColored(it.Def.grade)} · {where}";
+                if (GUI.Button(new Rect(x, row, w, rowH), text, _card)) arena.Discard(i);
+                row += rowH + 4f;
+            }
+            if (GUI.Button(new Rect(x, row + 8f, w, rowH), "포기 · 새 기물을 받지 않아요 (Esc)", _card)) arena.DeclinePending();
+        }
+
         // 기물 고르기 카드 3장 (시간이 멈춰 있어요). 1·2·3 또는 클릭, Esc 넘기기
         void DrawOffer()
         {
@@ -427,7 +458,7 @@ namespace AThousandDawns.Prototype
                 string aux = string.IsNullOrEmpty(def.aux) ? "" : $" · 보조 #{def.aux}";
                 string text = $"<size=13>[{i + 1}]</size>  <b><size=19>{def.name}</size></b>\n" +
                               $"{Colored(def.keyword)} · {GradeColored(def.grade)}{aux}\n" +
-                              $"기 {def.minQi}–{def.maxQi} · 경맥도 빈 칸에 왼쪽 위부터 놓여요 (가득 차면 보관함)\n\n" +
+                              $"기 {def.minQi}–{def.maxQi} · 경맥도 빈 칸에 왼쪽 위부터 놓여요 (가득 차면 주머니)\n\n" +
                               $"{def.effectText}\n\n" +
                               $"<color=#ff8a7a>주화입마 부작용: {def.sideText}</color>";
                 if (GUI.Button(new Rect(x + i * (cardW + gap), y, cardW, cardH), text, _card)) arena.Choose(i);

@@ -1,4 +1,4 @@
-using AThousandDawns.Enemies;
+﻿using AThousandDawns.Enemies;
 using AThousandDawns.Items;
 using AThousandDawns.Player;
 using UnityEngine;
@@ -312,8 +312,9 @@ namespace AThousandDawns.Prototype
             GUI.Box(area, GUIContent.none);
             if (_dragged != null && _dragged.OnBoard)
                 Outline(area, new Color(1f, 0.85f, 0.4f, area.Contains(Event.current.mousePosition) ? 1f : 0.4f), 2f); // 여기로 놓을 수 있어요
-            GUI.Label(new Rect(area.x + 8f * K, area.y + 4f * K, area.width - 16f * K, 22f * K), $"<b>보관함</b> {items.BagCount}개  (놓지 않은 기물은 효과 없음)", _small);
-            GUI.Label(new Rect(area.x + 8f * K, area.y + 24f * K, area.width - 16f * K, 20f * K), "<color=#9a9a9a>판의 기물을 여기로 끌어 놓으면 보관함으로</color>", _small);
+            string cap = !items.HasBag ? "없음" : items.BagCapacity < 0 ? $"{items.BagCount}개" : $"{items.BagCount}/{items.BagCapacity}칸";
+            GUI.Label(new Rect(area.x + 8f * K, area.y + 4f * K, area.width - 16f * K, 22f * K), $"<b>주머니</b> {cap}  (놓지 않은 기물은 효과 없음)", _small);
+            GUI.Label(new Rect(area.x + 8f * K, area.y + 24f * K, area.width - 16f * K, 20f * K), items.HasBag ? "<color=#9a9a9a>판의 기물을 여기로 끌어 놓으면 주머니로</color>" : "<color=#9a9a9a>회귀록에서 주머니를 열어야 넣을 수 있어요</color>", _small);
             float y = area.y + 48f * K;
 
             int count = items.BagCount;
@@ -352,7 +353,7 @@ namespace AThousandDawns.Prototype
             var e = Event.current;
             if (_dragged == null || e.rawType != EventType.MouseUp) return;
             if (_hoveredCell.HasValue) items.Place(_dragged, _hoveredCell.Value);
-            else if (_bagRect.Contains(e.mousePosition)) items.ToBag(_dragged);
+            else if (_bagRect.Contains(e.mousePosition) && !items.ToBag(_dragged)) Notice(items.HasBag ? "주머니가 가득해요" : "주머니가 없어요 · 회귀록에서 열어요");
             _dragged = null;
             if (e.type == EventType.MouseUp) e.Use();
         }
@@ -434,7 +435,7 @@ namespace AThousandDawns.Prototype
             var item = items.At(cell);
             if (button == 1)
             {
-                if (item != null) items.ToBag(item);
+                if (item != null && !items.ToBag(item)) Notice(items.HasBag ? "주머니가 가득해요" : "주머니가 없어요 · 회귀록에서 열어요");
                 if (item == _dragged) _dragged = null;
                 return;
             }
