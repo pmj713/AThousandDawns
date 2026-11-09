@@ -1981,3 +1981,155 @@ MonoBehaviour:
     value: 1.2
     unit: cell
     note: "\uBE44\uAE09 \uC8FD\uB9BC\uC12C: \uBCA0\uB294 \uC9C1\uC120 \uD3ED (\uC784\uC2DC)"
+  - key: ironfist.hp
+    value: 1200
+    unit: 
+    note: "\uCCA0\uAD8C \uB9C8\uC6C5 \uCCB4\uB825 (\uC8FD\uB9BC)"
+  - key: ironfist.atk
+    value: 20
+    unit: 
+    note: "\uCCA0\uAD8C \uB9C8\uC6C5 \uACF5\uACA9 (\uC8FD\uB9BC)"
+  - key: ironfist.toughness
+    value: 4
+    unit: 
+    note: "\uCCA0\uAD8C \uB9C8\uC6C5 \uAC15\uC778\uD568"
+  - key: ironfist.move_speed
+    value: 3.5
+    unit: cell/s
+    note: "\uCCA0\uAD8C \uB9C8\uC6C5 \uC774\uB3D9"
+  - key: ironfist.close_distance
+    value: 2.5
+    unit: cell
+    note: "\uC8FC\uBA39 2\uC5F0\uD0C0\uB97C \uC4F0\uB294 \uAC70\uB9AC (\uC784\uC2DC)"
+  - key: ironfist.far_distance
+    value: 5
+    unit: cell
+    note: "\uB3CC\uC9C4\uC744 \uC4F0\uB294 \uAC70\uB9AC (\uC784\uC2DC)"
+  - key: ironfist.decision_pause
+    value: 0.4
+    unit: s
+    note: "\uD328\uD134 \uC0AC\uC774 \uC26C\uB294 \uC2DC\uAC04 (\uB179\uB9BC\uC655\uACFC \uAC19\uAC8C \uC784\uC2DC)"
+  - key: ironfist.transition_time
+    value: 1.5
+    unit: s
+    note: "\uACE0\uC218 \uCCB4\uB825 50% \uC804\uD658 \uC5F0\uCD9C (\uBB34\uC801)"
+  - key: ironfist.phase2_hp_ratio
+    value: 0.5
+    unit: 
+    note: "2\uD398\uC774\uC988\uB85C \uB118\uC5B4\uAC00\uB294 \uCCB4\uB825 \uBE44\uC728"
+  - key: ironfist.max_repeat
+    value: 2
+    unit: 
+    note: "\uAC19\uC740 \uD328\uD134 \uC5F0\uC18D \uCD5C\uB300"
+  - key: ironfist.jab_windup
+    value: 0.5
+    unit: s
+    note: "\uC8FC\uBA39 2\uC5F0\uD0C0 \uC608\uACE0"
+  - key: ironfist.jab_recovery
+    value: 0.7
+    unit: s
+    note: "\uC8FC\uBA39 2\uC5F0\uD0C0 \uBE48\uD2C8"
+  - key: ironfist.jab_ratio
+    value: 0.7
+    unit: 
+    note: "\uC8FC\uBA39 2\uC5F0\uD0C0 \uD53C\uD574 \uBC30\uC728 (1\uBC88\uB2F9)"
+  - key: ironfist.jab_radius
+    value: 1.5
+    unit: cell
+    note: "\uC8FC\uBA39 \uBD80\uCC44\uAF34 \uBC18\uACBD"
+  - key: ironfist.jab_angle
+    value: 70
+    unit: deg
+    note: "\uC8FC\uBA39 \uBD80\uCC44\uAF34 \uAC01\uB3C4"
+  - key: ironfist.jab_gap
+    value: 0.35
+    unit: s
+    note: "\uC8FC\uBA39 2\uC5F0\uD0C0 \uAC04\uACA9"
+  - key: ironfist.jab_lunge
+    value: 0.5
+    unit: cell
+    note: "\uC8FC\uBA39 \uD55C \uBC88\uC5D0 \uC804\uC9C4"
+  - key: ironfist.quake_windup
+    value: 0.8
+    unit: s
+    note: "\uBD95\uC0B0\uAD8C \uC608\uACE0"
+  - key: ironfist.quake_recovery
+    value: 1
+    unit: s
+    note: "\uBD95\uC0B0\uAD8C \uBE48\uD2C8"
+  - key: ironfist.quake_ratio
+    value: 1.2
+    unit: 
+    note: "\uBD95\uC0B0\uAD8C \uD53C\uD574 \uBC30\uC728"
+  - key: ironfist.quake_radius
+    value: 3
+    unit: cell
+    note: "\uBD95\uC0B0\uAD8C \uCDA9\uACA9\uD30C \uBC18\uACBD"
+  - key: ironfist.quake_knockback
+    value: 2
+    unit: cell
+    note: "\uBD95\uC0B0\uAD8C \uB109\uBC31"
+  - key: ironfist.quake_interval
+    value: 7
+    unit: s
+    note: "\uBD95\uC0B0\uAD8C \uAC04\uACA9"
+  - key: ironfist.p2_quake_gap
+    value: 0.6
+    unit: s
+    note: "2\uD398\uC774\uC988 \uBD95\uC0B0\uAD8C 2\uC5F0\uC18D \uAC04\uACA9 (\uC784\uC2DC)"
+  - key: ironfist.charge_windup
+    value: 0.8
+    unit: s
+    note: "\uB3CC\uC9C4 \uC608\uACE0"
+  - key: ironfist.charge_ratio
+    value: 1
+    unit: 
+    note: "\uB3CC\uC9C4 \uD53C\uD574 \uBC30\uC728"
+  - key: ironfist.charge_speed
+    value: 13
+    unit: cell/s
+    note: "\uB3CC\uC9C4 \uC18D\uB3C4"
+  - key: ironfist.charge_width
+    value: 1.2
+    unit: cell
+    note: "\uB3CC\uC9C4 \uD3ED (\uC784\uC2DC)"
+  - key: ironfist.charge_knockback
+    value: 1.5
+    unit: cell
+    note: "\uB3CC\uC9C4 \uB109\uBC31 (\uC784\uC2DC)"
+  - key: ironfist.charge_max
+    value: 16
+    unit: cell
+    note: "\uB3CC\uC9C4 \uCD5C\uB300 \uAC70\uB9AC (\uBCBD\uC774 \uC5C6\uC744 \uB54C \uC784\uC2DC)"
+  - key: ironfist.wall_stun
+    value: 2.5
+    unit: s
+    note: "\uB3CC\uC9C4\uC774 \uBCBD\uC5D0 \uBD80\uB52A\uD614\uC744 \uB54C \uAE30\uC808"
+  - key: ironfist.p2_wall_stun
+    value: 1.5
+    unit: s
+    note: "2\uD398\uC774\uC988 \uBCBD \uAE30\uC808"
+  - key: ironfist.rock_ratio
+    value: 0.8
+    unit: 
+    note: "2\uD398\uC774\uC988 \uB099\uC11D \uD53C\uD574 \uBC30\uC728"
+  - key: ironfist.rock_radius
+    value: 1
+    unit: cell
+    note: "\uB099\uC11D \uC608\uACE0 \uC6D0 \uBC18\uACBD"
+  - key: ironfist.rock_fall
+    value: 0.8
+    unit: s
+    note: "\uB099\uC11D \uC608\uACE0 \uC2DC\uAC04 (\uC784\uC2DC)"
+  - key: skill_quake.ratio
+    value: 1
+    unit: 
+    note: "\uBE44\uAE09 \uBD95\uC0B0\uAD8C: \uD53C\uD574 (\uD68C\uC120\uCC38 \uD53C\uD574 \uBE44\uC728 \uC784\uC2DC)"
+  - key: skill_quake.radius
+    value: 3
+    unit: cell
+    note: "\uBE44\uAE09 \uBD95\uC0B0\uAD8C: \uCDA9\uACA9\uD30C \uBC18\uACBD (\uACE0\uC218\uC640 \uAC19\uAC8C)"
+  - key: skill_quake.knockback
+    value: 2
+    unit: cell
+    note: "\uBE44\uAE09 \uBD95\uC0B0\uAD8C: \uBC00\uC5B4\uB0B4\uB294 \uAC70\uB9AC (\uACE0\uC218\uC640 \uAC19\uAC8C)"

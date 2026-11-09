@@ -20,8 +20,10 @@ namespace AThousandDawns.EditorTools
         static readonly Vector3 RestCenter = new Vector3(60f, 0f, 0f);
         static readonly Vector3 InnCenter = new Vector3(180f, 0f, 0f);
         static readonly Vector3 MasterCenter = new Vector3(240f, 0f, 0f);
+        static readonly Vector3 IronMasterCenter = new Vector3(300f, 0f, 0f);
         const string WoodColor = "#7A5536";   // 객잔 계산대 (임시)
         const string ClerkColor = "#D9C9A8";  // 점소이 (임시)
+        const string StoneColor = "#6E6A64";  // 철권 마웅 결투장 돌벽 (임시)
         static readonly Vector3 BossCenter = new Vector3(120f, 0f, 0f);
         static readonly Vector2 CombatSize = new Vector2(20f, 12f);
 
@@ -100,6 +102,15 @@ namespace AThousandDawns.EditorTools
                 b.GetComponent<Renderer>().sharedMaterial = bambooMat;
             }
 
+            // 철권 마웅 결투장: 14×10, 사방 돌벽 (기둥 없음, 돌진을 벽으로 유도) (몬스터 시트 116행)
+            var ironRoom = new GameObject("Room_IronMaster").transform;
+            var stoneMat = GetMaterial("Stone", StoneColor, false);
+            Box("Floor", ironRoom, IronMasterCenter + new Vector3(0f, -0.1f, 0f), new Vector3(15f, 0.2f, 11f), floorMat);
+            Box("Stone_W", ironRoom, IronMasterCenter + new Vector3(-7.25f, 1f, 0f), new Vector3(0.5f, 2f, 10.5f), stoneMat);
+            Box("Stone_E", ironRoom, IronMasterCenter + new Vector3(7.25f, 1f, 0f), new Vector3(0.5f, 2f, 10.5f), stoneMat);
+            Box("Stone_N", ironRoom, IronMasterCenter + new Vector3(0f, 1f, 5.25f), new Vector3(15f, 2f, 0.5f), stoneMat);
+            Box("Stone_S", ironRoom, IronMasterCenter + new Vector3(0f, 1f, -5.25f), new Vector3(15f, 2f, 0.5f), stoneMat);
+
             // 정비실: 12×10, 북쪽 문은 늘 열려 있어요
             BuildShell("Room_Rest", RestCenter, new Vector2(12f, 10f), floorMat, wallMat);
 
@@ -150,6 +161,7 @@ namespace AThousandDawns.EditorTools
                 plugArr.GetArrayElementAtIndex(d).objectReferenceValue = plugs[d];
             }
             SetSite(runSo.FindProperty("master"), MasterCenter, new Vector2(14f, 10f), new Vector3(0f, 0f, -3.5f), new Vector3(0f, 0f, 99f));
+            SetSite(runSo.FindProperty("ironMaster"), IronMasterCenter, new Vector2(14f, 10f), new Vector3(0f, 0f, -3.5f), new Vector3(0f, 0f, 99f));
             SetSite(runSo.FindProperty("inn"), InnCenter, new Vector2(12f, 10f), new Vector3(0f, 0f, -3.5f), new Vector3(0f, 0f, 6.6f));
             SetSite(runSo.FindProperty("rest"), RestCenter, new Vector2(12f, 10f), new Vector3(0f, 0f, -3.5f), new Vector3(0f, 0f, 6.6f));
             SetSite(runSo.FindProperty("boss"), BossCenter, new Vector2(16f, 12f), new Vector3(0f, 0f, -4.5f), new Vector3(0f, 0f, 99f));

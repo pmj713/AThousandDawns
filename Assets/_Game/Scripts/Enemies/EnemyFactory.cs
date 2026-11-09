@@ -71,6 +71,12 @@ namespace AThousandDawns.Enemies
                 BodyPosition = new Vector3(0f, 0.95f, 0f), BodyScale = new Vector3(0.65f, 0.95f, 0.65f),
                 MarkPosition = new Vector3(0.3f, 1.0f, 0.5f), MarkScale = new Vector3(0.06f, 0.06f, 1.1f), // 장검
             },
+            EnemyKind.IronFist => new Shape
+            {
+                Name = "철권 마웅", Radius = 0.55f, Height = 2.1f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 1.05f, 0f), BodyScale = new Vector3(1.1f, 1.05f, 1.1f),
+                MarkPosition = new Vector3(0f, 1.2f, 0.6f), MarkScale = new Vector3(0.9f, 0.3f, 0.3f), // 쇠주먹
+            },
             EnemyKind.Nokrim => new Shape
             {
                 Name = "녹림왕", Radius = 0.7f, Height = 2.4f, Primitive = PrimitiveType.Capsule,
@@ -97,6 +103,7 @@ namespace AThousandDawns.Enemies
             EnemyKind.Nokrim => v.nokrim,
             EnemyKind.Assassin => v.assassin,
             EnemyKind.Qingzhu => v.qingzhu,
+            EnemyKind.IronFist => v.ironfist,
             _ => v.grunt,
         };
 
@@ -150,6 +157,7 @@ namespace AThousandDawns.Enemies
                 EnemyKind.Nokrim => root.AddComponent<NokrimBrain>(),
                 EnemyKind.Assassin => root.AddComponent<AssassinBrain>(),
                 EnemyKind.Qingzhu => root.AddComponent<QingzhuBrain>(),
+                EnemyKind.IronFist => root.AddComponent<IronFistBrain>(),
                 _ => root.AddComponent<GruntBrain>(),
             };
             if (brain is ShieldBrain shieldBrain) shieldBrain.SetShieldVisual(mark.transform);

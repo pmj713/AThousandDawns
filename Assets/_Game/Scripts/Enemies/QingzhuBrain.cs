@@ -10,7 +10,7 @@ namespace AThousandDawns.Enemies
     // 쾌검 3연격: 가까울 때. 예고 0.5, 앞 부채꼴 2칸 90° × 3번 (0.3초 간격, 2페이즈 0.25), 한 번에 0.8칸 전진, ×0.6, 빈틈 0.8
     // 죽림섬: 8초마다 (2페이즈 6초). 예고 0.6, 플레이어를 가로지르는 직선 4칸 3개 (2페이즈 4개) → 0.25초 간격 순간이동 베기, ×0.8, 빈틈 1.2
     // 대나무 베기: 10초마다. 예고 1.0, 직선 5칸 폭 1칸, ×1.0. 쓰러진 대나무는 6초 동안 벽 (투사체도 막음). 2페이즈 2그루씩
-    public sealed class QingzhuBrain : EnemyBrain
+    public sealed class QingzhuBrain : EnemyBrain, IMasterBrain
     {
         enum Pattern { None, Combo, Flash, Bamboo }
 

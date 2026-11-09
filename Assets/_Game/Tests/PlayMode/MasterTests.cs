@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using AThousandDawns.Enemies;
 using AThousandDawns.Player;
@@ -12,7 +12,7 @@ using Object = UnityEngine.Object;
 
 namespace AThousandDawns.Tests
 {
-    // 고수 청죽객: 2층 관문 뒤 결투장, 50%에서 2페이즈, 쓰러뜨리면 비급 전수 / 흡성 / 방면 → 3층 갈림길.
+    // 고수 (청죽객·철권 마웅): 2층 관문 뒤 결투장, 50%에서 2페이즈, 쓰러뜨리면 비급 전수 / 흡성 / 방면 → 3층 갈림길.
     public class MasterTests : InputTestFixture
     {
         Mouse _mouse;
@@ -30,6 +30,7 @@ namespace AThousandDawns.Tests
         public override void TearDown()
         {
             RoomRun.SeedOverride = 0;
+            RoomRun.MasterOverride = null;
             PrototypeArena.AutoSpawn = true;
             Time.timeScale = 1f;
             base.TearDown();
@@ -42,8 +43,9 @@ namespace AThousandDawns.Tests
         }
 
         // 1층 → 2층 → 2층 관문 → 고수. 쓰러뜨리고 선택 화면까지.
-        IEnumerator BeatMaster()
+        IEnumerator BeatMaster(EnemyKind kind = EnemyKind.Qingzhu)
         {
+            RoomRun.MasterOverride = kind;
             yield return SceneManager.LoadSceneAsync("Prototype_Run", LoadSceneMode.Single);
             yield return null;
             _run = Object.FindFirstObjectByType<RoomRun>();
@@ -55,15 +57,17 @@ namespace AThousandDawns.Tests
             _run.LeaveFloor();
             Assert.AreEqual(RoomRun.Phase.Master, _run.CurrentPhase, "2층 관문 → 고수 결투장");
             var master = _run.Master;
+            var info = _run.MasterInfo;
             Assert.IsNotNull(master);
-            Assert.AreEqual(1100f, master.Damageable.MaxHealth);
+            Assert.AreEqual(kind, master.Kind);
+            Assert.AreEqual(kind == EnemyKind.Qingzhu ? 1100f : 1200f, master.Damageable.MaxHealth);
             Assert.AreEqual(EnemyRank.Master, master.Rank);
 
             master.Damageable.ApplyHit(Mathf.CeilToInt(master.Damageable.MaxHealth * 0.55f));
-            Assert.IsTrue(master.IsTransitioning, "50%에서 전환 (무적)");
+            Assert.IsTrue(info.IsTransitioning, "50%에서 전환 (무적)");
             Assert.IsFalse(master.Damageable.Targetable);
-            yield return WaitUntil(() => master.Phase == 2 && !master.IsTransitioning, 4f);
-            Assert.AreEqual(2, master.Phase);
+            yield return WaitUntil(() => info.Phase == 2 && !info.IsTransitioning, 4f);
+            Assert.AreEqual(2, info.Phase);
             master.Damageable.ApplyHit(99999);
             yield return WaitUntil(() => _run.IsInEvent, 3f);
             Assert.IsTrue(_run.IsInEvent, "쓰러뜨리면 셋 중 하나");
@@ -80,6 +84,58 @@ namespace AThousandDawns.Tests
             Assert.IsTrue(_run.IsForking);
             Assert.AreEqual(3, _run.Floor);
             Assert.IsTrue(_run.MasterDone);
+        }
+
+        [UnityTest]
+        public IEnumerator 철권_마웅의_비급은_붕산권()
+        {
+            yield return BeatMaster(EnemyKind.IronFist);
+            Assert.IsTrue(_run.ChooseEvent(0));
+            Assert.AreEqual(SkillKind.Quake, _player.Skill);
+            Assert.AreEqual("붕산권", _player.SkillName);
+            _run.CloseEvent();
+            Assert.AreEqual(3, _run.Floor);
+        }
+
+        // 철권 마웅을 멀리 두면 돌진하다 벽에 부딪혀 기절 (빈틈)
+        [UnityTest]
+        public IEnumerator 철권_마웅은_돌진하다_벽에_부딪히면_기절()
+        {
+            PrototypeArena.AutoSpawn = false;
+            yield return SceneManager.LoadSceneAsync("Prototype_Combat", LoadSceneMode.Single);
+            yield return null;
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var cc = player.GetComponent<CharacterController>();
+            cc.enabled = false;
+            player.transform.position = new Vector3(0f, 0f, -12.5f); // 남쪽 벽 바로 앞
+            cc.enabled = true;
+            var fist = (IronFistBrain)director.Spawn(EnemyKind.IronFist, new Vector3(0f, 0f, -4f));
+            fist.SetZone(new Vector3(0f, 0f, -2f), new Vector2(40f, 24f));
+            yield return WaitUntil(() => fist.IsWallStunned, 8f);
+            Assert.IsTrue(fist.IsWallStunned, "벽에 부딪혀 기절");
+            Assert.Less(player.Health, player.MaxHealth, "돌진에 맞아요");
+        }
+
+        [UnityTest]
+        public IEnumerator 붕산권은_둘레의_적을_치고_밀어냄()
+        {
+            PrototypeArena.AutoSpawn = false;
+            yield return SceneManager.LoadSceneAsync("Prototype_Combat", LoadSceneMode.Single);
+            yield return null;
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            player.LearnSkill(SkillKind.Quake);
+            var grunt = director.Spawn(EnemyKind.Grunt, player.transform.position + new Vector3(1.5f, 0f, 0f));
+            yield return null;
+            float before = Vector3.Distance(grunt.transform.position, player.transform.position);
+
+            Press(_mouse.rightButton);
+            yield return null;
+            Release(_mouse.rightButton);
+            yield return new WaitForSeconds(0.5f);
+            Assert.Less(grunt.Damageable.Health, grunt.Damageable.MaxHealth, "충격파에 맞아요");
+            Assert.Greater(Vector3.Distance(grunt.transform.position, player.transform.position), before + 1f, "밀려나요");
         }
 
         [UnityTest]
@@ -114,7 +170,7 @@ namespace AThousandDawns.Tests
             yield return null;
             var director = Object.FindFirstObjectByType<EnemyDirector>();
             var player = Object.FindFirstObjectByType<PlayerController>();
-            var master = (QingzhuBrain)director.Spawn(EnemyKind.Qingzhu, new Vector3(0f, 0f, 1f));
+            var master = (QingzhuBrain)director.Spawn(EnemyKind.Qingzhu, new Vector3(0f, 0f, 1f)); // 청죽객
             master.SetZone(new Vector3(0f, 0f, -2f), new Vector2(30f, 20f));
             float end = Time.time + 12f;
             while (Time.time < end && !player.IsDead) yield return null;

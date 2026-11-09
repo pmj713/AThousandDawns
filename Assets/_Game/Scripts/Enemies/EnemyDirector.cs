@@ -21,6 +21,7 @@ namespace AThousandDawns.Enemies
         public Material nokrim;
         public Material assassin;
         public Material qingzhu;
+        public Material ironfist;
         public Material fire;
         public Material accent;
         public Material arrow;

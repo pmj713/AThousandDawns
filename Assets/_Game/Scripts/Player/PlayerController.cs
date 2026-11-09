@@ -468,6 +468,11 @@ namespace AThousandDawns.Player
                 TickBambooFlash();
                 return;
             }
+            if (Skill == SkillKind.Quake)
+            {
+                TickQuake();
+                return;
+            }
             if (!_skillHitDone && _skillElapsed >= _skillHitTime)
             {
                 _skillHitDone = true;
@@ -543,6 +548,7 @@ namespace AThousandDawns.Player
         // 베는 동안 몸을 한 바퀴 돌려요 (시험판용 표시). 시전이 끝나면 원래 방향.
         void ApplySkillSpin()
         {
+            if (Skill == SkillKind.Quake && _skillElapsed < _skillCastTime) return; // 붕산권은 돌지 않아요
             if (_skillElapsed >= _skillCastTime)
             {
                 _skillElapsed = -1f;

@@ -491,3 +491,41 @@ skill_flash.count,3,,비급 죽림섬: 순간이동 베기 횟수,기획 대화 
 skill_flash.gap,0.25,s,비급 죽림섬: 베기 간격 (청죽객과 같게),몬스터!H104 설명
 skill_flash.range,6,cell,비급 죽림섬: 적을 찾는 거리 (임시),
 skill_flash.width,1.2,cell,비급 죽림섬: 베는 직선 폭 (임시),
+ironfist.hp,1200,,철권 마웅 체력 (죽림),몬스터!E61
+ironfist.atk,20,,철권 마웅 공격 (죽림),몬스터!G61
+ironfist.toughness,4,,철권 마웅 강인함,몬스터!H61
+ironfist.move_speed,3.5,cell/s,철권 마웅 이동,몬스터!C116
+ironfist.close_distance,2.5,cell,주먹 2연타를 쓰는 거리 (임시),
+ironfist.far_distance,5,cell,돌진을 쓰는 거리 (임시),
+ironfist.decision_pause,0.4,s,패턴 사이 쉬는 시간 (녹림왕과 같게 임시),
+ironfist.transition_time,1.5,s,고수 체력 50% 전환 연출 (무적),몬스터!A94 설명
+ironfist.phase2_hp_ratio,50%,,2페이즈로 넘어가는 체력 비율,몬스터!A94 설명
+ironfist.max_repeat,2,,같은 패턴 연속 최대,몬스터!A94 설명
+ironfist.jab_windup,0.5,s,주먹 2연타 예고,몬스터!D107
+ironfist.jab_recovery,0.7,s,주먹 2연타 빈틈,몬스터!E107
+ironfist.jab_ratio,0.7,,주먹 2연타 피해 배율 (1번당),몬스터!F107
+ironfist.jab_radius,1.5,cell,주먹 부채꼴 반경,몬스터!H107 설명
+ironfist.jab_angle,70,deg,주먹 부채꼴 각도,몬스터!H107 설명
+ironfist.jab_gap,0.35,s,주먹 2연타 간격,몬스터!H107 설명
+ironfist.jab_lunge,0.5,cell,주먹 한 번에 전진,몬스터!H107 설명
+ironfist.quake_windup,0.8,s,붕산권 예고,몬스터!D108
+ironfist.quake_recovery,1,s,붕산권 빈틈,몬스터!E108
+ironfist.quake_ratio,1.2,,붕산권 피해 배율,몬스터!F108
+ironfist.quake_radius,3,cell,붕산권 충격파 반경,몬스터!H108 설명
+ironfist.quake_knockback,2,cell,붕산권 넉백,몬스터!H108 설명
+ironfist.quake_interval,7,s,붕산권 간격,몬스터!H108 설명
+ironfist.p2_quake_gap,0.6,s,2페이즈 붕산권 2연속 간격 (임시),
+ironfist.charge_windup,0.8,s,돌진 예고,몬스터!D109
+ironfist.charge_ratio,1,,돌진 피해 배율,몬스터!F109
+ironfist.charge_speed,13,cell/s,돌진 속도,몬스터!H109 설명
+ironfist.charge_width,1.2,cell,돌진 폭 (임시),
+ironfist.charge_knockback,1.5,cell,돌진 넉백 (임시),
+ironfist.charge_max,16,cell,돌진 최대 거리 (벽이 없을 때 임시),
+ironfist.wall_stun,2.5,s,돌진이 벽에 부딪혔을 때 기절,몬스터!E109
+ironfist.p2_wall_stun,1.5,s,2페이즈 벽 기절,몬스터!H110 설명
+ironfist.rock_ratio,0.8,,2페이즈 낙석 피해 배율,몬스터!F110
+ironfist.rock_radius,1,cell,낙석 예고 원 반경,몬스터!H110 설명
+ironfist.rock_fall,0.8,s,낙석 예고 시간 (임시),
+skill_quake.ratio,100%,,비급 붕산권: 피해 (회선참 피해 비율 임시),
+skill_quake.radius,3,cell,비급 붕산권: 충격파 반경 (고수와 같게),몬스터!H108 설명
+skill_quake.knockback,2,cell,비급 붕산권: 밀어내는 거리 (고수와 같게),몬스터!H108 설명

@@ -1,4 +1,4 @@
-using AThousandDawns.Combat;
+﻿using AThousandDawns.Combat;
 using AThousandDawns.Core;
 using UnityEngine;
 
@@ -8,7 +8,8 @@ namespace AThousandDawns.Player
     // 형태는 고수에게서, 속성은 내 빌드에서: 초식 적중이라 키워드 2단계 효과(화상·둔화·연쇄 번개)가 그대로 붙어요.
     // 죽림섬 (청죽객): 가까운 적 쪽으로 3번 순간이동하며 베기 (0.25초 간격). 지나간 직선 위의 적이 모두 맞아요. 베는 동안 무적.
     //   수치는 시트에 아직 없어서 임시 (1번에 회선참 피해의 50%, 사거리 6칸, 폭 1.2칸).
-    public enum SkillKind { Spin, BambooFlash }
+    // 붕산권 (철권 마웅): 땅을 내리쳐 반경 3칸 원형 충격파, 맞은 적을 2칸 밀어내요 (보스·고수는 안 밀림). 임시: 회선참 피해 그대로.
+    public enum SkillKind { Spin, BambooFlash, Quake }
 
     public sealed partial class PlayerController
     {
@@ -16,13 +17,42 @@ namespace AThousandDawns.Player
         bool _flashChained;
 
         public SkillKind Skill { get; private set; }
-        public string SkillName => Skill == SkillKind.BambooFlash ? "죽림섬" : "회선참";
+        public string SkillName => Skill == SkillKind.BambooFlash ? "죽림섬" : Skill == SkillKind.Quake ? "붕산권" : "회선참";
 
         public void LearnSkill(SkillKind skill)
         {
             Skill = skill;
             _skillElapsed = -1f;
             _skillCooldownLeft = 0f;
+        }
+
+        // 붕산권: 회선참과 같은 시전 시간, 판정 순간에 원형 충격파 + 밀어내기
+        void TickQuake()
+        {
+            if (_skillHitDone || _skillElapsed < _skillHitTime) return;
+            _skillHitDone = true;
+            _hitThisSwing.Clear();
+            float radius = GameConfig.Get("skill_quake.radius", 3f);
+            if (swingFlash != null) swingFlash.Show(transform.position, _facing, radius, 360f, 0.2f);
+            var hit = PlayerHit(_skillDamage * GameConfig.Get("skill_quake.ratio", 1f));
+            hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
+            int count = HitSector(radius, 360f, hit, HitTag.Skill);
+            Gauge = Mathf.Min(_gaugeMax, Gauge + count * _gaugeSkill * GaugeGainMultiplier);
+            float push = GameConfig.Get("skill_quake.knockback", 2f);
+            foreach (var target in _hitThisSwing)
+            {
+                if (target == null || !target.TryGetComponent(out AThousandDawns.Enemies.EnemyBrain brain)) continue;
+                Vector3 away = target.transform.position - transform.position;
+                away.y = 0f;
+                if (away.sqrMagnitude > 1e-4f) brain.Displace(away.normalized * push);
+            }
+            int thunder = _keywords.Count(Keyword.Noejeong);
+            if (count > 0 && thunder >= 2)
+            {
+                float trigger = DamageFormula.BeforeToughness(hit);
+                Lightning.Chain(_firstHit, transform.position + Vector3.up, trigger, ChainRatio(thunder), _chainTargets, _chainRange, DischargePerStack(thunder));
+                StrikeAfterSkillChain(_firstHit, trigger, thunder);
+            }
         }
 
         int FlashCount => Mathf.Max(1, Mathf.RoundToInt(GameConfig.Get("skill_flash.count", 3f)));
