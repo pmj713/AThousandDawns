@@ -528,7 +528,7 @@ namespace AThousandDawns.Prototype
             MovePlayer(inn.entry);
             director.ResetRoom();
             var db = GameConfig.Items;
-            Shop = db == null ? null : InnShop.Stock(db.Items, Player.Items, ApplyLuck(RegionGradeWeights(), _luck), _rng, _innStockBonus, _unlockedParts, _innPriceScale);
+            Shop = db == null ? null : InnShop.Stock(db.Items, Player.Items, ApplyLuck(RegionGradeWeights(), _luck), _rng, _innStockBonus, _unlockedParts, _innPriceScale, Player.Skill);
             int before = Tracking;
             Tracking = Mathf.FloorToInt(Tracking * GameConfig.Get("tracking.inn_ratio", 0.5f)); // 객잔에 들르면 추적도 절반
             int interest = InnInterest(); // 면벽수련 은 20

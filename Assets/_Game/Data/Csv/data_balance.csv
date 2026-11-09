@@ -613,3 +613,6 @@ meditation.iron_room_heal,4%,,강 10: 전투 방을 비울 때 체력 회복 (�
 meditation.meridian_power_cut,1,,맥 20: 단전 2개로 시작하는 대신 공력 −,기획 대화 (면벽수련)
 meditation.shadow_inn_interest,20%,,은 20: 객잔에 들를 때 가진 은자 이자,기획 대화 (면벽수련 재조정)
 meditation.shadow_inn_interest_max,100,은자,은 20: 이자 최대,기획 대화 (면벽수련 재조정)
+price.scroll,300,은자,객잔 비급 가격,은자!B22
+inn.scroll_chance,25%,,객잔에 비급이 진열될 확률,은자!C22 설명
+price.move_danjeon,100,은자,객잔 이혈: 단전 하나 옮기기,은자!B26

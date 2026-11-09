@@ -320,6 +320,8 @@ namespace AThousandDawns.Prototype
                     InnShop.SlotKind.Item => $"<b>{s.Item.name}</b>  {Colored(s.Item.keyword)} · {GradeColored(s.Item.grade)} · 기 {s.Item.minQi}–{s.Item.maxQi}\n<size=13>{s.Item.effectText}</size>",
                     InnShop.SlotKind.Potion => $"<b>금창약</b>  최대 체력 40% 회복 (R 누르고 있기)\n<size=13>지금 {player.Potions}/{player.PotionMax}개</size>",
                     InnShop.SlotKind.Part => $"<b>부품 {PlayerItems.PartLabel(s.Part)}</b>\n<size=13>경맥도 칸에 놓는 부품 (E · 부품 줄)</size>",
+                    InnShop.SlotKind.Scroll => $"<b>비급 {(s.Skill == SkillKind.Quake ? "붕산권" : "죽림섬")}</b>  우클릭 초식이 바뀌어요 (지금 {player.SkillName})\n<size=13>{(s.Skill == SkillKind.Quake ? "땅을 내리쳐 원형 충격파, 맞은 적을 밀어냄" : "가까운 적에게 3번 순간이동하며 베기")}</size>",
+                    InnShop.SlotKind.MoveDanjeon => $"<b>이혈</b>  단전 하나를 다른 칸으로 옮겨요\n<size=13>산 뒤 경맥도(E)에서 옮길 단전 → 새 칸{(player.Items.DanjeonMoves > 0 ? $" · 남은 이혈 {player.Items.DanjeonMoves}" : "")}</size>",
                     _ => "<b>숙박</b>  지금 바로 체력 30% 회복",
                 };
                 string text = $"<size=13>[{i + 1}]</size>  {body}\n<size=13>은자 {price}{(blocker != null && !s.Sold ? $"  <color=#9a9a9a>· {blocker}</color>" : "")}</size>";

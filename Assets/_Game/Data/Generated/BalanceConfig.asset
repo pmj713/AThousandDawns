@@ -2469,3 +2469,15 @@ MonoBehaviour:
     value: 100
     unit: "\uC740\uC790"
     note: "\uC740 20: \uC774\uC790 \uCD5C\uB300"
+  - key: price.scroll
+    value: 300
+    unit: "\uC740\uC790"
+    note: "\uAC1D\uC794 \uBE44\uAE09 \uAC00\uACA9"
+  - key: inn.scroll_chance
+    value: 0.25
+    unit: 
+    note: "\uAC1D\uC794\uC5D0 \uBE44\uAE09\uC774 \uC9C4\uC5F4\uB420 \uD655\uB960"
+  - key: price.move_danjeon
+    value: 100
+    unit: "\uC740\uC790"
+    note: "\uAC1D\uC794 \uC774\uD608: \uB2E8\uC804 \uD558\uB098 \uC62E\uAE30\uAE30"

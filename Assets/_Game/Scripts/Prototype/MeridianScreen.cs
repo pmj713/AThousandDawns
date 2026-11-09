@@ -36,6 +36,7 @@ namespace AThousandDawns.Prototype
         float _noticeTimer, _autoDelay, _panelTop;
         string _notice;
         Acupoint _acupoint; // 열려고 고른 혈자리
+        Vector2Int? _moveFrom; // 이혈: 옮기려고 고른 단전
         PartKind _placingPart; // 놓으려고 고른 부품 (부품 줄에서 고르고 빈 칸을 눌러요)
         bool _autoArmed, _wasInCombat;
         int _lastPending;
@@ -218,6 +219,8 @@ namespace AThousandDawns.Prototype
                 ? "<color=#ffd27a><b>하단전을 열 칸을 고르세요.</b> 한 번 고르면 바뀌지 않아요. 칸의 기 = 단전마다 (공력 − 거리)</color>"
                 : board.Danjeons.Count < items.StartDanjeons
                 ? "<color=#ffd27a><b>두 번째 단전을 열 칸을 고르세요</b> (면벽수련 맥 20). 한 번 고르면 바뀌지 않아요.</color>"
+                : items.DanjeonMoves > 0
+                ? (_moveFrom.HasValue ? $"<color=#ffd27a><b>이혈</b> · 단전을 옮길 새 칸을 고르세요 (같은 칸을 누르면 취소)</color>" : $"<color=#ffd27a><b>이혈 {items.DanjeonMoves}번</b> · 옮길 단전을 누르세요</color>")
                 : "칸의 기 = 단전마다 (공력 − 거리)의 합. 거리는 상하좌우로 센 칸 수예요.";
             GUI.Label(new Rect(area.x, area.y + 26f * K, area.width - 220f * K, 30f * K), guide, _small);
 
@@ -299,7 +302,7 @@ namespace AThousandDawns.Prototype
             if (board.IsDanjeon(cell))
             {
                 Outline(new Rect(rect.x + 4f * K, rect.y + 4f * K, rect.width - 8f * K, rect.height - 8f * K), new Color(1f, 0.85f, 0.4f), 2f);
-                tags = "<b>단전</b>";
+                tags = _moveFrom == cell ? "<color=#ff8a7a><b>옮길 단전</b></color>" : "<b>단전</b>";
             }
             GUI.Label(new Rect(rect.x + 6f * K, rect.y + 4f * K, 50f * K, 18f * K), $"기 <b>{qi}</b>", _small);
             var point = board.AcupointAt(cell);
@@ -389,7 +392,7 @@ namespace AThousandDawns.Prototype
         }
 
         // 하단전을 고르는 중이거나 혈자리를 고르는 중이면 기물을 옮기지 않아요
-        bool Busy => _acupoint != Acupoint.None || (Player != null && Player.Items != null && Player.Items.Board.Danjeons.Count < Player.Items.StartDanjeons);
+        bool Busy => _acupoint != Acupoint.None || _moveFrom.HasValue || (Player != null && Player.Items != null && Player.Items.Board.Danjeons.Count < Player.Items.StartDanjeons);
 
         // 손을 떼면: 칸 위면 놓기 (다른 기물이 있으면 자리 바꿈), 보관함 위면 보관함으로, 그 밖이면 제자리
         void HandleDrop(PlayerItems items)
@@ -467,6 +470,26 @@ namespace AThousandDawns.Prototype
             {
                 items.AddDanjeon(cell); // 첫 하단전 (맥 20이면 둘째 단전까지)
                 return;
+            }
+            // 이혈: 단전을 누르고 → 새 칸을 눌러 옮겨요
+            if (items.DanjeonMoves <= 0) _moveFrom = null;
+            if (items.DanjeonMoves > 0 && button == 0)
+            {
+                if (!_moveFrom.HasValue)
+                {
+                    if (board.IsDanjeon(cell))
+                    {
+                        _moveFrom = cell;
+                        return;
+                    }
+                }
+                else
+                {
+                    if (cell == _moveFrom.Value || board.IsDanjeon(cell)) _moveFrom = board.IsDanjeon(cell) && cell != _moveFrom.Value ? cell : (Vector2Int?)null;
+                    else if (items.MoveDanjeon(_moveFrom.Value, cell)) { _moveFrom = null; Notice("단전을 옮겼어요"); }
+                    else Notice("부품이 있는 칸에는 단전을 못 옮겨요");
+                    return;
+                }
             }
             // 부품: 오른쪽 클릭이면 거두고, 고른 부품이 있으면 빈 칸에 놓아요
             var placed = items.PartAt(cell);

@@ -8,16 +8,17 @@ namespace AThousandDawns.Prototype
 {
     // 객잔 (첫 버전): 진열 기물 3개 · 금창약 2개 · 숙박. 가격은 은자 시트 (지역과 상관없이 고정).
     // 기물 첫 장은 내 주 키워드 2개(가진 기물에 가장 많은 키워드) 중에서, 나머지는 무작위. 등급은 그 지역 확률표.
-    // 나중에: 부품·비급·이혈·소문 듣기·매각 (매각 비율은 시트에서 미정)
+    // 부품 (해금한 것만) · 비급 (25%, 지금 초식이 아닌 것) · 이혈 (단전 하나 옮기기). 나중에: 소문 듣기·매각 (매각 비율은 시트에서 미정)
     public sealed class InnShop
     {
-        public enum SlotKind { Item, Potion, Lodging, Part }
+        public enum SlotKind { Item, Potion, Lodging, Part, Scroll, MoveDanjeon }
 
         public sealed class Slot
         {
             public SlotKind Kind;
             public ItemDefinition Item;
             public PartKind Part;
+            public SkillKind Skill;   // 비급
             public int Price;
             public bool Sold;
         }
@@ -33,7 +34,7 @@ namespace AThousandDawns.Prototype
             _ => "price.item_legendary",
         }, grade == ItemGrade.Common ? 120f : grade == ItemGrade.Uncommon ? 300f : grade == ItemGrade.Rare ? 500f : 900f));
 
-        public static InnShop Stock(IReadOnlyList<ItemDefinition> pool, PlayerItems owned, IReadOnlyList<float> gradeWeights, Random rng, int extraItems = 0, IReadOnlyList<PartKind> parts = null, float priceScale = 1f)
+        public static InnShop Stock(IReadOnlyList<ItemDefinition> pool, PlayerItems owned, IReadOnlyList<float> gradeWeights, Random rng, int extraItems = 0, IReadOnlyList<PartKind> parts = null, float priceScale = 1f, SkillKind? currentSkill = null)
         {
             var shop = new InnShop();
             int count = (int)Math.Round(GameConfig.Get("inn.item_stock", 3f)) + extraItems; // 회귀록 객잔 진열 +1
@@ -55,6 +56,18 @@ namespace AThousandDawns.Prototype
             // 부품 1개: 해금한 종류 중 무작위 (은자 시트 B23)
             if (parts != null && parts.Count > 0)
                 shop._slots.Add(new Slot { Kind = SlotKind.Part, Part = parts[rng.Next(parts.Count)], Price = (int)Math.Round(GameConfig.Get("price.part", 100f)) });
+
+            // 비급: 25%로 하나 (은자 시트 B22). 지금 초식이 아닌 고수 초식 중에서. currentSkill이 없으면 (테스트) 안 놓아요.
+            if (currentSkill.HasValue && rng.NextDouble() < GameConfig.GetOptional("inn.scroll_chance", 0.25f))
+            {
+                var skill = currentSkill.Value == SkillKind.BambooFlash ? SkillKind.Quake
+                    : currentSkill.Value == SkillKind.Quake ? SkillKind.BambooFlash
+                    : rng.Next(2) == 0 ? SkillKind.BambooFlash : SkillKind.Quake;
+                shop._slots.Add(new Slot { Kind = SlotKind.Scroll, Skill = skill, Price = (int)Math.Round(GameConfig.GetOptional("price.scroll", 300f)) });
+            }
+
+            // 이혈: 단전 하나 옮기기 (은자 시트 B26)
+            shop._slots.Add(new Slot { Kind = SlotKind.MoveDanjeon, Price = (int)Math.Round(GameConfig.GetOptional("price.move_danjeon", 100f)) });
 
             int potions = (int)Math.Round(GameConfig.Get("inn.potion_stock", 2f));
             int potionPrice = (int)Math.Round(GameConfig.Get("price.potion", 60f));
@@ -89,6 +102,8 @@ namespace AThousandDawns.Prototype
             if (silver < slot.Price) return "은자가 모자라요";
             if (slot.Kind == SlotKind.Potion && player.Potions >= player.PotionMax) return $"금창약은 {player.PotionMax}개까지";
             if (slot.Kind == SlotKind.Lodging && player.Health >= player.MaxHealth) return "체력이 가득해요";
+            if (slot.Kind == SlotKind.Scroll && player.Skill == slot.Skill) return "이미 배웠어요";
+            if (slot.Kind == SlotKind.MoveDanjeon && player.Items.Board.Danjeons.Count == 0) return "아직 단전이 없어요";
             return null;
         }
 
@@ -103,6 +118,8 @@ namespace AThousandDawns.Prototype
                 case SlotKind.Potion: player.AddPotion(); break;
                 case SlotKind.Part: player.Items.AddPart(slot.Part); break;
                 case SlotKind.Lodging: player.Heal(player.MaxHealth * GameConfig.Get("lodging.heal", 0.3f)); break;
+                case SlotKind.Scroll: player.LearnSkill(slot.Skill); break;
+                case SlotKind.MoveDanjeon: player.Items.DanjeonMoves++; break; // 경맥도에서 옮겨요
             }
             slot.Sold = true;
             return slot.Price;

@@ -280,6 +280,24 @@ namespace AThousandDawns.Player
             return true;
         }
 
+        // 이혈 (객잔): 산 만큼 단전을 옮길 수 있어요
+        public int DanjeonMoves { get; set; }
+
+        // 단전 하나를 다른 칸으로 (판 밖·단전·부품 칸이면 false, 그대로)
+        public bool MoveDanjeon(Vector2Int from, Vector2Int to)
+        {
+            if (DanjeonMoves <= 0 || !_board.IsDanjeon(from) || from == to) return false;
+            _board.RemoveDanjeon(from);
+            if (!_board.AddDanjeon(to))
+            {
+                _board.AddDanjeon(from);
+                return false;
+            }
+            DanjeonMoves--;
+            Recount();
+            return true;
+        }
+
         // 혈자리 열기 (레벨업 보상). 한 칸에 하나.
         public bool OpenAcupoint(Vector2Int cell, Acupoint kind)
         {
