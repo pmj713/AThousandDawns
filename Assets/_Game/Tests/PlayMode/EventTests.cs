@@ -13,7 +13,7 @@ using Object = UnityEngine.Object;
 
 namespace AThousandDawns.Tests
 {
-    // 이벤트 방 첫 버전 6개: 선택지가 조건대로 잠기고, 결과가 은자·금창약·추적도·혈자리·전투에 반영돼요.
+    // 이벤트 방 7개 (첫 버전 6개 + 표국 행렬): 선택지가 조건대로 잠기고, 결과가 은자·금창약·추적도·혈자리·전투에 반영돼요.
     public class EventTests : InputTestFixture
     {
         RoomRun _run;
@@ -115,6 +115,31 @@ namespace AThousandDawns.Tests
             yield return WaitUntil(() => _arena.IsChoosing, 2f);
             Assert.IsTrue(_arena.IsChoosing);
             Assert.IsTrue(_arena.Offer.All(d => d.grade == AThousandDawns.Items.ItemGrade.Rare), "희귀 기물만");
+        }
+
+        [UnityTest]
+        public IEnumerator 표국_호위는_웨이브_3개_뒤_은자_150_짐을_털면_100과_추적도()
+        {
+            yield return Load();
+            Assert.AreEqual(3, _run.PlanRoom(1, 3).Count, "웨이브 3개");
+            _run.OpenEventForTest("escort");
+            Assert.IsTrue(_run.ChooseEvent(Index("호위한다")));
+            Assert.IsFalse(_run.IsInEvent, "창이 닫히고 전투");
+            Assert.IsTrue(_run.IsFighting);
+            yield return WaitUntil(() =>
+            {
+                for (int i = _director.Enemies.Count - 1; i >= 0; i--) _director.Enemies[i].Damageable.ApplyHit(99999);
+                return !_run.IsFighting;
+            }, 30f);
+            Assert.IsFalse(_run.IsFighting);
+            Assert.GreaterOrEqual(_run.Silver, 150 + 18, "방 은자 + 호위 삯 150");
+
+            yield return Load();
+            int tracking = _run.Tracking;
+            _run.OpenEventForTest("escort");
+            Assert.IsTrue(_run.ChooseEvent(Index("짐을 턴다")));
+            Assert.AreEqual(100, _run.Silver);
+            Assert.AreEqual(tracking + 3, _run.Tracking);
         }
 
         [UnityTest]

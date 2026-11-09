@@ -2481,3 +2481,19 @@ MonoBehaviour:
     value: 100
     unit: "\uC740\uC790"
     note: "\uAC1D\uC794 \uC774\uD608: \uB2E8\uC804 \uD558\uB098 \uC62E\uAE30\uAE30"
+  - key: event.escort_silver
+    value: 150
+    unit: "\uC740\uC790"
+    note: "\uD45C\uAD6D \uD589\uB82C: \uD638\uC704 \uC131\uACF5 \uBCF4\uC0C1"
+  - key: event.escort_waves
+    value: 3
+    unit: 
+    note: "\uD45C\uAD6D \uD589\uB82C: \uD638\uC704 \uC804\uD22C \uC6E8\uC774\uBE0C \uC218"
+  - key: event.rob_silver
+    value: 100
+    unit: "\uC740\uC790"
+    note: "\uD45C\uAD6D \uD589\uB82C: \uC9D0\uC744 \uD138\uBA74 \uC740\uC790"
+  - key: event.rob_tracking
+    value: 3
+    unit: 
+    note: "\uD45C\uAD6D \uD589\uB82C: \uC9D0\uC744 \uD138\uBA74 \uCD94\uC801\uB3C4 +"

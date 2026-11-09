@@ -616,3 +616,7 @@ meditation.shadow_inn_interest_max,100,은자,은 20: 이자 최대,기획 대�
 price.scroll,300,은자,객잔 비급 가격,은자!B22
 inn.scroll_chance,25%,,객잔에 비급이 진열될 확률,은자!C22 설명
 price.move_danjeon,100,은자,객잔 이혈: 단전 하나 옮기기,은자!B26
+event.escort_silver,150,은자,표국 행렬: 호위 성공 보상,기획 대화 (이벤트 8 표국 행렬)
+event.escort_waves,3,,표국 행렬: 호위 전투 웨이브 수,기획 대화 (이벤트 8 표국 행렬)
+event.rob_silver,100,은자,표국 행렬: 짐을 털면 은자,기획 대화 (이벤트 8 표국 행렬)
+event.rob_tracking,3,,표국 행렬: 짐을 털면 추적도 +,기획 대화 (이벤트 8 표국 행렬)

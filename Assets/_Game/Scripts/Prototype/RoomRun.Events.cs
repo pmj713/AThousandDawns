@@ -10,7 +10,7 @@ using UnityEngine.InputSystem.Controls;
 
 namespace AThousandDawns.Prototype
 {
-    // 이벤트 방 (기획 대화 이벤트 10종 중 죽림 첫 버전 6개). 층마다 0~1개 (은자 시트 등장 확률 50%), 비전투 막다른 방.
+    // 이벤트 방 (기획 대화 이벤트 10종 중 죽림 7개: 첫 버전 6개 + 표국 행렬). 층마다 0~1개 (은자 시트 등장 확률 50%), 비전투 막다른 방.
     // 같은 판에서 같은 이벤트는 한 번만. 모든 이벤트에 대가 없는 선택지가 있어요.
     // 조건부 선택지(🔒)는 조건이 안 되면 흐리게 조건만 보여 줘요. 그림은 아직 없고 글만 있어요.
     public sealed partial class RoomRun
@@ -28,12 +28,13 @@ namespace AThousandDawns.Prototype
             public List<EventChoice> Choices = new List<EventChoice>();
         }
 
-        public static readonly string[] EventIds = { "doctor", "pharmacy", "gambler", "captive", "shrine", "scripture" };
+        public static readonly string[] EventIds = { "doctor", "pharmacy", "gambler", "captive", "shrine", "scripture", "escort" };
 
         readonly HashSet<string> _usedEvents = new HashSet<string>();
         int _floorPower;           // 원기단: 이번 층 동안 공력 +1
         float _floorTaken;         // 산신의 노여움: 이번 층 동안 받는 피해 +15%
         bool _rescueFight;         // 붙잡힌 무인 구출 전투 중 (이기면 희귀 기물)
+        bool _escortFight;         // 표국 호위 전투 중 (웨이브 3개를 버티면 은자)
 
         public EventView CurrentEvent { get; private set; }
         public bool IsInEvent => CurrentEvent != null;
@@ -260,6 +261,30 @@ namespace AThousandDawns.Prototype
                     v.Choices.Add(Pass("절만 하고 간다"));
                     break;
 
+                case "escort":
+                    v.Title = "표국 행렬";
+                    v.Text = "짐수레를 끄는 표국 일행이 산적의 습격을 걱정하고 있다.";
+                    int pay = Price("event.escort_silver", 150f);
+                    int loot = Price("event.rob_silver", 100f);
+                    int rumor = Price("event.rob_tracking", 3f);
+                    v.Choices.Add(new EventChoice
+                    {
+                        Label = $"호위한다 · 습격 3번을 막아 내면 은자 +{pay}",
+                        Act = () => { CloseEvent(); StartEscortFight(); return null; },
+                    });
+                    v.Choices.Add(new EventChoice
+                    {
+                        Label = $"짐을 턴다 · 은자 +{loot}, 추적도 +{rumor} (소문이 퍼짐)",
+                        Act = () =>
+                        {
+                            Silver += loot;
+                            AddTracking(rumor);
+                            return $"표사들이 달아났어요. 은자 +{loot} · 소문이 퍼져 추적도 {Tracking}";
+                        },
+                    });
+                    v.Choices.Add(Pass("지나간다"));
+                    break;
+
                 case "scripture":
                     v.Title = "벽에 새긴 검결";
                     v.Text = "무너진 수련 동굴 벽에 누군가 검술 요결을 새겨 두었다.";
@@ -378,6 +403,21 @@ namespace AThousandDawns.Prototype
             foreach (EliteTrait t in Enum.GetValues(typeof(EliteTrait)))
                 if (EnemyBrain.Allows(EnemyKind.Grunt, t)) traits.Add(t);
             _eliteTrait = traits[_rng.Next(traits.Count)];
+            StartNextWave();
+        }
+
+        // 표국 호위: 그 층 방 예산으로 웨이브 3개, 다 막으면 은자 (ClearRoom에서)
+        void StartEscortFight()
+        {
+            _escortFight = true;
+            _fighting = true;
+            SetLocks(true);
+            Player.EnterRoom();
+            OnFightStart();
+            _waves = PlanRoom(_floor, Price("event.escort_waves", 3f));
+            _wave = -1;
+            _elitesThisRoom = 0;
+            _eliteWave = -1;
             StartNextWave();
         }
 

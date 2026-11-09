@@ -335,7 +335,7 @@ namespace AThousandDawns.Prototype
             else EnterInn();
         }
 
-        public List<List<EnemyKind>> PlanRoom(int floor)
+        public List<List<EnemyKind>> PlanRoom(int floor, int fixedWaves = 0)
         {
             string f = Mathf.Clamp(floor, 1, 3).ToString();
             int min = Mathf.RoundToInt(GameConfig.Get($"room.budget_min.f{f}", 6f));
@@ -343,7 +343,7 @@ namespace AThousandDawns.Prototype
             int budget = _rng.Next(min, Mathf.Max(min, max) + 1);
             int wavesMin = Mathf.RoundToInt(GameConfig.Get("room.waves_min", 2f));
             int wavesMax = Mathf.RoundToInt(GameConfig.Get("room.waves_max", 3f));
-            int waves = _rng.Next(wavesMin, Mathf.Max(wavesMin, wavesMax) + 1);
+            int waves = fixedWaves > 0 ? fixedWaves : _rng.Next(wavesMin, Mathf.Max(wavesMin, wavesMax) + 1);
             var limits = new RoomBudget.Limits
             {
                 Archers = Mathf.RoundToInt(GameConfig.Get("archer.max_per_room", 2f)),
@@ -482,6 +482,13 @@ namespace AThousandDawns.Prototype
                 _rescueFight = false;
                 arena.GrantOffer(RareOnlyWeights()); // 붙잡힌 무인 구출 보상
                 text += " · 무인을 구했어요, 희귀 기물";
+            }
+            if (_escortFight)
+            {
+                _escortFight = false;
+                int pay = BoostSilver(Mathf.RoundToInt(GameConfig.Get("event.escort_silver", 150f)));
+                Silver += pay;
+                text += $" · 표국을 지켜 냈어요, 은자 +{pay}";
             }
             if (_room.Kind == FloorRoomKind.Reward)
             {
