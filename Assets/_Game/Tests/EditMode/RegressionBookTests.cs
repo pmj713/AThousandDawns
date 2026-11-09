@@ -39,7 +39,8 @@ namespace AThousandDawns.Tests
         public void 콘텐츠가_없는_봉우리와_천마_조건은_잠김()
         {
             var meta = new MetaSave { memory = 1000 };
-            StringAssert.StartsWith("준비 중", RegressionBook.Blocker(meta, Node("tongmaek")));
+            StringAssert.StartsWith("준비 중", RegressionBook.Blocker(meta, Node("meditation")));
+            Assert.IsNull(RegressionBook.Blocker(meta, Node("tongmaek")), "부품 통맥은 이제 피울 수 있어요");
             Assert.AreEqual("첫 천마 격파 후", RegressionBook.Blocker(meta, Node("relic1")));
         }
 

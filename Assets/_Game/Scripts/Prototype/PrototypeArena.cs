@@ -119,6 +119,12 @@ namespace AThousandDawns.Prototype
                 if (keyboard.gKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.FillGauge();
                 if (keyboard.lKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.GainLevelForTest(); // 시험용 레벨업
                 if (keyboard.kKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.KillForTest(); // 시험용: 바로 쓰러지기
+                if (keyboard.pKey.wasPressedThisFrame && director != null && director.Player != null && director.Player.Items != null) // 시험용: 부품 셋
+                {
+                    director.Player.Items.AddPart(PartKind.Tongmaek);
+                    director.Player.Items.AddPart(PartKind.Jeomhyeol);
+                    director.Player.Items.AddPart(PartKind.Hanok);
+                }
                 if (director != null && director.Player != null && director.Player.Keywords != null)
                 {
                     if (keyboard.f1Key.wasPressedThisFrame) director.Player.Keywords.CycleStage(Keyword.Yeolyang);

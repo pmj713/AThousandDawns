@@ -11,12 +11,13 @@ namespace AThousandDawns.Prototype
     // 나중에: 부품·비급·이혈·소문 듣기·매각 (매각 비율은 시트에서 미정)
     public sealed class InnShop
     {
-        public enum SlotKind { Item, Potion, Lodging }
+        public enum SlotKind { Item, Potion, Lodging, Part }
 
         public sealed class Slot
         {
             public SlotKind Kind;
             public ItemDefinition Item;
+            public PartKind Part;
             public int Price;
             public bool Sold;
         }
@@ -32,7 +33,7 @@ namespace AThousandDawns.Prototype
             _ => "price.item_legendary",
         }, grade == ItemGrade.Common ? 120f : grade == ItemGrade.Uncommon ? 300f : grade == ItemGrade.Rare ? 500f : 900f));
 
-        public static InnShop Stock(IReadOnlyList<ItemDefinition> pool, PlayerItems owned, IReadOnlyList<float> gradeWeights, Random rng, int extraItems = 0)
+        public static InnShop Stock(IReadOnlyList<ItemDefinition> pool, PlayerItems owned, IReadOnlyList<float> gradeWeights, Random rng, int extraItems = 0, IReadOnlyList<PartKind> parts = null)
         {
             var shop = new InnShop();
             int count = (int)Math.Round(GameConfig.Get("inn.item_stock", 3f)) + extraItems; // 회귀록 객잔 진열 +1
@@ -50,6 +51,10 @@ namespace AThousandDawns.Prototype
             }
             picked.AddRange(ItemOffer.Roll(pool, Taken, count - picked.Count, gradeWeights, random));
             foreach (var def in picked) shop._slots.Add(new Slot { Kind = SlotKind.Item, Item = def, Price = ItemPrice(def.grade) });
+
+            // 부품 1개: 해금한 종류 중 무작위 (은자 시트 B23)
+            if (parts != null && parts.Count > 0)
+                shop._slots.Add(new Slot { Kind = SlotKind.Part, Part = parts[rng.Next(parts.Count)], Price = (int)Math.Round(GameConfig.Get("price.part", 100f)) });
 
             int potions = (int)Math.Round(GameConfig.Get("inn.potion_stock", 2f));
             int potionPrice = (int)Math.Round(GameConfig.Get("price.potion", 60f));
@@ -95,6 +100,7 @@ namespace AThousandDawns.Prototype
             {
                 case SlotKind.Item: player.Items.Add(slot.Item); break;
                 case SlotKind.Potion: player.AddPotion(); break;
+                case SlotKind.Part: player.Items.AddPart(slot.Part); break;
                 case SlotKind.Lodging: player.Heal(player.MaxHealth * GameConfig.Get("lodging.heal", 0.3f)); break;
             }
             slot.Sold = true;

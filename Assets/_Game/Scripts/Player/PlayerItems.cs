@@ -16,6 +16,14 @@ namespace AThousandDawns.Player
         public int MaxQi => Def.maxQi + MaxQiBonus;
     }
 
+    // 부품 하나 (판에 놓였거나 부품 주머니에). 부품 주머니는 칸 제한이 없어요.
+    public sealed class OwnedPart
+    {
+        public PartKind Kind;
+        public bool OnBoard;
+        public Vector2Int Cell;
+    }
+
     // 가진 기물과 경맥도 (기물 탭 공통 규칙, 경맥도 탭):
     //   경맥도에 놓은 기물만 효과가 있어요. 기물의 기 = 놓인 칸의 기.
     //   기 < 최소 기 → 기 부족 (효과 없음, 키워드 0) · 최소 ≤ 기 ≤ 최대 → 운기 (키워드 1) · 기 > 최대 → 주화입마 (키워드 2, 효과 ×1.5 + 부작용)
@@ -30,6 +38,8 @@ namespace AThousandDawns.Player
         float _deviationMultiplier, _madoDeviation;
 
         public IReadOnlyList<OwnedItem> Items => _items;
+        readonly List<OwnedPart> _parts = new List<OwnedPart>();
+        public IReadOnlyList<OwnedPart> Parts => _parts;
         public MeridianBoard Board => _board;
         public event Action Changed;
 
@@ -64,6 +74,7 @@ namespace AThousandDawns.Player
             {
                 GihyeolQi = Mathf.RoundToInt(GameConfig.Get("meridian.gihyeol_qi", 1f)),
                 HanhyeolMaxQi = Mathf.RoundToInt(GameConfig.Get("meridian.hanhyeol_max_qi", 1f)),
+                HanokMaxQi = Mathf.RoundToInt(GameConfig.Get("part.hanok_max_qi", 2f)),
             };
         }
 
@@ -149,7 +160,7 @@ namespace AThousandDawns.Player
             for (int x = 0; x < _board.Width; x++)
             {
                 cell = new Vector2Int(x, y);
-                if (At(cell) == null) return true;
+                if (At(cell) == null && _board.PartAt(cell) == PartKind.None) return true;
             }
             cell = default;
             return false;
@@ -158,7 +169,7 @@ namespace AThousandDawns.Player
         // 칸에 놓아요. 그 칸에 다른 기물이 있으면 자리를 바꾸고 (주머니에서 왔으면 그 기물이 주머니로).
         public void Place(OwnedItem item, Vector2Int cell)
         {
-            if (item == null || !_board.Contains(cell)) return;
+            if (item == null || !_board.Contains(cell) || _board.PartAt(cell) != PartKind.None) return; // 부품 칸에는 기물을 못 놓아요
             var other = At(cell);
             if (other == item) return;
             if (other != null)
@@ -179,6 +190,64 @@ namespace AThousandDawns.Player
             Recount();
             return true;
         }
+
+        // ── 부품
+
+        public OwnedPart AddPart(PartKind kind)
+        {
+            if (kind == PartKind.None) return null;
+            var part = new OwnedPart { Kind = kind };
+            _parts.Add(part);
+            Changed?.Invoke();
+            return part;
+        }
+
+        public OwnedPart PartAt(Vector2Int cell)
+        {
+            foreach (var p in _parts) if (p.OnBoard && p.Cell == cell) return p;
+            return null;
+        }
+
+        // 부품을 칸에 놓아요. 기물·다른 부품·단전이 있는 칸이면 false (옮기는 중이면 원래 칸은 비워요)
+        public bool PlacePart(OwnedPart part, Vector2Int cell)
+        {
+            if (part == null || !_board.Contains(cell) || At(cell) != null) return false;
+            var other = PartAt(cell);
+            if (other != null && other != part) return false;
+            if (part.OnBoard) _board.ClearPart(part.Cell);
+            if (!_board.SetPart(cell, part.Kind))
+            {
+                if (part.OnBoard) _board.SetPart(part.Cell, part.Kind); // 되돌리기
+                return false;
+            }
+            part.OnBoard = true;
+            part.Cell = cell;
+            Recount();
+            return true;
+        }
+
+        public void RemovePart(OwnedPart part)
+        {
+            if (part == null || !part.OnBoard) return;
+            _board.ClearPart(part.Cell);
+            part.OnBoard = false;
+            Recount();
+        }
+
+        public int CountParts(PartKind kind, bool onlyLoose = false)
+        {
+            int n = 0;
+            foreach (var p in _parts) if (p.Kind == kind && (!onlyLoose || !p.OnBoard)) n++;
+            return n;
+        }
+
+        public static string PartLabel(PartKind kind) => kind switch
+        {
+            PartKind.Tongmaek => "통맥",
+            PartKind.Jeomhyeol => "점혈",
+            PartKind.Hanok => "한옥",
+            _ => "",
+        };
 
         // 경맥도 확장 (녹림왕 처치 5×4 → 6×4)
         public void ExpandBoard(int width, int height)

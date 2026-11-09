@@ -22,7 +22,7 @@ namespace AThousandDawns.Prototype
     public sealed partial class RoomRun : MonoBehaviour
     {
         public enum Phase { None, Fork, Floor, Master, Inn, Rest, Boss, Done }
-        public enum RewardKind { Item, Heal }
+        public enum RewardKind { Item, Heal, Part }
 
         public struct Path
         {
@@ -180,6 +180,7 @@ namespace AThousandDawns.Prototype
             float dense = GameConfig.Get("room.fork_dense_chance", 0.4f);
             // 한 갈림길에 같은 보상 종류는 한 번만 (기물 옅은 길 + 기물 짙은 길 같이 안 나옴)
             var kinds = new List<RewardKind>((RewardKind[])Enum.GetValues(typeof(RewardKind)));
+            if (_unlockedParts.Count == 0) kinds.Remove(RewardKind.Part); // 부품 길은 회귀록에서 부품을 연 뒤부터
             for (int i = kinds.Count - 1; i > 0; i--)
             {
                 int j = _rng.Next(i + 1);
@@ -210,7 +211,7 @@ namespace AThousandDawns.Prototype
             Enter(_map.Start, -1);
         }
 
-        public static string RewardLabel(RewardKind kind) => kind == RewardKind.Item ? "기물" : "운기조식";
+        public static string RewardLabel(RewardKind kind) => kind == RewardKind.Item ? "기물" : kind == RewardKind.Part ? "부품" : "운기조식";
         public static string PathLabel(Path p) => $"{RewardLabel(p.Reward)} · 기운 {(p.Dense ? "짙음" : "옅음")}";
 
         public string PathDetail(Path p)
@@ -218,6 +219,8 @@ namespace AThousandDawns.Prototype
             float mult = p.Dense ? DenseMultiplier : 1f;
             string reward = p.Reward == RewardKind.Item
                 ? (p.Dense ? "기물 3개 중 하나 (한 단계 위 등급표)" : "기물 3개 중 하나")
+                : p.Reward == RewardKind.Part
+                ? (p.Dense ? "부품 둘 고르기" : "부품 하나 고르기") + $" ({PartNames()})"
                 : $"체력 {GameConfig.Get("room.heal_ratio", 0.3f) * mult:0%} 회복";
             string enemies = p.Dense ? $"적 체력 +{GameConfig.Get("room.dense_health", 1.3f) - 1f:0%} · 방마다 정예 1명" : "적 보통";
             return $"{reward}\n{enemies} · 방마다 은자 {Mathf.RoundToInt(GameConfig.Get("silver.room", 18f) * mult)}";
@@ -462,6 +465,11 @@ namespace AThousandDawns.Prototype
                     arena.GrantOffer(_path.Dense ? DenseGradeWeights() : null);
                     text += " · 기물 고르기";
                 }
+                else if (_path.Reward == RewardKind.Part)
+                {
+                    OpenPartChoice(_path.Dense ? 2 : 1);
+                    text += " · 부품 고르기";
+                }
                 else
                 {
                     float heal = Player.MaxHealth * GameConfig.Get("room.heal_ratio", 0.3f) * mult;
@@ -490,7 +498,7 @@ namespace AThousandDawns.Prototype
             MovePlayer(inn.entry);
             director.ResetRoom();
             var db = GameConfig.Items;
-            Shop = db == null ? null : InnShop.Stock(db.Items, Player.Items, RegionGradeWeights(), _rng, _innStockBonus);
+            Shop = db == null ? null : InnShop.Stock(db.Items, Player.Items, RegionGradeWeights(), _rng, _innStockBonus, _unlockedParts);
             int before = Tracking;
             Tracking = Mathf.FloorToInt(Tracking * GameConfig.Get("tracking.inn_ratio", 0.5f)); // 객잔에 들르면 추적도 절반
             ShowBanner($"객잔 · 점소이 앞에서 F로 진열대 (북쪽 문: 정비실) · 추적도 {before} → {Tracking}");

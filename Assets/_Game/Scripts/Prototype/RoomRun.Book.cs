@@ -18,6 +18,7 @@ namespace AThousandDawns.Prototype
             if (Player.Items != null) Player.Items.BagCapacity = RegressionBook.BagCapacity(meta);
             for (int i = RegressionBook.StartPotions(meta); i > 0; i--) Player.AddPotion();
             _innStockBonus = RegressionBook.InnStockBonus(meta);
+            _unlockedParts = RegressionBook.UnlockedParts(meta);
         }
     }
 }

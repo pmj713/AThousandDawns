@@ -2265,3 +2265,11 @@ MonoBehaviour:
     value: 270
     unit: "\uAE30\uC5B5"
     note: "\uD68C\uADC0\uB85D \uAE30\uC5B5 \uC6A9\uB7C9 +1 (4\uCC28)"
+  - key: part.hanok_max_qi
+    value: 2
+    unit: 
+    note: "\uBD80\uD488 \uD55C\uC625: \uBD99\uC5B4 \uC788\uB294 \uAE30\uBB3C\uC758 \uCD5C\uB300 \uAE30 +"
+  - key: price.part
+    value: 100
+    unit: "\uC740\uC790"
+    note: "\uAC1D\uC794 \uBD80\uD488 \uAC00\uACA9 (\uD574\uAE08\uB41C \uC885\uB958 \uC911 \uBB34\uC791\uC704)"
