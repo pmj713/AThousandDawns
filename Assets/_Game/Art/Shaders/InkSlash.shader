@@ -6,8 +6,8 @@ Shader "AThousandDawns/InkSlash"
     {
         _InkColor ("Ink", Color) = (0.06, 0.06, 0.07, 1)
         _WashColor ("Wash (번짐)", Color) = (0.25, 0.25, 0.27, 1)
-        _Progress ("Progress (칼끝 위치)", Range(0, 2)) = 1
-        _Trail ("Trail (꼬리 길이)", Range(0.05, 1)) = 0.5
+        _Progress ("Progress (칼끝 위치)", Range(0, 4)) = 1
+        _Trail ("Trail (꼬리 길이)", Range(0.05, 3)) = 2
         _Fade ("Fade", Range(0, 1)) = 0
         _Seed ("Seed", Float) = 0
     }

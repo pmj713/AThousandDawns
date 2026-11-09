@@ -250308,9 +250308,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: AThousandDawns.Art::AThousandDawns.Art.InkSlashFX
   slashMaterial: {fileID: 2100000, guid: a3d8f0afcb037514291399c95248cf28, type: 2}
-  sweepTime: 0.1
-  trail: 0.45
-  innerRatio: 0.72
+  sweepTime: 0.15
+  trail: 2
+  innerRatio: 0.8
 --- !u!1 &1427334675
 GameObject:
   m_ObjectHideFlags: 0

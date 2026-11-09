@@ -15,9 +15,9 @@ namespace AThousandDawns.Art
         static readonly int SeedId = Shader.PropertyToID("_Seed");
 
         [SerializeField] Material slashMaterial;
-        [SerializeField] float sweepTime = 0.1f;   // 칼끝이 호 처음부터 끝까지 가는 시간
-        [SerializeField] float trail = 0.45f;      // 꼬리 길이 (호 전체 대비)
-        [SerializeField] float innerRatio = 0.72f; // 궤적 띠가 시작하는 반지름 비율 (칼끝 근처만)
+        [SerializeField] float sweepTime = 0.15f;  // 칼끝이 호 처음부터 끝까지 가는 시간
+        [SerializeField] float trail = 2f;        // 꼬리 길이 (호 전체 대비)
+        [SerializeField] float innerRatio = 0.8f;  // 궤적 띠가 시작하는 반지름 비율 (칼끝 근처만)
 
         MeshRenderer _flash;
         MeshFilter _flashFilter;
