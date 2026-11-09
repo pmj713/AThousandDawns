@@ -47,6 +47,7 @@ namespace AThousandDawns.Prototype
             DrawFork();
             DrawShop();
             DrawEvent();
+            DrawResult();
             DrawOffer(); // 기물 카드는 맨 위에
         }
 
@@ -59,7 +60,7 @@ namespace AThousandDawns.Prototype
             GUILayout.Label("일조천회 시험판 · 전투", _label);
             GUILayout.Label("WASD 이동 · 좌클릭(누르고 있기) 평타 · 우클릭 회선참 · Q 만검귀종 · Space 대시 · R 금창약(누르고 있기)", _label);
             GUILayout.Label("부르기 (바로 옆): 1 졸개 · 2 멧돼지 · 3 궁수 · 4 들개 · 5 방패 · 6 나팔수 · 7 화약 · 8 청죽사 · 9 녹림왕 (결투장) · 0 살수 · - 청죽객 · = 철권 마웅 · Shift+숫자 정예", _label);
-            GUILayout.Label("G 기세 채우기 · F5 처음부터 · 키워드 F1 열양 F2 빙백 F3 뇌정 F4 강기 F6 금강 F7 경공 F8 마도 F9 정종 · 기물 상태 F10 기 부족 F11 운기 F12 주화입마 · I 기물 고르기 · E 경맥도 · L 레벨업", _wrapLabel);
+            GUILayout.Label("G 기세 채우기 · F5 처음부터 · 키워드 F1 열양 F2 빙백 F3 뇌정 F4 강기 F6 금강 F7 경공 F8 마도 F9 정종 · 기물 상태 F10 기 부족 F11 운기 F12 주화입마 · I 기물 고르기 · E 경맥도 · L 레벨업 · K 쓰러지기", _wrapLabel);
             if (player != null)
             {
                 GUILayout.Label($"체력 {player.Health:0}/{player.MaxHealth:0}", _label);
@@ -122,7 +123,7 @@ namespace AThousandDawns.Prototype
             if (run != null && run.AtGate && !run.IsForking)
                 GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), $"F 다음 층으로 · 남은 전투 방 {run.Map.FightsLeft()} · 추적도 {run.Tracking}", _big);
 
-            if (player != null && player.IsDead)
+            if (player != null && player.IsDead && run == null) // 판 구조 씬은 결과 화면이 대신 떠요
                 GUI.Label(new Rect(0, UiScale.Height * 0.4f, UiScale.Width, 60), "쓰러졌어요 · F5 키로 다시 시작", _big);
 
             // 녹림왕이 깨어나면 화면 아래쪽 가운데에 큰 체력바 (왼쪽 위 도움말과 겹치지 않게)
@@ -317,6 +318,35 @@ namespace AThousandDawns.Prototype
             }
             if (!string.IsNullOrEmpty(run.ShopNotice))
                 GUI.Label(new Rect(0, y + slots.Count * (rowH + 6f) + 10f, UiScale.Width, 40f), run.ShopNotice, _big);
+        }
+
+        // 판 결과 (쓰러짐 · 녹림왕 격파): 기록 → 회귀의 기억. Enter·F5로 다시 회귀
+        void DrawResult()
+        {
+            if (run == null || !run.IsShowingResult) return;
+            EnsureStyles();
+            var r = run.Result;
+            var old = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.82f);
+            GUI.DrawTexture(new Rect(0, 0, UiScale.Width, UiScale.Height), Texture2D.whiteTexture);
+            GUI.color = old;
+
+            const float w = 620f;
+            float x = (UiScale.Width - w) * 0.5f, y = UiScale.Height * 0.16f;
+            GUI.Label(new Rect(0, y, UiScale.Width, 50f), r.Victory ? "죽림을 돌파했어요" : "쓰러졌어요 · 첫날 아침으로 회귀해요", _big);
+            GUI.Label(new Rect(0, y + 52f, UiScale.Width, 30f), $"<color=#cfcfcf>{r.Where} · {r.Runs}번째 회귀</color>", _bossLabel);
+            float row = y + 110f;
+            foreach (var line in r.Lines)
+            {
+                if (line.count <= 0f) continue;
+                GUI.Label(new Rect(x, row, w * 0.55f, 30f), line.label, _label);
+                GUI.Label(new Rect(x + w * 0.45f, row, w * 0.25f, 30f), $"{line.count:0}", _label);
+                GUI.Label(new Rect(x + w * 0.7f, row, w * 0.3f, 30f), $"<color=#ffd27a>기억 +{line.memory:0.#}</color>", _label);
+                row += 32f;
+            }
+            row += 10f;
+            GUI.Label(new Rect(x, row, w, 34f), $"<b>회귀의 기억 +{r.Memory}</b>   <color=#cfcfcf>(가진 기억 {r.StoredMemory})</color>", _big);
+            GUI.Label(new Rect(0, row + 60f, UiScale.Width, 30f), "<color=#cfcfcf>Enter · F5 다시 회귀 · 회귀록(해금)은 아직 없어요</color>", _bossLabel);
         }
 
         // 이벤트 (시간이 멈춰 있어요): 제목 · 글 · 선택지. 🔒 선택지는 조건이 안 되면 흐리게 이유만.

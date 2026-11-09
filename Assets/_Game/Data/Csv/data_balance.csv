@@ -529,3 +529,12 @@ ironfist.rock_fall,0.8,s,낙석 예고 시간 (임시),
 skill_quake.ratio,100%,,비급 붕산권: 피해 (회선참 피해 비율 임시),
 skill_quake.radius,3,cell,비급 붕산권: 충격파 반경 (고수와 같게),몬스터!H108 설명
 skill_quake.knockback,2,cell,비급 붕산권: 밀어내는 거리 (고수와 같게),몬스터!H108 설명
+memory.per_floor,3,,회귀의 기억: 돌파한 층 1개당,기억!B4
+memory.normal,0.1,,회귀의 기억: 일반 적 1마리당,기억!B5
+memory.elite,1,,회귀의 기억: 정예,기억!B6
+memory.assassin,3,,회귀의 기억: 살수,기억!B7
+memory.master,5,,회귀의 기억: 고수,기억!B8
+memory.boss,10,,회귀의 기억: 보스,기억!B9
+memory.hidden_room,5,,회귀의 기억: 기연 방 발견,기억!B10
+memory.final_boss,30,,회귀의 기억: 천마 격파,기억!B11
+result.death_delay,1.5,s,쓰러진 뒤 결과 화면이 뜨기까지 (임시),

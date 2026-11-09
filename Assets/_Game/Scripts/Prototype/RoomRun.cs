@@ -118,6 +118,7 @@ namespace AThousandDawns.Prototype
         {
             if (_bannerTimer > 0f) _bannerTimer -= Time.unscaledDeltaTime;
             if (Player == null) return;
+            if (TickResult()) return; // 쓰러짐·판 끝 → 결과 화면
 
             if (IsForking)
             {
@@ -301,6 +302,7 @@ namespace AThousandDawns.Prototype
             ClearPending();
             EndHunt();
             EndFloorEffects();
+            _record.FloorsCleared++; // 관문을 지나면 그 층 돌파
             _fighting = false;
             SetLocks(false);
             SetGateMarker(false);
@@ -592,6 +594,7 @@ namespace AThousandDawns.Prototype
         void FinishRun()
         {
             _phase = Phase.Done;
+            _record.FloorsCleared++; // 보스 층 돌파
             int silver = Mathf.RoundToInt(GameConfig.Get("silver.boss", 50f));
             Silver += silver;
             arena.GrantOffer(SpecialGradeWeights()); // 보스·살수 특별 보상 표
@@ -665,6 +668,7 @@ namespace AThousandDawns.Prototype
         void OnDestroy()
         {
             if (IsForking || IsShopping || IsInEvent) Time.timeScale = 1f;
+            AThousandDawns.Combat.Damageable.AnyDied -= OnAnyDied;
         }
 
         // HUD 한 줄

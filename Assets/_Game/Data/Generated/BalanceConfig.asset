@@ -2133,3 +2133,39 @@ MonoBehaviour:
     value: 2
     unit: cell
     note: "\uBE44\uAE09 \uBD95\uC0B0\uAD8C: \uBC00\uC5B4\uB0B4\uB294 \uAC70\uB9AC (\uACE0\uC218\uC640 \uAC19\uAC8C)"
+  - key: memory.per_floor
+    value: 3
+    unit: 
+    note: "\uD68C\uADC0\uC758 \uAE30\uC5B5: \uB3CC\uD30C\uD55C \uCE35 1\uAC1C\uB2F9"
+  - key: memory.normal
+    value: 0.1
+    unit: 
+    note: "\uD68C\uADC0\uC758 \uAE30\uC5B5: \uC77C\uBC18 \uC801 1\uB9C8\uB9AC\uB2F9"
+  - key: memory.elite
+    value: 1
+    unit: 
+    note: "\uD68C\uADC0\uC758 \uAE30\uC5B5: \uC815\uC608"
+  - key: memory.assassin
+    value: 3
+    unit: 
+    note: "\uD68C\uADC0\uC758 \uAE30\uC5B5: \uC0B4\uC218"
+  - key: memory.master
+    value: 5
+    unit: 
+    note: "\uD68C\uADC0\uC758 \uAE30\uC5B5: \uACE0\uC218"
+  - key: memory.boss
+    value: 10
+    unit: 
+    note: "\uD68C\uADC0\uC758 \uAE30\uC5B5: \uBCF4\uC2A4"
+  - key: memory.hidden_room
+    value: 5
+    unit: 
+    note: "\uD68C\uADC0\uC758 \uAE30\uC5B5: \uAE30\uC5F0 \uBC29 \uBC1C\uACAC"
+  - key: memory.final_boss
+    value: 30
+    unit: 
+    note: "\uD68C\uADC0\uC758 \uAE30\uC5B5: \uCC9C\uB9C8 \uACA9\uD30C"
+  - key: result.death_delay
+    value: 1.5
+    unit: s
+    note: "\uC4F0\uB7EC\uC9C4 \uB4A4 \uACB0\uACFC \uD654\uBA74\uC774 \uB728\uAE30\uAE4C\uC9C0 (\uC784\uC2DC)"

@@ -117,6 +117,7 @@ namespace AThousandDawns.Prototype
                 if (keyboard.equalsKey.wasPressedThisFrame) SpawnMaster(EnemyKind.IronFist); // 고수 철권 마웅
                 if (keyboard.gKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.FillGauge();
                 if (keyboard.lKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.GainLevelForTest(); // 시험용 레벨업
+                if (keyboard.kKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.KillForTest(); // 시험용: 바로 쓰러지기
                 if (director != null && director.Player != null && director.Player.Keywords != null)
                 {
                     if (keyboard.f1Key.wasPressedThisFrame) director.Player.Keywords.CycleStage(Keyword.Yeolyang);

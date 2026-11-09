@@ -9,6 +9,14 @@
 
         float GaugeGainMultiplier => 1f + RunGaugeBonus;
 
+        // 시험판 K 키: 바로 쓰러지기 (결과 화면 확인용)
+        public void KillForTest()
+        {
+            if (IsDead) return;
+            Health = 0f;
+            if (visual != null) visual.localScale = new UnityEngine.Vector3(1.2f, 0.25f, 1.2f);
+        }
+
         // 버려진 약방 독약: 체력을 직접 깎아요 (쓰러지지는 않아요)
         public void TakeEventDamage(float amount)
         {

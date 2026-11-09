@@ -1,0 +1,48 @@
+using System;
+using System.IO;
+using UnityEngine;
+
+namespace AThousandDawns.Core
+{
+    // 판 밖에 남는 것 (회귀해도 사라지지 않음): 회귀의 기억, 회차, 가장 깊이 간 기록.
+    // persistentDataPath/meta.json 에 저장해요. 회귀록(해금)이 생기면 여기에 해금 목록을 더해요.
+    [Serializable]
+    public sealed class MetaSave
+    {
+        public int memory;        // 지금 가진 회귀의 기억 (회귀록에 쓰면 줄어요)
+        public int totalMemory;   // 지금까지 얻은 기억 합계
+        public int runs;          // 회차 (끝난 판 수)
+        public int bestFloors;    // 가장 많이 돌파한 층
+        public int bossKills;     // 지역 보스 처치 수
+
+        // 테스트에서 실제 저장 파일을 건드리지 않게 바꿔요
+        public static string PathOverride;
+
+        public static string FilePath => PathOverride ?? Path.Combine(Application.persistentDataPath, "meta.json");
+
+        public static MetaSave Load()
+        {
+            try
+            {
+                if (File.Exists(FilePath)) return JsonUtility.FromJson<MetaSave>(File.ReadAllText(FilePath)) ?? new MetaSave();
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[MetaSave] 저장 파일을 읽지 못해 새로 시작해요: {e.Message}");
+            }
+            return new MetaSave();
+        }
+
+        public void Save()
+        {
+            try
+            {
+                File.WriteAllText(FilePath, JsonUtility.ToJson(this, true));
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[MetaSave] 저장하지 못했어요: {e.Message}");
+            }
+        }
+    }
+}
