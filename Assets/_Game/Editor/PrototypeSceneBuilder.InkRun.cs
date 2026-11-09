@@ -127,7 +127,7 @@ namespace AThousandDawns.EditorTools
             //    공격 예고·불·검기·결계·관문은 전투에서 읽혀야 하니 그대로 둬요
             //    시험판 재질 폴더(MaterialFolder)의 것만 바꿔요 (방금 단 수묵 그림·기본 스프라이트 재질은 그대로).
             //    대나무·풀숲 원래 모양은 이미 안 보이게 했으니 건너뛰어요
-            var keep = new HashSet<string> { "Telegraph_Base", "Telegraph_Fill", "Telegraph_Outline", "SwingFlash", "UltimateSword", "BossGate", "Gate_Portal", "Bamboo", "Bush" };
+            var keep = new HashSet<string> { "Telegraph_Outline", "SwingFlash", "BossGate", "Gate_Portal", "Bamboo", "Bush" };
             var swapped = new Dictionary<Material, Material>();
             Material InkFor(Material m)
             {
@@ -141,6 +141,8 @@ namespace AThousandDawns.EditorTools
                     case "Wall": case "Stone": ink = stoneMat; break;
                     case "Wood": ink = woodMat; break;
                     case "Fire": ink = GetInkFireGroundMaterial(); break; // 불타는 죽림 띠·불 장판: 일렁이는 수묵 불길
+                    case "Telegraph_Base": case "Telegraph_Fill": ink = GetInkTelegraphMaterial(m); break; // 색은 그대로, 붓 자국 농담만
+                    case "UltimateSword": ink = GetInkMaterial("Ink_UltimateSword", "#1E2226", 0f); break; // 만검귀종: 먹색 수묵 검
                     default:
                         // 사람·적·소품: 원래 색을 바탕으로 수묵 캐릭터 재질. 적은 종류가 구분되게 색을 조금 남겨요
                         float saturation = m.name == "Player" ? 0.75f : m.name.StartsWith("Enemy_") ? 0.45f : 0.3f;
@@ -179,6 +181,9 @@ namespace AThousandDawns.EditorTools
                     }
                     if (changed) so.ApplyModifiedPropertiesWithoutUndo();
                 }
+
+            // 4-1) 전투 이펙트: 평타 붓 획, 맞을 때 먹물 튀김
+            AddInkCombatFX();
 
             // 5) 한지색 배경과 원근 안개
             var cam = Camera.main;
