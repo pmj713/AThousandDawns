@@ -1,4 +1,4 @@
-key,value,unit,note,source
+﻿key,value,unit,note,source
 world.cell_size,1,unit,1칸 = 유니티 1 유닛,
 damage.toughness_floor_ratio,0.2,,강인함을 빼도 적용 전 피해의 이 비율 아래로는 안 내려감,
 damage.gongryeok_per_point,10%,,공력 1당 초식·절초 피해 증가,무기!B47
@@ -327,3 +327,27 @@ xp.elite,5,,정예 처치 수련치,수련치!B5
 xp.assassin,5,,살수 처치 수련치,수련치!B6
 xp.master,15,,고수 처치 수련치,수련치!B7
 xp.boss,30,,보스 처치 수련치,수련치!B8
+room.floors,3,,죽림 일반 층 수,판구조!B5
+room.path_rooms,3,,층마다 최소 경로 전투 방 수 (선택 방·갈림길은 아직),판구조!C5
+room.budget_min.f1,6,점,1층 방 난이도 예산 하한,판구조!H5 설명
+room.budget_max.f1,8,점,1층 방 난이도 예산 상한,판구조!H5 설명
+room.budget_min.f2,9,점,2층 방 난이도 예산 하한,판구조!H5 설명
+room.budget_max.f2,12,점,2층 방 난이도 예산 상한,판구조!H5 설명
+room.budget_min.f3,12,점,3층 방 난이도 예산 하한 (임시: 1→2층 증가폭 이어 감),
+room.budget_max.f3,15,점,3층 방 난이도 예산 상한 (임시),
+room.waves_min,2,,방마다 웨이브 수 하한 (방 전투 흐름: 2~3웨이브),
+room.waves_max,3,,방마다 웨이브 수 상한,
+room.spawn_warning,0.8,s,적이 나오기 전 바닥 예고 원 (임시),
+room.spawn_min_distance,5,cell,플레이어에게서 이 거리 밖에서 나옴 (임시),
+room.horn_max,1,,방마다 최대 나팔수 (임시),
+room.snake_max,2,,방마다 최대 청죽사 (풀숲 수에 맞춤 임시),
+room_cost.grunt,1,점,산적 졸개 난이도 점수 (임시: 방당 5마리 ≈ 6~8점),
+room_cost.boar,2,점,멧돼지 난이도 점수 (임시),
+room_cost.archer,2,점,궁수 난이도 점수 (임시),
+room_cost.hound,2,점,들개 무리(둘) 난이도 점수 (임시),
+room_cost.shield,2,점,방패 산적 난이도 점수 (임시),
+room_cost.horn,2,점,나팔수 난이도 점수 (임시),
+room_cost.bomber,1,점,화약 산적 난이도 점수 (임시),
+room_cost.snake,1,점,청죽사 난이도 점수 (임시),
+meridian.width_after_boss1,6,cell,녹림왕 처치 뒤 경맥도 가로,기획 대화 (5×4 → 6×4)
+meridian.height_after_boss1,4,cell,녹림왕 처치 뒤 경맥도 세로,기획 대화

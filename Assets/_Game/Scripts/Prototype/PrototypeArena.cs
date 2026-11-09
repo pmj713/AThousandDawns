@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using AThousandDawns.Core;
 using AThousandDawns.Enemies;
@@ -32,6 +32,7 @@ namespace AThousandDawns.Prototype
         public static bool AutoSpawn = true;
 
         [SerializeField] EnemyDirector director;
+        [SerializeField] bool sandbox = true; // 끄면 판 구조 씬 (RoomRun이 적·보상을 맡고, 여기선 시험 키·기물 고르기·녹림왕만)
         [SerializeField] GameObject bossGate;
         [SerializeField] Vector3 bossZoneCenter = new Vector3(0f, 0f, 16.5f);
         [SerializeField] float respawnDelay = 3f;
@@ -82,7 +83,7 @@ namespace AThousandDawns.Prototype
                 GameConfig.Get("item_grade.rare", 0.1f), GameConfig.Get("item_grade.legendary", 0.02f),
             };
             SetGate(false);
-            if (AutoSpawn) SpawnLayout();
+            if (AutoSpawn && sandbox) SpawnLayout();
         }
 
         void Update()
@@ -129,7 +130,7 @@ namespace AThousandDawns.Prototype
             // 녹림왕이 쓰러지면 결계가 풀려요
             if (bossGate != null && bossGate.activeSelf && (_boss == null || _boss.IsDead)) SetGate(false);
 
-            if (!AutoSpawn || director == null) return;
+            if (!sandbox || !AutoSpawn || director == null) return;
             DetectClears();
             if (director.Enemies.Count > 0)
             {
@@ -188,6 +189,9 @@ namespace AThousandDawns.Prototype
             if (_bossWasAlive && !bossAlive) _pendingOffers++;
             _bossWasAlive = bossAlive;
         }
+
+        // 판 구조: 방을 비우거나 녹림왕을 쓰러뜨리면 RoomRun이 불러요.
+        public void GrantOffer() => _pendingOffers++;
 
         // 고르는 중이면 true. 1·2·3 (또는 화면 클릭) 고르기 · Esc 넘기기 · I 하나 열기
         bool UpdateItemChoice(Keyboard keyboard)

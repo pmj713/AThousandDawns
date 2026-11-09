@@ -122,6 +122,13 @@ namespace AThousandDawns.Player
             Recount();
         }
 
+        // 경맥도 확장 (녹림왕 처치 5×4 → 6×4)
+        public void ExpandBoard(int width, int height)
+        {
+            _board.Expand(width, height);
+            Recount();
+        }
+
         // 공력 (모든 단전의 출력). PlayerController가 공력이 바뀔 때마다 알려 줘요.
         public void SetPower(int power)
         {

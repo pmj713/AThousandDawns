@@ -1,4 +1,4 @@
-using AThousandDawns.Combat;
+﻿using AThousandDawns.Combat;
 using AThousandDawns.Enemies;
 using AThousandDawns.Items;
 using AThousandDawns.Player;
@@ -17,6 +17,7 @@ namespace AThousandDawns.Prototype
         [SerializeField] TrainingDummy[] dummies;
         [SerializeField] EnemyDirector director;
         [SerializeField] PrototypeArena arena;
+        [SerializeField] RoomRun run; // 판 구조 씬에만
 
         static readonly Color BurnDot = new Color(0.85f, 0.28f, 0.06f);  // 진한 주홍 (예고 #FF9A2E와 구분)
         static readonly Color SlowDot = new Color(0.55f, 0.82f, 0.98f);  // 하늘색
@@ -98,7 +99,7 @@ namespace AThousandDawns.Prototype
             }
             if (director != null && director.MeleeTokens != null)
             {
-                string wave = arena != null && arena.RoundNumber > 0 ? $"{arena.RoundNumber}번째 배치 · " : "";
+                string wave = run != null ? $"{run.StatusText} · " : arena != null && arena.RoundNumber > 0 ? $"{arena.RoundNumber}번째 배치 · " : "";
                 GUILayout.Label($"{wave}적 {director.Enemies.Count}  ·  공격 중 근접 {director.MeleeTokens.InUse}/{director.MeleeTokens.Capacity}, 원거리 {director.RangedTokens.InUse}/{director.RangedTokens.Capacity}", _label);
             }
             GUILayout.EndArea();
@@ -107,6 +108,9 @@ namespace AThousandDawns.Prototype
 
             // 레벨업 순간 (최대 체력 +5는 바로, 혈자리는 경맥도에서)
             if (_levelUpTimer > 0f) GUI.Label(new Rect(0, UiScale.Height * 0.22f, UiScale.Width, 50), "레벨 업! 최대 체력 +5 · 혈자리를 열 수 있어요", _big);
+
+            string banner = run != null ? run.Banner : null;
+            if (banner != null) GUI.Label(new Rect(0, UiScale.Height * 0.3f, UiScale.Width, 50), banner, _big);
 
             if (player != null && player.IsDead)
                 GUI.Label(new Rect(0, UiScale.Height * 0.4f, UiScale.Width, 60), "쓰러졌어요 · F5 키로 다시 시작", _big);

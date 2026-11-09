@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using AThousandDawns.Combat;
 using AThousandDawns.Core;
 using AThousandDawns.Data;
@@ -14,7 +14,7 @@ using UnityEngine;
 namespace AThousandDawns.EditorTools
 {
     // 시험판 전투 씬을 코드로 다시 만들어요. 손으로 고친 씬이 있으면 덮어쓰니 주의.
-    public static class PrototypeSceneBuilder
+    public static partial class PrototypeSceneBuilder
     {
         public const string ScenePath = "Assets/_Game/Scenes/Prototype_Combat.unity";
         const string MaterialFolder = "Assets/_Game/Prototype/Materials";
@@ -64,13 +64,27 @@ namespace AThousandDawns.EditorTools
             EditorApplication.Exit(0);
         }
 
+        // 시험판 씬 둘: 판 구조(Prototype_Run, 처음 씬)와 넓은 맵 샌드박스(Prototype_Combat).
         public static void Build()
         {
             SheetImporter.ImportBalance();
             SheetImporter.ImportItems();
-            var balance = AssetDatabase.LoadAssetAtPath<BalanceConfig>(SheetImporter.BalanceAssetPath);
-            var itemDb = AssetDatabase.LoadAssetAtPath<AThousandDawns.Items.ItemDatabase>(SheetImporter.ItemsAssetPath);
+            // 새 씬을 열면 앞에서 불러 둔 에셋 참조가 풀려요. 씬마다 다시 불러요.
+            BuildSandbox(LoadBalance(), LoadItems());
+            BuildRun(LoadBalance(), LoadItems());
+            EditorBuildSettings.scenes = new[]
+            {
+                new EditorBuildSettingsScene(RunScenePath, true),
+                new EditorBuildSettingsScene(ScenePath, true),
+            };
+            AssetDatabase.SaveAssets();
+        }
 
+        static BalanceConfig LoadBalance() => AssetDatabase.LoadAssetAtPath<BalanceConfig>(SheetImporter.BalanceAssetPath);
+        static AThousandDawns.Items.ItemDatabase LoadItems() => AssetDatabase.LoadAssetAtPath<AThousandDawns.Items.ItemDatabase>(SheetImporter.ItemsAssetPath);
+
+        static void BuildSandbox(BalanceConfig balance, AThousandDawns.Items.ItemDatabase itemDb)
+        {
             var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
 
             var floorMat = GetMaterial("Floor", FloorColor, false);
@@ -88,7 +102,7 @@ namespace AThousandDawns.EditorTools
             SetRef(config, "items", itemDb);
 
             var swordMat = GetMaterial("UltimateSword", UltimateSwordColor, false);
-            var player = BuildPlayer(playerMat, wallMat, flashMat, swordMat);
+            var player = BuildPlayer(playerMat, wallMat, flashMat, swordMat, new Vector3(0f, 0f, -3f));
             var dummyA = BuildDummy("목인장 (강인함 0)", new Vector3(-2.5f, 0f, 2f), 0f, 0f, false, dummyMat);
             var dummyB = BuildDummy("목인장 (녹림왕: 강인함 5, 방어 10%)", new Vector3(2.5f, 0f, 2f), 5f, 0.1f, true, dummyMat);
 
@@ -118,16 +132,14 @@ namespace AThousandDawns.EditorTools
 
             EnsureFolder(Path.GetDirectoryName(ScenePath).Replace('\\', '/'));
             EditorSceneManager.SaveScene(scene, ScenePath);
-            EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
-            AssetDatabase.SaveAssets();
             Debug.Log($"[시험판 씬] {ScenePath} 를 만들었어요.");
         }
 
         // 청죽사가 숨는 풀숲 8곳 (대나무·목인장·플레이어 시작 자리·테스트 경로와 떨어진 곳). 충돌체 없음.
-        static void BuildBushes(Material mat)
+        static void BuildBushes(Material mat, Vector3[] spots = null)
         {
             var parent = new GameObject("Bushes").transform;
-            Vector3[] spots =
+            spots ??= new[]
             {
                 new Vector3(-6.5f, 0f, -2.5f), new Vector3(6.5f, 0f, 2f), new Vector3(-3f, 0f, 4.8f), new Vector3(3.5f, 0f, -4.5f),
                 new Vector3(-15f, 0f, 5f), new Vector3(15f, 0f, -9f), new Vector3(-5f, 0f, -11f), new Vector3(13f, 0f, 8f),
@@ -197,10 +209,10 @@ namespace AThousandDawns.EditorTools
             return gate;
         }
 
-        static PlayerController BuildPlayer(Material bodyMat, Material noseMat, Material flashMat, Material swordMat)
+        static PlayerController BuildPlayer(Material bodyMat, Material noseMat, Material flashMat, Material swordMat, Vector3 start)
         {
             var root = new GameObject("Player");
-            root.transform.position = new Vector3(0f, 0f, -3f);
+            root.transform.position = start;
             var cc = root.AddComponent<CharacterController>();
             cc.radius = 0.3f;
             cc.height = 1.6f;

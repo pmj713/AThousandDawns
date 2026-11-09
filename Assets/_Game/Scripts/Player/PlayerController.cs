@@ -427,6 +427,13 @@ namespace AThousandDawns.Player
         // 시험판용: G 키로 기세를 가득 채워요.
         public void FillGauge() => Gauge = _gaugeMax;
 
+        // 정비실을 나갈 때: 목인장에 쓴 기세를 들어올 때 값으로 되돌리고 회선참 쿨타임을 비워요.
+        public void RestoreAfterTraining(float gauge)
+        {
+            Gauge = Mathf.Clamp(gauge, 0f, _gaugeMax);
+            _skillCooldownLeft = 0f;
+        }
+
         // 회선참: 주변 원형(반경 2.2칸)을 한 바퀴 베요. 시전 0.35초, 쿨타임은 누르는 순간부터.
         void StartSkill()
         {

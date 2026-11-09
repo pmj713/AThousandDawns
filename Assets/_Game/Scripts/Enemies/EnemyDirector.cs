@@ -165,7 +165,13 @@ namespace AThousandDawns.Enemies
             return new Vector3(around.x, 0f, around.z);
         }
 
-        bool IsFree(Vector3 p, float radius)
+        // 새 방에 들어갈 때: 방마다 세는 것(나팔수 호출 횟수)을 처음으로
+        public void ResetRoom()
+        {
+            SummonsLeft = Mathf.RoundToInt(GameConfig.Get("horn.summon_max", 2f));
+        }
+
+        public bool IsFree(Vector3 p, float radius)
         {
             int found = Physics.OverlapSphereNonAlloc(p + Vector3.up * 0.8f, radius, _overlap, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < found; i++)
