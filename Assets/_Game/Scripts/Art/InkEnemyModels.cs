@@ -129,9 +129,9 @@ namespace AThousandDawns.Art
 
         InkEnemyModels.Move PickMove()
         {
-            string name = _brain.AttackName;
+            string name = _brain.AttackName ?? "";   // 이름 없는 공격(멧돼지 돌진 등)은 attack이 ""인 동작
             foreach (var m in _moves)
-                if (!string.IsNullOrEmpty(name) && m.attack == name) return m;
+                if (m.attack == name) return m;
             return new InkEnemyModels.Move { state = "Attack", mode = _windupPlays ? InkEnemyModels.MoveMode.Play : InkEnemyModels.MoveMode.Swing };
         }
 
