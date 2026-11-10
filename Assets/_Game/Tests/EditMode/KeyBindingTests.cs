@@ -34,6 +34,17 @@ namespace AThousandDawns.Tests
         }
 
         [Test]
+        public void 안내_글의_키_표식은_지금_키_이름으로()
+        {
+            string text = $"{KeyHint.Key(Bind.Meridian)} 경맥도 · {KeyHint.Key(Bind.Attack)} 공격";
+            StringAssert.DoesNotContain("E 경맥도", text, "표식 그대로는 글자가 아니에요");
+            Assert.AreEqual("E 경맥도 · 좌클릭 공격", KeyHint.Plain(text));
+            KeyBindings.Set(Bind.Meridian, "<Keyboard>/m");
+            Assert.AreEqual("M 경맥도 · 좌클릭 공격", KeyHint.Plain(text), "키를 바꾸면 따라 바뀌어요");
+            Assert.AreEqual("표식 없음", KeyHint.Plain("표식 없음"));
+        }
+
+        [Test]
         public void 바꾸면_저장되고_겹치면_맞바꿈()
         {
             KeyBindings.Set(Bind.Interact, "<Keyboard>/g");
