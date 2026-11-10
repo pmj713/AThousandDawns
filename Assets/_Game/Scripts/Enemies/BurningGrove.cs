@@ -1,4 +1,5 @@
 using AThousandDawns.Player;
+using AThousandDawns.Core;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -71,6 +72,7 @@ namespace AThousandDawns.Enemies
             }
             if (!wasBurning)
             {
+                Sfx.Play(SfxId.GroveIgnite);
                 foreach (var r in _renderers)
                 {
                     r.enabled = true;
@@ -82,6 +84,7 @@ namespace AThousandDawns.Enemies
             if (_shrinkTimer >= _shrinkInterval)
             {
                 _shrinkTimer -= _shrinkInterval;
+                if (_safe.x > _minSafe.x || _safe.y > _minSafe.y) Sfx.Play(SfxId.GroveShrink, 0.7f); // 다 좁혀진 뒤엔 조용히
                 _safe = new Vector2(Mathf.Max(_minSafe.x, _safe.x - _shrinkStep), Mathf.Max(_minSafe.y, _safe.y - _shrinkStep));
                 Layout();
             }

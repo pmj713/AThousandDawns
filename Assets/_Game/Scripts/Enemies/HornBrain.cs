@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AThousandDawns.Core;
 using UnityEngine;
 
 namespace AThousandDawns.Enemies
@@ -43,6 +44,13 @@ namespace AThousandDawns.Enemies
         protected override void TickWindup(float dt, bool tracking) => FaceToward(ToPlayer());
 
         protected override List<Vector2> TelegraphShape() => TelegraphShapes.Circle(CallRadius);
+
+        AudioSource _horn;
+
+        // 예고 동안 나팔. 예고가 끊기거나 쓰러지면 나팔도 멈춰요
+        protected override void OnAttackStarted() => _horn = Sfx.PlayStoppable(SfxId.HornBlow);
+        protected override void OnAttackInterrupted() => Sfx.Stop(_horn);
+        protected override void OnDied() => Sfx.Stop(_horn);
 
         protected override void OnActiveStarted()
         {

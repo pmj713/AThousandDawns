@@ -1,3 +1,4 @@
+using AThousandDawns.Core;
 using UnityEngine;
 
 namespace AThousandDawns.Enemies
@@ -60,5 +61,7 @@ namespace AThousandDawns.Enemies
         }
 
         protected override void OnAttackFinished() => _flankSign = -_flankSign; // 다음엔 반대쪽으로
+
+        protected override void OnBite() => Sfx.Play(SfxId.HoundBite); // 2~3마리가 같이 나와서 예고 으르렁은 빼고 물기만
     }
 }

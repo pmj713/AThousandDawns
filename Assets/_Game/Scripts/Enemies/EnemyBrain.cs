@@ -212,7 +212,7 @@ namespace AThousandDawns.Enemies
             Attack.Start(WindupTime + Status.WindupExtra, ActiveTime, RecoveryTime); // 눈송이 수정: 둔화 3중첩이면 예고가 길어짐
             OnAttackStarted();
             Telegraph.Show(TelegraphShape(), RadialTelegraph);
-            Sfx.Play(SfxId.Telegraph, 0.6f);
+            if (Rank != EnemyRank.Normal) Sfx.Play(SfxId.Telegraph, 0.6f); // 예고 소리는 정예·살수·고수·보스만 (졸개가 여럿이면 겹쳐서)
             UpdateTelegraph();
         }
 

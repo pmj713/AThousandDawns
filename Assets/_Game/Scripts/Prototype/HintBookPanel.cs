@@ -150,6 +150,8 @@ namespace AThousandDawns.Prototype
         void DrawItem(Rect text, ItemDefinition def)
         {
             string grade = ItemDefinition.GradeLabel(def.grade);
+            DrawCodexIcon(text, def);
+            text.width -= 160f; // 글은 아이콘 왼쪽까지
             if (!Seen(def))
             {
                 int pack = ItemDatabase.PackOf(def.id);
@@ -163,6 +165,17 @@ namespace AThousandDawns.Prototype
             if (!string.IsNullOrEmpty(def.sideText)) body += $"\n\n<color=#c98a7a>주화입마: {def.sideText}</color>";
             GUI.Label(new Rect(text.x, text.y, text.width, 36f), def.name, _title);
             GUI.Label(new Rect(text.x, text.y + 50f, text.width, text.height - 50f), body, _body);
+        }
+
+        // 본문 오른쪽 위 아이콘: 못 만난 기물은 검은 그림자만
+        void DrawCodexIcon(Rect text, ItemDefinition def)
+        {
+            var tex = ItemIcons.Get(def);
+            if (tex == null) return;
+            var old = GUI.color;
+            if (!Seen(def)) GUI.color = new Color(0f, 0f, 0f, 0.85f);
+            GUI.DrawTexture(new Rect(text.xMax - 140f, text.y, 140f, 140f), tex, ScaleMode.ScaleToFit, true);
+            GUI.color = old;
         }
 
         void EnsureStyles()

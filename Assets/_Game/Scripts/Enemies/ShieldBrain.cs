@@ -1,4 +1,5 @@
 using AThousandDawns.Combat;
+using AThousandDawns.Core;
 using UnityEngine;
 
 namespace AThousandDawns.Enemies
@@ -49,8 +50,10 @@ namespace AThousandDawns.Enemies
             if (!GuardUp) return 1f;
             Vector3 to = attacker - transform.position;
             to.y = 0f;
-            if (to.sqrMagnitude < 1e-4f) return _guardRatio; // 겹쳐 있으면 정면으로 쳐요
-            return Vector3.Angle(Facing, to) <= _guardAngle * 0.5f ? _guardRatio : 1f;
+            bool blocked = to.sqrMagnitude < 1e-4f || Vector3.Angle(Facing, to) <= _guardAngle * 0.5f; // 겹쳐 있으면 정면으로 쳐요
+            if (!blocked) return 1f;
+            Sfx.Play(SfxId.ShieldBlock);
+            return _guardRatio;
         }
 
         void LateUpdate()
