@@ -104,6 +104,26 @@
             return true;
         }
 
+        // 판 중간 저장에서 되살릴 때 (기물·면벽수련을 먼저 적용해 최대 체력이 정해진 뒤에)
+        public void RestoreRunState(float health, int potions, float gauge, bool revive)
+        {
+            Potions = UnityEngine.Mathf.Clamp(potions, 0, PotionMax);
+            Gauge = UnityEngine.Mathf.Clamp(gauge, 0f, GaugeCap);
+            Health = UnityEngine.Mathf.Clamp(health, 1f, MaxHealth);
+            ReviveReady = revive;
+        }
+
+        // 마지막으로 맞은 것 (결과 화면 사망 원인): "청죽객의 죽림섬에" · "산적 졸개에게" · "화상으로"
+        public string LastHitBy { get; private set; }
+
+        static string DescribeAttacker(AThousandDawns.Combat.Damageable attacker)
+        {
+            if (attacker == null || !attacker.TryGetComponent(out AThousandDawns.Enemies.EnemyBrain brain)) return null;
+            string name = brain.DisplayName;
+            string attack = brain.AttackName;
+            return string.IsNullOrEmpty(attack) ? $"{name}에게" : $"{name}의 {attack}에";
+        }
+
         // 시험판 K 키: 바로 쓰러지기 (결과 화면 확인용)
         public void KillForTest()
         {

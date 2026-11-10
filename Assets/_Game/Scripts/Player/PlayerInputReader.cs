@@ -3,7 +3,8 @@ using UnityEngine.InputSystem;
 
 namespace AThousandDawns.Player
 {
-    // 시험판 입력: WASD 이동, 좌클릭 평타(누르고 있기), 우클릭 초식, Q 절초, Space 대시, R 금창약(누르고 있기). 조준은 마우스가 가리키는 바닥.
+    // 시험판 입력 (기본): WASD 이동, 좌클릭 평타(누르고 있기), 우클릭 초식, Q 절초, Space 대시, R 금창약(누르고 있기). 조준은 마우스가 가리키는 바닥.
+    // 키보드·마우스 키는 설정에서 바꿀 수 있어요 (KeyBindings).
     public sealed class PlayerInputReader : MonoBehaviour
     {
         InputAction _move;
@@ -47,6 +48,23 @@ namespace AThousandDawns.Player
 
             _potion = new InputAction("Potion", InputActionType.Button, "<Keyboard>/r");
             _potion.AddBinding("<Gamepad>/leftShoulder");
+            ApplyKeys();
+            AThousandDawns.Core.GameSettings.Changed += ApplyKeys;
+        }
+
+        // 설정 → 조작 키: 키보드·마우스 바인딩(각 동작의 첫 바인딩, 이동은 2DVector 네 방향)을 바꿔요. 게임패드 바인딩은 그대로.
+        void ApplyKeys()
+        {
+            string P(AThousandDawns.Core.Bind b) => AThousandDawns.Core.KeyBindings.Path(b);
+            _move.ApplyBindingOverride(1, P(AThousandDawns.Core.Bind.MoveUp));
+            _move.ApplyBindingOverride(2, P(AThousandDawns.Core.Bind.MoveDown));
+            _move.ApplyBindingOverride(3, P(AThousandDawns.Core.Bind.MoveLeft));
+            _move.ApplyBindingOverride(4, P(AThousandDawns.Core.Bind.MoveRight));
+            _attack.ApplyBindingOverride(0, P(AThousandDawns.Core.Bind.Attack));
+            _skill.ApplyBindingOverride(0, P(AThousandDawns.Core.Bind.Skill));
+            _dash.ApplyBindingOverride(0, P(AThousandDawns.Core.Bind.Dash));
+            _ultimate.ApplyBindingOverride(0, P(AThousandDawns.Core.Bind.Ultimate));
+            _potion.ApplyBindingOverride(0, P(AThousandDawns.Core.Bind.Potion));
         }
 
         void OnEnable()
@@ -71,6 +89,7 @@ namespace AThousandDawns.Player
 
         void OnDestroy()
         {
+            AThousandDawns.Core.GameSettings.Changed -= ApplyKeys;
             _move.Dispose();
             _attack.Dispose();
             _dash.Dispose();

@@ -13,6 +13,8 @@ namespace AThousandDawns.Enemies
     //   (반투명해지는 연출은 아직 없어요. 연기는 바닥 원으로만 보여요)
     public sealed class AssassinBrain : EnemyBrain
     {
+        public override string AttackName => _pattern switch { Pattern.Twin => "쌍검 2연격", Pattern.Shuriken => "표창", Pattern.Ambush => "은신 습격", _ => null };
+
         enum Pattern { Twin, Shuriken, Ambush, Smoke }
 
         Pattern _pattern;

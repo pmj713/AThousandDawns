@@ -16,6 +16,7 @@ namespace AThousandDawns.Prototype
         public void OpenForge(int count)
         {
             if (count <= 0 || Player.Items == null) return;
+            Notify("forge", "대장간: 기물을 녹여 주 키워드를 무기 홈에 넣어요 · 같은 키워드 둘이면 강화판");
             var items = Player.Items;
             var v = new EventView
             {
@@ -45,7 +46,7 @@ namespace AThousandDawns.Prototype
             {
                 Id = "forge_slot",
                 Title = $"{item.Def.name} · {PlayerKeywords.Label(k)}를 어느 홈에?",
-                Text = $"기본: {ForgeEffect(k, false)}\n강화판 (두 홈 모두 {PlayerKeywords.Label(k)}): {ForgeEffect(k, true)}",
+                Text = $"{(Player.UsesDagger ? "비도" : "검")} · 기본: {ForgeEffect(k, false, Player.UsesDagger)}\n강화판 (두 홈 모두 {PlayerKeywords.Label(k)}): {ForgeEffect(k, true, Player.UsesDagger)}\n<size=13>(무기를 바꾸면 그 무기의 효과로 바뀌어요)</size>",
             };
             for (int i = 0; i < PlayerItems.ForgeSlotCount; i++)
             {
@@ -84,7 +85,7 @@ namespace AThousandDawns.Prototype
             var k = item.Def.keyword;
             Player.Items.Fuse(item, slot);
             bool strong = Player.Items.ForgeLevel(k) >= 2;
-            return $"{item.Def.name}이(가) 녹아 검에 {PlayerKeywords.Label(k)}이(가) 새겨졌어요{(strong ? " · 강화판!" : "")}.\n{ForgeEffect(k, strong)}";
+            return $"{item.Def.name}이(가) 녹아 무기에 {PlayerKeywords.Label(k)}이(가) 새겨졌어요{(strong ? " · 강화판!" : "")}.\n{ForgeEffect(k, strong, Player.UsesDagger)}";
         }
 
         string SlotText(int slot)
@@ -92,6 +93,20 @@ namespace AThousandDawns.Prototype
             var k = Player.Items.ForgeSlot(slot);
             return k.HasValue ? PlayerKeywords.Label(k.Value) : "빈 홈";
         }
+
+        public static string ForgeEffect(Keyword k, bool strong, bool dagger) => dagger ? DaggerForgeEffect(k, strong) : ForgeEffect(k, strong);
+
+        // 비도 융합 (무기 시트 5번 표). 강화판은 기본 효과에 더해져요.
+        public static string DaggerForgeEffect(Keyword k, bool strong) => k switch
+        {
+            Keyword.Yeolyang => "비도가 꽂혀 있는 적은 1초마다 화상 1중첩" + (strong ? " + 꽂힌 비도 2개마다 화상 최대 중첩 +1 (최대 +3)" : ""),
+            Keyword.Bingbaek => "비도가 꽂혀 있는 동안 둔화가 풀리지 않음" + (strong ? " + 회수할 때 꽂혀 있던 적에게 둔화 2중첩" : ""),
+            Keyword.Noejeong => "비도가 꽂힐 때마다 감전 1중첩" + (strong ? " + 꽂힌 비도 1개당 감전 최대 중첩 +1 (최대 +5)" : ""),
+            Keyword.Ganggi => strong ? "비도가 2명 관통, 관통할 때마다 피해 +15%" : "비도가 1명 관통해 다음 적에게 꽂힘",
+            Keyword.Gyeonggong => strong ? "대시할 때 반경 6칸 안 비도를 모아 앞쪽 적에게 다시 던짐 (피해 +50%)" : "대시할 때 반경 3칸 안 비도를 모아 앞쪽 적에게 다시 던짐",
+            Keyword.Geumgang => strong ? "회수하면 돌아온 비도 1개당 보호막 최대 체력 2% (최대 15%), 5초" : "회수하면 돌아온 비도 1개당 보호막 최대 체력 1% (최대 10%), 3초",
+            _ => "",
+        };
 
         public static string ForgeEffect(Keyword k, bool strong) => k switch
         {

@@ -8,6 +8,8 @@ namespace AThousandDawns.Enemies
     // 먼저 맞히면(쓰러뜨려도) 0.5초 뒤 그 자리에서 터져요. 화상으로 터지는 건 화상이 생기면 붙여요.
     public sealed class BomberBrain : EnemyBrain
     {
+        public override string AttackName => "자폭";
+
         float _igniteDistance, _fuseMoveRatio, _hitFuse, _hitFuseElapsed;
         bool _exploded, _hitFusing;
 

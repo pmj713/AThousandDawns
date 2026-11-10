@@ -8,6 +8,8 @@ namespace AThousandDawns.Enemies
     // 옆걸음을 계속해도 화살은 고정된 지점을 지나가니까, 가만히 있으면 맞고 예고를 보고 비키면 피해요.
     public sealed class ArcherBrain : EnemyBrain
     {
+        public override string AttackName => "화살";
+
         const float ShotHeight = 1f;
 
         float _keepMin, _keepMax, _retreatDistance, _strafeSpeed, _shotPause, _arrowSpeed, _arrowRadius;

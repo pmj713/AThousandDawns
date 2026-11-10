@@ -55,7 +55,9 @@ namespace AThousandDawns.Prototype
             {
                 _crack = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 _crack.name = "HiddenCrack";
-                Destroy(_crack.GetComponent<Collider>());
+                var col = _crack.GetComponent<Collider>();
+                col.enabled = false; // Destroy는 프레임 끝에 지워져서, 그 사이 캐릭터가 이 충돌 상자 위로 밀려 올라가지 않게 먼저 꺼요
+                Destroy(col);
                 var r = _crack.GetComponent<Renderer>();
                 r.material.color = new Color(0.12f, 0.1f, 0.09f);
             }
@@ -77,7 +79,7 @@ namespace AThousandDawns.Prototype
         // 금 간 벽 앞에서 F: 벽이 무너지고 기연 방이 열려요
         bool TickCrack(Keyboard keyboard)
         {
-            if (keyboard == null || !keyboard.fKey.wasPressedThisFrame || !NearCrack) return false;
+            if (!AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Interact) || !NearCrack) return false;
             BreakCrack();
             return true;
         }
@@ -92,6 +94,7 @@ namespace AThousandDawns.Prototype
             if (combat.plugs[_crackDirection] != null) combat.plugs[_crackDirection].SetActive(false);
             PlaceCrack(null);
             ShowBanner("벽이 무너지고 숨은 동굴이 드러났어요 · 기연 방");
+            Notify("hidden", "기연 방: 벽의 금을 부수면 열리는 숨은 방 · 영약이나 비급을 얻어요");
         }
 
         // 영약이나 비급 중 하나

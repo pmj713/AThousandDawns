@@ -64,7 +64,7 @@ namespace AThousandDawns.Prototype
 
         readonly List<(EnemyKind kind, Vector3 position, Telegraph marker, bool elite)> _pending = new List<(EnemyKind, Vector3, Telegraph, bool)>();
         List<List<EnemyKind>> _waves;
-        List<Path> _forkOptions;
+        [System.NonSerialized] List<Path> _forkOptions; // null = 갈림길 아님 (플레이 중 다시 컴파일돼도 빈 목록으로 되살아나지 않게)
         System.Random _rng;
         Phase _phase;
         FloorMap _map;
@@ -114,9 +114,14 @@ namespace AThousandDawns.Prototype
             PlaceCrack(null);
             PlaceJars(null);
             ApplyBook();
+            bool resume = ResumeRun;
+            ResumeRun = false;
             if (PrototypeArena.AutoSpawn)
             {
+                if (resume && RestoreRun()) return; // 시작 화면 "이어하기": 저장한 판부터
+                RunSave.Delete(); // 새 판 (남아 있던 저장은 버려요)
                 if (StartsInVillage()) EnterVillage(); // 첫 사망 뒤부터 마을에서
+                else if (StartsTutorial()) BeginTutorialFloor(); // 처음엔 입문 죽림
                 else BeginFork(1);
             }
         }
@@ -125,8 +130,11 @@ namespace AThousandDawns.Prototype
         {
             if (_bannerTimer > 0f) _bannerTimer -= Time.unscaledDeltaTime;
             if (Player == null) return;
+            TickRecord(); // 플레이 시간 · 최대 추적도
             if (TickResult()) return; // 쓰러짐·판 끝 → 결과 화면
             if (TickPause()) return;  // Esc 일시정지
+            TickTutorial();
+            TickAutosave();
 
             if (IsForking)
             {
@@ -157,6 +165,7 @@ namespace AThousandDawns.Prototype
                 case Phase.Master: TickMaster(); break;
                 case Phase.Floor:
                     TickHunt(Time.deltaTime);
+                    TickJars(); // 항아리는 싸우는 중에도 부딪히면 깨져요
                     if (_fighting) TickFight();
                     else TickFloorExits();
                     break;
@@ -179,10 +188,12 @@ namespace AThousandDawns.Prototype
             Player.enabled = false; // 고르는 클릭이 평타로 남지 않게
             Time.timeScale = 0f;
             ShowBanner($"죽림 {floor}층 · 갈림길");
+            MarkSave();
         }
 
         List<Path> RollFork()
         {
+            if (_tutorialFork) return TutorialFork(); // 입문 뒤 첫 갈림길
             int min = Mathf.RoundToInt(GameConfig.Get("room.fork_min", 2f));
             int max = Mathf.RoundToInt(GameConfig.Get("room.fork_max", 3f));
             float dense = GameConfig.Get("room.fork_dense_chance", 0.4f);
@@ -271,7 +282,7 @@ namespace AThousandDawns.Prototype
                 _fighting = true;
                 Player.EnterRoom(); // #금강 2단계: 싸우는 방에 들어갈 때마다 보호막
                 OnFightStart();
-                _waves = PlanRoom(_floor);
+                _waves = room.FixedWaves ?? PlanRoom(_floor); // 입문 죽림은 손으로 짠 구성
                 _wave = -1;
                 _elitesThisRoom = 0;
                 _eliteWave = -1;
@@ -283,11 +294,13 @@ namespace AThousandDawns.Prototype
                 SetLocks(false);
                 _fighting = false;
                 _waves = null;
-                if (room.Kind == FloorRoomKind.Gate) ShowBanner("관문 · 가운데에서 F를 누르면 다음 층");
+                if (room.Kind == FloorRoomKind.Gate) ShowBanner($"관문 · 가운데에서 {KeyName(Bind.Interact)}를 누르면 다음 층");
                 if (room.Kind == FloorRoomKind.Event && !room.Cleared) OpenEvent(room, room.EventId);
                 if (room.Kind == FloorRoomKind.Hidden && !room.Cleared) OpenHiddenRoom(room);
             }
             OnHuntEnter(room);
+            OnTutorialEnter(room);
+            MarkSave(); // 비운 방·싸움 없는 방이면 바로, 싸우는 방이면 비운 뒤에 저장돼요
         }
 
         Vector3 EntryFrom(int movedDirection)
@@ -308,9 +321,8 @@ namespace AThousandDawns.Prototype
         {
             if (OffersOpen) return; // 기물을 고른 뒤에 움직여요
             var keyboard = Keyboard.current;
-            TickJars();
             if (TickCrack(keyboard)) return; // 금 간 벽 부수기 (기연 방)
-            if (AtGate && keyboard != null && keyboard.fKey.wasPressedThisFrame)
+            if (AtGate && AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Interact))
             {
                 LeaveFloor();
                 return;
@@ -327,6 +339,7 @@ namespace AThousandDawns.Prototype
 
         public void LeaveFloor()
         {
+            OnTutorialFloorLeft();
             ClearPending();
             EndHunt();
             EndFloorEffects();
@@ -469,6 +482,7 @@ namespace AThousandDawns.Prototype
 
         void ClearRoom()
         {
+            MarkSave(); // 기물 고르기 등이 끝난 뒤 저장돼요
             _fighting = false;
             _room.Cleared = true;
             SetLocks(false);
@@ -504,7 +518,8 @@ namespace AThousandDawns.Prototype
             }
             if (_room.Kind == FloorRoomKind.Reward)
             {
-                if (_path.Reward == RewardKind.Item)
+                if (GrantTutorialReward()) text += " · 첫 기물";
+                else if (_path.Reward == RewardKind.Item)
                 {
                     arena.GrantOffer(_path.Dense ? DenseGradeWeights() : null);
                     text += " · 기물 고르기";
@@ -540,19 +555,27 @@ namespace AThousandDawns.Prototype
 
         public void EnterInn()
         {
+            var db = GameConfig.Items;
+            EnterInnSite(db == null ? null : InnShop.Stock(db.Items, Player.Items, ApplyLuck(RegionGradeWeights(), _luck), _rng, _innStockBonus, _unlockedParts, _innPriceScale, Player.Skill));
+            int before = Tracking;
+            Tracking = Mathf.FloorToInt(Tracking * GameConfig.Get("tracking.inn_ratio", 0.5f)); // 객잔에 들르면 추적도 절반
+            int interest = InnInterest(); // 면벽수련 은 20
+            Silver += interest;
+            Notify("inn", "객잔: 점소이(F)에게 기물·금창약을 사요 · 들르면 추적도 절반 · 북쪽 문은 정비실");
+            ShowBanner($"객잔 · 점소이 앞에서 {KeyName(Bind.Interact)}로 진열대 (북쪽 문: 정비실) · 추적도 {before} → {Tracking}{(interest > 0 ? $" · 은자 이자 +{interest}" : "")}");
+        }
+
+        // 객잔 자리로 옮기기 (이어하기에서는 저장한 진열 그대로, 추적도·이자는 다시 안 받아요)
+        void EnterInnSite(InnShop shop)
+        {
             ClearPending();
             _phase = Phase.Inn;
             _room = null;
             _fighting = false;
             MovePlayer(inn.entry);
             director.ResetRoom();
-            var db = GameConfig.Items;
-            Shop = db == null ? null : InnShop.Stock(db.Items, Player.Items, ApplyLuck(RegionGradeWeights(), _luck), _rng, _innStockBonus, _unlockedParts, _innPriceScale, Player.Skill);
-            int before = Tracking;
-            Tracking = Mathf.FloorToInt(Tracking * GameConfig.Get("tracking.inn_ratio", 0.5f)); // 객잔에 들르면 추적도 절반
-            int interest = InnInterest(); // 면벽수련 은 20
-            Silver += interest;
-            ShowBanner($"객잔 · 점소이 앞에서 F로 진열대 (북쪽 문: 정비실) · 추적도 {before} → {Tracking}{(interest > 0 ? $" · 은자 이자 +{interest}" : "")}");
+            Shop = shop;
+            MarkSave();
         }
 
         // 객잔 진열: 그 지역 등급표 (등급확률 시트 죽림 줄)
@@ -565,7 +588,7 @@ namespace AThousandDawns.Prototype
         void TickInn()
         {
             var keyboard = Keyboard.current;
-            if (AtCounter && Shop != null && keyboard != null && keyboard.fKey.wasPressedThisFrame)
+            if (AtCounter && Shop != null && AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Interact))
             {
                 OpenShop();
                 return;
@@ -587,6 +610,7 @@ namespace AThousandDawns.Prototype
         public void CloseShop()
         {
             if (!IsShopping) return;
+            MarkSave();
             IsShopping = false;
             arena.Blocked = false;
             Player.enabled = true;
@@ -598,7 +622,7 @@ namespace AThousandDawns.Prototype
         {
             var keyboard = Keyboard.current;
             if (keyboard == null) return;
-            if (keyboard.escapeKey.wasPressedThisFrame || keyboard.fKey.wasPressedThisFrame)
+            if (keyboard.escapeKey.wasPressedThisFrame || AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Interact))
             {
                 CloseShop();
                 return;
@@ -645,7 +669,9 @@ namespace AThousandDawns.Prototype
             MovePlayer(rest.entry);
             director.ResetRoom();
             _restGauge = Player.Gauge;
+            Notify("rest", "정비실: 보스 전 마지막 정비 · 목인장으로 지금 빌드를 시험해 봐요");
             ShowBanner("정비실 · 목인장으로 시험해 봐요 (나가면 기세·쿨타임이 돌아와요)");
+            MarkSave();
         }
 
         void TickRestExit()
@@ -692,6 +718,9 @@ namespace AThousandDawns.Prototype
             if (combat.gateMarker != null) combat.gateMarker.SetActive(on);
         }
 
+        // 설정에서 바꾼 키 이름 ("F", "Space", "좌클릭")
+        static string KeyName(Bind bind) => KeyBindings.Label(bind);
+
         static Vector3 Flat(Vector3 v)
         {
             v.y = 0f;
@@ -717,6 +746,7 @@ namespace AThousandDawns.Prototype
         void MovePlayer(Vector3 to)
         {
             var player = Player;
+            player.ClearDaggers(); // 방을 옮기면 남은 비도는 사라져요
             var cc = player.GetComponent<CharacterController>();
             Vector3 from = player.transform.position;
             if (cc != null) cc.enabled = false;

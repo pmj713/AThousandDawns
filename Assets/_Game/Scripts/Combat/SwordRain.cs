@@ -21,11 +21,18 @@ namespace AThousandDawns.Combat
 
         [SerializeField] Material swordMaterial;
 
+        // 비도 절초 만천화우: 검 대신 작은 비도가 비스듬히 쏟아져요 (Begin 전에 정해요)
+        public bool DaggerLook { get; set; }
+        const float DaggerSlantAngle = 40f; // 만천화우가 기울어 내려오는 각도 (수직에서)
+        public Vector3 DaggerDirection { get; set; } = Vector3.forward; // 만천화우가 날아가는 쪽 (시전할 때 바라보던 방향)
+        Vector3 _slant;
+
         struct Sword
         {
             public Transform Body;
             public Damageable Target;
             public Vector3 Point;
+            public Vector3 Slant; // 떨어지기 시작할 때 옆으로 벗어난 거리 (비도는 비스듬히, 검은 0)
             public float Age;
             public bool Landed;
         }
@@ -65,6 +72,10 @@ namespace AThousandDawns.Combat
             _counts.Clear();
             _totalDamage = 0;
             _finishPending = count > 0;
+            // 만천화우: 바라보던 쪽으로 비스듬히 내려요 (뒤 위에서 앞 아래로)
+            var dir = new Vector3(DaggerDirection.x, 0f, DaggerDirection.z);
+            dir = dir.sqrMagnitude > 1e-4f ? dir.normalized : Vector3.forward;
+            _slant = DaggerLook ? -dir * DropHeight * Mathf.Tan(DaggerSlantAngle * Mathf.Deg2Rad) : Vector3.zero;
             _landed = 0;
         }
 
@@ -86,7 +97,7 @@ namespace AThousandDawns.Combat
                 {
                     if (s.Target != null && !s.Target.IsDead) s.Point = Ground(s.Target.transform.position);
                     float t = Mathf.Clamp01(s.Age / _fallTime);
-                    s.Body.position = s.Point + Vector3.up * Mathf.Lerp(DropHeight, RestHeight, t * t);
+                    s.Body.position = s.Point + s.Slant * (1f - t * t) + Vector3.up * Mathf.Lerp(DropHeight, RestHeight, t * t);
                     if (t >= 1f)
                     {
                         s.Landed = true;
@@ -129,8 +140,9 @@ namespace AThousandDawns.Combat
             }
 
             var body = CreateSword();
-            body.position = point + Vector3.up * DropHeight;
-            _swords.Add(new Sword { Body = body, Target = target, Point = point });
+            body.position = point + _slant + Vector3.up * DropHeight;
+            if (DaggerLook) body.rotation = Quaternion.FromToRotation(Vector3.up, (_slant + Vector3.up * DropHeight).normalized); // 칼끝이 날아가는 쪽 (손잡이가 뒤)
+            _swords.Add(new Sword { Body = body, Target = target, Point = point, Slant = _slant });
             _remaining--;
             _spawned++;
         }
@@ -170,9 +182,17 @@ namespace AThousandDawns.Combat
             _totalDamage += damage;
         }
 
-        // 칼끝이 원점(아래)에 오는 검: 날 + 코등이 + 손잡이
+        // 칼끝이 원점(아래)에 오는 검: 날 + 코등이 + 손잡이 (비도면 작은 비도, 기울기는 SpawnSword에서)
         Transform CreateSword()
         {
+            if (DaggerLook)
+            {
+                var dagger = new GameObject("만천화우 비도").transform;
+                Part(dagger, new Vector3(0f, 0.28f, 0f), new Vector3(0.06f, 0.56f, 0.02f));
+                Part(dagger, new Vector3(0f, 0.6f, 0f), new Vector3(0.14f, 0.04f, 0.05f));
+                Part(dagger, new Vector3(0f, 0.7f, 0f), new Vector3(0.05f, 0.16f, 0.05f));
+                return dagger;
+            }
             var root = new GameObject("만검귀종 검").transform;
             Part(root, new Vector3(0f, 0.7f, 0f), new Vector3(0.1f, 1.4f, 0.03f));
             Part(root, new Vector3(0f, 1.42f, 0f), new Vector3(0.42f, 0.06f, 0.08f));

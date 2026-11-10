@@ -137,6 +137,16 @@ namespace AThousandDawns.Player
             return item;
         }
 
+        // 판 중간 저장에서 되살릴 때: 정해진 자리에 그대로 (자동 배치 없이)
+        public OwnedItem Restore(ItemDefinition def, bool onBoard, Vector2Int cell)
+        {
+            if (def == null || Has(def.id)) return null;
+            var item = new OwnedItem { Def = def, OnBoard = onBoard && _board.Contains(cell), Cell = cell };
+            _items.Add(item);
+            Recount();
+            return item;
+        }
+
         // 흡성: 이번 지역 동안 모든 기물의 최대 기 −1 (이질적인 기운)
         public int GlobalMaxQiBonus { get; private set; }
 

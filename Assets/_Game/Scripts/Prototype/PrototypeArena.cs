@@ -60,7 +60,7 @@ namespace AThousandDawns.Prototype
         int _choiceCount, _pendingOffers, _lastField;
         float[] _gradeWeights;
         bool _bossWasAlive;
-        List<ItemDefinition> _offer;
+        [System.NonSerialized] List<ItemDefinition> _offer; // null = 고르는 중 아님 (플레이 중 다시 컴파일돼도 빈 목록으로 되살아나지 않게)
         readonly Queue<float[]> _offerWeights = new Queue<float[]>(); // 짙은 길 보상처럼 등급표가 다른 고르기
 
         public int RoundNumber { get; private set; }
@@ -120,6 +120,7 @@ namespace AThousandDawns.Prototype
                 if (keyboard.gKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.FillGauge();
                 if (keyboard.lKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.GainLevelForTest(); // 시험용 레벨업
                 if (keyboard.kKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.KillForTest(); // 시험용: 바로 쓰러지기
+                if (keyboard.vKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.SetWeapon(director.Player.UsesDagger ? WeaponKind.Sword : WeaponKind.Dagger); // 시험용: 검 ↔ 비도
                 if (keyboard.oKey.wasPressedThisFrame && director != null && director.Player != null && director.Player.Items != null) CycleForge(director.Player.Items, keyboard.shiftKey.isPressed ? 1 : 0); // 시험용: 무기 홈
                 if (keyboard.pKey.wasPressedThisFrame && director != null && director.Player != null && director.Player.Items != null) // 시험용: 부품 셋
                 {

@@ -19,6 +19,9 @@ namespace AThousandDawns.Core
         public List<string> bloomed = new List<string>(); // 회귀록에서 피운 봉우리
         public int[] meditation = new int[6]; // 면벽수련 심법별 포인트 (쾌 강 맥 오 은 기)
         public int storyFragments; // 기시감 노인에게 들은 이야기 조각 수
+        public int weapon;              // 마을 무기 거치대에서 고른 무기 (0 검, 1 비도)
+        public bool tutorialFloorDone;  // 입문 죽림 (첫 판 1층 고정 구성)을 한 번이라도 통과했는가
+        public List<string> seenHints = new List<string>(); // 이미 본 첫 안내
 
         // 테스트에서 실제 저장 파일을 건드리지 않게 바꿔요
         public static string PathOverride;
@@ -33,6 +36,7 @@ namespace AThousandDawns.Core
                 {
                     var meta = JsonUtility.FromJson<MetaSave>(File.ReadAllText(FilePath)) ?? new MetaSave();
                     if (meta.bloomed == null) meta.bloomed = new List<string>();
+                    if (meta.seenHints == null) meta.seenHints = new List<string>();
                     return meta;
                 }
             }

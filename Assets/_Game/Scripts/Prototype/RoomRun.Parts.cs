@@ -22,6 +22,7 @@ namespace AThousandDawns.Prototype
         void OpenPartChoice(int count)
         {
             if (count <= 0 || _unlockedParts.Count == 0) return;
+            Notify("parts", "부품: 경맥도(E) 부품 줄에서 골라 빈 칸에 놓아요 · 통맥 · 점혈 · 한옥");
             var v = new EventView
             {
                 Id = "part",

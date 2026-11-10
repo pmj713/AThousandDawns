@@ -22,11 +22,14 @@ namespace AThousandDawns.Core
         public DashDir dash = DashDir.Move;
         // 게임플레이
         public bool damageNumbers = true;
+        public bool damageNumbersSum;       // 피해 숫자 합산 표시: 같은 자리에 짧은 시간 안에 들어간 피해를 하나로 모아요
         public EnemyBars enemyBars = EnemyBars.Damaged;
         public QiNumbers qiNumbers = QiNumbers.Always;
         public bool confirmDialogs = true;  // 되돌릴 수 없는 행동 (대장간 녹이기, 단전 위치, 이혈) 전에 묻기
         // 접근성
         public int screenShake = 100;       // 0~100 (화면 흔들림이 생기면 곱해요)
+        // 조작 키 (KeyBindings.Bind 순서, Input System 경로). 비어 있으면 기본값
+        public string[] keys;
 
         public static string PathOverride; // 테스트에서 진짜 설정 파일을 건드리지 않게
         public static string FilePath => PathOverride ?? Path.Combine(Application.persistentDataPath, "settings.json");

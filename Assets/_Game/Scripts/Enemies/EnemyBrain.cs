@@ -50,6 +50,8 @@ namespace AThousandDawns.Enemies
         protected virtual bool FreezeBlocked => false;       // 보스 페이즈 전환 연출 중엔 빙결이 안 걸림
 
         public string DisplayName { get; private set; }
+        // 지금 쓰는 공격 이름 (결과 화면 사망 원인: "청죽객의 죽림섬에 쓰러짐"). 없으면 이름만 ("산적 졸개에게 쓰러짐")
+        public virtual string AttackName => null;
         public Damageable Damageable => Body;
         public CharacterController BodyCollider => Controller;
         public float Height => Controller != null ? Controller.height : 1.6f;

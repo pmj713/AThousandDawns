@@ -34,11 +34,15 @@ namespace AThousandDawns.Combat
 
         public Damageable Body => _body;
         public int BurnStacks => _burnTimer > 0f ? _burnStacks : 0;
-        public int BurnMax => _burnMax + _burnExtraMax + Mods.BurnMaxBonus + _burnOvercap;
+        public int BurnMax => _burnMax + _burnExtraMax + Mods.BurnMaxBonus + _burnOvercap + ExtraBurnMax;
+        // 대장간 비도 융합: 꽂힌 비도 수에 따라 (플레이어가 매 프레임 정해요)
+        public int ExtraBurnMax { get; set; }   // 열양 강화판: 비도 2개마다 화상 최대 중첩 +1
+        public int ExtraShockMax { get; set; }  // 뇌정 강화판: 비도 1개당 감전 최대 중첩 +1
+        public bool HoldSlow { get; set; }      // 빙백: 비도가 꽂혀 있는 동안 둔화가 풀리지 않음
         public int SlowStacks => _slowTimer > 0f ? _slowStacks : 0;
         public int SlowMax => _slowMax;
         public int ShockStacks => _shockTimer > 0f ? _shockStacks : 0;
-        public int ShockMax => _shockMax;
+        public int ShockMax => _shockMax + ExtraShockMax;
         public bool IsFrozen => _freezeTimer > 0f;
         public float FreezeLeft => Mathf.Max(0f, _freezeTimer);
         public float FreezeImmunityLeft => Mathf.Max(0f, _freezeImmunity);
@@ -186,7 +190,7 @@ namespace AThousandDawns.Combat
         public void AddShock(int stacks = 1)
         {
             if (stacks <= 0) return;
-            _shockStacks = Mathf.Min(_shockMax, ShockStacks + stacks);
+            _shockStacks = Mathf.Min(ShockMax, ShockStacks + stacks);
             _shockTimer = ShockDuration;
         }
 
@@ -208,7 +212,7 @@ namespace AThousandDawns.Combat
             }
             else if (_freezeImmunity > 0f) _freezeImmunity -= dt;
 
-            if (_slowTimer > 0f) _slowTimer -= dt;
+            if (_slowTimer > 0f && !(HoldSlow && _slowStacks > 0)) _slowTimer -= dt; // 빙백 비도: 꽂혀 있으면 둔화 유지
             if (_shockTimer > 0f) _shockTimer -= dt;
             TickBurn(dt);
         }

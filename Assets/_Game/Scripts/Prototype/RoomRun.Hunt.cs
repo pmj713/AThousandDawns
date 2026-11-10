@@ -79,6 +79,7 @@ namespace AThousandDawns.Prototype
                     h.Room = _map.Start;
                     h.StepTimer = GameConfig.Get("assassin.step_time", 6f);
                     ShowBanner("마교 살수가 나타났어요 · 지도의 붉은 방");
+                    Notify("assassin", "살수: 지도의 붉은 방에서 방 하나씩 쫓아와요 · 관문으로 빠져나가면 따돌릴 수 있어요");
                 }
                 if (h.Room == room) Engage(h);
             }

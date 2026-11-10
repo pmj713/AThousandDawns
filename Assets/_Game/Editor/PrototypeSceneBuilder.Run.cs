@@ -146,6 +146,9 @@ namespace AThousandDawns.EditorTools
             arenaSo.ApplyModifiedPropertiesWithoutUndo();
 
             var run = arena.gameObject.AddComponent<RoomRun>();
+            var music = arena.gameObject.AddComponent<RunMusic>();
+            foreach (var (field, file) in new[] { ("village", "Village"), ("bamboo", "Bamboo"), ("inn", "Inn"), ("boss", "Boss"), ("result", "Result") })
+                SetRef(music, field, AssetDatabase.LoadAssetAtPath<AudioClip>($"Assets/_Game/Audio/BGM/{file}.mp3"));
             var runSo = new SerializedObject(run);
             runSo.FindProperty("director").objectReferenceValue = director;
             runSo.FindProperty("arena").objectReferenceValue = arena;

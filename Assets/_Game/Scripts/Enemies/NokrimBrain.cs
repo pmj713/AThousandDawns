@@ -10,6 +10,8 @@ namespace AThousandDawns.Enemies
     // 체력 50%: 1.5초 전환(무적) → 2페이즈: 불타는 죽림 + 회전베기 3연속, 휘두르기·돌진이 빨라지고 부하 부르기 없음.
     public sealed class NokrimBrain : EnemyBrain
     {
+        public override string AttackName => _pattern switch { Pattern.Sweep => "대도 휘두르기", Pattern.Charge => "돌진", Pattern.Spin => "회전베기", _ => null };
+
         enum Pattern { None, Sweep, Charge, Summon, Spin }
 
         const float ProbeHeight = 0.8f;

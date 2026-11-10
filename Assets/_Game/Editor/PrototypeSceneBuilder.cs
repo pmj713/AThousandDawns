@@ -90,6 +90,7 @@ namespace AThousandDawns.EditorTools
         }
 
         public const string TitleScenePath = "Assets/_Game/Scenes/Title.unity";
+        const string TitleMusicPath = "Assets/_Game/Audio/BGM/Title.mp3";
 
         // 시작 화면: 카메라와 TitleScreen 하나 (그림이 없어서 IMGUI로 다 그려요)
         static void BuildTitle()
@@ -99,7 +100,8 @@ namespace AThousandDawns.EditorTools
             cam.tag = "MainCamera";
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color32(0xEF, 0xE6, 0xD2, 0xFF);
-            new GameObject("TitleScreen").AddComponent<AThousandDawns.Prototype.TitleScreen>();
+            var title = new GameObject("TitleScreen").AddComponent<AThousandDawns.Prototype.TitleScreen>();
+            SetRef(title, "music", AssetDatabase.LoadAssetAtPath<AudioClip>(TitleMusicPath));
             EditorSceneManager.SaveScene(scene, TitleScenePath);
             Debug.Log($"[시험판 씬] {TitleScenePath} 를 만들었어요.");
         }
