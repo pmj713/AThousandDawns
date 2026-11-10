@@ -45,10 +45,10 @@ namespace AThousandDawns.EditorTools
         }
 
         // 모델 고유 동작 중 반복하는 것
-        static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "Idle", "Run" };
+        static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "ShoulderRun", "Idle", "Run" };
 
         // 고유 동작만 쓰는 적 (Generic으로 가져와요)
-        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Boar", "Hound", "Snake" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
+        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
 
         static readonly Dictionary<string, MoveSpec[]> InkEnemyMoves = new Dictionary<string, MoveSpec[]>
         {
@@ -71,16 +71,18 @@ namespace AThousandDawns.EditorTools
             // 청죽객: 쾌검 3연격(베기 셋을 0.3초씩) · 죽림섬(순간이동 베기 0.25초씩) · 대나무 베기(내려찍기)
             ["Qingzhu"] = new[]
             {
-                new MoveSpec { attack = "쾌검 3연격", state = "Combo", clips = new[] { "IKAttack1", "IKAttack2", "IKAttack3" }, seconds = 0.3f },
-                new MoveSpec { attack = "죽림섬", state = "Flash", clips = new[] { "IKAttack2", "IKAttack3", "IKAttack2", "IKAttack3" }, seconds = 0.25f },
-                new MoveSpec { attack = "대나무 베기", state = "Chop", clips = new[] { "IKAttack1" } },
+                // 고유 동작 (Generic): 내려베기 → 되받아 가로베기 → 찌르기 / 좌우 번갈아 가로베기 4번 / 머리 위에서 내려베기
+                new MoveSpec { attack = "쾌검 3연격", state = "Combo", clips = new[] { "Combo" } },
+                new MoveSpec { attack = "죽림섬", state = "Flash", clips = new[] { "Flash" } },
+                new MoveSpec { attack = "대나무 베기", state = "Chop", clips = new[] { "Chop" } },
             },
             // 철권 마웅: 주먹 2연타(고유 동작) · 붕산권(예고부터 치켜들었다 땅 내려치기) · 돌진(달리기)
             ["IronFist"] = new[]
             {
                 new MoveSpec { attack = "주먹 2연타", state = "Jab", clips = new[] { "Punch2" } },
                 new MoveSpec { attack = "붕산권", state = "Quake", clips = new[] { "Quake" }, mode = MoveMode.Play },
-                new MoveSpec { attack = "돌진", state = "Charge", clips = new[] { "Run" }, mode = MoveMode.Run, speed = 2f },
+                new MoveSpec { state = "ShoulderReady", clips = new[] { "ShoulderReady" }, mode = MoveMode.Run },
+                new MoveSpec { attack = "돌진", state = "Charge", clips = new[] { "ShoulderRun" }, mode = MoveMode.Run, speed = 1.6f, ready = "ShoulderReady" },   // 어깨를 앞세워 들이받으며 달려요
             },
         };
 
@@ -158,7 +160,7 @@ namespace AThousandDawns.EditorTools
             idle = clips["Idle"];
             run = clips["Run"];
             // 플레이어 동작은 Generic에 못 써요: 기본 공격은 고유 Attack(동물 덤비기) 또는 Slam(녹림왕 부하 부르기 등)
-            if (generic) attackClip = clips.TryGetValue("Attack", out var own) ? own : clips.TryGetValue("Slam", out var slam) ? slam : null;
+            if (generic) attackClip = new[] { "Attack", "Slam", "Chop", "Punch2" }.Select(n => clips.TryGetValue(n, out var c) ? c : null).FirstOrDefault(c => c != null);
             // 기본 공격에 고유 동작이 있으면 그걸로 (나팔수·궁수 — 예고 동안 그대로 재생해요)
             if (clips.TryGetValue("BlowHorn", out var blow)) attackClip = blow;
             else if (clips.TryGetValue("ShootBow", out var shoot)) attackClip = shoot;
