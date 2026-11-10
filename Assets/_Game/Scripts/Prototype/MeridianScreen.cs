@@ -347,6 +347,9 @@ namespace AThousandDawns.Prototype
         {
             var def = item.Def;
             var state = PlayerItems.StateOf(item);
+            // 아이콘은 칸 가운데에 흐리게 깔고 글자를 위에 (기 부족이면 더 흐리게)
+            float iconSize = Mathf.Min(rect.width, rect.height) - 16f * K;
+            ItemIcons.Draw(new Rect(rect.center.x - iconSize * 0.5f, rect.center.y - iconSize * 0.5f, iconSize, iconSize), def, state == QiState.Lacking ? 0.3f : 0.6f);
             GUI.Label(new Rect(rect.x + 2f * K, rect.y + 22f * K, rect.width - 4f * K, 38f * K), $"<b>{def.name}</b>", _cellName);
             GUI.Label(new Rect(rect.x + 2f * K, rect.y + 54f * K, rect.width - 4f * K, 18f * K), $"{Colored(def.keyword)} {StateLabel(item)}", _cellName);
             DrawQiBar(new Rect(rect.x + 8f * K, rect.yMax - 14f * K, rect.width - 16f * K, 6f * K), def.minQi, item.MaxQi, item.Qi);
@@ -397,6 +400,7 @@ namespace AThousandDawns.Prototype
                     }
                 }
                 GUI.Box(rect, label, _bagButton);
+                ItemIcons.Draw(new Rect(rect.xMax - rect.height - 2f, rect.y + 1f, rect.height - 2f, rect.height - 2f), item.Def, dragging ? 0.4f : 1f);
                 row += 34f * K;
             }
             GUI.EndScrollView();
@@ -425,6 +429,7 @@ namespace AThousandDawns.Prototype
             Fill(rect, new Color(0.15f, 0.12f, 0.08f, 0.92f));
             Outline(rect, Color.white, 1f);
             GUI.Label(rect, $"<b>{_dragged.Def.name}</b>\n{Colored(_dragged.Def.keyword)}", _cellName);
+            ItemIcons.Draw(new Rect(rect.x - 44f * K, rect.y, 44f * K, 44f * K), _dragged.Def);
         }
 
         void DrawDetail(PlayerItems items, Rect area)

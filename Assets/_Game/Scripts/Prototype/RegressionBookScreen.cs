@@ -177,7 +177,9 @@ namespace AThousandDawns.Prototype
                 foreach (var def in pack)
                 {
                     string head = $"<b>{def.name}</b>  {PlayerKeywords.Label(def.keyword)} · {ItemDefinition.GradeLabel(def.grade)} · 기 {def.minQi}–{def.maxQi}";
-                    GUI.Label(new Rect(panel.x + 20, y, panel.width - 40, 66), $"{head}\n{def.effectText}", _small);
+                    bool icon = ItemIcons.Draw(new Rect(panel.x + 16, y + 4, 58, 58), def);
+                    float left = icon ? 84 : 20;
+                    GUI.Label(new Rect(panel.x + left, y, panel.width - left - 20, 66), $"{head}\n{def.effectText}", _small);
                     y += 70;
                 }
                 y += 4;

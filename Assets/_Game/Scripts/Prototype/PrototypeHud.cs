@@ -23,7 +23,7 @@ namespace AThousandDawns.Prototype
         static readonly Color SlowDot = new Color(0.55f, 0.82f, 0.98f);  // 하늘색
         static readonly Color ShockDot = new Color(1f, 0.89f, 0.3f);     // 노랑
 
-        [System.NonSerialized] GUIStyle _hintLabel, _label, _wrapLabel, _popup, _dummy, _big, _bossLabel, _popupSmall, _popupBig, _statusLabel, _card, _itemLine, _itemSmall;
+        [System.NonSerialized] GUIStyle _hintLabel, _label, _wrapLabel, _popup, _dummy, _big, _bossLabel, _popupSmall, _popupBig, _statusLabel, _card, _cardTop, _cardLeft, _cardLeftSmall, _itemLine, _itemSmall;
         Camera _camera;
         int _lastLevel = 1;
         float _levelUpTimer;
@@ -268,7 +268,11 @@ namespace AThousandDawns.Prototype
                     : state == QiState.Circulating ? $"운기 {level}레벨"
                     : $"<color=#ff6a5a>주화입마 {level}레벨</color>";
                 string qi = item.OnBoard ? $"기 {item.Qi} " : "";
+                GUILayout.BeginHorizontal();
+                var iconTex = ItemIcons.Get(def);
+                if (iconTex != null) GUILayout.Label(iconTex, GUILayout.Width(20f), GUILayout.Height(20f));
                 GUILayout.Label($"<b>{def.name}</b> {Colored(def.keyword)} · {qi}({def.minQi}–{def.maxQi}) · {stateText}", _itemSmall);
+                GUILayout.EndHorizontal();
             }
             GUILayout.EndArea();
         }
@@ -396,7 +400,9 @@ namespace AThousandDawns.Prototype
                 if (s.Kind == InnShop.SlotKind.Sell) price = "<color=#9a9a9a>—</color>";
                 string text = $"<size=13>[{i + 1}]</size>  {body}\n<size=13>은자 {price}{(blocker != null && !s.Sold ? $"  <color=#9a9a9a>· {blocker}</color>" : "")}</size>";
                 GUI.enabled = !s.Sold;
-                if (GUI.Button(new Rect(x, y + i * (rowH + 6f), w, rowH), text, _card)) run.Buy(i);
+                bool itemRow = s.Kind == InnShop.SlotKind.Item && ItemIcons.Get(s.Item) != null;
+                if (GUI.Button(new Rect(x, y + i * (rowH + 6f), w, rowH), text, itemRow ? _cardLeft : _card)) run.Buy(i);
+                if (itemRow) ItemIcons.Draw(new Rect(x + 8f, y + i * (rowH + 6f) + 4f, rowH - 8f, rowH - 8f), s.Item, s.Sold ? 0.4f : 1f);
                 GUI.enabled = true;
             }
             if (!string.IsNullOrEmpty(run.ShopNotice))
@@ -420,11 +426,12 @@ namespace AThousandDawns.Prototype
                 string where = it.OnBoard ? "경맥도" : "주머니";
                 string key = i < 9 ? $"[{i + 1}]  " : "";
                 string text = $"<size=13>{key}</size><b>{it.Def.name}</b>  {Colored(it.Def.keyword)} · {GradeColored(it.Def.grade)} · {where}\n<size=13>은자 <color=#ffd27a>+{RoomRun.SellPrice(it.Def)}</color></size>";
-                if (GUI.Button(new Rect(0, i * (rowH + 6f), w, rowH), text, _card))
+                if (GUI.Button(new Rect(0, i * (rowH + 6f), w, rowH), text, _cardLeftSmall))
                 {
                     run.Sell(i);
                     break;
                 }
+                ItemIcons.Draw(new Rect(8f, i * (rowH + 6f) + 4f, rowH - 8f, rowH - 8f), it.Def);
             }
             GUI.EndScrollView();
             if (!string.IsNullOrEmpty(run.ShopNotice))
@@ -511,7 +518,8 @@ namespace AThousandDawns.Prototype
                 var it = items.Items[i];
                 string where = it.OnBoard ? $"경맥도 ({it.Cell.x + 1},{it.Cell.y + 1})" : "주머니";
                 string text = $"<size=13>[{(i < 9 ? (i + 1).ToString() : "-")}]</size>  버리기 · <b>{it.Def.name}</b>  {Colored(it.Def.keyword)} · {GradeColored(it.Def.grade)} · {where}";
-                if (GUI.Button(new Rect(x, row, w, rowH), text, _card)) arena.Discard(i);
+                if (GUI.Button(new Rect(x, row, w, rowH), text, _cardLeftSmall)) arena.Discard(i);
+                ItemIcons.Draw(new Rect(x + 10f, row + 3f, rowH - 6f, rowH - 6f), it.Def);
                 row += rowH + 4f;
             }
             if (GUI.Button(new Rect(x, row + 8f, w, rowH), "포기 · 새 기물을 받지 않아요 (Esc)", _card)) arena.DeclinePending();
@@ -528,7 +536,7 @@ namespace AThousandDawns.Prototype
             GUI.DrawTexture(new Rect(0, 0, UiScale.Width, UiScale.Height), Texture2D.whiteTexture);
             GUI.color = old;
 
-            const float cardW = 320f, cardH = 260f, gap = 20f;
+            const float cardW = 320f, cardH = 360f, gap = 20f, icon = 96f;
             float total = offer.Count * cardW + (offer.Count - 1) * gap;
             float x = (UiScale.Width - total) * 0.5f, y = (UiScale.Height - cardH) * 0.5f;
             GUI.Label(new Rect(0, y - 56f, UiScale.Width, 40f), "기물 고르기 · 1 2 3 또는 클릭 · Esc 넘기기", _big);
@@ -541,7 +549,10 @@ namespace AThousandDawns.Prototype
                               $"기 {def.minQi}–{def.maxQi} · 경맥도 빈 칸에 왼쪽 위부터 놓여요 (가득 차면 주머니)\n\n" +
                               $"{def.effectText}\n\n" +
                               $"<color=#ff8a7a>주화입마 부작용: {def.sideText}</color>";
-                if (GUI.Button(new Rect(x + i * (cardW + gap), y, cardW, cardH), text, _card)) arena.Choose(i);
+                float cx = x + i * (cardW + gap);
+                bool hasIcon = ItemIcons.Get(def) != null;
+                if (GUI.Button(new Rect(cx, y, cardW, cardH), text, hasIcon ? _cardTop : _card)) arena.Choose(i);
+                ItemIcons.Draw(new Rect(cx + (cardW - icon) * 0.5f, y + 10f, icon, icon), def);
             }
         }
 
@@ -638,6 +649,10 @@ namespace AThousandDawns.Prototype
             _statusLabel.normal.textColor = SlowDot;
             _card = new GUIStyle(GUI.skin.button) { fontSize = 15, wordWrap = true, richText = true, alignment = TextAnchor.UpperLeft, padding = new RectOffset(14, 14, 12, 12) };
             _card.normal.textColor = _card.hover.textColor = Color.white;
+            // 기물 아이콘 자리를 비운 카드 (위 · 왼쪽)
+            _cardTop = new GUIStyle(_card) { padding = new RectOffset(14, 14, 112, 12) };
+            _cardLeft = new GUIStyle(_card) { padding = new RectOffset(72, 14, 12, 12) };
+            _cardLeftSmall = new GUIStyle(_card) { padding = new RectOffset(54, 14, 10, 10) };
             _itemLine = new GUIStyle(_label) { fontSize = 15, richText = true, wordWrap = true };
             _itemSmall = new GUIStyle(_label) { fontSize = 14, richText = true, wordWrap = false, margin = new RectOffset(4, 4, 0, 0), padding = new RectOffset(0, 0, 1, 1) };
         }
