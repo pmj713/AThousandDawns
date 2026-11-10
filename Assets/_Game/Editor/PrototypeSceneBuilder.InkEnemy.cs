@@ -28,6 +28,9 @@ namespace AThousandDawns.EditorTools
             ("Nokrim", EnemyKind.Nokrim, 3f),
             ("Qingzhu", EnemyKind.Qingzhu, 5f),
             ("IronFist", EnemyKind.IronFist, 3.5f),
+            ("Boar", EnemyKind.Boar, 2.5f),
+            ("Hound", EnemyKind.Hound, 5f),
+            ("Snake", EnemyKind.Snake, 4f),
         };
 
         // 패턴 동작: attack(브레인 AttackName, null이면 다른 동작이 이어 부르는 상태) → state.
@@ -45,7 +48,7 @@ namespace AThousandDawns.EditorTools
         static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "Idle", "Run" };
 
         // 고유 동작만 쓰는 적 (Generic으로 가져와요)
-        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim" };
+        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Boar", "Hound", "Snake" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
 
         static readonly Dictionary<string, MoveSpec[]> InkEnemyMoves = new Dictionary<string, MoveSpec[]>
         {
@@ -58,6 +61,12 @@ namespace AThousandDawns.EditorTools
                 new MoveSpec { state = "Slam", clips = new[] { "Slam" }, mode = MoveMode.Run },   // 양손 내려찍기, 끝 자세로 멈춰 있다가 빈틈이 끝나면 대기로
                 // 회전베기(2페이즈): 두 팔을 벌리고 칼끝을 바깥으로 뻗은 자세(Whirl)로 판정 동안 모델째 빙글빙글 (힐윈드처럼)
                 new MoveSpec { attack = "회전베기", state = "Spin", clips = new[] { "Whirl" }, mode = MoveMode.Whirl },
+            },
+            // 멧돼지: 이름 없는 기본 공격(돌진) — 예고 동안 머리를 숙여 버티다가(Ready) 판정 동안 빠르게 달려요
+            ["Boar"] = new[]
+            {
+                new MoveSpec { state = "Ready", clips = new[] { "Ready" }, mode = MoveMode.Run },
+                new MoveSpec { attack = "", state = "Charge", clips = new[] { "Run" }, mode = MoveMode.Run, speed = 2.2f, ready = "Ready" },
             },
             // 청죽객: 쾌검 3연격(베기 셋을 0.3초씩) · 죽림섬(순간이동 베기 0.25초씩) · 대나무 베기(내려찍기)
             ["Qingzhu"] = new[]
@@ -148,7 +157,8 @@ namespace AThousandDawns.EditorTools
             // 녹림왕은 고유 대기(대도를 늘어뜨린 자세, 휘두르기 끝 자세와 같아서 칼이 돌지 않아요)·달리기를 써요
             idle = clips["Idle"];
             run = clips["Run"];
-            if (generic) attackClip = clips.TryGetValue("Slam", out var slam) ? slam : null;   // 플레이어 동작은 Generic에 못 써요 (부하 부르기 등 기본 공격)
+            // 플레이어 동작은 Generic에 못 써요: 기본 공격은 고유 Attack(동물 덤비기) 또는 Slam(녹림왕 부하 부르기 등)
+            if (generic) attackClip = clips.TryGetValue("Attack", out var own) ? own : clips.TryGetValue("Slam", out var slam) ? slam : null;
             // 기본 공격에 고유 동작이 있으면 그걸로 (나팔수·궁수 — 예고 동안 그대로 재생해요)
             if (clips.TryGetValue("BlowHorn", out var blow)) attackClip = blow;
             else if (clips.TryGetValue("ShootBow", out var shoot)) attackClip = shoot;
