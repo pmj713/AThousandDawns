@@ -40,6 +40,7 @@ namespace AThousandDawns.Combat
 
         public event Action<Damageable, int> Damaged;
         public static event Action<Damageable> AnyDied; // 처치 시 효과 (염화 호리병, 구리 동전)
+        public static event Action<Damageable, int> AnyDamaged; // 판 기록 (준 피해 · 최대 단일 피해)
 
         void Awake()
         {
@@ -92,6 +93,7 @@ namespace AThousandDawns.Combat
             DamagePopups.Spawn(transform.position + Vector3.up * 2.2f, amount, style);
             LastHitReacts = reacts;
             Damaged?.Invoke(this, amount);
+            AnyDamaged?.Invoke(this, amount);
             if (IsDead) AnyDied?.Invoke(this);
         }
 

@@ -20,6 +20,8 @@ namespace AThousandDawns.Enemies
     //   2페이즈: 벽에 부딪히면 낙석 3개 (예고 원 반경 1칸, ×0.8), 기절은 1.5초
     public sealed class IronFistBrain : EnemyBrain, IMasterBrain
     {
+        public override string AttackName => _pattern switch { Pattern.Jab => "주먹 2연타", Pattern.Quake => "붕산권", Pattern.Charge => "돌진", _ => null };
+
         enum Pattern { None, Jab, Quake, Charge }
 
         Pattern _pattern, _lastPattern;

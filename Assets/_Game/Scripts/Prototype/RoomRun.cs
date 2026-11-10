@@ -130,6 +130,7 @@ namespace AThousandDawns.Prototype
         {
             if (_bannerTimer > 0f) _bannerTimer -= Time.unscaledDeltaTime;
             if (Player == null) return;
+            TickRecord(); // 플레이 시간 · 최대 추적도
             if (TickResult()) return; // 쓰러짐·판 끝 → 결과 화면
             if (TickPause()) return;  // Esc 일시정지
             TickTutorial();

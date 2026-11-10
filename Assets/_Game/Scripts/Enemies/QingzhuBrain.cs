@@ -12,6 +12,8 @@ namespace AThousandDawns.Enemies
     // 대나무 베기: 10초마다. 예고 1.0, 직선 5칸 폭 1칸, ×1.0. 쓰러진 대나무는 6초 동안 벽 (투사체도 막음). 2페이즈 2그루씩
     public sealed class QingzhuBrain : EnemyBrain, IMasterBrain
     {
+        public override string AttackName => _pattern switch { Pattern.Combo => "쾌검 3연격", Pattern.Flash => "죽림섬", Pattern.Bamboo => "대나무 베기", _ => null };
+
         enum Pattern { None, Combo, Flash, Bamboo }
 
         Pattern _pattern, _lastPattern;

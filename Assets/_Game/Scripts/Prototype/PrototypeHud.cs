@@ -7,7 +7,7 @@ using UnityEngine;
 namespace AThousandDawns.Prototype
 {
     // 시험판 화면 표시 (IMGUI). 나중에 진짜 HUD로 바꿀 자리예요.
-    public sealed class PrototypeHud : MonoBehaviour
+    public sealed partial class PrototypeHud : MonoBehaviour
     {
         static readonly Color HealthColor = new Color(0.78f, 0.27f, 0.24f);   // 매화 홍 #C8463C
         static readonly Color EnemyHealthColor = new Color(0.92f, 0.85f, 0.7f);
@@ -393,36 +393,6 @@ namespace AThousandDawns.Prototype
             }
             if (!string.IsNullOrEmpty(run.ShopNotice))
                 GUI.Label(new Rect(0, y + slots.Count * (rowH + 6f) + 10f, UiScale.Width, 40f), run.ShopNotice, _big);
-        }
-
-        // 판 결과 (쓰러짐 · 녹림왕 격파): 기록 → 회귀의 기억. Enter·F5로 다시 회귀
-        void DrawResult()
-        {
-            if (run == null || !run.IsShowingResult) return;
-            if (run.Book != null && run.Book.IsOpen) return; // 회귀록·면벽수련이 덮고 있어요
-            EnsureStyles();
-            var r = run.Result;
-            var old = GUI.color;
-            GUI.color = new Color(0f, 0f, 0f, 0.82f);
-            GUI.DrawTexture(new Rect(0, 0, UiScale.Width, UiScale.Height), Texture2D.whiteTexture);
-            GUI.color = old;
-
-            const float w = 620f;
-            float x = (UiScale.Width - w) * 0.5f, y = UiScale.Height * 0.16f;
-            GUI.Label(new Rect(0, y, UiScale.Width, 50f), r.Victory ? "죽림을 돌파했어요" : "쓰러졌어요 · 첫날 아침으로 회귀해요", _big);
-            GUI.Label(new Rect(0, y + 52f, UiScale.Width, 30f), $"<color=#cfcfcf>{r.Where} · {r.Runs}번째 회귀</color>", _bossLabel);
-            float row = y + 110f;
-            foreach (var line in r.Lines)
-            {
-                if (line.count <= 0f) continue;
-                GUI.Label(new Rect(x, row, w * 0.55f, 30f), line.label, _label);
-                GUI.Label(new Rect(x + w * 0.45f, row, w * 0.25f, 30f), $"{line.count:0}", _label);
-                GUI.Label(new Rect(x + w * 0.7f, row, w * 0.3f, 30f), $"<color=#ffd27a>기억 +{line.memory:0.#}</color>", _label);
-                row += 32f;
-            }
-            row += 10f;
-            GUI.Label(new Rect(x, row, w, 34f), $"<b>회귀의 기억 +{r.Memory}</b>   <color=#cfcfcf>(가진 기억 {r.StoredMemory})</color>", _big);
-            GUI.Label(new Rect(0, row + 60f, UiScale.Width, 30f), "<color=#cfcfcf>B 회귀록 · Enter · F5 다시 회귀</color>", _bossLabel);
         }
 
         // 이벤트 (시간이 멈춰 있어요): 제목 · 글 · 선택지. 🔒 선택지는 조건이 안 되면 흐리게 이유만.

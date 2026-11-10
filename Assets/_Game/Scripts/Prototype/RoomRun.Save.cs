@@ -59,6 +59,11 @@ namespace AThousandDawns.Prototype
                 floorsCleared = _record.FloorsCleared,
                 hiddenRooms = _record.HiddenRooms,
                 deja = _record.Deja,
+                playSeconds = _record.PlaySeconds,
+                damageDealt = _record.DamageDealt,
+                maxHit = _record.MaxHit,
+                damageTaken = _record.DamageTaken,
+                maxTracking = _record.MaxTracking,
                 kills = (int[])_record.Kills.Clone(),
                 health = Player.Health,
                 gauge = Player.Gauge,
@@ -165,6 +170,11 @@ namespace AThousandDawns.Prototype
             _record.FloorsCleared = s.floorsCleared;
             _record.HiddenRooms = s.hiddenRooms;
             _record.Deja = s.deja;
+            _record.PlaySeconds = s.playSeconds;
+            _record.DamageDealt = s.damageDealt;
+            _record.MaxHit = s.maxHit;
+            _record.DamageTaken = s.damageTaken;
+            _record.MaxTracking = s.maxTracking;
             for (int i = 0; i < _record.Kills.Length && i < s.kills.Length; i++) _record.Kills[i] = s.kills[i];
 
             switch ((Phase)s.phase)

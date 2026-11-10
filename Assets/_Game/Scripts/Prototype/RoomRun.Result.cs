@@ -17,6 +17,9 @@ namespace AThousandDawns.Prototype
             public string Where;
             public (string label, float count, float memory)[] Lines;
             public int Memory, StoredMemory, Runs;
+            public float PlaySeconds;
+            public (string label, string value)[] Stats;
+            public float ShownAt; // 기록이 한 줄씩 차오르는 연출 시작 (unscaled)
         }
 
         readonly RunRecord _record = new RunRecord();
@@ -26,8 +29,49 @@ namespace AThousandDawns.Prototype
         public ResultView Result { get; private set; }
         public bool IsShowingResult => Result != null;
 
-        void OnEnable() => Damageable.AnyDied += OnAnyDied;
-        void OnDisable() => Damageable.AnyDied -= OnAnyDied;
+        void OnEnable()
+        {
+            Damageable.AnyDied += OnAnyDied;
+            Damageable.AnyDamaged += OnAnyDamaged;
+        }
+
+        void OnDisable()
+        {
+            Damageable.AnyDied -= OnAnyDied;
+            Damageable.AnyDamaged -= OnAnyDamaged;
+            if (_hurtHooked != null) _hurtHooked.Hurt -= OnPlayerHurt;
+        }
+
+        // 기록: 적에게 준 피해 · 최대 단일 피해 (목인장 같은 적 아닌 것은 빼요), 받은 피해
+        void OnAnyDamaged(Damageable d, int amount)
+        {
+            if (IsShowingResult || amount <= 0 || d == null || !d.TryGetComponent(out EnemyBrain _)) return;
+            _record.DamageDealt += amount;
+            _record.MaxHit = Mathf.Max(_record.MaxHit, amount);
+        }
+
+        AThousandDawns.Player.PlayerController _hurtHooked;
+
+        void HookPlayerRecord()
+        {
+            if (_hurtHooked != null || Player == null) return;
+            _hurtHooked = Player;
+            Player.Hurt += OnPlayerHurt;
+        }
+
+        void OnPlayerHurt(int amount)
+        {
+            if (!IsShowingResult && amount > 0) _record.DamageTaken += amount;
+        }
+
+        // 플레이 시간: 마을·결과 화면은 빼고, 멈춰 있는 동안은 안 셈 (Update에서)
+        void TickRecord()
+        {
+            HookPlayerRecord();
+            if (IsShowingResult || _phase == Phase.Village) return;
+            _record.PlaySeconds += Time.deltaTime;
+            _record.MaxTracking = Mathf.Max(_record.MaxTracking, Tracking);
+        }
 
         // 처치 기록 (목인장처럼 적이 아닌 것은 빼요)
         void OnAnyDied(Damageable d)
@@ -86,11 +130,14 @@ namespace AThousandDawns.Prototype
             Result = new ResultView
             {
                 Victory = victory,
-                Where = victory ? "녹림왕 격파 · 죽림 돌파" : $"{WhereText()}에서 쓰러짐",
+                Where = victory ? "녹림왕 격파 · 죽림 돌파" : $"{WhereText()} · {DeathCause()}",
                 Lines = _record.Lines(weights),
                 Memory = memory,
                 StoredMemory = meta.memory,
                 Runs = meta.runs,
+                PlaySeconds = _record.PlaySeconds,
+                Stats = _record.Stats(),
+                ShownAt = Time.unscaledTime,
             };
             if (IsShopping) CloseShop();
             if (IsInEvent)
@@ -100,6 +147,9 @@ namespace AThousandDawns.Prototype
             }
             ClearPending();
         }
+
+        // 사망 원인 (기획: "청죽객의 죽림섬에 쓰러짐")
+        string DeathCause() => string.IsNullOrEmpty(Player.LastHitBy) ? "쓰러짐" : $"{Player.LastHitBy} 쓰러짐";
 
         string WhereText() => _phase switch
         {

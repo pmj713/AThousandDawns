@@ -13,6 +13,9 @@ namespace AThousandDawns.Prototype
         public readonly int[] Kills = new int[Enum.GetValues(typeof(EnemyRank)).Length];
         public int HiddenRooms;
         public int Deja;          // 기시감: 전생 이야기를 들음
+        // 기억으로 바꾸지 않는 기록 (결과 화면에 보여 주기만)
+        public float PlaySeconds;
+        public int DamageDealt, MaxHit, DamageTaken, MaxTracking;
         public bool FinalBoss;
 
         public void AddKill(EnemyRank rank) => Kills[(int)rank]++;
@@ -48,6 +51,21 @@ namespace AThousandDawns.Prototype
             ("기시감", Deja, Deja * w.Deja),
             ("천마 격파", FinalBoss ? 1 : 0, FinalBoss ? w.FinalBoss : 0f),
         };
+
+        // 기억으로 바꾸지 않는 기록 줄 (이름, 값 글)
+        public (string label, string value)[] Stats() => new[]
+        {
+            ("준 피해", DamageDealt.ToString("N0")),
+            ("최대 단일 피해", MaxHit.ToString("N0")),
+            ("받은 피해", DamageTaken.ToString("N0")),
+            ("최대 추적도", MaxTracking.ToString()),
+        };
+
+        public static string Clock(float seconds)
+        {
+            int s = Math.Max(0, (int)Math.Round(seconds));
+            return s >= 3600 ? $"{s / 3600}:{s / 60 % 60:00}:{s % 60:00}" : $"{s / 60}:{s % 60:00}";
+        }
 
         public int Memory(Weights w)
         {

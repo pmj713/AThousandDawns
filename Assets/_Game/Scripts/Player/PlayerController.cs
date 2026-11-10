@@ -135,6 +135,7 @@ namespace AThousandDawns.Player
             {
                 _burnTickTimer -= _burnTick;
                 float defenseRate = EffectiveDefense / (EffectiveDefense + _rules.PlayerDefenseConstant);
+                LastHitBy = "화상으로";
                 TakeDirectDamage(Mathf.Max(1, Mathf.RoundToInt(_burnStacks * _burnPerStack * _burnTick * (1f - defenseRate))));
             }
         }
@@ -373,6 +374,7 @@ namespace AThousandDawns.Player
                 DamageReduction = DamageReductionTotal,
             };
             int damage = DamageFormula.ToPlayer(hit, _rules);
+            LastHitBy = DescribeAttacker(attacker); // 결과 화면 사망 원인
             int dealt = SurviveLethal(_shields.Absorb(damage)); // 피해 공식을 다 계산한 뒤 보호막부터 깎음 (불괴 호패는 그 뒤)
             Health = Mathf.Max(0f, Health - dealt);
             OnHurtForShield(damage);
