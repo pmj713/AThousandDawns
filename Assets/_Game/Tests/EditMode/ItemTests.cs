@@ -26,13 +26,15 @@ namespace AThousandDawns.Tests
         }
 
         [Test]
-        public void 프로젝트의_data_items_CSV에_오류가_없고_60종이_있음()
+        public void 프로젝트의_data_items_CSV에_오류가_없고_72종이_있음()
         {
             var errors = new List<string>();
             var items = ItemTable.Read(File.ReadAllText(SheetImporter.ItemsCsvPath), errors);
             Assert.IsEmpty(errors, string.Join("\n", errors));
-            Assert.AreEqual(60, items.Count);
-            for (int k = 0; k < 6; k++) Assert.AreEqual(10, items.FindAll(i => (int)i.keyword == k).Count, $"키워드 {k} 기물 수");
+            Assert.AreEqual(72, items.Count, "기본 60 + 꾸러미 1·2 12");
+            for (int k = 0; k < 6; k++) Assert.AreEqual(12, items.FindAll(i => (int)i.keyword == k).Count, $"키워드 {k} 기물 수 (꾸러미마다 1개씩)");
+            foreach (var id in ItemDatabase.Pack1) Assert.IsNotNull(items.Find(i => i.id == id), id);
+            foreach (var id in ItemDatabase.Pack2) Assert.IsNotNull(items.Find(i => i.id == id), id);
 
             var ring = items.Find(i => i.id == "ember_ring");
             Assert.AreEqual(Keyword.Yeolyang, ring.keyword);
@@ -63,6 +65,34 @@ namespace AThousandDawns.Tests
                     Assert.AreNotEqual("c0", def.id);
                     Assert.IsTrue(ids.Add(def.id), "같은 기물이 두 장");
                 }
+            }
+        }
+
+        [Test]
+        public void 꾸러미_기물은_회귀록을_피워야_나옴()
+        {
+            var db = UnityEngine.ScriptableObject.CreateInstance<ItemDatabase>();
+            db.SetItems(new[]
+            {
+                new ItemDefinition { id = "ember_ring" },
+                new ItemDefinition { id = "ash_urn" },
+                new ItemDefinition { id = "cloud_boots" },
+            });
+            int before = ItemDatabase.UnlockedPacks;
+            try
+            {
+                ItemDatabase.UnlockedPacks = 0;
+                CollectionAssert.AreEqual(new[] { "ember_ring" }, db.Available.ConvertAll(d => d.id));
+                ItemDatabase.UnlockedPacks = 1;
+                CollectionAssert.AreEqual(new[] { "ember_ring", "ash_urn" }, db.Available.ConvertAll(d => d.id));
+                ItemDatabase.UnlockedPacks = 2;
+                Assert.AreEqual(3, db.Available.Count);
+                Assert.AreEqual(3, db.Items.Count, "저장 되살리기는 다 찾아요");
+            }
+            finally
+            {
+                ItemDatabase.UnlockedPacks = before;
+                UnityEngine.Object.DestroyImmediate(db);
             }
         }
 

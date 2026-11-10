@@ -95,7 +95,7 @@ namespace AThousandDawns.Prototype
             var db = GameConfig.Items;
             ItemDefinition pick = null;
             if (db != null)
-                foreach (var d in db.Items)
+                foreach (var d in db.Available)
                     if (d != null && d.grade == ItemGrade.Common && !Player.Items.Has(d.id) && (pick == null || d.maxQi < pick.maxQi || (d.maxQi == pick.maxQi && d.minQi < pick.minQi))) pick = d;
             if (pick == null) return false;
             Player.Items.Add(pick);

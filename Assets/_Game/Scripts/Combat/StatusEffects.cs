@@ -137,6 +137,7 @@ namespace AThousandDawns.Combat
         public void AddSlow(float bonus, bool freezeAtMax, int stacks = 1)
         {
             if (IsFrozen || stacks <= 0) return;
+            if (Mods.SlowExtraChance > 0f && UnityEngine.Random.value < Mods.SlowExtraChance) stacks++; // 한기 구슬
             _slowBonus = SlowStacks > 0 ? Mathf.Max(_slowBonus, bonus) : bonus;
             _slowStacks = Mathf.Min(_slowMax, SlowStacks + stacks);
             _slowTimer = SlowDuration;

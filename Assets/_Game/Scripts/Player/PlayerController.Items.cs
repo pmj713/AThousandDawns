@@ -48,6 +48,7 @@ namespace AThousandDawns.Player
             _items.SetPower(Gongryeok); // 경맥도 단전 출력 = 공력
             Damageable.AnyDied += OnAnyEnemyDied;
             StatusEffects.AnyFrozen += OnAnyFrozen;
+            _shields.Broken += OnShieldBrokenForPack; // 철포삼 조끼
             RefreshItems();
         }
 
@@ -77,6 +78,7 @@ namespace AThousandDawns.Player
                 BurnTick = ForgeBurnTick, // 대장간 열양 강화판
                 // #빙백
                 SlowDurationBonus = V("snow_hood", 1),
+                SlowExtraChance = V("frost_bead", 1), // 꾸러미 1 한기 구슬
                 SlowWindupExtra = V("snowflake_crystal", 1) * (pure ? V("snowflake_crystal", 2) : 1f),
                 BossSlowBonus = V("ice_beads", 1),
                 BossFreezeImmunityReduction = pure ? V("ice_beads", 2) : 0f,
@@ -109,6 +111,7 @@ namespace AThousandDawns.Player
         {
             if (_noDashTimer > 0f) _noDashTimer -= dt;
             if (_reishiCooldown > 0f) _reishiCooldown -= dt;
+            TickPackItemTimers(dt);
 
             // 뇌정 옥새 부작용: 간격마다 기세 −(최대 비율)
             float drain = Side("gauge_drain");
@@ -133,6 +136,7 @@ namespace AThousandDawns.Player
         {
             if (_items == null || _items.Items.Count == 0 || target.IsDead) return;
             var status = StatusEffects.For(target);
+            ApplyPackOnHit(target, tag, status); // 피뢰침 · 뇌격 장갑
             int fire = K(Keyword.Yeolyang), frost = K(Keyword.Bingbaek);
             switch (tag)
             {
@@ -245,6 +249,7 @@ namespace AThousandDawns.Player
         {
             if (_items == null || _items.Items.Count == 0 || IsDead) return;
             OnEnemyDiedForMartialItems(); // 혈석
+            OnEnemyDiedForPack(dead); // 재 항아리
 
             // 염화 호리병: 화상 중인 적이 죽은 자리에 불길. 안에 있는 적은 간격마다 화상 1중첩 (0개면 불길 크기 +50%)
             if (Has("fire_gourd") && dead.TryGetComponent(out StatusEffects deadStatus) && deadStatus.BurnStacks > 0)

@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using AThousandDawns.Core;
+using AThousandDawns.Items;
+using AThousandDawns.Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -151,14 +153,15 @@ namespace AThousandDawns.Prototype
 
         void DrawDetail()
         {
-            var panel = new Rect(UiScale.Width - 520, 180, 470, 360);
+            var node = _selected != null ? RegressionBook.Find(_selected) : null;
+            var pack = PackItems(node);
+            var panel = pack != null ? new Rect(UiScale.Width - 660, 100, 610, 690) : new Rect(UiScale.Width - 520, 180, 470, 360);
             Fill(panel, new Color(1f, 1f, 1f, 0.85f));
-            if (_selected == null)
+            if (node == null)
             {
                 GUI.Label(new Rect(panel.x + 20, panel.y + 20, panel.width - 40, 60), "봉우리를 눌러 보세요.", _label);
                 return;
             }
-            var node = RegressionBook.Find(_selected);
             int cost = RegressionBook.Cost(node);
             bool bloomed = RegressionBook.Bloomed(_meta, node.Id);
             string blocker = RegressionBook.Blocker(_meta, node);
@@ -167,8 +170,23 @@ namespace AThousandDawns.Prototype
             y += 48;
             GUI.Label(new Rect(panel.x + 20, y, panel.width - 40, 26), $"{node.Branch} 가지 · 비용 기억 {cost}", _label);
             y += 32;
-            GUI.Label(new Rect(panel.x + 20, y, panel.width - 40, 90), node.Effect, _small);
-            y += 96;
+            if (pack != null) // 새 기물 묶음: 풀리는 기물 6종을 미리 보여 줘요
+            {
+                GUI.Label(new Rect(panel.x + 20, y, panel.width - 40, 26), "새 기물 6종이 보상 · 객잔 · 이벤트에 나와요", _small);
+                y += 30;
+                foreach (var def in pack)
+                {
+                    string head = $"<b>{def.name}</b>  {PlayerKeywords.Label(def.keyword)} · {ItemDefinition.GradeLabel(def.grade)} · 기 {def.minQi}–{def.maxQi}";
+                    GUI.Label(new Rect(panel.x + 20, y, panel.width - 40, 66), $"{head}\n{def.effectText}", _small);
+                    y += 70;
+                }
+                y += 4;
+            }
+            else
+            {
+                GUI.Label(new Rect(panel.x + 20, y, panel.width - 40, 90), node.Effect, _small);
+                y += 96;
+            }
             if (bloomed)
             {
                 GUI.Label(new Rect(panel.x + 20, y, panel.width - 40, 30), "<color=#b0506a>피었어요 · 적용 중</color>", _label);
@@ -179,6 +197,21 @@ namespace AThousandDawns.Prototype
             GUI.enabled = blocker == null;
             if (GUI.Button(new Rect(panel.x + 20, y, panel.width - 40, 50), $"개화 · 기억 {cost}", _button)) BloomSelected();
             GUI.enabled = true;
+        }
+
+        // 새 기물 묶음 봉우리면 그 묶음의 기물 (기물 에셋 순서), 아니면 null
+        public static List<ItemDefinition> PackItems(BookNode node)
+        {
+            string[] ids = node?.Id == "item_pack1" ? ItemDatabase.Pack1 : node?.Id == "item_pack2" ? ItemDatabase.Pack2 : null;
+            var db = GameConfig.Items;
+            if (ids == null || db == null) return null;
+            var list = new List<ItemDefinition>();
+            foreach (var id in ids)
+            {
+                var def = db.Find(id);
+                if (def != null) list.Add(def);
+            }
+            return list.Count > 0 ? list : null;
         }
 
         bool MeditationOpen => _meta != null && RegressionBook.Bloomed(_meta, "meditation");

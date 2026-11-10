@@ -8,10 +8,10 @@ namespace AThousandDawns.Prototype
 {
     // 객잔 (첫 버전): 진열 기물 3개 · 금창약 2개 · 숙박. 가격은 은자 시트 (지역과 상관없이 고정).
     // 기물 첫 장은 내 주 키워드 2개(가진 기물에 가장 많은 키워드) 중에서, 나머지는 무작위. 등급은 그 지역 확률표.
-    // 부품 (해금한 것만) · 비급 (25%, 지금 초식이 아닌 것) · 이혈 (단전 하나 옮기기). 나중에: 소문 듣기·매각 (매각 비율은 시트에서 미정)
+    // 부품 (해금한 것만) · 비급 (25%, 지금 초식이 아닌 것) · 이혈 (단전 하나 옮기기) · 매각 (가진 기물을 판매가의 40%에). 나중에: 소문 듣기
     public sealed class InnShop
     {
-        public enum SlotKind { Item, Potion, Lodging, Part, Scroll, MoveDanjeon }
+        public enum SlotKind { Item, Potion, Lodging, Part, Scroll, MoveDanjeon, Sell }
 
         public sealed class Slot
         {
@@ -41,6 +41,10 @@ namespace AThousandDawns.Prototype
             ItemGrade.Rare => "price.item_rare",
             _ => "price.item_legendary",
         }, grade == ItemGrade.Common ? 120f : grade == ItemGrade.Uncommon ? 300f : grade == ItemGrade.Rare ? 500f : 900f));
+
+        // 매각가: 객잔 판매가 × 매각 비율 (은자 시트 C33). 면벽수련 할인과 상관없이 기본 판매가로 셈해요.
+        public static int SellPrice(ItemDefinition def, float ratio = -1f) =>
+            (int)Math.Round(ItemPrice(def.grade) * (ratio >= 0f ? ratio : GameConfig.GetOptional("inn.sell_ratio", 0.4f)));
 
         public static InnShop Stock(IReadOnlyList<ItemDefinition> pool, PlayerItems owned, IReadOnlyList<float> gradeWeights, Random rng, int extraItems = 0, IReadOnlyList<PartKind> parts = null, float priceScale = 1f, SkillKind? currentSkill = null)
         {
@@ -82,6 +86,7 @@ namespace AThousandDawns.Prototype
             for (int i = 0; i < potions; i++) shop._slots.Add(new Slot { Kind = SlotKind.Potion, Price = potionPrice });
             shop._slots.Add(new Slot { Kind = SlotKind.Lodging, Price = (int)Math.Round(GameConfig.Get("price.lodging", 40f)) });
             if (priceScale != 1f) foreach (var s in shop._slots) s.Price = (int)Math.Round(s.Price * priceScale); // 면벽수련 은 10: 객잔 −15%
+            shop._slots.Add(new Slot { Kind = SlotKind.Sell }); // 매각: 누르면 가진 기물 목록 (RoomRun.OpenSell)
             return shop;
         }
 
@@ -107,6 +112,7 @@ namespace AThousandDawns.Prototype
             if (index < 0 || index >= _slots.Count) return "없는 칸";
             var slot = _slots[index];
             if (slot.Sold) return "팔렸어요";
+            if (slot.Kind == SlotKind.Sell) return player.Items.Items.Count == 0 ? "팔 기물이 없어요" : null;
             if (silver < slot.Price) return "은자가 모자라요";
             if (slot.Kind == SlotKind.Potion && player.Potions >= player.PotionMax) return $"금창약은 {player.PotionMax}개까지";
             if (slot.Kind == SlotKind.Lodging && player.Health >= player.MaxHealth) return "체력이 가득해요";
@@ -120,6 +126,7 @@ namespace AThousandDawns.Prototype
         {
             if (Blocker(index, player, silver) != null) return 0;
             var slot = _slots[index];
+            if (slot.Kind == SlotKind.Sell) return 0; // 매각 목록은 RoomRun이 열어요
             switch (slot.Kind)
             {
                 case SlotKind.Item: player.Items.Add(slot.Item); break;

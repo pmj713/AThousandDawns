@@ -298,7 +298,7 @@ namespace AThousandDawns.Prototype
         {
             var db = GameConfig.Items;
             var weights = RoomRun.ApplyLuck(_offerWeights.Count > 0 ? _offerWeights.Dequeue() : _gradeWeights, Luck);
-            _offer = db == null ? null : ItemOffer.Roll(db.Items, player.Items.Has, _choiceCount, weights, () => UnityEngine.Random.value);
+            _offer = db == null ? null : ItemOffer.Roll(db.Available, player.Items.Has, _choiceCount, weights, () => UnityEngine.Random.value);
             if (_offer == null || _offer.Count == 0)
             {
                 _offer = null;

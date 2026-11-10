@@ -53,7 +53,7 @@ namespace AThousandDawns.Player
         float ItemMoveSpeedBonus => V("straw_sandals", 1) + (_cloakTimer > 0f ? V("black_wind_cloak", 1) : 0f);
 
         // 거북 등껍질 (0개면 2배)
-        float ItemToughness => V("turtle_shell", 1) * (Pure ? V("turtle_shell", 2) : 1f);
+        float ItemToughness => V("turtle_shell", 1) * (Pure ? V("turtle_shell", 2) : 1f) + PackToughness; // + 철포삼 조끼
 
         // 죽갑 조각
         float EffectiveDefense => Defense + V("bamboo_armor", 1);
@@ -75,8 +75,8 @@ namespace AThousandDawns.Player
         {
             get
             {
-                if (_items == null || !_items.Active("swallow_feather", out var feather)) return 0;
-                return PlayerItems.LevelOf(feather) >= C("swallow_feather", 2) ? C("swallow_feather", 3) : 0;
+                if (_items == null || !_items.Active("swallow_feather", out var feather)) return PackDashBonus;
+                return (PlayerItems.LevelOf(feather) >= C("swallow_feather", 2) ? C("swallow_feather", 3) : 0) + PackDashBonus; // + 천리 신발
             }
         }
 
@@ -101,6 +101,7 @@ namespace AThousandDawns.Player
             float bonus = V("wooden_sword", 1) * (Pure ? V("wooden_sword", 2) : 1f) + V("blood_bandage", 1);
             if (finisher) bonus += V("ink_scabbard", 1);
             if (extra) bonus += V("sword_manual", 2);
+            bonus += PackSwingBonus(); // 그림자 보법서 · 일섬 검결
             if (_whetstoneSwings > 0)
             {
                 _whetstoneSwings--;
@@ -117,6 +118,7 @@ namespace AThousandDawns.Player
         void AfterBasicSwing(int hits, HitDamageInput swing)
         {
             if (_swingKills > 0 && Has("iron_sandbag")) _sandbagReady = true; // 철장 모래주머니
+            FireIlseom(swing); // 일섬 검결
             if (hits <= 0) return;
 
             // 부러진 검날: 적중마다 공격 속도 +1% 중첩
@@ -145,10 +147,11 @@ namespace AThousandDawns.Player
         }
 
         // 비연 깃털 · 운룡 허리띠: 대시 공격 피해 +
-        float DashAttackBonus => V("swallow_feather", 1) + V("cloud_dragon_belt", 1);
+        float DashAttackBonus => V("swallow_feather", 1) + V("cloud_dragon_belt", 1) + PackDashAttackBonus; // + 천리 신발
 
         void AfterDashAttack(int hits, HitDamageInput hit)
         {
+            AfterDashAttackForPack(); // 뇌격 장갑: 대시 공격 한 번 끝
             // 운룡 허리띠: 대시가 지나온 길의 모든 적도 대시 공격으로 베어요
             if (Has("cloud_dragon_belt")) hits += HitPath(_dashStart, transform.position, _dashPathWidth * 0.5f, hit, HitTag.DashAttack);
             if (hits <= 0) return;

@@ -4,6 +4,39 @@ using UnityEngine;
 
 namespace AThousandDawns.Combat
 {
+    // 진전 (기연 방에서 낮은 확률): 그 판 동안 절초 모양이 바뀌어요. 검 3가지 · 비도 3가지.
+    public enum UltimateForm { None, OneSword, Formation, Echo, Storm, Bloom, Backflow }
+
+    public static class UltimateForms
+    {
+        public static readonly UltimateForm[] Sword = { UltimateForm.OneSword, UltimateForm.Formation, UltimateForm.Echo };
+        public static readonly UltimateForm[] Dagger = { UltimateForm.Storm, UltimateForm.Bloom, UltimateForm.Backflow };
+
+        public static bool ForDagger(UltimateForm form) => form >= UltimateForm.Storm;
+
+        public static string Name(UltimateForm form) => form switch
+        {
+            UltimateForm.OneSword => "일검",
+            UltimateForm.Formation => "검진",
+            UltimateForm.Echo => "귀원",
+            UltimateForm.Storm => "폭우",
+            UltimateForm.Bloom => "산화",
+            UltimateForm.Backflow => "회류",
+            _ => "없음",
+        };
+
+        public static string Text(UltimateForm form) => form switch
+        {
+            UltimateForm.OneSword => "검 여러 자루 대신 큰 검 한 자루가 체력이 가장 많은 적에게 떨어져 주변까지 베어요",
+            UltimateForm.Formation => "검이 3초 동안 내 주위를 돌며 닿는 적을 계속 베어요",
+            UltimateForm.Echo => "떨어진 검이 땅에 꽂혔다가 1초 뒤 한 번 더 터져요",
+            UltimateForm.Storm => "비도가 더 많이, 더 넓게 쏟아져요 (한 발 피해는 줄어요)",
+            UltimateForm.Bloom => "비도가 꽂힌 적이 마지막에 한꺼번에 터져요",
+            UltimateForm.Backflow => "떨어진 비도가 전부 나에게 돌아오며 길에 있는 적을 한 번 더 맞혀요",
+            _ => "",
+        };
+    }
+
     // 만검귀종 (검 절초): 시전 시간 동안 검이 범위 안 적에게 고르게 나뉘어 떨어져요. 적이 1명이면 전부 그 적에게.
     // 검은 떨어지는 동안 대상을 따라가서 반드시 맞고, 강인함을 무시해요 (방어력은 적용). 범위에 적이 없으면 빈 땅에 꽂혀요.
     // 범위는 방 하나 크기 (가로 20 × 세로 12칸, 조작 탭), 시전한 자리가 가운데예요.
@@ -27,6 +60,15 @@ namespace AThousandDawns.Combat
         public Vector3 DaggerDirection { get; set; } = Vector3.forward; // 만천화우가 날아가는 쪽 (시전할 때 바라보던 방향)
         Vector3 _slant;
 
+        // 진전 (Begin 전에 정해요). Owner = 시전한 사람 (검진이 그 둘레를 돌고, 회류가 그쪽으로 돌아와요)
+        public UltimateForm Form { get; set; }
+        public Transform Owner { get; set; }
+        public float OneSwordRadius = 3f;       // 일검: 떨어진 자리 둘레도 베요
+        public float EchoDelay = 1f, EchoRatio = 0.6f, EchoRadius = 1.2f;   // 귀원
+        public float BloomRatio = 0.5f, BloomRadius = 1.5f;                 // 산화: 꽂힌 비도 1개당
+        public float BackflowSpeed = 20f, BackflowRadius = 0.6f;            // 회류
+        public float OrbitTime = 3f, OrbitRadius = 2.2f, OrbitSpeed = 300f, OrbitRatio = 0.5f, OrbitInterval = 0.3f; // 검진
+
         struct Sword
         {
             public Transform Body;
@@ -35,7 +77,14 @@ namespace AThousandDawns.Combat
             public Vector3 Slant; // 떨어지기 시작할 때 옆으로 벗어난 거리 (비도는 비스듬히, 검은 0)
             public float Age;
             public bool Landed;
+            public bool Echoed;   // 귀원: 한 번 더 터졌음
+            public HashSet<Damageable> Returned; // 회류: 돌아오며 맞힌 적
         }
+
+        readonly Dictionary<Damageable, int> _bloomHits = new Dictionary<Damageable, int>();
+        readonly Dictionary<Damageable, float> _orbitCooldown = new Dictionary<Damageable, float>();
+        readonly List<Damageable> _orbitKeys = new List<Damageable>();
+        float _orbitLeft;
 
         readonly List<Sword> _swords = new List<Sword>();
         readonly Dictionary<Damageable, int> _counts = new Dictionary<Damageable, int>();
@@ -48,7 +97,7 @@ namespace AThousandDawns.Combat
         HitDamageInput _hit;
         DamageRules _rules;
 
-        public bool IsRaining => _remaining > 0 || _swords.Count > 0;
+        public bool IsRaining => _remaining > 0 || _swords.Count > 0 || _orbitLeft > 0f;
 
         // 절초 각인용: 검이 땅에 닿을 때 (맞힌 적, 없으면 null · 떨어진 자리), 마지막 검까지 닿았을 때 (피해 합)
         public event Action<Damageable, Vector3> SwordLanded;
@@ -77,11 +126,29 @@ namespace AThousandDawns.Combat
             dir = dir.sqrMagnitude > 1e-4f ? dir.normalized : Vector3.forward;
             _slant = DaggerLook ? -dir * DropHeight * Mathf.Tan(DaggerSlantAngle * Mathf.Deg2Rad) : Vector3.zero;
             _landed = 0;
+            _bloomHits.Clear();
+            _orbitCooldown.Clear();
+            _orbitLeft = 0f;
+
+            // 검진: 검이 한꺼번에 나와 시전한 사람 둘레를 돌아요 (떨어지지 않음)
+            if (Form == UltimateForm.Formation && count > 0)
+            {
+                _orbitLeft = OrbitTime;
+                for (int i = 0; i < count; i++)
+                    _swords.Add(new Sword { Body = CreateSword(), Point = new Vector3(i * 360f / count, 0f, 0f), Landed = true });
+                _remaining = 0;
+                _spawned = _landed = count;
+            }
         }
 
         void Update()
         {
             float dt = Time.deltaTime;
+            if (_orbitLeft > 0f)
+            {
+                TickOrbit(dt);
+                return;
+            }
             if (_remaining > 0)
             {
                 _elapsed += dt;
@@ -102,12 +169,12 @@ namespace AThousandDawns.Combat
                     {
                         s.Landed = true;
                         s.Age = 0f;
-                        Land(s.Target);
+                        Land(s.Target, s.Point);
                         _landed++;
                         SwordLanded?.Invoke(s.Target, s.Point);
                     }
                 }
-                else if (s.Age >= Linger)
+                else if (LandedDone(ref s))
                 {
                     Destroy(s.Body.gameObject);
                     _swords.RemoveAt(i);
@@ -120,7 +187,117 @@ namespace AThousandDawns.Combat
             if (_finishPending && _remaining == 0 && _landed >= _spawned)
             {
                 _finishPending = false;
+                if (Form == UltimateForm.Bloom) BurstBloom();
                 Finished?.Invoke(_totalDamage);
+            }
+        }
+
+        // 땅에 닿은 뒤: 보통은 잠깐 남았다 사라져요. 귀원은 한 번 더 터지고, 회류는 시전한 사람에게 돌아와요.
+        bool LandedDone(ref Sword s)
+        {
+            if (Form == UltimateForm.Echo)
+            {
+                if (!s.Echoed && s.Age >= EchoDelay)
+                {
+                    s.Echoed = true;
+                    HitAround(s.Point, EchoRadius, EchoRatio, null);
+                    s.Body.localScale = Vector3.one * 1.3f; // 터지는 순간 살짝 커져요
+                }
+                return s.Echoed && s.Age >= EchoDelay + 0.15f;
+            }
+            if (Form == UltimateForm.Backflow && Owner != null)
+            {
+                if (s.Age < Linger) return false;
+                s.Returned ??= new HashSet<Damageable>();
+                Vector3 goal = Owner.position + Vector3.up;
+                Vector3 to = goal - s.Body.position;
+                float step = BackflowSpeed * Time.deltaTime;
+                if (to.magnitude <= step + 0.3f || s.Age >= Linger + 2f) return true;
+                s.Body.position += to.normalized * step;
+                s.Body.rotation = Quaternion.FromToRotation(Vector3.up, to.normalized);
+                foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+                {
+                    if (d.IsDead || !d.Targetable || s.Returned.Contains(d) || d.transform == Owner) continue;
+                    if (DistanceXZ(d.transform.position, s.Body.position) > BackflowRadius + d.BodyRadius) continue;
+                    s.Returned.Add(d);
+                    Strike(d, 1f);
+                }
+                return false;
+            }
+            return s.Age >= Linger;
+        }
+
+        // 검진: 둘레를 돌며 닿는 적을 베요 (적마다 간격에 한 번). 끝나면 검이 사라져요.
+        void TickOrbit(float dt)
+        {
+            _orbitLeft -= dt;
+            _orbitKeys.Clear();
+            _orbitKeys.AddRange(_orbitCooldown.Keys);
+            foreach (var k in _orbitKeys) _orbitCooldown[k] -= dt;
+
+            Vector3 center = Owner != null ? Owner.position : _center;
+            center.y = 0f;
+            for (int i = 0; i < _swords.Count; i++)
+            {
+                var s = _swords[i];
+                s.Point.x += OrbitSpeed * dt;
+                Vector3 outward = Quaternion.Euler(0f, s.Point.x, 0f) * Vector3.forward;
+                s.Body.position = center + outward * (OrbitRadius + 0.8f) + Vector3.up;
+                s.Body.rotation = Quaternion.FromToRotation(Vector3.up, -outward); // 칼끝이 바깥, 손잡이가 안쪽
+                _swords[i] = s;
+                Vector3 tip = center + outward * OrbitRadius;
+                foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+                {
+                    if (d.IsDead || !d.Targetable || (Owner != null && d.transform == Owner)) continue;
+                    if (_orbitCooldown.TryGetValue(d, out float cd) && cd > 0f) continue;
+                    if (DistanceXZ(d.transform.position, tip) > 0.9f + d.BodyRadius) continue;
+                    bool first = !_orbitCooldown.ContainsKey(d);
+                    _orbitCooldown[d] = OrbitInterval;
+                    Strike(d, OrbitRatio);
+                    if (first) SwordLanded?.Invoke(d, Ground(d.transform.position)); // 절초 각인은 적마다 처음 한 번
+                }
+            }
+
+            if (_orbitLeft > 0f) return;
+            foreach (var s in _swords)
+                if (s.Body != null) Destroy(s.Body.gameObject);
+            _swords.Clear();
+            _finishPending = false;
+            Finished?.Invoke(_totalDamage);
+        }
+
+        // 산화: 비도가 꽂힌 적마다 (꽂힌 수 × 비율) 피해로 주변까지 터져요
+        void BurstBloom()
+        {
+            foreach (var kv in _bloomHits)
+            {
+                var d = kv.Key;
+                if (d == null || d.IsDead) continue;
+                HitAround(Ground(d.transform.position), BloomRadius, BloomRatio * kv.Value, null);
+            }
+            _bloomHits.Clear();
+        }
+
+        // 한 자루 피해 × ratio로 그 적을 베요 (강인함 무시, 방어력 적용)
+        void Strike(Damageable target, float ratio)
+        {
+            if (target == null || target.IsDead || !target.Targetable) return;
+            var hit = _hit;
+            hit.SpecialMultiplier *= ratio;
+            hit.Toughness = target.Toughness;
+            hit.Defense = target.Defense;
+            int damage = DamageFormula.ToEnemy(hit, _rules);
+            target.ApplyHit(damage);
+            _totalDamage += damage;
+        }
+
+        void HitAround(Vector3 point, float radius, float ratio, Damageable skip)
+        {
+            foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+            {
+                if (d == skip || d.IsDead || !d.Targetable || (Owner != null && d.transform == Owner)) continue;
+                if (DistanceXZ(point, d.transform.position) > radius + d.BodyRadius) continue;
+                Strike(d, ratio);
             }
         }
 
@@ -142,6 +319,7 @@ namespace AThousandDawns.Combat
             var body = CreateSword();
             body.position = point + _slant + Vector3.up * DropHeight;
             if (DaggerLook) body.rotation = Quaternion.FromToRotation(Vector3.up, (_slant + Vector3.up * DropHeight).normalized); // 칼끝이 날아가는 쪽 (손잡이가 뒤)
+            if (Form == UltimateForm.OneSword) body.localScale = Vector3.one * 2.5f; // 일검: 큰 검 한 자루
             _swords.Add(new Sword { Body = body, Target = target, Point = point, Slant = _slant });
             _remaining--;
             _spawned++;
@@ -153,6 +331,14 @@ namespace AThousandDawns.Combat
             _candidates.Clear();
             foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
                 if (!d.IsDead && d.Targetable && InArea(_center, _area, d)) _candidates.Add(d);
+
+            if (Form == UltimateForm.OneSword) // 일검: 체력이 가장 많은 적
+            {
+                Damageable strongest = null;
+                foreach (var d in _candidates)
+                    if (strongest == null || d.Health > strongest.Health) strongest = d;
+                return strongest;
+            }
 
             Damageable best = null;
             int bestCount = int.MaxValue;
@@ -171,15 +357,12 @@ namespace AThousandDawns.Combat
             return best;
         }
 
-        void Land(Damageable target)
+        void Land(Damageable target, Vector3 point)
         {
+            if (Form == UltimateForm.OneSword) HitAround(point, OneSwordRadius, 1f, target); // 일검: 떨어진 자리 둘레도
             if (target == null || target.IsDead || !target.Targetable) return;
-            var hit = _hit;
-            hit.Toughness = target.Toughness;
-            hit.Defense = target.Defense;
-            int damage = DamageFormula.ToEnemy(hit, _rules);
-            target.ApplyHit(damage);
-            _totalDamage += damage;
+            Strike(target, 1f);
+            if (Form == UltimateForm.Bloom) _bloomHits[target] = _bloomHits.TryGetValue(target, out int n) ? n + 1 : 1; // 산화: 꽂힌 수
         }
 
         // 칼끝이 원점(아래)에 오는 검: 날 + 코등이 + 손잡이 (비도면 작은 비도, 기울기는 SpawnSword에서)

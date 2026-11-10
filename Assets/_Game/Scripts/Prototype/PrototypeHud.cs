@@ -83,7 +83,8 @@ namespace AThousandDawns.Prototype
                 if (player.BladeStacks > 0) slow += $"  · 검날 {player.BladeStacks}중첩";
                 if (player.TabletUsed) slow += "  · 불괴 호패 씀";
                 GUILayout.Label($"대시 {player.Dash.Charges}/{player.Dash.MaxCharges}  {(player.IsInvulnerable ? "(무적)" : "")}{slow}", _label);
-                string ultimate = player.IsCastingUltimate ? "  · 만검귀종!" : player.UltimateReady ? "  · Q 만검귀종 준비" : "";
+                string ultName = UltimateLabel(player);
+                string ultimate = player.IsCastingUltimate ? $"  · {ultName}!" : player.UltimateReady ? $"  · {KeyName(AThousandDawns.Core.Bind.Ultimate)} {ultName} 준비" : $"  · {ultName}";
                 GUILayout.Label($"기세 {player.Gauge:0}/{player.GaugeCap:0}{ultimate}", _label);
                 string drink = player.IsDrinking ? $"  · 마시는 중 {player.PotionProgress:0%}" : "";
                 GUILayout.Label($"금창약 {player.Potions}/{player.PotionMax}{drink}", _label);
@@ -367,6 +368,11 @@ namespace AThousandDawns.Prototype
             GUI.DrawTexture(new Rect(0, 0, UiScale.Width, UiScale.Height), Texture2D.whiteTexture);
             GUI.color = old;
 
+            if (run.IsSelling)
+            {
+                DrawSell();
+                return;
+            }
             var slots = run.Shop.Slots;
             const float w = 760f, rowH = 64f;
             float h = 110f + slots.Count * (rowH + 6f);
@@ -384,8 +390,10 @@ namespace AThousandDawns.Prototype
                     InnShop.SlotKind.Part => $"<b>부품 {PlayerItems.PartLabel(s.Part)}</b>\n<size=13>경맥도 칸에 놓는 부품 (E · 부품 줄)</size>",
                     InnShop.SlotKind.Scroll => $"<b>비급 {(s.Skill == SkillKind.Quake ? "붕산권" : "죽림섬")}</b>  우클릭 초식이 바뀌어요 (지금 {player.SkillName})\n<size=13>{(s.Skill == SkillKind.Quake ? "땅을 내리쳐 원형 충격파, 맞은 적을 밀어냄" : "가까운 적에게 3번 순간이동하며 베기")}</size>",
                     InnShop.SlotKind.MoveDanjeon => $"<b>이혈</b>  단전 하나를 다른 칸으로 옮겨요\n<size=13>산 뒤 경맥도(E)에서 옮길 단전 → 새 칸{(player.Items.DanjeonMoves > 0 ? $" · 남은 이혈 {player.Items.DanjeonMoves}" : "")}</size>",
+                    InnShop.SlotKind.Sell => $"<b>매각</b>  가진 기물을 팔아요\n<size=13>객잔 판매가의 {Mathf.RoundToInt(AThousandDawns.Core.GameConfig.GetOptional("inn.sell_ratio", 0.4f) * 100f)}% · 누르면 가진 기물 목록</size>",
                     _ => "<b>숙박</b>  지금 바로 체력 30% 회복",
                 };
+                if (s.Kind == InnShop.SlotKind.Sell) price = "<color=#9a9a9a>—</color>";
                 string text = $"<size=13>[{i + 1}]</size>  {body}\n<size=13>은자 {price}{(blocker != null && !s.Sold ? $"  <color=#9a9a9a>· {blocker}</color>" : "")}</size>";
                 GUI.enabled = !s.Sold;
                 if (GUI.Button(new Rect(x, y + i * (rowH + 6f), w, rowH), text, _card)) run.Buy(i);
@@ -393,6 +401,34 @@ namespace AThousandDawns.Prototype
             }
             if (!string.IsNullOrEmpty(run.ShopNotice))
                 GUI.Label(new Rect(0, y + slots.Count * (rowH + 6f) + 10f, UiScale.Width, 40f), run.ShopNotice, _big);
+        }
+
+        // 매각 목록: 가진 기물 (경맥도 위 · 주머니). 숫자 키 또는 클릭으로 팔기, F·Esc 진열대로
+        Vector2 _sellScroll;
+
+        void DrawSell()
+        {
+            var items = player.Items.Items;
+            const float w = 760f, rowH = 52f;
+            float listH = Mathf.Min(items.Count * (rowH + 6f), UiScale.Height - 220f);
+            float x = (UiScale.Width - w) * 0.5f, y = (UiScale.Height - listH) * 0.5f;
+            GUI.Label(new Rect(0, y - 56f, UiScale.Width, 40f), $"매각 · 은자 {run.Silver} · 숫자 키 또는 클릭 · {KeyName(AThousandDawns.Core.Bind.Interact)} 진열대로", _big);
+            _sellScroll = GUI.BeginScrollView(new Rect(x, y, w + 20f, listH), _sellScroll, new Rect(0, 0, w, items.Count * (rowH + 6f)));
+            for (int i = 0; i < items.Count; i++)
+            {
+                var it = items[i];
+                string where = it.OnBoard ? "경맥도" : "주머니";
+                string key = i < 9 ? $"[{i + 1}]  " : "";
+                string text = $"<size=13>{key}</size><b>{it.Def.name}</b>  {Colored(it.Def.keyword)} · {GradeColored(it.Def.grade)} · {where}\n<size=13>은자 <color=#ffd27a>+{RoomRun.SellPrice(it.Def)}</color></size>";
+                if (GUI.Button(new Rect(0, i * (rowH + 6f), w, rowH), text, _card))
+                {
+                    run.Sell(i);
+                    break;
+                }
+            }
+            GUI.EndScrollView();
+            if (!string.IsNullOrEmpty(run.ShopNotice))
+                GUI.Label(new Rect(0, y + listH + 10f, UiScale.Width, 40f), run.ShopNotice, _big);
         }
 
         // 이벤트 (시간이 멈춰 있어요): 제목 · 글 · 선택지. 🔒 선택지는 조건이 안 되면 흐리게 이유만.
@@ -510,6 +546,14 @@ namespace AThousandDawns.Prototype
         }
 
         static string KeyName(AThousandDawns.Core.Bind bind) => AThousandDawns.Core.KeyBindings.Label(bind); // 설정에서 바꾼 키 이름
+
+        // 절초 이름 (무기) + 진전 (예: 만검귀종 · 진전 검진)
+        static string UltimateLabel(PlayerController p)
+        {
+            string name = p.UsesDagger ? "만천화우" : "만검귀종";
+            var form = p.ActiveUltimateForm;
+            return form == AThousandDawns.Combat.UltimateForm.None ? name : $"{name} <color=#ffd27a>· 진전 {AThousandDawns.Combat.UltimateForms.Name(form)}</color>";
+        }
 
         static string Colored(Keyword keyword)
         {

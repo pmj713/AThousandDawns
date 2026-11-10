@@ -115,6 +115,18 @@ namespace AThousandDawns.Prototype
                     S.ApplyDisplay();
                 },
             },
+            new Row
+            {
+                Section = "화면", Label = "화면 비율",
+                Value = () => S.aspect switch
+                {
+                    GameSettings.AspectMode.Wide16x9 => "16:9 (남는 곳은 검은 띠)",
+                    GameSettings.AspectMode.Wide16x10 => "16:10 (남는 곳은 검은 띠)",
+                    GameSettings.AspectMode.Ultra21x9 => "21:9 (남는 곳은 검은 띠)",
+                    _ => "자동 (창에 맞춤)",
+                },
+                Step = d => S.aspect = Cycle(S.aspect, d),
+            },
             new Row { Section = "조작", Label = "조준 방식", Value = () => S.aim == GameSettings.AimMode.Mouse ? "마우스 방향" : "이동 방향", Step = d => S.aim = Cycle(S.aim, d) },
             new Row { Section = "조작", Label = "대시 방향", Value = () => S.dash == GameSettings.DashDir.Move ? "이동 방향" : "조준 방향", Step = d => S.dash = Cycle(S.dash, d) },
             new Row

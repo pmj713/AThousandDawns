@@ -1,3 +1,4 @@
+using AThousandDawns.Combat;
 using AThousandDawns.Core;
 using AThousandDawns.Player;
 using UnityEngine;
@@ -8,11 +9,13 @@ namespace AThousandDawns.Prototype
     // 기연 방 (판구조 기연 15%, 기획 대화 "기연 방: 내공 수위로 찾는 숨은 방"):
     //   층마다 일정 확률로 막다른 숨은 방이 하나 생겨요. 그 방 쪽 문은 벽으로 막혀 있고, 벽에 금이 가 있어요.
     //   금 간 벽 앞에서 F → 벽이 무너지고 길이 열려요. 공력 4 이상 (면벽수련 오 5면 3)이면 층에 들어설 때 지도에 희미하게 보여요.
-    //   들어가면 영약 (공력 +1)이나 비급 (다른 초식) 중 하나. 찾은 기연 방은 회귀의 기억 +5.
+    //   들어가면 영약 (공력 +1)이나 비급 (다른 초식) 중 하나. 아주 드물게 (5%) 진전 (그 판 동안 절초 모양)도. 찾은 기연 방은 회귀의 기억 +5.
     public sealed partial class RoomRun
     {
         // 테스트에서 기연 방을 꼭 만들어요
         public static bool HiddenOverride;
+        // 테스트에서 기연 방에 진전을 꼭 놓아요
+        public static bool JinjeonOverride;
 
         int _hiddenSenseCut;
         GameObject _crack;
@@ -121,6 +124,24 @@ namespace AThousandDawns.Prototype
                 Label = $"비급을 펼친다 · 초식이 {skillName}(으)로 바뀌어요 (우클릭: {skillText})",
                 Act = () => { Player.LearnSkill(skill); return $"{skillName}을(를) 깨우쳤어요. 우클릭 초식이 바뀌었어요."; },
             });
+            // 진전: 아주 드물게 유해가 남긴 검결 한 장 (그 판 동안 절초 모양이 바뀌어요)
+            if (JinjeonOverride || _rng.NextDouble() < GameConfig.GetOptional("room.hidden_jinjeon_chance", 0.05f))
+            {
+                var form = Player.RollUltimateForm(_rng);
+                string ultimate = Player.UsesDagger ? "만천화우" : "만검귀종";
+                string now = Player.UltimateForm != UltimateForm.None ? $" · 지금 진전 {UltimateForms.Name(Player.UltimateForm)}을(를) 바꿔요" : "";
+                v.Text += " 유해의 손에 피로 쓴 검결 한 장이 쥐여 있다.";
+                v.Choices.Add(new EventChoice
+                {
+                    Label = $"검결을 읽는다 · 진전 {UltimateForms.Name(form)}: {UltimateForms.Text(form)}{now}",
+                    Act = () =>
+                    {
+                        Player.UltimateForm = form;
+                        Notify("jinjeon", "진전: 이번 판 동안 절초 모양이 바뀌어요 · 판을 새로 시작하면 사라져요");
+                        return $"{ultimate}이(가) {UltimateForms.Name(form)}의 경지로 나아갔어요. 이번 판 동안 절초가 바뀌어요.";
+                    },
+                });
+            }
             OpenEventView(v, null);
         }
     }
