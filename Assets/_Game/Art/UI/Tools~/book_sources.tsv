@@ -1,0 +1,5 @@
+file	out	note
+f1fccbf1bdf54676a37b62684f4527a7.png	Flower	1:1 · icon_alpha 256 -NoHalo -Solid + trim · single deep pink plum flower
+f8c6c816a3bef27d275aed2b6d49f97f.png	Bud	1:1 · icon_alpha 192 -NoHalo -Solid + trim · closed pink bud with calyx
+6fc0a75b72e263e7326b694c6c6368cf.png	DormantBud	1:1 · icon_alpha 128 -NoHalo -Solid + trim, cropped to the bud tip · dormant winter bud
+f3ddabcd02efacedd7b8954af5e1efd8.png	Tree	16:9 image edit of a 640x360 layout guide (trunk + branches) · icon_alpha 1920 -NoHalo -Solid · node coords in RegressionBookScreen.Layout snapped to its branches

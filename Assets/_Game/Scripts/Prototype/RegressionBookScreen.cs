@@ -14,8 +14,8 @@ namespace AThousandDawns.Prototype
     {
         static readonly Color Paper = new Color(0.97f, 0.9f, 0.9f);            // 연분홍 한지
         static readonly Color Ink = new Color(0.16f, 0.1f, 0.1f);
-        static readonly Color Branch = new Color(0.36f, 0.22f, 0.22f);          // 매화 가지 (열린 길)
-        static readonly Color BranchDim = new Color(0.78f, 0.68f, 0.68f);       // 아직 닫힌 길
+        static readonly Color Branch = new Color(0.16f, 0.12f, 0.12f);          // 매화 가지 (열린 길): 짙은 먹
+        static readonly Color BranchDim = new Color(0.55f, 0.48f, 0.48f, 0.55f); // 아직 닫힌 길: 옅은 먹
         static readonly Color Bud = new Color(0.86f, 0.3f, 0.42f);              // 피울 수 있는 꽃봉오리
         static readonly Color BudPoor = new Color(0.92f, 0.66f, 0.72f);         // 열렸지만 기억이 모자람
         static readonly Color Sepal = new Color(0.45f, 0.18f, 0.2f);            // 꽃받침
@@ -27,32 +27,35 @@ namespace AThousandDawns.Prototype
         static readonly Color Selected = new Color(0.2f, 0.12f, 0.12f);
 
         // 기준 1920×1080 화면 좌표 (오른쪽 520은 설명 칸).
-        // 줄기는 왼쪽 아래 뿌리에서 오른쪽 위로 비스듬히 누운 매화 가지, 잔가지가 위아래로 갈라져요.
+        // 매화나무 수형 (손그림 BookArt/Tree와 같은 1920×1080 자리): 살짝 휘며 시계 방향으로 기운 줄기에서 큰 가지가 양쪽으로 휘어 나가고,
+        // 가지에서 다시 곁가지가 나요. 해금 순서대로 가지를 따라 봉우리가 달려요 (좌표는 그림 속 가지 선에 맞췄어요).
+        //   위: 경맥·무기 · 왼쪽: 주머니 · 가운데 큰 가지: 면벽수련 → 심득, 거기서 위로 견문, 아래로 생존 · 아래: 유품
+        // "@"로 시작하는 자리는 봉우리가 아니라 가지가 줄기에 붙는 곳이에요 (그림이 없을 때 코드로 그리는 용도).
         static readonly Dictionary<string, Vector2> Layout = new Dictionary<string, Vector2>
         {
-            [RegressionBook.Root] = new Vector2(230, 940),
-            // 줄기: 면벽수련 → 심득
-            ["meditation"] = new Vector2(390, 870), ["insight1"] = new Vector2(570, 790), ["insight2"] = new Vector2(770, 705),
-            ["insight3"] = new Vector2(960, 615), ["insight4"] = new Vector2(1140, 535), ["insight5"] = new Vector2(1310, 465),
-            // 위로: 경맥 → 무기 (뿌리 곁에서), 견문 (심득 1차에서)
-            ["tongmaek"] = new Vector2(300, 770), ["jeomhyeol"] = new Vector2(340, 640), ["hanok"] = new Vector2(410, 530),
-            ["forge"] = new Vector2(500, 440), ["flying_dagger"] = new Vector2(610, 375),
-            ["item_pack1"] = new Vector2(660, 640), ["item_pack2"] = new Vector2(780, 530),
-            // 아래로: 생존 (면벽수련에서), 주머니 (뿌리 왼쪽 위), 유품 겨울 가지 (뿌리에서 바닥을 따라)
-            ["potion_kit"] = new Vector2(560, 925), ["inn_stock"] = new Vector2(740, 960),
-            ["bag"] = new Vector2(120, 810), ["bag_plus1"] = new Vector2(110, 680), ["bag_plus2"] = new Vector2(150, 560),
-            ["relic1"] = new Vector2(420, 1035), ["relic2"] = new Vector2(620, 1045), ["relic3"] = new Vector2(820, 1040), ["relic4"] = new Vector2(1010, 1020),
+            [RegressionBook.Root] = new Vector2(130, 1000),
+            ["@relic"] = new Vector2(240, 875), ["@med"] = new Vector2(330, 680), ["@bag"] = new Vector2(390, 470),
+            ["@top"] = new Vector2(510, 260), ["@tip"] = new Vector2(570, 120),
+            ["tongmaek"] = new Vector2(657, 217), ["jeomhyeol"] = new Vector2(790, 238), ["hanok"] = new Vector2(930, 236),
+            ["forge"] = new Vector2(1059, 196), ["flying_dagger"] = new Vector2(1193, 150),
+            ["meditation"] = new Vector2(470, 650), ["insight1"] = new Vector2(630, 600), ["insight2"] = new Vector2(790, 574),
+            ["insight3"] = new Vector2(948, 546), ["insight4"] = new Vector2(1112, 510), ["insight5"] = new Vector2(1259, 445),
+            ["potion_kit"] = new Vector2(561, 755), ["inn_stock"] = new Vector2(694, 801),
+            ["item_pack1"] = new Vector2(725, 485), ["item_pack2"] = new Vector2(822, 402),
+            ["bag"] = new Vector2(302, 428), ["bag_plus1"] = new Vector2(217, 354), ["bag_plus2"] = new Vector2(168, 276),
+            ["relic1"] = new Vector2(380, 880), ["relic2"] = new Vector2(530, 910), ["relic3"] = new Vector2(680, 903), ["relic4"] = new Vector2(831, 874),
         };
 
-        // 가지마다 지나는 봉우리 (그리는 순서: 줄기가 먼저, 굵게 시작해 가늘어짐)
+        // 가지마다 지나는 봉우리 (그림이 없을 때만 코드로 그려요. 줄기가 먼저, 굵게 시작해 가늘어짐)
         static readonly (string[] path, float start, float end)[] Twigs =
         {
-            (new[] { RegressionBook.Root, "meditation", "insight1", "insight2", "insight3", "insight4", "insight5" }, 22f, 7f),
-            (new[] { RegressionBook.Root, "tongmaek", "jeomhyeol", "hanok", "forge", "flying_dagger" }, 12f, 4f),
-            (new[] { "insight1", "item_pack1", "item_pack2" }, 9f, 4f),
-            (new[] { "meditation", "potion_kit", "inn_stock" }, 10f, 4f),
-            (new[] { RegressionBook.Root, "bag", "bag_plus1", "bag_plus2" }, 10f, 4f),
-            (new[] { RegressionBook.Root, "relic1", "relic2", "relic3", "relic4" }, 8f, 3f),
+            (new[] { RegressionBook.Root, "@relic", "@med", "@bag", "@top", "@tip" }, 28f, 8f),
+            (new[] { "@top", "tongmaek", "jeomhyeol", "hanok", "forge", "flying_dagger" }, 12f, 4f),
+            (new[] { "@med", "meditation", "insight1", "insight2", "insight3", "insight4", "insight5" }, 14f, 4f),
+            (new[] { "insight1", "item_pack1", "item_pack2" }, 8f, 3f),
+            (new[] { "meditation", "potion_kit", "inn_stock" }, 8f, 3f),
+            (new[] { "@bag", "bag", "bag_plus1", "bag_plus2" }, 10f, 3f),
+            (new[] { "@relic", "relic1", "relic2", "relic3", "relic4" }, 12f, 3f),
         };
 
         static Texture2D _circle;
@@ -118,12 +121,13 @@ namespace AThousandDawns.Prototype
             GUI.Label(new Rect(60, 132, 900, 26), "봉우리를 누르고, 개화를 눌러 피워요 · B·Esc 닫기", _small);
             DrawLegend(new Rect(60, 170, 620, 30));
 
-            DrawTwigs();
+            // 손그림 가지 (VARCO, Layout과 같은 1920×1080 자리에 그려 둠). 없으면 코드로 그려요
+            if (Art.Tree != null) GUI.DrawTexture(new Rect(0, 0, 1920, 1080), Art.Tree);
+            else DrawTwigs();
 
             // 뿌리 (굵은 밑동)
             var root = Layout[RegressionBook.Root];
-            Circle(root + new Vector2(-14, 10), 30f, Branch);
-            Circle(root, 28f, Branch);
+            if (Art.Tree == null) { Circle(root + new Vector2(-14, 10), 30f, Branch); Circle(root, 28f, Branch); } // 손그림이면 밑동이 그림에 있어요
             GUI.Label(new Rect(root.x - 80, root.y + 22, 160, 26), "<b>뿌리 · 회귀</b>", _node);
 
             foreach (var node in RegressionBook.Nodes)
@@ -140,9 +144,15 @@ namespace AThousandDawns.Prototype
                 }
                 if (bloomed) Blossom(p, size);
                 else if (openable) BudShape(p, size, blocker == null ? Bud : BudPoor);
-                else Circle(p, size, Locked); // 닫힌 눈: 가지에 붙은 작은 갈색 눈
+                else LockedBud(p, size); // 닫힌 눈: 가지에 붙은 작은 갈색 눈
                 string name = bloomed ? $"<b>{node.Name}</b>" : openable ? $"<b>{node.Name}</b> <color=#8a2a3a>{RegressionBook.Cost(node)}</color>" : $"<color=#8a8278>{node.Name}</color>";
-                GUI.Label(new Rect(p.x - 100, p.y + size * 0.5f + 4, 200, 26), name, _node);
+                var labelRect = new Rect(p.x - 100, p.y + size * 0.5f + 4, 200, 26);
+                if (Art.Tree != null) // 손그림 가지 위에서도 읽히게 이름 뒤에 옅은 한지
+                {
+                    float tw = _node.CalcSize(new GUIContent(name)).x + 10f;
+                    Fill(new Rect(p.x - tw * 0.5f, labelRect.y + 1, tw, 22), new Color(Paper.r, Paper.g, Paper.b, 0.8f));
+                }
+                GUI.Label(labelRect, name, _node);
                 float hit = Mathf.Max(size, 40f) + 12f;
                 if (GUI.Button(new Rect(p.x - hit * 0.5f, p.y - hit * 0.5f, hit, hit), GUIContent.none, GUIStyle.none)) _selected = node.Id;
             }
@@ -278,7 +288,8 @@ namespace AThousandDawns.Prototype
                 for (int i = 0; i < segs; i++)
                 {
                     Vector2 p0 = pts[Mathf.Max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Mathf.Min(segs, i + 2)];
-                    var color = RegressionBook.Bloomed(_meta, path[i]) ? Branch : BranchDim;
+                    bool open = path[i].StartsWith("@") || RegressionBook.Bloomed(_meta, path[i]); // 줄기에 붙는 자리는 뿌리처럼 늘 열림
+                    var color = open ? Branch : BranchDim;
                     float len = Vector2.Distance(p1, p2);
                     int steps = Mathf.Max(2, Mathf.CeilToInt(len / 2.5f));
                     for (int s = 0; s <= steps; s++)
@@ -308,6 +319,7 @@ namespace AThousandDawns.Prototype
         static void Blossom(Vector2 c, float size)
         {
             Circle(c, size * 2.1f, Glow);
+            if (Painted(c, size * 1.25f, Art.Flower, Color.white)) return; // 손그림 매화 (없으면 아래 도형)
             float r = size * 0.3f;
             for (int i = 0; i < 5; i++)
             {
@@ -327,6 +339,8 @@ namespace AThousandDawns.Prototype
         // 꽃봉오리: 둥근 봉오리 + 아래 꽃받침
         static void BudShape(Vector2 c, float size, Color color)
         {
+            // 손그림 봉오리: 기억이 모자라면 옅게 (없으면 아래 도형)
+            if (Painted(c, size * 1.5f, Art.Bud, color == Bud ? Color.white : new Color(1f, 1f, 1f, 0.45f))) return;
             Circle(c + new Vector2(0, size * 0.28f), size * 0.7f, Sepal);
             Circle(c, size, color);
             Circle(c + new Vector2(-size * 0.18f, -size * 0.18f), size * 0.3f, new Color(1f, 1f, 1f, 0.35f)); // 윤기
@@ -338,6 +352,45 @@ namespace AThousandDawns.Prototype
             float length = Vector2.Distance(a, b);
             int steps = Mathf.Max(1, Mathf.CeilToInt(length / (width * 0.4f)));
             for (int i = 0; i <= steps; i++) Circle(Vector2.Lerp(a, b, i / (float)steps), width, c);
+        }
+
+        // 손그림 (Art/UI/Book/Resources/BookArt): 매화·봉오리·닫힌 눈. 없으면 null이라 원래 도형으로 그려요
+        static class Art
+        {
+            static bool _loaded;
+            static Texture2D _tree, _flower, _bud, _dormant;
+            public static Texture2D Flower { get { Load(); return _flower; } }
+            public static Texture2D Bud { get { Load(); return _bud; } }
+            public static Texture2D Dormant { get { Load(); return _dormant; } }
+            public static Texture2D Tree { get { Load(); return _tree; } } // 줄기·가지 한 장 (투명 바탕, 1920×1080 기준)
+
+            static void Load()
+            {
+                if (_loaded) return;
+                _loaded = true;
+                _flower = Resources.Load<Texture2D>("BookArt/Flower");
+                _bud = Resources.Load<Texture2D>("BookArt/Bud");
+                _dormant = Resources.Load<Texture2D>("BookArt/DormantBud");
+                _tree = Resources.Load<Texture2D>("BookArt/Tree");
+            }
+        }
+
+        // 손그림 한 장을 가운데 맞춰 그려요. 그림이 없으면 false
+        static bool Painted(Vector2 center, float size, Texture2D tex, Color tint)
+        {
+            if (tex == null) return false;
+            float w = size * tex.width / Mathf.Max(tex.width, tex.height), h = size * tex.height / Mathf.Max(tex.width, tex.height);
+            var old = GUI.color;
+            GUI.color = tint;
+            GUI.DrawTexture(new Rect(center.x - w * 0.5f, center.y - h * 0.5f, w, h), tex);
+            GUI.color = old;
+            return true;
+        }
+
+        // 닫힌 눈: 손그림 겨울눈 (없으면 갈색 점)
+        static void LockedBud(Vector2 c, float size)
+        {
+            if (!Painted(c, size * 1.6f, Art.Dormant, Color.white)) Circle(c, size, Locked);
         }
 
         static void Circle(Vector2 center, float size, Color c)
@@ -368,7 +421,7 @@ namespace AThousandDawns.Prototype
         {
             float x = area.x;
             var p0 = new Vector2(x + 12, area.y + 14);
-            Circle(p0, 12f, Locked);
+            LockedBud(p0, 12f);
             GUI.Label(new Rect(x + 28, area.y, 140, 28), "닫힘 · 준비 중", _small);
             x += 150;
             BudShape(new Vector2(x + 12, area.y + 12), 18f, Bud);
