@@ -83,8 +83,10 @@ assassin.toughness,2,,살수 강인함,몬스터!B123
 assassin.move_speed,5,cell/s,살수 이동,몬스터!B124
 combo.chain_window,0.25,s,후딜이 끝난 뒤 다음 타로 이어지는 시간 (조작 시트 연결 규칙),
 combo.input_buffer,0.12,s,평타·대시를 먼저 눌러도 이어지는 시간 (조작 시트 연결 규칙),
-combo.1.radius,1.6,cell,평타 1·2타 부채꼴 반경 (조작 시트 평타 범위),
-combo.1.angle,100,deg,평타 1·2타 부채꼴 각도,
+combo.1.length,2.4,cell,평타 1타(세로베기) 직사각형 범위 길이 (2타 부채꼴 폭을 세로로 세움),
+combo.1.width,1.6,cell,평타 1타(세로베기) 직사각형 범위 폭 (2타 부채꼴 반경),
+combo.2.radius,1.6,cell,평타 2타(가로베기) 부채꼴 반경 (조작 시트 평타 범위),
+combo.2.angle,100,deg,평타 2타(가로베기) 부채꼴 각도,
 combo.3.radius,2,cell,평타 3타째 부채꼴 반경,
 combo.3.angle,160,deg,평타 3타째 부채꼴 각도,
 combo.3.lunge,0.5,cell,평타 3타째 전진 거리,

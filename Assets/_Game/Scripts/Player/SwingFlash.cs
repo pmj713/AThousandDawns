@@ -28,6 +28,20 @@ namespace AThousandDawns.Player
             _renderer.enabled = true;
         }
 
+        // 몸 앞으로 뻗은 직사각형 범위 (세로베기)
+        public void ShowRect(Vector3 origin, Vector3 forward, float length, float width, float duration)
+        {
+            float h = width * 0.5f;
+            _mesh.Clear();
+            _mesh.vertices = new[] { new Vector3(-h, 0f, 0f), new Vector3(h, 0f, 0f), new Vector3(h, 0f, length), new Vector3(-h, 0f, length) };
+            _mesh.triangles = new[] { 0, 3, 2, 0, 2, 1 };
+            _mesh.RecalculateNormals();
+            _mesh.RecalculateBounds();
+            transform.SetPositionAndRotation(new Vector3(origin.x, 0.02f, origin.z), Quaternion.LookRotation(new Vector3(forward.x, 0f, forward.z)));
+            _timer = duration;
+            _renderer.enabled = true;
+        }
+
         void Update()
         {
             if (!_renderer.enabled) return;

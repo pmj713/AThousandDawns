@@ -26,7 +26,7 @@ namespace AThousandDawns.Player
         float _moveSpeed, _accelTime, _decelTime, _attackMoveRatio;
         float _dashDistance, _dashDuration, _dashIframe, _dashAttackWindow, _inputBuffer;
         float _basicDamage, _finisherDamage, _dashAttackDamage, _dashAttackRadius, _dashAttackAngle;
-        float[] _hitRadius, _hitAngle;
+        float[] _hitRadius, _hitAngle, _hitWidth; // _hitWidth > 0이면 그 타는 직사각형 범위 (_hitRadius = 길이)
         float _finisherLunge, _finisherActive;
         float _gaugeMax, _gaugeBasic, _gaugeFinisher, _gaugeDashAttack, _gaugeHurt;
         float _maxHealth, _hurtIframe, _hurtKnockback, _hurtStun;
@@ -194,9 +194,12 @@ namespace AThousandDawns.Player
             _combo.SwingStarted += OnSwingStarted;
             _combo.HitFrame += OnHitFrame;
 
-            float r1 = GameConfig.Get("combo.1.radius", 1.6f), a1 = GameConfig.Get("combo.1.angle", 100f);
-            _hitRadius = new[] { r1, r1, GameConfig.Get("combo.3.radius", 2f) };
-            _hitAngle = new[] { a1, a1, GameConfig.Get("combo.3.angle", 160f) };
+            // 1타 세로베기(앞으로 긴 직사각형: 2타 부채꼴을 세로로 세운 크기) · 2타 가로베기 · 3타 넓은 가로베기
+            float l1 = GameConfig.Get("combo.1.length", 2.4f), w1 = GameConfig.Get("combo.1.width", 1.6f);
+            float r2 = GameConfig.GetOptional("combo.2.radius", 1.6f), a2 = GameConfig.GetOptional("combo.2.angle", 100f);
+            _hitRadius = new[] { l1, r2, GameConfig.Get("combo.3.radius", 2f) };
+            _hitAngle = new[] { 0f, a2, GameConfig.Get("combo.3.angle", 160f) };
+            _hitWidth = new[] { w1, 0f, 0f };
             _finisherLunge = GameConfig.Get("combo.3.lunge", 0.5f);
             _finisherActive = hits[2].Active;
 
@@ -652,12 +655,19 @@ namespace AThousandDawns.Player
             bool extra = _combo.IsExtraHit(index);
             bool finisher = index >= _combo.BaseHitCount - 1;
             if (finisher) _lungeRemaining = _finisherLunge;
-            float radius = _hitRadius[Mathf.Min(index, _hitRadius.Length - 1)] * BasicRangeMultiplier(finisher) * ForgeRangeMultiplier; // 대장간 강기
-            float angle = _hitAngle[Mathf.Min(index, _hitAngle.Length - 1)];
-            if (swingFlash != null) swingFlash.Show(transform.position, _facing, radius, angle, _combo.HitCount > 0 ? 0.1f : 0f);
+            int shape = Mathf.Min(index, _hitRadius.Length - 1);
+            float rangeScale = BasicRangeMultiplier(finisher) * ForgeRangeMultiplier; // 대장간 강기
+            float radius = _hitRadius[shape] * rangeScale;
+            float angle = _hitAngle[shape];
+            float width = _hitWidth[shape] * rangeScale;
+            if (swingFlash != null)
+            {
+                if (width > 0f) swingFlash.ShowRect(transform.position, _facing, radius, width, _combo.HitCount > 0 ? 0.1f : 0f);
+                else swingFlash.Show(transform.position, _facing, radius, angle, _combo.HitCount > 0 ? 0.1f : 0f);
+            }
             var hit = PlayerHit(finisher ? _finisherDamage : _basicDamage);
             hit.AttackIncrease += BasicSwingBonus(finisher, extra);
-            int count = HitSector(radius, angle, hit, finisher ? HitTag.Finisher : HitTag.Basic);
+            int count = HitSector(radius, angle, hit, finisher ? HitTag.Finisher : HitTag.Basic, width);
             Gauge = Mathf.Min(GaugeCap, Gauge + count * (finisher ? _gaugeFinisher : _gaugeBasic) * GaugeGainMultiplier);
             FireGanggiOnSwing(finisher, hit);
             if (finisher && !extra) QueueEcho(radius, angle, hit); // 면벽수련 쾌 20
@@ -680,7 +690,8 @@ namespace AThousandDawns.Player
         }
 
         // template의 피해·배율을 그대로 쓰고, 대상마다 강인함·방어력·상황 배율(방패 정면 등)만 채워요.
-        int HitSector(float radius, float angle, HitDamageInput template, HitTag tag)
+        // width > 0이면 부채꼴 대신 몸 앞 직사각형 (radius = 길이)
+        int HitSector(float radius, float angle, HitDamageInput template, HitTag tag, float width = 0f)
         {
             int found = Physics.OverlapSphereNonAlloc(transform.position, radius + 1f, _overlap, ~0, QueryTriggerInteraction.Collide);
             int hits = 0;
@@ -690,7 +701,10 @@ namespace AThousandDawns.Player
             {
                 var target = _overlap[i].GetComponentInParent<Damageable>();
                 if (target == null || target.IsDead || !target.Targetable || _hitThisSwing.Contains(target)) continue;
-                if (!HitShapes.InSector(transform.position, _facing, radius, angle, target.transform.position, target.BodyRadius)) continue;
+                bool inside = width > 0f
+                    ? HitShapes.InRect(transform.position, _facing, radius, width, target.transform.position, target.BodyRadius)
+                    : HitShapes.InSector(transform.position, _facing, radius, angle, target.transform.position, target.BodyRadius);
+                if (!inside) continue;
                 _hitThisSwing.Add(target);
                 HitTarget(target, template, tag);
                 hits++;

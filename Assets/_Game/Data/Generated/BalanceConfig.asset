@@ -349,14 +349,22 @@ MonoBehaviour:
     value: 0.12
     unit: s
     note: "\uD3C9\uD0C0\xB7\uB300\uC2DC\uB97C \uBA3C\uC800 \uB20C\uB7EC\uB3C4 \uC774\uC5B4\uC9C0\uB294 \uC2DC\uAC04 (\uC870\uC791 \uC2DC\uD2B8 \uC5F0\uACB0 \uADDC\uCE59)"
-  - key: combo.1.radius
+  - key: combo.1.length
+    value: 2.4
+    unit: cell
+    note: "\uD3C9\uD0C0 1\uD0C0(\uC138\uB85C\uBCA0\uAE30) \uC9C1\uC0AC\uAC01\uD615 \uBC94\uC704 \uAE38\uC774 (2\uD0C0 \uBD80\uCC44\uAF34 \uD3ED\uC744 \uC138\uB85C\uB85C \uC138\uC6C0)"
+  - key: combo.1.width
     value: 1.6
     unit: cell
-    note: "\uD3C9\uD0C0 1\xB72\uD0C0 \uBD80\uCC44\uAF34 \uBC18\uACBD (\uC870\uC791 \uC2DC\uD2B8 \uD3C9\uD0C0 \uBC94\uC704)"
-  - key: combo.1.angle
+    note: "\uD3C9\uD0C0 1\uD0C0(\uC138\uB85C\uBCA0\uAE30) \uC9C1\uC0AC\uAC01\uD615 \uBC94\uC704 \uD3ED (2\uD0C0 \uBD80\uCC44\uAF34 \uBC18\uACBD)"
+  - key: combo.2.radius
+    value: 1.6
+    unit: cell
+    note: "\uD3C9\uD0C0 2\uD0C0(\uAC00\uB85C\uBCA0\uAE30) \uBD80\uCC44\uAF34 \uBC18\uACBD (\uC870\uC791 \uC2DC\uD2B8 \uD3C9\uD0C0 \uBC94\uC704)"
+  - key: combo.2.angle
     value: 100
     unit: deg
-    note: "\uD3C9\uD0C0 1\xB72\uD0C0 \uBD80\uCC44\uAF34 \uAC01\uB3C4"
+    note: "\uD3C9\uD0C0 2\uD0C0(\uAC00\uB85C\uBCA0\uAE30) \uBD80\uCC44\uAF34 \uAC01\uB3C4"
   - key: combo.3.radius
     value: 2
     unit: cell

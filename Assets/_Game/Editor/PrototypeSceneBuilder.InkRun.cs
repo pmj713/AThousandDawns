@@ -185,6 +185,9 @@ namespace AThousandDawns.EditorTools
             // 4-1) 전투 이펙트: 평타 붓 획, 맞을 때 먹물 튀김
             AddInkCombatFX();
 
+            // 4-2) 플레이어: 캡슐 대신 리깅 모델, 평타·대시에 동작을 이어요
+            DressPlayerModelInk();
+
             // 5) 한지색 배경과 원근 안개
             var cam = Camera.main;
             if (cam != null)
