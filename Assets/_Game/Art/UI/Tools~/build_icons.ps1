@@ -4,12 +4,13 @@
 #   -Set emblem : 키워드·부품·혈자리·키 → Icons/Resources/<id>.png (id에 폴더 포함, 예: KeywordIcons/Yeolyang)
 #   -Set event  : 이벤트 그림 → Events/Resources/EventArt/<이벤트 id>.png (한지 바탕 그대로, 가로 960px)
 #   -Set title  : 시작 화면 배경·프롤로그 → Title/Resources/TitleArt/<id>.png (가로 1536px)
+#   -Set hint   : 시스템 설명 카드(무공 요결) → Hints/Resources/HintArt/<Notify id>.png (16:9 한지 바탕, 가로 960px)
 # 원본(장당 약 2MB)은 저장소에 넣지 않고 -RawDir에 캐시해요.
-param([ValidateSet("item", "emblem", "event", "title")][string]$Set = "item", [string]$RawDir = "$env:TEMP\AThousandDawns_icon_raw", [switch]$Force)
+param([ValidateSet("item", "emblem", "event", "title", "hint")][string]$Set = "item", [string]$RawDir = "$env:TEMP\AThousandDawns_icon_raw", [switch]$Force)
 
 $tools = $PSScriptRoot
-$outRoot = switch ($Set) { "event" { Join-Path $tools "..\Events\Resources" } "title" { Join-Path $tools "..\Title\Resources" } default { Join-Path $tools "..\Icons\Resources" } }
-$prefix = switch ($Set) { "item" { "ItemIcons/" } "event" { "EventArt/" } "title" { "TitleArt/" } default { "" } }
+$outRoot = switch ($Set) { "event" { Join-Path $tools "..\Events\Resources" } "title" { Join-Path $tools "..\Title\Resources" } "hint" { Join-Path $tools "..\Hints\Resources" } default { Join-Path $tools "..\Icons\Resources" } }
+$prefix = switch ($Set) { "item" { "ItemIcons/" } "event" { "EventArt/" } "title" { "TitleArt/" } "hint" { "HintArt/" } default { "" } }
 New-Item -ItemType Directory -Force $RawDir | Out-Null
 
 $idBySubject = @{}
@@ -29,7 +30,7 @@ if (Test-Path $sources) {
         New-Item -ItemType Directory -Force (Split-Path $dst) | Out-Null
         $raw = Join-Path $RawDir $file
         if (-not (Test-Path $raw)) { curl.exe -s -f -o $raw "https://3d.varco.ai/api/objects/$file" }
-        if ($Set -eq "event") { & (Join-Path $tools "resize.ps1") $raw $dst 960 }
+        if ($Set -eq "event" -or $Set -eq "hint") { & (Join-Path $tools "resize.ps1") $raw $dst 960 }
         elseif ($Set -eq "title") { & (Join-Path $tools "resize.ps1") $raw $dst 1536 }
         else { & (Join-Path $tools "icon_alpha.ps1") $raw $dst }
         $made++
