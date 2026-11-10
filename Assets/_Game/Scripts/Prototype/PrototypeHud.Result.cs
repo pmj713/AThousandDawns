@@ -65,15 +65,24 @@ namespace AThousandDawns.Prototype
             var keywords = p.Keywords;
             if (keywords != null)
             {
-                var sb = new System.Text.StringBuilder();
+                // 키워드: 아이콘 + 이름 + 단계 (있는 것만)
+                GUI.Label(new Rect(x, y, 70f, 30f), "키워드", _itemLine);
+                float kx = x + 70f;
+                bool any = false;
                 for (int i = 0; i < PlayerKeywords.KeywordCount; i++)
                 {
-                    int n = keywords.Count((Keyword)i);
+                    var k = (Keyword)i;
+                    int n = keywords.Count(k);
                     if (n <= 0) continue;
-                    if (sb.Length > 0) sb.Append("  ");
-                    sb.Append(Colored((Keyword)i)).Append(' ').Append(n).Append("단계");
+                    any = true;
+                    if (AThousandDawns.Items.ItemIcons.Draw(new Rect(kx, y, 28f, 28f), AThousandDawns.Items.ItemIcons.Get(k))) kx += 30f;
+                    string label = $"{Colored(k)} {n}단계";
+                    float lw = _itemLine.CalcSize(new GUIContent(label)).x;
+                    GUI.Label(new Rect(kx, y, lw + 4f, 30f), label, _itemLine);
+                    kx += lw + 16f;
                 }
-                Line(ref y, x, w, sb.Length > 0 ? $"키워드 {sb}" : "키워드 <color=#808080>없음</color>");
+                if (!any) GUI.Label(new Rect(kx, y, w - 70f, 30f), "<color=#808080>없음</color>", _itemLine);
+                y += 34f;
             }
 
             // 경맥도 축소판 (실제 배치 그대로)

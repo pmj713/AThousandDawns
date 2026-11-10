@@ -275,6 +275,7 @@ namespace AThousandDawns.Prototype
                 if (GUI.Button(rect, $"{(chosen ? "▶ " : "")}{PlayerItems.PartLabel(kind)} {loose}/{total} · {hints[i]}", _button))
                     _placingPart = chosen || loose == 0 ? PartKind.None : kind;
                 GUI.enabled = true;
+                ItemIcons.Draw(new Rect(rect.xMax - rect.height, rect.y + 2f, rect.height - 4f, rect.height - 4f), ItemIcons.Get(kind), total > 0 ? 1f : 0.35f);
                 if (chosen) Outline(rect, new Color(0.6f, 0.85f, 1f), 2f);
             }
         }
@@ -318,13 +319,17 @@ namespace AThousandDawns.Prototype
             }
             var point = board.AcupointAt(cell);
             if (point != Acupoint.None) tags = tags.Length > 0 ? $"{tags} {AcupointTag(point)}" : AcupointTag(point);
+            if (point != Acupoint.None) ItemIcons.Draw(new Rect(rect.x + 3f * K, rect.yMax - 29f * K, 26f * K, 26f * K), ItemIcons.Get(point));
             if (tags.Length > 0) GUI.Label(new Rect(rect.x + 30f * K, rect.y + 4f * K, rect.width - 34f * K, 18f * K), tags, _tag); // 오른쪽 위: 단전 · 혈자리 (겹치지 않게 한 줄로)
 
             var part = board.PartAt(cell);
             if (part != PartKind.None)
             {
                 Fill(new Rect(rect.x + 6f * K, rect.y + 24f * K, rect.width - 12f * K, rect.height - 34f * K), new Color(0.08f, 0.1f, 0.14f, 0.85f));
-                GUI.Label(new Rect(rect.x, rect.y + 30f * K, rect.width, 40f * K), PartMark(part), _cellName);
+                float partSize = Mathf.Min(rect.width, rect.height) - 40f * K;
+                if (ItemIcons.Draw(new Rect(rect.center.x - partSize * 0.5f, rect.y + 22f * K, partSize, partSize), ItemIcons.Get(part)))
+                    GUI.Label(new Rect(rect.x, rect.yMax - 26f * K, rect.width, 22f * K), PartMark(part), _cellName);
+                else GUI.Label(new Rect(rect.x, rect.y + 30f * K, rect.width, 40f * K), PartMark(part), _cellName);
             }
             if (item != null && item != _dragged) DrawItemInCell(item, rect);
             else if (item != null) GUI.Label(new Rect(rect.x, rect.y + 30f * K, rect.width, 40f * K), "<color=#9a9a9a>(옮기는 중)</color>", _cellName);
