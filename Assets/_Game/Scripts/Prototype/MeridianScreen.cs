@@ -75,10 +75,10 @@ namespace AThousandDawns.Prototype
             if (keyboard == null) return;
             if (IsOpen)
             {
-                if (keyboard.eKey.wasPressedThisFrame || keyboard.escapeKey.wasPressedThisFrame) Close();
+                if (AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Meridian) || keyboard.escapeKey.wasPressedThisFrame) Close();
                 return;
             }
-            if (keyboard.eKey.wasPressedThisFrame) TryOpen();
+            if (AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Meridian)) TryOpen();
         }
 
         // 레벨이 오르면 (전투 중이면 전투가 끝난 뒤, 기물 고르기도 끝난 뒤) 경맥도가 저절로 열려 혈자리를 골라요.

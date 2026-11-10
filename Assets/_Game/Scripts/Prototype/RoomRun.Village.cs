@@ -64,7 +64,7 @@ namespace AThousandDawns.Prototype
                 return;
             }
             NearSpot = FindSpot();
-            if (keyboard != null && keyboard.fKey.wasPressedThisFrame && NearSpot != VillageSpot.None) UseSpot(NearSpot);
+            if (AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Interact) && NearSpot != VillageSpot.None) UseSpot(NearSpot);
             if (Flat(Player.transform.position - village.exit).magnitude < village.exitRadius) Depart();
         }
 
@@ -82,10 +82,10 @@ namespace AThousandDawns.Prototype
 
         public string SpotPrompt(VillageSpot spot) => spot switch
         {
-            VillageSpot.Tree => "F 매화나무 · 회귀록",
-            VillageSpot.Cave => RegressionBook.Bloomed(VillageMeta, "meditation") ? "F 뒷산 동굴 · 면벽수련" : "뒷산 동굴 · 회귀록에서 면벽수련을 피우면 열려요",
-            VillageSpot.Shrine => VillageMeta.finalBossKills > 0 ? "F 사당 · 유품록" : "사당 · 첫 천마 격파 후 열려요 (유품록)",
-            VillageSpot.Rack => RegressionBook.DaggerUnlocked(VillageMeta) ? $"F 무기 거치대 · 지금 {(Player.UsesDagger ? "비도" : "검")} (바꾸기)" : "F 무기 거치대",
+            VillageSpot.Tree => $"{KeyName(Bind.Interact)} 매화나무 · 회귀록",
+            VillageSpot.Cave => RegressionBook.Bloomed(VillageMeta, "meditation") ? $"{KeyName(Bind.Interact)} 뒷산 동굴 · 면벽수련" : "뒷산 동굴 · 회귀록에서 면벽수련을 피우면 열려요",
+            VillageSpot.Shrine => VillageMeta.finalBossKills > 0 ? $"{KeyName(Bind.Interact)} 사당 · 유품록" : "사당 · 첫 천마 격파 후 열려요 (유품록)",
+            VillageSpot.Rack => RegressionBook.DaggerUnlocked(VillageMeta) ? $"{KeyName(Bind.Interact)} 무기 거치대 · 지금 {(Player.UsesDagger ? "비도" : "검")} (바꾸기)" : $"{KeyName(Bind.Interact)} 무기 거치대",
             _ => null,
         };
 

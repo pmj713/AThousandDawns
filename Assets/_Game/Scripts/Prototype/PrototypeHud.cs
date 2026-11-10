@@ -60,7 +60,7 @@ namespace AThousandDawns.Prototype
 
             GUILayout.BeginArea(new Rect(16, 16, 700, 466), GUI.skin.box);
             GUILayout.Label("일조천회 시험판 · 전투", _label);
-            GUILayout.Label("WASD 이동 · 좌클릭(누르고 있기) 평타 · 우클릭 회선참 · Q 만검귀종 · Space 대시 · R 금창약(누르고 있기)", _label);
+            GUILayout.Label($"{KeyName(AThousandDawns.Core.Bind.MoveUp)}{KeyName(AThousandDawns.Core.Bind.MoveLeft)}{KeyName(AThousandDawns.Core.Bind.MoveDown)}{KeyName(AThousandDawns.Core.Bind.MoveRight)} 이동 · {KeyName(AThousandDawns.Core.Bind.Attack)}(누르고 있기) 평타 · {KeyName(AThousandDawns.Core.Bind.Skill)} 초식 · {KeyName(AThousandDawns.Core.Bind.Ultimate)} 절초 · {KeyName(AThousandDawns.Core.Bind.Dash)} 대시 · {KeyName(AThousandDawns.Core.Bind.Potion)} 금창약(누르고 있기) · {KeyName(AThousandDawns.Core.Bind.Meridian)} 경맥도", _label);
             GUILayout.Label("부르기 (바로 옆): 1 졸개 · 2 멧돼지 · 3 궁수 · 4 들개 · 5 방패 · 6 나팔수 · 7 화약 · 8 청죽사 · 9 녹림왕 (결투장) · 0 살수 · - 청죽객 · = 철권 마웅 · Shift+숫자 정예", _label);
             GUILayout.Label("G 기세 채우기 · F5 처음부터 · 키워드 F1 열양 F2 빙백 F3 뇌정 F4 강기 F6 금강 F7 경공 F8 마도 F9 정종 · 기물 상태 F10 기 부족 F11 운기 F12 주화입마 · I 기물 고르기 · E 경맥도 · L 레벨업 · K 쓰러지기 · P 부품 셋 · O / Shift+O 무기 홈 1 / 2 바꾸기 · V 검 ↔ 비도", _wrapLabel);
             if (player != null)
@@ -126,7 +126,7 @@ namespace AThousandDawns.Prototype
             string banner = run != null ? run.Banner : null;
             if (banner != null) GUI.Label(new Rect(0, UiScale.Height * 0.3f, UiScale.Width, 50), banner, _big);
             if (run != null && run.AtCounter)
-                GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), "F 점소이에게 말 걸기", _big);
+                GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), $"{KeyName(AThousandDawns.Core.Bind.Interact)} 점소이에게 말 걸기", _big);
             // 튜토리얼: 조작 안내는 아래 가운데, 상황별 첫 안내는 오른쪽 위 한 줄
             if (run != null && !string.IsNullOrEmpty(run.Hint) && !run.IsPaused)
             {
@@ -149,9 +149,9 @@ namespace AThousandDawns.Prototype
             if (run != null && run.InVillage && run.NearSpot != RoomRun.VillageSpot.None && (run.Book == null || !run.Book.IsOpen))
                 GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), run.SpotPrompt(run.NearSpot), _big);
             if (run != null && run.AtGate && !run.IsForking)
-                GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), $"F 다음 층으로 · 남은 전투 방 {run.Map.FightsLeft()} · 추적도 {run.Tracking}", _big);
+                GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), $"{KeyName(AThousandDawns.Core.Bind.Interact)} 다음 층으로 · 남은 전투 방 {run.Map.FightsLeft()} · 추적도 {run.Tracking}", _big);
             if (run != null && run.NearCrack)
-                GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), "벽에 금이 가 있어요 · F 벽을 부수기", _big);
+                GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), $"벽에 금이 가 있어요 · {KeyName(AThousandDawns.Core.Bind.Interact)} 벽을 부수기", _big);
 
             if (player != null && player.IsDead && run == null) // 판 구조 씬은 결과 화면이 대신 떠요
                 GUI.Label(new Rect(0, UiScale.Height * 0.4f, UiScale.Width, 60), "쓰러졌어요 · F5 키로 다시 시작", _big);
@@ -371,7 +371,7 @@ namespace AThousandDawns.Prototype
             const float w = 760f, rowH = 64f;
             float h = 110f + slots.Count * (rowH + 6f);
             float x = (UiScale.Width - w) * 0.5f, y = (UiScale.Height - h) * 0.5f;
-            GUI.Label(new Rect(0, y - 56f, UiScale.Width, 40f), $"객잔 진열대 · 은자 {run.Silver} · 숫자 키 또는 클릭 · F 닫기", _big);
+            GUI.Label(new Rect(0, y - 56f, UiScale.Width, 40f), $"객잔 진열대 · 은자 {run.Silver} · 숫자 키 또는 클릭 · {KeyName(AThousandDawns.Core.Bind.Interact)} 닫기", _big);
             for (int i = 0; i < slots.Count; i++)
             {
                 var s = slots[i];
@@ -508,6 +508,8 @@ namespace AThousandDawns.Prototype
                 if (GUI.Button(new Rect(x + i * (cardW + gap), y, cardW, cardH), text, _card)) arena.Choose(i);
             }
         }
+
+        static string KeyName(AThousandDawns.Core.Bind bind) => AThousandDawns.Core.KeyBindings.Label(bind); // 설정에서 바꾼 키 이름
 
         static string Colored(Keyword keyword)
         {

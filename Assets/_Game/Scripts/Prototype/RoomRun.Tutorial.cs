@@ -71,7 +71,7 @@ namespace AThousandDawns.Prototype
                     if (_tutorialStep == 0)
                     {
                         _hintStart = Player.transform.position;
-                        SetHint("WASD 이동", () => Flat(Player.transform.position - _hintStart).magnitude > 2f);
+                        SetHint($"{KeyName(Bind.MoveUp)}{KeyName(Bind.MoveLeft)}{KeyName(Bind.MoveDown)}{KeyName(Bind.MoveRight)} 이동", () => Flat(Player.transform.position - _hintStart).magnitude > 2f);
                         _tutorialStep = 1;
                     }
                     break;
@@ -82,9 +82,9 @@ namespace AThousandDawns.Prototype
                 case 2: SetHint("방패는 정면 공격을 막아요 · 대시(Space) 직후 좌클릭으로 대시 공격하면 깨져요", () => !_fighting); break;
                 case 3:
                     Player.RaiseGaugeTo(0.8f); // 이 방에서 절초까지 써 보게 기세를 채워 둬요
-                    SetHint("우클릭 초식 · 주변을 한 바퀴 베요", () => Player.IsCastingSkill || !_fighting);
+                    SetHint($"{KeyName(Bind.Skill)} 초식 · 주변을 한 바퀴 베요", () => Player.IsCastingSkill || !_fighting);
                     break;
-                case 5: SetHint("관문 · 가운데에서 F를 누르면 다음 층", () => _phase != Phase.Floor); break;
+                case 5: SetHint($"관문 · 가운데에서 {KeyName(Bind.Interact)}를 누르면 다음 층", () => _phase != Phase.Floor); break;
             }
         }
 
@@ -99,7 +99,7 @@ namespace AThousandDawns.Prototype
                     if (d != null && d.grade == ItemGrade.Common && !Player.Items.Has(d.id) && (pick == null || d.maxQi < pick.maxQi || (d.maxQi == pick.maxQi && d.minQi < pick.minQi))) pick = d;
             if (pick == null) return false;
             Player.Items.Add(pick);
-            SetHint($"첫 기물 · {pick.name} · E 경맥도를 열어요", () => _meridianOpenedOnce);
+            SetHint($"첫 기물 · {pick.name} · {KeyName(Bind.Meridian)} 경맥도를 열어요", () => _meridianOpenedOnce);
             _tutorialStep = 5;
             return true;
         }
@@ -158,7 +158,7 @@ namespace AThousandDawns.Prototype
                 }
             if (Player.Level != null && Player.Level.Pending > 0) Notify("level_up", "개혈 대기: 싸움이 끝나면 경맥도(E)에서 혈자리를 열어요");
             if (Tracking >= 3) Notify("tracking", "추적도: 방을 비울수록 올라 마교 살수가 쫓아와요 · 객잔에 들르면 절반");
-            if (Player.UltimateReady && _phase != Phase.Village) Notify("ultimate", "기세가 가득 찼어요 · Q 절초");
+            if (Player.UltimateReady && _phase != Phase.Village) Notify("ultimate", $"기세가 가득 찼어요 · {KeyName(Bind.Ultimate)} 절초");
         }
 
         // ── 회피 배우기 (입문 2번 방): 졸개가 처음 공격하려는 순간 게임을 멈추고, Space를 누르면 다시 움직이며 대시가 나가요.
@@ -171,7 +171,7 @@ namespace AThousandDawns.Prototype
             if (DodgeFrozen)
             {
                 var k = UnityEngine.InputSystem.Keyboard.current;
-                bool dash = k != null && k.spaceKey.wasPressedThisFrame; // 대시 키 (지금은 키보드 Space만)
+                bool dash = AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Dash); // 대시 키 (설정에서 바꾼 키)
                 if (!dash) return true;
                 ResumeFromDodge(); // 대시 입력은 플레이어가 같은 프레임에 받아요 (시간이 멈춰 있어도 읽혀요)
                 return false;
@@ -196,7 +196,7 @@ namespace AThousandDawns.Prototype
             _dodgeArmed = false;
             DodgeFrozen = true;
             Time.timeScale = 0f;
-            SetHint("Space 대시로 피해요 · 대시하는 동안은 맞지 않아요", null);
+            SetHint($"{KeyName(Bind.Dash)} 대시로 피해요 · 대시하는 동안은 맞지 않아요", null);
         }
 
         public void ResumeFromDodge()
@@ -204,7 +204,7 @@ namespace AThousandDawns.Prototype
             if (!DodgeFrozen) return;
             DodgeFrozen = false;
             Time.timeScale = 1f;
-            SetHint("좌클릭 공격 · 누르고 있으면 이어 베요. 3타째가 가장 강해요", () => !_fighting);
+            SetHint($"{KeyName(Bind.Attack)} 공격 · 누르고 있으면 이어 베요. 3타째가 가장 강해요", () => !_fighting);
         }
 
         void NextHint()

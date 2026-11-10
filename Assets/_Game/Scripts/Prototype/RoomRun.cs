@@ -294,7 +294,7 @@ namespace AThousandDawns.Prototype
                 SetLocks(false);
                 _fighting = false;
                 _waves = null;
-                if (room.Kind == FloorRoomKind.Gate) ShowBanner("관문 · 가운데에서 F를 누르면 다음 층");
+                if (room.Kind == FloorRoomKind.Gate) ShowBanner($"관문 · 가운데에서 {KeyName(Bind.Interact)}를 누르면 다음 층");
                 if (room.Kind == FloorRoomKind.Event && !room.Cleared) OpenEvent(room, room.EventId);
                 if (room.Kind == FloorRoomKind.Hidden && !room.Cleared) OpenHiddenRoom(room);
             }
@@ -322,7 +322,7 @@ namespace AThousandDawns.Prototype
             if (OffersOpen) return; // 기물을 고른 뒤에 움직여요
             var keyboard = Keyboard.current;
             if (TickCrack(keyboard)) return; // 금 간 벽 부수기 (기연 방)
-            if (AtGate && keyboard != null && keyboard.fKey.wasPressedThisFrame)
+            if (AtGate && AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Interact))
             {
                 LeaveFloor();
                 return;
@@ -562,7 +562,7 @@ namespace AThousandDawns.Prototype
             int interest = InnInterest(); // 면벽수련 은 20
             Silver += interest;
             Notify("inn", "객잔: 점소이(F)에게 기물·금창약을 사요 · 들르면 추적도 절반 · 북쪽 문은 정비실");
-            ShowBanner($"객잔 · 점소이 앞에서 F로 진열대 (북쪽 문: 정비실) · 추적도 {before} → {Tracking}{(interest > 0 ? $" · 은자 이자 +{interest}" : "")}");
+            ShowBanner($"객잔 · 점소이 앞에서 {KeyName(Bind.Interact)}로 진열대 (북쪽 문: 정비실) · 추적도 {before} → {Tracking}{(interest > 0 ? $" · 은자 이자 +{interest}" : "")}");
         }
 
         // 객잔 자리로 옮기기 (이어하기에서는 저장한 진열 그대로, 추적도·이자는 다시 안 받아요)
@@ -588,7 +588,7 @@ namespace AThousandDawns.Prototype
         void TickInn()
         {
             var keyboard = Keyboard.current;
-            if (AtCounter && Shop != null && keyboard != null && keyboard.fKey.wasPressedThisFrame)
+            if (AtCounter && Shop != null && AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Interact))
             {
                 OpenShop();
                 return;
@@ -622,7 +622,7 @@ namespace AThousandDawns.Prototype
         {
             var keyboard = Keyboard.current;
             if (keyboard == null) return;
-            if (keyboard.escapeKey.wasPressedThisFrame || keyboard.fKey.wasPressedThisFrame)
+            if (keyboard.escapeKey.wasPressedThisFrame || AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Interact))
             {
                 CloseShop();
                 return;
@@ -717,6 +717,9 @@ namespace AThousandDawns.Prototype
         {
             if (combat.gateMarker != null) combat.gateMarker.SetActive(on);
         }
+
+        // 설정에서 바꾼 키 이름 ("F", "Space", "좌클릭")
+        static string KeyName(Bind bind) => KeyBindings.Label(bind);
 
         static Vector3 Flat(Vector3 v)
         {

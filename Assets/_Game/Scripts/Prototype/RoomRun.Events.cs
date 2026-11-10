@@ -109,7 +109,7 @@ namespace AThousandDawns.Prototype
             if (keyboard == null) return;
             if (CurrentEvent.Result != null)
             {
-                if (keyboard.fKey.wasPressedThisFrame || keyboard.enterKey.wasPressedThisFrame || keyboard.escapeKey.wasPressedThisFrame || keyboard.digit1Key.wasPressedThisFrame) CloseEvent();
+                if (AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Interact) || keyboard.enterKey.wasPressedThisFrame || keyboard.escapeKey.wasPressedThisFrame || keyboard.digit1Key.wasPressedThisFrame) CloseEvent();
                 return;
             }
             for (int i = 0; i < CurrentEvent.Choices.Count && i < 9; i++)

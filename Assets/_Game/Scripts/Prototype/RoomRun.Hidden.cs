@@ -79,7 +79,7 @@ namespace AThousandDawns.Prototype
         // 금 간 벽 앞에서 F: 벽이 무너지고 기연 방이 열려요
         bool TickCrack(Keyboard keyboard)
         {
-            if (keyboard == null || !keyboard.fKey.wasPressedThisFrame || !NearCrack) return false;
+            if (!AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Interact) || !NearCrack) return false;
             BreakCrack();
             return true;
         }
