@@ -137,7 +137,7 @@ namespace AThousandDawns.EditorTools
                 go.transform.SetParent(tree.transform, false);
                 go.transform.localRotation = facing * Quaternion.Euler(0f, 0f, (i * 53 % 60) - 30f);
                 var sprite = blossomSprites[i % 2];
-                float size = 0.38f * (0.8f + (i * 37 % 10) * 0.05f); // 월드 키 약 0.4
+                float size = 0.3f * (0.8f + (i * 37 % 10) * 0.05f); // 월드 키 약 0.3
                 float k = size / sprite.bounds.size.y;
                 go.transform.localScale = new Vector3(i % 4 >= 2 ? -k : k, k, k);
                 go.transform.localPosition = tips[i] - go.transform.up * size * 0.5f; // 스프라이트는 밑동 기준이라 가운데가 가지 끝에 오게
@@ -188,62 +188,105 @@ namespace AThousandDawns.EditorTools
                 for (int s = 0; s < sides; s++) tris.AddRange(new[] { last + s, tip, last + (s + 1) % sides });
             }
 
-            // 가지: 마디마다 조금씩 꺾여요. depth가 남으면 끝에서 갈라지고, 가는 가지는 중간에 곁가지 하나
-            // 방향은 (수평 방위 yaw, 올려본 각 elevation)으로 다뤄요. 가지는 부모가 뻗은 방위를 이어받아
-            // 좌우로만 갈라지고(되돌아 엉키지 않게), 마디마다 조금씩 각지게 꺾여요 (매화 가지의 지그재그).
+            // 고매(古梅) 수형: 실제 늙은 매화나무와 매화도를 참고했어요.
+            //  - 줄기: 짧고 굵게, 한쪽으로 크게 기울었다가 한 번 꺾여요. 옆에 부러진 굵은 그루터기 하나
+            //  - 큰 가지: 둘셋이 낮고 넓게 퍼지며 마디마다 각지게 꺾여요 (둥글게 휘지 않게). 수관이 키보다 넓어요
+            //  - 새 가지(도장지): 큰 가지 위에서 가늘고 곧게 거의 수직으로 솟아요. 매화다운 모습은 대부분 여기서 나와요
+            //  - 잔가지: 짧고 가는 가지가 비스듬히. 꽃은 새 가지·잔가지를 따라 점점이 (끝에만 몰리지 않게)
+            // 방향은 (수평 방위 yaw, 올려본 각 elevation)으로 다뤄요.
             Vector3 Dir(float yaw, float elevation)
             {
                 float y = yaw * Mathf.Deg2Rad, e = elevation * Mathf.Deg2Rad;
                 return new Vector3(Mathf.Sin(y) * Mathf.Cos(e), Mathf.Sin(e), Mathf.Cos(y) * Mathf.Cos(e));
             }
 
-            void Branch(Vector3 start, float yaw, float elevation, float length, float radius, int depth)
+            // 마디 몇 개짜리 각진 가지. kink = 마디마다 꺾이는 정도(도), droop = 마디마다 낮아지는 정도
+            List<Vector3> Limb(Vector3 start, float yaw, float elevation, float length, int segs, float kink, float droop, float r0, float r1)
             {
                 var path = new List<Vector3> { start };
                 var p = start;
-                const int segs = 3;
                 for (int i = 0; i < segs; i++)
                 {
-                    float kink = depth >= 3 ? 6f : 14f; // 줄기는 곧게, 가는 가지일수록 각지게
-                    yaw += Rand(-kink, kink);
-                    elevation = Mathf.Clamp(elevation + Rand(-kink, kink * 0.7f), 15f, 85f);
+                    float sign = i % 2 == 0 ? 1f : -1f; // 좌우로 번갈아 꺾여 지그재그
+                    yaw += sign * Rand(kink * 0.5f, kink);
+                    elevation = Mathf.Clamp(elevation + Rand(-kink * 0.4f, kink * 0.4f) - droop, -10f, 88f);
                     p += Dir(yaw, elevation) * length / segs;
                     path.Add(p);
                 }
-                float endRadius = depth > 0 ? radius * 0.62f : Mathf.Max(0.025f, radius * 0.3f);
-                Tube(path, radius, endRadius);
-                if (depth <= 0) { allTips.Add(p); return; }
-
-                if (depth >= 3)
-                {
-                    // 줄기 끝: 사방으로 굵은 가지 셋
-                    float start0 = Rand(0f, 120f);
-                    for (int f = 0; f < 3; f++)
-                        Branch(p, start0 + f * 120f + Rand(-20f, 20f), Rand(35f, 50f), length * Rand(0.6f, 0.7f), endRadius, depth - 1);
-                    Branch(path[2], start0 + 60f, 50f, length * 0.35f, radius * 0.35f, 0); // 줄기 중간에 짧은 잔가지 (꽃 자리 22개 채움)
-                }
-                else
-                {
-                    // 좌우로 하나씩, 부모 방위에서 15~40°만 벌어져요
-                    for (int s = -1; s <= 1; s += 2)
-                        Branch(p, yaw + s * Rand(15f, 40f), Mathf.Clamp(elevation + Rand(-5f, 15f), 20f, 75f), length * Rand(0.6f, 0.75f), endRadius, depth - 1);
-                    // 가지 중간에서 짧은 곁가지 하나 (위로 솟는 잔가지)
-                    Branch(path[1], yaw + (rng.Next(2) * 2 - 1) * Rand(40f, 70f), Rand(50f, 70f), length * 0.4f, radius * 0.45f, 0);
-                }
+                Tube(path, r0, r1);
+                return path;
             }
 
-            // 밑동: 굵고 조금 기운 줄기, 땅을 움켜쥔 짧은 뿌리 일곱
-            Branch(Vector3.zero, 30f, 78f, 2.1f, 0.3f, 3);
-            for (int i = 0; i < 7; i++)
+            // 가는 가지를 따라 꽃 자리 후보를 찍어요 (from~끝 사이 몇 군데)
+            void Spots(List<Vector3> path, float from, int count)
             {
-                var outward = Quaternion.Euler(0f, i * 51f + Rand(-15f, 15f), 0f) * Vector3.forward;
-                Tube(new List<Vector3> { Vector3.up * 0.45f, outward * 0.28f + Vector3.up * 0.14f, outward * Rand(0.45f, 0.6f) + Vector3.down * 0.04f }, 0.2f, 0.06f);
+                for (int i = 1; i <= count; i++)
+                {
+                    float t = Mathf.Lerp(from, 1f, i / (float)count) * (path.Count - 1);
+                    int a = Mathf.Min((int)t, path.Count - 2);
+                    allTips.Add(Vector3.Lerp(path[a], path[a + 1], t - a));
+                }
             }
 
-            // 꽃송이 자리: 높은 끝부터 서로 떨어지게 PlumBlossomCount개 고르고, 피는 순서는 섞어요
-            allTips.Sort((a, b) => b.y.CompareTo(a.y));
+            // 가지 위 t 지점 (0~1)
+            Vector3 At(List<Vector3> path, float t)
+            {
+                float f = t * (path.Count - 1);
+                int a = Mathf.Min((int)f, path.Count - 2);
+                return Vector3.Lerp(path[a], path[a + 1], f - a);
+            }
+
+            void Shoot(Vector3 from, float yaw)
+            {
+                // 새 가지: 거의 곧게, 높이 솟아요. 끝 가까이에 잔가지 하나
+                var s = Limb(from, yaw + Rand(-45f, 45f), Rand(55f, 80f), Rand(0.7f, 1.4f), 2, 8f, 0f, 0.032f, 0.008f); // 가늘고, 각도·길이가 제각각
+                Spots(s, 0.35f, 3);
+                if (rng.NextDouble() < 0.6)
+                {
+                    var spur = Limb(At(s, Rand(0.4f, 0.7f)), yaw + (rng.Next(2) * 2 - 1) * Rand(50f, 90f), Rand(35f, 55f), Rand(0.25f, 0.45f), 1, 0f, 0f, 0.015f, 0.006f);
+                    Spots(spur, 0.6f, 1);
+                }
+            }
+
+            float lean = Rand(0f, 360f);
+            // 줄기: 기울어 오르다 반대로 한 번 꺾여요
+            var trunkA = Limb(Vector3.zero, lean, 62f, 0.9f, 2, 8f, 0f, 0.36f, 0.3f);
+            var trunkB = Limb(trunkA[trunkA.Count - 1], lean + 160f, 70f, 0.7f, 2, 10f, 0f, 0.3f, 0.24f);
+            var crown = trunkB[trunkB.Count - 1];
+            // 부러진 굵은 그루터기 (끝이 뭉툭하게)
+            Tube(new List<Vector3> { At(trunkA, 0.7f), At(trunkA, 0.7f) + Dir(lean - 70f, 35f) * 0.45f }, 0.17f, 0.13f);
+
+            // 큰 가지 셋: 한쪽으로 쏠려요 (늙은 매화는 기운 쪽으로 긴 가지 하나, 양옆에 짧은 가지 둘).
+            // 사방으로 고르게 뻗으면 촛대처럼 보여서 일부러 비대칭으로
+            float side = lean + 160f; // 줄기 위쪽이 기운 방향
+            (float yawOffset, float minElev, float maxElev, float minLen, float maxLen)[] limbs =
+            {
+                (0f, 32f, 40f, 2.3f, 2.6f), (-80f, 40f, 55f, 1.3f, 1.6f), (75f, 40f, 55f, 1.2f, 1.5f),
+            };
+            foreach (var l in limbs)
+            {
+                float yaw = side + l.yawOffset + Rand(-15f, 15f);
+                var limb = Limb(crown, yaw, Rand(l.minElev, l.maxElev), Rand(l.minLen, l.maxLen), 4, 22f, 2f, 0.2f, 0.06f);
+                // 큰 가지 위로 새 가지 넷, 바깥쪽으로 갈수록 촘촘하게
+                for (int k = 0; k < 4; k++) Shoot(At(limb, 0.25f + k * 0.2f + Rand(-0.05f, 0.05f)), yaw);
+                // 큰 가지 끝은 가는 가지로 이어져 비스듬히 뻗어요
+                var end = Limb(limb[limb.Count - 1], yaw + Rand(-25f, 25f), Rand(25f, 45f), Rand(0.6f, 0.9f), 2, 18f, 0f, 0.05f, 0.015f);
+                Spots(end, 0.4f, 2);
+            }
+            // 줄기 꼭대기에서 바로 솟는 새 가지 둘
+            for (int k = 0; k < 2; k++) Shoot(crown, lean + 180f + k * 90f);
+
+            // 밑동: 땅을 움켜쥔 짧은 뿌리 다섯
+            for (int i = 0; i < 5; i++)
+            {
+                var outward = Quaternion.Euler(0f, i * 72f + Rand(-15f, 15f), 0f) * Vector3.forward;
+                Tube(new List<Vector3> { Vector3.up * 0.4f, outward * 0.25f + Vector3.up * 0.12f, outward * Rand(0.4f, 0.55f) + Vector3.down * 0.04f }, 0.18f, 0.05f);
+            }
+
+            // 꽃송이 자리: 후보를 섞은 뒤 서로 떨어지게 PlumBlossomCount개 골라요 (고른 순서 = 피는 순서, 나무 전체에 흩어지게)
+            for (int i = allTips.Count - 1; i > 0; i--) { int j = rng.Next(i + 1); (allTips[i], allTips[j]) = (allTips[j], allTips[i]); }
             var picked = new List<Vector3>();
-            for (float minDist = 0.7f; picked.Count < PlumBlossomCount && minDist > 0.05f; minDist *= 0.8f)
+            for (float minDist = 0.6f; picked.Count < PlumBlossomCount && minDist > 0.05f; minDist *= 0.8f)
                 foreach (var t in allTips)
                 {
                     if (picked.Count >= PlumBlossomCount) break;
