@@ -1,0 +1,5 @@
+file	out	note
+c27b979954a4112d52714815ed5d0006.png	ForkMap	16:9 · resize 1280 · faint ink map of a bamboo valley (fork screen background)
+3fc12c04c144bda91e1013a721efb5f1.png	ScrollRod	16:9 · icon_alpha 1536 -NoHalo -Solid + trim · hanging-scroll roller rod (depart transition)
+8ef789281f2631bbe7905387c19e81f3.png	InkBlot	1:1 · icon_alpha 512 -NoHalo · large ink splash (regression / floor transitions)
+e59896d23cdb1681bf3cd2b39f0cb6f0.png	InkMist	1:1 · icon_alpha 256 -NoHalo · dark ink mist puff (dense fork paths)
