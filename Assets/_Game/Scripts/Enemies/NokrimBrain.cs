@@ -40,7 +40,7 @@ namespace AThousandDawns.Enemies
         float _lungeRemaining, _traveled, _plannedLength, _spinElapsed;
         Vector3 _slamPoint; // 내려찍기 원 자리 (돌진이 끝나는 곳, 월드 좌표)
         const float FootstepLength = 2f; // 돌진 발소리 간격 (칸)
-        float _nextFootstep; // 내려찍기 원 자리 (돌진이 끝나는 곳, 월드 좌표)
+        float _nextFootstep; // 다음 발소리가 날 돌진 거리
         bool _hitPlayer;
         readonly float[] _banTimers = new float[5]; // 패턴마다 다시 나오지 않는 남은 시간 (설련 향낭)
         readonly List<EnemyBrain> _minions = new List<EnemyBrain>();
