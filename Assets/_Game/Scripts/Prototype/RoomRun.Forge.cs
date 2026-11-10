@@ -16,6 +16,7 @@ namespace AThousandDawns.Prototype
         public void OpenForge(int count)
         {
             if (count <= 0 || Player.Items == null) return;
+            Notify("forge", "대장간: 기물을 녹여 주 키워드를 무기 홈에 넣어요 · 같은 키워드 둘이면 강화판");
             var items = Player.Items;
             var v = new EventView
             {

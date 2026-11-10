@@ -94,6 +94,7 @@ namespace AThousandDawns.Prototype
             if (combat.plugs[_crackDirection] != null) combat.plugs[_crackDirection].SetActive(false);
             PlaceCrack(null);
             ShowBanner("벽이 무너지고 숨은 동굴이 드러났어요 · 기연 방");
+            Notify("hidden", "기연 방: 벽의 금을 부수면 열리는 숨은 방 · 영약이나 비급을 얻어요");
         }
 
         // 영약이나 비급 중 하나

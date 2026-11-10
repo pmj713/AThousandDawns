@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Linq;
 using AThousandDawns.Core;
 using AThousandDawns.Prototype;
 using NUnit.Framework;
@@ -74,6 +75,26 @@ namespace AThousandDawns.Tests
             Assert.IsTrue(_run.IsInEvent);
             yield return Esc();
             Assert.IsFalse(_run.IsPaused, "이벤트 창이 있을 땐 일시정지 안 열림");
+        }
+
+        [UnityTest]
+        public IEnumerator 무공_요결은_본_안내까지_펼쳐짐()
+        {
+            yield return Load();
+            var meta = MetaSave.Load();
+            meta.seenHints.Add("tracking");
+            meta.Save();
+            _run.OpenPause();
+            _run.ChoosePause(RoomRun.PauseItem.Book);
+            Assert.IsTrue(_run.PauseBookOpen);
+            var book = _run.PauseBook;
+            Assert.IsTrue(book.Entries.Any(e => e.Id == "basic_move"), "조작은 처음부터");
+            Assert.IsTrue(book.Entries.Any(e => e.Id == "tracking"), "본 안내");
+            Assert.IsFalse(book.Entries.Any(e => e.Id == "assassin"), "아직 안 본 안내는 접혀 있어요");
+            Assert.AreEqual(HintBook.All.Length - book.Entries.Count, book.LockedCount);
+            yield return Esc();
+            Assert.IsFalse(_run.PauseBookOpen, "Esc로 닫으면 일시정지 메뉴로");
+            Assert.IsTrue(_run.IsPaused);
         }
 
         [UnityTest]

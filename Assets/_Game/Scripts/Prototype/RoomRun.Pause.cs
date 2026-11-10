@@ -5,13 +5,15 @@ using UnityEngine.SceneManagement;
 namespace AThousandDawns.Prototype
 {
     // 일시정지 (Esc): 다른 창(진열대·이벤트·기물 고르기·경맥도·회귀록·결과)이 없을 때만 열려요. 시간이 멈춰요.
-    //   계속하기 · 설정 (시작 화면과 같은 설정창) · 시작 화면으로 (한 번 더 눌러 확인. 이어하기는 마지막 저장부터, RoomRun.Save)
+    //   계속하기 · 설정 (시작 화면과 같은 설정창) · 무공 요결 (본 안내 모음, HintBook) · 시작 화면으로 (한 번 더 눌러 확인. 이어하기는 마지막 저장부터, RoomRun.Save)
     public sealed partial class RoomRun
     {
-        public enum PauseItem { Resume, Settings, Title }
+        public enum PauseItem { Resume, Settings, Book, Title }
 
         public bool IsPaused { get; private set; }
         public bool PauseSettingsOpen { get; private set; }
+        public bool PauseBookOpen { get; private set; }
+        public HintBookPanel PauseBook { get; } = new HintBookPanel();
         public bool ConfirmTitle { get; private set; }
         public int PauseSelected { get; private set; }
         public SettingsPanel PauseSettings { get; } = new SettingsPanel();
@@ -47,11 +49,16 @@ namespace AThousandDawns.Prototype
                 if (PauseSettings.TickKeys()) PauseSettingsOpen = false;
                 return true;
             }
+            if (PauseBookOpen)
+            {
+                if (PauseBook.TickKeys()) PauseBookOpen = false;
+                return true;
+            }
             bool up = (k != null && (k.upArrowKey.wasPressedThisFrame || k.wKey.wasPressedThisFrame)) || (pad != null && pad.dpad.up.wasPressedThisFrame);
             bool down = (k != null && (k.downArrowKey.wasPressedThisFrame || k.sKey.wasPressedThisFrame)) || (pad != null && pad.dpad.down.wasPressedThisFrame);
             bool ok = (k != null && (k.enterKey.wasPressedThisFrame || k.spaceKey.wasPressedThisFrame)) || (pad != null && pad.buttonSouth.wasPressedThisFrame);
-            if (up) { PauseSelected = (PauseSelected + 2) % 3; ConfirmTitle = false; }
-            if (down) { PauseSelected = (PauseSelected + 1) % 3; ConfirmTitle = false; }
+            if (up) { PauseSelected = (PauseSelected + 3) % 4; ConfirmTitle = false; }
+            if (down) { PauseSelected = (PauseSelected + 1) % 4; ConfirmTitle = false; }
             if (ok) ChoosePause((PauseItem)PauseSelected);
             else if (esc || (pad != null && pad.buttonEast.wasPressedThisFrame)) ClosePause();
             return true;
@@ -64,6 +71,7 @@ namespace AThousandDawns.Prototype
             PauseSelected = 0;
             ConfirmTitle = false;
             PauseSettingsOpen = false;
+            PauseBookOpen = false;
             _pauseTimeScale = Time.timeScale;
             Time.timeScale = 0f;
             Player.enabled = false;
@@ -75,6 +83,7 @@ namespace AThousandDawns.Prototype
             if (!IsPaused) return;
             IsPaused = false;
             PauseSettingsOpen = false;
+            PauseBookOpen = false;
             Time.timeScale = _pauseTimeScale;
             Player.enabled = !IsForking; // 갈림길을 고르는 중이면 그대로 멈춰 있어요
             arena.Blocked = IsForking;
@@ -91,6 +100,10 @@ namespace AThousandDawns.Prototype
                 case PauseItem.Settings:
                     PauseSettingsOpen = true;
                     break;
+                case PauseItem.Book:
+                    PauseBook.Refresh();
+                    PauseBookOpen = true;
+                    break;
                 case PauseItem.Title:
                     if (!ConfirmTitle && _phase != Phase.Village)
                     {
@@ -105,5 +118,6 @@ namespace AThousandDawns.Prototype
         }
 
         public void SetPauseSettings(bool open) => PauseSettingsOpen = open;
+        public void SetPauseBook(bool open) => PauseBookOpen = open;
     }
 }

@@ -95,9 +95,10 @@ namespace AThousandDawns.Prototype
             {
                 case VillageSpot.Tree:
                     OpenVillageBook(false);
+                    Notify("book", "회귀록: 봉우리를 골라 개화하면 새 시스템이 열려요");
                     break;
                 case VillageSpot.Cave:
-                    if (RegressionBook.Bloomed(VillageMeta, "meditation")) OpenVillageBook(true);
+                    if (RegressionBook.Bloomed(VillageMeta, "meditation")) { OpenVillageBook(true); Notify("meditation", "면벽수련: 심득을 심법에 나눠 넣어요 · 언제든 다시 나눌 수 있어요"); }
                     else ShowBanner("동굴 입구가 막혀 있어요 · 회귀록에서 면벽수련을 피우면 열려요");
                     break;
                 case VillageSpot.Shrine:
