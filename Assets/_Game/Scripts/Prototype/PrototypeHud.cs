@@ -83,7 +83,8 @@ namespace AThousandDawns.Prototype
                 if (player.BladeStacks > 0) slow += $"  · 검날 {player.BladeStacks}중첩";
                 if (player.TabletUsed) slow += "  · 불괴 호패 씀";
                 GUILayout.Label($"대시 {player.Dash.Charges}/{player.Dash.MaxCharges}  {(player.IsInvulnerable ? "(무적)" : "")}{slow}", _label);
-                string ultimate = player.IsCastingUltimate ? "  · 만검귀종!" : player.UltimateReady ? "  · Q 만검귀종 준비" : "";
+                string ultName = UltimateLabel(player);
+                string ultimate = player.IsCastingUltimate ? $"  · {ultName}!" : player.UltimateReady ? $"  · {KeyName(AThousandDawns.Core.Bind.Ultimate)} {ultName} 준비" : $"  · {ultName}";
                 GUILayout.Label($"기세 {player.Gauge:0}/{player.GaugeCap:0}{ultimate}", _label);
                 string drink = player.IsDrinking ? $"  · 마시는 중 {player.PotionProgress:0%}" : "";
                 GUILayout.Label($"금창약 {player.Potions}/{player.PotionMax}{drink}", _label);
@@ -545,6 +546,14 @@ namespace AThousandDawns.Prototype
         }
 
         static string KeyName(AThousandDawns.Core.Bind bind) => AThousandDawns.Core.KeyBindings.Label(bind); // 설정에서 바꾼 키 이름
+
+        // 절초 이름 (무기) + 진전 (예: 만검귀종 · 진전 검진)
+        static string UltimateLabel(PlayerController p)
+        {
+            string name = p.UsesDagger ? "만천화우" : "만검귀종";
+            var form = p.ActiveUltimateForm;
+            return form == AThousandDawns.Combat.UltimateForm.None ? name : $"{name} <color=#ffd27a>· 진전 {AThousandDawns.Combat.UltimateForms.Name(form)}</color>";
+        }
 
         static string Colored(Keyword keyword)
         {

@@ -111,6 +111,18 @@ namespace AThousandDawns.Tests
         }
 
         [UnityTest]
+        public IEnumerator 회귀록_새_기물_묶음은_기물_6종을_미리_보여줌()
+        {
+            yield return Load(WeaponKind.Sword, UltimateForm.None);
+            var pack1 = RegressionBookScreen.PackItems(AThousandDawns.Core.RegressionBook.Find("item_pack1"));
+            var pack2 = RegressionBookScreen.PackItems(AThousandDawns.Core.RegressionBook.Find("item_pack2"));
+            Assert.AreEqual(6, pack1.Count);
+            Assert.AreEqual(6, pack2.Count);
+            Assert.AreEqual("재 항아리", pack1[0].name);
+            Assert.IsNull(RegressionBookScreen.PackItems(AThousandDawns.Core.RegressionBook.Find("forge")));
+        }
+
+        [UnityTest]
         public IEnumerator 비도_진전은_검일_때_안_붙음()
         {
             yield return Load(WeaponKind.Sword, UltimateForm.Storm);

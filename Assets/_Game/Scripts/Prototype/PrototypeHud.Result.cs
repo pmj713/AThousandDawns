@@ -60,7 +60,7 @@ namespace AThousandDawns.Prototype
             }
             Line(ref y, x, w, $"무기 <b>{(p.UsesDagger ? "비도" : "검")}</b>{slots}");
             string skill = p.UsesDagger && p.SkillName.StartsWith("회수") ? "회수" : p.SkillName;
-            Line(ref y, x, w, $"초식 <b>{skill}</b> · 절초 <b>{(p.UsesDagger ? "만천화우" : "만검귀종")}</b> · 공력 <b>{p.Gongryeok}</b> · 레벨 <b>{(p.Level != null ? p.Level.Level : 1)}</b>");
+            Line(ref y, x, w, $"초식 <b>{skill}</b> · 절초 <b>{UltimateLabel(p)}</b> · 공력 <b>{p.Gongryeok}</b> · 레벨 <b>{(p.Level != null ? p.Level.Level : 1)}</b>");
 
             var keywords = p.Keywords;
             if (keywords != null)
