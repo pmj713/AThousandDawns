@@ -1306,7 +1306,7 @@ MonoBehaviour:
     unit: 
     note: "\uB808\uBCA8\uC5C5\uB9C8\uB2E4 \uCD5C\uB300 \uCCB4\uB825 + (\uD604\uC7AC \uCCB4\uB825\uB3C4 \uAC19\uC774)"
   - key: level.base_need
-    value: 25
+    value: 30
     unit: 
     note: "\uB2E4\uC74C \uB808\uBCA8\uAE4C\uC9C0 \uD544\uC694\uD55C \uC218\uB828\uCE58 = \uAE30\uBCF8 \uD544\uC694\uB7C9 + \uC9C0\uAE08 \uB808\uBCA8 \xD7 \uB808\uBCA8\uB2F9 \uC99D\uAC00"
   - key: level.need_per_level

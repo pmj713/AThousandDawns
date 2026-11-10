@@ -322,7 +322,7 @@ meridian.max_danjeon,3,,단전 최대 개수 (하단전·중단전·상단전),�
 meridian.gihyeol_qi,1,,혈자리 기혈: 그 칸의 기 +,경맥도!C28
 meridian.hanhyeol_max_qi,1,,혈자리 한혈: 그 칸 기물의 최대 기 +,경맥도!C30
 level.max_health,5,,레벨업마다 최대 체력 + (현재 체력도 같이),경맥도!C31
-level.base_need,25,,다음 레벨까지 필요한 수련치 = 기본 필요량 + 지금 레벨 × 레벨당 증가,수련치!B12
+level.base_need,30,,다음 레벨까지 필요한 수련치 = 기본 필요량 + 지금 레벨 × 레벨당 증가,수련치!B12
 level.need_per_level,3,,레벨당 증가 (위 식),수련치!B13
 xp.normal,1,,일반 적 처치 수련치,수련치!B4
 xp.elite,5,,정예 처치 수련치,수련치!B5
