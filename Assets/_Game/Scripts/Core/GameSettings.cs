@@ -13,10 +13,12 @@ namespace AThousandDawns.Core
         public enum DashDir { Move, Aim }            // 대시: 이동 방향 / 조준 방향
         public enum EnemyBars { Always, Damaged, Off } // 적 체력바: 항상 / 피격 시만 / 끄기
         public enum QiNumbers { Always, Hover }      // 경맥도 기 숫자: 항상 / 마우스를 올렸을 때만
+        public enum AspectMode { Auto, Wide16x9, Wide16x10, Ultra21x9 } // 화면 비율: 창에 맞춤 / 고정 (남는 곳은 검은 띠)
 
         // 화면 (0이면 지금 화면 그대로)
         public int width, height;
         public FullScreenMode screenMode = FullScreenMode.FullScreenWindow;
+        public AspectMode aspect = AspectMode.Auto;
         // 조작
         public AimMode aim = AimMode.Mouse;
         public DashDir dash = DashDir.Move;
@@ -75,6 +77,15 @@ namespace AThousandDawns.Core
             if (w != Screen.width || h != Screen.height || Screen.fullScreenMode != screenMode)
                 Screen.SetResolution(w, h, screenMode);
         }
+
+        // 고정 비율 (가로 ÷ 세로). 자동이면 0
+        public static float Ratio(AspectMode mode) => mode switch
+        {
+            AspectMode.Wide16x9 => 16f / 9f,
+            AspectMode.Wide16x10 => 16f / 10f,
+            AspectMode.Ultra21x9 => 21f / 9f,
+            _ => 0f,
+        };
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void ApplyOnStart()

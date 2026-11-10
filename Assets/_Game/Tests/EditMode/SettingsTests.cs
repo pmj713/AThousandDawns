@@ -62,5 +62,32 @@ namespace AThousandDawns.Tests
             Assert.AreEqual("21:9", SettingsPanel.Aspect(3440, 1440));
             Assert.AreEqual("4:3", SettingsPanel.Aspect(1024, 768));
         }
+        [Test]
+        public void 화면_비율을_고정하면_가운데에_검은_띠()
+        {
+            // 21:9 모니터에서 16:9 → 양옆이 남아요
+            var r = Letterbox.Fit(3440, 1440, 16f / 9f);
+            Assert.AreEqual(2560, r.width);
+            Assert.AreEqual(1440, r.height);
+            Assert.AreEqual(440, r.x);
+            // 16:10 창에서 16:9 → 위아래가 남아요
+            r = Letterbox.Fit(1920, 1200, 16f / 9f);
+            Assert.AreEqual(1920, r.width);
+            Assert.AreEqual(1080, r.height);
+            Assert.AreEqual(60, r.y);
+            // 자동은 화면 전체
+            Assert.AreEqual(new UnityEngine.Rect(0, 0, 1280, 720), Letterbox.Fit(1280, 720, GameSettings.Ratio(GameSettings.AspectMode.Auto)));
+
+            new GameSettings().Save();
+            GameSettings.Reload();
+            var panel = new SettingsPanel();
+            int row = System.Linq.Enumerable.First(System.Linq.Enumerable.Range(0, panel.AllRows.Count), i => panel.AllRows[i].Label == "화면 비율");
+            panel.Change(row, +1);
+            Assert.AreEqual(GameSettings.AspectMode.Wide16x9, GameSettings.Current.aspect);
+            GameSettings.Reload();
+            Assert.AreEqual(GameSettings.AspectMode.Wide16x9, GameSettings.Current.aspect, "저장돼요");
+            new GameSettings().Save();
+            GameSettings.Reload();
+        }
     }
 }
