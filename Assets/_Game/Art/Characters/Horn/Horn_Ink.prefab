@@ -1,0 +1,83 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &5994943252820175268
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -9010924203803880570, guid: 9cbe3de6967e7d0468d3bc9b4bae6cc3, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: b60d6d6292c8ebc4898f7ef9e83f68f5, type: 2}
+    - target: {fileID: -8679921383154817045, guid: 9cbe3de6967e7d0468d3bc9b4bae6cc3, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9cbe3de6967e7d0468d3bc9b4bae6cc3, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9cbe3de6967e7d0468d3bc9b4bae6cc3, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9cbe3de6967e7d0468d3bc9b4bae6cc3, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9cbe3de6967e7d0468d3bc9b4bae6cc3, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9cbe3de6967e7d0468d3bc9b4bae6cc3, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9cbe3de6967e7d0468d3bc9b4bae6cc3, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9cbe3de6967e7d0468d3bc9b4bae6cc3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9cbe3de6967e7d0468d3bc9b4bae6cc3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9cbe3de6967e7d0468d3bc9b4bae6cc3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -1077845617222717352, guid: 9cbe3de6967e7d0468d3bc9b4bae6cc3, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 2c582bcb2f989a8469204ab8d788d815, type: 2}
+    - target: {fileID: -517650089470280167, guid: 9cbe3de6967e7d0468d3bc9b4bae6cc3, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 3b1b2bc7b4324fb4289d468a809fc3f8, type: 2}
+    - target: {fileID: 919132149155446097, guid: 9cbe3de6967e7d0468d3bc9b4bae6cc3, type: 3}
+      propertyPath: m_Name
+      value: Horn_Ink
+      objectReference: {fileID: 0}
+    - target: {fileID: 1824773139363582572, guid: 9cbe3de6967e7d0468d3bc9b4bae6cc3, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 97477bfb9f357124a8500399c10ecdc6, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 9cbe3de6967e7d0468d3bc9b4bae6cc3, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: ffaf4b6771ecbc0489ae4ff6f8d509a8, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 9cbe3de6967e7d0468d3bc9b4bae6cc3, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 9cbe3de6967e7d0468d3bc9b4bae6cc3, type: 3}

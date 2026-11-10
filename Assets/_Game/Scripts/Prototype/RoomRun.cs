@@ -741,7 +741,7 @@ namespace AThousandDawns.Prototype
         }
 
         // 설정에서 바꾼 키 이름 ("F", "Space", "좌클릭")
-        static string KeyName(Bind bind) => KeyBindings.Label(bind);
+        static string KeyName(Bind bind) => KeyHint.Key(bind); // 안내 글 속 키 표식 (HUD가 키캡 그림으로 그려요, 글로는 KeyHint.Plain)
 
         static Vector3 Flat(Vector3 v)
         {

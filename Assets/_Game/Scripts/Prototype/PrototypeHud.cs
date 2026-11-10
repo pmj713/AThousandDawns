@@ -127,9 +127,11 @@ namespace AThousandDawns.Prototype
             if (_levelUpTimer > 0f) GUI.Label(new Rect(0, UiScale.Height * 0.22f, UiScale.Width, 50), "레벨 업! 최대 체력 +5 · 혈자리를 열 수 있어요", _big);
 
             string banner = run != null ? run.Banner : null;
-            if (banner != null) GUI.Label(new Rect(0, UiScale.Height * 0.3f, UiScale.Width, 50), banner, _big);
+            // 안내 글 속 키(KeyHint 표식)는 키캡 그림으로 그려요
+            if (banner != null) KeyHint.Draw(new Rect(0, UiScale.Height * 0.3f, UiScale.Width, 50), banner, _big, _big.fontSize);
+            var interact = KeyHint.Key(AThousandDawns.Core.Bind.Interact);
             if (run != null && run.AtCounter)
-                GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), $"{KeyName(AThousandDawns.Core.Bind.Interact)} 점소이에게 말 걸기", _big);
+                KeyHint.Draw(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), $"{interact} 점소이에게 말 걸기", _big, _big.fontSize);
             // 튜토리얼: 조작 안내는 아래 가운데, 상황별 첫 안내는 오른쪽 위 한 줄
             if (run != null && !string.IsNullOrEmpty(run.Hint) && !run.IsPaused)
             {
@@ -138,7 +140,7 @@ namespace AThousandDawns.Prototype
                 GUI.color = new Color(0f, 0f, 0f, 0.55f);
                 GUI.DrawTexture(hintRect, Texture2D.whiteTexture);
                 GUI.color = oldHint;
-                GUI.Label(hintRect, $"<size=24>{run.Hint}</size>", _hintLabel);
+                KeyHint.Draw(hintRect, run.Hint, _hintLabel, 24);
             }
             if (run != null && !string.IsNullOrEmpty(run.HintNotice) && !run.IsPaused)
             {
@@ -147,14 +149,15 @@ namespace AThousandDawns.Prototype
                 GUI.color = new Color(0.1f, 0.08f, 0.05f, 0.7f);
                 GUI.DrawTexture(noteRect, Texture2D.whiteTexture);
                 GUI.color = oldNote;
-                GUI.Label(noteRect, $"<size=18><color=#ffd27a>안내</color>  {run.HintNotice}</size>", _hintLabel);
+                KeyHint.Draw(noteRect, $"<color=#ffd27a>안내</color>  {run.HintNotice}", _hintLabel, 18);
             }
+            var prompt = new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50);
             if (run != null && run.InVillage && run.NearSpot != RoomRun.VillageSpot.None && (run.Book == null || !run.Book.IsOpen))
-                GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), run.SpotPrompt(run.NearSpot), _big);
+                KeyHint.Draw(prompt, run.SpotPrompt(run.NearSpot), _big, _big.fontSize);
             if (run != null && run.AtGate && !run.IsForking)
-                GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), $"{KeyName(AThousandDawns.Core.Bind.Interact)} 다음 층으로 · 남은 전투 방 {run.Map.FightsLeft()} · 추적도 {run.Tracking}", _big);
+                KeyHint.Draw(prompt, $"{interact} 다음 층으로 · 남은 전투 방 {run.Map.FightsLeft()} · 추적도 {run.Tracking}", _big, _big.fontSize);
             if (run != null && run.NearCrack)
-                GUI.Label(new Rect(0, UiScale.Height * 0.62f, UiScale.Width, 50), $"벽에 금이 가 있어요 · {KeyName(AThousandDawns.Core.Bind.Interact)} 벽을 부수기", _big);
+                KeyHint.Draw(prompt, $"벽에 금이 가 있어요 · {interact} 벽을 부수기", _big, _big.fontSize);
 
             if (player != null && player.IsDead && run == null) // 판 구조 씬은 결과 화면이 대신 떠요
                 GUI.Label(new Rect(0, UiScale.Height * 0.4f, UiScale.Width, 60), "쓰러졌어요 · F5 키로 다시 시작", _big);

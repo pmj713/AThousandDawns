@@ -74,12 +74,12 @@ namespace AThousandDawns.Tests
             Assert.AreEqual(6, rooms.Count);
             CollectionAssert.AreEqual(new[] { FloorRoomKind.Start, FloorRoomKind.Combat, FloorRoomKind.Combat, FloorRoomKind.Combat, FloorRoomKind.Reward, FloorRoomKind.Gate },
                 rooms.Select(r => r.Kind).ToArray());
-            StringAssert.Contains("WASD", _run.Hint, "첫 방: 이동 안내");
+            StringAssert.Contains("WASD", KeyHint.Plain(_run.Hint), "첫 방: 이동 안내");
 
             // 방패 방: 방패 산적 하나
             _run.Enter(rooms[2], 1);
             yield return null;
-            StringAssert.Contains("대시 공격", _run.Hint);
+            StringAssert.Contains("대시 공격", KeyHint.Plain(_run.Hint));
             yield return null;
             yield return new WaitForSeconds(1.2f);
             Assert.AreEqual(1, _director.Enemies.Count);
@@ -95,7 +95,7 @@ namespace AThousandDawns.Tests
             Assert.AreEqual(ItemGrade.Common, first.grade);
             int lowest = GameConfig.Items.Items.Where(d => d.grade == ItemGrade.Common).Min(d => d.maxQi);
             Assert.AreEqual(lowest, first.maxQi, "어디에 놓아도 운기가 쉬운 기 낮은 기물");
-            StringAssert.Contains("경맥도", _run.Hint);
+            StringAssert.Contains("경맥도", KeyHint.Plain(_run.Hint));
 
             // 관문을 나가면 통과 기록, 2층 갈림길은 기물 옅은 길 · 짙은 길
             _run.LeaveFloor();
@@ -116,7 +116,7 @@ namespace AThousandDawns.Tests
             while (!_run.DodgeFrozen && Time.realtimeSinceStartup < end) yield return null;
             Assert.IsTrue(_run.DodgeFrozen, "공격 예고에서 멈춰요");
             Assert.AreEqual(0f, Time.timeScale);
-            StringAssert.Contains("Space 대시", _run.Hint);
+            StringAssert.Contains("Space 대시", KeyHint.Plain(_run.Hint));
 
             yield return null;
             Assert.IsTrue(_run.DodgeFrozen, "누를 때까지 그대로");
@@ -127,7 +127,7 @@ namespace AThousandDawns.Tests
             Assert.IsFalse(_run.DodgeFrozen);
             Assert.AreEqual(1f, Time.timeScale, "다시 움직여요");
             Assert.IsTrue(_player.IsDashing || _player.Dash.Charges < _player.Dash.MaxCharges, "대시가 나가요");
-            StringAssert.Contains("좌클릭 공격", _run.Hint, "다음은 평타");
+            StringAssert.Contains("좌클릭 공격", KeyHint.Plain(_run.Hint), "다음은 평타");
 
             // 한 번만: 다시 예고가 나와도 안 멈춰요
             end = Time.realtimeSinceStartup + 4f;

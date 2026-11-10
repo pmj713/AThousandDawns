@@ -79,7 +79,7 @@ namespace AThousandDawns.Prototype
                     _dodgeArmed = true; // 졸개가 처음 공격하려는 순간 멈추고 대시를 알려 줘요
                     SetHint("산적 졸개가 다가와요 · 공격 예고(주황 바닥)를 잘 보세요", () => !_fighting);
                     break;
-                case 2: SetHint("방패는 정면 공격을 막아요 · 대시(Space) 직후 좌클릭으로 대시 공격하면 깨져요", () => !_fighting); break;
+                case 2: SetHint($"방패는 정면 공격을 막아요 · {KeyName(Bind.Dash)} 대시 직후 {KeyName(Bind.Attack)} 대시 공격이면 깨져요", () => !_fighting); break;
                 case 3:
                     Player.RaiseGaugeTo(0.8f); // 이 방에서 절초까지 써 보게 기세를 채워 둬요
                     SetHint($"{KeyName(Bind.Skill)} 초식 · 주변을 한 바퀴 베요", () => Player.IsCastingSkill || !_fighting);
