@@ -237,7 +237,7 @@ namespace AThousandDawns.EditorTools
             // 엉키지 않고 둥근 수관을 채워요. 가는 가지(depth 1 이하)를 따라 꽃 자리를 찍어요
             void Grow(Vector3 start, float yaw, float elevation, float length, float radius, int depth)
             {
-                float endRadius = Mathf.Max(0.012f, radius * 0.68f);
+                float endRadius = Mathf.Max(0.005f, radius * (depth <= 0 ? 0.25f : 0.6f)); // 마지막 잔가지는 끝이 바늘처럼 가늘게
                 var path = Limb(start, yaw, elevation, length, 3, 9f, 1.5f, radius, endRadius);
                 if (depth <= 1) Spots(path, 0.25f, 3);
                 if (depth <= 0) return;
@@ -249,7 +249,7 @@ namespace AThousandDawns.EditorTools
                 }
                 // 가지 중간에 짧은 곁가지 (수관 안쪽을 채워요)
                 if (depth <= 2)
-                    Grow(At(path, Rand(0.35f, 0.6f)), yaw + (rng.Next(2) * 2 - 1) * Rand(45f, 75f), Rand(35f, 60f), length * 0.45f, endRadius * 0.7f, 0);
+                    Grow(At(path, Rand(0.35f, 0.6f)), yaw + (rng.Next(2) * 2 - 1) * Rand(45f, 75f), Rand(35f, 60f), length * 0.45f, endRadius * 0.6f, 0);
             }
 
             float lean = Rand(0f, 360f);
