@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using AThousandDawns.Combat;
 using AThousandDawns.Enemies;
 using UnityEngine;
 
@@ -113,6 +114,12 @@ namespace AThousandDawns.Art
         bool _shieldHidden;
         [SerializeField] float whirlSpeed = 1800f;  // 회전베기 빠르기 (도/초, 1초에 5바퀴: 자세가 잘 안 보일 만큼)
         Quaternion _modelRest;
+        Vector3 _modelScale;           // 처음 월드 크기 (쓰러질 때 Visual이 납작해져도 시체는 이 크기로)
+        Damageable _body;
+        // 맞은 반응: 맞은 반대쪽(뒤)으로 몸이 젖혀져요. 경직이면 크게 젖혀 비틀거려요
+        [SerializeField] float flinchAngle = 12f, flinchTime = 0.2f, staggerAngle = 24f;
+        float _flinchTimer, _staggerTime, _staggerBlend;
+        bool _corpse;
         float _whirlAngle;
 
         public void Init(EnemyBrain brain, Animator animator, bool windupPlays = false, bool noAttackAnim = false, InkEnemyModels.Move[] moves = null)
@@ -124,6 +131,10 @@ namespace AThousandDawns.Art
             _brain = brain;
             _animator = animator;
             _modelRest = animator.transform.localRotation;
+            _modelScale = animator.transform.lossyScale;
+            _body = brain.GetComponent<Damageable>();
+            if (_body != null) _body.Damaged += OnDamaged;   // 브레인이 먼저 구독해서, 여기 올 땐 경직·쓰러짐이 이미 정해져 있어요
+            if (brain.Rank == EnemyRank.Boss || brain.Rank == EnemyRank.Master) flinchAngle = 5f;   // 고수·보스는 덩치가 커서 살짝만 움찔해요
             _lastPos = transform.position;
         }
 
@@ -186,17 +197,28 @@ namespace AThousandDawns.Art
                 _animator.CrossFadeInFixedTime(IdleState, 0.15f, 0);   // 돌진하다 벽에 부딪혀 기절
                 _moving = false;
             }
-            // 회전베기: 판정 동안 모델째 돌고, 끝나면 원래 방향으로
+            // 회전베기: 판정 동안 모델째 돌고(위에서 보면 시계 반대 방향), 끝나면 원래 방향으로
             if (_moving && _move.mode == InkEnemyModels.MoveMode.Whirl)
-            {
                 _whirlAngle = (_whirlAngle + whirlSpeed * Time.deltaTime) % 360f;
-                _animator.transform.localRotation = _modelRest * Quaternion.Euler(0f, -_whirlAngle, 0f);   // 위에서 보면 시계 반대 방향
-            }
-            else if (_whirlAngle != 0f)
-            {
+            else
                 _whirlAngle = 0f;
-                _animator.transform.localRotation = _modelRest;
+            // 맞은 반응: 움찔(짧게 젖혔다 돌아옴) · 경직(크게 젖혀 비틀거리다 풀리면 돌아옴)
+            float tilt = 0f;
+            if (_flinchTimer > 0f)
+            {
+                _flinchTimer -= Time.deltaTime;
+                tilt = flinchAngle * Mathf.Sin(Mathf.PI * Mathf.Clamp01(1f - _flinchTimer / flinchTime));
             }
+            _staggerBlend = Mathf.MoveTowards(_staggerBlend, _brain.IsStunned ? 1f : 0f, Time.deltaTime / (_brain.IsStunned ? 0.08f : 0.25f));
+            if (_staggerBlend > 0f)
+            {
+                _staggerTime += Time.deltaTime;
+                float wobble = 0.8f + 0.2f * Mathf.Sin(_staggerTime * 11f);
+                tilt = Mathf.Max(tilt, staggerAngle * wobble * _staggerBlend);
+            }
+            else _staggerTime = 0f;
+            // 적의 앞(+Z) 기준으로 뒤로 젖혀요 (X축 −회전이 위를 뒤로 보내요). 발밑이 원점이라 발을 축으로 젖혀져요
+            _animator.transform.localRotation = Quaternion.AngleAxis(-tilt, Vector3.right) * _modelRest * Quaternion.Euler(0f, -_whirlAngle, 0f);
             Vector3 d = transform.position - _lastPos;
             d.y = 0f;
             _lastPos = transform.position;
@@ -208,6 +230,83 @@ namespace AThousandDawns.Art
             }
             bool busy = phase != EnemyAttackTimeline.Phase.Ready || _brain.IsStunned || _brain.IsDead;
             _animator.SetFloat(SpeedId, busy || Time.deltaTime <= 0f ? 0f : d.magnitude / Time.deltaTime);
+        }
+
+        void OnDamaged(Damageable body, int amount)
+        {
+            if (_brain == null || _animator == null) return;
+            if (_brain.IsDead) { MakeCorpse(); return; }
+            if (!body.LastHitReacts) return;            // 화상·번개 같은 파생 피해는 움찔하지 않아요
+            if (!_brain.IsStunned) _flinchTimer = flinchTime;   // 경직이면 Update가 비틀거리게 해요
+        }
+
+        // 쓰러짐: 모델을 적에게서 떼어 시체로 남겨요 (적 오브젝트는 곧 지워져요).
+        // 사람은 뒤로, 짐승은 옆으로 쓰러지고, 잠시 있다가 땅으로 가라앉아 사라져요. 화약 산적은 터져서 남기지 않아요
+        void MakeCorpse()
+        {
+            if (_corpse) return;
+            _corpse = true;
+            if (_brain.Kind == EnemyKind.Bomber) return;
+            var model = _animator.transform;
+            var corpse = new GameObject($"{_brain.name} (쓰러짐)");
+            corpse.transform.SetPositionAndRotation(model.position, transform.rotation);
+            model.SetParent(corpse.transform, false);
+            model.localPosition = Vector3.zero;
+            model.localRotation = _modelRest;
+            model.localScale = _modelScale;
+            foreach (var r in model.GetComponentsInChildren<Renderer>(true))
+                if (!r.name.Contains("_Prop_Shield") || !_shieldHidden) r.enabled = true;
+            bool beast = _brain.Kind == EnemyKind.Boar || _brain.Kind == EnemyKind.Hound || _brain.Kind == EnemyKind.Snake;
+            corpse.AddComponent<InkCorpse>().Init(_animator, beast ? Vector3.forward : Vector3.right,
+                _brain.Kind == EnemyKind.Snake ? 160f : beast ? 88f : -85f);
+            enabled = false;
+        }
+
+        void OnDestroy()
+        {
+            if (_body != null) _body.Damaged -= OnDamaged;
+        }
+    }
+
+    // 쓰러진 적: 발을 축으로 넘어가(점점 빨리) 살짝 튕긴 뒤, 잠시 누워 있다가 땅속으로 가라앉아 사라져요
+    public class InkCorpse : MonoBehaviour
+    {
+        const float FallTime = 0.4f, LieTime = 1.2f, SinkTime = 1.4f, SinkDepth = 0.8f;
+        Animator _animator;
+        Vector3 _axis;
+        float _angle, _t;
+        Quaternion _start;
+        Vector3 _startPos;
+
+        public void Init(Animator animator, Vector3 localAxis, float angle)
+        {
+            _animator = animator;
+            _axis = localAxis;
+            _angle = angle;
+            _start = transform.rotation;
+            _startPos = transform.position;
+            if (_animator != null)
+            {
+                _animator.SetFloat(Animator.StringToHash("Speed"), 0f);
+                _animator.speed = 0.3f;                      // 넘어가는 동안 굳어 가요
+            }
+        }
+
+        void Update()
+        {
+            _t += Time.deltaTime;
+            float fall = Mathf.Clamp01(_t / FallTime);
+            float a = fall * fall;                          // 점점 빨리 넘어가요
+            if (fall >= 1f)
+            {
+                float b = _t - FallTime;                    // 바닥에 닿고 살짝 튕겨요
+                a = 1f - 0.08f * Mathf.Max(0f, Mathf.Sin(b * 18f)) * Mathf.Exp(-b * 8f);
+                if (_animator != null) _animator.speed = 0f;
+            }
+            transform.rotation = _start * Quaternion.AngleAxis(_angle * a, _axis);
+            float sink = Mathf.Clamp01((_t - FallTime - LieTime) / SinkTime);
+            transform.position = _startPos + Vector3.down * SinkDepth * sink * sink;
+            if (sink >= 1f) Destroy(gameObject);
         }
     }
 }
