@@ -31,6 +31,16 @@ hair.parent = rig
 hair.modifiers.new("Armature", 'ARMATURE').object = rig
 meshes = parts + [hair]
 
+# 옷 (컨셉 B안): VARCO 3D로 만든 옷(Source~/Outfit_B.glb)을 A자 기본 자세의 몸에 맞춰 입혀요 (outfit_fit.py).
+# 아래에서 T자로 바꿀 때 몸과 같이 바뀌어요. 파일이 없으면 직접 그린 옷(clothes.py)을 써요
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+OUTFIT_GLB = os.path.join(os.path.dirname(rig_blend), "Outfit_B.glb")
+cloth = []
+if os.path.isfile(OUTFIT_GLB):
+    import outfit_fit
+    cloth = outfit_fit.fit(rig, parts, OUTFIT_GLB)
+    meshes += cloth
+
 X, Y, Z = Vector((1, 0, 0)), Vector((0, 1, 0)), Vector((0, 0, 1))
 pose = rig.pose.bones
 for pb in pose:
@@ -141,6 +151,13 @@ def build_sword():
 
 sword = build_sword()
 meshes.append(sword)
+
+# 옷 (컨셉 B안): 먹색 도포·소매·바지·각반·짚신, 흰 속소매·깃, 붉은 허리띠·머리끈 (clothes.py)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+if not cloth:
+    import clothes
+    cloth = clothes.build(rig, parts, hair)
+    meshes += cloth
 
 
 # 팔을 몸 옆으로 내리는 각도 (T자 수평에서 내려 → 아래에서 12°만 벌어지게)
@@ -454,7 +471,9 @@ print("RIGGED", out_fbx, [a.name for a, _, _ in actions], "bones", len(rig.data.
 if preview:
     import numpy as np
     for o in meshes:
-        o.color = (0.12, 0.12, 0.14, 1) if o in (hair, sword) else (0.8, 0.74, 0.68, 1)
+        o.color = ((0.12, 0.12, 0.14, 1) if o in (hair, sword) or "Cloth_Dark" in o.name else
+                   (0.7, 0.12, 0.1, 1) if "Cloth_Red" in o.name else
+                   (0.85, 0.84, 0.8, 1) if "Cloth_Light" in o.name else (0.8, 0.74, 0.68, 1))
     scene.render.engine = 'BLENDER_WORKBENCH'
     scene.display.shading.color_type = 'OBJECT'
     scene.render.resolution_x, scene.render.resolution_y = 360, 520

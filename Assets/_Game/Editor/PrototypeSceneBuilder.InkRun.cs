@@ -188,6 +188,16 @@ namespace AThousandDawns.EditorTools
             // 4-2) 플레이어: 캡슐 대신 리깅 모델, 평타·대시에 동작을 이어요
             DressPlayerModelInk();
 
+            // 4-3) 지역 색: 마을은 색을 다 넣고(1), 그 밖 죽림은 마을의 90% (0.9). 진행할수록 지역마다 낮춰 갈 계획
+            var colorZones = new GameObject("Ink Color Zones").AddComponent<AThousandDawns.Art.InkColorZones>();
+            colorZones.SetZones(0.9f, new[]
+            {
+                new AThousandDawns.Art.InkColorZones.Zone
+                {
+                    name = "마을", center = VillageCenter, size = VillageSize + new Vector2(8f, 8f), amount = 1f,
+                },
+            });
+
             // 5) 한지색 배경과 원근 안개
             var cam = Camera.main;
             if (cam != null)

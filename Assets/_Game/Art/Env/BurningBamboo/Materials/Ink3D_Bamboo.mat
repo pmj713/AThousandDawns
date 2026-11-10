@@ -51,8 +51,8 @@ Material:
     - _WashNoiseScale: 1.5
     - _WashNoiseStrength: 0.25
     m_Colors:
-    - _BaseColor: {r: 0.48, g: 0.48, b: 0.48, a: 1}
-    - _InkColor: {r: 0.08, g: 0.1, b: 0.1, a: 1}
+    - _BaseColor: {r: 0.5, g: 0.62, b: 0.34, a: 1}
+    - _InkColor: {r: 0.07, g: 0.1, b: 0.07, a: 1}
     - _PaperColor: {r: 0.93, g: 0.91, b: 0.86, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

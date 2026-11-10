@@ -75,6 +75,9 @@ Shader "AThousandDawns/InkTriplanar"
             float _PatchScale;
         CBUFFER_END
 
+            // 지역 색 양 (InkColorZones가 전역으로 정해요): 0 = 재질 채도 그대로(수묵), 1 = 원래 색 전부
+            float _InkColorAmount;
+
         float Hash13(float3 p)
         {
             p = frac(p * 0.1031);
@@ -175,7 +178,7 @@ Shader "AThousandDawns/InkTriplanar"
 
                 // 텍스처: 채도를 낮추고 종이색 쪽으로 조금 띄워요. 텍스처의 어두운 결은 그대로 먹으로 남아요
                 half3 albedo = SampleTriplanar(input.positionWS, n) * _BaseColor.rgb;
-                albedo = lerp(Luminance(albedo).xxx, albedo, _Saturation);
+                albedo = lerp(Luminance(albedo).xxx, albedo, lerp(_Saturation, 1.0, _InkColorAmount));
                 albedo = lerp(albedo, _PaperColor.rgb, _PaperLift);
                 half3 color = lerp(_InkColor.rgb, albedo, tone * (1.0 - input.vertexInk.x));
 
