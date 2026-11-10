@@ -48,9 +48,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from autoremesh import autoremesh
 tris_now = sum(len(p.vertices) - 2 for p in me.polygons)
 old_me = me
+hi_verts = [v.co.copy() for v in old_me.vertices]   # 손가락 찾기용 원본 고해상도 점
 me = autoremesh(old_me, TARGET_QUADS, preserve_thin=True, island_detail=10)
 body.data = me
-bpy.data.meshes.remove(old_me)
+hi_mesh = old_me   # 가중치가 실패하면 다시 리메시할 원본 (끝에 지워요)
 print("RETOPO", tris_now, "->", sum(len(p.vertices) - 2 for p in me.polygons))
 
 # 관절 위치 (A자 포즈): 손끝 = 좌우로 가장 바깥, 나머지는 몸 비율 + 메시로 보정
@@ -146,6 +147,14 @@ def cap_holes(pbm):
             if len(loop) < 3:
                 continue
             center = pbm.verts.new(sum((v.co for v in loop), Vector()) / len(loop))
+            dl = pbm.verts.layers.deform.active
+            if dl is not None:   # 뚜껑 가운데 점은 테두리 점들의 뼈 가중치 평균
+                acc = {}
+                for v in loop:
+                    for g, w in v[dl].items():
+                        acc[g] = acc.get(g, 0.0) + w / len(loop)
+                for g, w in acc.items():
+                    center[dl][g] = w
             for i in range(len(loop)):
                 a, b = loop[i], loop[(i + 1) % len(loop)]
                 if a == b:
@@ -155,6 +164,144 @@ def cap_holes(pbm):
                     f[pbm.faces.layers.int["cap"]] = 1
                 except ValueError:
                     pass  # 이미 있는 면
+
+# 뼈대: 관절 위치로 사람 뼈(Unity Humanoid 이름)를 세우고, 자르기 전 몸 전체에 자동 가중치를 줘요.
+# 몸 전체에서 계산한 가중치를 파츠가 그대로 나눠 가져서, 굽혀도 파츠 사이 경계가 벌어지지 않아요
+# 손가락: 손 메시에서 손가락 끝을 찾아 마디(뿌리·가운데·끝마디) 위치를 잡아요.
+# 손 좌표: a = 손목→손끝, b = 앞뒤(손가락이 벌어진 방향, +면 뒤), c = 손바닥 쪽(몸 안쪽)
+FINGERS = ("Index", "Middle", "Ring", "Little")
+def find_fingers(side):
+    j = joints[side]
+    W, T = j["wrist"], j["tip"]
+    a = (T - W).normalized()
+    b = (Vector((0, 1, 0)) - a * a.y).normalized()
+    c = a.cross(b).normalized()
+    if c.x * (1 if side == "L" else -1) > 0:   # 손바닥은 몸 안쪽
+        c = -c
+    L = (T - W).dot(a)
+    sgn = 1 if side == "L" else -1
+    pts = [p for p in hi_verts if sgn * p.x > 0.15 and p.z < W.z + 0.05 and classify(p) == f"Hand_{side}"]
+    loc = [((p - W).dot(a), (p - W).dot(b), (p - W).dot(c), p) for p in pts]
+    # 손가락은 서로 붙어 있어 틈으로는 못 나눠요. 대신 손가락 끝 = 둘레 8mm 안에서 손목→손끝 방향(u)으로 가장 멀리 나온 점.
+    # 엄지 끝은 손바닥 앞쪽(-b)에서 가장 앞으로 나온 점이라 먼저 찾아 빼요
+    from mathutils.kdtree import KDTree
+    vw = KDTree(len(loc))
+    for i, (u, v, w, _) in enumerate(loc):
+        vw.insert(Vector((v, w, 0)), i)
+    vw.balance()
+    front = [t for t in loc if 0.3 * L < t[0] < 0.75 * L]
+    t_front = min(front, key=lambda t: t[1])[:3]; t_back = max(front, key=lambda t: t[1])[:3]
+    tips = []
+    for u, v, w, _ in loc:
+        if u < 0.6 * L:
+            continue
+        if all(loc[i][0] <= u for _, i, _ in vw.find_range(Vector((v, w, 0)), 0.008)):
+            if all((Vector((v, w)) - Vector((tv_, tw_))).length > 0.012 for _, tv_, tw_ in tips):
+                tips.append((u, v, w))
+    # 엄지가 앞(-b)·뒤(+b) 어느 쪽인지: 손가락 끝 무리에서 더 멀리 떨어진 쪽
+    fv = sorted(t[1] for t in tips)
+    thumb = t_front if (fv and fv[0] - t_front[1] > t_back[1] - fv[-1]) else t_back
+    tips = [t for t in tips if (Vector(t[1:]) - Vector(thumb[1:])).length > 0.015]
+    tips = sorted(tips, key=lambda t: -t[0])[:4]
+    index_first = thumb is t_front
+    tips.sort(key=lambda t: t[1] if index_first else -t[1])   # 검지(엄지 쪽)부터
+    print("FINGER_TIPS", side, len(tips), [tuple(round(x, 3) for x in t) for t in tips], "thumb", tuple(round(x, 3) for x in thumb))
+    to_world = lambda u, v, w: W + a * u + b * v + c * w
+
+    def center(u0, v0, w0):
+        # 그 자리 손가락 단면 가운데: 둘레 점들의 (v, w) 평균
+        near = [(v, w) for u, v, w, _ in loc if abs(u - u0) < 0.004 and abs(v - v0) < 0.006]
+        if len(near) < 3:
+            return to_world(u0, v0, w0)
+        return to_world(u0, sum(v for v, _ in near) / len(near), sum(w for _, w in near) / len(near))
+
+    chains = {}
+    for name, (tu, tv_, tw_) in zip(FINGERS, tips):
+        u0 = 0.47 * L
+        pts_ = []
+        for t in (0.0, 0.45, 0.75):
+            uu = u0 + (tu - 0.006 - u0) * t
+            pts_.append(center(uu, tv_, tw_))
+        pts_.append(to_world(tu - 0.004, tv_, tw_))
+        chains[name] = pts_
+    # 엄지: 손목 쪽 뿌리(검지 뿌리 옆, 손바닥 쪽) → 엄지 끝
+    idx0 = chains[FINGERS[0]][0] if FINGERS[0] in chains else W
+    root = W.lerp(idx0, 0.35) + c * 0.006
+    tip_w = to_world(thumb[0] - 0.004, thumb[1], thumb[2])
+    chains["Thumb"] = [root, root.lerp(tip_w, 0.42), root.lerp(tip_w, 0.72), tip_w]
+    print("FINGERS", side, "L", round(L, 3), {k: round((v[3] - v[0]).length, 3) for k, v in chains.items()})
+    return chains, c
+fingers = {side: find_fingers(side) for side in ("L", "R")}
+
+arm_data = bpy.data.armatures.new("Player_Rig")
+rig = bpy.data.objects.new("Player_Rig", arm_data)
+bpy.context.scene.collection.objects.link(rig)
+bpy.context.view_layer.objects.active = rig
+bpy.ops.object.mode_set(mode='EDIT')
+def bone(name, head, tail, parent=None, connect=False):
+    b = arm_data.edit_bones.new(name)
+    b.head, b.tail = head, tail
+    if parent:
+        b.parent = arm_data.edit_bones[parent]
+        b.use_connect = connect
+    return b
+chest_z = 0.795 * H
+bone("Hips", pelvis, Vector((0, 0, 0.56 * H)))
+bone("Spine", Vector((0, 0, 0.56 * H)), Vector((0, 0, 0.66 * H)), "Hips", True)
+bone("Chest", Vector((0, 0, 0.66 * H)), Vector((0, 0, chest_z)), "Spine", True)
+bone("Neck", Vector((0, 0, chest_z)), Vector((0, 0, 0.862 * H)), "Chest", True)
+bone("Head", Vector((0, 0, 0.862 * H)), Vector((0, 0, 0.99 * H)), "Neck", True)
+for side, word in (("L", "Left"), ("R", "Right")):
+    j = joints[side]
+    sgn = 1 if side == "L" else -1
+    elbow = j["shoulder"] + (j["wrist"] - j["shoulder"]) * 0.5
+    bone(f"{word}Shoulder", Vector((sgn * 0.02, 0, chest_z - 0.01 * H)), j["shoulder"], "Chest")
+    bone(f"{word}UpperArm", j["shoulder"], elbow, f"{word}Shoulder", True)
+    bone(f"{word}LowerArm", elbow, j["wrist"], f"{word}UpperArm", True)
+    chains, palm = fingers[side]
+    bone(f"{word}Hand", j["wrist"], chains["Middle"][0], f"{word}LowerArm", True)
+    for fname, pts in chains.items():
+        prev = f"{word}Hand"
+        for k, part in enumerate(("Proximal", "Intermediate", "Distal")):
+            n = f"{word}{fname}{part}"
+            bone(n, pts[k], pts[k + 1], prev, k > 0)
+            prev = n
+    bone(f"{word}UpperLeg", j["hip"], j["knee"], "Hips")
+    bone(f"{word}LowerLeg", j["knee"], j["ankle"], f"{word}UpperLeg", True)
+    bone(f"{word}Foot", j["ankle"], Vector((j["ankle"].x, j["toe"].y * 0.7, 0.025 * H)), f"{word}LowerLeg", True)
+bpy.ops.object.mode_set(mode='OBJECT')
+for side, word in (("L", "Left"), ("R", "Right")):
+    arm_data.bones[f"{word}Hand"]["palm"] = list(fingers[side][1])   # 손바닥 방향: 손가락 굽히는 축 계산용 (animate_player.py)
+bpy.ops.object.select_all(action='DESELECT')
+body.select_set(True); rig.select_set(True)
+bpy.context.view_layer.objects.active = rig
+bpy.ops.object.parent_set(type='ARMATURE_AUTO')
+# AutoRemesher 결과가 매번 조금씩 달라서, 가끔 자동 가중치(Bone Heat)가 몸 상당 부분에서 실패해요.
+# 가중치 없는 점이 1% 넘으면 리메시부터 다시 해요 (최대 5번)
+for attempt in range(5):
+    unweighted = sum(1 for v in me.vertices if not v.groups)
+    if unweighted <= len(me.vertices) * 0.01:
+        break
+    print("WEIGHTS_RETRY", attempt + 1, "unweighted", unweighted)
+    old = me
+    me = autoremesh(hi_mesh, TARGET_QUADS, preserve_thin=True, island_detail=10)
+    body.data = me
+    bpy.data.meshes.remove(old)
+    body.vertex_groups.clear()
+    bpy.ops.object.select_all(action='DESELECT')
+    body.select_set(True); rig.select_set(True)
+    bpy.context.view_layer.objects.active = rig
+    bpy.ops.object.parent_set(type='ARMATURE_AUTO')
+bpy.data.meshes.remove(hi_mesh)
+# 자동 가중치가 못 닿은 점(작은 조각 등)은 가장 가까운 뼈에 통째로 붙여요
+segments = [(b.name, b.head_local, b.tail_local) for b in arm_data.bones]
+missing = [v for v in me.vertices if not v.groups]
+for v in missing:
+    name = min(segments, key=lambda s: seg_dist(v.co, s[1], s[2]))[0]
+    vg = body.vertex_groups.get(name) or body.vertex_groups.new(name=name)
+    vg.add([v.index], 1.0, 'REPLACE')
+group_names = [g.name for g in body.vertex_groups]
+print("WEIGHTS groups", len(group_names), "filled unweighted verts", len(missing))
 
 bm = bmesh.new()
 bm.from_mesh(me)
@@ -200,6 +347,10 @@ for i, part in enumerate(parts):
     pbm.free()
     obj = bpy.data.objects.new(f"Player_{part}", pme)
     bpy.context.scene.collection.objects.link(obj)
+    for g in group_names:
+        obj.vertex_groups.new(name=g)
+    obj.parent = rig
+    obj.modifiers.new("Armature", 'ARMATURE').object = rig
     part_objects.append(obj)
     palette = {"Head": 0.62, "Torso": 0.0, "Arm": 0.08, "Hand": 0.5, "Thigh": 0.78, "Calf": 0.3, "Foot": 0.16}
     hue = palette.get(part.split("_")[0], 0.9)
@@ -220,6 +371,12 @@ def export(objs, path):
 for o in part_objects:
     export([o], os.path.join(out_dir, f"{o.name}.fbx"))
 export(part_objects, os.path.join(out_dir, "Player_BaseBody_All.fbx"))
+
+# 리깅·동작 단계(animate_player.py)가 이어받을 파일: 뼈대 + 가중치 든 파츠
+rig_blend = os.path.join(os.path.dirname(os.path.abspath(out_dir)), "Source~", "Player_Body_Rig.blend")
+os.makedirs(os.path.dirname(rig_blend), exist_ok=True)
+bpy.ops.wm.save_as_mainfile(filepath=rig_blend, compress=True)
+print("RIG_BLEND", rig_blend)
 
 report = {o.name: len(o.data.polygons) for o in part_objects}
 print("PARTS", report)

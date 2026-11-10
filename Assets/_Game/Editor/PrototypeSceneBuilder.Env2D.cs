@@ -1,4 +1,4 @@
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
@@ -175,13 +175,14 @@ namespace AThousandDawns.EditorTools
             // 플레이어는 WASD로 걸려 볼 수 있어요 (카메라가 따라와요).
             // 맨몸 기본 바디 파츠 + 머리카락 모델에 수묵 셰이더를 입혀 세워요. 모델이 없으면 예전 캡슐로 세워요
             GameObject player;
+            var playerAnimator = SetupPlayerRig();   // 한 번만 만들어 두 모델이 같이 써요
             if (AssetDatabase.LoadAssetAtPath<GameObject>(PlayerBodyModel) != null)
             {
                 player = new GameObject("Player (Ink, WASD)");
                 player.transform.SetParent(group, false);
                 player.transform.localPosition = new Vector3(0f, 0f, -3f);
                 PlayerModel(player.transform, GetInkMaterial("Ink_PlayerSkin", PlayerSkinColor, 0.35f),
-                    GetInkMaterial("Ink_PlayerHair", PlayerHairColor, 0.1f));
+                    GetInkMaterial("Ink_PlayerHair", PlayerHairColor, 0.1f), playerAnimator);
                 var controller = player.AddComponent<CharacterController>();
                 controller.height = 1.9f;
                 controller.radius = 0.35f;
@@ -205,7 +206,7 @@ namespace AThousandDawns.EditorTools
                 var plain = new GameObject("Player (Plain Lit, 비교용)");
                 plain.transform.SetParent(group, false);
                 plain.transform.localPosition = new Vector3(1.4f, 0f, -3.6f);
-                PlayerModel(plain.transform, GetMaterial("PlayerSkin", PlayerSkinColor, false), GetMaterial("PlayerHair", PlayerHairColor, false));
+                PlayerModel(plain.transform, GetMaterial("PlayerSkin", PlayerSkinColor, false), GetMaterial("PlayerHair", PlayerHairColor, false), playerAnimator);
             }
             else
             {
@@ -219,22 +220,39 @@ namespace AThousandDawns.EditorTools
         const string PlayerHairModel = PlayerPartsFolder + "/Player_Hair.fbx";
         const string PlayerSkinColor = "#D8B89A";
         const string PlayerHairColor = "#1E1C1C";
+        const string PlayerSwordColor = "#2E343B";
 
-        // 기본 바디(파츠 12개가 한 FBX에)와 머리카락을 발밑 기준으로 parent 아래에 세워요. 파츠 기준점이 모두 발밑이라 그대로 맞물려요
-        static void PlayerModel(Transform parent, Material skin, Material hair)
+        // 플레이어 모델을 발밑 기준으로 parent 아래에 세워요. 파츠 기준점이 모두 발밑이라 그대로 맞물려요.
+        // 뼈대·동작이 든 Player_Rigged.fbx가 있으면 그걸(애니메이터 연결), 없으면 맨몸 파츠 + 머리카락을 따로 세워요
+        static void PlayerModel(Transform parent, Material skin, Material hair, RuntimeAnimatorController controller)
         {
             var model = new GameObject("Model").transform;
             model.SetParent(parent, false);
-            foreach (var (path, mat) in new[] { (PlayerBodyModel, skin), (PlayerHairModel, hair) })
+            // 오른손 칼(Player_Sword): 수묵이면 먹색 수묵 재질, 비교용 Lit이면 같은 색 Lit
+            var sword = skin != null && skin.shader != null && skin.shader.name == InkShaderName
+                ? GetInkMaterial("Ink_PlayerSword", PlayerSwordColor, 0.1f)
+                : GetMaterial("PlayerSword", PlayerSwordColor, false);
+            // Blender에서 -Y를 보던 모델이 Unity에서는 -Z(뒤)를 보고 들어와서, 앞(+Z)을 보게 돌려요
+            model.localRotation = Quaternion.Euler(0f, 180f, 0f);
+            var paths = controller != null ? new[] { PlayerRiggedModel } : new[] { PlayerBodyModel, PlayerHairModel };
+            foreach (var path in paths)
             {
                 var asset = AssetDatabase.LoadAssetAtPath<GameObject>(path);
                 if (asset == null) continue;
                 var go = (GameObject)PrefabUtility.InstantiatePrefab(asset, model);
                 foreach (var r in go.GetComponentsInChildren<Renderer>())
                 {
+                    var mat = r.name.Contains("Sword") ? sword : r.name.Contains("Hair") || path == PlayerHairModel ? hair : skin;
                     var mats = new Material[r.sharedMaterials.Length];
                     for (int i = 0; i < mats.Length; i++) mats[i] = mat;
                     r.sharedMaterials = mats;
+                }
+                if (controller != null)
+                {
+                    var animator = go.GetComponent<Animator>();
+                    if (animator == null) animator = go.AddComponent<Animator>();
+                    animator.runtimeAnimatorController = controller;
+                    animator.applyRootMotion = false;
                 }
             }
         }

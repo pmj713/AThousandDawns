@@ -142,3 +142,9 @@ crashlytics-build.properties
 *.csproj
 *.sln
 
+
+# 에셋 스토어 에셋 (공개 저장소라 올리지 않음): Free Sword Animation과 거기서 잘라 만든 동작
+/Assets/EEJANAI_Team/
+/Assets/EEJANAI_Team.meta
+/Assets/_Game/Art/Characters/Player/Anims/
+/Assets/_Game/Art/Characters/Player/Anims.meta
