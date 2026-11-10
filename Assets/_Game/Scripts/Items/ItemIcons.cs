@@ -19,6 +19,11 @@ namespace AThousandDawns.Items
         // 이벤트 그림 (Art/UI/Events/Resources/EventArt/<이벤트 id>, 16:9 한지 바탕)
         public static Texture2D EventArt(string eventId) => string.IsNullOrEmpty(eventId) ? null : Load("EventArt/" + eventId);
 
+        // 시작 화면·프롤로그 (Art/UI/Title/Resources/TitleArt/<이름>)
+        //   배경 Bg_Bamboo · Bg_Temple · Bg_IcePalace · Bg_Tomb · Bg_TombSunset, 프롤로그 Prologue_1~4 (16:9)
+        //   제목 붓글씨 Title (세로, 투명) · Title_Alt, 낙관 Seal, 메뉴 밑줄 BrushUnderline, 날리는 잎 BambooLeaf
+        public static Texture2D TitleArt(string name) => string.IsNullOrEmpty(name) ? null : Load("TitleArt/" + name);
+
         // 키 그림: 빈 키캡 (글자는 코드로 위에 써요. 키를 바꿔도 맞게), 마우스 좌·우 버튼
         public static Texture2D KeyCap(bool wide = false) => Load(wide ? "KeyIcons/KeyWide" : "KeyIcons/Key");
         public static Texture2D Mouse(bool right) => Load(right ? "KeyIcons/MouseRight" : "KeyIcons/MouseLeft");

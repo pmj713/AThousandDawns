@@ -1,7 +1,8 @@
 ﻿# 흰 바탕 수묵 아이콘 → 투명 바탕 256px PNG.
 # 흰색을 알파로 빼요 (GIMP "Color to Alpha"와 같은 식): 알파 = 흰색에서 가장 먼 채널, 색 = 흰색을 걷어낸 값.
-# 사용: powershell -File icon_alpha.ps1 <원본.png> <결과.png> [크기=256]
-param([string]$Src, [string]$Dst, [int]$Size = 256)
+# 사용: powershell -File icon_alpha.ps1 <원본.png> <결과.png> [크기=256] [-NoHalo]
+#   -NoHalo: 한지 바탕 위에 올릴 그림(제목 붓글씨 등). 둘레 번짐 없이, 가로 크기만 맞추고 비율은 원본대로
+param([string]$Src, [string]$Dst, [int]$Size = 256, [switch]$NoHalo)
 
 Add-Type -ReferencedAssemblies System.Drawing -TypeDefinition @"
 using System;
@@ -15,21 +16,21 @@ public static class IconAlpha
     // 종이 얼룩이 남지 않게 흰색에 가까운 값(Floor 이하)은 완전 투명으로 봐요.
     const int Floor = 14;
 
-    public static void Run(string src, string dst, int size)
+    public static void Run(string src, string dst, int size, bool halo)
     {
         using (var input = new Bitmap(src))
-        using (var bmp = new Bitmap(size, size, PixelFormat.Format32bppArgb))
+        using (var bmp = new Bitmap(size, halo ? size : (int)Math.Round((double)size * input.Height / input.Width), PixelFormat.Format32bppArgb))
         {
             using (var g = Graphics.FromImage(bmp))
             {
                 g.Clear(Color.White);
                 g.InterpolationMode = InterpolationMode.HighQualityBicubic;
                 g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                g.DrawImage(input, new Rectangle(0, 0, size, size));
+                g.DrawImage(input, new Rectangle(0, 0, bmp.Width, bmp.Height));
             }
-            var rect = new Rectangle(0, 0, size, size);
+            var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
             var data = bmp.LockBits(rect, ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-            var px = new byte[data.Stride * size];
+            var px = new byte[data.Stride * bmp.Height];
             Marshal.Copy(data.Scan0, px, 0, px.Length);
             for (int i = 0; i < px.Length; i += 4)
             {
@@ -43,7 +44,7 @@ public static class IconAlpha
                 px[i + 2] = Unmix(r, af);
                 px[i + 3] = (byte)a;
             }
-            AddHalo(px, size);
+            if (halo) AddHalo(px, size);
             Marshal.Copy(px, 0, data.Scan0, px.Length);
             bmp.UnlockBits(data);
             bmp.Save(dst, ImageFormat.Png);
@@ -109,4 +110,4 @@ public static class IconAlpha
 }
 "@
 
-[IconAlpha]::Run((Resolve-Path $Src).Path, [IO.Path]::GetFullPath($Dst), $Size)
+[IconAlpha]::Run((Resolve-Path $Src).Path, [IO.Path]::GetFullPath($Dst), $Size, -not $NoHalo)
