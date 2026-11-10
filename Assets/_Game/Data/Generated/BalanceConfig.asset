@@ -2585,3 +2585,59 @@ MonoBehaviour:
     value: 3
     unit: "\uCD08"
     note: "\uC808\uCD08 \uB9CC\uCC9C\uD654\uC6B0 \uBE44 \uC2DC\uAC04 (\uD558\uB2E8\uC804)"
+  - key: forge.knife_yeolyang_interval
+    value: 1
+    unit: "\uCD08"
+    note: "\uBE44\uB3C4 \uC5F4\uC591 \uC735\uD569: \uAF42\uD600 \uC788\uB294 \uC801\uC5D0\uAC8C \uD654\uC0C1 1\uC911\uCCA9 \uAC04\uACA9"
+  - key: forge.knife_yeolyang_max
+    value: 3
+    unit: 
+    note: "\uBE44\uB3C4 \uC5F4\uC591 \uAC15\uD654\uD310: \uAF42\uD78C \uBE44\uB3C4 2\uAC1C\uB9C8\uB2E4 \uD654\uC0C1 \uCD5C\uB300 \uC911\uCCA9 + (\uCD5C\uB300)"
+  - key: forge.knife_bingbaek_slow
+    value: 2
+    unit: "\uC911\uCCA9"
+    note: "\uBE44\uB3C4 \uBE59\uBC31 \uAC15\uD654\uD310: \uD68C\uC218\uD560 \uB54C \uAF42\uD600 \uC788\uB358 \uC801\uC5D0\uAC8C \uB454\uD654"
+  - key: forge.knife_noejeong_max
+    value: 5
+    unit: 
+    note: "\uBE44\uB3C4 \uB1CC\uC815 \uAC15\uD654\uD310: \uAF42\uD78C \uBE44\uB3C4 1\uAC1C\uB2F9 \uAC10\uC804 \uCD5C\uB300 \uC911\uCCA9 + (\uCD5C\uB300)"
+  - key: forge.knife_ganggi_pierce_bonus
+    value: 0.15
+    unit: 
+    note: "\uBE44\uB3C4 \uAC15\uAE30 \uAC15\uD654\uD310: \uAD00\uD1B5\uD560 \uB54C\uB9C8\uB2E4 \uD53C\uD574 +"
+  - key: forge.knife_gyeonggong_radius
+    value: 3
+    unit: "\uCE78"
+    note: "\uBE44\uB3C4 \uACBD\uACF5 \uC735\uD569: \uB300\uC2DC\uD560 \uB54C \uB2E4\uC2DC \uB358\uC9C8 \uBE44\uB3C4\uB97C \uBAA8\uC73C\uB294 \uBC18\uACBD"
+  - key: forge.knife_gyeonggong_radius_strong
+    value: 6
+    unit: "\uCE78"
+    note: "\uBE44\uB3C4 \uACBD\uACF5 \uAC15\uD654\uD310: \uBAA8\uC73C\uB294 \uBC18\uACBD"
+  - key: forge.knife_gyeonggong_bonus_strong
+    value: 0.5
+    unit: 
+    note: "\uBE44\uB3C4 \uACBD\uACF5 \uAC15\uD654\uD310: \uB2E4\uC2DC \uB358\uC9C4 \uBE44\uB3C4 \uD53C\uD574 +"
+  - key: forge.knife_geumgang_per
+    value: 0.01
+    unit: 
+    note: "\uBE44\uB3C4 \uAE08\uAC15 \uC735\uD569: \uD68C\uC218\uB85C \uB3CC\uC544\uC628 \uBE44\uB3C4 1\uAC1C\uB2F9 \uBCF4\uD638\uB9C9 (\uCD5C\uB300 \uCCB4\uB825 \xD7)"
+  - key: forge.knife_geumgang_cap
+    value: 0.1
+    unit: 
+    note: "\uBE44\uB3C4 \uAE08\uAC15 \uC735\uD569: \uBCF4\uD638\uB9C9 \uCD5C\uB300 (\uCD5C\uB300 \uCCB4\uB825 \xD7)"
+  - key: forge.knife_geumgang_time
+    value: 3
+    unit: "\uCD08"
+    note: "\uBE44\uB3C4 \uAE08\uAC15 \uC735\uD569: \uBCF4\uD638\uB9C9 \uC9C0\uC18D"
+  - key: forge.knife_geumgang_per_strong
+    value: 0.02
+    unit: 
+    note: "\uBE44\uB3C4 \uAE08\uAC15 \uAC15\uD654\uD310: 1\uAC1C\uB2F9 \uBCF4\uD638\uB9C9"
+  - key: forge.knife_geumgang_cap_strong
+    value: 0.15
+    unit: 
+    note: "\uBE44\uB3C4 \uAE08\uAC15 \uAC15\uD654\uD310: \uBCF4\uD638\uB9C9 \uCD5C\uB300"
+  - key: forge.knife_geumgang_time_strong
+    value: 5
+    unit: "\uCD08"
+    note: "\uBE44\uB3C4 \uAE08\uAC15 \uAC15\uD654\uD310: \uBCF4\uD638\uB9C9 \uC9C0\uC18D"

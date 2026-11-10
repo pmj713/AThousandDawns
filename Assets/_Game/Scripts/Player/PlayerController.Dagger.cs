@@ -31,6 +31,8 @@ namespace AThousandDawns.Player
             public HitTag Tag;
             public float Gauge;
             public bool Returning;    // 회수: 나에게 날아오는 중 (피해는 회수한 순간에 들어가요)
+            public int Pierced;       // 강기: 뚫고 지나간 적 수
+            public HashSet<Damageable> HitSet; // 이미 뚫고 지나간 적 (다시 맞지 않게)
             public bool Flying => Flight > 0f;
         }
 
@@ -137,6 +139,7 @@ namespace AThousandDawns.Player
                 if (d.Rend != null) d.Rend.enabled = d.Life > blink || Mathf.Repeat(d.Life, 0.25f) > 0.12f; // 마지막 1.5초 깜빡임
                 if (d.Life <= 0f) RemoveDagger(i);
             }
+            TickDaggerForge(dt); // 융합: 꽂힌 비도 수에 따른 화상·감전·둔화
             // 최대 개수를 넘으면 오래된 것부터
             int max = Mathf.RoundToInt(D("knife.max_count", 15f));
             while (DaggerCount > max)
@@ -162,7 +165,7 @@ namespace AThousandDawns.Player
             for (int i = 0; i < found; i++)
             {
                 var target = _overlap[i].GetComponentInParent<Damageable>();
-                if (target == null || target.IsDead || !target.Targetable) continue;
+                if (target == null || target.IsDead || !target.Targetable || (d.HitSet != null && d.HitSet.Contains(target))) continue;
                 bool blocked = target.ResolveSituational(transform.position, d.Tag) < 1f; // 방패 정면: 피해가 줄고 꽂히지 않아요
                 HitTarget(target, d.Hit, d.Tag);
                 Gauge = Mathf.Min(GaugeCap, Gauge + d.Gauge * GaugeGainMultiplier);
@@ -172,7 +175,18 @@ namespace AThousandDawns.Player
                     back = back.sqrMagnitude > 1e-4f ? back.normalized : -d.Dir;
                     Drop(d, target.transform.position + back * (target.BodyRadius + 0.35f)); // 적 앞에 떨어져요
                 }
-                else Stick(d, target);
+                else if (d.Pierced < DaggerPierce) // 강기 융합: 뚫고 지나가 다음 적에게
+                {
+                    d.Pierced++;
+                    (d.HitSet ??= new HashSet<Damageable>()).Add(target);
+                    if (DaggerForge(Keyword.Ganggi) >= 2) d.Hit.AttackIncrease += FK("forge.knife_ganggi_pierce_bonus", 0.15f); // 강화판: 관통할 때마다 피해 +
+                    continue;
+                }
+                else
+                {
+                    Stick(d, target);
+                    OnDaggerStuck(target);
+                }
                 return;
             }
             if (d.Flight <= 0f) Drop(d, to);
@@ -253,6 +267,14 @@ namespace AThousandDawns.Player
                 HitTarget(kv.Key, hit, HitTag.Skill);
                 hits++;
             }
+            var stuckTargets = new List<Damageable>(); int returning = 0;
+            foreach (var d in _daggers)
+            {
+                if (d.Flying || d.Returning) continue;
+                returning++;
+                if (d.Stuck != null && !stuckTargets.Contains(d.Stuck)) stuckTargets.Add(d.Stuck);
+            }
+            OnDaggersRecalled(returning, stuckTargets); // 융합: 빙백 강화판 둔화 · 금강 보호막
             // 비도는 나에게 날아와요 (움직이는 나를 따라옴, 닿으면 사라짐)
             foreach (var d in _daggers)
             {
@@ -296,6 +318,7 @@ namespace AThousandDawns.Player
                 }
                 HitTarget(best, hit, HitTag.DashAttack);
                 Stick(d, best);
+                OnDaggerStuck(best);
                 if (used.Add(best)) hits++;
             }
             return hits;

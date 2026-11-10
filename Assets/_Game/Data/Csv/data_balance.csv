@@ -642,3 +642,17 @@ knife.dash_radius,0.6,칸,비도 대시 공격이 꽂히는 거리,무기!E14 �
 knife.ultimate_count,24,발,절초 만천화우 비도 수 (하단전),무기!B62
 knife.ultimate_damage,6,,절초 만천화우 비도 한 발 피해,무기!B63
 knife.ultimate_time,3,초,절초 만천화우 비 시간 (하단전),무기!B61
+forge.knife_yeolyang_interval,1,초,비도 열양 융합: 꽂혀 있는 적에게 화상 1중첩 간격,무기!E98
+forge.knife_yeolyang_max,3,,비도 열양 강화판: 꽂힌 비도 2개마다 화상 최대 중첩 + (최대),무기!E98
+forge.knife_bingbaek_slow,2,중첩,비도 빙백 강화판: 회수할 때 꽂혀 있던 적에게 둔화,무기!E100
+forge.knife_noejeong_max,5,,비도 뇌정 강화판: 꽂힌 비도 1개당 감전 최대 중첩 + (최대),무기!E102
+forge.knife_ganggi_pierce_bonus,15%,,비도 강기 강화판: 관통할 때마다 피해 +,무기!E104
+forge.knife_gyeonggong_radius,3,칸,비도 경공 융합: 대시할 때 다시 던질 비도를 모으는 반경,무기!E106
+forge.knife_gyeonggong_radius_strong,6,칸,비도 경공 강화판: 모으는 반경,무기!E106
+forge.knife_gyeonggong_bonus_strong,50%,,비도 경공 강화판: 다시 던진 비도 피해 +,무기!E106
+forge.knife_geumgang_per,1%,,비도 금강 융합: 회수로 돌아온 비도 1개당 보호막 (최대 체력 ×),무기!E108
+forge.knife_geumgang_cap,10%,,비도 금강 융합: 보호막 최대 (최대 체력 ×),무기!E108
+forge.knife_geumgang_time,3,초,비도 금강 융합: 보호막 지속,무기!E108
+forge.knife_geumgang_per_strong,2%,,비도 금강 강화판: 1개당 보호막,무기!E108
+forge.knife_geumgang_cap_strong,15%,,비도 금강 강화판: 보호막 최대,무기!E108
+forge.knife_geumgang_time_strong,5,초,비도 금강 강화판: 보호막 지속,무기!E108

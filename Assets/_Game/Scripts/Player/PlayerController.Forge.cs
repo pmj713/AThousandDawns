@@ -13,7 +13,10 @@ namespace AThousandDawns.Player
     //   금강: 3타 적중마다 최대 체력 2% 보호막 (융합 보호막 최대 10%) ▶ 3% (최대 15%)
     public sealed partial class PlayerController
     {
-        int Forge(Keyword keyword) => _items != null ? _items.ForgeLevel(keyword) : 0;
+        // 검 융합 효과 (비도를 들면 꺼지고 비도 융합 효과가 대신 붙어요: PlayerController.ForgeDagger)
+        int Forge(Keyword keyword) => _items != null && !UsesDagger ? _items.ForgeLevel(keyword) : 0;
+        int DaggerForge(Keyword keyword) => _items != null && UsesDagger ? _items.ForgeLevel(keyword) : 0;
+        public float ForgeRangeForTest => ForgeRangeMultiplier; // 테스트용
 
         static float F(string key, float fallback) => GameConfig.GetOptional(key, fallback);
 
