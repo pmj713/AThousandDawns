@@ -52,22 +52,6 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: e86fba859c2b2d04ba5d527aff2ed3b4, type: 2}
-    - target: {fileID: -425000660604008254, guid: 9419a7b9aa7f0074c8956500d253f800, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.41438842
-      objectReference: {fileID: 0}
-    - target: {fileID: -425000660604008254, guid: 9419a7b9aa7f0074c8956500d253f800, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0.5959079
-      objectReference: {fileID: 0}
-    - target: {fileID: -425000660604008254, guid: 9419a7b9aa7f0074c8956500d253f800, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0.5100288
-      objectReference: {fileID: 0}
-    - target: {fileID: -425000660604008254, guid: 9419a7b9aa7f0074c8956500d253f800, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0.46156988
-      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 9419a7b9aa7f0074c8956500d253f800, type: 3}
       propertyPath: m_Name
       value: IronFist_Ink
@@ -76,10 +60,6 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: b15352525d83ed941a46ca255a388eca, type: 2}
-    - target: {fileID: 5866666021909216657, guid: 9419a7b9aa7f0074c8956500d253f800, type: 3}
-      propertyPath: m_ApplyRootMotion
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

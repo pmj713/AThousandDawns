@@ -767,12 +767,14 @@ if "whirl" in EXTRAS:
     rig.animation_data.action = None
     reset_pose()
 
-# 대도 휘두르기 (Sweep): 오른쪽 뒤로 대도를 치켜 감았다가(예고 동안 여기서 멈춰요) 허리째 돌려 왼쪽 앞으로 크게 가로 베요.
-#   팔꿈치는 살짝 굽히고, 칼은 주먹에 똑바로 쥔 채 아래팔만 비틀어 칼끝 방향을 맞춰요. 끝에는 칼끝을 왼쪽 아래로 내려 멈춰요
-if "sweep" in EXTRAS:
-    # 녹림왕 대기(Idle)·달리기(Run): 플레이어 대기·달리기(Player_Rigged.fbx)를 이 뼈대로 옮겨 구워요.
-    #   녹림왕은 Generic이라 Unity에서 플레이어 동작을 바로 못 쓰기 때문이에요.
-    #   팔다리는 뼈 방향(관절→다음 관절)을 맞추고, 엉덩이·몸통·목·머리·손·발은 기본 자세에서 돈 만큼(월드 기준)을 그대로 옮겨요
+# ── 플레이어 대기(Idle)·달리기(Run)를 이 뼈대로 옮겨 구워요 (Generic 적: 녹림왕·청죽객·철권 마웅).
+#    Generic이라 Unity에서 플레이어 동작을 바로 못 쓰기 때문이에요.
+#    팔다리는 뼈 방향(관절→다음 관절)을 맞추고, 엉덩이·몸통·목·머리·발은 기본 자세에서 돈 만큼(월드 기준)을 그대로 옮겨요.
+#    armspread=<배수>: 몸통이 두꺼우면 팔이 옆구리에 붙어서 바깥으로 벌려요 (기본 1, 날씬하면 작게)
+HAS_BLADE = bool({"dao", "bigdao", "jian"} & EXTRAS)
+SPREAD = float(next((w.split("=")[1] for w in WEAPONS if w.startswith("armspread=")), "1"))
+player_objs, player_acts = [], []
+if "playeranim" in EXTRAS or "sweep" in EXTRAS:
     player_fbx = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "Player", "Parts", "Player_Rigged.fbx"))
     before = set(bpy.data.objects); before_act = set(bpy.data.actions)
     bpy.ops.import_scene.fbx(filepath=player_fbx)
@@ -781,13 +783,13 @@ if "sweep" in EXTRAS:
     player_acts = [a for a in bpy.data.actions if a not in before_act]
     PB, PBN = prig.pose.bones, prig.data.bones
     pmw = prig.matrix_world
-    hip_scale = B["Hips"].head_local.z / (pmw @ PBN["Hips"].head_local).z
     rot_map = [("Hips", "Hips"), ("Spine", "Spine"), ("Spine1", "Chest"), ("Neck", "Neck"), ("Head", "Head"),
                ("LeftShoulder", "LeftShoulder"), ("RightShoulder", "RightShoulder")]
     limb_map = [(f"{s}{a}", f"{s}{b}", f"{s}{ca}", f"{s}{cb}") for s in ("Left", "Right") for a, b, ca, cb in
                 (("UpLeg", "UpperLeg", "Leg", "LowerLeg"), ("Leg", "LowerLeg", "Foot", "Foot"),
                  ("Arm", "UpperArm", "ForeArm", "LowerArm"), ("ForeArm", "LowerArm", "Hand", "Hand"))]
     end_map = [(f"{s}{n}", f"{s}{n}") for s in ("Left", "Right") for n in ("Hand", "Foot")]
+    hip_scale = B["Hips"].head_local.z / (pmw @ PBN["Hips"].head_local).z
 
     def pdelta(pn):
         """플레이어 뼈가 기본 자세에서 월드 기준으로 돈 회전."""
@@ -815,9 +817,8 @@ if "sweep" in EXTRAS:
         fore = {}
         for n, pn, cn, cpn in limb_map:
             d = ((pmw @ PB[cpn].head) - (pmw @ PB[pn].head)).normalized()
-            # 녹림왕은 몸통이 두꺼워서 플레이어 팔 방향 그대로면 옆구리에 붙어요. 위팔·아래팔을 바깥으로 벌려요
             out = Vector((1, 0, 0)) if n.startswith("Left") else Vector((-1, 0, 0))
-            spread = {"Arm": 0.55, "ForeArm": 0.3}.get(n[4:] if n.startswith("Left") else n[5:], 0.0)
+            spread = {"Arm": 0.55, "ForeArm": 0.3}.get(n[4:] if n.startswith("Left") else n[5:], 0.0) * SPREAD
             fore[n] = aim(n, pb[n].head + (d + out * spread).normalized(), cn)
         for n, pn in end_map:
             if n.endswith("Hand"):
@@ -825,8 +826,9 @@ if "sweep" in EXTRAS:
                 aim(n, None, delta=fore[n.replace("Hand", "ForeArm")])
             else:
                 aim(n, None, delta=pdelta(pn))
-        fa = (pb["RightHand"].head - pb["RightForeArm"].head).normalized()
-        point_blade((fa + Vector((0, -0.12, 0))).normalized(), wrist_bend=90)   # 칼은 팔과 일직선으로 늘어뜨려요 (칼자루가 주먹을 가로지르니 손목을 젖혀서)
+        if HAS_BLADE:
+            fa = (pb["RightHand"].head - pb["RightForeArm"].head).normalized()
+            point_blade((fa + Vector((0, -0.12, 0))).normalized(), wrist_bend=90)   # 칼은 팔과 일직선으로 늘어뜨려요
 
     def bake_player(name):
         act = next(a for a in player_acts if a.name.split("|")[-1] == name)
@@ -839,13 +841,18 @@ if "sweep" in EXTRAS:
     idle_act, idle_start = bake_player("Idle")
     bake_player("Run")
 
+    def idle_end_pose():
+        """공격이 끝나면 대기(플레이어 대기) 첫 자세 그대로 (넘어갈 때 칼·팔이 휙 돌지 않게)."""
+        use_player(idle_act)
+        player_pose(idle_start)
+
+# 대도 휘두르기 (Sweep): 오른쪽 뒤로 대도를 치켜 감았다가(예고 동안 여기서 멈춰요) 허리째 돌려 칼이 수평 반원을 그려요.
+if "sweep" in EXTRAS:
     def sweep_pose(stage):
         if stage == "idle":
-            use_player(idle_act)                                            # 끝은 대기(플레이어 대기) 첫 자세 그대로 (넘어갈 때 칼이 돌지 않게)
-            player_pose(idle_start)
+            idle_end_pose()
             return
         twist, wrist, lift, dy, blade = {
-            # 칼은 허리~가슴 높이에서 수평으로 오른쪽 뒤 → 앞 → 왼쪽 뒤로 크게 반원을 그려요
             "load": (-50, Vector((-0.65, 0.45, -0.05)), -0.14, 0.06, Vector((-0.2, 1, 0.12))),   # 오른쪽 뒤로 감아 칼끝은 뒤로
             "hit": (0, Vector((-0.3, -0.85, -0.12)), -0.2, -0.1, Vector((-0.35, -1, 0))),       # 오른쪽 앞을 휩쓸어요
             "follow": (45, Vector((0.45, -0.75, -0.15)), -0.2, -0.1, Vector((1, -0.45, 0))),     # 왼쪽 앞으로 휘둘러 나가요
@@ -861,12 +868,78 @@ if "sweep" in EXTRAS:
     make_action("Sweep", [(0, "load"), (4, "hit"), (7, "follow"), (11, "end"), (16, "end"), (26, "idle")], sweep_pose)
     rig.animation_data.action = None
     reset_pose()
-    # 플레이어 뼈대·메시·동작은 지워요 (내보낼 때 같이 나가지 않게)
-    for o in player_objs:
-        bpy.data.objects.remove(o, do_unlink=True)
-    for a in player_acts:
-        bpy.data.actions.remove(a)
-    scene.frame_set(0)
+
+# 청죽객 장검 (jianmoves): 빠르고 가벼운 검술. 왼손은 검지·중지를 세운 검결처럼 가슴 앞에 둬요
+#   Combo(쾌검 3연격, 0.3초 간격): 오른쪽 위에서 왼쪽 아래로 내려베기 → 되받아 오른쪽으로 가로베기 → 허리에서 앞으로 찌르기
+#   Flash(죽림섬, 0.25초 간격): 오른쪽·왼쪽으로 번갈아 가로베기 4번
+#   Chop(대나무 베기): 머리 위로 들었다가(예고 1초 동안 멈춤) 앞으로 크게 내려베기
+JIAN = {
+    # (허리 틀기, 손 방향, 팔 뻗기, 엉덩이 높이, 앞뒤, 칼끝 방향)
+    "c_load": (-30, Vector((-0.4, 0.1, 0.5)), 0.9, -0.06, 0.0, Vector((-0.3, 0.3, 1))),
+    "c1": (25, Vector((0.4, -0.6, -0.4)), 0.88, -0.14, -0.06, Vector((0.6, -0.6, -0.5))),
+    "c2load": (30, Vector((0.55, -0.35, 0.0)), 0.8, -0.1, -0.03, Vector((1, 0.3, 0))),
+    "c2": (-35, Vector((-0.6, -0.5, 0.0)), 0.9, -0.12, -0.06, Vector((-1, -0.4, 0))),
+    "c3load": (-20, Vector((-0.3, 0.25, -0.3)), 0.7, -0.1, 0.03, Vector((0, -1, 0))),
+    "c3": (20, Vector((0.05, -1, 0.0)), 1.0, -0.18, -0.16, Vector((0, -1, 0))),
+    "f_r": (-35, Vector((-0.6, -0.45, 0.0)), 0.9, -0.12, -0.05, Vector((-1, -0.3, 0))),
+    "f_l": (35, Vector((0.55, -0.5, 0.0)), 0.9, -0.12, -0.05, Vector((1, -0.4, 0))),
+    "ch_up": (-10, Vector((0.0, 0.1, 1.0)), 0.95, -0.04, 0.03, Vector((0, 0.5, 1))),
+    "ch_down": (5, Vector((0.0, -0.8, -0.35)), 0.95, -0.2, -0.12, Vector((0, -1, -0.6))),
+}
+if "jianmoves" in EXTRAS:
+    def jian_pose(stage):
+        if stage == "idle":
+            idle_end_pose()
+            return
+        twist, wrist, reach, lift, dy, blade = JIAN[stage]
+        lower_hips(lift, FEET, dy=dy)
+        bend("Spine", UP, twist * 0.6); bend("Spine1", UP, twist * 0.4)
+        sh = pb["RightArm"].head.copy()
+        pole = Vector((-0.6, 0.3, 0)) if wrist.z > 0.3 else Vector((0.2, 0.5, -1))
+        arm("Right", sh + wrist.normalized() * REACH * reach, pole)
+        point_blade(blade, wrist_bend=80)                                  # 찌르기·내려베기는 칼이 팔을 따라 뻗도록 손목을 젖혀요
+        sl = pb["LeftArm"].head.copy()
+        arm("Left", sl + Vector((-0.12, -0.28, -0.12)), Vector((1, 0.3, -0.6)))   # 검결: 왼손을 가슴 앞에
+    make_action("Combo", [(0, "c_load"), (3, "c1"), (7, "c2load"), (10, "c2"), (14, "c3load"), (18, "c3"), (22, "c3"), (30, "idle")], jian_pose)
+    make_action("Flash", [(0, "f_r"), (4, "f_l"), (11, "f_r"), (19, "f_l"), (26, "f_r"), (34, "idle")], jian_pose)
+    make_action("Chop", [(0, "ch_up"), (4, "ch_down"), (16, "ch_down"), (26, "idle")], jian_pose)
+    rig.animation_data.action = None
+    reset_pose()
+
+# 철권 마웅 어깨 돌진 (shouldercharge): 준비는 낮게 웅크려 오른 어깨를 앞세우고 두 주먹으로 얼굴을 가린 자세,
+#   돌진은 그 자세로 크게 숙여 들이받으며 내달리는 반복 동작 (16프레임)
+if "shouldercharge" in EXTRAS:
+    def fists_up():
+        for s, inward in (("Left", -0.15), ("Right", 0.15)):
+            sh = pb[f"{s}Arm"].head.copy()
+            arm(s, sh + Vector((inward, -0.22, 0.12)), Vector((-inward * 4, 0.3, -1)))
+
+    def shoulder_ready(_):
+        lower_hips(-0.28, FEET, dy=0.06)
+        bend("Spine", Vector((1, 0, 0)), 28)
+        bend("Spine", UP, 30)                                               # 오른 어깨를 앞으로
+        fists_up()
+    make_action("ShoulderReady", [(0, None), (10, None)], shoulder_ready)
+    rig.animation_data.action = None
+    reset_pose()
+
+    def shoulder_run(phase):
+        lead = "Left" if phase in (0, 3) else "Right"
+        feet = {}
+        for s in ("Left", "Right"):
+            base = FEET[s]
+            if phase in (0, 2):
+                feet[s] = base + (Vector((0, -0.5, 0)) if s == lead else Vector((0, 0.45, 0.26)))
+            else:
+                feet[s] = base + (Vector((0, -0.1, 0.4)) if s != lead else Vector((0, 0.15, 0.0)))
+        lower_hips(-0.2 if phase in (0, 2) else -0.1, feet, dy=-0.05)
+        bend("Spine", Vector((1, 0, 0)), 32)
+        bend("Spine", UP, 30 + (5 if lead == "Left" else -5))
+        fists_up()
+    make_action("ShoulderRun", [(0, 0), (4, 1), (8, 2), (12, 3), (16, 0)], shoulder_run)
+    rig.animation_data.action = None
+    reset_pose()
+
 
 # 돌진 (ChargeReady·ChargeRun·Slam): 준비는 몸을 낮추고 앞으로 숙여 대도를 오른 어깨 위로 치켜든 자세,
 #   돌진은 크게 앞으로 숙인 채 다리를 크게 내딛고 왼팔을 휘저으며 대도를 치켜든 채 달리는 반복 동작 (16프레임),
@@ -953,6 +1026,13 @@ if "quake" in EXTRAS:
     rig.animation_data.action = None
     reset_pose()
 
+# 옮겨 굽는 데 쓴 플레이어 뼈대·메시·동작은 지워요 (내보낼 때 같이 나가지 않게)
+for o in player_objs:
+    bpy.data.objects.remove(o, do_unlink=True)
+for a in player_acts:
+    bpy.data.actions.remove(a)
+bpy.context.scene.frame_set(0)
+
 bpy.ops.object.select_all(action='DESELECT')
 for o in [rig, body] + weapon_objs:
     o.select_set(True)
@@ -962,7 +1042,7 @@ bpy.ops.export_scene.fbx(filepath=out, use_selection=True, object_types={'ARMATU
                          apply_scale_options='FBX_SCALE_ALL', axis_forward='-Z', axis_up='Y',
                          bake_space_transform=False, mesh_smooth_type='OFF', add_leaf_bones=False,
                          primary_bone_axis='Y', secondary_bone_axis='X', armature_nodetype='NULL',
-                         bake_anim=bool({"blowhorn", "shootbow", "punch", "quake", "whirl", "sweep", "charge"} & EXTRAS), bake_anim_use_all_actions=True, bake_anim_use_nla_strips=False,
+                         bake_anim=len(bpy.data.actions) > 0, bake_anim_use_all_actions=True, bake_anim_use_nla_strips=False,
                          bake_anim_force_startend_keying=True, bake_anim_simplify_factor=0.0, path_mode='STRIP')
 print("ENEMY exported", out, "bones", len(rig.data.bones), "faces", len(body.data.polygons), "weapons", WEAPONS)
 
