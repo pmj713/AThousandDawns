@@ -225,6 +225,7 @@ namespace AThousandDawns.Player
             _dash.Refill(1);
             _perfectBonusRatio = count >= 6 ? _perfectBonus6 : _perfectBonus4;
             _perfectBonusTimer = _perfectWindow;
+            Sfx.Play(SfxId.PerfectDodge);
             if (swingFlash != null) swingFlash.Show(transform.position, _facing, 0.9f, 360f, 0.12f); // 잔상이 번쩍
 
             if (count < 6 || attacker == null || attacker.IsDead || !attacker.Targetable) return;

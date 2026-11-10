@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AThousandDawns.Core;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -120,6 +121,7 @@ namespace AThousandDawns.Combat
         // 번개 한 줄기
         static void Bolt(Vector3 a, Vector3 b, float life)
         {
+            Sfx.Play(SfxId.Zap, 0.7f); // 연쇄로 여러 줄기가 한꺼번에 나와도 최소 간격으로 걸러져요
             var go = new GameObject("번개");
             var line = go.AddComponent<LineRenderer>();
             line.useWorldSpace = true;

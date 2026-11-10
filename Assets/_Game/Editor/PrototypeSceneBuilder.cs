@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using AThousandDawns.Combat;
 using AThousandDawns.Core;
 using AThousandDawns.Data;
@@ -102,8 +103,33 @@ namespace AThousandDawns.EditorTools
             cam.backgroundColor = new Color32(0xEF, 0xE6, 0xD2, 0xFF);
             var title = new GameObject("TitleScreen").AddComponent<AThousandDawns.Prototype.TitleScreen>();
             SetRef(title, "music", AssetDatabase.LoadAssetAtPath<AudioClip>(TitleMusicPath));
+            AddSfx(title.gameObject);
             EditorSceneManager.SaveScene(scene, TitleScenePath);
             Debug.Log($"[시험판 씬] {TitleScenePath} 를 만들었어요.");
+        }
+
+        // 효과음: Audio/SFX/<SfxId 이름>.wav, 버전이 더 있으면 <이름>2.wav, <이름>3.wav … 를 SfxId 순서대로 넣어요
+        static void AddSfx(GameObject host)
+        {
+            var sfx = host.AddComponent<Sfx>();
+            var so = new SerializedObject(sfx);
+            var sounds = so.FindProperty("sounds");
+            var ids = (SfxId[])System.Enum.GetValues(typeof(SfxId));
+            sounds.arraySize = ids.Length;
+            for (int i = 0; i < ids.Length; i++)
+            {
+                var found = new List<AudioClip>();
+                for (int v = 1; ; v++)
+                {
+                    var clip = AssetDatabase.LoadAssetAtPath<AudioClip>($"Assets/_Game/Audio/SFX/{ids[i]}{(v == 1 ? "" : v.ToString())}.wav");
+                    if (clip == null) break;
+                    found.Add(clip);
+                }
+                var clips = sounds.GetArrayElementAtIndex(i).FindPropertyRelative("clips");
+                clips.arraySize = found.Count;
+                for (int v = 0; v < found.Count; v++) clips.GetArrayElementAtIndex(v).objectReferenceValue = found[v];
+            }
+            so.ApplyModifiedPropertiesWithoutUndo();
         }
 
         static BalanceConfig LoadBalance() => AssetDatabase.LoadAssetAtPath<BalanceConfig>(SheetImporter.BalanceAssetPath);

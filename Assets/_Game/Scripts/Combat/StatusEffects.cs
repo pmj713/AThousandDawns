@@ -87,6 +87,7 @@ namespace AThousandDawns.Combat
         {
             if (stacks <= 0) return;
             int current = BeginBurn(perStackDps, extraMax);
+            if (current == 0) Sfx.Play(SfxId.Burn, 0.6f); // 새로 불붙을 때만
             for (int i = 0; i < stacks; i++)
             {
                 // 화룡 비늘: 최대 중첩인 적에게 또 걸면 그 적만 최대 중첩 +1

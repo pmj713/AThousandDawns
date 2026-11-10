@@ -65,6 +65,7 @@ namespace AThousandDawns.Player
             if (_potionTimer < _potionHold) return true;
 
             Potions--;
+            Sfx.Play(SfxId.PotionDrink);
             Heal(MaxHealth * _potionHeal);
             CancelPotion();
             _potionCooldown = _potionReuse;

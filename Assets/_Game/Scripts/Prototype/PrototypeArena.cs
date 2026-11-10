@@ -314,6 +314,7 @@ namespace AThousandDawns.Prototype
         {
             if (!IsChoosing || index < 0 || index >= _offer.Count) return;
             director.Player.Items.Add(_offer[index]);
+            Sfx.Play(SfxId.UiConfirm);
             CloseOffer();
         }
 

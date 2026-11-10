@@ -1,3 +1,4 @@
+using AThousandDawns.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -57,8 +58,8 @@ namespace AThousandDawns.Prototype
             bool up = (k != null && (k.upArrowKey.wasPressedThisFrame || k.wKey.wasPressedThisFrame)) || (pad != null && pad.dpad.up.wasPressedThisFrame);
             bool down = (k != null && (k.downArrowKey.wasPressedThisFrame || k.sKey.wasPressedThisFrame)) || (pad != null && pad.dpad.down.wasPressedThisFrame);
             bool ok = (k != null && (k.enterKey.wasPressedThisFrame || k.spaceKey.wasPressedThisFrame)) || (pad != null && pad.buttonSouth.wasPressedThisFrame);
-            if (up) { PauseSelected = (PauseSelected + 3) % 4; ConfirmTitle = false; }
-            if (down) { PauseSelected = (PauseSelected + 1) % 4; ConfirmTitle = false; }
+            if (up) { PauseSelected = (PauseSelected + 3) % 4; ConfirmTitle = false; Sfx.Play(SfxId.UiMove); }
+            if (down) { PauseSelected = (PauseSelected + 1) % 4; ConfirmTitle = false; Sfx.Play(SfxId.UiMove); }
             if (ok) ChoosePause((PauseItem)PauseSelected);
             else if (esc || (pad != null && pad.buttonEast.wasPressedThisFrame)) ClosePause();
             return true;
@@ -92,6 +93,7 @@ namespace AThousandDawns.Prototype
         public void ChoosePause(PauseItem item)
         {
             PauseSelected = (int)item;
+            Sfx.Play(SfxId.UiConfirm);
             switch (item)
             {
                 case PauseItem.Resume:

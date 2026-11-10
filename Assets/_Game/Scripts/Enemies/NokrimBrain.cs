@@ -393,6 +393,7 @@ namespace AThousandDawns.Enemies
             if (Attack.IsAttacking) CancelAttack();
             _pattern = Pattern.None;
             _transitionTimer = _transitionTime;
+            Sfx.Play(SfxId.BossPhase);
             Body.Targetable = false; // 전환 연출 동안 무적
         }
 

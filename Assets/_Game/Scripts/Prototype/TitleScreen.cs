@@ -93,8 +93,8 @@ namespace AThousandDawns.Prototype
             switch (Current)
             {
                 case View.Menu:
-                    if (up) Selected = (Selected + 3) % 4;
-                    if (down) Selected = (Selected + 1) % 4;
+                    if (up) { Selected = (Selected + 3) % 4; Sfx.Play(SfxId.UiMove); }
+                    if (down) { Selected = (Selected + 1) % 4; Sfx.Play(SfxId.UiMove); }
                     if (ok) Choose((Item)Selected);
                     break;
                 case View.Prologue:
@@ -112,6 +112,7 @@ namespace AThousandDawns.Prototype
 
         public void Choose(Item item)
         {
+            Sfx.Play(SfxId.UiConfirm);
             switch (item)
             {
                 case Item.Continue:

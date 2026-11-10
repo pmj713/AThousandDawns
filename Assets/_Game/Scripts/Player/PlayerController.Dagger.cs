@@ -71,6 +71,7 @@ namespace AThousandDawns.Player
         // count발을 바라보는 쪽으로 (3발이면 15° 간격 부채꼴)
         public void ThrowDaggers(int count, HitDamageInput hit, HitTag tag, float gaugePerHit)
         {
+            Sfx.Play(SfxId.DaggerThrow);
             float spread = D("knife.fan_angle", 15f);
             for (int i = 0; i < count; i++)
             {
@@ -241,6 +242,7 @@ namespace AThousandDawns.Player
         // 방 안의 비도가 전부 돌아와요. 맞힌 적 수
         public int RecallDaggers()
         {
+            Sfx.Play(SfxId.DaggerRecall);
             float per = _skillDamage * D("knife.recall_ratio", 0.25f);
             int maxPer = Mathf.RoundToInt(D("knife.recall_max_per_target", 6f));
             float pathRadius = D("knife.recall_path_radius", 0.6f);

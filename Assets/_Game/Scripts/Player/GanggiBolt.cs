@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using AThousandDawns.Combat;
+using AThousandDawns.Core;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -29,6 +30,7 @@ namespace AThousandDawns.Player
         {
             direction.y = 0f;
             if (direction.sqrMagnitude < 1e-4f) return;
+            Sfx.Play(dart ? SfxId.DaggerThrow : SfxId.BoltFire, dart ? 0.7f : 1f);
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = dart ? "버들잎 표창" : "강기";
             var collider = go.GetComponent<Collider>();
@@ -87,6 +89,7 @@ namespace AThousandDawns.Player
         // 강기 구슬 주화입마: 맞은 적 주변(그 적 빼고)에 강기 피해 × 비율
         void Explode(Damageable center)
         {
+            Sfx.Play(SfxId.BoltExplode);
             Vector3 p = center.transform.position;
             foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
             {

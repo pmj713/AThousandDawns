@@ -91,7 +91,16 @@ namespace AThousandDawns.Prototype
         public bool IsDone => _phase == Phase.Done;
         public int Wave => _wave;
         public int WaveCount => _waves != null ? _waves.Count : 0;
-        public int Silver { get; private set; } // 은자 (판 안 재화, 죽으면 사라짐)
+        public int Silver // 은자 (판 안 재화, 죽으면 사라짐). 바뀔 때마다 동전 소리
+        {
+            get => _silver;
+            private set
+            {
+                if (value != _silver) Sfx.Play(SfxId.Coin);
+                _silver = value;
+            }
+        }
+        int _silver;
         public InnShop Shop { get; private set; }
         public bool IsShopping { get; private set; }
         public string ShopNotice { get; private set; }
@@ -486,6 +495,7 @@ namespace AThousandDawns.Prototype
             _fighting = false;
             _room.Cleared = true;
             SetLocks(false);
+            Sfx.Play(SfxId.RoomClear, 0.7f);
             AddTracking(Mathf.RoundToInt(GameConfig.Get("tracking.per_room", 1f)));
             Player.OnRoomCleared(); // 호신 부적
             float mult = _path.Dense ? DenseMultiplier : 1f;

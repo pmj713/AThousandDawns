@@ -129,6 +129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1861087318}
   - component: {fileID: 1861087317}
+  - component: {fileID: 1861087320}
   m_Layer: 0
   m_Name: TitleScreen
   m_TagString: Untagged
@@ -253,3 +254,105 @@ SceneRoots:
   m_Roots:
   - {fileID: 1941754850}
   - {fileID: 1861087318}
+--- !u!114 &1861087320
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1861087316}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b2f4cc5c6bc44a8a27fd581b4703abe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AThousandDawns::AThousandDawns.Core.Sfx
+  sounds:
+  - clips:
+    - {fileID: 8300000, guid: 1c56e54a54874c029abd153a193b147d, type: 3}
+    - {fileID: 8300000, guid: 11f9c91713814ef7b7f9932de79f837c, type: 3}
+    - {fileID: 8300000, guid: 6b617485eed0442998c1ec135e6156b4, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: 83a29a2f5b824d75b6e3b31e641bb33d, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: afe626b4a0774bce91dfd07a97e29af4, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: 2663e7076ca741619ceb1456f2999d11, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: 6b285441b7b64eaf924f6b18c0187c7c, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: 9ca01cbc200148f895fd00093e82534c, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: aea56e62189946ab8f0dba759c2aaede, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: 0af54d297e4b46749c92e825f7297f65, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: 3b9e3894b61c45e685663fe655414033, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: 6c5c6beb252d4042a90f56f02b7ac5ea, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: ea48c37654a14029a1cb9f9ce581425b, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: c2735339a72640229f0f2ff599bb9657, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: 2e9fca44fd964d35a7f39b367eaaae4a, type: 3}
+    - {fileID: 8300000, guid: e6152ef5a04247eb8ac44691ac3710fd, type: 3}
+    - {fileID: 8300000, guid: 06494441984b4568b5d38d2436247909, type: 3}
+    - {fileID: 8300000, guid: 4470ccc4c1294f648509dbdf6af5162d, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: e89678179d964908831c62eaaef20289, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: d4af558f1e964938a9a6678b1b4dcf00, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: f4a44a06307049ec81f8a7a37d218190, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: 7dfae847b840472abc38c880ac144cf6, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: c2526ca7bfd94d3599ee35f662ffed10, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: 7fe56be0692b40a7ba94269dcf734582, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: 54338b7d2a2149e384cbc56f7ff7195b, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: 34eaee4f1b7c4a018f7d6500772516fb, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: b48844023bc84aad92073ad065d7d986, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: 34c59ee964434a55b00d6430e0452ebc, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: 8ad304f1208446af9631ab3f2230483d, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: 3ecc7c7da63a42a08fa1425c853f8772, type: 3}
+    - {fileID: 8300000, guid: 0b30c0b581ff44f7ac4d626e306813d2, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: bb9021f942f14faabeb182b189fa2040, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: 835af629e73f431c8fbac0cf11919411, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: 889f8e5c1b1c40a394868e6ca01e784c, type: 3}
+    - {fileID: 8300000, guid: c16f9dd6ace7471ab3b7fc7cef3ecdc2, type: 3}
+    - {fileID: 8300000, guid: 15c0dc934446445fb6e6d485d0cb85e7, type: 3}
+    - {fileID: 8300000, guid: 89a5142534fe413a9ee7c913f45bee36, type: 3}
+    - {fileID: 8300000, guid: 99f9975e27db4e30bcd12b0a15483427, type: 3}
+    - {fileID: 8300000, guid: cbee7e9495684612bea9b046ef57211d, type: 3}
+    - {fileID: 8300000, guid: 86cf055f389e44af84e3193ae91a4bf8, type: 3}
+    - {fileID: 8300000, guid: a35d420117634fb880687bfa59030763, type: 3}
+    - {fileID: 8300000, guid: 7f7286ff2f5d4f5495bf8b2341d6628f, type: 3}
+    - {fileID: 8300000, guid: 022a746308f0434aa967ee19a8c4a09c, type: 3}
+    - {fileID: 8300000, guid: 6c705b4dc1b0482fb292ad8f540d1bae, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: e50ad304fdb048eeaa5305ae3e2edadd, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: 5f8e89a0b08645ba8988fd0f4993ba33, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: 456630bba97d4c438dfc591bd13a8ab0, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: bdcab66c48c8461388de24c29d3d57bf, type: 3}
+    - {fileID: 8300000, guid: 046026222faf4c82a37e45ce4f8cfa4b, type: 3}
+    - {fileID: 8300000, guid: 7318a6ec3a0444d7a4b848acff1c399c, type: 3}
+    - {fileID: 8300000, guid: 728c113bb715414db3640733bdc76b71, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: 1b78346bfdaf43cdab14963c7adf0cb5, type: 3}
+  - clips:
+    - {fileID: 8300000, guid: 4e427d0701714412bcdf963b983cec0f, type: 3}
+  voices: 8
+  minInterval: 0.05

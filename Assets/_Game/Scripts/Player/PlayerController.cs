@@ -427,6 +427,7 @@ namespace AThousandDawns.Player
             _sinceUltimatePress = float.PositiveInfinity;
             Gauge = Mathf.Max(0f, Gauge - _gaugeMax);
             _ultimateTimer = _ultimateCastTime;
+            Sfx.Play(SfxId.Ultimate); // 절초 만검귀종
             _invulnerableTimer = Mathf.Max(_invulnerableTimer, _ultimateCastTime);
 
             _combo.Cancel();
@@ -471,6 +472,7 @@ namespace AThousandDawns.Player
                 dir.y = 0f;
                 if (dir.sqrMagnitude > 0.01f) _facing = dir.normalized;
             }
+            if (Skill == SkillKind.Spin && !RecallSkill) Sfx.Play(SfxId.Spin); // 회선참
             OnSkillStartedForItems(); // 연마석 · 수호 노리개
         }
 
@@ -601,6 +603,7 @@ namespace AThousandDawns.Player
             _dashIframeTimer = DashIframe; // 간파 판정 시간
             _dashStart = transform.position;
             _perfectDodgeUsed = false;
+            Sfx.Play(SfxId.Dash);
             _sinceDashPress = float.PositiveInfinity;
             _lungeRemaining = 0f;
             OnDashStartedForItems(); // 버들잎 표창 · 잔영 가면 · 구름 비단
@@ -704,6 +707,7 @@ namespace AThousandDawns.Player
         void DoDashAttack()
         {
             FaceAim(); // 대시 방향이 아니라 커서 쪽으로 베요
+            if (!UsesDagger) Sfx.Play(SfxId.DashAttack); // 비도는 던지기 소리가 따로 나요
             if (UsesDagger) // 비도: 지나온 길에 4발
             {
                 var dh = PlayerHit(D("knife.dash_damage", 8f));

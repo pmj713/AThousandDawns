@@ -97,6 +97,7 @@ namespace AThousandDawns.Enemies
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             var arrow = go.AddComponent<Arrow>();
             arrow.Launch(player, direction, speed, range, radius, attack, owner);
+            Sfx.Play(SfxId.Arrow);
             return arrow;
         }
 
@@ -158,6 +159,7 @@ namespace AThousandDawns.Enemies
             burst.SetPose(center, Vector3.forward);
             burst.SetProgress(1f);
             Destroy(burst.gameObject, 0.2f);
+            Sfx.Play(SfxId.Explosion); // 화약 산적 폭발 · 녹림왕 내려찍기·회전베기
         }
 
         // around 둘레에서 벽·대나무와 겹치지 않고, around에서 벽을 넘지 않고 갈 수 있는 자리 (소환된 졸개가 설 곳)

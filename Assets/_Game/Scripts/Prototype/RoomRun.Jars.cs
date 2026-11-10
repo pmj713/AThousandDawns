@@ -60,6 +60,7 @@ namespace AThousandDawns.Prototype
             if (index < 0 || index >= _jars.Count) return;
             Destroy(_jars[index]);
             _jars.RemoveAt(index);
+            Sfx.Play(SfxId.JarBreak);
             _room.Jars = Mathf.Max(0, _room.Jars - 1);
             int silver = BoostSilver(Mathf.RoundToInt(GameConfig.GetOptional("jar.silver", 1f)));
             Silver += silver;

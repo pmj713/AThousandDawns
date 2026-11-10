@@ -100,6 +100,7 @@
             Health = MaxHealth * _reviveRatio;
             _invulnerableTimer = UnityEngine.Mathf.Max(_invulnerableTimer, 1.5f);
             if (visual != null) visual.localScale = UnityEngine.Vector3.one;
+            AThousandDawns.Core.Sfx.Play(AThousandDawns.Core.SfxId.Revive); // 기사회생
             AThousandDawns.Combat.DamagePopups.Spawn(transform.position + UnityEngine.Vector3.up * 2.2f, UnityEngine.Mathf.RoundToInt(Health), AThousandDawns.Combat.PopupStyle.Burst);
             return true;
         }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using AThousandDawns.Core;
 using UnityEngine;
 
 namespace AThousandDawns.Combat
@@ -170,6 +171,7 @@ namespace AThousandDawns.Combat
                         s.Landed = true;
                         s.Age = 0f;
                         Land(s.Target, s.Point);
+                        Sfx.PlayEach(SfxId.SwordLand, -1, 0.6f); // 검마다 "슉" (두 소리 중 무작위)
                         _landed++;
                         SwordLanded?.Invoke(s.Target, s.Point);
                     }

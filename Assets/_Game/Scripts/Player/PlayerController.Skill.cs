@@ -14,6 +14,7 @@ namespace AThousandDawns.Player
     public sealed partial class PlayerController
     {
         int _flashDone;
+        int _flashSoundStart; // 죽림섬 소리를 고를 첫 자리 (시전마다 무작위)
         bool _flashChained;
 
         public SkillKind Skill { get; private set; }
@@ -34,6 +35,7 @@ namespace AThousandDawns.Player
             if (_skillHitDone || _skillElapsed < _skillHitTime) return;
             _skillHitDone = true;
             _hitThisSwing.Clear();
+            Sfx.Play(SfxId.Quake); // 붕산권
             float radius = GameConfig.Get("skill_quake.radius", 3f);
             if (swingFlash != null) swingFlash.Show(transform.position, _facing, radius, 360f, 0.2f);
             var hit = PlayerHit(_skillDamage * GameConfig.Get("skill_quake.ratio", 1f));
@@ -78,6 +80,9 @@ namespace AThousandDawns.Player
         void FlashSlash()
         {
             _flashDone++;
+            // 죽림섬: 시전마다 무작위 자리에서 시작해 1·2·3타가 서로 다른 소리
+            if (_flashDone == 1) _flashSoundStart = Random.Range(0, Mathf.Max(1, Sfx.VariantCount(SfxId.BambooFlash)));
+            Sfx.PlayEach(SfxId.BambooFlash, _flashSoundStart + _flashDone - 1);
             float range = GameConfig.Get("skill_flash.range", 6f);
             float width = GameConfig.Get("skill_flash.width", 1.2f);
             Vector3 from = transform.position;

@@ -212,6 +212,7 @@ namespace AThousandDawns.Enemies
             Attack.Start(WindupTime + Status.WindupExtra, ActiveTime, RecoveryTime); // 눈송이 수정: 둔화 3중첩이면 예고가 길어짐
             OnAttackStarted();
             Telegraph.Show(TelegraphShape(), RadialTelegraph);
+            Sfx.Play(SfxId.Telegraph, 0.6f);
             UpdateTelegraph();
         }
 
