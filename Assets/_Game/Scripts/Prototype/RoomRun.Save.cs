@@ -71,6 +71,7 @@ namespace AThousandDawns.Prototype
                 gongryeok = Player.Gongryeok,
                 skill = (int)Player.Skill,
                 weapon = (int)Player.Weapon,
+                ultimateForm = (int)Player.UltimateForm,
                 revive = Player.ReviveReady,
                 moveBonus = Player.RunMoveBonus,
                 gaugeBonus = Player.RunGaugeBonus,
@@ -150,6 +151,7 @@ namespace AThousandDawns.Prototype
             Player.Gongryeok = s.gongryeok;
             Player.LearnSkill((SkillKind)s.skill);
             Player.SetWeapon((WeaponKind)s.weapon);
+            Player.UltimateForm = (AThousandDawns.Combat.UltimateForm)s.ultimateForm;
             Player.RunMoveBonus = s.moveBonus;
             Player.RunGaugeBonus = s.gaugeBonus;
             Player.RunTakenIncrease = s.takenIncrease;

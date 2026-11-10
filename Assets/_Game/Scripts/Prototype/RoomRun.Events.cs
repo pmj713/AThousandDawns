@@ -28,7 +28,7 @@ namespace AThousandDawns.Prototype
             public List<EventChoice> Choices = new List<EventChoice>();
         }
 
-        public static readonly string[] EventIds = { "doctor", "pharmacy", "gambler", "captive", "shrine", "scripture", "escort", "smith", "tomb", "deja" };
+        public static readonly string[] EventIds = { "doctor", "pharmacy", "gambler", "captive", "shrine", "scripture", "escort", "smith", "tomb", "deja", "peddler" };
 
         readonly HashSet<string> _usedEvents = new HashSet<string>();
         int _floorPower;           // 원기단: 이번 층 동안 공력 +1
@@ -290,6 +290,10 @@ namespace AThousandDawns.Prototype
                     v.Choices.Add(Pass("지나간다"));
                     break;
 
+                case "peddler":
+                    BuildPeddler(v); // RoomRun.Sell.cs
+                    break;
+
                 case "smith":
                     v.Title = "서툰 대장장이";
                     v.Text = "대장간 견습생이 실력을 시험해 보고 싶어 한다.";
@@ -434,7 +438,7 @@ namespace AThousandDawns.Prototype
             var db = GameConfig.Items;
             var same = new List<ItemDefinition>();
             if (db != null)
-                foreach (var def in db.Items)
+                foreach (var def in db.Available)
                     if (def != null && def.grade == item.Def.grade && !Player.Items.Has(def.id)) same.Add(def);
             if (same.Count == 0) return "이겼지만 같은 등급 기물이 남아 있지 않아요.";
             var won = same[_rng.Next(same.Count)];
@@ -487,7 +491,7 @@ namespace AThousandDawns.Prototype
             if (db == null) return null;
             var same = new List<ItemDefinition>();
             var any = new List<ItemDefinition>();
-            foreach (var d in db.Items)
+            foreach (var d in db.Available)
             {
                 if (d == null || d.grade != def.grade + 1 || Player.Items.Has(d.id)) continue;
                 any.Add(d);

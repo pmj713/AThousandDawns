@@ -36,8 +36,8 @@ namespace AThousandDawns.Core
             new BookNode { Id = "potion_kit", Name = "금창약 지참", Branch = "생존", Prereq = "meditation", DefaultCost = 220, Ready = true, Effect = "판을 금창약 1개를 들고 시작" },
             new BookNode { Id = "inn_stock", Name = "객잔 진열 +1", Branch = "생존", Prereq = "potion_kit", DefaultCost = 230, Ready = true, Effect = "객잔 진열 기물 4개" },
             new BookNode { Id = "insight1", Name = "심득 +5 (1차)", Branch = "줄기", Prereq = "meditation", DefaultCost = 180, Ready = true, Effect = "면벽수련 심득 +5" },
-            new BookNode { Id = "item_pack1", Name = "새 기물 묶음 1", Branch = "견문", Prereq = "insight1", DefaultCost = 180, Effect = "보상에 새 기물 묶음 추가" },
-            new BookNode { Id = "item_pack2", Name = "새 기물 묶음 2", Branch = "견문", Prereq = "item_pack1", DefaultCost = 320, Effect = "보상에 새 기물 묶음 추가" },
+            new BookNode { Id = "item_pack1", Name = "새 기물 묶음 1", Branch = "견문", Prereq = "insight1", DefaultCost = 180, Ready = true, Effect = "새 기물 6종이 보상·객잔에 나와요: 재 항아리 · 한기 구슬 · 피뢰침 · 결살 검결 · 철포삼 조끼 · 그림자 보법서" },
+            new BookNode { Id = "item_pack2", Name = "새 기물 묶음 2", Branch = "견문", Prereq = "item_pack1", DefaultCost = 320, Ready = true, Effect = "새 기물 6종이 보상·객잔에 나와요: 숯 주머니 · 뇌격 장갑 · 서리 갑옷 · 호신 부적 · 일섬 검결 · 천리 신발" },
             new BookNode { Id = "insight2", Name = "심득 +5 (2차)", Branch = "줄기", Prereq = "insight1", DefaultCost = 270, Ready = true, Effect = "면벽수련 심득 +5" },
             new BookNode { Id = "insight3", Name = "심득 +5 (3차)", Branch = "줄기", Prereq = "insight2", DefaultCost = 360, Ready = true, Effect = "면벽수련 심득 +5" },
             new BookNode { Id = "insight4", Name = "심득 +5 (4차)", Branch = "줄기", Prereq = "insight3", DefaultCost = 450, Ready = true, Effect = "면벽수련 심득 +5" },
@@ -116,5 +116,8 @@ namespace AThousandDawns.Core
         public static bool ForgeUnlocked(MetaSave meta) => Bloomed(meta, "forge");
 
         public static bool DaggerUnlocked(MetaSave meta) => Bloomed(meta, "flying_dagger");
+
+        // 풀린 기물 꾸러미 수 (0~2)
+        public static int ItemPacks(MetaSave meta) => Bloomed(meta, "item_pack2") ? 2 : Bloomed(meta, "item_pack1") ? 1 : 0;
     }
 }

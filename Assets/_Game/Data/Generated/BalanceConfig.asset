@@ -2649,3 +2649,63 @@ MonoBehaviour:
     value: 5
     unit: "\uCD08"
     note: "\uBE44\uB3C4 \uAE08\uAC15 \uAC15\uD654\uD310: \uBCF4\uD638\uB9C9 \uC9C0\uC18D"
+  - key: inn.sell_ratio
+    value: 0.4
+    unit: 
+    note: "\uB9E4\uAC01\uAC00 = \uAC1D\uC794 \uD310\uB9E4\uAC00 \xD7 \uC774 \uBE44\uC728"
+  - key: event.peddler_ratio
+    value: 0.6
+    unit: 
+    note: "\uB5A0\uB3CC\uC774 \uC0C1\uC778: \uD310\uB9E4\uAC00 \xD7 \uC774 \uBE44\uC728\uB85C \uC0AC \uAC10"
+  - key: room.hidden_jinjeon_chance
+    value: 0.05
+    unit: 
+    note: "\uAE30\uC5F0 \uBC29\uC5D0 \uC9C4\uC804 \uC120\uD0DD\uC9C0\uAC00 \uB098\uC62C \uD655\uB960"
+  - key: jinjeon.one_sword_ratio
+    value: 1.2
+    unit: 
+    note: "\uC77C\uAC80: \uD070 \uAC80 \uD53C\uD574 = \uC6D0\uB798 \uAC80 \uC218 \xD7 \uD55C \uC790\uB8E8 \uD53C\uD574 \xD7 \uC774 \uAC12"
+  - key: jinjeon.one_sword_radius
+    value: 3
+    unit: "\uCE78"
+    note: "\uC77C\uAC80: \uB5A8\uC5B4\uC9C4 \uC790\uB9AC \uB458\uB808 \uBC94\uC704"
+  - key: jinjeon.formation_time
+    value: 3
+    unit: "\uCD08"
+    note: "\uAC80\uC9C4: \uB458\uB808\uB97C \uB3C4\uB294 \uC2DC\uAC04"
+  - key: jinjeon.formation_ratio
+    value: 0.5
+    unit: 
+    note: "\uAC80\uC9C4: \uD55C \uBC88 \uBCA8 \uB54C \uD55C \uC790\uB8E8 \uD53C\uD574 \uBE44\uC728"
+  - key: jinjeon.formation_interval
+    value: 0.3
+    unit: "\uCD08"
+    note: "\uAC80\uC9C4: \uAC19\uC740 \uC801\uC744 \uB2E4\uC2DC \uBCA0\uB294 \uAC04\uACA9"
+  - key: jinjeon.echo_delay
+    value: 1
+    unit: "\uCD08"
+    note: "\uADC0\uC6D0: \uAF42\uD78C \uB4A4 \uB2E4\uC2DC \uD130\uC9C0\uB294 \uC2DC\uAC04"
+  - key: jinjeon.echo_ratio
+    value: 0.6
+    unit: 
+    note: "\uADC0\uC6D0: \uB2E4\uC2DC \uD130\uC9C8 \uB54C \uD55C \uC790\uB8E8 \uD53C\uD574 \uBE44\uC728 (\uBC18\uACBD 1.2\uCE78)"
+  - key: jinjeon.storm_count
+    value: 1.5
+    unit: "\uBC30"
+    note: "\uD3ED\uC6B0: \uBE44\uB3C4 \uC218 \uBC30\uC728"
+  - key: jinjeon.storm_damage
+    value: 0.7
+    unit: 
+    note: "\uD3ED\uC6B0: \uD55C \uBC1C \uD53C\uD574 \uBE44\uC728"
+  - key: jinjeon.storm_area
+    value: 1.3
+    unit: "\uBC30"
+    note: "\uD3ED\uC6B0: \uBC94\uC704 \uBC30\uC728"
+  - key: jinjeon.bloom_ratio
+    value: 0.5
+    unit: 
+    note: "\uC0B0\uD654: \uAF42\uD78C \uBE44\uB3C4 1\uAC1C\uB2F9 \uD130\uC9C0\uB294 \uD53C\uD574 \uBE44\uC728 (\uBC18\uACBD 1.5\uCE78)"
+  - key: jinjeon.backflow_speed
+    value: 20
+    unit: "\uCE78/\uCD08"
+    note: "\uD68C\uB958: \uBE44\uB3C4\uAC00 \uB3CC\uC544\uC624\uB294 \uC18D\uB3C4"

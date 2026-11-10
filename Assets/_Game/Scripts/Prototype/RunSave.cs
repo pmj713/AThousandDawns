@@ -46,6 +46,7 @@ namespace AThousandDawns.Prototype
 
         // 플레이어
         public int weapon;
+        public int ultimateForm; // 진전 (UltimateForm)
         public float health, gauge;
         public int potions, gongryeok, skill, level, xp, pending;
         public bool revive;

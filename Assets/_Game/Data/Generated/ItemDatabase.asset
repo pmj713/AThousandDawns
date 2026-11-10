@@ -1153,3 +1153,231 @@ MonoBehaviour:
     sideValue: 0.5
     effectText: "\uB300\uC2DC\uAC00 \uC9C0\uB098\uAC04 \uC801\uC5D0\uAC8C \uD53C\uD574 (+50%). \uB300\uC2DC \uACF5\uACA9 \uC801\uC911 \uC2DC \uAE30\uC138 +3%"
     sideText: "\uB300\uC2DC \uBB34\uC801 \uC2DC\uAC04 \uC808\uBC18"
+  - id: ash_urn
+    keyword: 0
+    name: "\uC7AC \uD56D\uC544\uB9AC"
+    grade: 1
+    aux: 
+    minQi: 1
+    maxQi: 3
+    v1: 0.5
+    v2: 3
+    v3: 2
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: skill_cooldown
+    sideValue: 0.2
+    effectText: "\uD654\uC0C1 3\uC911\uCCA9 \uC774\uC0C1\uC778 \uC801\uC774 \uC8FD\uC73C\uBA74 \uADF8 \uC911\uCCA9\uC758 \uC808\uBC18\uC774 \uC8FC\uBCC0 2\uCE78 \uC801\uC5D0\uAC8C \uC62E\uACA8\uBD99\uC74C"
+    sideText: "\uCD08\uC2DD \uCFE8\uD0C0\uC784 +20%"
+  - id: frost_bead
+    keyword: 1
+    name: "\uD55C\uAE30 \uAD6C\uC2AC"
+    grade: 0
+    aux: 
+    minQi: 1
+    maxQi: 2
+    v1: 0.25
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: move_speed
+    sideValue: 0.05
+    effectText: "\uC801\uC5D0\uAC8C \uB454\uD654\uB97C \uAC78 \uB54C 25% \uD655\uB960\uB85C 1\uC911\uCCA9 \uB354"
+    sideText: "\uC774\uB3D9\uC18D\uB3C4 -5%"
+  - id: lightning_rod
+    keyword: 2
+    name: "\uD53C\uB8B0\uCE68"
+    grade: 1
+    aux: "\uC815\uC885"
+    minQi: 2
+    maxQi: 3
+    v1: 0.2
+    v2: 2
+    v3: 3
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.1
+    effectText: "\uAC10\uC804 3\uC911\uCCA9 \uC774\uC0C1\uC778 \uC801\uC744 \uB9DE\uD788\uBA74 \uC5F0\uC1C4 \uBC88\uAC1C \uD655\uB960 +20%. 0\uAC1C\uBA74 2\uBC30"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+  - id: finishing_edge
+    keyword: 3
+    name: "\uACB0\uC0B4 \uAC80\uACB0"
+    grade: 0
+    aux: 
+    minQi: 1
+    maxQi: 2
+    v1: 0.2
+    v2: 0.3
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: attack_speed
+    sideValue: 0.05
+    effectText: "\uCCB4\uB825 30% \uC774\uD558\uC778 \uC801\uC5D0\uAC8C \uD3C9\uD0C0 \uD53C\uD574 +20%"
+    sideText: "\uACF5\uACA9 \uC18D\uB3C4 -5%"
+  - id: iron_vest
+    keyword: 4
+    name: "\uCCA0\uD3EC\uC0BC \uC870\uB07C"
+    grade: 1
+    aux: "\uB9C8\uB3C4"
+    minQi: 2
+    maxQi: 3
+    v1: 3
+    v2: 0.5
+    v3: 2
+    v4: 0
+    v1Scales: 1
+    v2Scales: 1
+    v3Scales: 0
+    v4Scales: 0
+    side: max_hp
+    sideValue: 0.1
+    effectText: "\uBCF4\uD638\uB9C9\uC774 \uC788\uC73C\uBA74 \uAC15\uC778\uD568 +3. \uC8FC\uD654\uC785\uB9C8\uBA74 \uBCF4\uD638\uB9C9\uC774 \uAE68\uC9C8 \uB54C \uCDA9\uACA9\uD30C (\uD53C\uD574 +50%)"
+    sideText: "\uCD5C\uB300 \uCCB4\uB825 -10%"
+  - id: shadow_step
+    keyword: 5
+    name: "\uADF8\uB9BC\uC790 \uBCF4\uBC95\uC11C"
+    grade: 2
+    aux: 
+    minQi: 2
+    maxQi: 4
+    v1: 0.4
+    v2: 0.05
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: dash_recharge
+    sideValue: 0.15
+    effectText: "\uB300\uC2DC \uBB34\uC801 \uC911\uC5D0 \uC801 \uACF5\uACA9\uC744 \uD53C\uD558\uBA74 \uAE30\uC138 +5%\uC640 \uB2E4\uC74C \uD3C9\uD0C0 \uD53C\uD574 +40%"
+    sideText: "\uB300\uC2DC \uD68C\uBCF5 -15%"
+  - id: charcoal_bag
+    keyword: 0
+    name: "\uC22F \uC8FC\uBA38\uB2C8"
+    grade: 1
+    aux: 
+    minQi: 1
+    maxQi: 3
+    v1: 0.04
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: attack_speed
+    sideValue: 0.1
+    effectText: "\uCD08\uC2DD\uC73C\uB85C \uB9DE\uD78C \uC801\uC758 \uD654\uC0C1 1\uC911\uCCA9\uB2F9 \uD53C\uD574 +4%"
+    sideText: "\uACF5\uACA9 \uC18D\uB3C4 -10%"
+  - id: thunder_glove
+    keyword: 2
+    name: "\uB1CC\uACA9 \uC7A5\uAC11"
+    grade: 1
+    aux: "\uB9C8\uB3C4"
+    minQi: 1
+    maxQi: 3
+    v1: 1
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: dash_distance
+    sideValue: 0.1
+    effectText: "\uB300\uC2DC \uACF5\uACA9 \uC801\uC911 \uC2DC \uAC10\uC804 +1\uC911\uCCA9. \uC8FC\uD654\uC785\uB9C8\uBA74 \uC5F0\uC1C4 \uBC88\uAC1C\uB3C4 \uBC1C\uB3D9"
+    sideText: "\uB300\uC2DC \uAC70\uB9AC -10%"
+  - id: frost_armor
+    keyword: 1
+    name: "\uC11C\uB9AC \uAC11\uC637"
+    grade: 2
+    aux: "\uC815\uC885"
+    minQi: 2
+    maxQi: 4
+    v1: 1
+    v2: 1
+    v3: 0.5
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: skill_cooldown
+    sideValue: 0.15
+    effectText: "\uD53C\uACA9 \uC2DC \uB54C\uB9B0 \uC801\uC5D0\uAC8C \uB454\uD654 2\uC911\uCCA9. 0\uAC1C\uBA74 0.5\uCD08 \uBE59\uACB0"
+    sideText: "\uCD08\uC2DD \uCFE8\uD0C0\uC784 +15%"
+  - id: guard_talisman
+    keyword: 4
+    name: "\uD638\uC2E0 \uBD80\uC801"
+    grade: 2
+    aux: 
+    minQi: 2
+    maxQi: 4
+    v1: 0.05
+    v2: 0.2
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: max_hp
+    sideValue: 0.1
+    effectText: "\uBC29\uC744 \uBE44\uC6B8 \uB54C\uB9C8\uB2E4 \uBCF4\uD638\uB9C9 +5% \uC313\uC5EC \uB2E4\uC74C \uBC29\uAE4C\uC9C0 \uC774\uC5B4\uC9D0 (\uCD5C\uB300 20%)"
+    sideText: "\uCD5C\uB300 \uCCB4\uB825 -10%"
+  - id: sword_scroll
+    keyword: 3
+    name: "\uC77C\uC12C \uAC80\uACB0"
+    grade: 3
+    aux: 
+    minQi: 3
+    maxQi: 6
+    v1: 0.8
+    v2: 5
+    v3: 4
+    v4: 1
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.15
+    effectText: "\uD3C9\uD0C0 5\uD68C\uB9C8\uB2E4 \uB2E4\uC74C \uD3C9\uD0C0\uAC00 \uC55E\uC73C\uB85C 4\uCE78\uC744 \uBCA0\uB294 \uC77C\uC12C (\uD53C\uD574 +80%)"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +15%"
+  - id: cloud_boots
+    keyword: 5
+    name: "\uCC9C\uB9AC \uC2E0\uBC1C"
+    grade: 3
+    aux: 
+    minQi: 3
+    maxQi: 6
+    v1: 0.2
+    v2: 1
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: dash_recharge
+    sideValue: 0.2
+    effectText: "\uB300\uC2DC \uCD5C\uB300 \uD69F\uC218 +1. \uB300\uC2DC \uACF5\uACA9 \uD53C\uD574 +20%"
+    sideText: "\uB300\uC2DC \uD68C\uBCF5 -20%"

@@ -47,7 +47,13 @@ namespace AThousandDawns.Tests
             meta.bloomed.Add("forge");
             Assert.IsNull(RegressionBook.Blocker(meta, Node("flying_dagger")), "비도도 피울 수 있어요");
             meta.bloomed.Add("insight1");
-            StringAssert.StartsWith("준비 중", RegressionBook.Blocker(meta, Node("item_pack1")), "새 기물 묶음은 아직 준비 중");
+            Assert.IsNull(RegressionBook.Blocker(meta, Node("item_pack1")), "새 기물 묶음 1도 피울 수 있어요");
+            Assert.AreEqual(0, RegressionBook.ItemPacks(meta));
+            meta.bloomed.Add("item_pack1");
+            Assert.AreEqual(1, RegressionBook.ItemPacks(meta));
+            Assert.IsNull(RegressionBook.Blocker(meta, Node("item_pack2")));
+            meta.bloomed.Add("item_pack2");
+            Assert.AreEqual(2, RegressionBook.ItemPacks(meta));
         }
         [Test]
         public void 금창약_지참과_객잔_진열()

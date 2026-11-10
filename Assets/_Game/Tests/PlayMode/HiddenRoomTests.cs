@@ -33,6 +33,7 @@ namespace AThousandDawns.Tests
         public override void TearDown()
         {
             RoomRun.HiddenOverride = false;
+            RoomRun.JinjeonOverride = false;
             MetaSave.PathOverride = null;
             RoomRun.SeedOverride = 0;
             if (File.Exists(_savePath)) File.Delete(_savePath);
@@ -105,6 +106,34 @@ namespace AThousandDawns.Tests
             run.Enter(host, dir);
             run.Enter(hidden, FloorMap.Opposite(dir));
             Assert.IsFalse(run.IsInEvent, "한 번만");
+        }
+        [UnityTest]
+        public IEnumerator 아주_드물게_진전_검결()
+        {
+            RoomRun.JinjeonOverride = true;
+            yield return Load(null);
+            var run = Object.FindFirstObjectByType<RoomRun>();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var hidden = run.Map.Hidden;
+            int dir = Enumerable.Range(0, 4).First(d => run.Map.Neighbor(hidden, d) != null);
+            var host = run.Map.Neighbor(hidden, dir);
+            run.Enter(host, -1);
+            yield return WaitUntil(() =>
+            {
+                for (int i = director.Enemies.Count - 1; i >= 0; i--) director.Enemies[i].Damageable.ApplyHit(99999);
+                return !run.IsFighting;
+            }, 20f);
+            if (run.IsInEvent) run.CloseEvent();
+            run.BreakCrack();
+            run.Enter(hidden, FloorMap.Opposite(dir));
+            Assert.AreEqual(3, run.CurrentEvent.Choices.Count, "영약 · 비급 · 진전");
+            StringAssert.Contains("진전", run.CurrentEvent.Choices[2].Label);
+            Assert.AreEqual(AThousandDawns.Combat.UltimateForm.None, player.UltimateForm);
+            run.ChooseEvent(2);
+            run.CloseEvent();
+            Assert.AreNotEqual(AThousandDawns.Combat.UltimateForm.None, player.UltimateForm);
+            Assert.IsFalse(AThousandDawns.Combat.UltimateForms.ForDagger(player.UltimateForm), "검이면 검 진전");
         }
     }
 }

@@ -364,6 +364,7 @@ namespace AThousandDawns.Player
             if (IsDashInvulnerable)
             {
                 TryPerfectDodge(attacker); // 간파 (#경공 4단계)
+                OnDashDodgedForPack(); // 그림자 보법서
                 return false;
             }
             if (IsInvulnerable) return false;
@@ -383,6 +384,7 @@ namespace AThousandDawns.Player
             OnHurtForShield(damage);
             OnHurtForItems();
             OnHurtForMartialItems();
+            OnHurtByForPack(attacker); // 서리 갑옷
 
             _invulnerableTimer = Mathf.Max(_invulnerableTimer, _hurtIframe);
             _stunTimer = _hurtStun;
@@ -440,8 +442,7 @@ namespace AThousandDawns.Player
             _ultimateEndPending = true;
             swordRain.DaggerLook = UsesDagger; // 만천화우는 비도 모양
             swordRain.DaggerDirection = _facing; // 바라보는 쪽으로 기울어 내려와요
-            if (UsesDagger) swordRain.Begin(transform.position, _ultimateArea, Mathf.RoundToInt(D("knife.ultimate_count", 24f)), D("knife.ultimate_time", 3f), _ultimateFallTime, hit, _rules);
-            else swordRain.Begin(transform.position, _ultimateArea, _ultimateSwordCount, _ultimateCastTime, _ultimateFallTime, hit, _rules);
+            BeginUltimateRain(hit); // 무기 · 진전에 맞춰 (PlayerController.Jinjeon.cs)
         }
 
         // 시험판용: G 키로 기세를 가득 채워요.
@@ -676,6 +677,7 @@ namespace AThousandDawns.Player
                 var dh = PlayerHit(D("knife.shot_damage", 8f));
                 dh.AttackIncrease += BasicSwingBonus(finisher, extra);
                 ThrowDaggers(finisher ? Mathf.RoundToInt(D("knife.finisher_count", 3f)) : 1, dh, finisher ? HitTag.Finisher : HitTag.Basic, finisher ? _gaugeFinisher : _gaugeBasic);
+                FireIlseom(dh); // 일섬 검결
                 return;
             }
             if (finisher) _lungeRemaining = _finisherLunge;
@@ -753,7 +755,7 @@ namespace AThousandDawns.Player
             var hit = template;
             hit.Toughness = target.Toughness;
             hit.Defense = target.Defense;
-            hit.Situational *= target.ResolveSituational(transform.position, tag) * UnburnedMultiplier(target);
+            hit.Situational *= target.ResolveSituational(transform.position, tag) * UnburnedMultiplier(target) * PackTargetMultiplier(target, tag); // 결살 검결 · 숯 주머니
             target.ApplyHit(DamageFormula.ToEnemy(hit, _rules));
             if (target.IsDead) _swingKills++;
             ApplyItemsOnHit(target, tag);

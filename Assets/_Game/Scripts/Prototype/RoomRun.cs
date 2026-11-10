@@ -487,6 +487,7 @@ namespace AThousandDawns.Prototype
             _room.Cleared = true;
             SetLocks(false);
             AddTracking(Mathf.RoundToInt(GameConfig.Get("tracking.per_room", 1f)));
+            Player.OnRoomCleared(); // 호신 부적
             float mult = _path.Dense ? DenseMultiplier : 1f;
             int silver = BoostSilver(Mathf.RoundToInt(GameConfig.Get("silver.room", 18f) * mult) + _elitesThisRoom * Mathf.RoundToInt(GameConfig.Get("silver.elite", 15f)));
             Silver += silver;
@@ -556,7 +557,7 @@ namespace AThousandDawns.Prototype
         public void EnterInn()
         {
             var db = GameConfig.Items;
-            EnterInnSite(db == null ? null : InnShop.Stock(db.Items, Player.Items, ApplyLuck(RegionGradeWeights(), _luck), _rng, _innStockBonus, _unlockedParts, _innPriceScale, Player.Skill));
+            EnterInnSite(db == null ? null : InnShop.Stock(db.Available, Player.Items, ApplyLuck(RegionGradeWeights(), _luck), _rng, _innStockBonus, _unlockedParts, _innPriceScale, Player.Skill));
             int before = Tracking;
             Tracking = Mathf.FloorToInt(Tracking * GameConfig.Get("tracking.inn_ratio", 0.5f)); // 객잔에 들르면 추적도 절반
             int interest = InnInterest(); // 면벽수련 은 20
@@ -610,6 +611,7 @@ namespace AThousandDawns.Prototype
         public void CloseShop()
         {
             if (!IsShopping) return;
+            IsSelling = false;
             MarkSave();
             IsShopping = false;
             arena.Blocked = false;
@@ -622,6 +624,11 @@ namespace AThousandDawns.Prototype
         {
             var keyboard = Keyboard.current;
             if (keyboard == null) return;
+            if (IsSelling)
+            {
+                TickSellKeys(keyboard);
+                return;
+            }
             if (keyboard.escapeKey.wasPressedThisFrame || AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Interact))
             {
                 CloseShop();
@@ -639,6 +646,11 @@ namespace AThousandDawns.Prototype
             {
                 ShopNotice = blocker;
                 return false;
+            }
+            if (Shop.Slots[index].Kind == InnShop.SlotKind.Sell)
+            {
+                OpenSell(); // 매각 목록 (RoomRun.Sell.cs)
+                return true;
             }
             var slot = Shop.Slots[index];
             int paid = Shop.Buy(index, Player, Silver);
@@ -772,6 +784,7 @@ namespace AThousandDawns.Prototype
         {
             if (IsForking || IsShopping || IsInEvent) Time.timeScale = 1f;
             AThousandDawns.Combat.Damageable.AnyDied -= OnAnyDied;
+            AThousandDawns.Items.ItemDatabase.UnlockedPacks = 2; // 시험장에선 다 나오게
         }
 
         // HUD 한 줄

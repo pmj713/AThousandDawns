@@ -18,6 +18,7 @@ namespace AThousandDawns.Combat
 
         // 둔화·빙결
         public float SlowDurationBonus;          // 빙설 두건: 둔화 지속 +초
+        public float SlowExtraChance;            // 한기 구슬: 둔화를 걸 때 1중첩 더 걸릴 확률
         public float BossSlowBonus;              // 빙백 염주: 고수·보스에게 들어가는 둔화 효과 +%p (절반 규칙을 메움)
         public float SlowWindupExtra;            // 눈송이 수정: 둔화 3중첩인 적의 공격 예고 +초
         public float FreezeDurationBonus;        // 한빙 거울: 빙결 시간 +초
