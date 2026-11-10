@@ -1,6 +1,7 @@
 using AThousandDawns.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 namespace AThousandDawns.Prototype
 {
@@ -142,10 +143,23 @@ namespace AThousandDawns.Prototype
         }
 
         // 마을 어귀: 출발 (씬을 다시 불러 회귀록·면벽수련을 적용하고 바로 죽림으로)
+        // 마을 출발: 족자가 내려와 덮고 죽림이 번진 뒤 말려 올라가요 (회귀 연출은 거치지 않아요)
         public void Depart()
         {
-            SkipVillage = true;
-            Restart();
+            if (AThousandDawns.Fx.InkTransition.IsPlaying) return; // 어귀에 서 있는 동안 매 프레임 불려요
+            Time.timeScale = 1f;
+            int scene = SceneManager.GetActiveScene().buildIndex;
+            if (!Transitions)
+            {
+                SkipVillage = true;
+                SceneManager.LoadScene(scene);
+                return;
+            }
+            AThousandDawns.Fx.InkTransition.Play(AThousandDawns.Fx.InkTransition.Kind.Depart, () =>
+            {
+                SkipVillage = true;
+                SceneManager.LoadScene(scene);
+            });
         }
     }
 }
