@@ -189,39 +189,51 @@ namespace AThousandDawns.EditorTools
             }
 
             // 가지: 마디마다 조금씩 꺾여요. depth가 남으면 끝에서 갈라지고, 가는 가지는 중간에 곁가지 하나
-            void Branch(Vector3 start, Vector3 dir, float length, float radius, int depth)
+            // 방향은 (수평 방위 yaw, 올려본 각 elevation)으로 다뤄요. 가지는 부모가 뻗은 방위를 이어받아
+            // 좌우로만 갈라지고(되돌아 엉키지 않게), 마디마다 조금씩 각지게 꺾여요 (매화 가지의 지그재그).
+            Vector3 Dir(float yaw, float elevation)
+            {
+                float y = yaw * Mathf.Deg2Rad, e = elevation * Mathf.Deg2Rad;
+                return new Vector3(Mathf.Sin(y) * Mathf.Cos(e), Mathf.Sin(e), Mathf.Cos(y) * Mathf.Cos(e));
+            }
+
+            void Branch(Vector3 start, float yaw, float elevation, float length, float radius, int depth)
             {
                 var path = new List<Vector3> { start };
                 var p = start;
-                const int segs = 4;
+                const int segs = 3;
                 for (int i = 0; i < segs; i++)
                 {
-                    float j = depth >= 3 ? 0.2f : 0.45f; // 줄기는 덜, 가는 가지는 많이 꺾여요
-                    dir = (dir + new Vector3(Rand(-j, j), Rand(-0.15f, 0.25f), Rand(-j, j))).normalized;
-                    p += dir * length / segs;
+                    float kink = depth >= 3 ? 6f : 14f; // 줄기는 곧게, 가는 가지일수록 각지게
+                    yaw += Rand(-kink, kink);
+                    elevation = Mathf.Clamp(elevation + Rand(-kink, kink * 0.7f), 15f, 85f);
+                    p += Dir(yaw, elevation) * length / segs;
                     path.Add(p);
                 }
-                float endRadius = depth > 0 ? radius * 0.6f : radius * 0.25f;
+                float endRadius = depth > 0 ? radius * 0.62f : Mathf.Max(0.025f, radius * 0.3f);
                 Tube(path, radius, endRadius);
                 if (depth <= 0) { allTips.Add(p); return; }
 
-                int forks = depth >= 3 ? 3 : 2;
-                for (int f = 0; f < forks; f++)
+                if (depth >= 3)
                 {
-                    float yaw = f * 360f / forks + Rand(-30f, 30f);
-                    var outward = Quaternion.Euler(0f, yaw, 0f) * Vector3.forward;
-                    var childDir = (dir * 0.4f + outward * Rand(0.7f, 1.1f) + Vector3.up * 0.25f).normalized; // 옆으로 넓게 퍼지는 매화 수형
-                    Branch(p, childDir, length * Rand(0.65f, 0.8f), endRadius, depth - 1);
+                    // 줄기 끝: 사방으로 굵은 가지 셋
+                    float start0 = Rand(0f, 120f);
+                    for (int f = 0; f < 3; f++)
+                        Branch(p, start0 + f * 120f + Rand(-20f, 20f), Rand(35f, 50f), length * Rand(0.6f, 0.7f), endRadius, depth - 1);
+                    Branch(path[2], start0 + 60f, 50f, length * 0.35f, radius * 0.35f, 0); // 줄기 중간에 짧은 잔가지 (꽃 자리 22개 채움)
                 }
-                if (depth <= 2)
+                else
                 {
-                    var sideDir = (Vector3.Cross(dir, Vector3.up).normalized * (rng.Next(2) * 2 - 1) + Vector3.up * 0.4f).normalized;
-                    Branch(path[2], sideDir, length * 0.45f, radius * 0.45f, 0);
+                    // 좌우로 하나씩, 부모 방위에서 15~40°만 벌어져요
+                    for (int s = -1; s <= 1; s += 2)
+                        Branch(p, yaw + s * Rand(15f, 40f), Mathf.Clamp(elevation + Rand(-5f, 15f), 20f, 75f), length * Rand(0.6f, 0.75f), endRadius, depth - 1);
+                    // 가지 중간에서 짧은 곁가지 하나 (위로 솟는 잔가지)
+                    Branch(path[1], yaw + (rng.Next(2) * 2 - 1) * Rand(40f, 70f), Rand(50f, 70f), length * 0.4f, radius * 0.45f, 0);
                 }
             }
 
-            // 밑동: 굵고 비스듬히 휜 줄기, 땅을 움켜쥔 짧은 뿌리 일곱
-            Branch(Vector3.zero, new Vector3(0.2f, 1f, 0.05f).normalized, 2.3f, 0.3f, 3);
+            // 밑동: 굵고 조금 기운 줄기, 땅을 움켜쥔 짧은 뿌리 일곱
+            Branch(Vector3.zero, 30f, 78f, 2.1f, 0.3f, 3);
             for (int i = 0; i < 7; i++)
             {
                 var outward = Quaternion.Euler(0f, i * 51f + Rand(-15f, 15f), 0f) * Vector3.forward;
