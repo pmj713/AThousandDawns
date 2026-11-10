@@ -221,7 +221,28 @@ namespace AThousandDawns.Prototype
             return options;
         }
 
-        public void ChooseFork(int index)
+        // 수묵 전환 연출 (아트 InkTransition). 테스트는 꺼요 (TestSettingsFixture). 켜 두면 고른 뒤 0.35초 뒤에야 층이 바뀌어요
+        public static bool Transitions = true;
+        bool _forkPicked; // 층 사이 먹 번짐 도중 (같은 갈림길을 두 번 고르지 않게)
+
+        // origin: 고른 길 끝 (화면 픽셀, 위가 0). 그 자리에서 먹이 번져요
+        public void ChooseFork(int index, Vector2? origin = null)
+        {
+            if (!IsForking || _forkPicked || index < 0 || index >= _forkOptions.Count) return;
+            if (!Transitions)
+            {
+                ChooseForkNow(index);
+                return;
+            }
+            _forkPicked = true;
+            AThousandDawns.Fx.InkTransition.Play(AThousandDawns.Fx.InkTransition.Kind.Floor, () =>
+            {
+                _forkPicked = false;
+                ChooseForkNow(index);
+            }, origin: origin);
+        }
+
+        void ChooseForkNow(int index)
         {
             if (!IsForking || index < 0 || index >= _forkOptions.Count) return;
             _path = _forkOptions[index];

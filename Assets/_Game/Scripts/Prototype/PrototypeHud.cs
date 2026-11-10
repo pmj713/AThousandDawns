@@ -496,18 +496,32 @@ namespace AThousandDawns.Prototype
             GUI.DrawTexture(new Rect(0, 0, UiScale.Width, UiScale.Height), Texture2D.whiteTexture);
             GUI.color = old;
 
-            const float cardW = 320f, cardH = 200f, gap = 20f;
-            float total = options.Count * cardW + (options.Count - 1) * gap;
-            float x = (UiScale.Width - total) * 0.5f, y = (UiScale.Height - cardH) * 0.5f;
-            GUI.Label(new Rect(0, y - 56f, UiScale.Width, 40f), $"죽림 {run.Floor}층 갈림길 · 1 2 3 또는 클릭", _big);
+            // 먹선 지도 (아트 InkForkMap): 아래 가운데(지금 자리)에서 갈래마다 길이 그어지고, 카드는 그 길 끝에
+            const float cardW = 300f, cardH = 190f;
+            var mapRect = new Rect(UiScale.Width * 0.5f - 640f, 230f, 1280f, Mathf.Min(720f, UiScale.Height - 260f));
+            GUI.Label(new Rect(0, 24f, UiScale.Width, 40f), $"죽림 {run.Floor}층 갈림길 · 1 2 3 또는 클릭", _big);
+            var dense = new System.Collections.Generic.List<bool>();
+            foreach (var p in options) dense.Add(p.Dense);
+            int hover = -1;
+            var mouse = Event.current.mousePosition;
+            for (int i = 0; i < options.Count; i++) // 카드 자리는 지도의 길 끝과 같은 식 (그리기 전에 마우스가 어느 길 위인지)
+            {
+                var end = new Vector2(mapRect.x + mapRect.width * (i + 1f) / (options.Count + 1f), mapRect.y + mapRect.height * 0.2f);
+                if (ForkCard(end, cardW, cardH).Contains(mouse)) hover = i;
+            }
+            var ends = AThousandDawns.Fx.InkForkMap.Draw(mapRect, dense, hover);
             for (int i = 0; i < options.Count; i++)
             {
                 var p = options[i];
                 string qi = p.Dense ? "<color=#ff6a5a>기운 짙음</color>" : "<color=#bfe3c0>기운 옅음</color>";
                 string text = $"<size=13>[{i + 1}]</size>  <b><size=21>{RoomRun.RewardLabel(p.Reward)}</size></b>\n{qi}\n\n{run.PathDetail(p)}";
-                if (GUI.Button(new Rect(x + i * (cardW + gap), y, cardW, cardH), text, _card)) run.ChooseFork(i);
+                var card = ForkCard(ends[i], cardW, cardH);
+                if (GUI.Button(card, text, _card)) run.ChooseFork(i, GUIUtility.GUIToScreenPoint(ends[i])); // 고른 길 끝에서 먹이 번져요
             }
         }
+
+        // 길 끝 위에 얹는 카드 (아래 가장자리가 길 끝 조금 아래)
+        static Rect ForkCard(Vector2 end, float w, float h) => new Rect(end.x - w * 0.5f, end.y - h + 30f, w, h);
 
         // 버릴 기물 고르기: 경맥도도 주머니도 가득일 때 새 기물을 받으려면 가진 기물 하나를 버려요 (그 자리에 새 기물). Esc 포기
         void DrawDiscard()

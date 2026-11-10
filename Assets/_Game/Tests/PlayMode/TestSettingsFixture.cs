@@ -16,6 +16,7 @@ namespace AThousandDawns.Tests
         public void UseTempSettings()
         {
             AThousandDawns.Prototype.RoomRun.TutorialEnabled = false; // 튜토리얼 테스트만 켜요 (나머지는 첫 판도 바로 갈림길)
+            AThousandDawns.Prototype.RoomRun.Transitions = false; // 수묵 전환 연출도 꺼요 (층·회귀가 바로 바뀌게)
             _path = Path.Combine(Application.temporaryCachePath, $"settings_test_{Guid.NewGuid():N}.json");
             GameSettings.PathOverride = _path;
             GameSettings.Reload();
@@ -25,6 +26,7 @@ namespace AThousandDawns.Tests
         public void RestoreSettings()
         {
             AThousandDawns.Prototype.RoomRun.TutorialEnabled = true;
+            AThousandDawns.Prototype.RoomRun.Transitions = true;
             if (File.Exists(_path)) File.Delete(_path);
             GameSettings.PathOverride = null;
             GameSettings.Reload();

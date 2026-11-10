@@ -163,10 +163,19 @@ namespace AThousandDawns.Prototype
             _ => "죽림",
         };
 
+        // 회귀: 먹이 덮었다가 되감기듯 걷혀요. 첫 회귀(끝난 판이 1번)면 "그날 아침으로 돌아왔다" → 一朝千回
         public void Restart()
         {
+            if (AThousandDawns.Fx.InkTransition.IsPlaying) return; // 연출 중에 다시 눌러도 한 번만
             Time.timeScale = 1f;
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            int scene = SceneManager.GetActiveScene().buildIndex;
+            if (!Transitions)
+            {
+                SceneManager.LoadScene(scene);
+                return;
+            }
+            bool firstDawn = MetaSave.Load().runs == 1;
+            AThousandDawns.Fx.InkTransition.Play(AThousandDawns.Fx.InkTransition.Kind.Regression, () => SceneManager.LoadScene(scene), firstDawn);
         }
     }
 }
