@@ -2709,3 +2709,31 @@ MonoBehaviour:
     value: 20
     unit: "\uCE78/\uCD08"
     note: "\uD68C\uB958: \uBE44\uB3C4\uAC00 \uB3CC\uC544\uC624\uB294 \uC18D\uB3C4"
+  - key: fork.silver
+    value: 80
+    unit: "\uC740\uC790"
+    note: "\uAC08\uB9BC\uAE38 \uC740\uC790 \uAE38 (\uC605\uC74C): \uBCF4\uC0C1 \uBC29 \uC804\uB9AC\uD488 \uB354\uBBF8"
+  - key: fork.silver_dense
+    value: 120
+    unit: "\uC740\uC790"
+    note: "\uAC08\uB9BC\uAE38 \uC740\uC790 \uAE38 (\uC9D9\uC74C)"
+  - key: fork.xp
+    value: 25
+    unit: 
+    note: "\uAC08\uB9BC\uAE38 \uC218\uB828 \uAE38 (\uC605\uC74C): \uC218\uB828\uCE58"
+  - key: fork.xp_dense
+    value: 40
+    unit: 
+    note: "\uAC08\uB9BC\uAE38 \uC218\uB828 \uAE38 (\uC9D9\uC74C): \uC218\uB828\uCE58"
+  - key: fork.potions
+    value: 1
+    unit: "\uAC1C"
+    note: "\uAC08\uB9BC\uAE38 \uC7A1\uD654 \uAE38 (\uC605\uC74C): \uAE08\uCC3D\uC57D"
+  - key: fork.potions_dense
+    value: 2
+    unit: "\uAC1C"
+    note: "\uAC08\uB9BC\uAE38 \uC7A1\uD654 \uAE38 (\uC9D9\uC74C): \uAE08\uCC3D\uC57D"
+  - key: fork.potion_silver
+    value: 40
+    unit: "\uC740\uC790"
+    note: "\uC7A1\uD654 \uAE38: \uAE08\uCC3D\uC57D\uC774 \uAC00\uB4DD\uD558\uBA74 1\uAC1C\uB2F9 \uB300\uC2E0 \uC8FC\uB294 \uC740\uC790"
