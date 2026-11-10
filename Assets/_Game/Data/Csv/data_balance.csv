@@ -680,3 +680,10 @@ fork.xp_dense,40,,갈림길 수련 길 (짙음): 수련치,
 fork.potions,1,개,갈림길 잡화 길 (옅음): 금창약,
 fork.potions_dense,2,개,갈림길 잡화 길 (짙음): 금창약,
 fork.potion_silver,40,은자,잡화 길: 금창약이 가득하면 1개당 대신 주는 은자,
+region.1.health,1.8,배,폐사찰 적 체력 배율 (일반 적·살수·고수·보스),몬스터!B16
+region.1.attack,1.3,배,폐사찰 적 공격 배율,몬스터!C16
+region.1.silver_room,22,은자,폐사찰 전투 방 클리어 은자,은자!B5
+item_grade.r2.common,46%,,기물 등급 확률 일반 (장강 수채 = 폐사찰 짙은 길),등급확률!B13
+item_grade.r2.uncommon,31%,,기물 등급 확률 고급 (장강 수채),등급확률!C13
+item_grade.r2.rare,17%,,기물 등급 확률 희귀 (장강 수채),등급확률!D13
+item_grade.r2.legendary,6%,,기물 등급 확률 전설 (장강 수채),등급확률!E13

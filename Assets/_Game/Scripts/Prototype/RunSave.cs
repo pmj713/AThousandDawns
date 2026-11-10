@@ -25,6 +25,7 @@ namespace AThousandDawns.Prototype
         // 판
         public int phase;        // RoomRun.Phase (Fork · Floor · Inn · Rest)
         public int floor;
+        public int region;     // 0 죽림 · 1 폐사찰
         public int pathReward;
         public bool pathDense;
         public List<Fork> forkOptions = new List<Fork>();
@@ -105,13 +106,15 @@ namespace AThousandDawns.Prototype
             }
         }
 
+        string RegionText => RoomRun.RegionNames[UnityEngine.Mathf.Clamp(region, 0, RoomRun.RegionNames.Length - 1)];
+
         // 시작 화면 진행 정보 ("죽림 2층" 등)
         public string WhereText => (RoomRun.Phase)phase switch
         {
-            RoomRun.Phase.Fork => $"죽림 {floor}층 갈림길",
+            RoomRun.Phase.Fork => $"{RegionText} {floor}층 갈림길",
             RoomRun.Phase.Inn => "객잔",
             RoomRun.Phase.Rest => "정비실",
-            _ => $"죽림 {floor}층",
+            _ => $"{RegionText} {floor}층",
         };
     }
 }

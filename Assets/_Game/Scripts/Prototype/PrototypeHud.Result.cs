@@ -31,7 +31,7 @@ namespace AThousandDawns.Prototype
             GUI.color = old;
 
             float cx = UiScale.Width * 0.5f;
-            GUI.Label(new Rect(0, 50f, UiScale.Width, 50f), r.Victory ? "죽림을 돌파했어요" : "쓰러졌어요 · 그날 아침으로 회귀해요", _big);
+            GUI.Label(new Rect(0, 50f, UiScale.Width, 50f), r.Victory ? "끝까지 돌파했어요" : "쓰러졌어요 · 그날 아침으로 회귀해요", _big);
             GUI.Label(new Rect(0, 104f, UiScale.Width, 30f),
                 $"<color=#cfcfcf>제{r.Runs}회 회귀 · {r.Where} · 플레이 시간 {RunRecord.Clock(r.PlaySeconds)}</color>", _bossLabel);
 

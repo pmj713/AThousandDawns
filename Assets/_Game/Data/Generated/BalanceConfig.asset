@@ -2737,3 +2737,31 @@ MonoBehaviour:
     value: 40
     unit: "\uC740\uC790"
     note: "\uC7A1\uD654 \uAE38: \uAE08\uCC3D\uC57D\uC774 \uAC00\uB4DD\uD558\uBA74 1\uAC1C\uB2F9 \uB300\uC2E0 \uC8FC\uB294 \uC740\uC790"
+  - key: region.1.health
+    value: 1.8
+    unit: "\uBC30"
+    note: "\uD3D0\uC0AC\uCC30 \uC801 \uCCB4\uB825 \uBC30\uC728 (\uC77C\uBC18 \uC801\xB7\uC0B4\uC218\xB7\uACE0\uC218\xB7\uBCF4\uC2A4)"
+  - key: region.1.attack
+    value: 1.3
+    unit: "\uBC30"
+    note: "\uD3D0\uC0AC\uCC30 \uC801 \uACF5\uACA9 \uBC30\uC728"
+  - key: region.1.silver_room
+    value: 22
+    unit: "\uC740\uC790"
+    note: "\uD3D0\uC0AC\uCC30 \uC804\uD22C \uBC29 \uD074\uB9AC\uC5B4 \uC740\uC790"
+  - key: item_grade.r2.common
+    value: 0.46
+    unit: 
+    note: "\uAE30\uBB3C \uB4F1\uAE09 \uD655\uB960 \uC77C\uBC18 (\uC7A5\uAC15 \uC218\uCC44 = \uD3D0\uC0AC\uCC30 \uC9D9\uC740 \uAE38)"
+  - key: item_grade.r2.uncommon
+    value: 0.31
+    unit: 
+    note: "\uAE30\uBB3C \uB4F1\uAE09 \uD655\uB960 \uACE0\uAE09 (\uC7A5\uAC15 \uC218\uCC44)"
+  - key: item_grade.r2.rare
+    value: 0.17
+    unit: 
+    note: "\uAE30\uBB3C \uB4F1\uAE09 \uD655\uB960 \uD76C\uADC0 (\uC7A5\uAC15 \uC218\uCC44)"
+  - key: item_grade.r2.legendary
+    value: 0.06
+    unit: 
+    note: "\uAE30\uBB3C \uB4F1\uAE09 \uD655\uB960 \uC804\uC124 (\uC7A5\uAC15 \uC218\uCC44)"

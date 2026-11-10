@@ -106,6 +106,7 @@ namespace AThousandDawns.Prototype
             var hunter = _intruder;
             CancelIntrude();
             hunter.Brain = director.Spawn(EnemyKind.Assassin, _intrudeSpot);
+            ScaleForRegion(hunter.Brain);
             Sfx.Play(SfxId.AssassinAppear);
         }
 

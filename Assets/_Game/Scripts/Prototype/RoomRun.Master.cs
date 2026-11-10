@@ -42,9 +42,10 @@ namespace AThousandDawns.Prototype
             director.ResetRoom();
             Player.EnterRoom();
             _master = director.Spawn(kind, site.center + new Vector3(0f, 0f, 2.5f));
+            ScaleForRegion(_master); // 폐사찰 고수가 생기기 전까지 죽림 고수를 지역 배율로
             ((IMasterBrain)_master).SetZone(site.center, site.size);
             OnFightStart();
-            ShowBanner($"죽림 2층 관문 · 고수 {_master.DisplayName}");
+            ShowBanner($"{RegionName} 2층 관문 · 고수 {_master.DisplayName}");
         }
 
         void TickMaster()

@@ -210,12 +210,47 @@ namespace AThousandDawns.Tests
             boss.Damageable.ApplyHit(Mathf.CeilToInt(boss.Damageable.MaxHealth * 0.55f));
             yield return WaitUntil(() => boss.Phase == 2 && !boss.IsTransitioning, 4f);
             boss.Damageable.ApplyHit(99999);
-            yield return WaitUntil(() => _run.IsDone, 3f);
-            Assert.IsTrue(_run.IsDone);
+            yield return WaitUntil(() => _arena.IsChoosing, 3f);
+            Assert.IsTrue(_arena.IsChoosing, "녹림왕 보상 기물");
+            Assert.IsFalse(_run.IsDone, "죽림 보스는 판 끝이 아니에요");
             Assert.AreEqual(6, _player.Items.Board.Width);
             Assert.AreEqual(50, _run.Silver, "보스 은자 50");
-            yield return WaitUntil(() => _arena.IsChoosing, 2f);
-            Assert.IsTrue(_arena.IsChoosing, "녹림왕 보상 기물");
+
+            // 기물을 고르면 폐사찰 1층 갈림길
+            _arena.Choose(0);
+            yield return WaitUntil(() => _run.IsForking, 2f);
+            Assert.AreEqual(1, _run.Region);
+            Assert.AreEqual("폐사찰", _run.RegionName);
+            Assert.AreEqual(1, _run.Floor);
+        }
+
+        // 폐사찰: 적이 지역 배율만큼 세고, 보스를 쓰러뜨리면 판 끝 (승리)
+        [UnityTest]
+        public IEnumerator 폐사찰은_적이_세고_보스를_쓰러뜨리면_판_끝()
+        {
+            yield return Load();
+            _run.SetRegionForTest(1);
+            bool dense = _run.ForkOptions[0].Dense;
+            _run.ChooseFork(0);
+            Assert.AreEqual("폐사찰", _run.RegionName);
+            var room = _run.Map.Rooms.First(r => r.Kind == FloorRoomKind.Combat);
+            _run.Enter(room, -1);
+            yield return WaitUntil(() => _director.Enemies.Count > 0, 5f);
+            var grunt = _director.Enemies.FirstOrDefault(e => e.Kind == EnemyKind.Grunt && !e.IsElite);
+            if (grunt != null) Assert.AreEqual(30f * 1.8f * (dense ? 1.3f : 1f), grunt.Damageable.MaxHealth, 0.5f, "졸개 체력 30 × 1.8 (짙은 길이면 × 1.3)");
+
+            _run.EnterRest();
+            var cc = _player.GetComponent<CharacterController>();
+            cc.enabled = false;
+            _player.transform.position = new Vector3(60f, 0f, 6.6f);
+            cc.enabled = true;
+            yield return WaitUntil(() => _arena.Boss != null && _arena.Boss.IsAwake, 3f);
+            var boss = _arena.Boss;
+            boss.Damageable.ApplyHit(Mathf.CeilToInt(boss.Damageable.MaxHealth * 0.55f));
+            yield return WaitUntil(() => boss.Phase == 2 && !boss.IsTransitioning, 4f);
+            boss.Damageable.ApplyHit(99999);
+            yield return WaitUntil(() => _run.IsDone, 3f);
+            Assert.IsTrue(_run.IsDone, "마지막 지역 보스 = 판 끝");
         }
     }
 }

@@ -48,6 +48,7 @@ namespace AThousandDawns.Prototype
             {
                 phase = (int)(IsForking ? Phase.Fork : _phase), // 갈림길은 층 사이라 따로 표시
                 floor = _floor,
+                region = _region,
                 pathReward = (int)_path.Reward,
                 pathDense = _path.Dense,
                 masterDone = _masterDone,
@@ -163,6 +164,7 @@ namespace AThousandDawns.Prototype
             Silver = s.silver;
             Tracking = s.tracking;
             _floor = s.floor;
+            _region = s.region;
             _path = new Path { Reward = (RewardKind)s.pathReward, Dense = s.pathDense };
             _masterDone = s.masterDone;
             _floorPower = s.floorPower;
@@ -190,7 +192,7 @@ namespace AThousandDawns.Prototype
                     arena.Blocked = true;
                     Player.enabled = false;
                     Time.timeScale = 0f;
-                    ShowBanner($"이어하기 · 죽림 {_floor}층 갈림길");
+                    ShowBanner($"이어하기 · {RegionName} {_floor}층 갈림길");
                     break;
                 case Phase.Inn:
                     EnterInnSite(s.hasShop ? RestoreShop(s, db) : null);
@@ -218,7 +220,7 @@ namespace AThousandDawns.Prototype
                     Time.timeScale = 1f;
                     var at = _map.At(new Vector2Int(s.roomX, s.roomY)) ?? _map.Start;
                     Enter(at, -1);
-                    ShowBanner($"이어하기 · 죽림 {_floor}층");
+                    ShowBanner($"이어하기 · {RegionName} {_floor}층");
                     break;
             }
             _saveDirty = false;

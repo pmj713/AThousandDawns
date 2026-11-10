@@ -336,6 +336,9 @@ namespace AThousandDawns.Enemies
 
         protected bool TryHitPlayer() => Player.TryReceiveHit(AttackPower, transform.position, HitKnockback, Body);
 
+        // 지역 배율 (폐사찰 ×1.3): 나온 직후 한 번
+        public void ScaleAttack(float multiplier) => AttackPower *= multiplier;
+
         Vector3 Separation()
         {
             Vector3 push = Vector3.zero;

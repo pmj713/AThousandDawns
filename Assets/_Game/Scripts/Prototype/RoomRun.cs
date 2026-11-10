@@ -168,6 +168,7 @@ namespace AThousandDawns.Prototype
                 return;
             }
 
+            TickRegionAdvance(); // 보스 보상을 고른 뒤 다음 지역으로
             switch (_phase)
             {
                 case Phase.Inn: TickInn(); break;
@@ -196,7 +197,7 @@ namespace AThousandDawns.Prototype
             arena.Blocked = true;
             Player.enabled = false; // 고르는 클릭이 평타로 남지 않게
             Time.timeScale = 0f;
-            ShowBanner($"죽림 {floor}층 · 갈림길");
+            ShowBanner($"{RegionName} {floor}층 · 갈림길");
             MarkSave();
         }
 
@@ -265,7 +266,7 @@ namespace AThousandDawns.Prototype
             AssignEvents();
             SenseHidden();
             _phase = Phase.Floor;
-            ShowBanner($"죽림 {_floor}층 · {PathLabel(_path)}");
+            ShowBanner($"{RegionName} {_floor}층 · {PathLabel(_path)}");
             BeginHunt();
             Enter(_map.Start, -1);
             if (_startPartPick) // 면벽수련 맥 10: 시작 시 부품 고르기
@@ -299,7 +300,7 @@ namespace AThousandDawns.Prototype
                 ? (p.Dense ? "기물 둘까지 녹여 무기에 넣기" : "기물 하나를 녹여 무기에 넣기")
                 : $"체력 {GameConfig.Get("room.heal_ratio", 0.3f) * mult:0%} 회복");
             string enemies = p.Dense ? $"적 체력 +{GameConfig.Get("room.dense_health", 1.3f) - 1f:0%} · 방마다 정예 1명" : "적 보통";
-            return $"{reward}\n{enemies} · 방마다 은자 {Mathf.RoundToInt(GameConfig.Get("silver.room", 18f) * mult)}";
+            return $"{reward}\n{enemies} · 방마다 은자 {Mathf.RoundToInt(RoomSilver * mult)}";
         }
 
         float DenseMultiplier => GameConfig.Get("room.dense_reward_multiplier", 1.5f);
@@ -523,6 +524,7 @@ namespace AThousandDawns.Prototype
                     _elitesThisRoom++;
                 }
                 if (health != 1f) enemy.Damageable.ScaleMaxHealth(health);
+                ScaleForRegion(enemy); // 폐사찰: 체력 ×1.8 · 공격 ×1.3
             }
             _pending.Clear();
             _warning = false;
@@ -538,7 +540,7 @@ namespace AThousandDawns.Prototype
             AddTracking(Mathf.RoundToInt(GameConfig.Get("tracking.per_room", 1f)));
             Player.OnRoomCleared(); // 호신 부적
             float mult = _path.Dense ? DenseMultiplier : 1f;
-            int silver = BoostSilver(Mathf.RoundToInt(GameConfig.Get("silver.room", 18f) * mult) + _elitesThisRoom * Mathf.RoundToInt(GameConfig.Get("silver.elite", 15f)));
+            int silver = BoostSilver(Mathf.RoundToInt(RoomSilver * mult) + _elitesThisRoom * Mathf.RoundToInt(GameConfig.Get("silver.elite", 15f)));
             Silver += silver;
             string text = $"방을 비웠어요 · 은자 +{silver}";
             if (_roomHeal > 0f && !Player.IsDead) // 면벽수련 강 10: 방을 비우면 체력 회복
@@ -571,7 +573,7 @@ namespace AThousandDawns.Prototype
                 if (GrantTutorialReward()) text += " · 첫 기물";
                 else if (_path.Reward == RewardKind.Item)
                 {
-                    arena.GrantOffer(_path.Dense ? DenseGradeWeights() : null);
+                    arena.GrantOffer(_path.Dense ? DenseGradeWeights() : RegionGradeWeights()); // 그 지역 표 (짙으면 다음 지역 표)
                     text += " · 기물 고르기";
                 }
                 else if (_path.Reward == RewardKind.Forge)
@@ -594,13 +596,6 @@ namespace AThousandDawns.Prototype
             }
             ShowBanner(text);
         }
-
-        // 짙은 길 기물: 다음 지역(폐사찰) 등급표 (등급확률 시트)
-        static float[] DenseGradeWeights() => new[]
-        {
-            GameConfig.Get("item_grade_dense.common", 0.52f), GameConfig.Get("item_grade_dense.uncommon", 0.3f),
-            GameConfig.Get("item_grade_dense.rare", 0.14f), GameConfig.Get("item_grade_dense.legendary", 0.04f),
-        };
 
         // ── 객잔
 
@@ -628,13 +623,6 @@ namespace AThousandDawns.Prototype
             Shop = shop;
             MarkSave();
         }
-
-        // 객잔 진열: 그 지역 등급표 (등급확률 시트 죽림 줄)
-        static float[] RegionGradeWeights() => new[]
-        {
-            GameConfig.Get("item_grade.common", 0.58f), GameConfig.Get("item_grade.uncommon", 0.3f),
-            GameConfig.Get("item_grade.rare", 0.1f), GameConfig.Get("item_grade.legendary", 0.02f),
-        };
 
         void TickInn()
         {
@@ -745,6 +733,7 @@ namespace AThousandDawns.Prototype
             director.ResetRoom();
             Player.EnterRoom();
             var nokrim = arena.SpawnBoss();
+            if (nokrim != null) ScaleForRegion(nokrim); // 폐사찰 보스가 생기기 전까지 녹림왕을 지역 배율로
             OnFightStart();
             if (_bossGauge > 0f) Player.RaiseGaugeTo(_bossGauge); // 기시감: 천마에 대해 물음 (마지막 보스전 = 지금은 녹림왕)
             bool hunted = Tracking >= Mathf.RoundToInt(GameConfig.Get("tracking.assassin2", 10f));
@@ -754,17 +743,23 @@ namespace AThousandDawns.Prototype
 
         void FinishRun()
         {
-            _phase = Phase.Done;
+            if (!LastRegion) // 지역 보스: 보상을 고른 뒤 다음 지역으로 (RoomRun.Region.cs)
+            {
+                _phase = Phase.None;
+                _regionAdvancePending = true;
+            }
+            else _phase = Phase.Done;
             _record.FloorsCleared++; // 보스 층 돌파
             int silver = BoostSilver(Mathf.RoundToInt(GameConfig.Get("silver.boss", 50f)));
             Silver += silver;
             arena.GrantOffer(SpecialGradeWeights()); // 보스·살수 특별 보상 표
             var items = Player.Items;
-            if (items != null)
+            if (items != null && _region == 0) // 죽림 보스: 경맥도 5×4 → 6×4
                 items.ExpandBoard(
                     Mathf.RoundToInt(GameConfig.Get("meridian.width_after_boss1", 6f)),
                     Mathf.RoundToInt(GameConfig.Get("meridian.height_after_boss1", 4f)));
-            ShowBanner($"녹림왕 격파! 은자 +{silver} · 경맥도가 넓어졌어요 (6×4) · F5 새 판", 6f);
+            string next = LastRegion ? "판 끝" : $"기물을 고르면 {RegionNames[_region + 1]}로";
+            ShowBanner($"{RegionName} 보스 격파! 은자 +{silver}{(_region == 0 ? " · 경맥도가 넓어졌어요 (6×4)" : "")} · {next}", 6f);
         }
 
         // ── 도움
@@ -845,19 +840,19 @@ namespace AThousandDawns.Prototype
                 string where;
                 switch (_phase)
                 {
-                    case Phase.Fork: where = $"죽림 {_floor}층 갈림길"; break;
+                    case Phase.Fork: where = $"{RegionName} {_floor}층 갈림길"; break;
                     case Phase.Floor:
                         string wave = _fighting && _waves != null ? $" · 웨이브 {Mathf.Clamp(_wave + 1, 1, _waves.Count)}/{_waves.Count}" : "";
-                        where = $"죽림 {_floor}층 · {PathLabel(_path)} · 남은 전투 방 {_map.FightsLeft()}{wave}";
+                        where = $"{RegionName} {_floor}층 · {PathLabel(_path)} · 남은 전투 방 {_map.FightsLeft()}{wave}";
                         break;
-                    case Phase.Inn: where = "죽림 · 객잔"; break;
-                    case Phase.Master: where = "죽림 2층 관문 · 고수"; break;
-                    case Phase.Rest: where = "죽림 보스 층 · 정비실"; break;
-                    case Phase.Boss: where = "죽림 보스 층 · 녹림왕"; break;
+                    case Phase.Inn: where = $"{RegionName} · 객잔"; break;
+                    case Phase.Master: where = $"{RegionName} 2층 관문 · 고수"; break;
+                    case Phase.Rest: where = $"{RegionName} 보스 층 · 정비실"; break;
+                    case Phase.Boss: where = $"{RegionName} 보스 층 · 녹림왕"; break;
                     case Phase.Done: where = "판 끝"; break;
-                    default: where = IsForking ? $"죽림 {_floor}층 갈림길" : ""; break;
+                    default: where = IsForking ? $"{RegionName} {_floor}층 갈림길" : ""; break;
                 }
-                if (IsForking) where = $"죽림 {_floor}층 갈림길";
+                if (IsForking) where = $"{RegionName} {_floor}층 갈림길";
                 return $"{where} · 은자 {Silver} · 추적도 {Tracking} · 시드 {Seed}";
             }
         }

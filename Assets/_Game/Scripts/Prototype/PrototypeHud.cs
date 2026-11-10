@@ -499,7 +499,7 @@ namespace AThousandDawns.Prototype
             // 먹선 지도 (아트 InkForkMap): 아래 가운데(지금 자리)에서 갈래마다 길이 그어지고, 카드는 그 길 끝에
             const float cardW = 300f, cardH = 190f;
             var mapRect = new Rect(UiScale.Width * 0.5f - 640f, 230f, 1280f, Mathf.Min(720f, UiScale.Height - 260f));
-            GUI.Label(new Rect(0, 24f, UiScale.Width, 40f), $"죽림 {run.Floor}층 갈림길 · 1 2 3 또는 클릭", _big);
+            GUI.Label(new Rect(0, 24f, UiScale.Width, 40f), $"{run.RegionName} {run.Floor}층 갈림길 · 1 2 3 또는 클릭", _big);
             var dense = new System.Collections.Generic.List<bool>();
             foreach (var p in options) dense.Add(p.Dense);
             int hover = -1;

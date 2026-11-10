@@ -130,7 +130,7 @@ namespace AThousandDawns.Prototype
             Result = new ResultView
             {
                 Victory = victory,
-                Where = victory ? "녹림왕 격파 · 죽림 돌파" : $"{WhereText()} · {DeathCause()}",
+                Where = victory ? $"{RegionName} 돌파" : $"{WhereText()} · {DeathCause()}",
                 Lines = _record.Lines(weights),
                 Memory = memory,
                 StoredMemory = meta.memory,
@@ -153,14 +153,14 @@ namespace AThousandDawns.Prototype
 
         string WhereText() => _phase switch
         {
-            Phase.Floor => $"죽림 {_floor}층",
-            Phase.Fork => $"죽림 {_floor}층 갈림길",
-            Phase.Master => $"죽림 2층 관문 ({(_master != null ? _master.DisplayName : "고수")})",
+            Phase.Floor => $"{RegionName} {_floor}층",
+            Phase.Fork => $"{RegionName} {_floor}층 갈림길",
+            Phase.Master => $"{RegionName} 2층 관문 ({(_master != null ? _master.DisplayName : "고수")})",
             Phase.Inn => "객잔",
             Phase.Rest => "정비실",
             Phase.Village => "마을",
-            Phase.Boss => "녹림왕 앞",
-            _ => "죽림",
+            Phase.Boss => $"{RegionName} 보스 앞",
+            _ => RegionName,
         };
 
         // 회귀: 먹이 덮었다가 되감기듯 걷혀요. 첫 회귀(끝난 판이 1번)면 "그날 아침으로 돌아왔다" → 一朝千回
