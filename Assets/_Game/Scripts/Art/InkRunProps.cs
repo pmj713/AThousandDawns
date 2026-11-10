@@ -90,26 +90,49 @@ namespace AThousandDawns.Art
             visual.position = t.position - t.forward * 0.02f; // 벽 안쪽 면 (crack의 forward = 벽 쪽)
             visual.rotation = t.rotation;
             Unscale(visual, t, 1f);
+            // 카메라는 남쪽 위에서 북쪽을 내려다봐요. 남쪽 담의 안쪽 면은 카메라를 등지고, 담(1.5) 바로 뒤 바닥 약 1m도 가려져요.
+            // 그래서 남쪽 담이면 금을 바깥 면(카메라 쪽)에도 그리고, 부스러기는 가려지는 곳 너머에 둬요.
+            // 어느 담이든 담 밑에서 방 쪽 바닥으로 금이 이어져 어디서 봐도 보여요.
+            bool south = t.forward.z < -0.5f;
             if (crackSprite != null)
             {
-                var card = new GameObject("Crack").transform;
-                card.SetParent(visual, false);
-                card.localPosition = new Vector3(0f, -1.1f, 0f); // 금 그림 밑동 = 바닥
-                float k = 1.9f / crackSprite.bounds.size.y; // 담 높이 안에서 (기와까지 올라가지 않게)
-                card.localScale = new Vector3(k, k, k);
-                card.gameObject.AddComponent<SpriteRenderer>().sprite = crackSprite;
+                WallCard(visual, 0f);
+                if (south) WallCard(visual, WallThickness + 0.04f);
+                // 바닥으로 이어진 금: 담 밑동에서 방 쪽으로 눕혀요
+                var floor = new GameObject("Crack_Floor").transform;
+                floor.SetParent(visual, false);
+                floor.localPosition = new Vector3(0f, -1.1f + 0.02f, south ? -0.9f : 0f); // 남쪽은 담·기와에 가리는 곳 너머에서 시작
+                floor.localRotation = Quaternion.Euler(-90f, 0f, 0f); // 스프라이트 위쪽이 방 안쪽(-forward)으로
+                float kf = 1.6f / crackSprite.bounds.size.y;
+                floor.localScale = new Vector3(kf * 0.8f, kf, kf);
+                floor.gameObject.AddComponent<SpriteRenderer>().sprite = crackSprite;
             }
+            float rubbleOut = south ? 1.15f : 0.25f;
             if (rubbleMesh != null && rubbleMaterial != null)
                 for (int i = 0; i < 4; i++)
                 {
                     var stone = new GameObject("Rubble").transform;
                     stone.SetParent(visual, false);
-                    stone.localPosition = new Vector3((i - 1.5f) * 0.28f, -1.1f, -0.25f - (i % 2) * 0.2f);
+                    stone.localPosition = new Vector3((i - 1.5f) * 0.28f, -1.1f, -rubbleOut - (i % 2) * 0.2f);
                     stone.localRotation = Quaternion.Euler(0f, i * 77f, 0f);
                     stone.localScale = Vector3.one * (0.18f + (i % 3) * 0.07f);
                     stone.gameObject.AddComponent<MeshFilter>().sharedMesh = rubbleMesh;
                     stone.gameObject.AddComponent<MeshRenderer>().sharedMaterial = rubbleMaterial;
                 }
+        }
+
+        const float WallThickness = 0.5f; // PrototypeSceneBuilder.BuildShell의 담 두께
+        const float WallHeight = 1.5f;
+
+        // 담 면에 세운 금 그림. depth = 안쪽 면에서 담 속으로 들어간 거리 (두께만큼이면 바깥 면)
+        void WallCard(Transform visual, float depth)
+        {
+            var card = new GameObject(depth > 0f ? "Crack_Outer" : "Crack").transform;
+            card.SetParent(visual, false);
+            card.localPosition = new Vector3(0f, -1.1f + 0.05f, depth); // 금 그림 밑동 = 바닥 (crack 오브젝트는 바닥 위 1.1)
+            float k = (WallHeight - 0.15f) / crackSprite.bounds.size.y; // 담 높이 안에서 (기와까지 올라가지 않게)
+            card.localScale = new Vector3(k, k, k);
+            card.gameObject.AddComponent<SpriteRenderer>().sprite = crackSprite;
         }
 
         static Transform Child(Transform parent, string name)

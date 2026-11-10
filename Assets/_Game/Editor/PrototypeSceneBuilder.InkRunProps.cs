@@ -93,6 +93,14 @@ namespace AThousandDawns.EditorTools
             crack.transform.localScale = new Vector3(0.25f, 2f, 0.6f);
             props.DressNow(crack);
             temps.Add(crack);
+            var crackS = GameObject.CreatePrimitive(PrimitiveType.Cube); // 남쪽 벽 (카메라 쪽): 바깥 면·바닥 금으로 보여요
+            crackS.name = "HiddenCrack";
+            Object.DestroyImmediate(crackS.GetComponent<Collider>());
+            crackS.transform.position = CombatCenter + Vector3.back * CombatSize.y * 0.5f + Vector3.right * 4f + Vector3.up * 1.1f;
+            crackS.transform.rotation = Quaternion.LookRotation(Vector3.back);
+            crackS.transform.localScale = new Vector3(0.25f, 2f, 0.6f);
+            props.DressNow(crackS);
+            temps.Add(crackS);
 
             GameObject gate = null;
             foreach (var t in Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
@@ -104,6 +112,7 @@ namespace AThousandDawns.EditorTools
             ArtCapture.Capture("props_jars", CombatCenter + new Vector3(-halfX * 0.75f, 0f, halfZ * 0.7f), 0.4f);
             ArtCapture.Capture("props_crack", CombatCenter + new Vector3(0f, 0.8f, CombatSize.y * 0.5f - 1f), 0.45f);
             ArtCapture.Capture("props_gate", CombatCenter, 0.45f);
+            ArtCapture.Capture("props_crack_south", CombatCenter + new Vector3(4f, 0f, -CombatSize.y * 0.5f + 2f), 0.55f);
 
             if (gate != null) gate.SetActive(wasActive);
             foreach (var t in temps) Object.DestroyImmediate(t);
