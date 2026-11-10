@@ -22,7 +22,7 @@ namespace AThousandDawns.Prototype
     public sealed partial class RoomRun : MonoBehaviour
     {
         public enum Phase { None, Fork, Floor, Master, Inn, Rest, Boss, Done, Village }
-        public enum RewardKind { Item, Heal, Part, Forge }
+        public enum RewardKind { Item, Heal, Part, Forge, Silver, Training, Supply, Scroll } // 뒤 넷은 RoomRun.ForkRewards.cs (저장 번호가 밀리지 않게 끝에 붙여요)
 
         public struct Path
         {
@@ -210,18 +210,47 @@ namespace AThousandDawns.Prototype
             var kinds = new List<RewardKind>((RewardKind[])Enum.GetValues(typeof(RewardKind)));
             if (_unlockedParts.Count == 0) kinds.Remove(RewardKind.Part); // 부품 길은 회귀록에서 부품을 연 뒤부터
             if (!_forgeUnlocked) kinds.Remove(RewardKind.Forge); // 대장간 길은 회귀록에서 대장간을 연 뒤부터
+            if (Player.UsesDagger) kinds.Remove(RewardKind.Scroll); // 비도는 초식이 회수로 고정이라 비급 길이 없어요
             for (int i = kinds.Count - 1; i > 0; i--)
             {
                 int j = _rng.Next(i + 1);
                 (kinds[i], kinds[j]) = (kinds[j], kinds[i]);
             }
             int count = Mathf.Min(kinds.Count, _rng.Next(min, Mathf.Max(min, max) + 1) + _forkBonus); // 면벽수련 오 10: 갈림길 +1
+            // 기물 길은 갈림길마다 꼭 하나 (빌드를 만드는 핵심 보상)
+            int item = kinds.IndexOf(RewardKind.Item);
+            if (item >= count)
+            {
+                int slot = _rng.Next(count);
+                (kinds[item], kinds[slot]) = (kinds[slot], kinds[item]);
+            }
             var options = new List<Path>();
             for (int i = 0; i < count; i++) options.Add(new Path { Reward = kinds[i], Dense = _rng.NextDouble() < dense });
             return options;
         }
 
-        public void ChooseFork(int index)
+        // 수묵 전환 연출 (아트 InkTransition). 테스트는 꺼요 (TestSettingsFixture). 켜 두면 고른 뒤 0.35초 뒤에야 층이 바뀌어요
+        public static bool Transitions = true;
+        bool _forkPicked; // 층 사이 먹 번짐 도중 (같은 갈림길을 두 번 고르지 않게)
+
+        // origin: 고른 길 끝 (화면 픽셀, 위가 0). 그 자리에서 먹이 번져요
+        public void ChooseFork(int index, Vector2? origin = null)
+        {
+            if (!IsForking || _forkPicked || index < 0 || index >= _forkOptions.Count) return;
+            if (!Transitions)
+            {
+                ChooseForkNow(index);
+                return;
+            }
+            _forkPicked = true;
+            AThousandDawns.Fx.InkTransition.Play(AThousandDawns.Fx.InkTransition.Kind.Floor, () =>
+            {
+                _forkPicked = false;
+                ChooseForkNow(index);
+            }, origin: origin);
+        }
+
+        void ChooseForkNow(int index)
         {
             if (!IsForking || index < 0 || index >= _forkOptions.Count) return;
             _path = _forkOptions[index];
@@ -246,19 +275,29 @@ namespace AThousandDawns.Prototype
             }
         }
 
-        public static string RewardLabel(RewardKind kind) => kind == RewardKind.Item ? "기물" : kind == RewardKind.Part ? "부품" : kind == RewardKind.Forge ? "대장간" : "운기조식";
+        public static string RewardLabel(RewardKind kind) => kind switch
+        {
+            RewardKind.Item => "기물",
+            RewardKind.Part => "부품",
+            RewardKind.Forge => "대장간",
+            RewardKind.Silver => "은자",
+            RewardKind.Training => "수련",
+            RewardKind.Supply => "잡화",
+            RewardKind.Scroll => "비급",
+            _ => "운기조식",
+        };
         public static string PathLabel(Path p) => $"{RewardLabel(p.Reward)} · 기운 {(p.Dense ? "짙음" : "옅음")}";
 
         public string PathDetail(Path p)
         {
             float mult = p.Dense ? DenseMultiplier : 1f;
-            string reward = p.Reward == RewardKind.Item
+            string reward = ForkRewardDetail(p) ?? (p.Reward == RewardKind.Item
                 ? (p.Dense ? "기물 3개 중 하나 (한 단계 위 등급표)" : "기물 3개 중 하나")
                 : p.Reward == RewardKind.Part
                 ? (p.Dense ? "부품 둘 고르기" : "부품 하나 고르기") + $" ({PartNames()})"
                 : p.Reward == RewardKind.Forge
                 ? (p.Dense ? "기물 둘까지 녹여 무기에 넣기" : "기물 하나를 녹여 무기에 넣기")
-                : $"체력 {GameConfig.Get("room.heal_ratio", 0.3f) * mult:0%} 회복";
+                : $"체력 {GameConfig.Get("room.heal_ratio", 0.3f) * mult:0%} 회복");
             string enemies = p.Dense ? $"적 체력 +{GameConfig.Get("room.dense_health", 1.3f) - 1f:0%} · 방마다 정예 1명" : "적 보통";
             return $"{reward}\n{enemies} · 방마다 은자 {Mathf.RoundToInt(GameConfig.Get("silver.room", 18f) * mult)}";
         }
@@ -545,6 +584,7 @@ namespace AThousandDawns.Prototype
                     OpenPartChoice(_path.Dense ? 2 : 1);
                     text += " · 부품 고르기";
                 }
+                else if (GrantForkReward(_path) is string extra) text += extra; // 은자 · 수련 · 잡화 · 비급
                 else
                 {
                     float heal = Player.MaxHealth * GameConfig.Get("room.heal_ratio", 0.3f) * mult;

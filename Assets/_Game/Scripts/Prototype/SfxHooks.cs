@@ -6,7 +6,7 @@ using UnityEngine;
 namespace AThousandDawns.Prototype
 {
     // 이미 있는 이벤트로 낼 수 있는 효과음 (게임 코드를 고치지 않고 듣기만 해요).
-    //   적 피격(경직 있는 타격만) · 적 처치 · 빙결 · 휘두르기 · 마지막 타 · 플레이어 피격 · 호신강기 깨짐 · 레벨 업
+    //   적 피격(경직 있는 타격만) · 적 처치 · 빙결 · 휘두르기 · 플레이어 피격 · 호신강기 깨짐 · 레벨 업
     // 나머지(대시·화살·폭발·예고 등)는 그 코드에서 Sfx.Play를 바로 불러요.
     public sealed class SfxHooks : MonoBehaviour
     {
@@ -44,7 +44,6 @@ namespace AThousandDawns.Prototype
             if (_player == null || _player.Combo == null) { _player = null; return; }
             _player.Hurt += OnHurt;
             _player.Combo.SwingStarted += OnSwing;
-            _player.Combo.HitFrame += OnHitFrame;
             if (_player.Shields != null) _player.Shields.Broken += OnShieldBroken;
             if (_player.Level != null) _player.Level.LeveledUp += OnLeveledUp;
         }
@@ -53,7 +52,7 @@ namespace AThousandDawns.Prototype
         {
             if (_player == null) return;
             _player.Hurt -= OnHurt;
-            if (_player.Combo != null) { _player.Combo.SwingStarted -= OnSwing; _player.Combo.HitFrame -= OnHitFrame; }
+            if (_player.Combo != null) _player.Combo.SwingStarted -= OnSwing;
             if (_player.Shields != null) _player.Shields.Broken -= OnShieldBroken;
             if (_player.Level != null) _player.Level.LeveledUp -= OnLeveledUp;
             _player = null;
@@ -70,10 +69,5 @@ namespace AThousandDawns.Prototype
         static void OnHurt(int dealt) { if (dealt > 0) Sfx.Play(SfxId.Hurt); }
         static void OnShieldBroken(int left) => Sfx.Play(SfxId.ShieldBreak);
         static void OnLeveledUp() => Sfx.Play(SfxId.LevelUp);
-
-        void OnHitFrame(int index)
-        {
-            if (_player != null && index >= _player.Combo.BaseHitCount - 1) Sfx.Play(SfxId.Finisher, 0.8f);
-        }
     }
 }
