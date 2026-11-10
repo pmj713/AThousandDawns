@@ -24,6 +24,7 @@ namespace AThousandDawns.Prototype
             Player.SetWeapon(meta.weapon == 1 && RegressionBook.DaggerUnlocked(meta) ? AThousandDawns.Player.WeaponKind.Dagger : AThousandDawns.Player.WeaponKind.Sword); // 마을 무기 거치대
             if (meta.runs < UnityEngine.Mathf.RoundToInt(GameConfig.GetOptional("event.deja_runs", 3f))) _usedEvents.Add("deja"); // 기시감은 회귀 3회 이상부터
             ApplyMeditation(meta);
+            WatchCodex(); // 기물 도감
         }
     }
 }

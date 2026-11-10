@@ -42,6 +42,7 @@ namespace AThousandDawns.Prototype
         public int floorsCleared, hiddenRooms, deja;
         public float playSeconds;
         public int damageDealt, maxHit, damageTaken, maxTracking;
+        public int newItems;
         public int[] kills = new int[0];
 
         // 플레이어

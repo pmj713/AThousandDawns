@@ -42,6 +42,7 @@ namespace AThousandDawns.Player
         public IReadOnlyList<OwnedPart> Parts => _parts;
         public MeridianBoard Board => _board;
         public event Action Changed;
+        public event Action<ItemDefinition> Acquired; // 새 기물을 실제로 받았을 때 (기물 도감). 저장에서 되살릴 땐 안 불러요
 
         public int BagCount
         {
@@ -109,6 +110,7 @@ namespace AThousandDawns.Player
             var item = new OwnedItem { Def = def, OnBoard = onBoard, Cell = cell };
             _items.Add(item);
             Recount();
+            Acquired?.Invoke(def);
             resolved?.Invoke(true);
             return item;
         }
@@ -133,6 +135,7 @@ namespace AThousandDawns.Player
             var item = new OwnedItem { Def = def, OnBoard = discard.OnBoard, Cell = discard.Cell };
             _items.Add(item);
             Recount();
+            Acquired?.Invoke(def);
             resolved?.Invoke(true);
             return item;
         }
@@ -171,6 +174,7 @@ namespace AThousandDawns.Player
             var next = new OwnedItem { Def = def, OnBoard = item.OnBoard, Cell = item.Cell };
             _items[_items.IndexOf(item)] = next;
             Recount();
+            Acquired?.Invoke(def);
             return next;
         }
 

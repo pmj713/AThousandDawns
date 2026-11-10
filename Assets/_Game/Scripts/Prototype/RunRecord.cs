@@ -16,6 +16,7 @@ namespace AThousandDawns.Prototype
         // 기억으로 바꾸지 않는 기록 (결과 화면에 보여 주기만)
         public float PlaySeconds;
         public int DamageDealt, MaxHit, DamageTaken, MaxTracking;
+        public int NewItems;      // 기물 도감에 새로 오른 기물
         public bool FinalBoss;
 
         public void AddKill(EnemyRank rank) => Kills[(int)rank]++;
@@ -59,6 +60,7 @@ namespace AThousandDawns.Prototype
             ("최대 단일 피해", MaxHit.ToString("N0")),
             ("받은 피해", DamageTaken.ToString("N0")),
             ("최대 추적도", MaxTracking.ToString()),
+            ("새로 만난 기물", $"{NewItems}종"),
         };
 
         public static string Clock(float seconds)

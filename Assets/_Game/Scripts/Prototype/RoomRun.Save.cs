@@ -64,6 +64,7 @@ namespace AThousandDawns.Prototype
                 maxHit = _record.MaxHit,
                 damageTaken = _record.DamageTaken,
                 maxTracking = _record.MaxTracking,
+                newItems = _record.NewItems,
                 kills = (int[])_record.Kills.Clone(),
                 health = Player.Health,
                 gauge = Player.Gauge,
@@ -177,6 +178,7 @@ namespace AThousandDawns.Prototype
             _record.MaxHit = s.maxHit;
             _record.DamageTaken = s.damageTaken;
             _record.MaxTracking = s.maxTracking;
+            _record.NewItems = s.newItems;
             for (int i = 0; i < _record.Kills.Length && i < s.kills.Length; i++) _record.Kills[i] = s.kills[i];
 
             switch ((Phase)s.phase)

@@ -74,6 +74,8 @@ namespace AThousandDawns.Prototype
             // 회귀
             new Entry { Id = "book", Group = "회귀", Title = "회귀록",
                 Text = "판이 끝나면 회귀의 기억을 얻어요. 마을 매화나무(회귀록)에서 봉우리를 골라 피우면 새 시스템이 열려요.\n봉우리를 누르고 개화를 누르면 바로 적용돼요." },
+            new Entry { Id = "codex", Group = "회귀", Title = "기물 도감",
+                Text = "처음 얻은 기물은 기물 도감에 남아요. 회귀해도 지워지지 않아요.\n일시정지 → 무공 요결에서 Tab으로 넘겨 봐요. 아직 못 만난 기물은 ???로 보여요." },
             new Entry { Id = "meditation", Group = "회귀", Title = "면벽수련",
                 Text = "뒷산 동굴에서 심득을 심법 6종(쾌·강·맥·오·은·기)에 나눠 넣어요. 언제든 무료로 다시 나눌 수 있어요.\n5·10·20 포인트에서 단계 보상이 열려요." },
         };
