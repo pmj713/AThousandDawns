@@ -17,6 +17,8 @@ namespace AThousandDawns.Art
             public RuntimeAnimatorController controller;      // Idle·Run·Attack (InkEnemyAnimator가 움직여요)
             public float scale;                               // 0이면 1
             public float yaw;                                 // 모델 앞을 +Z로 맞추는 회전
+            public bool windupPlays;                          // 예고 동안 공격 동작을 그대로 재생 (나팔 불기·활 쏘기). 아니면 치켜든 자세로 멈춤
+            public bool noAttackAnim;                         // 공격 동작 없음 (화약 산적: 손 들지 않고 그 자리에서 터져요)
         }
 
         [SerializeField] Entry[] entries = Array.Empty<Entry>();
@@ -59,7 +61,7 @@ namespace AThousandDawns.Art
             animator.applyRootMotion = false;
             if (e.controller != null) animator.runtimeAnimatorController = e.controller;
             var driver = brain.gameObject.AddComponent<InkEnemyAnimator>();
-            driver.Init(brain, animator);
+            driver.Init(brain, animator, e.windupPlays, e.noAttackAnim);
         }
     }
 
@@ -80,8 +82,16 @@ namespace AThousandDawns.Art
         bool _swung;
         Vector3 _lastPos;
 
-        public void Init(EnemyBrain brain, Animator animator)
+        bool _windupPlays;
+        bool _noAttack;
+        ShieldBrain _shieldBrain;
+        bool _shieldHidden;
+
+        public void Init(EnemyBrain brain, Animator animator, bool windupPlays = false, bool noAttackAnim = false)
         {
+            _windupPlays = windupPlays;
+            _noAttack = noAttackAnim;
+            _shieldBrain = brain as ShieldBrain;
             _brain = brain;
             _animator = animator;
             _lastPos = transform.position;
@@ -90,19 +100,27 @@ namespace AThousandDawns.Art
         void Update()
         {
             if (_brain == null || _animator == null || _animator.runtimeAnimatorController == null) return;
+            // 방패병: 대시 공격으로 방패가 부서지면 방패 소품을 감춰요
+            if (_shieldBrain != null && !_shieldHidden && _shieldBrain.ShieldBroken)
+            {
+                foreach (var r in _animator.GetComponentsInChildren<Renderer>(true))
+                    if (r.name.Contains("_Prop_Shield")) r.enabled = false;
+                _shieldHidden = true;
+            }
             var phase = _brain.AttackPhase;
+            if (_noAttack) _last = phase;   // 공격 동작 없이 대기·달리기만
             if (phase != _last)
             {
                 switch (phase)
                 {
                     case EnemyAttackTimeline.Phase.Windup:
-                        _animator.SetFloat(AttackSpeedId, 0f);                              // 첫 자세(치켜듦)에서 멈춰요
+                        _animator.SetFloat(AttackSpeedId, _windupPlays ? 1f : 0f);          // 첫 자세(치켜듦)에서 멈추거나, 나팔은 그대로 불어요
                         _animator.CrossFadeInFixedTime(AttackState, raiseBlend, 0, 0f);
                         _swung = false;
                         break;
                     case EnemyAttackTimeline.Phase.Active:
                         _animator.SetFloat(AttackSpeedId, 1f);                              // 한 번 내려찍어요
-                        _swung = true;
+                        _swung = !_windupPlays;
                         break;
                     case EnemyAttackTimeline.Phase.Ready:
                         _animator.SetFloat(AttackSpeedId, 1f);
@@ -114,6 +132,12 @@ namespace AThousandDawns.Art
             Vector3 d = transform.position - _lastPos;
             d.y = 0f;
             _lastPos = transform.position;
+            // 화약 산적: 불붙인 뒤 터질 때까지 계속 달려요 (붙어서 멈춰도 달리는 동작 유지)
+            if (_noAttack && phase != EnemyAttackTimeline.Phase.Ready && !_brain.IsStunned)
+            {
+                _animator.SetFloat(SpeedId, 1f);
+                return;
+            }
             bool busy = phase != EnemyAttackTimeline.Phase.Ready || _brain.IsStunned || _brain.IsDead;
             _animator.SetFloat(SpeedId, busy || Time.deltaTime <= 0f ? 0f : d.magnitude / Time.deltaTime);
         }
