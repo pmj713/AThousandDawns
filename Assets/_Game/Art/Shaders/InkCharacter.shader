@@ -6,6 +6,7 @@ Shader "AThousandDawns/InkCharacter"
     Properties
     {
         _BaseColor ("Base Color", Color) = (0.5, 0.5, 0.5, 1)
+        _BaseMap ("Base Map (색 텍스처, 없으면 흰색)", 2D) = "white" {}
         _Saturation ("Saturation (0 = 흑백)", Range(0, 1)) = 0.15
         _PaperColor ("Paper", Color) = (0.93, 0.91, 0.86, 1)
         _InkColor ("Ink", Color) = (0.07, 0.07, 0.08, 1)
@@ -33,8 +34,12 @@ Shader "AThousandDawns/InkCharacter"
         HLSLINCLUDE
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
+        TEXTURE2D(_BaseMap);
+        SAMPLER(sampler_BaseMap);
+
         CBUFFER_START(UnityPerMaterial)
             half4 _BaseColor;
+            float4 _BaseMap_ST;
             half _Saturation;
             half4 _PaperColor;
             half4 _InkColor;
@@ -104,6 +109,7 @@ Shader "AThousandDawns/InkCharacter"
             {
                 float4 positionOS : POSITION;
                 float3 normalOS : NORMAL;
+                float2 uv : TEXCOORD0;
             };
 
             struct Varyings
@@ -112,6 +118,7 @@ Shader "AThousandDawns/InkCharacter"
                 float3 positionWS : TEXCOORD0;
                 float3 normalWS : TEXCOORD1;
                 half fogFactor : TEXCOORD2;
+                float2 uv : TEXCOORD3;
             };
 
             Varyings Vert(Attributes input)
@@ -122,6 +129,7 @@ Shader "AThousandDawns/InkCharacter"
                 output.positionWS = pos.positionWS;
                 output.normalWS = TransformObjectToWorldNormal(input.normalOS);
                 output.fogFactor = ComputeFogFactor(pos.positionCS.z);
+                output.uv = TRANSFORM_TEX(input.uv, _BaseMap);
                 return output;
             }
 
@@ -150,8 +158,9 @@ Shader "AThousandDawns/InkCharacter"
                 tone *= 1.0 - rim;
 
                 // 바탕색: 채도를 낮추고 종이색 쪽으로 조금 밝혀요
-                half3 gray = Luminance(_BaseColor.rgb).xxx;
-                half3 tint = lerp(gray, _BaseColor.rgb, lerp(_Saturation, 1.0, _InkColorAmount));
+                half3 baseRgb = _BaseColor.rgb * SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv).rgb;
+                half3 gray = Luminance(baseRgb).xxx;
+                half3 tint = lerp(gray, baseRgb, lerp(_Saturation, 1.0, _InkColorAmount));
                 half3 paperLit = lerp(tint, _PaperColor.rgb, lerp(0.35, 0.12, _InkColorAmount));
                 half3 color = lerp(_InkColor.rgb, paperLit, tone);
 
