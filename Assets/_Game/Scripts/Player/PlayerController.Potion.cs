@@ -5,7 +5,7 @@ namespace AThousandDawns.Player
 {
     // 금창약 (조작 시트): R을 0.5초 누르고 있으면 최대 체력의 40% 회복. 누르는 동안 이동 50%, 평타·초식 불가.
     // 손을 떼거나 대시하거나 맞으면 취소되고 소모되지 않아요. 다 마신 뒤 1초 동안은 다시 못 마셔요.
-    // 시작 0개, 최대 3개. 객잔(과 나중에 이벤트)에서만 얻어요.
+    // 시작 0개, 최대 3개. 객잔과 이벤트(떠돌이 의원 · 버려진 약방)에서 얻어요.
     public sealed partial class PlayerController
     {
         bool _potionTuned;

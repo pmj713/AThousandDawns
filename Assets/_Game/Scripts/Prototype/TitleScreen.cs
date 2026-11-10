@@ -210,10 +210,8 @@ namespace AThousandDawns.Prototype
 
         void DrawPanel(float w, float h)
         {
-            string title = Current == View.Settings ? "설정" : "크레딧";
-            string body = Current == View.Settings
-                ? "설정창은 아직 준비 중이에요.\n(소리·화면·조작 설정이 들어갈 자리)"
-                : "일조천회 (一朝千回) · A THOUSAND DAWNS\n\n기획·개발  (이름)\n\n시험판입니다. 그림·소리는 아직 임시예요.";
+            const string title = "크레딧"; // 설정은 SettingsPanel이 그려요
+            const string body = "일조천회 (一朝千回) · A THOUSAND DAWNS\n\n기획·개발  (이름)\n\n시험판입니다. 그림·소리는 아직 임시예요.";
             var area = new Rect(120f, h - 460f, 820f, 380f);
             GUI.Label(new Rect(area.x, area.y, area.width, 50f), title, _menuOn);
             GUI.Label(new Rect(area.x, area.y + 70f, area.width, 240f), body, _body);
