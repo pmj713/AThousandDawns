@@ -1,3 +1,4 @@
+using AThousandDawns.Core;
 using UnityEngine;
 
 namespace AThousandDawns.Enemies
@@ -51,6 +52,7 @@ namespace AThousandDawns.Enemies
                 {
                     _relocating = false;
                     SetHidden(true);
+                    Sfx.Play(SfxId.BushRustle, 0.6f); // 다른 풀숲으로 숨어들 때 바스락 (단서)
                     return;
                 }
                 if (_relocateElapsed > _relocateTime * 3f)
@@ -75,6 +77,7 @@ namespace AThousandDawns.Enemies
         {
             if (!IsHidden) return;
             SetHidden(false); // 뛰어나와요
+            Sfx.Play(SfxId.SnakeStrike);
             if (_bush != null) _bush.Release(this);
             _lastBush = _bush;
             _bush = null;

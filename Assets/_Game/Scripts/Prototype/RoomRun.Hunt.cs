@@ -106,6 +106,7 @@ namespace AThousandDawns.Prototype
             var hunter = _intruder;
             CancelIntrude();
             hunter.Brain = director.Spawn(EnemyKind.Assassin, _intrudeSpot);
+            Sfx.Play(SfxId.AssassinAppear);
         }
 
         // 따라잡힘: 1.5초 경고 (바닥 원) 뒤 나타나요. 싸우는 중이 아니면 문을 잠그고 결투.

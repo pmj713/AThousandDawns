@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AThousandDawns.Core;
 using UnityEngine;
 
 namespace AThousandDawns.Enemies
@@ -76,6 +77,7 @@ namespace AThousandDawns.Enemies
             _traveled = 0f;
             _hitPlayer = false;
             IsWallStunned = false;
+            Sfx.Play(SfxId.BoarCharge);
         }
 
         protected override void TickActive(float dt)
@@ -93,6 +95,7 @@ namespace AThousandDawns.Enemies
                 if ((flags & CollisionFlags.Sides) != 0)
                 {
                     IsWallStunned = true;
+                    Sfx.Play(SfxId.BoarCrash);
                     Attack.EndActive(_wallStun);
                     return;
                 }

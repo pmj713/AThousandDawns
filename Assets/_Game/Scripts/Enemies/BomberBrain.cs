@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using AThousandDawns.Core;
 using UnityEngine;
 
 namespace AThousandDawns.Enemies
@@ -77,6 +78,7 @@ namespace AThousandDawns.Enemies
         {
             if (_exploded || _hitFusing) return;
             _hitFusing = true;
+            Sfx.Play(SfxId.FuseHiss);
             if (Attack.IsAttacking) CancelAttack();
             Telegraph.Show(TelegraphShapes.Circle(AttackRange), true);
             Telegraph.SetPose(transform.position, Vector3.forward);

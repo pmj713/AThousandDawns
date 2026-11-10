@@ -39,6 +39,8 @@ namespace AThousandDawns.Enemies
         float _decisionTimer, _transitionTimer, _summonCooldown;
         float _lungeRemaining, _traveled, _plannedLength, _spinElapsed;
         Vector3 _slamPoint; // 내려찍기 원 자리 (돌진이 끝나는 곳, 월드 좌표)
+        const float FootstepLength = 2f; // 돌진 발소리 간격 (칸)
+        float _nextFootstep; // 내려찍기 원 자리 (돌진이 끝나는 곳, 월드 좌표)
         bool _hitPlayer;
         readonly float[] _banTimers = new float[5]; // 패턴마다 다시 나오지 않는 남은 시간 (설련 향낭)
         readonly List<EnemyBrain> _minions = new List<EnemyBrain>();
@@ -272,11 +274,13 @@ namespace AThousandDawns.Enemies
                 case Pattern.Charge:
                     // 돌진하는 동안 끝자리에 내려찍기 원이 차올라요
                     _traveled = 0f;
+                    _nextFootstep = 0f;
                     Telegraph.Show(TelegraphShapes.Circle(_slamRadius), true);
                     _slamPoint = transform.position + AimDirection * _plannedLength;
                     Telegraph.SetPose(_slamPoint, Vector3.forward);
                     break;
                 case Pattern.Summon:
+                    Sfx.Play(SfxId.BossSummon);
                     for (int i = 0; i < _summonCount; i++)
                         _minions.Add(Director.Spawn(EnemyKind.Grunt, Director.FindFreeSpot(transform.position, 2f)));
                     _summonsThisPhase++;
@@ -334,6 +338,12 @@ namespace AThousandDawns.Enemies
                 total -= step;
                 if (!_hitPlayer && ToPlayer().magnitude <= _chargeWidth * 0.5f + PlayerRadius) _hitPlayer = HitPlayer(_chargeRatio);
                 if ((flags & CollisionFlags.Sides) != 0) break;
+            }
+            // 발소리: 2칸마다 한 번, 네 가지 중 무작위
+            while (_traveled >= _nextFootstep)
+            {
+                Sfx.PlayEach(SfxId.BossCharge, -1);
+                _nextFootstep += FootstepLength;
             }
             // 예고는 녹림왕 자식이라 같이 움직이니까, 매 프레임 끝자리에 다시 놓아요
             Telegraph.SetPose(_slamPoint, Vector3.forward);
@@ -426,6 +436,7 @@ namespace AThousandDawns.Enemies
 
         protected override void OnDied()
         {
+            Sfx.Play(SfxId.BossDeath);
             if (_grove != null) Destroy(_grove.gameObject);
         }
     }
