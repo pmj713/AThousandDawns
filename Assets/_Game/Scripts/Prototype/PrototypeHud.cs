@@ -96,14 +96,16 @@ namespace AThousandDawns.Prototype
                 var keywords = player.Keywords;
                 if (keywords != null)
                 {
-                    var sb = new System.Text.StringBuilder();
+                    GUILayout.BeginHorizontal(); // 키워드마다 아이콘 + 개수
                     for (int i = 0; i < PlayerKeywords.KeywordCount; i++)
                     {
                         var k = (Keyword)i;
-                        if (i > 0) sb.Append(" · ");
-                        sb.Append(PlayerKeywords.Label(k)).Append(' ').Append(keywords.Count(k));
+                        var tex = ItemIcons.Get(k);
+                        if (tex != null) GUILayout.Label(tex, GUILayout.Width(22f), GUILayout.Height(22f));
+                        GUILayout.Label($"{PlayerKeywords.Label(k)} {keywords.Count(k)}", _label, GUILayout.ExpandWidth(false));
                     }
-                    GUILayout.Label(sb.ToString(), _label);
+                    GUILayout.FlexibleSpace();
+                    GUILayout.EndHorizontal();
                     if (player.Items != null && (player.Items.ForgeSlot(0).HasValue || player.Items.ForgeSlot(1).HasValue))
                     {
                         string Slot(int s) => player.Items.ForgeSlot(s) is Keyword fk ? PlayerKeywords.Label(fk) : "빈 홈";
@@ -451,9 +453,18 @@ namespace AThousandDawns.Prototype
 
             const float w = 760f, rowH = 52f;
             int rows = ev.Result != null ? 1 : ev.Choices.Count;
-            float h = 150f + rows * (rowH + 6f);
+            // 이벤트 그림 (smith_pick처럼 하위 화면은 앞부분 id로). 선택지가 많으면 띠를 낮춰요
+            string artId = ev.Id == null ? null : ev.Id.Split('_')[0];
+            var art = AThousandDawns.Items.ItemIcons.EventArt(artId);
+            float artH = art == null ? 0f : rows > 5 ? 180f : 280f;
+            float h = 150f + (artH > 0f ? artH + 10f : 0f) + rows * (rowH + 6f);
             float x = (UiScale.Width - w) * 0.5f, y = (UiScale.Height - h) * 0.5f;
             GUI.Label(new Rect(0, y - 56f, UiScale.Width, 40f), ev.Title, _big);
+            if (art != null)
+            {
+                GUI.DrawTexture(new Rect(x, y, w, artH), art, ScaleMode.ScaleAndCrop);
+                y += artH + 10f;
+            }
             GUI.Label(new Rect(x, y, w, 60f), $"<i>{ev.Text}</i>", _wrapLabel);
             float top = y + 70f;
             if (ev.Result != null)
