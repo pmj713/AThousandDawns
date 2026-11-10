@@ -113,7 +113,7 @@ namespace AThousandDawns.Prototype
                 if (keyboard.digit6Key.wasPressedThisFrame) SpawnKey(EnemyKind.Horn, elite);
                 if (keyboard.digit7Key.wasPressedThisFrame) SpawnKey(EnemyKind.Bomber, elite);
                 if (keyboard.digit8Key.wasPressedThisFrame) SpawnKey(EnemyKind.Snake, elite);
-                if (keyboard.digit9Key.wasPressedThisFrame) SpawnBoss();
+                if (keyboard.digit9Key.wasPressedThisFrame) SpawnBossForTest();
                 if (keyboard.digit0Key.wasPressedThisFrame) SpawnKey(EnemyKind.Assassin, false); // 마교 살수
                 if (keyboard.minusKey.wasPressedThisFrame) SpawnMaster(EnemyKind.Qingzhu); // 고수 청죽객
                 if (keyboard.equalsKey.wasPressedThisFrame) SpawnMaster(EnemyKind.IronFist); // 고수 철권 마웅
@@ -171,6 +171,16 @@ namespace AThousandDawns.Prototype
             }
             SpawnBoss();
             if (director.Player != null) director.Player.EnterRoom(); // #금강 2단계: 방에 들어갈 때마다 보호막
+        }
+
+        // 시험용 9키: 결투장 근처면 결투장에, 멀리 있으면(수묵 시험판처럼 결투장이 화면 밖) 플레이어 곁에 깨어 있는 채로 불러요
+        void SpawnBossForTest()
+        {
+            if (_boss != null && !_boss.IsDead) return;
+            Vector3 d = director != null && director.Player != null ? director.Player.transform.position - bossZoneCenter : Vector3.zero;
+            d.y = 0f;
+            if (d.magnitude <= 12f) { SpawnBoss(); return; }
+            _boss = SpawnNearPlayer(EnemyKind.Nokrim) as NokrimBrain;
         }
 
         public NokrimBrain SpawnBoss()
@@ -341,7 +351,14 @@ namespace AThousandDawns.Prototype
             foreach (var e in director.Enemies)
                 if (e is IMasterBrain && !e.IsDead) return e; // 고수는 한 번에 하나
             var master = SpawnNearPlayer(kind);
-            if (master is IMasterBrain info) info.SetZone(masterZoneCenter, masterZoneSize);
+            // 결투장이 멀면(수묵 시험판처럼 결투장이 화면 밖) 결투장 범위를 지금 자리에 둬요. 아니면 순간이동·돌진 끝자리가 그 먼 범위로 끌려가요
+            Vector3 zone = masterZoneCenter;
+            if (master != null)
+            {
+                Vector3 d = master.transform.position - masterZoneCenter; d.y = 0f;
+                if (Mathf.Abs(d.x) > masterZoneSize.x * 0.5f || Mathf.Abs(d.z) > masterZoneSize.y * 0.5f) zone = director.Player.transform.position;
+            }
+            if (master is IMasterBrain info) info.SetZone(zone, masterZoneSize);
             return master;
         }
 

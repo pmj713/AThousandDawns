@@ -1,13 +1,17 @@
+using System.Collections.Generic;
 using System.Linq;
 using AThousandDawns.Enemies;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using Move = AThousandDawns.Art.InkEnemyModels.Move;
+using MoveMode = AThousandDawns.Art.InkEnemyModels.MoveMode;
 
 namespace AThousandDawns.EditorTools
 {
     // 수묵 시험판 적 모델: VARCO로 만들고 자동 리깅한 사람형 적(Blender Enemies/Tools~/prepare_enemy.py가 정리)을 Humanoid로 가져와,
     // 플레이어 동작(대기·달리기·1타 내려찍기)을 옮겨 입혀요. 적은 실행 중에 생겨서 InkEnemyModels가 생길 때 갈아 끼워요.
+    // 고수·보스는 패턴마다 다른 동작(플레이어 베기·회전베기·달리기, 모델 고유 동작)을 써요.
     public static partial class PrototypeSceneBuilder
     {
         const string CharactersFolder = "Assets/_Game/Art/Characters";
@@ -21,11 +25,59 @@ namespace AThousandDawns.EditorTools
             ("Horn", EnemyKind.Horn, 3f),
             ("Bomber", EnemyKind.Bomber, 4.5f),
             ("Assassin", EnemyKind.Assassin, 5f),
+            ("Nokrim", EnemyKind.Nokrim, 3f),
+            ("Qingzhu", EnemyKind.Qingzhu, 5f),
+            ("IronFist", EnemyKind.IronFist, 3.5f),
+        };
+
+        // 패턴 동작: attack(브레인 AttackName, null이면 다른 동작이 이어 부르는 상태) → state.
+        // clips가 여럿이면 차례로 이어져요. seconds > 0이면 한 동작이 그 시간에 끝나도록 빠르기를 맞춰요 (연격 간격).
+        // speed는 달리기·되풀이 빠르기 배수. after는 빈틈이 시작될 때 이어 재생할 상태
+        struct MoveSpec
+        {
+            public string attack, state, after, ready;
+            public string[] clips;
+            public MoveMode mode;
+            public float seconds, speed;
+        }
+
+        // 모델 고유 동작 중 반복하는 것
+        static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "Idle", "Run" };
+
+        // 고유 동작만 쓰는 적 (Generic으로 가져와요)
+        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim" };
+
+        static readonly Dictionary<string, MoveSpec[]> InkEnemyMoves = new Dictionary<string, MoveSpec[]>
+        {
+            // 녹림왕 (고유 동작): 대도 휘두르기(오른쪽 뒤로 감았다 허리째 가로 베기) · 돌진(낮게 숙인 준비 → 대도를 끌며 달리기) → 끝에서 내려찍기 · 회전베기
+            ["Nokrim"] = new[]
+            {
+                new MoveSpec { attack = "대도 휘두르기", state = "Sweep", clips = new[] { "Sweep" } },
+                new MoveSpec { state = "ChargeReady", clips = new[] { "ChargeReady" }, mode = MoveMode.Run },
+                new MoveSpec { attack = "돌진", state = "Charge", clips = new[] { "ChargeRun" }, mode = MoveMode.Run, speed = 1.4f, after = "Slam", ready = "ChargeReady" },
+                new MoveSpec { state = "Slam", clips = new[] { "Slam" }, mode = MoveMode.Run },   // 양손 내려찍기, 끝 자세로 멈춰 있다가 빈틈이 끝나면 대기로
+                // 회전베기(2페이즈): 두 팔을 벌리고 칼끝을 바깥으로 뻗은 자세(Whirl)로 판정 동안 모델째 빙글빙글 (힐윈드처럼)
+                new MoveSpec { attack = "회전베기", state = "Spin", clips = new[] { "Whirl" }, mode = MoveMode.Whirl },
+            },
+            // 청죽객: 쾌검 3연격(베기 셋을 0.3초씩) · 죽림섬(순간이동 베기 0.25초씩) · 대나무 베기(내려찍기)
+            ["Qingzhu"] = new[]
+            {
+                new MoveSpec { attack = "쾌검 3연격", state = "Combo", clips = new[] { "IKAttack1", "IKAttack2", "IKAttack3" }, seconds = 0.3f },
+                new MoveSpec { attack = "죽림섬", state = "Flash", clips = new[] { "IKAttack2", "IKAttack3", "IKAttack2", "IKAttack3" }, seconds = 0.25f },
+                new MoveSpec { attack = "대나무 베기", state = "Chop", clips = new[] { "IKAttack1" } },
+            },
+            // 철권 마웅: 주먹 2연타(고유 동작) · 붕산권(예고부터 치켜들었다 땅 내려치기) · 돌진(달리기)
+            ["IronFist"] = new[]
+            {
+                new MoveSpec { attack = "주먹 2연타", state = "Jab", clips = new[] { "Punch2" } },
+                new MoveSpec { attack = "붕산권", state = "Quake", clips = new[] { "Quake" }, mode = MoveMode.Play },
+                new MoveSpec { attack = "돌진", state = "Charge", clips = new[] { "Run" }, mode = MoveMode.Run, speed = 2f },
+            },
         };
 
         static void DressEnemyModelsInk()
         {
-            var entries = new System.Collections.Generic.List<AThousandDawns.Art.InkEnemyModels.Entry>();
+            var entries = new List<AThousandDawns.Art.InkEnemyModels.Entry>();
             foreach (var (name, kind, moveSpeed) in InkEnemies)
             {
                 var made = SetupEnemy(name, moveSpeed);
@@ -36,6 +88,7 @@ namespace AThousandDawns.EditorTools
                         // 나팔수·궁수: 예고 동안 나팔 불기·시위 당기기 동작을 그대로 재생
                         windupPlays = kind == EnemyKind.Horn || kind == EnemyKind.Archer,
                         noAttackAnim = kind == EnemyKind.Bomber,   // 화약 산적: 손 들지 않고 그대로 터져요
+                        moves = made.moves,
                     });
             }
             if (entries.Count == 0) return;
@@ -43,15 +96,18 @@ namespace AThousandDawns.EditorTools
             models.SetEntries(entries.ToArray());
         }
 
-        static (GameObject prefab, RuntimeAnimatorController controller) SetupEnemy(string name, float moveSpeed)
+        static (GameObject prefab, RuntimeAnimatorController controller, Move[] moves) SetupEnemy(string name, float moveSpeed)
         {
             string folder = $"{CharactersFolder}/{name}";
             string modelPath = $"{folder}/{name}_Rigged.fbx";
             string controllerPath = $"{folder}/{name}.controller";
-            if (!(AssetImporter.GetAtPath(modelPath) is ModelImporter importer)) return (null, null);
-            if (importer.animationType != ModelImporterAnimationType.Human || !importer.bakeAxisConversion || !importer.importAnimation)
+            if (!(AssetImporter.GetAtPath(modelPath) is ModelImporter importer)) return (null, null, null);
+            // 녹림왕은 Generic: 동작을 모두 Blender에서 만들어서, Humanoid 관절 한계에 잘려 칼이 틀어지지 않고 만든 그대로 움직여요
+            bool generic = GenericRigs.Contains(name);
+            var rigType = generic ? ModelImporterAnimationType.Generic : ModelImporterAnimationType.Human;
+            if (importer.animationType != rigType || !importer.bakeAxisConversion || !importer.importAnimation)
             {
-                importer.animationType = ModelImporterAnimationType.Human;
+                importer.animationType = rigType;
                 importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
                 importer.bakeAxisConversion = true;
                 importer.importAnimation = true;   // 고유 동작(나팔수 BlowHorn 등)이 들어 있으면 써요
@@ -61,18 +117,19 @@ namespace AThousandDawns.EditorTools
             // 고유 동작(BlowHorn·ShootBow)도 플레이어 동작처럼 몸통 방향·위치를 구워 넣어요.
             // 기본값(몸 방향 기준 루트 회전)으로 두면 모델을 돌려 세운 방향과 어긋나 뒤돌아서 쏴요
             var ownClips = importer.defaultClipAnimations;
-            if (ownClips.Length > 0 && (importer.clipAnimations.Length != ownClips.Length || importer.clipAnimations.Any(c => !c.lockRootRotation || !c.keepOriginalOrientation)))
+            if (ownClips.Length > 0 && (importer.clipAnimations.Length != ownClips.Length || importer.clipAnimations.Any(c => !c.lockRootRotation || !c.keepOriginalOrientation || c.loopTime != LoopingOwnClips.Contains(c.name))))
             {
                 foreach (var clip in ownClips)
                 {
                     clip.name = clip.takeName.Split('|').Last();
                     clip.lockRootRotation = clip.lockRootHeightY = clip.lockRootPositionXZ = true;
                     clip.keepOriginalOrientation = clip.keepOriginalPositionY = clip.keepOriginalPositionXZ = true;
+                    clip.loopTime = LoopingOwnClips.Contains(clip.name);   // 녹림왕 돌진 달리기는 반복
                 }
                 importer.clipAnimations = ownClips;
                 importer.SaveAndReimport();
             }
-            if (AssetDatabase.LoadAllAssetsAtPath(modelPath).OfType<Avatar>().All(a => !a.isHuman))
+            if (!generic && AssetDatabase.LoadAllAssetsAtPath(modelPath).OfType<Avatar>().All(a => !a.isHuman))
                 Debug.LogWarning($"{modelPath}의 Humanoid 아바타가 만들어지지 않았어요");
 
             // 동작: 플레이어 동작을 그대로 옮겨 입혀요 (둘 다 Humanoid).
@@ -83,12 +140,18 @@ namespace AThousandDawns.EditorTools
                 SetupPlayerRig();
             var clips = AssetDatabase.LoadAllAssetsAtPath(PlayerRiggedModel).OfType<AnimationClip>()
                 .Where(c => !c.name.StartsWith("__preview__")).ToDictionary(c => c.name);
-            if (!clips.TryGetValue("Idle", out var idle) || !clips.TryGetValue("Run", out var run)) return (null, null);
+            if (!clips.TryGetValue("Idle", out var idle) || !clips.TryGetValue("Run", out var run)) return (null, null, null);
             var attackClip = clips.TryGetValue("IKAttack1", out var ik) ? ik : clips.TryGetValue("Attack1", out var a1) ? a1 : null;
-            // 모델에 고유 공격 동작이 있으면 그걸로 (나팔수 BlowHorn·궁수 ShootBow — 예고 동안 그대로 재생해요)
-            var own = AssetDatabase.LoadAllAssetsAtPath(modelPath).OfType<AnimationClip>()
-                .FirstOrDefault(c => !c.name.StartsWith("__preview__") && c.name.Split('|').Last() is "BlowHorn" or "ShootBow");
-            if (own != null) attackClip = own;
+            // 모델 고유 동작 (나팔수 BlowHorn·궁수 ShootBow·철권 Punch2·Quake). 같은 이름이면 플레이어 동작보다 먼저 써요
+            foreach (var c in AssetDatabase.LoadAllAssetsAtPath(modelPath).OfType<AnimationClip>().Where(c => !c.name.StartsWith("__preview__")))
+                clips[c.name.Split('|').Last()] = c;
+            // 녹림왕은 고유 대기(대도를 늘어뜨린 자세, 휘두르기 끝 자세와 같아서 칼이 돌지 않아요)·달리기를 써요
+            idle = clips["Idle"];
+            run = clips["Run"];
+            if (generic) attackClip = clips.TryGetValue("Slam", out var slam) ? slam : null;   // 플레이어 동작은 Generic에 못 써요 (부하 부르기 등 기본 공격)
+            // 기본 공격에 고유 동작이 있으면 그걸로 (나팔수·궁수 — 예고 동안 그대로 재생해요)
+            if (clips.TryGetValue("BlowHorn", out var blow)) attackClip = blow;
+            else if (clips.TryGetValue("ShootBow", out var shoot)) attackClip = shoot;
 
             AssetDatabase.DeleteAsset(controllerPath);
             var controller = AnimatorController.CreateAnimatorControllerAtPath(controllerPath);
@@ -97,18 +160,42 @@ namespace AThousandDawns.EditorTools
             controller.AddParameter(new AnimatorControllerParameter { name = "AttackSpeed", type = AnimatorControllerParameterType.Float, defaultFloat = 1f });
             var sm = controller.layers[0].stateMachine;
             var sIdle = sm.AddState("Idle"); sIdle.motion = idle;
-            var sRun = sm.AddState("Run"); sRun.motion = run; sRun.speed = 1.2f * moveSpeed / 6f;   // 플레이어 달리기(6칸/초, 1.2배)에 맞춰
+            var sRun = sm.AddState("Run"); sRun.motion = run; sRun.speed = generic ? moveSpeed / 3f : 1.2f * moveSpeed / 6f;   // 플레이어 달리기(6칸/초, 1.2배)에 맞춰 (녹림왕 고유 달리기는 3칸/초 기준)
             sm.defaultState = sIdle;
             var t = sIdle.AddTransition(sRun); t.hasExitTime = false; t.duration = 0.1f; t.AddCondition(AnimatorConditionMode.Greater, 0.1f, "Speed");
             t = sRun.AddTransition(sIdle); t.hasExitTime = false; t.duration = 0.12f; t.AddCondition(AnimatorConditionMode.Less, 0.1f, "Speed");
-            if (attackClip != null)
+
+            // 공격 상태로는 InkEnemyAnimator가 직접 넘겨요 (트리거로 넘기면 여러 번 걸려 거듭 휘둘러요).
+            // 예고 동안 첫 자세(치켜듦)에서 멈췄다가 판정 순간 제 속도로 한 번 내려찍어요 (InkEnemyAnimator가 AttackSpeed를 0/1로 바꿔요)
+            void AddMove(string state, AnimationClip[] chain, MoveMode mode, float seconds, float speed)
             {
-                // 예고 동안 첫 자세(치켜듦)에서 멈췄다가 판정 순간 제 속도로 한 번 내려찍어요 (InkEnemyAnimator가 AttackSpeed를 0/1로 바꿔요)
-                var sAtk = sm.AddState("Attack"); sAtk.motion = attackClip;
-                sAtk.speedParameterActive = true; sAtk.speedParameter = "AttackSpeed";
-                // 공격 상태로는 InkEnemyAnimator가 직접 넘겨요 (트리거로 넘기면 여러 번 걸려 거듭 휘둘러요)
-                var back = sAtk.AddTransition(sIdle); back.hasExitTime = true; back.exitTime = 1f; back.duration = 0.15f;
+                AnimatorState prev = null;
+                for (int i = 0; i < chain.Length; i++)
+                {
+                    var s = sm.AddState(i == 0 ? state : $"{state}_{i + 1}");
+                    s.motion = chain[i];
+                    s.speedParameterActive = true; s.speedParameter = "AttackSpeed";
+                    s.speed = seconds > 0f ? chain[i].length / seconds : speed > 0f ? speed : 1f;
+                    if (prev != null) { var n = prev.AddTransition(s); n.hasExitTime = true; n.exitTime = 1f; n.duration = 0.05f; }
+                    prev = s;
+                }
+                if (mode == MoveMode.Loop || mode == MoveMode.Whirl) { var again = prev.AddTransition(prev); again.hasExitTime = true; again.exitTime = 1f; again.duration = 0f; }
+                else if (mode != MoveMode.Run) { var back = prev.AddTransition(sIdle); back.hasExitTime = true; back.exitTime = 1f; back.duration = 0.3f; }   // 천천히 대기로 (칼이 휙 돌지 않게)
             }
+            if (attackClip != null) AddMove("Attack", new[] { attackClip }, MoveMode.Swing, 0f, 0f);
+            var moves = new List<Move>();
+            if (InkEnemyMoves.TryGetValue(name, out var specs))
+                foreach (var spec in specs)
+                {
+                    var chain = spec.clips.Select(c => clips.TryGetValue(c, out var clip) ? clip : null).ToArray();
+                    if (chain.Any(c => c == null))
+                    {
+                        Debug.LogWarning($"{name}: {spec.state} 동작에 필요한 클립({string.Join(",", spec.clips)})이 없어요");
+                        continue;
+                    }
+                    AddMove(spec.state, chain, spec.mode, spec.seconds, spec.speed);
+                    if (spec.attack != null) moves.Add(new Move { attack = spec.attack, state = spec.state, mode = spec.mode, after = spec.after, ready = spec.ready });
+                }
 
             // 재질: 수묵 캐릭터 셰이더 + VARCO 색 텍스처. 채도는 지역 색 양(_InkColorAmount)을 따라요
             var body = GetInkMaterial($"Ink_{name}_Body", "#FFFFFF", 0.45f);
@@ -145,7 +232,7 @@ namespace AThousandDawns.EditorTools
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, $"{folder}/{name}_Ink.prefab");
             Object.DestroyImmediate(go);
             AssetDatabase.SaveAssets();
-            return (prefab, controller);
+            return (prefab, controller, moves.ToArray());
         }
     }
 }
