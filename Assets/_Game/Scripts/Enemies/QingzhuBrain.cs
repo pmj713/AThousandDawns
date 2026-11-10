@@ -187,7 +187,7 @@ namespace AThousandDawns.Enemies
                 {
                     var dir = Quaternion.Euler(0f, baseAngle + i * 180f / _flashLines, 0f) * Vector3.forward;
                     if (i % 2 == 1) dir = -dir;
-                    _lines.Add((Clamp(p - dir * (_flashLength * 0.5f)), Clamp(p + dir * (_flashLength * 0.5f))));
+                    _lines.Add((Clamp(p - dir * FlashReach(p, -dir)), Clamp(p + dir * FlashReach(p, dir))));
                 }
             }
             else if (_pattern == Pattern.Bamboo)
@@ -286,6 +286,14 @@ namespace AThousandDawns.Enemies
             if (_strikesDone > 1) Telegraph.Hide();
             if (HitShapes.InSector(transform.position, AimDirection, _comboRadius, _comboAngle, Player.transform.position, PlayerRadius))
                 HitPlayer(_comboRatio); // 피격 무적 0.6초라 3번 다 맞지는 않아요
+        }
+
+        // 죽림섬 직선의 반쪽 길이: 플레이어에서 그 방향으로 벽·대나무 앞까지만 (벽 너머나 방 밖으로 순간이동하지 않게)
+        float FlashReach(Vector3 from, Vector3 dir)
+        {
+            float half = _flashLength * 0.5f;
+            float free = ObstacleProbe.Distance(new Vector3(from.x, 0.8f, from.z), dir, BodyRadius, half + BodyRadius);
+            return Mathf.Clamp(free - BodyRadius, 0.5f, half);
         }
 
         // 직선 시작점에 나타나 끝으로 베며 지나가요

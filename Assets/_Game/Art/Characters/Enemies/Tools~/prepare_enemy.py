@@ -71,6 +71,12 @@ def box(bm, c, axis, side, length, w, th):
 
 
 def grip_of(side):
+    """쥐는 자리 = 그 손 뼈에 붙은 손 메시의 가운데 (FBX로 들어온 손 뼈 꼬리는 손가락 쪽을 가리키지 않을 때가 있어요)."""
+    g = body.vertex_groups.get(f"{side}Hand")
+    if g is not None:
+        pts = [body.matrix_world @ v.co for v in body.data.vertices if any(e.group == g.index and e.weight > 0.5 for e in v.groups)]
+        if len(pts) > 20:
+            return sum(pts, Vector()) / len(pts)
     h = B[f"{side}Hand"]
     return h.head_local.lerp(h.tail_local, 0.6)
 
@@ -96,12 +102,36 @@ def blade(bm, g, axis, edge, L, wide):
 
 
 for w in WEAPONS:
-    if w in ("dao", "dagger"):
+    if w in ("dao", "dagger", "bigdao"):
         g = grip_of("Right")
         axis = Vector((0, -1, -0.15)).normalized()
         edge = Vector((0, 0, -1)); edge = (edge - axis * edge.dot(axis)).normalized()
-        L, wide = (0.62, 0.07) if w == "dao" else (0.26, 0.035)
+        L, wide = {"dao": (0.62, 0.07), "dagger": (0.26, 0.035), "bigdao": (1.15, 0.16)}[w]   # bigdao: 녹림왕의 대도
         make(f"{NAME}_Weapon_{w}", "RightHand", lambda bm, g=g, a=axis, e=edge, L=L, wd=wide: blade(bm, g, a, e, L, wd))
+    elif w == "jian":
+        # 곧은 양날 장검 (청죽객): 손잡이·코등이 + 마름모 단면 칼날이 끝으로 뾰족해요
+        g = grip_of("Right")
+        axis = Vector((0, -1, -0.15)).normalized()
+        flat = Vector((0, 0, -1)); flat = (flat - axis * flat.dot(axis)).normalized()
+
+        def build(bm, g=g, a=axis, e=flat):
+            box(bm, g, a, e, 0.18, 0.03, 0.028)
+            box(bm, g + a * 0.1, a, e, 0.02, 0.1, 0.03)
+            t = a.cross(e).normalized()
+            rings = []
+            for u, ww in ((0.0, 0.022), (0.9, 0.018), (1.0, 0.0)):
+                c = g + a * (0.11 + 0.85 * u)
+                rings.append([bm.verts.new(c)] if ww == 0 else
+                             [bm.verts.new(c + e * ww), bm.verts.new(c + t * 0.004), bm.verts.new(c - e * ww), bm.verts.new(c - t * 0.004)])
+            for r0, r1 in zip(rings[:-1], rings[1:]):
+                for i in range(4):
+                    j = (i + 1) % 4
+                    if len(r1) == 1:
+                        bm.faces.new((r0[i], r0[j], r1[0]))
+                    else:
+                        bm.faces.new((r0[i], r0[j], r1[j], r1[i]))
+            bm.faces.new(list(reversed(rings[0])))
+        make(f"{NAME}_Weapon_jian", "RightHand", build)
     elif w == "bow" and "shootbow" not in WEAPONS:   # 활 쏘는 동작이 있으면 그 자세에 맞춰 아래에서 만들어요
         g = grip_of("Left")
 
@@ -461,83 +491,148 @@ if "blowhorn" in EXTRAS:
     for p in pb:
         p.rotation_quaternion = Quaternion(); p.location = (0, 0, 0)
 
-# 활 쏘기 (예고 0.7초 = 21프레임 동안 시위를 당겨 판정 순간 놓아요). 단순하게 팔 각도를 직접 계산해요 (두 마디 팔 풀이):
-#   왼팔은 처음부터 앞으로 곧게 활을 들고, 오른손은 시위(활 바로 뒤)에서 볼까지 당겼다가 놓으면 뒤로 살짝 튕겨요.
-#   활은 다 당긴 자세에서 세로로 서고 시위가 몸 쪽에 오도록 만든 뒤, 왼손 기본 자세로 되돌려 붙여요
-if "shootbow" in EXTRAS:
-    scene = bpy.context.scene
-    scene.render.fps = 30
-    pb = rig.pose.bones
-    UP = Vector((0, 0, 1))
+# ── 직접 만드는 동작 (활 쏘기·주먹·붕산권). 단순하게 관절 위치를 정하고 두 마디 팔·다리 풀이로 각도를 계산해요.
+#    FBX로 들어온 뼈 꼬리는 다음 관절을 가리키지 않아서 관절 위치로 방향을 재요.
+scene = bpy.context.scene
+scene.render.fps = 30
+pb = rig.pose.bones
+UP = Vector((0, 0, 1))
 
-    def reset_pose():
-        for p in pb:
-            p.rotation_mode = 'QUATERNION'; p.rotation_quaternion = Quaternion(); p.location = (0, 0, 0)
-        bpy.context.view_layer.update()
 
-    def aim(name, to_pt, child=None, delta=None):
-        """뼈 머리는 그대로 두고 다음 관절(child 머리)이 to_pt를 향하도록 가장 작게 돌려요.
-        FBX로 들어온 뼈 꼬리는 다음 관절을 가리키지 않아서 관절 위치로 방향을 재요. delta를 주면 그 회전을 그대로 써요."""
-        b, p = B[name], pb[name]
-        head = p.head.copy()
-        if delta is None:
-            rest_dir = (B[child].head_local - b.head_local).normalized()
-            delta = rest_dir.rotation_difference((to_pt - head).normalized())
-        m = (delta.to_matrix() @ b.matrix_local.to_3x3()).to_4x4()
-        m.translation = head
-        p.matrix = m
-        bpy.context.view_layer.update()
-        return delta
+def reset_pose():
+    for p in pb:
+        p.rotation_mode = 'QUATERNION'; p.rotation_quaternion = Quaternion(); p.location = (0, 0, 0)
+    bpy.context.view_layer.update()
 
-    def two_bone(side, wrist, pole):
-        s = pb[f"{side}Arm"].head.copy()
-        l1 = (B[f"{side}ForeArm"].head_local - B[f"{side}Arm"].head_local).length
-        l2 = (B[f"{side}Hand"].head_local - B[f"{side}ForeArm"].head_local).length
-        v = wrist - s
-        dist = min(v.length, (l1 + l2) * 0.999)
-        n = v.normalized()
-        a = (l1 * l1 - l2 * l2 + dist * dist) / (2 * dist)
-        h = math.sqrt(max(l1 * l1 - a * a, 0.0))
-        pp = pole - n * pole.dot(n)
-        pp = pp.normalized() if pp.length > 1e-6 else UP
-        elbow = s + n * a + pp * h
-        aim(f"{side}Arm", elbow, f"{side}ForeArm")
-        d = aim(f"{side}ForeArm", s + n * dist, f"{side}Hand")
-        aim(f"{side}Hand", None, delta=d)                      # 손목은 곧게 (아래팔과 같이 돌려요)
 
-    reset_pose()
-    sh_l, sh_r, hd = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy(), pb["Head"].head.copy()
-    reach = ((B["LeftForeArm"].head_local - B["LeftArm"].head_local).length + (B["LeftHand"].head_local - B["LeftForeArm"].head_local).length) * 0.97
-    bow_wrist = sh_l + Vector((-0.15, -1, 0.03)).normalized() * reach      # 왼팔 앞으로 곧게 (조금 안쪽)
-    pole_l = Vector((0.4, 0, -1))                                           # 팔꿈치는 바깥·아래
-    back = Vector((0, 1, 0))
-    nock = bow_wrist + back * 0.16 + Vector((-0.02, 0, 0))                  # 시위 (활 바로 뒤)
-    cheek = hd + Vector((-0.08, -0.07, 0.04))                               # 오른 볼 (다 당긴 끝)
-    flick = cheek + Vector((-0.08, 0.1, 0.02))                              # 놓은 뒤 손이 뒤로 튕겨요
-    pole_r = Vector((-0.5, 0.7, 0.25))                                      # 당기는 팔꿈치는 옆·뒤·위로
-    # (프레임, 오른 손목 자리)
-    keys = [(0, nock), (4, nock), (19, cheek), (21, cheek), (23, flick), (30, flick)]
-    # 자세는 동작 없이 계산해 두고 (동작이 걸려 있으면 갱신할 때마다 키 값으로 덮여요), 나중에 한꺼번에 키를 넣어요
+def aim(name, to_pt, child=None, delta=None):
+    """뼈 머리는 그대로 두고 다음 관절(child 머리)이 to_pt를 향하도록 가장 작게 돌려요. delta를 주면 그 회전을 그대로 써요."""
+    b, p = B[name], pb[name]
+    head = p.head.copy()
+    if delta is None:
+        rest_dir = (B[child].head_local - b.head_local).normalized()
+        delta = rest_dir.rotation_difference((to_pt - head).normalized())
+    m = (delta.to_matrix() @ b.matrix_local.to_3x3()).to_4x4()
+    m.translation = head
+    p.matrix = m
+    bpy.context.view_layer.update()
+    return delta
+
+
+def two_bone(upper, lower, end, target, pole):
+    s = pb[upper].head.copy()
+    l1 = (B[lower].head_local - B[upper].head_local).length
+    l2 = (B[end].head_local - B[lower].head_local).length
+    v = target - s
+    dist = max(min(v.length, (l1 + l2) * 0.999), abs(l1 - l2) + 1e-3)
+    n = v.normalized()
+    a = (l1 * l1 - l2 * l2 + dist * dist) / (2 * dist)
+    h = math.sqrt(max(l1 * l1 - a * a, 0.0))
+    pp = pole - n * pole.dot(n)
+    pp = pp.normalized() if pp.length > 1e-6 else UP
+    joint = s + n * a + pp * h
+    aim(upper, joint, lower)
+    return aim(lower, s + n * dist, end)
+
+
+def arm(side, wrist, pole):
+    d = two_bone(f"{side}Arm", f"{side}ForeArm", f"{side}Hand", wrist, pole)
+    aim(f"{side}Hand", None, delta=d)                       # 손목은 곧게 (아래팔과 같이 돌려요)
+
+
+def lower_hips(dz, feet, dy=0.0):
+    """엉덩이를 dz만큼 내리고(dy만큼 앞뒤로 옮기고) 발은 제자리에 두도록 무릎을 굽혀요."""
+    p = pb["Hips"]
+    m = p.matrix.copy(); m.translation.z += dz; m.translation.y += dy; p.matrix = m
+    bpy.context.view_layer.update()
+    for side, foot in feet.items():
+        two_bone(f"{side}UpLeg", f"{side}Leg", f"{side}Foot", foot, Vector((0, -1, 0)))
+        aim(f"{side}Foot", None, delta=Quaternion())        # 발은 기본 방향 그대로
+
+
+def bend(name, axis, deg):
+    """지금 자세에서 뼈를 축(아마추어 공간) 둘레로 더 돌려요. 자식 뼈는 따라와요."""
+    cur = pb[name].matrix.to_quaternion() @ B[name].matrix_local.to_quaternion().inverted()
+    aim(name, None, delta=Quaternion(axis, math.radians(deg)) @ cur)
+
+
+BLADE_REST = Vector((0, -1, -0.15)).normalized()   # 기본 자세에서 오른손 칼(dao·bigdao·jian)이 뻗는 방향
+MAX_TWIST = math.pi if "generic" in EXTRAS else math.radians(85)   # Humanoid는 넘으면 Unity가 잘라서 칼이 튀어요 (Generic은 한계 없음)
+
+
+def point_blade(want, wrist_bend=0.0):
+    """손목을 꺾지 않고 아래팔 축 둘레로만 비틀어, 칼끝이 want 쪽(아래팔에 수직인 면 안에서 가장 가까운 방향)을 향하게 해요.
+    칼은 주먹을 가로질러 똑바로 쥔 채예요."""
+    p = pb["RightHand"]
+    a = (p.head - pb["RightForeArm"].head).normalized()
+    cur = p.matrix.to_quaternion() @ B["RightHand"].matrix_local.to_quaternion().inverted()
+    c = cur @ BLADE_REST
+    c = c - a * c.dot(a)
+    w = want.normalized() - a * want.normalized().dot(a)
+    if c.length > 1e-4 and w.length > 1e-4:
+        ang = math.atan2(a.dot(c.cross(w)), c.dot(w))
+        ang = max(-MAX_TWIST, min(MAX_TWIST, ang))       # Unity Humanoid 아래팔 비틀기 한계(약 ±90°) 안에서만
+        aim("RightHand", None, delta=Quaternion(a, ang) @ cur)
+    if wrist_bend > 0:
+        # 남은 차이는 손목을 젖혀서 (wrist_bend 도까지, Unity 손목 한계 안)
+        cur = p.matrix.to_quaternion() @ B["RightHand"].matrix_local.to_quaternion().inverted()
+        c = (cur @ BLADE_REST).normalized()
+        axis = c.cross(want.normalized())
+        if axis.length > 1e-4:
+            bend_ang = min(c.angle(want.normalized()), math.radians(wrist_bend))
+            aim("RightHand", None, delta=Quaternion(axis.normalized(), bend_ang) @ cur)
+
+
+def make_action(name, keys, pose):
+    """keys의 각 프레임 값으로 pose(값)를 세우고 회전(엉덩이는 위치도)을 키로 넣어요.
+    자세는 동작 없이 계산해 두고 (동작이 걸려 있으면 갱신할 때마다 키 값으로 덮여요), 나중에 한꺼번에 키를 넣어요."""
     rig.animation_data_create(); rig.animation_data.action = None
     poses = []
-    for f, wrist_r in keys:
+    for f, val in keys:
         reset_pose()
-        two_bone("Left", bow_wrist, pole_l)
-        two_bone("Right", wrist_r, pole_r)
-        poses.append((f, {p.name: p.rotation_quaternion.copy() for p in pb}))
-    act = bpy.data.actions.new("ShootBow"); rig.animation_data.action = act
-    for f, quats in poses:
+        pose(val)
+        poses.append((f, {p.name: p.rotation_quaternion.copy() for p in pb}, pb["Hips"].location.copy()))
+    # 같은 회전도 q와 -q 두 값이 있어요. 키마다 앞 키와 같은 쪽 값으로 맞춰야 사이를 이을 때 먼 길로 빙글 돌지 않아요
+    for (_, prev, _), (_, cur, _) in zip(poses[:-1], poses[1:]):
+        for n, q in cur.items():
+            if q.dot(prev[n]) < 0:
+                cur[n] = -q
+    act = bpy.data.actions.new(name); rig.animation_data.action = act
+    for f, quats, hips in poses:
         for p in pb:
             p.rotation_quaternion = quats[p.name]
             p.keyframe_insert("rotation_quaternion", frame=f)
+        pb["Hips"].location = hips
+        pb["Hips"].keyframe_insert("location", frame=f)
+    act.use_fake_user = True
+    return act
+
+
+reset_pose()
+SH_L, SH_R, HD = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy(), pb["Head"].head.copy()
+FEET = {s: pb[f"{s}Foot"].head.copy() for s in ("Left", "Right")}
+REACH = ((B["LeftForeArm"].head_local - B["LeftArm"].head_local).length + (B["LeftHand"].head_local - B["LeftForeArm"].head_local).length) * 0.97
+
+# 활 쏘기 (예고 0.7초 = 21프레임 동안 시위를 당겨 판정 순간 놓아요):
+#   왼팔은 처음부터 앞으로 곧게 활을 들고, 오른손은 시위(활 바로 뒤)에서 볼까지 당겼다가 놓으면 뒤로 살짝 튕겨요.
+#   활은 다 당긴 자세에서 세로로 서고 시위가 몸 쪽에 오도록 만든 뒤, 왼손 기본 자세로 되돌려 붙여요
+if "shootbow" in EXTRAS:
+    bow_wrist = SH_L + Vector((-0.15, -1, 0.03)).normalized() * REACH      # 왼팔 앞으로 곧게 (조금 안쪽)
+    nock = bow_wrist + Vector((-0.02, 0.16, 0))                             # 시위 (활 바로 뒤)
+    cheek = HD + Vector((-0.08, -0.07, 0.04))                               # 오른 볼 (다 당긴 끝)
+    flick = cheek + Vector((-0.08, 0.1, 0.02))                              # 놓은 뒤 손이 뒤로 튕겨요
+
+    def shoot_pose(wrist_r):
+        arm("Left", bow_wrist, Vector((0.4, 0, -1)))                        # 팔꿈치는 바깥·아래
+        arm("Right", wrist_r, Vector((-0.5, 0.7, 0.25)))                    # 당기는 팔꿈치는 옆·뒤·위로
+    make_action("ShootBow", [(0, nock), (4, nock), (19, cheek), (21, cheek), (23, flick), (30, flick)], shoot_pose)
     scene.frame_start, scene.frame_end = 0, 30
 
-    # 활: 다 당긴 자세(19프레임)에서 세로 활대 + 몸 쪽 시위로 만든 뒤 왼손 기본 자세로 되돌려요
     scene.frame_set(19); bpy.context.view_layer.update()
     ph = pb["LeftHand"]
     delta_inv = (ph.matrix @ B["LeftHand"].matrix_local.inverted()).inverted()
     grip = ph.head.lerp(ph.tail, 0.45)
-    to_body = Vector((sh_r.x - grip.x, sh_r.y - grip.y, 0)).normalized()
+    to_body = Vector((SH_R.x - grip.x, SH_R.y - grip.y, 0)).normalized()
 
     def build_bow(bm, g=grip, bk=to_body):
         n_, prev = 12, None
@@ -556,8 +651,305 @@ if "shootbow" in EXTRAS:
         for k in range(3):
             bm.faces.new((sr[0][k], sr[0][(k + 1) % 3], sr[1][(k + 1) % 3], sr[1][k]))
     make(f"{NAME}_Weapon_bow", "LeftHand", build_bow)
+    rig.animation_data.action = None
+    reset_pose()
 
-    act.use_fake_user = True
+# 맨손 고수의 공통 자세: 두 주먹을 가슴 앞에 (가드)
+GUARD = {"Left": SH_L + Vector((-0.12, -0.3, -0.12)), "Right": SH_R + Vector((0.12, -0.3, -0.12))}
+POLE_GUARD = {"Left": Vector((0.6, 0.2, -1)), "Right": Vector((-0.6, 0.2, -1))}
+
+
+def guard(skip=()):
+    for s in ("Left", "Right"):
+        if s not in skip:
+            arm(s, pb[f"{s}Arm"].head + (GUARD[s] - (SH_L if s == "Left" else SH_R)), POLE_GUARD[s])
+
+
+# 주먹 2연타 (Punch2, 판정 0.35초 간격): 몸 전체로 치는 묵직한 원투.
+#   0 오른 주먹을 허리춤으로 당기고 몸을 뒤로 튼 자세 (예고 동안 여기서 멈춰요) → 4 무릎을 굽히고 앞으로 실으며 오른 주먹 쭉
+#   → 8 왼 주먹을 당기며 반대로 틀기 → 13 왼 주먹 쭉 → 22 가드
+if "punch" in EXTRAS:
+    def chamber(side):
+        sh = pb[f"{side}Arm"].head.copy()
+        out = 1 if side == "Left" else -1
+        arm(side, sh + Vector((out * 0.08, 0.18, -0.38)), Vector((out, 0.6, -0.2)))   # 주먹을 옆구리로 (팔꿈치는 뒤로)
+
+    def strike(side):
+        sh = pb[f"{side}Arm"].head.copy()
+        inward = 0.22 if side == "Right" else -0.22
+        arm(side, sh + Vector((inward, -1, 0.0)).normalized() * REACH * 1.05, Vector((-inward * 3, 0.2, -1)))
+
+    def punch_pose(stage):
+        if stage == "guard":
+            lower_hips(-0.08, FEET)
+            guard()
+            return
+        side, phase = stage
+        sign = 1 if side == "Right" else -1                                  # 오른쪽을 칠 때 +: 오른 어깨가 앞으로
+        other = "Left" if side == "Right" else "Right"
+        if phase == "load":
+            lower_hips(-0.1, FEET, dy=0.05)
+            bend("Spine", UP, -22 * sign); bend("Spine1", UP, -12 * sign)   # 치는 쪽 어깨를 뒤로 감아요
+            chamber(side)
+            guard(skip=(side,))
+        else:
+            lower_hips(-0.16, FEET, dy=-0.14)                               # 무릎을 굽혀 앞으로 실어요
+            bend("Spine", Vector((1, 0, 0)), 10)
+            bend("Spine", UP, 30 * sign); bend("Spine1", UP, 15 * sign)     # 허리째 돌려 내질러요
+            strike(side)
+            chamber(other)
+    make_action("Punch2", [(0, ("Right", "load")), (4, ("Right", "hit")), (8, ("Left", "load")), (13, ("Left", "hit")),
+                           (17, ("Left", "hit")), (24, "guard")], punch_pose)
+    rig.animation_data.action = None
+    reset_pose()
+
+GRIP_R = grip_of("Right")   # 기본 자세에서 오른손이 칼자루를 쥔 자리
+
+
+def blade_now():
+    """지금 자세의 칼자루 자리와 칼끝 방향."""
+    p = pb["RightHand"]
+    m = p.matrix @ B["RightHand"].matrix_local.inverted()
+    return m @ GRIP_R, (m.to_quaternion() @ BLADE_REST).normalized()
+
+
+def left_on_hilt(back=0.16):
+    """왼손으로 칼자루 끝(오른손 아래쪽)을 함께 잡아요 (양손 잡기)."""
+    g, d = blade_now()
+    arm("Left", g - d * back, Vector((1, 0.4, -1)))
+
+def fit_right(base, offsets, poles, want, wrist_bend=0.0):
+    """오른손을 base+offset 후보들에 두어 보고, 아래팔 비틀기 한계 안에서 칼끝이 want에 가장 가까운 자리·팔꿈치 방향으로 세워요."""
+    want = want.normalized()
+    best = None
+    for off in offsets:
+        for pole in poles:
+            arm("Right", base + off, pole)
+            point_blade(want, wrist_bend)
+            score = blade_now()[1].dot(want)
+            if best is None or score > best[0]:
+                best = (score, off, pole)
+    arm("Right", base + best[1], best[2])
+    point_blade(want, wrist_bend)
+    return best[0]
+
+
+ALL_POLES = (Vector((-0.5, 0.4, -1)), Vector((-1, 0, 0)), Vector((0, 1, 0)), Vector((-0.5, -0.5, 0)), Vector((0, 0.5, 1)), Vector((-1, 0.3, 0.6)))
+
+
+
+# 회전베기 자세 (Whirl): 대도를 양손으로 잡고 오른쪽 앞으로 칼끝을 뻗은 채 무릎을 굽혀요 (힐윈드).
+#   빙글빙글 도는 것은 Unity(InkEnemyAnimator)가 모델을 판정 동안 시계 반대 방향으로 돌려서 해요
+if "whirl" in EXTRAS:
+    def whirl_pose(_):
+        lower_hips(-0.2, FEET)
+        bend("Spine", Vector((1, 0, 0)), 10)
+        bend("Spine", UP, -15)
+        chest = (pb["LeftArm"].head + pb["RightArm"].head) / 2
+        want = Vector((-1, -0.35, 0.05)).normalized()                        # 칼끝은 오른쪽 바깥으로 눕혀요
+        # 아래팔 비틀기 한계 안에서 칼끝이 want에 가장 가깝게 눕는 손 자리·팔꿈치 방향을 골라요
+        best = None
+        for x in (-0.45, -0.3, -0.15, 0.0):
+            for y in (-0.55, -0.4, -0.25):
+                for z in (-0.4, -0.25, -0.1):
+                    for pole in (Vector((-0.5, 0.3, -1)), Vector((-1, 0, 0)), Vector((0, 0.5, 1)), Vector((-0.5, -0.5, 0.5))):
+                        wrist = chest + Vector((x, y, z))
+                        arm("Right", wrist, pole)
+                        point_blade(want)
+                        score = blade_now()[1].dot(want)
+                        if best is None or score > best[0]:
+                            best = (score, wrist, pole)
+        arm("Right", best[1], best[2])
+        point_blade(want)
+        print("ENEMY whirl blade fit %.2f" % best[0])
+        left_on_hilt()
+    make_action("Whirl", [(0, None), (10, None)], whirl_pose)
+    rig.animation_data.action = None
+    reset_pose()
+
+# 대도 휘두르기 (Sweep): 오른쪽 뒤로 대도를 치켜 감았다가(예고 동안 여기서 멈춰요) 허리째 돌려 왼쪽 앞으로 크게 가로 베요.
+#   팔꿈치는 살짝 굽히고, 칼은 주먹에 똑바로 쥔 채 아래팔만 비틀어 칼끝 방향을 맞춰요. 끝에는 칼끝을 왼쪽 아래로 내려 멈춰요
+if "sweep" in EXTRAS:
+    # 녹림왕 대기(Idle)·달리기(Run): 플레이어 대기·달리기(Player_Rigged.fbx)를 이 뼈대로 옮겨 구워요.
+    #   녹림왕은 Generic이라 Unity에서 플레이어 동작을 바로 못 쓰기 때문이에요.
+    #   팔다리는 뼈 방향(관절→다음 관절)을 맞추고, 엉덩이·몸통·목·머리·손·발은 기본 자세에서 돈 만큼(월드 기준)을 그대로 옮겨요
+    player_fbx = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "Player", "Parts", "Player_Rigged.fbx"))
+    before = set(bpy.data.objects); before_act = set(bpy.data.actions)
+    bpy.ops.import_scene.fbx(filepath=player_fbx)
+    prig = next(o for o in bpy.data.objects if o not in before and o.type == 'ARMATURE')
+    player_objs = [o for o in bpy.data.objects if o not in before]
+    player_acts = [a for a in bpy.data.actions if a not in before_act]
+    PB, PBN = prig.pose.bones, prig.data.bones
+    pmw = prig.matrix_world
+    hip_scale = B["Hips"].head_local.z / (pmw @ PBN["Hips"].head_local).z
+    rot_map = [("Hips", "Hips"), ("Spine", "Spine"), ("Spine1", "Chest"), ("Neck", "Neck"), ("Head", "Head"),
+               ("LeftShoulder", "LeftShoulder"), ("RightShoulder", "RightShoulder")]
+    limb_map = [(f"{s}{a}", f"{s}{b}", f"{s}{ca}", f"{s}{cb}") for s in ("Left", "Right") for a, b, ca, cb in
+                (("UpLeg", "UpperLeg", "Leg", "LowerLeg"), ("Leg", "LowerLeg", "Foot", "Foot"),
+                 ("Arm", "UpperArm", "ForeArm", "LowerArm"), ("ForeArm", "LowerArm", "Hand", "Hand"))]
+    end_map = [(f"{s}{n}", f"{s}{n}") for s in ("Left", "Right") for n in ("Hand", "Foot")]
+
+    def pdelta(pn):
+        """플레이어 뼈가 기본 자세에서 월드 기준으로 돈 회전."""
+        posed = (pmw @ PB[pn].matrix).to_quaternion()
+        rest = (pmw @ PBN[pn].matrix_local).to_quaternion()
+        return posed @ rest.inverted()
+
+    def use_player(act):
+        prig.animation_data_create(); prig.animation_data.action = act
+        if hasattr(prig.animation_data, "action_slot") and act.slots:
+            prig.animation_data.action_slot = act.slots[0]
+
+    def player_pose(frame):
+        scene.frame_set(frame)
+        prest = pmw @ PBN["Hips"].head_local
+        pnow = pmw @ PB["Hips"].head
+        hp = pb["Hips"]
+        m = (pdelta("Hips").to_matrix() @ B["Hips"].matrix_local.to_3x3()).to_4x4()
+        m.translation = B["Hips"].head_local + Vector((0, 0, (pnow - prest).z * hip_scale))
+        hp.matrix = m
+        bpy.context.view_layer.update()
+        for n, pn in rot_map[1:]:
+            if n in pb and pn in PB:
+                aim(n, None, delta=pdelta(pn))
+        fore = {}
+        for n, pn, cn, cpn in limb_map:
+            d = ((pmw @ PB[cpn].head) - (pmw @ PB[pn].head)).normalized()
+            # 녹림왕은 몸통이 두꺼워서 플레이어 팔 방향 그대로면 옆구리에 붙어요. 위팔·아래팔을 바깥으로 벌려요
+            out = Vector((1, 0, 0)) if n.startswith("Left") else Vector((-1, 0, 0))
+            spread = {"Arm": 0.55, "ForeArm": 0.3}.get(n[4:] if n.startswith("Left") else n[5:], 0.0)
+            fore[n] = aim(n, pb[n].head + (d + out * spread).normalized(), cn)
+        for n, pn in end_map:
+            if n.endswith("Hand"):
+                # 손은 아래팔과 일직선 (플레이어 손 각도를 옮기면 벌린 팔에서 손목이 꺾여 보여요)
+                aim(n, None, delta=fore[n.replace("Hand", "ForeArm")])
+            else:
+                aim(n, None, delta=pdelta(pn))
+        fa = (pb["RightHand"].head - pb["RightForeArm"].head).normalized()
+        point_blade((fa + Vector((0, -0.12, 0))).normalized(), wrist_bend=90)   # 칼은 팔과 일직선으로 늘어뜨려요 (칼자루가 주먹을 가로지르니 손목을 젖혀서)
+
+    def bake_player(name):
+        act = next(a for a in player_acts if a.name.split("|")[-1] == name)
+        use_player(act)
+        s, e = int(act.frame_range[0]), int(act.frame_range[1])
+        make_action(name, [(f - s, f) for f in range(s, e + 1)], player_pose)
+        rig.animation_data.action = None
+        reset_pose()
+        return act, s
+    idle_act, idle_start = bake_player("Idle")
+    bake_player("Run")
+
+    def sweep_pose(stage):
+        if stage == "idle":
+            use_player(idle_act)                                            # 끝은 대기(플레이어 대기) 첫 자세 그대로 (넘어갈 때 칼이 돌지 않게)
+            player_pose(idle_start)
+            return
+        twist, wrist, lift, dy, blade = {
+            # 칼은 허리~가슴 높이에서 수평으로 오른쪽 뒤 → 앞 → 왼쪽 뒤로 크게 반원을 그려요
+            "load": (-50, Vector((-0.65, 0.45, -0.05)), -0.14, 0.06, Vector((-0.2, 1, 0.12))),   # 오른쪽 뒤로 감아 칼끝은 뒤로
+            "hit": (0, Vector((-0.3, -0.85, -0.12)), -0.2, -0.1, Vector((-0.35, -1, 0))),       # 오른쪽 앞을 휩쓸어요
+            "follow": (45, Vector((0.45, -0.75, -0.15)), -0.2, -0.1, Vector((1, -0.45, 0))),     # 왼쪽 앞으로 휘둘러 나가요
+            "end": (55, Vector((0.75, -0.1, -0.25)), -0.14, -0.05, Vector((0.85, 0.5, -0.1))),   # 왼쪽 뒤까지 돌아 나가요
+        }[stage]
+        lower_hips(lift, FEET, dy=dy)
+        bend("Spine", UP, twist * 0.6); bend("Spine1", UP, twist * 0.4)
+        sh = pb["RightArm"].head.copy()
+        arm("Right", sh + wrist.normalized() * REACH * 0.82, Vector((0.2, 0.5, -1)))   # 팔꿈치를 살짝 굽혀요
+        point_blade(blade)
+        sl = pb["LeftArm"].head.copy()
+        arm("Left", sl + Vector((-0.1, -0.35, -0.3)) if stage == "load" else sl + Vector((0.25, 0.1, -0.4)), Vector((1, 0.3, -0.5)))
+    make_action("Sweep", [(0, "load"), (4, "hit"), (7, "follow"), (11, "end"), (16, "end"), (26, "idle")], sweep_pose)
+    rig.animation_data.action = None
+    reset_pose()
+    # 플레이어 뼈대·메시·동작은 지워요 (내보낼 때 같이 나가지 않게)
+    for o in player_objs:
+        bpy.data.objects.remove(o, do_unlink=True)
+    for a in player_acts:
+        bpy.data.actions.remove(a)
+    scene.frame_set(0)
+
+# 돌진 (ChargeReady·ChargeRun·Slam): 준비는 몸을 낮추고 앞으로 숙여 대도를 오른 어깨 위로 치켜든 자세,
+#   돌진은 크게 앞으로 숙인 채 다리를 크게 내딛고 왼팔을 휘저으며 대도를 치켜든 채 달리는 반복 동작 (16프레임),
+#   끝에서 양손으로 내려찍고(Slam) 그 자세로 멈춰요
+if "charge" in EXTRAS:
+    def sword_up(lift=0.0):
+        # 세로베기 직전처럼 오른팔을 곧게 위로 쭉 뻗어 대도를 치켜들어요 (칼끝은 위로, 손목을 젖혀서)
+        sh = pb["RightArm"].head.copy()
+        offs = [Vector((x, y, 1.0)).normalized() * REACH * (0.99 - lift) for x in (-0.06, 0.0) for y in (-0.08, 0.0, 0.06)]
+        fit_right(sh, offs, ALL_POLES, Vector((0, 0.3, 1)), wrist_bend=70)   # 칼은 팔을 따라 위로 서요
+
+    def ready_pose(_):
+        lower_hips(-0.32, FEET, dy=0.08)                                    # 깊게 앉아요
+        bend("Spine", Vector((1, 0, 0)), 30)                                # 앞으로 숙여요
+        bend("Spine", UP, -15)
+        sword_up()
+        sl = pb["LeftArm"].head.copy()
+        arm("Left", sl + Vector((-0.05, -0.5, -0.35)), Vector((1, 0, -1)))  # 왼손은 앞으로 내밀어 균형
+    make_action("ChargeReady", [(0, None), (10, None)], ready_pose)
+    rig.animation_data.action = None
+    reset_pose()
+
+    stride = 0.55
+
+    def run_pose(phase):
+        # phase 0: 왼발 앞 디딤 · 오른발 뒤로 들림 / 1: 지나감(오른 무릎 높이) / 2: 오른발 앞 / 3: 지나감(왼 무릎 높이)
+        lead = "Left" if phase in (0, 3) else "Right"
+        feet = {}
+        for s in ("Left", "Right"):
+            base = FEET[s]
+            if phase in (0, 2):
+                fwd = s == lead
+                feet[s] = base + (Vector((0, -stride, 0)) if fwd else Vector((0, stride * 0.9, 0.28)))
+            else:
+                passing = s != lead                                         # 앞으로 나오는 다리는 무릎을 높이
+                feet[s] = base + (Vector((0, -0.1, 0.42)) if passing else Vector((0, 0.15, 0.0)))
+        lower_hips(-0.2 if phase in (0, 2) else -0.1, feet, dy=-0.05)
+        bend("Spine", Vector((1, 0, 0)), 32)                                # 크게 숙여요
+        bend("Spine", UP, 8 if lead == "Left" else -8)
+        sword_up(0.03 if phase in (1, 3) else 0.0)
+        sl = pb["LeftArm"].head.copy()
+        swing = Vector((0.0, -0.45, -0.25)) if lead == "Right" else Vector((0.05, 0.35, -0.4))   # 왼팔은 반대 다리와 엇갈려 휘저어요
+        arm("Left", sl + swing, Vector((1, 0.2, -0.6)))
+    make_action("ChargeRun", [(0, 0), (4, 1), (8, 2), (12, 3), (16, 0)], run_pose)
+    rig.animation_data.action = None
+    reset_pose()
+
+    # 내려찍기 (Slam, 돌진 끝 빈틈 동안): 0 양손으로 머리 위로 치켜든 자세 → 5 무릎을 굽히며 앞 땅으로 내려찍기 → 그대로 멈춤
+    def slam_pose(stage):
+        chest = None
+        if stage == "up":
+            lower_hips(-0.08, FEET)
+            bend("Spine", Vector((1, 0, 0)), -8)
+            chest = (pb["LeftArm"].head + pb["RightArm"].head) / 2
+            offs = [Vector((x, y, z)) for x in (-0.15, 0.0) for y in (-0.15, 0.0, 0.1) for z in (0.45, 0.6)]
+            fit_right(chest, offs, ALL_POLES, Vector((0, 0.6, 1)))          # 칼끝은 위·뒤로
+        else:
+            lower_hips(-0.3, FEET, dy=-0.1)
+            bend("Spine", Vector((1, 0, 0)), 30)
+            chest = (pb["LeftArm"].head + pb["RightArm"].head) / 2
+            offs = [Vector((x, y, z)) for x in (-0.15, 0.0) for y in (-0.55, -0.4) for z in (-0.45, -0.3, -0.15)]
+            fit_right(chest, offs, ALL_POLES, Vector((0, -1, -0.7)))        # 칼끝은 앞 땅으로
+        left_on_hilt()
+    make_action("Slam", [(0, "up"), (5, "down"), (20, "down")], slam_pose)
+    rig.animation_data.action = None
+    reset_pose()
+
+# 붕산권 (Quake, 예고 0.8초 = 24프레임 동안 그대로 재생): 두 주먹을 머리 위로 치켜들었다가 24프레임에 무릎을 굽히며 땅을 내려쳐요
+if "quake" in EXTRAS:
+    def quake_pose(stage):
+        if stage == "up":
+            bend("Spine1", Vector((1, 0, 0)), -10)                          # 가슴을 젖혀요
+            for s, sx in (("Left", -0.1), ("Right", 0.1)):
+                arm(s, pb[f"{s}Arm"].head + Vector((sx, -0.08, 0.5)), Vector((-sx * 4, 0.3, 0.3)))
+        elif stage == "slam":
+            lower_hips(-0.3, FEET)
+            bend("Spine", Vector((1, 0, 0)), 35)                            # 앞으로 숙여요
+            for s, sx in (("Left", -0.12), ("Right", 0.12)):
+                sh = pb[f"{s}Arm"].head.copy()
+                arm(s, Vector((sx * 0.6, sh.y - 0.6, 0.45)), Vector((-sx * 4, 0.3, 0.5)))   # 두 주먹을 모아 앞 땅으로
+        else:
+            guard()
+    make_action("Quake", [(0, "guard"), (14, "up"), (19, "up"), (24, "slam"), (34, "slam"), (44, "guard")], quake_pose)
     rig.animation_data.action = None
     reset_pose()
 
@@ -570,7 +962,7 @@ bpy.ops.export_scene.fbx(filepath=out, use_selection=True, object_types={'ARMATU
                          apply_scale_options='FBX_SCALE_ALL', axis_forward='-Z', axis_up='Y',
                          bake_space_transform=False, mesh_smooth_type='OFF', add_leaf_bones=False,
                          primary_bone_axis='Y', secondary_bone_axis='X', armature_nodetype='NULL',
-                         bake_anim=bool({"blowhorn", "shootbow"} & EXTRAS), bake_anim_use_all_actions=True, bake_anim_use_nla_strips=False,
+                         bake_anim=bool({"blowhorn", "shootbow", "punch", "quake", "whirl", "sweep", "charge"} & EXTRAS), bake_anim_use_all_actions=True, bake_anim_use_nla_strips=False,
                          bake_anim_force_startend_keying=True, bake_anim_simplify_factor=0.0, path_mode='STRIP')
 print("ENEMY exported", out, "bones", len(rig.data.bones), "faces", len(body.data.polygons), "weapons", WEAPONS)
 
