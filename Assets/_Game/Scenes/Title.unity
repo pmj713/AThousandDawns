@@ -148,6 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23ca5902a528561469d5edfc36719a39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: AThousandDawns::AThousandDawns.Prototype.TitleScreen
+  music: {fileID: 8300000, guid: 31d490f24fb045a988af61f54b898bb5, type: 3}
 --- !u!4 &1861087318
 Transform:
   m_ObjectHideFlags: 0

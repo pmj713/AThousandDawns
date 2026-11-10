@@ -38,6 +38,8 @@ namespace AThousandDawns.Prototype
         public int ProloguePage { get; private set; }
         public bool HasSave { get; private set; }
 
+        [SerializeField] AudioClip music; // 시작 화면 BGM (VARCO Sound, Audio/BGM/Title.mp3)
+
         MetaSave _meta;
         public SettingsPanel Settings { get; } = new SettingsPanel();
         [System.NonSerialized] GUIStyle _titleBig, _titleSmall, _subtitle, _hint, _menu, _menuOn, _info, _small, _body, _sealText;
@@ -49,6 +51,18 @@ namespace AThousandDawns.Prototype
             _meta = MetaSave.Load();
             Selected = 0;
             Time.timeScale = 1f;
+            PlayMusic();
+        }
+
+        // 음량 설정이 생기면 여기서 곱해요
+        void PlayMusic()
+        {
+            if (music == null) return;
+            if (FindAnyObjectByType<AudioListener>() == null) gameObject.AddComponent<AudioListener>();
+            var source = gameObject.AddComponent<AudioSource>();
+            source.clip = music;
+            source.loop = true;
+            source.Play();
         }
 
         public string ItemLabel(Item item) => item switch

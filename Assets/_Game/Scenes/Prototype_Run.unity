@@ -7099,6 +7099,7 @@ GameObject:
   - component: {fileID: 1151805592}
   - component: {fileID: 1151805591}
   - component: {fileID: 1151805590}
+  - component: {fileID: 1151805599}
   m_Layer: 0
   m_Name: PrototypeArena
   m_TagString: Untagged
@@ -7106,6 +7107,24 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &1151805599
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1151805589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86781b2fa110464585dd77e7047ff515, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: AThousandDawns::AThousandDawns.Prototype.RunMusic
+  village: {fileID: 8300000, guid: 10cbf04946cf43bc9e306c2dd6666208, type: 3}
+  bamboo: {fileID: 8300000, guid: 9419ab839c7d46759fc477ea5945f259, type: 3}
+  inn: {fileID: 8300000, guid: 524d083b5685445d93a96bc0e7ad56df, type: 3}
+  boss: {fileID: 8300000, guid: 15ed8536d1024cec87901c180d27d2eb, type: 3}
+  result: {fileID: 8300000, guid: b94e43ad2b72463b94d1a722f7a0d5d9, type: 3}
+  fadeSeconds: 1.2
 --- !u!114 &1151805590
 MonoBehaviour:
   m_ObjectHideFlags: 0
