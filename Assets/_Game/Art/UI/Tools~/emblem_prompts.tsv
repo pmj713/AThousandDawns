@@ -13,3 +13,7 @@ PartIcons/Hanok	pale icy cyan	a cold carved white jade disc giving off cool mist
 AcupointIcons/Gihyeol	warm gold	a glowing acupuncture point with qi welling upward from it, a small radiant orb
 AcupointIcons/Tonghyeol	pale teal	a ring-shaped acupuncture point with a stream of qi passing straight through its center
 AcupointIcons/Hanhyeol	pale icy cyan	an acupuncture point encircled by a cool frost ring holding a calm orb of qi
+KeyIcons/Key	warm grey	a single blank square keyboard keycap seen from slightly above, its top face completely empty with nothing printed on it
+KeyIcons/KeyWide	warm grey	a single long blank spacebar keycap seen from slightly above, its top face completely empty with nothing printed on it
+KeyIcons/MouseLeft	vermilion	a computer mouse seen from directly above, its left button filled with a vermilion ink wash, the right button plain
+KeyIcons/MouseRight	vermilion	a computer mouse seen from directly above, its right button filled with a vermilion ink wash, the left button plain
