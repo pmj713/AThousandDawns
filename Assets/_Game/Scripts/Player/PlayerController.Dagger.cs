@@ -13,7 +13,7 @@ namespace AThousandDawns.Player
     //     같은 적에게 꽂힌 비도는 한 번의 피해로 합쳐요 (한 적 최대 6개). 남은 비도가 없으면 못 써요.
     //   대시 공격: 대시가 끝나면 지나온 길(4칸)에 1칸 간격으로 4발, 반경 0.6칸 안 적 1명에게 꽂힘 (각 8, 대시 공격 1회로 셈)
     //   절초 만천화우: 3초 동안 비도 24발 (각 6), 강인함 무시 · 공력 배율
-    // 비도 융합 효과(무기 시트 5번 표)는 아직 없어요. 비도여도 대장간 검 효과가 그대로 붙어요.
+    // 비도 융합 효과(무기 시트 5번 표)는 PlayerController.ForgeDagger.cs. 대장간 홈 효과가 무기마다 달라요.
     public enum WeaponKind { Sword, Dagger }
 
     public sealed partial class PlayerController
