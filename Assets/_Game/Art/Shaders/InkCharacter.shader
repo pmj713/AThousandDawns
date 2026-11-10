@@ -51,6 +51,9 @@ Shader "AThousandDawns/InkCharacter"
             float _OutlineNoiseScale;
         CBUFFER_END
 
+            // 지역 색 양 (InkColorZones가 전역으로 정해요): 0 = 재질 채도 그대로(수묵), 1 = 원래 색 전부
+            float _InkColorAmount;
+
         float Hash13(float3 p)
         {
             p = frac(p * 0.1031);
@@ -148,8 +151,8 @@ Shader "AThousandDawns/InkCharacter"
 
                 // 바탕색: 채도를 낮추고 종이색 쪽으로 조금 밝혀요
                 half3 gray = Luminance(_BaseColor.rgb).xxx;
-                half3 tint = lerp(gray, _BaseColor.rgb, _Saturation);
-                half3 paperLit = lerp(tint, _PaperColor.rgb, 0.35);
+                half3 tint = lerp(gray, _BaseColor.rgb, lerp(_Saturation, 1.0, _InkColorAmount));
+                half3 paperLit = lerp(tint, _PaperColor.rgb, lerp(0.35, 0.12, _InkColorAmount));
                 half3 color = lerp(_InkColor.rgb, paperLit, tone);
 
                 // 종이 결

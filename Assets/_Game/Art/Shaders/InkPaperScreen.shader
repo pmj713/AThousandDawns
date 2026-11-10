@@ -50,6 +50,9 @@ Shader "AThousandDawns/InkPaperScreen"
                 half _EdgeRagged;
             CBUFFER_END
 
+                // 지역 색 양 (InkColorZones가 전역으로 정해요): 0 = 재질 채도 그대로(수묵), 1 = 원래 색 전부
+                float _InkColorAmount;
+
             float Hash12(float2 p)
             {
                 float3 p3 = frac(float3(p.xyx) * 0.1031);
@@ -74,7 +77,7 @@ Shader "AThousandDawns/InkPaperScreen"
                 // 색 바램: 붉은 기가 강한 곳은 덜 바래요 (공격 예고·결계·플레이어가 읽히게)
                 half luminance = Luminance(color);
                 half red = saturate((color.r - max(color.g, color.b)) * 3.0);
-                color = lerp(color, luminance.xxx, _Desaturate * (1.0 - red * _KeepRed));
+                color = lerp(color, luminance.xxx, _Desaturate * (1.0 - _InkColorAmount) * (1.0 - red * _KeepRed));
 
                 // 한지색 물들임 (밝은 곳일수록 종이색에 가깝게)
                 color *= lerp(1.0, _PaperColor.rgb * 1.07, _PaperTint);

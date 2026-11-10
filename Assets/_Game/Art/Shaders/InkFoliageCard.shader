@@ -17,6 +17,7 @@ Shader "AThousandDawns/InkFoliageCard"
         _BottomInk ("Bottom Ink (카드 아래쪽을 진하게)", Range(0, 1)) = 0.25
         _NormalInk ("Normal Ink (빛 반대편을 진하게)", Range(0, 1)) = 0
         [Toggle] _Billboard ("Billboard (덤불 덩어리 메시용)", Float) = 0
+        _NatureColor ("Nature Color (원래 색, 알파 0 = 색 없음)", Color) = (1, 1, 1, 0)
     }
 
     SubShader
@@ -39,7 +40,11 @@ Shader "AThousandDawns/InkFoliageCard"
             half _BottomInk;
             half _NormalInk;
             float _Billboard;
+            half4 _NatureColor;
         CBUFFER_END
+
+        // 지역 색 양 (InkColorZones가 전역으로 정해요): 0 = 먹 그림 그대로, 1 = 원래 색(_NatureColor) 전부
+        float _InkColorAmount;
 
         // 카드 꼭짓점의 월드 위치. 빌보드면 현재 뷰(그림자 패스에서는 빛 기준 뷰)를 정면으로 보게 펼쳐요
         float3 FoliagePositionWS(float3 positionOS, float2 cornerOffset)
@@ -109,7 +114,11 @@ Shader "AThousandDawns/InkFoliageCard"
                 half ink = (1.0 - light.shadowAttenuation) * _ShadowInk
                          + (1.0 - input.uv.y) * _BottomInk
                          + (1.0 - facing) * _NormalInk;
-                half3 color = lerp(tex.rgb * _Tint.rgb, _InkColor.rgb, saturate(ink));
+                // 먹 그림의 밝기는 그대로 두고 원래 색을 입혀요 (밝은 곳이 그 색, 진한 먹은 그대로 진하게)
+                half3 base = tex.rgb * _Tint.rgb;
+                half3 natural = Luminance(base) * _NatureColor.rgb * 1.6;
+                base = lerp(base, natural, _InkColorAmount * _NatureColor.a);
+                half3 color = lerp(base, _InkColor.rgb, saturate(ink));
                 return half4(MixFog(color, input.fogFactor), 1.0);
             }
             ENDHLSL

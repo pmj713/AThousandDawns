@@ -89,12 +89,12 @@ namespace AThousandDawns.EditorTools
             bambooMat.SetFloat("_RimPower", 2f);
             bambooMat.SetFloat("_Bands", 3f);
             bambooMat.SetFloat("_BandSoftness", 0.3f);
-            bambooMat.SetColor("_BaseColor", new Color(0.48f, 0.48f, 0.48f, 1f));
+            bambooMat.SetColor("_BaseColor", BambooStalkColor);   // 원래 대나무 색. 채도는 _Saturation(0) ~ 지역 색 양(_InkColorAmount)으로 정해져요
             bambooMat.SetFloat("_StreakLight", 0.6f);   // 세로로 옅은 마른 붓 결
             bambooMat.SetFloat("_StreakScale", 8f);
             bambooMat.SetFloat("_PatchLight", 0.45f);   // 마디·줄기마다 다른 옅은 얼룩
             bambooMat.SetFloat("_PatchScale", 0.9f);
-            bambooMat.SetColor("_InkColor", new Color(0.08f, 0.1f, 0.1f, 1f));
+            bambooMat.SetColor("_InkColor", new Color(0.07f, 0.1f, 0.07f, 1f));   // 먹에 초록 기운을 살짝
             floorMat.SetFloat("_PaperLift", 0.55f);
             floorMat.SetFloat("_Saturation", 0f);
             TuneInkStoneWood(stoneMat, woodMat);
@@ -382,6 +382,7 @@ namespace AThousandDawns.EditorTools
             mat.SetFloat("_NormalInk", 0.3f);   // 공처럼 둥근 명암이 되지 않게 약하게
             mat.SetFloat("_BottomInk", 0.15f);
             mat.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{Env2DArtFolder}/{textureName}.png"));
+            mat.SetColor("_NatureColor", BushNatureColor);   // 덤불 원래 색. 얼마나 보일지는 지역 색 양(_InkColorAmount)이 정해요
             EditorUtility.SetDirty(mat);
             return mat;
         }
@@ -511,9 +512,15 @@ namespace AThousandDawns.EditorTools
             }
             else if (shader != null) mat.shader = shader;
             mat.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{Env2DArtFolder}/{textureName}.png"));
+            // 대나무 잎은 원래 색(초록)을 입혀요. 얼마나 보일지는 지역 색 양(_InkColorAmount)이 정해요
+            mat.SetColor("_NatureColor", textureName.StartsWith("BambooLeaves") ? BambooLeafColor : new Color(1f, 1f, 1f, 0f));
             EditorUtility.SetDirty(mat);
             return mat;
         }
+
+        static readonly Color BambooStalkColor = new Color(0.50f, 0.62f, 0.34f, 1f);   // 연두빛 대나무 줄기
+        static readonly Color BambooLeafColor = new Color(0.45f, 0.62f, 0.32f, 1f);    // 대나무 잎
+        static readonly Color BushNatureColor = new Color(0.36f, 0.52f, 0.28f, 1f);          // 덤불 (대나무 잎보다 짙은 초록)
 
         // 깎인 바위 큰 것 하나 + 작은 돌 둘 (메시는 GetRockMesh, 변형 셋을 돌려 써요)
         static void RockCluster(Transform parent, Vector3 foot, float size, int seed, Material mat)

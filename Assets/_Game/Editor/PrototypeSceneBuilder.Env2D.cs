@@ -221,6 +221,10 @@ namespace AThousandDawns.EditorTools
         const string PlayerSkinColor = "#D8B89A";
         const string PlayerHairColor = "#1E1C1C";
         const string PlayerSwordColor = "#2E343B";
+        // 옷 (컨셉 B안): 먹색 도포·바지, 흰 속소매·깃, 붉은 허리띠·머리끈. Blender clothes.py가 이름 앞에 Cloth_Dark/Light/Red를 붙여요
+        const string ClothDarkColor = "#26262A";
+        const string ClothLightColor = "#D9D5CB";
+        const string ClothRedColor = "#A3241E";
 
         // 플레이어 모델을 발밑 기준으로 parent 아래에 세워요. 파츠 기준점이 모두 발밑이라 그대로 맞물려요.
         // 뼈대·동작이 든 Player_Rigged.fbx가 있으면 그걸(애니메이터 연결), 없으면 맨몸 파츠 + 머리카락을 따로 세워요
@@ -232,6 +236,11 @@ namespace AThousandDawns.EditorTools
             var sword = skin != null && skin.shader != null && skin.shader.name == InkShaderName
                 ? GetInkMaterial("Ink_PlayerSword", PlayerSwordColor, 0.1f)
                 : GetMaterial("PlayerSword", PlayerSwordColor, false);
+            bool ink = skin != null && skin.shader != null && skin.shader.name == InkShaderName;
+            Material Cloth(string name, string hex, float sat) => ink ? GetInkMaterial($"Ink_Player{name}", hex, sat) : GetMaterial($"Player{name}", hex, false);
+            var clothDark = Cloth("ClothDark", ClothDarkColor, 0.1f);
+            var clothLight = Cloth("ClothLight", ClothLightColor, 0.1f);
+            var clothRed = Cloth("ClothRed", ClothRedColor, 0.85f);
             // Blender에서 -Y를 보던 모델이 Unity에서는 -Z(뒤)를 보고 들어와서, 앞(+Z)을 보게 돌려요
             model.localRotation = Quaternion.Euler(0f, 180f, 0f);
             var paths = controller != null ? new[] { PlayerRiggedModel } : new[] { PlayerBodyModel, PlayerHairModel };
@@ -242,7 +251,8 @@ namespace AThousandDawns.EditorTools
                 var go = (GameObject)PrefabUtility.InstantiatePrefab(asset, model);
                 foreach (var r in go.GetComponentsInChildren<Renderer>())
                 {
-                    var mat = r.name.Contains("Sword") ? sword : r.name.Contains("Hair") || path == PlayerHairModel ? hair : skin;
+                    var mat = r.name.Contains("Cloth_Dark") ? clothDark : r.name.Contains("Cloth_Light") ? clothLight : r.name.Contains("Cloth_Red") ? clothRed
+                        : r.name.Contains("Sword") ? sword : r.name.Contains("Hair") || path == PlayerHairModel ? hair : skin;
                     var mats = new Material[r.sharedMaterials.Length];
                     for (int i = 0; i < mats.Length; i++) mats[i] = mat;
                     r.sharedMaterials = mats;
