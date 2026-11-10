@@ -77,6 +77,17 @@ namespace AThousandDawns.Core
             return null;
         }
 
+        // 봉우리를 피운 직후 (마을 매화나무 꽃 등 아트 쪽이 들어요. 게임 코드가 아트 어셈블리를 몰라도 되게)
+        public static event System.Action<MetaSave> BloomChanged;
+
+        // 피운 봉우리 수 (뿌리 빼고)
+        public static int BloomedCount(MetaSave meta)
+        {
+            int n = 0;
+            foreach (var node in Nodes) if (Bloomed(meta, node.Id)) n++;
+            return n;
+        }
+
         // 개화: 기억을 쓰고 피워요. 저장은 부르는 쪽에서.
         public static bool Bloom(MetaSave meta, string id)
         {
@@ -84,6 +95,7 @@ namespace AThousandDawns.Core
             if (node == null || Blocker(meta, node) != null) return false;
             meta.memory -= Cost(node);
             meta.bloomed.Add(id);
+            BloomChanged?.Invoke(meta);
             return true;
         }
 

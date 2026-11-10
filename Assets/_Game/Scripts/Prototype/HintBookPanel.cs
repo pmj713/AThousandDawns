@@ -105,12 +105,34 @@ namespace AThousandDawns.Prototype
                 {
                     var e = _entries[Mathf.Clamp(Selected, 0, _entries.Count - 1)];
                     GUI.Label(new Rect(text.x, text.y, text.width, 36f), e.Title, _title);
-                    GUI.Label(new Rect(text.x, text.y + 50f, text.width, text.height - 50f), e.Text, _body);
+                    float bodyY = text.y + 50f;
+                    var card = CardArt(e.Id);
+                    if (card != null) // 시스템 설명 그림: 제목 아래 16:9 띠
+                    {
+                        float cardH = Mathf.Min(text.width * 9f / 16f, 300f);
+                        GUI.DrawTexture(new Rect(text.x, bodyY, text.width, cardH), card, ScaleMode.ScaleAndCrop);
+                        bodyY += cardH + 16f;
+                    }
+                    GUI.Label(new Rect(text.x, bodyY, text.width, text.yMax - bodyY), e.Text, _body);
                 }
                 footer = LockedCount > 0 ? $"아직 모르는 요결 {LockedCount}개 · 그 상황을 처음 겪으면 펼쳐져요" : "모든 요결을 펼쳤어요";
             }
             GUI.Label(new Rect(area.x + 30f, area.yMax - 44f, area.width - 60f, 30f), $"{footer}   ·   Tab 요결/도감 · 위아래 고르기 · Esc 닫기", _hint);
             return close;
+        }
+
+        // 요결 항목 그림 (아트: Resources/HintArt/<항목 id>, 16:9). 없으면 글만
+        static readonly Dictionary<string, Texture2D> Cards = new Dictionary<string, Texture2D>();
+
+        public static Texture2D CardArt(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return null;
+            if (!Cards.TryGetValue(id, out var tex))
+            {
+                tex = Resources.Load<Texture2D>("HintArt/" + id);
+                Cards[id] = tex;
+            }
+            return tex;
         }
 
         // 왼쪽 목록: 분류가 바뀔 때마다 분류 이름 줄
