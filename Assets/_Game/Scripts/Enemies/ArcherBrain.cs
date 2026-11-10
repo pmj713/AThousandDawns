@@ -3,9 +3,9 @@ using UnityEngine;
 
 namespace AThousandDawns.Enemies
 {
-    // 궁수: 5~7칸을 유지하고, 가까이 오면 2칸 물러나요. 옆걸음(초당 2칸)하며 조준하고, 쏘는 순간 0.2초 멈춰요.
+    // 궁수: 5~7칸을 유지하고, 가까이 오면 2칸 물러나요. 활을 당기는 예고 동안은 제자리에 서서 조준하고, 쏘는 순간 0.2초 멈춰요.
     // 예고 절반 규칙은 "겨누는 지점"에 적용해요: 앞 절반은 플레이어를 따라가고, 뒤 절반은 그 지점에 고정.
-    // 옆걸음을 계속해도 화살은 고정된 지점을 지나가니까, 가만히 있으면 맞고 예고를 보고 비키면 피해요.
+    // 화살은 고정된 지점을 지나가니까, 가만히 있으면 맞고 예고를 보고 비키면 피해요.
     public sealed class ArcherBrain : EnemyBrain
     {
         public override string AttackName => "화살";
@@ -59,8 +59,8 @@ namespace AThousandDawns.Enemies
 
         protected override void TickWindup(float dt, bool tracking)
         {
+            // 활을 당기는 동안은 제자리에 서서 겨눠요 (옆걸음 없음)
             if (tracking) _aimPoint = Player.transform.position;
-            Move(Strafe(ToPlayer().normalized) * _strafeSpeed, dt);
             AimAtPoint();
         }
 

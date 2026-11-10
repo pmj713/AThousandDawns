@@ -298,8 +298,9 @@ namespace AThousandDawns.Enemies
             _smoke = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             _smoke.name = "Smoke (연막)";
             EnemyFactory.StripCollider(_smoke);
-            _smoke.transform.position = new Vector3(_smokeCenter.x, 0.04f, _smokeCenter.z);
-            _smoke.transform.localScale = new Vector3(_smokeRadius * 2f, 0.03f, _smokeRadius * 2f);
+            // 예고 범위(바닥 0.03~0.05)보다 낮게 깔아요. 높으면 연기 원판이 공격 범위를 덮어 안 보여요
+            _smoke.transform.position = new Vector3(_smokeCenter.x, 0.01f, _smokeCenter.z);
+            _smoke.transform.localScale = new Vector3(_smokeRadius * 2f, 0.01f, _smokeRadius * 2f);
             var renderer = _smoke.GetComponent<Renderer>();
             renderer.sharedMaterial = RuntimeMaterial.Unlit(ref _smokeMat, new Color(0.35f, 0.35f, 0.38f));
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
