@@ -55,7 +55,9 @@ namespace AThousandDawns.Prototype
             {
                 _crack = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 _crack.name = "HiddenCrack";
-                Destroy(_crack.GetComponent<Collider>());
+                var col = _crack.GetComponent<Collider>();
+                col.enabled = false; // Destroy는 프레임 끝에 지워져서, 그 사이 캐릭터가 이 충돌 상자 위로 밀려 올라가지 않게 먼저 꺼요
+                Destroy(col);
                 var r = _crack.GetComponent<Renderer>();
                 r.material.color = new Color(0.12f, 0.1f, 0.09f);
             }

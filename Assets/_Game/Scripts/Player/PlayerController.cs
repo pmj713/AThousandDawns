@@ -95,6 +95,7 @@ namespace AThousandDawns.Player
 
         public bool IsCastingSkill => _skillElapsed >= 0f;
         public bool IsCastingUltimate => _ultimateTimer > 0f;
+        public bool UltimateRaining => swordRain != null && swordRain.IsRaining; // 만천화우는 시전 뒤에도 3초 동안 내려요
         public bool UltimateReady => Gauge >= _gaugeMax;
         public Vector3 Facing => _facing;
 
@@ -282,6 +283,7 @@ namespace AThousandDawns.Player
             TickItemTimers(dt);
             TickMartialItemTimers(dt);
             TickEcho(dt); // 면벽수련 쾌 20: 잔상
+            TickDaggers(dt); // 비도: 날아가기 · 꽂힘 · 사라짐
             TickBurn(dt);
             if (IsDead) return;
 
@@ -321,7 +323,7 @@ namespace AThousandDawns.Player
             }
 
             // 초식은 평타를 쉬고 있거나 평타 후딜 중에 나가요 (대시로 끊을 수 있는 때와 같음)
-            if (_sinceSkillPress <= _inputBuffer && _skillCooldownLeft <= 0f && !IsCastingSkill && _combo.CanDashCancel)
+            if (_sinceSkillPress <= _inputBuffer && _skillCooldownLeft <= 0f && !IsCastingSkill && _combo.CanDashCancel && (!RecallSkill || CanRecall)) // 회수는 남은 비도가 있어야
                 StartSkill();
 
             if (IsCastingSkill)
@@ -427,11 +429,14 @@ namespace AThousandDawns.Player
             _dashAttackTimer = 0f;
             ApplyFacing();
 
-            var hit = PlayerHit(_ultimateSwordDamage);
+            var hit = PlayerHit(UsesDagger ? D("knife.ultimate_damage", 6f) : _ultimateSwordDamage); // 비도: 만천화우
             hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
             if (K(Keyword.Mado) >= 4) hit.SpecialMultiplier *= _madoImprintPower; // #마도 각인: 위력 ×1.6
             _ultimateEndPending = true;
-            swordRain.Begin(transform.position, _ultimateArea, _ultimateSwordCount, _ultimateCastTime, _ultimateFallTime, hit, _rules);
+            swordRain.DaggerLook = UsesDagger; // 만천화우는 비도 모양
+            swordRain.DaggerDirection = _facing; // 바라보는 쪽으로 기울어 내려와요
+            if (UsesDagger) swordRain.Begin(transform.position, _ultimateArea, Mathf.RoundToInt(D("knife.ultimate_count", 24f)), D("knife.ultimate_time", 3f), _ultimateFallTime, hit, _rules);
+            else swordRain.Begin(transform.position, _ultimateArea, _ultimateSwordCount, _ultimateCastTime, _ultimateFallTime, hit, _rules);
         }
 
         // 시험판용: G 키로 기세를 가득 채워요.
@@ -474,6 +479,15 @@ namespace AThousandDawns.Player
             if (Skill == SkillKind.Quake)
             {
                 TickQuake();
+                return;
+            }
+            if (RecallSkill) // 비도: 회수
+            {
+                if (!_skillHitDone && _skillElapsed >= D("knife.recall_cast", 0.3f))
+                {
+                    _skillHitDone = true;
+                    RecallDaggers();
+                }
                 return;
             }
             if (!_skillHitDone && _skillElapsed >= _skillHitTime)
@@ -651,6 +665,13 @@ namespace AThousandDawns.Player
         {
             bool extra = _combo.IsExtraHit(index);
             bool finisher = index >= _combo.BaseHitCount - 1;
+            if (UsesDagger) // 비도: 1·2타 1발, 3타째 부채꼴 3발 (맞으면 기세)
+            {
+                var dh = PlayerHit(D("knife.shot_damage", 8f));
+                dh.AttackIncrease += BasicSwingBonus(finisher, extra);
+                ThrowDaggers(finisher ? Mathf.RoundToInt(D("knife.finisher_count", 3f)) : 1, dh, finisher ? HitTag.Finisher : HitTag.Basic, finisher ? _gaugeFinisher : _gaugeBasic);
+                return;
+            }
             if (finisher) _lungeRemaining = _finisherLunge;
             float radius = _hitRadius[Mathf.Min(index, _hitRadius.Length - 1)] * BasicRangeMultiplier(finisher) * ForgeRangeMultiplier; // 대장간 강기
             float angle = _hitAngle[Mathf.Min(index, _hitAngle.Length - 1)];
@@ -668,6 +689,16 @@ namespace AThousandDawns.Player
         void DoDashAttack()
         {
             FaceAim(); // 대시 방향이 아니라 커서 쪽으로 베요
+            if (UsesDagger) // 비도: 지나온 길에 4발
+            {
+                var dh = PlayerHit(D("knife.dash_damage", 8f));
+                dh.AttackIncrease += DashAttackBonus;
+                int dagHits = DropDaggersOnPath(dh);
+                if (dagHits > 0) Gauge = Mathf.Min(GaugeCap, Gauge + _gaugeDashAttack * GaugeGainMultiplier); // 대시 공격 1회로 셈
+                AfterDashAttack(dagHits, dh);
+                ForgeAfterDashAttack(dagHits);
+                return;
+            }
             _hitThisSwing.Clear();
             if (swingFlash != null) swingFlash.Show(transform.position, _facing, _dashAttackRadius, _dashAttackAngle, 0.12f);
             var hit = PlayerHit(_dashAttackDamage);
@@ -695,6 +726,7 @@ namespace AThousandDawns.Player
                 HitTarget(target, template, tag);
                 hits++;
             }
+            Breakable.BreakInSector(transform.position, _facing, radius, angle); // 항아리 등
             TrackFlint(hits); // 부싯돌
             return hits;
         }

@@ -17,7 +17,9 @@ namespace AThousandDawns.Player
         bool _flashChained;
 
         public SkillKind Skill { get; private set; }
-        public string SkillName => Skill == SkillKind.BambooFlash ? "죽림섬" : Skill == SkillKind.Quake ? "붕산권" : "회선참";
+        public string SkillName => Skill == SkillKind.BambooFlash ? "죽림섬" : Skill == SkillKind.Quake ? "붕산권" : UsesDagger ? $"회수 (비도 {DaggerCount})" : "회선참";
+        // 비도를 들고 기본 초식이면 회선참 대신 회수 (비급 초식은 무기와 상관없이 그대로)
+        bool RecallSkill => UsesDagger && Skill == SkillKind.Spin;
 
         public void LearnSkill(SkillKind skill)
         {

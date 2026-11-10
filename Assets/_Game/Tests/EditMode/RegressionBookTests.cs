@@ -45,7 +45,9 @@ namespace AThousandDawns.Tests
             meta.bloomed.AddRange(new[] { "tongmaek", "jeomhyeol", "hanok" });
             Assert.IsNull(RegressionBook.Blocker(meta, Node("forge")), "대장간도 피울 수 있어요");
             meta.bloomed.Add("forge");
-            StringAssert.StartsWith("준비 중", RegressionBook.Blocker(meta, Node("flying_dagger")), "비도는 아직 준비 중");
+            Assert.IsNull(RegressionBook.Blocker(meta, Node("flying_dagger")), "비도도 피울 수 있어요");
+            meta.bloomed.Add("insight1");
+            StringAssert.StartsWith("준비 중", RegressionBook.Blocker(meta, Node("item_pack1")), "새 기물 묶음은 아직 준비 중");
         }
         [Test]
         public void 금창약_지참과_객잔_진열()

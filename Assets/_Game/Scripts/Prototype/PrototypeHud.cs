@@ -62,7 +62,7 @@ namespace AThousandDawns.Prototype
             GUILayout.Label("일조천회 시험판 · 전투", _label);
             GUILayout.Label("WASD 이동 · 좌클릭(누르고 있기) 평타 · 우클릭 회선참 · Q 만검귀종 · Space 대시 · R 금창약(누르고 있기)", _label);
             GUILayout.Label("부르기 (바로 옆): 1 졸개 · 2 멧돼지 · 3 궁수 · 4 들개 · 5 방패 · 6 나팔수 · 7 화약 · 8 청죽사 · 9 녹림왕 (결투장) · 0 살수 · - 청죽객 · = 철권 마웅 · Shift+숫자 정예", _label);
-            GUILayout.Label("G 기세 채우기 · F5 처음부터 · 키워드 F1 열양 F2 빙백 F3 뇌정 F4 강기 F6 금강 F7 경공 F8 마도 F9 정종 · 기물 상태 F10 기 부족 F11 운기 F12 주화입마 · I 기물 고르기 · E 경맥도 · L 레벨업 · K 쓰러지기 · P 부품 셋 · O / Shift+O 무기 홈 1 / 2 바꾸기", _wrapLabel);
+            GUILayout.Label("G 기세 채우기 · F5 처음부터 · 키워드 F1 열양 F2 빙백 F3 뇌정 F4 강기 F6 금강 F7 경공 F8 마도 F9 정종 · 기물 상태 F10 기 부족 F11 운기 F12 주화입마 · I 기물 고르기 · E 경맥도 · L 레벨업 · K 쓰러지기 · P 부품 셋 · O / Shift+O 무기 홈 1 / 2 바꾸기 · V 검 ↔ 비도", _wrapLabel);
             if (player != null)
             {
                 GUILayout.Label($"체력 {player.Health:0}/{player.MaxHealth:0}", _label);

@@ -43,6 +43,7 @@ namespace AThousandDawns.Prototype
         public int[] kills = new int[0];
 
         // 플레이어
+        public int weapon;
         public float health, gauge;
         public int potions, gongryeok, skill, level, xp, pending;
         public bool revive;

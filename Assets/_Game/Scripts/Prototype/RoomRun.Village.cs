@@ -85,7 +85,7 @@ namespace AThousandDawns.Prototype
             VillageSpot.Tree => "F 매화나무 · 회귀록",
             VillageSpot.Cave => RegressionBook.Bloomed(VillageMeta, "meditation") ? "F 뒷산 동굴 · 면벽수련" : "뒷산 동굴 · 회귀록에서 면벽수련을 피우면 열려요",
             VillageSpot.Shrine => VillageMeta.finalBossKills > 0 ? "F 사당 · 유품록" : "사당 · 첫 천마 격파 후 열려요 (유품록)",
-            VillageSpot.Rack => "F 무기 거치대",
+            VillageSpot.Rack => RegressionBook.DaggerUnlocked(VillageMeta) ? $"F 무기 거치대 · 지금 {(Player.UsesDagger ? "비도" : "검")} (바꾸기)" : "F 무기 거치대",
             _ => null,
         };
 
@@ -104,7 +104,19 @@ namespace AThousandDawns.Prototype
                     ShowBanner(VillageMeta.finalBossKills > 0 ? "유품록은 아직 준비 중이에요" : "닫힌 사당 · 첫 천마 격파 후 열려요");
                     break;
                 case VillageSpot.Rack:
-                    ShowBanner(RegressionBook.Bloomed(VillageMeta, "flying_dagger") ? "검을 들었어요 · 비도는 아직 준비 중이에요" : "검을 들었어요 · 비도는 회귀록 무기 가지에서 열려요");
+                    if (!RegressionBook.DaggerUnlocked(VillageMeta))
+                    {
+                        ShowBanner("검을 들었어요 · 비도는 회귀록 무기 가지에서 열려요");
+                        break;
+                    }
+                    // 검 ↔ 비도 (다음에 회귀해도 기억해요)
+                    var meta = MetaSave.Load();
+                    meta.weapon = meta.weapon == 1 ? 0 : 1;
+                    meta.Save();
+                    _villageMeta = null;
+                    Player.SetWeapon(meta.weapon == 1 ? AThousandDawns.Player.WeaponKind.Dagger : AThousandDawns.Player.WeaponKind.Sword);
+                    ShowBanner(meta.weapon == 1 ? "비도를 들었어요 · 멀리서 던지고 우클릭 회수로 거둬들여요" : "검을 들었어요");
+                    Notify("dagger", "비도: 꽂히거나 떨어진 비도는 6초 남아요 · 우클릭 회수로 거둬들이며 다시 베요");
                     break;
             }
         }

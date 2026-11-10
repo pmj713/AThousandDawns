@@ -176,7 +176,10 @@ namespace AThousandDawns.Prototype
                 ResumeFromDodge(); // 대시 입력은 플레이어가 같은 프레임에 받아요 (시간이 멈춰 있어도 읽혀요)
                 return false;
             }
+            if (_dodgeArmed && (!InTutorialFloor || _room == null || _room.Cell.x != 1)) _dodgeArmed = false; // 회피 안내는 입문 2번 방에서만
             if (!_dodgeArmed || !_fighting || _room == null || Player.IsDead) return false;
+            // 절초·초식·대시 중이거나 무적이면 멈추지 않아요 (어차피 맞지 않아요)
+            if (Player.IsCastingUltimate || Player.UltimateRaining || Player.IsCastingSkill || Player.IsDashing || Player.IsInvulnerable) return false;
             float reach = GameConfig.GetOptional("tutorial.dodge_distance", 4f);
             foreach (var e in director.Enemies)
             {

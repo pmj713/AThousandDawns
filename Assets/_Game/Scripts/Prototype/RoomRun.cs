@@ -64,7 +64,7 @@ namespace AThousandDawns.Prototype
 
         readonly List<(EnemyKind kind, Vector3 position, Telegraph marker, bool elite)> _pending = new List<(EnemyKind, Vector3, Telegraph, bool)>();
         List<List<EnemyKind>> _waves;
-        List<Path> _forkOptions;
+        [System.NonSerialized] List<Path> _forkOptions; // null = 갈림길 아님 (플레이 중 다시 컴파일돼도 빈 목록으로 되살아나지 않게)
         System.Random _rng;
         Phase _phase;
         FloorMap _map;
@@ -164,6 +164,7 @@ namespace AThousandDawns.Prototype
                 case Phase.Master: TickMaster(); break;
                 case Phase.Floor:
                     TickHunt(Time.deltaTime);
+                    TickJars(); // 항아리는 싸우는 중에도 부딪히면 깨져요
                     if (_fighting) TickFight();
                     else TickFloorExits();
                     break;
@@ -319,7 +320,6 @@ namespace AThousandDawns.Prototype
         {
             if (OffersOpen) return; // 기물을 고른 뒤에 움직여요
             var keyboard = Keyboard.current;
-            TickJars();
             if (TickCrack(keyboard)) return; // 금 간 벽 부수기 (기연 방)
             if (AtGate && keyboard != null && keyboard.fKey.wasPressedThisFrame)
             {
@@ -742,6 +742,7 @@ namespace AThousandDawns.Prototype
         void MovePlayer(Vector3 to)
         {
             var player = Player;
+            player.ClearDaggers(); // 방을 옮기면 남은 비도는 사라져요
             var cc = player.GetComponent<CharacterController>();
             Vector3 from = player.transform.position;
             if (cc != null) cc.enabled = false;

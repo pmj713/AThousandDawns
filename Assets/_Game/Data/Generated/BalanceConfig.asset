@@ -2537,3 +2537,51 @@ MonoBehaviour:
     value: 0.5
     unit: 
     note: "\uAE30\uC2DC\uAC10 \uCC9C\uB9C8\uC5D0 \uB300\uD574 \uBB3B\uAE30: \uB9C8\uC9C0\uB9C9 \uBCF4\uC2A4\uC804 \uC2DC\uC791 \uAE30\uC138 (\uC9C0\uAE08\uC740 \uB179\uB9BC\uC655)"
+  - key: knife.fan_angle
+    value: 15
+    unit: "\xB0"
+    note: "\uBE44\uB3C4 3\uD0C0\uC9F8 \uBD80\uCC44\uAF34 \uAC04\uACA9"
+  - key: knife.speed
+    value: 18
+    unit: "\uCE78/\uCD08"
+    note: "\uBE44\uB3C4 \uB0A0\uC544\uAC00\uB294 \uC18D\uB3C4"
+  - key: knife.range
+    value: 8
+    unit: "\uCE78"
+    note: "\uBE44\uB3C4 \uC0AC\uAC70\uB9AC"
+  - key: knife.hit_radius
+    value: 0.35
+    unit: "\uCE78"
+    note: "\uB0A0\uC544\uAC00\uB294 \uBE44\uB3C4\uAC00 \uC801\uC5D0\uAC8C \uB9DE\uB294 \uAC70\uB9AC (\uC784\uC2DC)"
+  - key: knife.blink
+    value: 1.5
+    unit: "\uCD08"
+    note: "\uC0AC\uB77C\uC9C0\uAE30 \uC804 \uAE5C\uBE61\uC774\uB294 \uC2DC\uAC04"
+  - key: knife.recall_cast
+    value: 0.3
+    unit: "\uCD08"
+    note: "\uD68C\uC218 \uC2DC\uC804 \uC2DC\uAC04"
+  - key: knife.recall_path_radius
+    value: 0.6
+    unit: "\uCE78"
+    note: "\uD68C\uC218: \uB3CC\uC544\uC624\uB294 \uAE38\uC5D0 \uB9DE\uB294 \uAC70\uB9AC (\uC784\uC2DC)"
+  - key: knife.dash_damage
+    value: 8
+    unit: 
+    note: "\uBE44\uB3C4 \uB300\uC2DC \uACF5\uACA9 \uD55C \uBC1C \uD53C\uD574"
+  - key: knife.dash_radius
+    value: 0.6
+    unit: "\uCE78"
+    note: "\uBE44\uB3C4 \uB300\uC2DC \uACF5\uACA9\uC774 \uAF42\uD788\uB294 \uAC70\uB9AC"
+  - key: knife.ultimate_count
+    value: 24
+    unit: "\uBC1C"
+    note: "\uC808\uCD08 \uB9CC\uCC9C\uD654\uC6B0 \uBE44\uB3C4 \uC218 (\uD558\uB2E8\uC804)"
+  - key: knife.ultimate_damage
+    value: 6
+    unit: 
+    note: "\uC808\uCD08 \uB9CC\uCC9C\uD654\uC6B0 \uBE44\uB3C4 \uD55C \uBC1C \uD53C\uD574"
+  - key: knife.ultimate_time
+    value: 3
+    unit: "\uCD08"
+    note: "\uC808\uCD08 \uB9CC\uCC9C\uD654\uC6B0 \uBE44 \uC2DC\uAC04 (\uD558\uB2E8\uC804)"

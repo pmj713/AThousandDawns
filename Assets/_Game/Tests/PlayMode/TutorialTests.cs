@@ -136,6 +136,41 @@ namespace AThousandDawns.Tests
         }
 
         [UnityTest]
+        public IEnumerator 절초를_쓰는_동안에는_회피_안내로_멈추지_않음()
+        {
+            yield return Load();
+            _player.SetWeapon(WeaponKind.Dagger); // 만천화우는 시전 뒤에도 3초 동안 내려요
+            _run.Enter(_run.Map.Rooms[1], 1);
+            yield return new WaitForSeconds(1f); // 졸개가 나올 때까지
+            _player.FillGauge();
+            Press(_keyboard.qKey);
+            yield return null;
+            Release(_keyboard.qKey);
+            yield return null;
+            Assert.IsTrue(_player.IsCastingUltimate || _player.UltimateRaining, "절초");
+            float end = Time.realtimeSinceStartup + 3f;
+            while ((_player.IsCastingUltimate || _player.UltimateRaining) && Time.realtimeSinceStartup < end)
+            {
+                Assert.IsFalse(_run.DodgeFrozen, "절초 중엔 멈추지 않아요");
+                yield return null;
+            }
+            Assert.AreEqual(1f, Time.timeScale);
+        }
+
+        [UnityTest]
+        public IEnumerator 회피_안내는_입문_2번_방에서만()
+        {
+            yield return Load();
+            _run.Enter(_run.Map.Rooms[2], 1); // 방패 산적 방 (2번 방을 건너뜀)
+            float end = Time.realtimeSinceStartup + 6f;
+            while (Time.realtimeSinceStartup < end)
+            {
+                Assert.IsFalse(_run.DodgeFrozen, "다른 방에선 멈추지 않아요");
+                yield return null;
+            }
+        }
+
+        [UnityTest]
         public IEnumerator 한_번_통과하면_다음_판_1층은_무작위()
         {
             var meta = new MetaSave { tutorialFloorDone = true };

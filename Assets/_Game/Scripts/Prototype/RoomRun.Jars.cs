@@ -4,13 +4,14 @@ using UnityEngine;
 
 namespace AThousandDawns.Prototype
 {
-    // 항아리·상자 (은자 탭 C4: 방당 3): 전투 방마다 벽가에 항아리가 놓여 있어요. 부딪히면 깨지고 은자가 나와요.
+    // 항아리·상자 (은자 탭 C4: 방당 3): 전투 방마다 벽가에 항아리가 놓여 있어요. 부딪히거나 공격(평타·초식·대시 공격·비도)이 닿으면 깨지고 은자가 나와요. 싸우는 중에도 돼요.
     // 한 번 깬 항아리는 그 층에서 다시 나오지 않아요 (FloorRoom.Jars가 남은 수). 판 시드와 방 자리로 놓을 곳을 정해서 _rng를 건드리지 않아요.
     public sealed partial class RoomRun
     {
         readonly List<GameObject> _jars = new List<GameObject>();
 
         public int JarsInRoom => _jars.Count;
+        public IReadOnlyList<GameObject> Jars => _jars;
 
         // 방에 들어갈 때 (null이면 치움)
         void PlaceJars(FloorRoom room)
@@ -28,10 +29,15 @@ namespace AThousandDawns.Prototype
                 var p = combat.center + new Vector3(sx * halfX * (0.55f + 0.4f * (float)rng.NextDouble()), 0f, sz * halfZ * (0.6f + 0.35f * (float)rng.NextDouble()));
                 var jar = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 jar.name = "Jar";
-                Destroy(jar.GetComponent<Collider>());
+                var col = jar.GetComponent<Collider>();
+                col.enabled = false; // Destroy는 프레임 끝에 지워져서, 그 사이 캐릭터가 이 충돌 상자 위로 밀려 올라가지 않게 먼저 꺼요
+                Destroy(col);
                 jar.GetComponent<Renderer>().material.color = new Color(0.55f, 0.36f, 0.2f);
                 jar.transform.position = p + Vector3.up * 0.35f;
                 jar.transform.localScale = new Vector3(0.55f, 0.35f, 0.55f);
+                var breakable = jar.AddComponent<AThousandDawns.Combat.Breakable>(); // 평타·초식·비도로도 깨져요
+                breakable.Radius = 0.3f;
+                breakable.Broken += b => BreakJar(_jars.IndexOf(b.gameObject));
                 _jars.Add(jar);
             }
         }
