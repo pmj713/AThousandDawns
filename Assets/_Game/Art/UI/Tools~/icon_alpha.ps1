@@ -2,7 +2,8 @@
 # 흰색을 알파로 빼요 (GIMP "Color to Alpha"와 같은 식): 알파 = 흰색에서 가장 먼 채널, 색 = 흰색을 걷어낸 값.
 # 사용: powershell -File icon_alpha.ps1 <원본.png> <결과.png> [크기=256] [-NoHalo]
 #   -NoHalo: 한지 바탕 위에 올릴 그림(제목 붓글씨 등). 둘레 번짐 없이, 가로 크기만 맞추고 비율은 원본대로
-param([string]$Src, [string]$Dst, [int]$Size = 256, [switch]$NoHalo)
+#   -Solid : 연한 색(분홍 꽃잎 등)도 비치지 않게. 흰색에서 조금만 멀어도 불투명, 원래 색 그대로 (가장자리만 부드럽게)
+param([string]$Src, [string]$Dst, [int]$Size = 256, [switch]$NoHalo, [switch]$Solid)
 
 Add-Type -ReferencedAssemblies System.Drawing -TypeDefinition @"
 using System;
@@ -16,7 +17,7 @@ public static class IconAlpha
     // 종이 얼룩이 남지 않게 흰색에 가까운 값(Floor 이하)은 완전 투명으로 봐요.
     const int Floor = 14;
 
-    public static void Run(string src, string dst, int size, bool halo)
+    public static void Run(string src, string dst, int size, bool halo, bool solid)
     {
         using (var input = new Bitmap(src))
         using (var bmp = new Bitmap(size, halo ? size : (int)Math.Round((double)size * input.Height / input.Width), PixelFormat.Format32bppArgb))
@@ -36,8 +37,9 @@ public static class IconAlpha
             {
                 int b = px[i], g = px[i + 1], r = px[i + 2];
                 int d = Math.Max(255 - r, Math.Max(255 - g, 255 - b));
-                int a = Math.Max(0, Math.Min(255, (d - Floor) * 255 / (255 - Floor)));
+                int a = Math.Max(0, Math.Min(255, (d - Floor) * (solid ? 1020 : 255) / (255 - Floor)));
                 if (a == 0) { px[i] = px[i + 1] = px[i + 2] = px[i + 3] = 0; continue; }
+                if (solid) { px[i + 3] = (byte)a; continue; } // 색은 원본 그대로
                 float af = d / 255f;
                 px[i]     = Unmix(b, af);
                 px[i + 1] = Unmix(g, af);
@@ -110,4 +112,4 @@ public static class IconAlpha
 }
 "@
 
-[IconAlpha]::Run((Resolve-Path $Src).Path, [IO.Path]::GetFullPath($Dst), $Size, -not $NoHalo)
+[IconAlpha]::Run((Resolve-Path $Src).Path, [IO.Path]::GetFullPath($Dst), $Size, -not $NoHalo, [bool]$Solid)

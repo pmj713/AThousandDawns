@@ -1,5 +1,5 @@
 file	out	note
 e91a37091b71e24e669792930c868c1e.png	Door_Lattice	3:4 · icon_alpha 512 -NoHalo + trim · lattice door, paper panels become see-through
-652c2795ac0b954d3d02dd044b417e2c.png	Plum_Blossom	1:1 · icon_alpha 256 -NoHalo + trim · red plum blossom cluster
-8bf238c9948c0d8784d04998454efff6.png	Plum_Blossom_B	1:1 · same prompt, second take
+a3047f27eb4e23f1d0d7dcef05b6c096.png	Plum_Blossom	1:1 · icon_alpha 256 -NoHalo -Solid + trim · lush round cluster of deep pink hongmaehwa blossoms
+ec86b157fe609866563ce51e642f84ff.png	Plum_Blossom_B	1:1 · icon_alpha 256 -NoHalo -Solid + trim · small spray of soft pink plum blossoms on a twig
 76c2b71eb3c5a1032be5e27787892071.png	Tex_PlumBark	1:1 · resize 1024 · seamless plum bark texture for the 3D tree (InkTriplanar)
