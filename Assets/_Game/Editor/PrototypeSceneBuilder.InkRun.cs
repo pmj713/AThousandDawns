@@ -123,6 +123,7 @@ namespace AThousandDawns.EditorTools
             // 3-2) 방별 꾸미기: 녹림왕 방(불타는 죽림 불꽃·화톳불·목책), 객잔, 정비실, 방마다 벽 너머 숲
             DressRoomsInk(stoneMat, woodMat, bambooMat, roofX);
             DressVillageInk(floorMat, stoneMat, woodMat, bambooMat, roofX); // 마을 (PrototypeSceneBuilder.InkVillage.cs)
+            DressRunPropsInk(stoneMat); // 항아리·금 간 벽·관문 (PrototypeSceneBuilder.InkRunProps.cs)
 
             // 4) 재질 바꿔 끼우기: 씬의 모든 재질 참조(렌더러·적 연출 설정 등)를 이름으로 찾아 수묵 재질로.
             //    공격 예고·불·검기·결계·관문은 전투에서 읽혀야 하니 그대로 둬요
