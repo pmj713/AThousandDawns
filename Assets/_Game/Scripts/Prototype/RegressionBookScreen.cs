@@ -27,37 +27,42 @@ namespace AThousandDawns.Prototype
         static readonly Color Selected = new Color(0.2f, 0.12f, 0.12f);
 
         // 기준 1920×1080 화면 좌표 (오른쪽 520은 설명 칸).
-        // F자 수형: 왼쪽 아래 뿌리에서 줄기가 위로 곧게 서되 시계 방향으로 살짝 기울고(위가 오른쪽),
-        // 줄기 높이마다 오른쪽으로 가로 가지가 뻗어요 (끝으로 갈수록 아주 조금 올라가요).
-        // "@"로 시작하는 자리는 봉우리가 아니라 뿌리에서 나온 가지가 줄기에 붙는 곳이에요 (그리기만 해요).
+        // F자 수형: 왼쪽 아래 뿌리에서 줄기가 위로 뻗되 시계 방향으로 기울고(위가 오른쪽, 약 23°),
+        // 줄기에는 봉우리 없이 높이마다 오른쪽으로 가로 가지가 뻗어 해금 봉우리가 모두 가지에 달려요 (끝으로 갈수록 아주 조금 올라가요).
+        // 가지는 선행 순서대로 이어지고, 가지의 첫 봉우리가 그 가지 해금의 시작이에요 (선행 조건은 설명 칸에 나와요).
+        // "@"로 시작하는 자리는 봉우리가 아니라 줄기 위 점이에요 (그리기만 해요). 줄기 x = 200 + (1000 - y) × 0.42
         static readonly Dictionary<string, Vector2> Layout = new Dictionary<string, Vector2>
         {
-            // 줄기: 뿌리 → 면벽수련 → 심득 (한 칸에 위로 123, 오른쪽으로 30)
-            [RegressionBook.Root] = new Vector2(200, 990),
-            ["meditation"] = new Vector2(230, 867), ["insight1"] = new Vector2(260, 744), ["insight2"] = new Vector2(290, 621),
-            ["insight3"] = new Vector2(320, 498), ["insight4"] = new Vector2(350, 375), ["insight5"] = new Vector2(380, 252),
-            ["@upper"] = new Vector2(365, 313), ["@middle"] = new Vector2(305, 560),
-            // 맨 위 가로 가지: 경맥 → 무기 (심득 4·5차 사이에서)
-            ["tongmaek"] = new Vector2(560, 309), ["jeomhyeol"] = new Vector2(750, 305), ["hanok"] = new Vector2(940, 300),
-            ["forge"] = new Vector2(1130, 295), ["flying_dagger"] = new Vector2(1310, 290),
-            // 가운데: 주머니 (심득 2·3차 사이에서)
-            ["bag"] = new Vector2(500, 556), ["bag_plus1"] = new Vector2(690, 551), ["bag_plus2"] = new Vector2(880, 546),
-            // 견문 (심득 1차에서), 생존 (면벽수련에서)
-            ["item_pack1"] = new Vector2(460, 740), ["item_pack2"] = new Vector2(650, 735),
-            ["potion_kit"] = new Vector2(430, 863), ["inn_stock"] = new Vector2(620, 858),
-            // 맨 아래: 유품 (뿌리에서 바닥을 따라)
-            ["relic1"] = new Vector2(400, 992), ["relic2"] = new Vector2(590, 990), ["relic3"] = new Vector2(780, 987), ["relic4"] = new Vector2(970, 984),
+            [RegressionBook.Root] = new Vector2(200, 1000),
+            ["@top"] = new Vector2(530, 215),
+            ["@a260"] = new Vector2(511, 260), ["@a390"] = new Vector2(456, 390), ["@a520"] = new Vector2(402, 520),
+            ["@a650"] = new Vector2(347, 650), ["@a780"] = new Vector2(292, 780), ["@a910"] = new Vector2(238, 910),
+            // 맨 위: 경맥 → 무기
+            ["tongmaek"] = new Vector2(670, 257), ["jeomhyeol"] = new Vector2(830, 254), ["hanok"] = new Vector2(990, 251),
+            ["forge"] = new Vector2(1150, 248), ["flying_dagger"] = new Vector2(1310, 245),
+            // 면벽수련 → 심득 1~5차
+            ["meditation"] = new Vector2(600, 387), ["insight1"] = new Vector2(740, 384), ["insight2"] = new Vector2(880, 381),
+            ["insight3"] = new Vector2(1020, 378), ["insight4"] = new Vector2(1160, 375), ["insight5"] = new Vector2(1300, 372),
+            // 견문 (심득 1차 뒤)
+            ["item_pack1"] = new Vector2(560, 517), ["item_pack2"] = new Vector2(710, 514),
+            // 생존 (면벽수련 뒤)
+            ["potion_kit"] = new Vector2(500, 647), ["inn_stock"] = new Vector2(650, 644),
+            // 주머니
+            ["bag"] = new Vector2(450, 777), ["bag_plus1"] = new Vector2(600, 774), ["bag_plus2"] = new Vector2(750, 771),
+            // 맨 아래: 유품
+            ["relic1"] = new Vector2(400, 907), ["relic2"] = new Vector2(560, 904), ["relic3"] = new Vector2(720, 901), ["relic4"] = new Vector2(880, 898),
         };
 
         // 가지마다 지나는 봉우리 (그리는 순서: 줄기가 먼저, 굵게 시작해 가늘어짐)
         static readonly (string[] path, float start, float end)[] Twigs =
         {
-            (new[] { RegressionBook.Root, "meditation", "insight1", "insight2", "insight3", "insight4", "insight5" }, 24f, 9f),
-            (new[] { "@upper", "tongmaek", "jeomhyeol", "hanok", "forge", "flying_dagger" }, 11f, 4f),
-            (new[] { "@middle", "bag", "bag_plus1", "bag_plus2" }, 11f, 4f),
-            (new[] { "insight1", "item_pack1", "item_pack2" }, 10f, 4f),
-            (new[] { "meditation", "potion_kit", "inn_stock" }, 10f, 4f),
-            (new[] { RegressionBook.Root, "relic1", "relic2", "relic3", "relic4" }, 10f, 3f),
+            (new[] { RegressionBook.Root, "@a910", "@a780", "@a650", "@a520", "@a390", "@a260", "@top" }, 28f, 10f),
+            (new[] { "@a260", "tongmaek", "jeomhyeol", "hanok", "forge", "flying_dagger" }, 11f, 4f),
+            (new[] { "@a390", "meditation", "insight1", "insight2", "insight3", "insight4", "insight5" }, 12f, 4f),
+            (new[] { "@a520", "item_pack1", "item_pack2" }, 10f, 4f),
+            (new[] { "@a650", "potion_kit", "inn_stock" }, 10f, 4f),
+            (new[] { "@a780", "bag", "bag_plus1", "bag_plus2" }, 10f, 4f),
+            (new[] { "@a910", "relic1", "relic2", "relic3", "relic4" }, 10f, 3f),
         };
 
         static Texture2D _circle;
@@ -66,7 +71,7 @@ namespace AThousandDawns.Prototype
         bool _meditation; // 면벽수련 화면
         string _selected, _notice;
         float _noticeTimer;
-        [System.NonSerialized] GUIStyle _title, _label, _small, _node, _nodeLeft, _button;
+        [System.NonSerialized] GUIStyle _title, _label, _small, _node, _button;
 
         public bool IsOpen { get; private set; }
         public MetaSave Meta => _meta;
@@ -147,8 +152,7 @@ namespace AThousandDawns.Prototype
                 else if (openable) BudShape(p, size, blocker == null ? Bud : BudPoor);
                 else LockedBud(p, size); // 닫힌 눈: 가지에 붙은 작은 갈색 눈
                 string name = bloomed ? $"<b>{node.Name}</b>" : openable ? $"<b>{node.Name}</b> <color=#8a2a3a>{RegressionBook.Cost(node)}</color>" : $"<color=#8a8278>{node.Name}</color>";
-                if (node.Branch == "줄기") GUI.Label(new Rect(p.x - size * 0.5f - 214, p.y - 13, 200, 26), name, _nodeLeft); // 줄기 봉우리: 줄기에 가리지 않게 왼쪽에
-                else GUI.Label(new Rect(p.x - 100, p.y + size * 0.5f + 4, 200, 26), name, _node);
+                GUI.Label(new Rect(p.x - 100, p.y + size * 0.5f + 4, 200, 26), name, _node);
                 float hit = Mathf.Max(size, 40f) + 12f;
                 if (GUI.Button(new Rect(p.x - hit * 0.5f, p.y - hit * 0.5f, hit, hit), GUIContent.none, GUIStyle.none)) _selected = node.Id;
             }
@@ -439,7 +443,6 @@ namespace AThousandDawns.Prototype
             _small.normal.textColor = new Color(0.3f, 0.26f, 0.24f);
             _node = new GUIStyle(GUI.skin.label) { fontSize = 17, alignment = TextAnchor.UpperCenter, richText = true };
             _node.normal.textColor = Ink;
-            _nodeLeft = new GUIStyle(_node) { alignment = TextAnchor.MiddleRight };
             _button = new GUIStyle(GUI.skin.button) { fontSize = 22 };
         }
     }
