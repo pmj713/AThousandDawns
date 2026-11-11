@@ -358,6 +358,15 @@ namespace AThousandDawns.Player
         // 적 공격이 닿았을 때. 무적(대시·피격 후)이면 false를 돌려줘요. 화살은 이때 그대로 지나가요.
         // knockback을 주면 기본 넉백(0.5칸) 대신 그만큼 밀려요 (방패 산적 1칸).
         // attacker를 주면 #경공 6단계 간파 반격이 그 적에게 가요.
+        // 맞은 직후 넉백 대신 point 쪽으로 끌려가요 (혈불 혈수: stop만큼 앞에서 멈춤). TryReceiveHit이 성공한 뒤에 불러요
+        public void PullToward(Vector3 point, float stop)
+        {
+            Vector3 to = point - transform.position;
+            to.y = 0f;
+            float length = Mathf.Max(0f, to.magnitude - stop);
+            _knockbackVelocity = length > 0f ? to.normalized * (length / Mathf.Max(0.01f, _hurtStun)) : Vector3.zero;
+        }
+
         public bool TryReceiveHit(float enemyAttack, Vector3 source, float knockback = -1f, Damageable attacker = null)
         {
             if (IsDead) return false;

@@ -13,15 +13,17 @@ namespace AThousandDawns.Enemies
     // 2페이즈 (불상이 갈라져 팔이 여섯)
     //   팔 휘두르기: 가까울 때 부채꼴 반경 3.5칸 120°를 좌우로 세 번 (0.45초 간격) ×0.8
     //   피의 비: 플레이어 둘레에 핏방울 (예고 0.7초, 반경 1칸)이 0.4초 간격 6번 ×0.5 + 출혈 (플레이어 화상 1중첩)
-    //   손바닥 내려찍기 · 목탁승 부르기는 그대로, 염불 대신 피의 비
+    //   손바닥 연타: 첫 손바닥 뒤 0.4초 간격으로 두 번 더, 그때 플레이어 자리에 (서 있으면 맞아요)
+    //   혈수: 6칸 밖에 2초 넘게 있으면 핏빛 손을 뻗어요 (직선 예고 0.6초, 길이 10칸, 폭 1.4칸) ×0.6 → 맞으면 혈불 앞으로 끌려오고 바로 팔 휘두르기
+    //   목탁승 부르기는 그대로, 염불 대신 피의 비
     public sealed class BloodBuddhaBrain : EnemyBrain, IMasterBrain
     {
         public override string AttackName => _pattern switch
         {
-            Pattern.Palm => "손바닥 내려찍기", Pattern.Chant => "염불", Pattern.Arms => "팔 휘두르기", Pattern.BloodRain => "피의 비", _ => null,
+            Pattern.Palm => "손바닥 내려찍기", Pattern.Chant => "염불", Pattern.Arms => "팔 휘두르기", Pattern.BloodRain => "피의 비", Pattern.Grab => "혈수", _ => null,
         };
 
-        enum Pattern { None, Palm, Chant, Arms, BloodRain, Summon }
+        enum Pattern { None, Palm, Chant, Arms, BloodRain, Summon, Grab }
 
         struct Mark
         {
@@ -41,6 +43,10 @@ namespace AThousandDawns.Enemies
         float _rainWindup, _rainRecovery, _rainRatio, _rainRadius, _rainFall, _rainGap, _bleedDps;
         int _rainDrops;
         float _summonInterval;
+        float _grabWindup, _grabRecovery, _grabRatio, _grabRange, _grabWidth, _grabFar, _grabDelay, _grabStop, _farTimer;
+        bool _grabbed; // 혈수에 맞아 끌려옴 → 바로 팔 휘두르기
+        int _palmFollow, _palmHits;
+        float _palmGap, _palmFollowTimer;
         float _decisionTimer, _transitionTimer, _chantTimer, _summonTimer, _activeTimer;
         Vector3 _zoneCenter;
         Vector2 _zoneSize = new Vector2(16f, 12f);
@@ -110,6 +116,16 @@ namespace AThousandDawns.Enemies
             _rainDrops = Mathf.RoundToInt(Tuning("rain_drops", 6f));
             _bleedDps = Tuning("bleed_dps", 2f);
             _summonInterval = Tuning("summon_interval", 15f);
+            _palmHits = Mathf.Max(1, Mathf.RoundToInt(Tuning("p2_palm_hits", 3f)));
+            _palmGap = Tuning("p2_palm_gap", 0.4f);
+            _grabWindup = Tuning("grab_windup", 0.6f);
+            _grabRecovery = Tuning("grab_recovery", 0.3f);
+            _grabRatio = Tuning("grab_ratio", 0.6f);
+            _grabRange = Tuning("grab_range", 10f);
+            _grabWidth = Tuning("grab_width", 1.4f);
+            _grabFar = Tuning("grab_far", 6f);
+            _grabDelay = Tuning("grab_delay", 2f);
+            _grabStop = Tuning("grab_stop", 2f);
             _chantTimer = _chantInterval * 0.5f;
             _summonTimer = _summonInterval * 0.5f;
         }
@@ -125,6 +141,8 @@ namespace AThousandDawns.Enemies
                 _transitionTimer -= dt;
                 if (_transitionTimer <= 0f) EnterPhase2();
             }
+            _farTimer = Phase == 2 && ToPlayer().magnitude > _grabFar ? _farTimer + dt : 0f; // 멀리서만 싸우면 혈수
+            TickPalmFollow(dt);
             TickMarks(dt);
         }
 
@@ -134,11 +152,13 @@ namespace AThousandDawns.Enemies
         {
             if (IsTransitioning || _decisionTimer > 0f) return false;
             Pattern next;
-            if (_summonTimer <= 0f && Director.Count(EnemyKind.Moktak) == 0) next = Pattern.Summon;
+            if (_grabbed) next = Pattern.Arms; // 끌려온 플레이어에게 바로
+            else if (Phase == 2 && _farTimer >= _grabDelay) next = Pattern.Grab;
+            else if (_summonTimer <= 0f && Director.Count(EnemyKind.Moktak) == 0) next = Pattern.Summon;
             else if (Phase == 2 && distance <= _closeDistance) next = Pattern.Arms;
             else if (_chantTimer <= 0f) next = Phase == 1 ? Pattern.Chant : Pattern.BloodRain;
             else next = Pattern.Palm;
-            if (next == _lastPattern && _repeat >= _maxRepeat && next != Pattern.Summon)
+            if (next == _lastPattern && _repeat >= _maxRepeat && next != Pattern.Summon && next != Pattern.Grab && !_grabbed)
                 next = next == Pattern.Palm ? (Phase == 1 ? Pattern.Chant : Pattern.BloodRain) : Pattern.Palm;
 
             _repeat = next == _lastPattern ? _repeat + 1 : 1;
@@ -155,7 +175,14 @@ namespace AThousandDawns.Enemies
                     WindupTime = _rainWindup; RecoveryTime = _rainRecovery;
                     _chantTimer = _chantInterval * 0.7f;
                     break;
-                case Pattern.Arms: WindupTime = _armsWindup; RecoveryTime = _armsRecovery; break;
+                case Pattern.Arms:
+                    WindupTime = _grabbed ? _armsWindup * 0.5f : _armsWindup; RecoveryTime = _armsRecovery; // 끌려오면 예고가 짧아요
+                    _grabbed = false;
+                    break;
+                case Pattern.Grab:
+                    WindupTime = _grabWindup; RecoveryTime = _grabRecovery;
+                    _farTimer = 0f;
+                    break;
                 case Pattern.Summon:
                     WindupTime = 0.8f; RecoveryTime = 0.5f;
                     _summonTimer = _summonInterval;
@@ -181,6 +208,7 @@ namespace AThousandDawns.Enemies
         protected override List<Vector2> TelegraphShape() => _pattern switch
         {
             Pattern.Arms => TelegraphShapes.Lunge(_armsRadius, _armsAngle, 0f),
+            Pattern.Grab => TelegraphShapes.Rect(_grabWidth, _grabRange),
             _ => TelegraphShapes.Circle(BodyRadius + 0.3f), // 몸 둘레에 기운이 모여요 (실제 판정은 바닥 예고 원)
         };
 
@@ -191,6 +219,11 @@ namespace AThousandDawns.Enemies
             AddMark(p, _palmWindup, _palmRadius, _palmRatio, false);
             for (int i = 0; i < 2; i++)
                 AddMark(p + Quaternion.Euler(0f, Random.Range(0f, 360f), 0f) * Vector3.forward * _palmSpread, _palmWindup, _palmRadius, _palmRatio, false);
+            if (Phase == 2) // 손바닥 연타: 플레이어를 따라 두 번 더
+            {
+                _palmFollow = _palmHits - 1;
+                _palmFollowTimer = _palmGap;
+            }
         }
 
         // ── 판정
@@ -205,6 +238,7 @@ namespace AThousandDawns.Enemies
                 case Pattern.Chant: _waveCount = _chantWaves; ChantWave(); break;
                 case Pattern.BloodRain: _waveCount = _rainDrops; RainDrop(); break;
                 case Pattern.Arms: Swing(); break;
+                case Pattern.Grab: Grab(); break;
                 case Pattern.Summon:
                     Director.Spawn(EnemyKind.Moktak, Director.FindFreeSpot(transform.position + Facing * 2f, 1f));
                     break;
@@ -251,6 +285,32 @@ namespace AThousandDawns.Enemies
                 HitPlayer(_armsRatio);
         }
 
+        // 손바닥 연타: 그때 플레이어 자리에 하나씩 (예고 시간은 첫 손바닥과 같아요)
+        void TickPalmFollow(float dt)
+        {
+            if (_palmFollow <= 0) return;
+            _palmFollowTimer -= dt;
+            if (_palmFollowTimer > 0f) return;
+            _palmFollow--;
+            _palmFollowTimer = _palmGap;
+            AddMark(Player.transform.position, _palmWindup, _palmRadius, _palmRatio, false);
+        }
+
+        // 혈수: 앞 직선 위에 있으면 맞고 혈불 앞으로 끌려와요
+        void Grab()
+        {
+            Vector3 rel = Player.transform.position - transform.position;
+            rel.y = 0f;
+            float along = Vector3.Dot(rel, AimDirection);
+            float side = Mathf.Abs(Vector3.Dot(rel, new Vector3(AimDirection.z, 0f, -AimDirection.x)));
+            if (along < 0f || along > _grabRange + PlayerRadius || side > _grabWidth * 0.5f + PlayerRadius) return;
+            if (!Player.TryReceiveHit(AttackPower * _grabRatio, transform.position, 0f, Body)) return;
+            Player.PullToward(transform.position, _grabStop);
+            _grabbed = true;
+        }
+
+        public bool GrabbedPlayer => _grabbed;
+
         Vector3 RandomInZone()
         {
             float hx = _zoneSize.x * 0.5f - 1f, hz = _zoneSize.y * 0.5f - 1f;
@@ -293,10 +353,12 @@ namespace AThousandDawns.Enemies
 
         bool HitPlayer(float ratio) => Player.TryReceiveHit(AttackPower * ratio, transform.position, HitKnockback, Body);
 
-        protected override void OnAttackFinished() => _decisionTimer = _decisionPause;
+        protected override void OnAttackFinished() => _decisionTimer = _grabbed ? 0f : _decisionPause; // 끌려왔으면 쉬지 않고 팔 휘두르기
 
         protected override void OnFreezeStarted(bool cancelledAttack)
         {
+            _grabbed = false;
+            _palmFollow = 0;
             _pattern = Pattern.None;
             _decisionTimer = _decisionPause;
         }
