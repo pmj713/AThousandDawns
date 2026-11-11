@@ -9,7 +9,7 @@ namespace AThousandDawns.Fx
     //   초식: 원상(먹 동그라미) 안에 초식 그림. 쿨타임 동안 먹물이 덮였다가 위에서부터 걷혀요. 남은 초 · 키캡.
     //         비도 0개면 그림이 회색(회수 불가), 금창약을 마시는 동안은 쿨타임 표시를 숨기고 머리 위 원형 게이지를 띄워요 (기획 시트).
     //   체력: 붓 획 하나 — 먹색 바탕 획 위에 매화 홍 획이 줄어들고, 깎인 자리는 한지색으로 잠깐 남았다 따라 줄어요. 보호막은 위에 흰 획.
-    //   대시: 먹점 — 찬 것은 짙게, 채워지는 것은 옅게 차올라요.
+    //   대시: 붓 ">" 하나가 한 번 — 최대 충전만큼 늘어요(>>>). 찬 것은 짙게, 채워지는 것은 왼쪽부터 먹이 차올라요.
     //   금창약: 호리병 — 남은 만큼 짙게, 마시는 중엔 아래 붉은 줄이 차요.
     // 그림: Art/UI/Hud/Resources/HudArt (없으면 단색으로 대신해요). 기준 1920×1080 (UiScale) 위에서 그려요.
     // 사용: OnGUI에서 InkHud.Draw(player);
@@ -23,11 +23,11 @@ namespace AThousandDawns.Fx
         public const float Height = Margin + 112f + 16f; // HUD가 차지하는 위쪽 높이 (아래에 다른 것을 놓을 때)
         const float SkillSize = 112f;
         const float BarW = 400f, BarH = 46f;
-        const float PipSize = 30f, GourdSize = 48f;
+        const float PipSize = 30f, GourdSize = 48f, ChevronW = 26f;
 
-        static Texture2D _stroke, _enso, _gourd, _blot, _spin, _bamboo, _quake, _recall, _recallGray;
+        static Texture2D _stroke, _enso, _gourd, _blot, _chevron, _spin, _bamboo, _quake, _recall, _recallGray;
         static bool _loaded;
-        static GUIStyle _number, _small, _key;
+        static GUIStyle _number, _small, _badge, _key;
         static float _lagHp = -1f;   // 깎인 자리 (따라 줄어드는 체력)
         static float _lagHold;       // 깎인 뒤 잠깐 멈춤
         static float _lastHp = 1f;
@@ -120,10 +120,13 @@ namespace AThousandDawns.Fx
             Tint(Ink, cooling ? 0.65f : 1f);
             if (_enso != null) GUI.DrawTexture(r, _enso, ScaleMode.ScaleToFit);
 
-            if (p.UsesDagger) // 비도 남은 수
+            if (p.UsesDagger) // 비도 남은 수: 오른쪽 위에 먹 번짐 배지 + 큰 숫자 (0개면 매화 홍)
             {
-                Tint(Paper, 1f);
-                Shadowed(new Rect(r.x, r.y + 2f, r.width - 8f, 24f), $"{p.DaggerCount}", _small, TextAnchor.UpperRight);
+                var badge = new Rect(r.xMax - 46f, r.y - 8f, 54f, 54f);
+                Tint(Ink, 0.92f);
+                Blot(badge);
+                Tint(p.DaggerCount > 0 ? Paper : Plum, 1f);
+                Shadowed(badge, $"{p.DaggerCount}", _badge);
             }
             GUI.color = Color.white;
             KeyHint.Draw(new Rect(r.x, r.yMax - 16f, r.width, 28f), KeyHint.Key(Bind.Skill), _key, 14);
@@ -179,20 +182,21 @@ namespace AThousandDawns.Fx
             if (dash == null) return at.x;
             float x = at.x;
             bool blocked = p.NoDashLeft > 0f;
+            // 붓 '>' 하나 = 대시 한 번. 최대 충전이 늘면 '>'도 늘어요 (>>>)
             for (int i = 0; i < dash.MaxCharges; i++)
             {
-                var r = new Rect(x, at.y, PipSize, PipSize);
-                Tint(Ink, 0.25f); // 빈 자리
-                Blot(r);
-                if (i < dash.Charges) { Tint(blocked ? Plum : Ink, 1f); Blot(r); }
-                else if (i == dash.Charges) // 채워지는 중: 가운데서 번져 커져요
+                var r = new Rect(x, at.y - 2f, ChevronW, PipSize + 4f);
+                Tint(Ink, 0.22f); // 빈 자리
+                Chevron(r, 1f);
+                if (i < dash.Charges) { Tint(blocked ? Plum : Ink, 1f); Chevron(r, 1f); }
+                else if (i == dash.Charges) // 채워지는 중: 왼쪽부터 먹이 차올라요
                 {
-                    float t = dash.RechargeRatio;
-                    Tint(Ink, 0.35f + 0.4f * t);
-                    Blot(Shrink(r, 0.5f * (1f - t)));
+                    Tint(Ink, 0.6f);
+                    Chevron(r, dash.RechargeRatio);
                 }
-                x += PipSize + 6f;
+                x += ChevronW * 0.72f; // 살짝 겹쳐 >>> 처럼
             }
+            x += ChevronW * 0.4f;
             GUI.color = Color.white;
             KeyHint.Draw(new Rect(x, at.y + 2f, 60f, PipSize - 4f), KeyHint.Key(Bind.Dash), _key, 12);
             return x + 50f;
@@ -225,6 +229,20 @@ namespace AThousandDawns.Fx
         }
 
         // ── 도움 ──
+        // 붓 ">" (ratio = 왼쪽부터 채운 비율)
+        static void Chevron(Rect r, float ratio)
+        {
+            if (ratio <= 0f) return;
+            var part = new Rect(r.x, r.y, r.width * ratio, r.height);
+            if (_chevron != null) GUI.DrawTextureWithTexCoords(part, _chevron, new Rect(0f, 0f, ratio, 1f));
+            else
+            {
+                GUI.BeginGroup(part);
+                GUI.Label(new Rect(0f, 0f, r.width, r.height), ">", _badge);
+                GUI.EndGroup();
+            }
+        }
+
         static void Blot(Rect r)
         {
             if (_blot != null) GUI.DrawTexture(r, _blot, ScaleMode.ScaleToFit);
@@ -258,6 +276,7 @@ namespace AThousandDawns.Fx
             _number = new GUIStyle(GUI.skin.label) { fontSize = 34, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             _number.normal.textColor = Color.white;
             _small = new GUIStyle(_number) { fontSize = 19 };
+            _badge = new GUIStyle(_number) { fontSize = 28 };
             _key = new GUIStyle(GUI.skin.label) { fontSize = 14, alignment = TextAnchor.MiddleCenter };
             _key.normal.textColor = Paper;
         }
@@ -275,6 +294,7 @@ namespace AThousandDawns.Fx
             _recall = Resources.Load<Texture2D>("HudArt/Skill_Recall");
             _recallGray = Resources.Load<Texture2D>("HudArt/Skill_Recall_Gray"); // 비도 0개 (회수 불가)
             _blot = Resources.Load<Texture2D>("HudArt/Blot"); // 흰 모양 (GUI.color로 물들여요)
+            _chevron = Resources.Load<Texture2D>("HudArt/Chevron"); // 흰 모양 붓 >
         }
     }
 }
