@@ -125,6 +125,7 @@ namespace AThousandDawns.EditorTools
             DressVillageInk(floorMat, stoneMat, woodMat, bambooMat, roofX); // 마을 (PrototypeSceneBuilder.InkVillage.cs)
             DressRunPropsInk(stoneMat); // 항아리·금 간 벽·관문 (PrototypeSceneBuilder.InkRunProps.cs)
             DressTempleInk(floorMat, stoneMat, woodMat, roofX); // 폐사찰 꾸밈: 지역이 바뀌면 대나무 대신 무너진 절 (PrototypeSceneBuilder.InkTemple.cs)
+            DressOutsideInk(floorMat); // 맵 바깥 땅: 벽 너머 흰 빈 곳을 지역별 수묵 땅으로 (PrototypeSceneBuilder.InkOutside.cs)
 
             // 4) 재질 바꿔 끼우기: 씬의 모든 재질 참조(렌더러·적 연출 설정 등)를 이름으로 찾아 수묵 재질로.
             //    공격 예고·불·검기·결계·관문은 전투에서 읽혀야 하니 그대로 둬요
