@@ -61,5 +61,36 @@ namespace AThousandDawns.Tests
             yield return WaitUntil(() => boss.Phase == 2 && !boss.IsTransitioning, 4f);
             Assert.AreEqual(2, boss.Phase);
         }
+        // 2페이즈: 6칸 밖에서만 싸우면 혈수로 끌어당겨요
+        [UnityTest]
+        public IEnumerator 이페이즈_멀리_있으면_혈수로_끌어당김()
+        {
+            yield return SceneManager.LoadSceneAsync("Prototype_Combat", LoadSceneMode.Single);
+            yield return null;
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var boss = (BloodBuddhaBrain)director.Spawn(EnemyKind.BloodBuddha, player.transform.position + new Vector3(0f, 0f, 8f));
+            boss.SetZone(player.transform.position, new Vector2(30f, 24f));
+            boss.Damageable.ApplyHit(Mathf.CeilToInt(boss.Damageable.MaxHealth * 0.55f));
+            yield return WaitUntil(() => boss.Phase == 2 && !boss.IsTransitioning, 4f);
+
+            bool grabbed = false;
+            float closest = float.MaxValue;
+            var cc = player.GetComponent<CharacterController>();
+            yield return WaitUntil(() =>
+            {
+                grabbed |= boss.GrabbedPlayer;
+                if (!grabbed && !player.IsInvulnerable) // 끌려오기 전까지는 8칸 거리를 지켜요
+                {
+                    cc.enabled = false;
+                    player.transform.position = boss.transform.position + new Vector3(0f, 0f, -8f);
+                    cc.enabled = true;
+                }
+                if (grabbed) closest = Mathf.Min(closest, Vector3.Distance(player.transform.position, boss.transform.position));
+                return grabbed && closest < 4f;
+            }, 12f);
+            Assert.IsTrue(grabbed, "멀리 있으면 혈수에 맞아요");
+            Assert.Less(closest, 4f, "혈불 앞으로 끌려와요");
+        }
     }
 }

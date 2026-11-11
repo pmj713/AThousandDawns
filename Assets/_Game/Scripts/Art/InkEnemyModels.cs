@@ -122,6 +122,8 @@ namespace AThousandDawns.Art
         bool _corpse;
         // 파계승 금강불괴: 자세(Stance)로 넘어가 버티는 동안 몸이 금빛으로 물들어요
         MonkBrain _monk;
+        BloodBuddhaBrain _buddha;   // 혈불: 2페이즈에 갈라져 나오는 팔(이름에 _Phase2_)을 그때 보여요
+        int _buddhaPhase;
         bool _stanced;
         static readonly Color StanceGold = new Color(1f, 0.78f, 0.32f, 1f);
         static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
@@ -134,6 +136,7 @@ namespace AThousandDawns.Art
             _moves = moves ?? Array.Empty<InkEnemyModels.Move>();
             _shieldBrain = brain as ShieldBrain;
             _monk = brain as MonkBrain;
+            _buddha = brain as BloodBuddhaBrain;
             _brain = brain;
             _animator = animator;
             _modelRest = animator.transform.localRotation;
@@ -163,6 +166,12 @@ namespace AThousandDawns.Art
                 foreach (var r in _animator.GetComponentsInChildren<Renderer>(true))
                     if (r.name.Contains("_Prop_Shield")) r.enabled = false;
                 _shieldHidden = true;
+            }
+            if (_buddha != null && _buddha.Phase != _buddhaPhase)
+            {
+                _buddhaPhase = _buddha.Phase;
+                foreach (var r in _animator.GetComponentsInChildren<Renderer>(true))
+                    if (r.name.Contains("_Phase2_")) r.enabled = _buddhaPhase >= 2;
             }
             var phase = _brain.AttackPhase;
             // 금강불괴: 파계승은 버티는 자세(IsStanced), 혜광은 금강불괴 예고 동안 몸이 금빛
