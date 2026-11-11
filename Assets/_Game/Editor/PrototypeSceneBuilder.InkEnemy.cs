@@ -38,6 +38,7 @@ namespace AThousandDawns.EditorTools
             ("Monk", EnemyKind.Monk, 3f),
             ("Lantern", EnemyKind.Lantern, 4f),
             ("Hyegwang", EnemyKind.Hyegwang, 3.5f),   // 폐사찰 고수
+            ("BloodBuddha", EnemyKind.BloodBuddha, 1.5f),   // 폐사찰 보스
         };
 
         // 패턴 동작: attack(브레인 AttackName, null이면 다른 동작이 이어 부르는 상태) → state.
@@ -52,10 +53,10 @@ namespace AThousandDawns.EditorTools
         }
 
         // 모델 고유 동작 중 반복하는 것
-        static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "ShoulderRun", "Idle", "Run" };
+        static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "ShoulderRun", "Idle", "Run", "Chant", "Rain" };
 
         // 고유 동작만 쓰는 적 (Generic으로 가져와요)
-        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
+        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
 
         static readonly Dictionary<string, MoveSpec[]> InkEnemyMoves = new Dictionary<string, MoveSpec[]>
         {
@@ -83,12 +84,22 @@ namespace AThousandDawns.EditorTools
                 new MoveSpec { attack = "선장", state = "Thrust", clips = new[] { "Thrust" } },
                 new MoveSpec { state = "Stance", clips = new[] { "Stance" }, mode = MoveMode.Run },
             },
+            // 혈불 (폐사찰 보스): 손바닥 내려찍기 · 염불(합장 반복) · 피의 비(두 팔을 하늘로 반복) · 팔 휘두르기(2페이즈, 좌우 세 번). 목탁승 부르기는 기본 Attack(손짓)
+            ["BloodBuddha"] = new[]
+            {
+                new MoveSpec { attack = "손바닥 내려찍기", state = "Palm", clips = new[] { "Palm" } },
+                new MoveSpec { attack = "염불", state = "Chant", clips = new[] { "Chant" }, mode = MoveMode.Loop },
+                new MoveSpec { attack = "피의 비", state = "Rain", clips = new[] { "Rain" }, mode = MoveMode.Loop },
+                new MoveSpec { attack = "팔 휘두르기", state = "Arms", clips = new[] { "Arms" } },
+            },
             // 파계승 혜광 (폐사찰 고수): 선장 휘두르기 · 금강불괴(예고 3초 동안 버티는 자세 → 선장을 내리꽂아요) · 염주 던지기
             ["Hyegwang"] = new[]
             {
                 new MoveSpec { attack = "선장 휘두르기", state = "StaffSweep", clips = new[] { "StaffSweep" } },
                 new MoveSpec { attack = "금강불괴", state = "Vajra", clips = new[] { "Vajra" } },
                 new MoveSpec { attack = "염주", state = "Beads", clips = new[] { "Beads" } },
+                // 축지: 예고 0.4초 동안 선장을 뒤로 감아 겨누고 있다가 순식간에 다가가며 휘둘러요 (선장 휘두르기 동작)
+                new MoveSpec { attack = "축지", state = "Rush", clips = new[] { "StaffSweep" } },
             },
             // 등불 귀신: 귀화 예고 동안 떨며 부풀었다가 터져요
             ["Lantern"] = new[] { new MoveSpec { attack = "귀화", state = "Ignite", clips = new[] { "Attack" }, mode = MoveMode.Play } },

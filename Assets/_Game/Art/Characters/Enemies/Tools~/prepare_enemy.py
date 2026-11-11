@@ -1261,6 +1261,108 @@ if "abbotmoves" in EXTRAS:
     rig.animation_data.action = None
     reset_pose()
 
+# 혈불 (buddhamoves · sixarms): 피 흘리는 거대 불상. 느리고 무거운 움직임
+#   sixarms: 2페이즈에 갈라져 나오는 팔 넷 — 몸의 두 팔 메시를 복사해 가슴(Spine2) 뒤에서 위·아래로 부채처럼 펼쳐 붙여요.
+#            이름에 "_Phase2_"가 있어 Unity가 2페이즈 전까지 숨겨요
+#   Attack(목탁승 부르기): 오른손을 들어 손짓해 불러요
+#   Palm(손바닥 내려찍기): 오른손바닥을 머리 위로 치켜든 채(예고 1초 동안 멈춤) → 앞 땅으로 내려찍어요
+#   Chant(염불·반복): 합장하고 고개를 숙여 읊조려요 (판정 동안 되풀이)
+#   Rain(피의 비·반복): 두 팔을 하늘로 벌려 들어요
+#   Arms(팔 휘두르기, 2페이즈): 허리째 좌→우→좌로 세 번 휘둘러요 (0.45초 = 13.5프레임 간격)
+if "sixarms" in EXTRAS:
+    def arm_piece(side):
+        """그 쪽 위팔·아래팔·손에 붙은 몸 메시 조각을 떼어 복사해요 (기본 자세 그대로)."""
+        names = {f"{side}Arm", f"{side}ForeArm", f"{side}Hand"}
+        idx = {body.vertex_groups[n].index for n in names if n in body.vertex_groups}
+        keep = set()
+        for v in body.data.vertices:
+            w = sum(g.weight for g in v.groups if g.group in idx)
+            if w > 0.5:
+                keep.add(v.index)
+        bm = bmesh.new(); bm.from_mesh(body.data)
+        bm.verts.ensure_lookup_table()
+        bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.index not in keep], context='VERTS')
+        me = bpy.data.meshes.new(f"{NAME}_arm_{side}"); bm.to_mesh(me); bm.free()
+        me.materials.clear()
+        for m in body.data.materials:
+            me.materials.append(m)
+        return me
+
+    chest = pb["Spine2"].head.copy()
+    for side, sx in (("Left", 1), ("Right", -1)):
+        sh = B[f"{side}Arm"].head_local.copy()
+        src = arm_piece(side)
+        for tier, (lift, back) in enumerate(((40, 0.18), (-35, 0.12))):   # 위로 하나, 아래로 하나
+            o = bpy.data.objects.new(f"{NAME}_Phase2_Arm_{side}_{tier}", src.copy())
+            bpy.context.scene.collection.objects.link(o)
+            # 어깨를 축으로 위/아래로 돌리고 조금 뒤·안쪽으로 붙여요 (원래 팔과 겹치지 않게)
+            rot = Quaternion(Vector((0, 1, 0)), math.radians(-sx * lift))
+            for v in o.data.vertices:
+                v.co = sh + rot @ (v.co - sh) + Vector((-sx * 0.04, back, 0.05 if lift > 0 else -0.05))
+            o.vertex_groups.new(name="Spine2").add(list(range(len(o.data.vertices))), 1.0, 'REPLACE')
+            o.parent = rig
+            o.modifiers.new("Armature", 'ARMATURE').object = rig
+            weapon_objs.append(o)
+    print("ENEMY six arms added")
+
+if "buddhamoves" in EXTRAS:
+    def heavy(lift=0.0, lean=0.0):
+        lower_hips(lift, FEET)
+        if lean:
+            bend("Spine", Vector((1, 0, 0)), lean)
+
+    def attack_pose(stage):
+        if stage == "idle":
+            idle_end_pose(); return
+        heavy(-0.04)
+        sh = pb["RightArm"].head.copy()
+        arm("Right", sh + Vector((-0.1, -0.35, 0.35 if stage == "up" else 0.15)), Vector((-1, 0, -0.5)))
+    make_action("Attack", [(0, "up"), (8, "wave"), (16, "up"), (28, "idle")], attack_pose)
+
+    def palm_pose(stage):
+        if stage == "idle":
+            idle_end_pose(); return
+        sh = pb["RightArm"].head.copy()
+        if stage == "raise":
+            heavy(0.0, -10)
+            arm("Right", sh + Vector((-0.05, -0.15, 1)).normalized() * REACH * 0.98, Vector((-1, 0.3, 0)))   # 머리 위로 치켜들어요
+        else:
+            deep = 1.0 if stage == "slam" else 0.9
+            heavy(-0.25 * deep, 30 * deep)
+            arm("Right", Vector((sh.x * 0.6, sh.y - 1.1, 0.25)), Vector((-1, 0.3, 0.3)))   # 앞 땅을 내려찍어요
+        sl = pb["LeftArm"].head.copy()
+        arm("Left", sl + Vector((0.15, -0.1, -0.6)), Vector((1, 0.3, -0.3)))
+    make_action("Palm", [(0, "raise"), (4, "slam"), (14, "hold"), (26, "idle")], palm_pose)
+
+    def chant_pose(t):
+        heavy(-0.03 * (1 + math.sin(2 * math.pi * t)), 8)
+        bend("Neck", Vector((1, 0, 0)), 14)
+        chest_ = (pb["LeftArm"].head + pb["RightArm"].head) / 2
+        for s, sx in (("Left", 0.04), ("Right", -0.04)):
+            arm(s, chest_ + Vector((sx, -0.32, -0.1)), Vector((sx * 30, 0.4, -1)))       # 합장
+    make_action("Chant", [(f, f / 30) for f in range(0, 31, 5)], chant_pose)
+
+    def rain_pose(t):
+        heavy(-0.02 * math.sin(2 * math.pi * t), -12)
+        bend("Neck", Vector((1, 0, 0)), -18)                                # 하늘을 올려다봐요
+        for s, sx in (("Left", 1), ("Right", -1)):
+            sh = pb[f"{s}Arm"].head.copy()
+            arm(s, sh + Vector((sx * 0.55, -0.1, 0.85)).normalized() * REACH * 0.98, Vector((sx, 0.3, 0)))
+    make_action("Rain", [(f, f / 30) for f in range(0, 31, 5)], rain_pose)
+
+    def arms_pose(side):
+        if side == "idle":
+            idle_end_pose(); return
+        sign = 1 if side == "L" else -1                                     # L: 왼쪽으로 휘둘러 나간 끝
+        heavy(-0.15, 10)
+        bend("Spine", UP, 40 * sign); bend("Spine1", UP, 20 * sign)
+        for s, sx in (("Left", 1), ("Right", -1)):
+            sh = pb[f"{s}Arm"].head.copy()
+            arm(s, sh + Vector((sx * 0.8 + sign * 0.3, -0.6, -0.05)).normalized() * REACH * 0.98, Vector((0, 0.3, -1)))
+    make_action("Arms", [(0, "R"), (7, "L"), (14, "L"), (20, "R"), (27, "R"), (34, "L"), (41, "L"), (52, "idle")], arms_pose)
+    rig.animation_data.action = None
+    reset_pose()
+
 # 옮겨 굽는 데 쓴 플레이어 뼈대·메시·동작은 지워요 (내보낼 때 같이 나가지 않게)
 for o in player_objs:
     bpy.data.objects.remove(o, do_unlink=True)
