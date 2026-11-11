@@ -75,11 +75,15 @@ namespace AThousandDawns.EditorTools
             // 5) 결투장 돌담: 폐사찰에선 담이 군데군데 무너지고 기와가 깨져 흘러내려요 (충돌체는 원래 담 그대로)
             RuinMasterWalls(bamboo, temple, ref seed);
 
+            // 6) 3지역 장강 수채: 갈대숲·망루·배·수채 짐더미·잔교 공터·본채 선착장 (PrototypeSceneBuilder.InkRiver.cs)
+            var river = DressRiverInk(stoneMat, woodMat, roofX, ref seed);
+
             var dressing = new GameObject("Ink Region Dressing").AddComponent<AThousandDawns.Art.InkRegionDressing>();
             dressing.SetRegions(new[]
             {
                 new AThousandDawns.Art.InkRegionDressing.Set { name = "죽림", objects = bamboo.ToArray() },
                 new AThousandDawns.Art.InkRegionDressing.Set { name = "폐사찰", objects = temple.ToArray() },
+                new AThousandDawns.Art.InkRegionDressing.Set { name = "장강 수채", objects = river.ToArray() },
             });
             foreach (var go in temple) go.SetActive(false);   // 처음(죽림)엔 꺼 둬요
 
@@ -498,9 +502,9 @@ namespace AThousandDawns.EditorTools
 
             var look = new GameObject("Ink Region Look").AddComponent<AThousandDawns.Art.InkRegionLook>();
             look.Setup(floorMat,
-                new Texture[] { null, AssetDatabase.LoadAssetAtPath<Texture2D>($"{TempleArtFolder}/Floor_Temple.png") },
-                new[] { bambooGroup, templeGroup },
-                new[] { new GameObject("죽림 분위기 (없음)"), air },
+                new Texture[] { null, AssetDatabase.LoadAssetAtPath<Texture2D>($"{TempleArtFolder}/Floor_Temple.png"), null },   // 장강 수채 바닥 그림은 아직 (원래 바닥)
+                new[] { bambooGroup, templeGroup, null },   // 장강 수채 먼 배경은 아직 없어요 (끔)
+                new[] { new GameObject("죽림 분위기 (없음)"), air, null },
                 dressing);
         }
 
