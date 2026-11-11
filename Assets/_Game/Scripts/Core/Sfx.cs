@@ -82,8 +82,22 @@ namespace AThousandDawns.Core
             return source;
         }
 
-        public static void Stop(AudioSource handle)
+        // fadeSeconds 동안 줄였다가 멈춰요 (뚝 끊기는 소리가 나지 않게)
+        public static void Stop(AudioSource handle, float fadeSeconds = 0.15f)
         {
+            if (handle == null) return;
+            if (_instance == null || fadeSeconds <= 0f) { Destroy(handle); return; }
+            _instance.StartCoroutine(FadeOut(handle, fadeSeconds));
+        }
+
+        static System.Collections.IEnumerator FadeOut(AudioSource handle, float seconds)
+        {
+            float start = handle.volume;
+            for (float t = 0f; t < seconds && handle != null; t += Time.unscaledDeltaTime)
+            {
+                handle.volume = start * (1f - t / seconds);
+                yield return null;
+            }
             if (handle != null) Destroy(handle);
         }
 
