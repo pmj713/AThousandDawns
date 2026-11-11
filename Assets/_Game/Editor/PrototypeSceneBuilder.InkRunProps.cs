@@ -25,6 +25,38 @@ namespace AThousandDawns.EditorTools
                 .Setup(jars, jarMat, lidMat, GetShardMesh(), crack, GetRockMesh(1), stoneMat);
 
             DressGateInk(stoneMat, vortex);
+
+            // 투사체·폭발 (InkProjectiles): 붓선 꼬리, 먹 번짐·불꽃, 먹 연기
+            var blot = GetBrushTextureMaterial("Ink_Burst_Blot", "Assets/_Game/Art/UI/Fx/Resources/FxArt/InkBlot.png", Color.black);
+            var mist = GetBrushTextureMaterial("Ink_Burst_Mist", "Assets/_Game/Art/UI/Fx/Resources/FxArt/InkMist.png", Color.black);
+            var line = GetBrushTextureMaterial("Ink_BrushLine", $"{RunPropsArtFolder}/BrushLine.png", Color.white);
+            var shaft = GetInkMaterial("Ink_ArrowShaft", "#1C1A19", 0f);
+            var feather = GetInkMaterial("Ink_ArrowFeather", "#D9D2C2", 0f);
+            new GameObject("Ink Projectiles").AddComponent<AThousandDawns.Art.InkProjectiles>().Setup(line, blot, mist, shaft, feather);
+        }
+
+        // 붓선 셰이더(InkBrushLine) + 알파 그림. 색은 렌더러마다 MaterialPropertyBlock·꼭짓점 색으로 바꿔요
+        static Material GetBrushTextureMaterial(string name, string texturePath, Color color)
+        {
+            var mat = GetShaderMaterial(name, "AThousandDawns/InkBrushLine");
+            var importer = (TextureImporter)AssetImporter.GetAtPath(texturePath);
+            if (importer != null && (!importer.alphaIsTransparency || importer.wrapMode != TextureWrapMode.Clamp))
+            {
+                importer.alphaIsTransparency = true;
+                importer.wrapMode = TextureWrapMode.Clamp;
+                importer.SaveAndReimport();
+            }
+            mat.SetTexture("_MainTex", AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath));
+            mat.SetColor("_BaseColor", color);
+            return mat;
+        }
+
+        // 공격 예고 테두리: 흰 직선 대신 짙은 먹 붓선 (한 바퀴를 붓 한 획으로 그은 듯, 마른 붓 결)
+        static Material GetInkBrushOutlineMaterial()
+        {
+            var mat = GetBrushTextureMaterial("Ink_Telegraph_Outline", $"{RunPropsArtFolder}/BrushLine.png", new Color(0.08f, 0.06f, 0.06f, 0.9f));
+            mat.SetFloat("_Grain", 0.3f);
+            return mat;
         }
 
         // 관문 원판(지름 2.4): 둘레를 두른 연석 여덟, 가운데 먹 소용돌이 (원판은 숨겨요)
