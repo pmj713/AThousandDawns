@@ -35,7 +35,9 @@ namespace AThousandDawns.Enemies
         // 붙이지 않는 조합: 방패형 + 철포삼, 자폭형 + 회춘 (몬스터 C144). 보스는 정예가 아니에요.
         public static bool Allows(EnemyKind kind, EliteTrait trait) =>
             kind != EnemyKind.Nokrim && kind != EnemyKind.Assassin && kind != EnemyKind.Qingzhu && kind != EnemyKind.IronFist && trait != EliteTrait.None
+            && kind != EnemyKind.WaterGhost // 숨는 수귀는 정예가 아니에요 (머리 위 표시가 보여서)
             && !(kind == EnemyKind.Shield && trait == EliteTrait.IronShirt)
+            && !(kind == EnemyKind.Rattan && trait == EliteTrait.IronShirt)
             && !(kind == EnemyKind.Bomber && trait == EliteTrait.Rejuvenation);
 
         // 만들어진 바로 뒤에 불러요 (EnemyDirector.Spawn 다음)

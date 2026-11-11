@@ -424,7 +424,7 @@ namespace AThousandDawns.Prototype
                 Horns = Mathf.RoundToInt(GameConfig.Get("room.horn_max", 1f)),
                 Snakes = Mathf.RoundToInt(GameConfig.Get("room.snake_max", 2f)),
             };
-            return RoomBudget.Plan(budget, waves, _region == 0 ? RoomBudget.Bamboo : RoomBudget.Temple, RoomBudget.Cost, limits, _rng); // 지역마다 적 구성
+            return RoomBudget.Plan(budget, waves, RoomBudget.ForRegion(_region), RoomBudget.Cost, limits, _rng); // 지역마다 적 구성 (죽림 · 폐사찰 · 장강 수채)
         }
 
         // 짙은 길: 무작위 웨이브에 정예 하나 (방마다 제한은 일반 적과 같이 세요)
@@ -434,11 +434,12 @@ namespace AThousandDawns.Prototype
             foreach (var w in _waves) all.AddRange(w);
             int Count(EnemyKind k) => all.FindAll(x => x == k).Count;
             var kinds = new List<EnemyKind>();
-            foreach (var k in RoomBudget.Bamboo)
+            foreach (var k in RoomBudget.ForRegion(_region)) // 그 지역 적 중에서
             {
                 if (k == EnemyKind.Archer && Count(k) >= Mathf.RoundToInt(GameConfig.Get("archer.max_per_room", 2f))) continue;
                 if (k == EnemyKind.Horn && Count(k) >= Mathf.RoundToInt(GameConfig.Get("room.horn_max", 1f))) continue;
                 if (k == EnemyKind.Snake && Count(k) >= Mathf.RoundToInt(GameConfig.Get("room.snake_max", 2f))) continue;
+                if (!EnemyBrain.Allows(k, EliteTrait.IronShirt) && !EnemyBrain.Allows(k, EliteTrait.Rejuvenation) && !EnemyBrain.Allows(k, EliteTrait.Blaze)) continue; // 정예가 못 되는 적 (수귀)
                 kinds.Add(k);
             }
             if (kinds.Count == 0 || _waves.Count == 0) return;

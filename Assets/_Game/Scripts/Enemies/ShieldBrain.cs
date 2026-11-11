@@ -7,7 +7,7 @@ namespace AThousandDawns.Enemies
     // 방패 산적: 정면 120°는 피해 ×0.2, 초당 180°로만 돌아서 옆·뒤가 열려요.
     // 방패를 든 채 초당 2칸으로 다가와 2칸 돌진 베기 + 넉백 1칸. 돌진 뒤 빈틈(0.8초) 동안 방패를 내려요.
     // 대시 공격에 맞으면 방패가 깨져요 (그 한 방은 온전히 들어가요).
-    public sealed class ShieldBrain : LungeSlashBrain
+    public class ShieldBrain : LungeSlashBrain // 등패수 (RattanBrain)가 이어받아요
     {
         static readonly Vector3 RaisedPosition = new Vector3(0f, 0.85f, 0.5f);
         static readonly Vector3 LoweredPosition = new Vector3(0f, 0.35f, 0.55f);
@@ -23,7 +23,7 @@ namespace AThousandDawns.Enemies
         protected override float ApproachSpeed => GuardUp ? _guardMoveSpeed : MoveSpeed;
 
         public bool ShieldBroken => _broken;
-        bool GuardUp => !_broken && Attack.Current != EnemyAttackTimeline.Phase.Recovery && !Status.IsFrozen; // 빙결 중엔 방패 정면 방어 해제
+        bool GuardUp => !_broken && !ShieldAway && Attack.Current != EnemyAttackTimeline.Phase.Recovery && !Status.IsFrozen; // 빙결 중엔 방패 정면 방어 해제
 
         public void SetShieldVisual(Transform shield) => _shield = shield;
 
@@ -53,12 +53,19 @@ namespace AThousandDawns.Enemies
             bool blocked = to.sqrMagnitude < 1e-4f || Vector3.Angle(Facing, to) <= _guardAngle * 0.5f; // 겹쳐 있으면 정면으로 쳐요
             if (!blocked) return 1f;
             Sfx.Play(SfxId.ShieldBlock);
-            return _guardRatio;
+            return BlockedRatio(attacker, _guardRatio);
         }
+
+        // 방패를 던져서 손에 없음 (등패수 방패 굴리기)
+        protected virtual bool ShieldAway => false;
+
+        // 방패 정면에 막힌 공격의 피해 배율 (등패수: 멀리서 온 공격은 다 막아요)
+        protected virtual float BlockedRatio(Vector3 attacker, float guardRatio) => guardRatio;
 
         void LateUpdate()
         {
             if (_shield == null) return;
+            if (_shield.gameObject.activeSelf == ShieldAway) _shield.gameObject.SetActive(!ShieldAway);
             bool lowered = Attack.Current == EnemyAttackTimeline.Phase.Recovery;
             _shield.localPosition = lowered ? LoweredPosition : RaisedPosition;
             _shield.localRotation = lowered ? Quaternion.Euler(70f, 0f, 0f) : Quaternion.identity;

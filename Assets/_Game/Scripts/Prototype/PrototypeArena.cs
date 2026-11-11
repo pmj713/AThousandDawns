@@ -107,7 +107,17 @@ namespace AThousandDawns.Prototype
             {
                 bool elite = keyboard.shiftKey.isPressed; // Shift + 숫자: 정예 (특성은 무작위)
                 bool temple = keyboard.altKey.isPressed;  // Alt + 1~5: 폐사찰 일반 적 (Alt+Shift는 정예)
-                if (temple)
+                bool river = keyboard.ctrlKey.isPressed;  // Ctrl + 1~6: 장강 수채 일반 적 (Ctrl+Shift는 정예)
+                if (river)
+                {
+                    if (keyboard.digit1Key.wasPressedThisFrame) { SpawnKey(EnemyKind.Pirate, elite); SpawnKey(EnemyKind.Pirate, elite); } // 수적 졸개는 둘씩
+                    if (keyboard.digit2Key.wasPressedThisFrame) SpawnKey(EnemyKind.Harpooner, elite);
+                    if (keyboard.digit3Key.wasPressedThisFrame) SpawnKey(EnemyKind.Anchor, elite);
+                    if (keyboard.digit4Key.wasPressedThisFrame) SpawnKey(EnemyKind.Rattan, elite);
+                    if (keyboard.digit5Key.wasPressedThisFrame) SpawnKey(EnemyKind.WaterGhost, false);
+                    if (keyboard.digit6Key.wasPressedThisFrame) SpawnKey(EnemyKind.FlagBearer, elite);
+                }
+                else if (temple)
                 {
                     if (keyboard.digit1Key.wasPressedThisFrame) SpawnKey(EnemyKind.Wraith, elite);
                     if (keyboard.digit2Key.wasPressedThisFrame) SpawnKey(EnemyKind.Arhat, elite);

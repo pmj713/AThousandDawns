@@ -850,3 +850,100 @@ region.2.attack,1.6,배,장강 수채 적 공격 배율,몬스터!C17
 region.2.silver_room,26,은자,장강 수채 전투 방 클리어 은자,은자!B6
 enemy.melee_tokens_per_region,1,,동시 공격 (근접): 지역마다 +,몬스터!C85 설명
 enemy.melee_tokens_max,4,,동시 공격 (근접) 최대,몬스터!C85 설명
+pirate.hp,30,,수적 졸개 체력 (×3.0 = 90),몬스터!F46
+pirate.atk,8,,수적 졸개 공격 (×1.6 = 13),몬스터!G46
+pirate.toughness,0,,수적 졸개 강인함,몬스터!H46
+pirate.move_speed,3.5,cell/s,수적 졸개 이동,
+pirate.attack_range,1.2,cell,수적 졸개 베기 반경,
+pirate.lunge,1.2,cell,수적 졸개 전진 거리,
+pirate.lunge_time,0.15,s,수적 졸개 전진 베기 시간,
+pirate.attack_angle,70,deg,수적 졸개 베기 각도,
+pirate.windup,0.6,s,수적 졸개 예고,
+pirate.recovery,0.6,s,수적 졸개 빈틈,
+pirate.attack_interval,2,s,수적 졸개 공격 간격,
+pirate.second_slash,0.3,s,수적 졸개 둘째 칼 (첫 칼 뒤),장강 적 고유 기믹
+room_cost.pirate,2,,방 예산 점수: 수적 졸개 (둘씩),
+room_cost.harpooner,2,,방 예산 점수: 작살수,
+room_cost.anchor,3,,방 예산 점수: 쇠닻 거한,
+room_cost.rattan,2,,방 예산 점수: 등패수,
+room_cost.waterghost,1,,방 예산 점수: 수귀,
+room_cost.flagbearer,2,,방 예산 점수: 깃발수,
+harpooner.hp,25,,작살수 체력 (×3.0 = 75),몬스터!F47
+harpooner.atk,8,,작살수 공격 (×1.6 = 13),몬스터!G47
+harpooner.toughness,0,,작살수 강인함,몬스터!H47
+harpooner.move_speed,3,cell/s,작살수 이동,
+harpooner.windup,0.7,s,작살 찌르기 예고,
+harpooner.recovery,0.8,s,작살수 빈틈,
+harpooner.attack_interval,2.5,s,작살수 공격 간격,
+harpooner.reach,4.5,cell,작살 찌르기 길이,장강 적 고유 기믹
+harpooner.width,0.6,cell,작살 찌르기 폭,장강 적 고유 기믹
+harpooner.pull_stop,1.5,cell,작살에 걸리면 작살수 이만큼 앞까지 끌려옴,장강 적 고유 기믹 (몬스터 K47)
+harpooner.keep_min,3,cell,작살수 유지 거리 최소 (더 붙으면 물러남),
+harpooner.keep_max,4.5,cell,작살수 유지 거리 최대,
+anchor.hp,104,,쇠닻 거한 체력 (멧돼지 80 × 1.3 · ×3.0 = 312),몬스터!F48
+anchor.atk,15,,쇠닻 거한 공격 (×1.6 = 24),몬스터!G48
+anchor.toughness,3,,쇠닻 거한 강인함,몬스터!H48
+anchor.move_speed,1.8,cell/s,쇠닻 거한 이동 (느림),
+anchor.recovery,1.2,s,쇠닻 거한 빈틈,
+anchor.attack_interval,4,s,쇠닻 거한 공격 간격,
+anchor.throw_min,3,cell,닻 던지기 최소 거리,장강 적 고유 기믹
+anchor.throw_max,8,cell,닻 던지기 최대 거리,장강 적 고유 기믹
+anchor.throw_windup,1,s,닻 던지기 예고,장강 적 고유 기믹
+anchor.pull_speed,14,cell/s,꽂힌 닻으로 끌려가는 속도,장강 적 고유 기믹
+anchor.pull_width,1.6,cell,끌려가는 길 판정 폭,장강 적 고유 기믹
+anchor.post_time,3,s,꽂힌 쇠닻이 길을 막는 시간,장강 적 고유 기믹
+anchor.swing_range,2.5,cell,쇠닻 휘두르기를 쓰는 거리,장강 적 고유 기믹
+anchor.swing_windup,0.8,s,쇠닻 휘두르기 예고,장강 적 고유 기믹
+anchor.swing_radius,2.2,cell,쇠닻 휘두르기 반경,장강 적 고유 기믹
+anchor.swing_angle,180,deg,쇠닻 휘두르기 각도,장강 적 고유 기믹
+anchor.swing_ratio,0.8,,쇠닻 휘두르기 피해 배율,장강 적 고유 기믹
+anchor.swing_knockback,1.5,cell,쇠닻 휘두르기 넉백,장강 적 고유 기믹
+rattan.hp,60,,등패수 체력 (×3.0 = 180),몬스터!F49
+rattan.atk,10,,등패수 공격 (×1.6 = 16),몬스터!G49
+rattan.toughness,2,,등패수 강인함,몬스터!H49
+rattan.move_speed,2.5,cell/s,등패수 이동,
+rattan.attack_range,1.5,cell,등패수 베기 반경,
+rattan.lunge,1.5,cell,등패수 돌진 거리,
+rattan.lunge_time,0.2,s,등패수 돌진 시간,
+rattan.attack_angle,90,deg,등패수 베기 각도,
+rattan.windup,0.6,s,등패수 베기 예고,
+rattan.recovery,0.8,s,등패수 빈틈 (방패를 내림),
+rattan.attack_interval,2.5,s,등패수 공격 간격,
+rattan.guard_angle,120,deg,등패수 정면 방어 각도,
+rattan.guard_ratio,0.2,,등패수 정면 근접 피해 배율,
+rattan.turn_speed,180,deg/s,등패수 도는 속도,
+rattan.guard_move_speed,2,cell/s,등패수 방패를 든 채 다가오는 속도,
+rattan.knockback,2,cell,등패수 베기 넉백,
+rattan.ranged_distance,3,cell,등패수: 이보다 멀리서 온 공격은 정면에서 다 막음,장강 적 고유 기믹
+rattan.throw_min,3,cell,방패 굴리기 최소 거리,장강 적 고유 기믹
+rattan.throw_max,7,cell,방패 굴리기 최대 거리,장강 적 고유 기믹
+rattan.throw_windup,0.7,s,방패 굴리기 예고,장강 적 고유 기믹
+rattan.throw_range,7,cell,굴린 방패가 가는 거리 (돌아옴),장강 적 고유 기믹
+rattan.throw_speed,9,cell/s,굴린 방패 속도,장강 적 고유 기믹
+rattan.throw_ratio,0.8,,굴린 방패 피해 배율 (가는 길·오는 길 한 번씩),장강 적 고유 기믹
+rattan.throw_interval,7,s,방패 굴리기 간격,장강 적 고유 기믹
+waterghost.hp,30,,수귀 체력 (×3.0 = 90),몬스터!F50
+waterghost.atk,6,,수귀 공격 (×1.6 = 10),몬스터!G50
+waterghost.toughness,0,,수귀 강인함,몬스터!H50
+waterghost.move_speed,2.5,cell/s,수귀 숨어서 다가오는 속도,
+waterghost.attack_range,1.2,cell,수귀 붙잡기 반경,
+waterghost.windup,0.5,s,수귀 튀어나오기 예고 (물결),
+waterghost.recovery,0.6,s,수귀 빈틈,
+waterghost.attack_interval,1,s,수귀 공격 간격,
+waterghost.ambush_distance,1.6,cell,수귀: 이 거리 안이면 튀어나와요,장강 적 고유 기믹 (몬스터 K50)
+waterghost.drag_time,1.5,s,수귀가 붙잡고 끌고 가는 시간 (때리거나 대시하면 풀림),장강 적 고유 기믹
+waterghost.drag_speed,2.5,cell/s,수귀가 끌고 가는 속도,장강 적 고유 기믹
+waterghost.drag_slow,60%,,수귀에 끌리는 동안 플레이어 이동속도 감소,장강 적 고유 기믹
+waterghost.surface_time,3,s,수귀가 드러나 있는 시간 (그다음 다시 숨음),장강 적 고유 기믹
+flagbearer.hp,40,,깃발수 체력 (×3.0 = 120),몬스터!F51
+flagbearer.atk,5,,깃발수 공격 (지휘만 해서 안 씀),몬스터!G51
+flagbearer.toughness,0,,깃발수 강인함,몬스터!H51
+flagbearer.move_speed,3,cell/s,깃발수 이동,
+flagbearer.windup,1.5,s,깃발 지휘 예고 (맞으면 끊김),
+flagbearer.recovery,0.5,s,깃발수 빈틈,
+flagbearer.attack_interval,8,s,깃발 지휘 간격,
+flagbearer.keep_distance,6,cell,깃발수가 두는 거리,
+flagbearer.summon_count,0,,깃발수 호출 수 (지금은 부르지 않고 지휘),
+flagbearer.command_radius,7,cell,깃발수 지휘 범위,장강 적 고유 기믹
+flagbearer.command_haste,30%,,깃발수 지휘: 이동·공격 빨라짐,장강 적 고유 기믹
+flagbearer.command_time,5,s,깃발수 지휘 시간,장강 적 고유 기믹

@@ -367,6 +367,14 @@ namespace AThousandDawns.Player
             _knockbackVelocity = length > 0f ? to.normalized * (length / Mathf.Max(0.01f, _hurtStun)) : Vector3.zero;
         }
 
+        // 적이 붙잡고 끌고 가요 (수귀). 벽에는 막혀요. 대시 중이면 끌리지 않아요
+        public void Drag(Vector3 displacement)
+        {
+            if (IsDead || IsDashing) return;
+            displacement.y = 0f;
+            _controller.Move(displacement);
+        }
+
         public bool TryReceiveHit(float enemyAttack, Vector3 source, float knockback = -1f, Damageable attacker = null)
         {
             if (IsDead) return false;

@@ -278,8 +278,9 @@ namespace AThousandDawns.Tests
             var room = _run.Map.Rooms.First(r => r.Kind == FloorRoomKind.Combat);
             _run.Enter(room, -1);
             yield return WaitUntil(() => _director.Enemies.Count > 0, 5f);
-            var monk = _director.Enemies.FirstOrDefault(e => e.Kind == EnemyKind.Monk && !e.IsElite);
-            if (monk != null) Assert.AreEqual(60f * 3f * (dense ? 1.3f : 1f), monk.Damageable.MaxHealth, 0.5f, "파계승 체력 60 × 3.0 (짙은 길이면 × 1.3)");
+            var pirate = _director.Enemies.FirstOrDefault(e => e.Kind == EnemyKind.Pirate && !e.IsElite);
+            Assert.IsTrue(_director.Enemies.All(e => RoomBudget.River.Contains(e.Kind)), "장강 수채 적만 나와요");
+            if (pirate != null) Assert.AreEqual(30f * 3f * (dense ? 1.3f : 1f), pirate.Damageable.MaxHealth, 0.5f, "수적 졸개 체력 30 × 3.0 (짙은 길이면 × 1.3)");
 
             _run.EnterRest();
             var cc = _player.GetComponent<CharacterController>();

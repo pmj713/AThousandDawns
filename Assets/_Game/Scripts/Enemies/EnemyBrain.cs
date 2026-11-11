@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace AThousandDawns.Enemies
 {
-    public enum EnemyKind { Grunt, Boar, Archer, Hound, Shield, Horn, Bomber, Snake, Nokrim, Assassin, Qingzhu, IronFist, Wraith, Arhat, Moktak, Monk, Lantern, Hyegwang, BloodBuddha } // 망령부터 폐사찰 (혜광 고수 · 혈불 보스)
+    public enum EnemyKind { Grunt, Boar, Archer, Hound, Shield, Horn, Bomber, Snake, Nokrim, Assassin, Qingzhu, IronFist, Wraith, Arhat, Moktak, Monk, Lantern, Hyegwang, BloodBuddha, Pirate, Harpooner, Anchor, Rattan, WaterGhost, FlagBearer } // 망령부터 폐사찰 (혜광 고수 · 혈불 보스) · 수적 졸개부터 장강 수채
 
     // 적 등급 (수련치 탭: 일반 1 · 정예 5 · 살수 5 · 고수 15 · 보스 30)
     public enum EnemyRank { Normal, Elite, Assassin, Master, Boss }
@@ -158,7 +158,8 @@ namespace AThousandDawns.Enemies
         {
             if (!_initialized || _dead || Status.IsFrozen) return;
             // 둔화: 이동과 공격(예고·빈틈 포함)이 함께 느려져요 (1중첩당 10%, 보스는 효과 50%)
-            float dt = Time.deltaTime * Status.SpeedMultiplier;
+            if (_hasteTimer > 0f) _hasteTimer -= Time.deltaTime;
+            float dt = Time.deltaTime * Status.SpeedMultiplier * (IsHastened ? 1f + _haste : 1f); // 깃발수 지휘: 이동과 공격(예고·빈틈)이 함께 빨라져요
             _reaction.Tick(dt);
             TickElite(Time.deltaTime);
             TickAlways(dt);
@@ -281,6 +282,17 @@ namespace AThousandDawns.Enemies
                 return;
             }
             FaceToward(Vector3.RotateTowards(Facing, direction.normalized, TurnSpeed * Mathf.Deg2Rad * dt, 0f));
+        }
+
+        // 깃발수 지휘: duration 동안 이동과 공격 (예고·빈틈 포함)이 ratio만큼 빨라져요
+        float _haste, _hasteTimer;
+        public bool IsHastened => _hasteTimer > 0f;
+
+        public void Hasten(float ratio, float duration)
+        {
+            if (_dead || ratio <= 0f || duration <= 0f) return;
+            _haste = Mathf.Max(IsHastened ? _haste : 0f, ratio);
+            _hasteTimer = Mathf.Max(_hasteTimer, duration);
         }
 
         // 숨으면 보이지 않고 맞힐 수도 없어요 (청죽사 풀숲). 충돌체는 그대로 둬요.

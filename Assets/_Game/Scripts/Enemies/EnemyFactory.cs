@@ -126,6 +126,43 @@ namespace AThousandDawns.Enemies
                 BodyPosition = new Vector3(0f, 1.6f, 0f), BodyScale = new Vector3(2.0f, 1.6f, 1.6f), // 거대 불상
                 MarkPosition = new Vector3(0f, 2.6f, 0.7f), MarkScale = new Vector3(0.6f, 0.6f, 0.3f), // 붉은 얼굴
             },
+            // ── 장강 수채
+            EnemyKind.Pirate => new Shape
+            {
+                Name = "수적 졸개", Radius = 0.35f, Height = 1.6f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.8f, 0f), BodyScale = new Vector3(0.7f, 0.8f, 0.7f),
+                MarkPosition = new Vector3(0.3f, 0.9f, 0.4f), MarkScale = new Vector3(0.1f, 0.08f, 0.6f), // 갈고리 칼
+            },
+            EnemyKind.Harpooner => new Shape
+            {
+                Name = "작살수", Radius = 0.35f, Height = 1.7f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.85f, 0f), BodyScale = new Vector3(0.65f, 0.85f, 0.65f),
+                MarkPosition = new Vector3(0.3f, 1.2f, 0.3f), MarkScale = new Vector3(0.05f, 0.05f, 1.4f), // 작살
+            },
+            EnemyKind.Anchor => new Shape
+            {
+                Name = "쇠닻 거한", Radius = 0.65f, Height = 2.2f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 1.1f, 0f), BodyScale = new Vector3(1.3f, 1.1f, 1.2f),
+                MarkPosition = new Vector3(0.6f, 0.4f, 0.6f), MarkScale = new Vector3(0.6f, 0.6f, 0.15f), // 쇠닻
+            },
+            EnemyKind.Rattan => new Shape
+            {
+                Name = "등패수", Radius = 0.4f, Height = 1.7f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.85f, 0f), BodyScale = new Vector3(0.75f, 0.85f, 0.75f),
+                MarkPosition = new Vector3(0f, 0.85f, 0.5f), MarkScale = new Vector3(1.0f, 1.0f, 0.12f), // 둥근 등나무 방패
+            },
+            EnemyKind.WaterGhost => new Shape
+            {
+                Name = "수귀", Radius = 0.35f, Height = 1.5f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.75f, 0f), BodyScale = new Vector3(0.6f, 0.75f, 0.6f),
+                MarkPosition = new Vector3(0f, 1.2f, 0.3f), MarkScale = new Vector3(0.5f, 0.15f, 0.15f), // 뻗은 손
+            },
+            EnemyKind.FlagBearer => new Shape
+            {
+                Name = "깃발수", Radius = 0.35f, Height = 1.6f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.8f, 0f), BodyScale = new Vector3(0.65f, 0.8f, 0.65f),
+                MarkPosition = new Vector3(0.3f, 1.6f, 0f), MarkScale = new Vector3(0.05f, 1.6f, 0.05f), // 깃대
+            },
             _ => new Shape
             {
                 Name = "산적 졸개", Radius = 0.35f, Height = 1.6f, Primitive = PrimitiveType.Capsule,
@@ -154,6 +191,12 @@ namespace AThousandDawns.Enemies
             EnemyKind.Lantern => Tinted(kind, v.grunt, new Color(1f, 0.75f, 0.35f)),
             EnemyKind.Hyegwang => Tinted(kind, v.ironfist != null ? v.ironfist : v.grunt, new Color(0.5f, 0.25f, 0.2f)),
             EnemyKind.BloodBuddha => Tinted(kind, v.nokrim != null ? v.nokrim : v.grunt, new Color(0.6f, 0.15f, 0.12f)),
+            EnemyKind.Pirate => Tinted(kind, v.grunt, new Color(0.35f, 0.45f, 0.55f)), // 장강 수채: 그림이 생기기 전까지 색만
+            EnemyKind.Harpooner => Tinted(kind, v.archer != null ? v.archer : v.grunt, new Color(0.4f, 0.55f, 0.6f)),
+            EnemyKind.Anchor => Tinted(kind, v.boar != null ? v.boar : v.grunt, new Color(0.3f, 0.35f, 0.4f)),
+            EnemyKind.Rattan => Tinted(kind, v.shield != null ? v.shield : v.grunt, new Color(0.65f, 0.55f, 0.35f)),
+            EnemyKind.WaterGhost => Tinted(kind, v.grunt, new Color(0.3f, 0.6f, 0.6f)),
+            EnemyKind.FlagBearer => Tinted(kind, v.horn != null ? v.horn : v.grunt, new Color(0.6f, 0.3f, 0.25f)),
             _ => v.grunt,
         };
 
@@ -228,6 +271,12 @@ namespace AThousandDawns.Enemies
                 EnemyKind.Lantern => root.AddComponent<LanternBrain>(),
                 EnemyKind.Hyegwang => root.AddComponent<HyegwangBrain>(),
                 EnemyKind.BloodBuddha => root.AddComponent<BloodBuddhaBrain>(),
+                EnemyKind.Pirate => root.AddComponent<PirateBrain>(),
+                EnemyKind.Harpooner => root.AddComponent<HarpoonerBrain>(),
+                EnemyKind.Anchor => root.AddComponent<AnchorBrain>(),
+                EnemyKind.Rattan => root.AddComponent<RattanBrain>(),
+                EnemyKind.WaterGhost => root.AddComponent<WaterGhostBrain>(),
+                EnemyKind.FlagBearer => root.AddComponent<FlagBearerBrain>(),
                 _ => root.AddComponent<GruntBrain>(),
             };
             if (brain is ShieldBrain shieldBrain) shieldBrain.SetShieldVisual(mark.transform);
