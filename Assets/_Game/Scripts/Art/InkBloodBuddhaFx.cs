@@ -38,8 +38,8 @@ namespace AThousandDawns.Art
                 case BloodBuddhaBrain.FxKind.Chant: _host.Chant(cue); break;
                 case BloodBuddhaBrain.FxKind.Rain: _host.Rain(cue); break;
                 case BloodBuddhaBrain.FxKind.Swing: _host.Swing(cue); break;
-                case BloodBuddhaBrain.FxKind.GrabStart: _host.GrabStart(cue); break;
-                case BloodBuddhaBrain.FxKind.Grab: _host.Grab(cue); break;
+                case BloodBuddhaBrain.FxKind.GrabStart: _host.GrabStart(cue, brain); break;
+                case BloodBuddhaBrain.FxKind.Grab: _host.Grab(cue, brain); break;
                 case BloodBuddhaBrain.FxKind.Transition: _host.Transition(cue); break;
             }
         }
@@ -135,21 +135,27 @@ namespace AThousandDawns.Art
         // 혈수: 혈불이 앞으로 손을 뻗으면 손끝에서 앞으로 누운 깔때기 모양 나선(검은 선·빨간 선 몇 가닥)이 생겨요.
         //   손 쪽은 좁고 앞(플레이어 쪽)으로 갈수록 넓게 벌어지며, 선이 돌면서 손 쪽으로 흘러 들어가요.
         //   예고 동안 길어지고 빨라지다가, 판정(Grab) 순간 손 쪽으로 확 빨려 들며 사라져요.
-        class GrabState { public Transform Root; public LineRenderer[] Arms; public Vector3 Hand, Dir, Side; public float T, Windup, PullT = -1f, Phase, Length; }
+        class GrabState { public Transform Root, Palm; public LineRenderer[] Arms; public Vector3 Hand, Dir, Side; public float T, Windup, PullT = -1f, Phase, Length; }
         GrabState _grab;
         static Material _lineMat;
-        const int ArmCount = 6, ArmPoints = 28;
-        const float HandRadius = 0.15f, MouthRadius = 1.7f; // 손 쪽 · 앞쪽 나선 반지름
+        const int ArmCount = 4, ArmPoints = 24;
+        const float HandRadius = 0.12f, MouthRadius = 1.1f; // 손 쪽 · 앞쪽 나선 반지름
 
-        void GrabStart(BloodBuddhaBrain.FxCue c)
+        void GrabStart(BloodBuddhaBrain.FxCue c, BloodBuddhaBrain brain)
         {
             Vector3 dir = Flatten(c.Dir);
             var g = new GrabState
             {
                 Windup = Mathf.Max(0.1f, c.Time), Dir = dir, Side = new Vector3(dir.z, 0f, -dir.x),
-                Hand = c.At + dir * 2f + Vector3.up * 1.8f, Length = Mathf.Clamp(c.Length * 0.55f, 3f, 6f),
+                Hand = c.At + dir * 2f + Vector3.up * 1.8f, Length = Mathf.Clamp(c.Length * 0.28f, 1.5f, 3f), // 절반 길이
+                Palm = brain != null ? FindDeep(brain.transform, "RightHand") : null, // 뻗은 손바닥 중심에서 나와요
             };
-            if (_lineMat == null) _lineMat = new Material(Shader.Find("Sprites/Default"));
+            if (_lineMat == null) // 마른 붓 획 그림을 선 따라 늘여 그려요 (붓 결이 보이게)
+            {
+                _lineMat = new Material(Shader.Find("Sprites/Default"));
+                var brush = Resources.Load<Texture2D>("HudArt/HpStroke");
+                if (brush != null) _lineMat.mainTexture = brush;
+            }
             g.Root = new GameObject("Blood Vortex").transform;
             g.Root.SetParent(transform, false);
             g.Arms = new LineRenderer[ArmCount];
@@ -163,7 +169,8 @@ namespace AThousandDawns.Art
                 lr.numCapVertices = 2;
                 bool red = k % 2 == 1;
                 // 점 0 = 앞쪽(넓고 굵고 옅게) → 끝 = 손(좁고 가늘고 짙게)
-                lr.widthCurve = new AnimationCurve(new Keyframe(0f, red ? 0.08f : 0.11f), new Keyframe(1f, 0.015f));
+                lr.textureMode = LineTextureMode.Stretch;
+                lr.widthCurve = new AnimationCurve(new Keyframe(0f, red ? 0.2f : 0.26f), new Keyframe(0.6f, red ? 0.12f : 0.15f), new Keyframe(1f, 0.03f));
                 lr.sortingOrder = 6;
                 g.Arms[k] = lr;
             }
@@ -171,6 +178,7 @@ namespace AThousandDawns.Art
             _live.Add(dt =>
             {
                 g.T += dt;
+                if (g.Palm != null) g.Hand = g.Palm.position + g.Dir * 0.25f; // 손바닥 앞 (팔이 움직이면 따라가요)
                 bool pulling = g.PullT >= 0f;
                 float pullAge = pulling ? g.T - g.PullT : 0f;
                 float grow = Mathf.Clamp01(g.T / g.Windup);
@@ -192,7 +200,7 @@ namespace AThousandDawns.Art
                         lr.SetPosition(i, axis + (g.Side * Mathf.Cos(a) + Vector3.up * Mathf.Sin(a)) * r);
                     }
                     var col = k % 2 == 1 ? new Color(0.75f, 0.05f, 0.05f) : new Color(0.06f, 0.04f, 0.04f);
-                    lr.startColor = new Color(col.r, col.g, col.b, 0.2f * alpha); // 앞쪽은 옅게 퍼져요
+                    lr.startColor = new Color(col.r, col.g, col.b, 0.35f * alpha); // 앞쪽은 옅게 퍼져요
                     lr.endColor = new Color(col.r, col.g, col.b, alpha);
                 }
                 bool done = pulling ? pullAge > 0.4f : g.T > g.Windup + 0.8f; // 얼려서 끊기면 알아서 끝나요
@@ -203,9 +211,9 @@ namespace AThousandDawns.Art
             });
         }
 
-        void Grab(BloodBuddhaBrain.FxCue c)
+        void Grab(BloodBuddhaBrain.FxCue c, BloodBuddhaBrain brain)
         {
-            if (_grab == null) GrabStart(new BloodBuddhaBrain.FxCue { At = c.At, Dir = c.Dir, Time = 0.1f });
+            if (_grab == null) GrabStart(new BloodBuddhaBrain.FxCue { At = c.At, Dir = c.Dir, Length = c.Length, Time = 0.1f }, brain);
             if (_grab != null && _grab.PullT < 0f) _grab.PullT = _grab.T;
         }
 
@@ -276,6 +284,13 @@ namespace AThousandDawns.Art
             sr.sortingOrder = 6;
             go.AddComponent<InkFaceCamera>();
             return sr;
+        }
+
+        static Transform FindDeep(Transform root, string name)
+        {
+            if (root.name == name || root.name.EndsWith(":" + name)) return root;
+            foreach (Transform child in root) { var t = FindDeep(child, name); if (t != null) return t; }
+            return null;
         }
 
         static Vector3 Flatten(Vector3 v) { v.y = 0f; return v.sqrMagnitude > 0.0001f ? v.normalized : Vector3.forward; }
