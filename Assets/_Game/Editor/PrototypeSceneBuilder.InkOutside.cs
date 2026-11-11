@@ -15,17 +15,17 @@ namespace AThousandDawns.EditorTools
             foreach (var p in paths) ImportAsTiledTexture(p);
             var textures = System.Array.ConvertAll(paths, p => AssetDatabase.LoadAssetAtPath<Texture2D>(p));
 
-            // 방 바닥들을 감싸는 범위 (바닥 재질을 쓰는 것들)
+            // 방들이 서로 멀리 떨어져 있으니 씬의 모든 것을 감싸는 범위로 (땅 높이는 바닥 재질을 쓰는 것 중 가장 낮은 윗면)
             var bounds = new Bounds();
             bool any = false;
             float floorTop = float.MaxValue;
             foreach (var r in Object.FindObjectsByType<MeshRenderer>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
-                if (r.sharedMaterial != floorMat) continue;
                 if (!any) { bounds = r.bounds; any = true; } else bounds.Encapsulate(r.bounds);
-                floorTop = Mathf.Min(floorTop, r.bounds.max.y);
+                if (r.sharedMaterial == floorMat) floorTop = Mathf.Min(floorTop, r.bounds.max.y);
             }
-            if (!any) { bounds = new Bounds(Vector3.zero, new Vector3(100f, 0f, 100f)); floorTop = 0f; }
+            if (!any) bounds = new Bounds(Vector3.zero, new Vector3(100f, 0f, 100f));
+            if (floorTop == float.MaxValue) floorTop = 0f;
 
             var mat = GetShaderMaterial("Ink_OutsideGround", floorMat.shader.name);
             mat.CopyPropertiesFromMaterial(floorMat);
