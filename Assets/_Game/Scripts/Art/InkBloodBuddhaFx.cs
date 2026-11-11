@@ -178,7 +178,7 @@ namespace AThousandDawns.Art
             _live.Add(dt =>
             {
                 g.T += dt;
-                if (g.Palm != null) g.Hand = g.Palm.position + g.Dir * 0.25f; // 손바닥 앞 (팔이 움직이면 따라가요)
+                if (g.Palm != null) g.Hand = g.Palm.position + g.Dir * 0.12f; // 손바닥 중심 (손 뼈에서 앞으로 약 0.1m · 팔이 움직이면 따라가요)
                 bool pulling = g.PullT >= 0f;
                 float pullAge = pulling ? g.T - g.PullT : 0f;
                 float grow = Mathf.Clamp01(g.T / g.Windup);
