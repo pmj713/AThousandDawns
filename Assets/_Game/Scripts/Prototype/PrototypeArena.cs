@@ -55,7 +55,7 @@ namespace AThousandDawns.Prototype
         float _respawnTimer = -1f;
         float _wakeRadius;
         int _archerLimit;
-        NokrimBrain _boss;
+        EnemyBrain _boss; // 지역 보스 (녹림왕 · 혈불)
 
         int _choiceCount, _pendingOffers, _lastField;
         float[] _gradeWeights;
@@ -64,7 +64,8 @@ namespace AThousandDawns.Prototype
         readonly Queue<float[]> _offerWeights = new Queue<float[]>(); // 짙은 길 보상처럼 등급표가 다른 고르기
 
         public int RoundNumber { get; private set; }
-        public NokrimBrain Boss => _boss;
+        public EnemyBrain Boss => _boss;
+        public IMasterBrain BossInfo => _boss as IMasterBrain; // 페이즈 · 전환 중
         public bool IsChoosing => _offer != null;
         public IReadOnlyList<ItemDefinition> Offer => _offer;
         public int PendingOffers => _pendingOffers;
@@ -180,14 +181,15 @@ namespace AThousandDawns.Prototype
             Vector3 d = director != null && director.Player != null ? director.Player.transform.position - bossZoneCenter : Vector3.zero;
             d.y = 0f;
             if (d.magnitude <= 12f) { SpawnBoss(); return; }
-            _boss = SpawnNearPlayer(EnemyKind.Nokrim) as NokrimBrain;
+            _boss = SpawnNearPlayer(EnemyKind.Nokrim);
         }
 
-        public NokrimBrain SpawnBoss()
+        // kind: 지역 보스 (죽림 녹림왕 · 폐사찰 혈불). 결투장은 같은 자리
+        public EnemyBrain SpawnBoss(EnemyKind kind = EnemyKind.Nokrim)
         {
             if (_boss != null && !_boss.IsDead) return _boss;
-            _boss = (NokrimBrain)director.Spawn(EnemyKind.Nokrim, bossZoneCenter + new Vector3(0f, 0f, 2f));
-            _boss.SetZone(bossZoneCenter, new Vector2(GameConfig.Get("nokrim.arena_width", 16f), GameConfig.Get("nokrim.arena_depth", 12f)));
+            _boss = director.Spawn(kind, bossZoneCenter + new Vector3(0f, 0f, 2f));
+            ((IMasterBrain)_boss).SetZone(bossZoneCenter, new Vector2(GameConfig.Get("nokrim.arena_width", 16f), GameConfig.Get("nokrim.arena_depth", 12f)));
             _boss.WakeRadius = 1f; // SetZone이 있으면 결투장 안에 들어와야 깨어나요
             _boss.Woke += _ =>
             {

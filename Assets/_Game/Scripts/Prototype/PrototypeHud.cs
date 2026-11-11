@@ -186,11 +186,13 @@ namespace AThousandDawns.Prototype
             {
                 float width = Mathf.Min(560f, UiScale.Width - 40f);
                 var area = new Rect((UiScale.Width - width) * 0.5f, UiScale.Height - 64f, width, 18f);
-                string state = boss.IsTransitioning ? " · 전환 중 (무적)" : boss.Grove != null && boss.Grove.IsBurning ? " · 불타는 죽림" : "";
+                var bossInfo = arena.BossInfo;
+                bool transitioning = bossInfo != null && bossInfo.IsTransitioning;
+                string state = transitioning ? " · 전환 중 (무적)" : boss is NokrimBrain nokrim && nokrim.Grove != null && nokrim.Grove.IsBurning ? " · 불타는 죽림" : "";
                 var bossStatus = boss.Statuses;
                 if (bossStatus != null && bossStatus.IsFrozen) state += " · 빙결";
                 else if (bossStatus != null && bossStatus.FreezeImmunityLeft > 0f) state += $" · 서리 {bossStatus.FreezeImmunityLeft:0}초";
-                GUI.Label(new Rect(area.x, area.y, area.width, 24f), $"녹림왕 · {boss.Phase}페이즈{state}   {boss.Damageable.Health:0}/{boss.Damageable.MaxHealth:0}", _bossLabel);
+                GUI.Label(new Rect(area.x, area.y, area.width, 24f), $"{boss.DisplayName} · {(bossInfo != null ? bossInfo.Phase : 1)}페이즈{state}   {boss.Damageable.Health:0}/{boss.Damageable.MaxHealth:0}", _bossLabel);
                 DrawBar(new Rect(area.x, area.y + 26f, area.width, 12f), boss.Damageable.Health / Mathf.Max(1f, boss.Damageable.MaxHealth), HealthColor);
             }
 

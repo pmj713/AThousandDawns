@@ -732,13 +732,14 @@ namespace AThousandDawns.Prototype
             MovePlayer(boss.entry);
             director.ResetRoom();
             Player.EnterRoom();
-            var nokrim = arena.SpawnBoss();
-            if (nokrim != null) ScaleForRegion(nokrim); // 폐사찰 보스가 생기기 전까지 녹림왕을 지역 배율로
+            var bossBrain = arena.SpawnBoss(_region == 1 ? EnemyKind.BloodBuddha : EnemyKind.Nokrim); // 죽림 녹림왕 · 폐사찰 혈불
+            if (bossBrain != null) ScaleForRegion(bossBrain);
             OnFightStart();
             if (_bossGauge > 0f) Player.RaiseGaugeTo(_bossGauge); // 기시감: 천마에 대해 물음 (마지막 보스전 = 지금은 녹림왕)
             bool hunted = Tracking >= Mathf.RoundToInt(GameConfig.Get("tracking.assassin2", 10f));
-            if (hunted && nokrim != null) nokrim.Damageable.ScaleMaxHealth(GameConfig.Get("tracking.boss_hp", 1.15f)); // 추적도 10 이상: 보스 체력 +15%
-            ShowBanner(hunted ? $"녹림왕 · 추적도 {Tracking}: 체력 +15%" : "녹림왕");
+            if (hunted && bossBrain != null) bossBrain.Damageable.ScaleMaxHealth(GameConfig.Get("tracking.boss_hp", 1.15f)); // 추적도 10 이상: 보스 체력 +15%
+            string bossName = bossBrain != null ? bossBrain.DisplayName : "보스";
+            ShowBanner(hunted ? $"{bossName} · 추적도 {Tracking}: 체력 +15%" : bossName);
         }
 
         void FinishRun()
@@ -758,8 +759,12 @@ namespace AThousandDawns.Prototype
                 items.ExpandBoard(
                     Mathf.RoundToInt(GameConfig.Get("meridian.width_after_boss1", 6f)),
                     Mathf.RoundToInt(GameConfig.Get("meridian.height_after_boss1", 4f)));
+            else if (items != null && _region == 1) // 폐사찰 보스: 6×4 → 6×5
+                items.ExpandBoard(
+                    Mathf.RoundToInt(GameConfig.GetOptional("meridian.width_after_boss2", 6f)),
+                    Mathf.RoundToInt(GameConfig.GetOptional("meridian.height_after_boss2", 5f)));
             string next = LastRegion ? "판 끝" : $"기물을 고르면 {RegionNames[_region + 1]}로";
-            ShowBanner($"{RegionName} 보스 격파! 은자 +{silver}{(_region == 0 ? " · 경맥도가 넓어졌어요 (6×4)" : "")} · {next}", 6f);
+            ShowBanner($"{RegionName} 보스 격파! 은자 +{silver}{(_region == 0 ? " · 경맥도가 넓어졌어요 (6×4)" : _region == 1 ? " · 경맥도가 넓어졌어요 (6×5)" : "")} · {next}", 6f);
         }
 
         // ── 도움
@@ -848,7 +853,7 @@ namespace AThousandDawns.Prototype
                     case Phase.Inn: where = $"{RegionName} · 객잔"; break;
                     case Phase.Master: where = $"{RegionName} 2층 관문 · 고수"; break;
                     case Phase.Rest: where = $"{RegionName} 보스 층 · 정비실"; break;
-                    case Phase.Boss: where = $"{RegionName} 보스 층 · 녹림왕"; break;
+                    case Phase.Boss: where = $"{RegionName} 보스 층 · {(arena.Boss != null ? arena.Boss.DisplayName : "보스")}"; break;
                     case Phase.Done: where = "판 끝"; break;
                     default: where = IsForking ? $"{RegionName} {_floor}층 갈림길" : ""; break;
                 }

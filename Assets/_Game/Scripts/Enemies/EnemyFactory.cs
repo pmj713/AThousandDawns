@@ -120,6 +120,12 @@ namespace AThousandDawns.Enemies
                 BodyPosition = new Vector3(0f, 1.05f, 0f), BodyScale = new Vector3(1.0f, 1.05f, 1.0f),
                 MarkPosition = new Vector3(0.45f, 1.1f, 0.4f), MarkScale = new Vector3(0.1f, 0.1f, 2.2f), // 긴 선장
             },
+            EnemyKind.BloodBuddha => new Shape
+            {
+                Name = "혈불", Radius = 1.0f, Height = 3.2f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 1.6f, 0f), BodyScale = new Vector3(2.0f, 1.6f, 1.6f), // 거대 불상
+                MarkPosition = new Vector3(0f, 2.6f, 0.7f), MarkScale = new Vector3(0.6f, 0.6f, 0.3f), // 붉은 얼굴
+            },
             _ => new Shape
             {
                 Name = "산적 졸개", Radius = 0.35f, Height = 1.6f, Primitive = PrimitiveType.Capsule,
@@ -147,6 +153,7 @@ namespace AThousandDawns.Enemies
             EnemyKind.Monk => Tinted(kind, v.grunt, new Color(0.45f, 0.3f, 0.3f)),
             EnemyKind.Lantern => Tinted(kind, v.grunt, new Color(1f, 0.75f, 0.35f)),
             EnemyKind.Hyegwang => Tinted(kind, v.ironfist != null ? v.ironfist : v.grunt, new Color(0.5f, 0.25f, 0.2f)),
+            EnemyKind.BloodBuddha => Tinted(kind, v.nokrim != null ? v.nokrim : v.grunt, new Color(0.6f, 0.15f, 0.12f)),
             _ => v.grunt,
         };
 
@@ -220,6 +227,7 @@ namespace AThousandDawns.Enemies
                 EnemyKind.Monk => root.AddComponent<MonkBrain>(),
                 EnemyKind.Lantern => root.AddComponent<LanternBrain>(),
                 EnemyKind.Hyegwang => root.AddComponent<HyegwangBrain>(),
+                EnemyKind.BloodBuddha => root.AddComponent<BloodBuddhaBrain>(),
                 _ => root.AddComponent<GruntBrain>(),
             };
             if (brain is ShieldBrain shieldBrain) shieldBrain.SetShieldVisual(mark.transform);

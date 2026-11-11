@@ -763,3 +763,23 @@ hyegwang.bead_range,8,cell,혜광 염주가 날아가는 거리,
 hyegwang.bead_speed,10,cell/s,혜광 염주 속도,
 hyegwang.p2_bead_spread,25,deg,혜광 2페이즈 염주 세 갈래 간격,
 hyegwang.p2_windup_ratio,80%,,혜광 2페이즈 예고 시간 배율,
+bloodbuddha.hp,1850,,혈불 체력 (폐사찰 ×1.8 = 3330),몬스터!D64
+bloodbuddha.atk,24,,혈불 공격 (×1.3 = 31),몬스터!F64
+bloodbuddha.toughness,5,,혈불 강인함,몬스터!H64
+bloodbuddha.defense,15%,,혈불 방어,몬스터!I64
+bloodbuddha.move_speed,1.5,cell/s,혈불 이동속도 (거대 불상),
+bloodbuddha.palm_windup,1,s,혈불 손바닥 내려찍기 예고,
+bloodbuddha.palm_ratio,1,,혈불 손바닥 피해 배율,
+bloodbuddha.palm_radius,1.6,cell,혈불 손바닥 예고 원 반경 (플레이어 자리 + 둘레 2곳),
+bloodbuddha.chant_ratio,0.6,,혈불 염불 장판 피해 배율,
+bloodbuddha.chant_waves,6,,혈불 염불 장판 횟수 (0.5초 간격),
+bloodbuddha.chant_per_wave,4,,혈불 염불 한 번에 장판 수,
+bloodbuddha.chant_interval,10,s,혈불 염불 간격 (2페이즈는 피의 비),
+bloodbuddha.arms_ratio,0.8,,혈불 2페이즈 팔 휘두르기 피해 배율 (세 번),
+bloodbuddha.arms_radius,3.5,cell,혈불 팔 휘두르기 반경,
+bloodbuddha.rain_ratio,0.5,,혈불 피의 비 핏방울 피해 배율,
+bloodbuddha.rain_drops,6,,혈불 피의 비 핏방울 수 (0.4초 간격),
+bloodbuddha.bleed_dps,2,,혈불 피의 비 출혈 (플레이어 화상 1중첩 초당),
+bloodbuddha.summon_interval,15,s,혈불 목탁승 부르기 간격 (목탁승이 없을 때),
+meridian.width_after_boss2,6,칸,폐사찰 보스 뒤 경맥도 가로,
+meridian.height_after_boss2,5,칸,폐사찰 보스 뒤 경맥도 세로,

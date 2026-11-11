@@ -166,7 +166,7 @@ namespace AThousandDawns.Tests
         {
             yield return LoadScene();
             var arena = Object.FindFirstObjectByType<PrototypeArena>();
-            var boss = arena.SpawnBoss();
+            var boss = (NokrimBrain)arena.SpawnBoss();
             PlacePlayer(new Vector3(0f, 0f, 13f));
 
             yield return WaitUntil(() => boss.IsAwake, 2f);

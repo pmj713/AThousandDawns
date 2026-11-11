@@ -8,7 +8,7 @@ namespace AThousandDawns.Enemies
     // 녹림왕 (죽림 보스, 몬스터 시트 고수·보스 패턴). 경직·넉백 없음. 거리에 따라 패턴을 고르고 같은 패턴은 연속 2번까지.
     // 1페이즈: 대도 휘두르기(가까울 때) · 돌진 → 내려찍기(멀 때) · 부하 부르기(20초마다, 부하가 다 쓰러졌을 때만, 페이즈마다 2번).
     // 체력 50%: 1.5초 전환(무적) → 2페이즈: 불타는 죽림 + 회전베기 3연속, 휘두르기·돌진이 빨라지고 부하 부르기 없음.
-    public sealed class NokrimBrain : EnemyBrain
+    public sealed class NokrimBrain : EnemyBrain, IMasterBrain // 보스 칸(PrototypeArena.Boss)은 IMasterBrain으로 다뤄요
     {
         public override string AttackName => _pattern switch { Pattern.Sweep => "대도 휘두르기", Pattern.Charge => "돌진", Pattern.Spin => "회전베기", _ => null };
 

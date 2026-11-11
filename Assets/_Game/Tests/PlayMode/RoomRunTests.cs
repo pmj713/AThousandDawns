@@ -208,7 +208,7 @@ namespace AThousandDawns.Tests
             Assert.IsTrue(_arena.Boss.IsAwake, "들어오면 바로 결투");
             var boss = _arena.Boss;
             boss.Damageable.ApplyHit(Mathf.CeilToInt(boss.Damageable.MaxHealth * 0.55f));
-            yield return WaitUntil(() => boss.Phase == 2 && !boss.IsTransitioning, 4f);
+            yield return WaitUntil(() => _arena.BossInfo.Phase == 2 && !_arena.BossInfo.IsTransitioning, 4f);
             boss.Damageable.ApplyHit(99999);
             yield return WaitUntil(() => _arena.IsChoosing, 3f);
             Assert.IsTrue(_arena.IsChoosing, "녹림왕 보상 기물");
@@ -246,11 +246,13 @@ namespace AThousandDawns.Tests
             cc.enabled = true;
             yield return WaitUntil(() => _arena.Boss != null && _arena.Boss.IsAwake, 3f);
             var boss = _arena.Boss;
+            Assert.IsInstanceOf<BloodBuddhaBrain>(boss, "폐사찰 보스는 혈불");
             boss.Damageable.ApplyHit(Mathf.CeilToInt(boss.Damageable.MaxHealth * 0.55f));
-            yield return WaitUntil(() => boss.Phase == 2 && !boss.IsTransitioning, 4f);
+            yield return WaitUntil(() => _arena.BossInfo.Phase == 2 && !_arena.BossInfo.IsTransitioning, 4f);
             boss.Damageable.ApplyHit(99999);
             yield return WaitUntil(() => _run.IsDone, 3f);
             Assert.IsTrue(_run.IsDone, "마지막 지역 보스 = 판 끝");
+            Assert.AreEqual(5, _player.Items.Board.Height, "경맥도 6×5");
         }
     }
 }

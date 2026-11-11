@@ -3069,3 +3069,83 @@ MonoBehaviour:
     value: 0.8
     unit: 
     note: "\uD61C\uAD11 2\uD398\uC774\uC988 \uC608\uACE0 \uC2DC\uAC04 \uBC30\uC728"
+  - key: bloodbuddha.hp
+    value: 1850
+    unit: 
+    note: "\uD608\uBD88 \uCCB4\uB825 (\uD3D0\uC0AC\uCC30 \xD71.8 = 3330)"
+  - key: bloodbuddha.atk
+    value: 24
+    unit: 
+    note: "\uD608\uBD88 \uACF5\uACA9 (\xD71.3 = 31)"
+  - key: bloodbuddha.toughness
+    value: 5
+    unit: 
+    note: "\uD608\uBD88 \uAC15\uC778\uD568"
+  - key: bloodbuddha.defense
+    value: 0.15
+    unit: 
+    note: "\uD608\uBD88 \uBC29\uC5B4"
+  - key: bloodbuddha.move_speed
+    value: 1.5
+    unit: cell/s
+    note: "\uD608\uBD88 \uC774\uB3D9\uC18D\uB3C4 (\uAC70\uB300 \uBD88\uC0C1)"
+  - key: bloodbuddha.palm_windup
+    value: 1
+    unit: s
+    note: "\uD608\uBD88 \uC190\uBC14\uB2E5 \uB0B4\uB824\uCC0D\uAE30 \uC608\uACE0"
+  - key: bloodbuddha.palm_ratio
+    value: 1
+    unit: 
+    note: "\uD608\uBD88 \uC190\uBC14\uB2E5 \uD53C\uD574 \uBC30\uC728"
+  - key: bloodbuddha.palm_radius
+    value: 1.6
+    unit: cell
+    note: "\uD608\uBD88 \uC190\uBC14\uB2E5 \uC608\uACE0 \uC6D0 \uBC18\uACBD (\uD50C\uB808\uC774\uC5B4 \uC790\uB9AC + \uB458\uB808 2\uACF3)"
+  - key: bloodbuddha.chant_ratio
+    value: 0.6
+    unit: 
+    note: "\uD608\uBD88 \uC5FC\uBD88 \uC7A5\uD310 \uD53C\uD574 \uBC30\uC728"
+  - key: bloodbuddha.chant_waves
+    value: 6
+    unit: 
+    note: "\uD608\uBD88 \uC5FC\uBD88 \uC7A5\uD310 \uD69F\uC218 (0.5\uCD08 \uAC04\uACA9)"
+  - key: bloodbuddha.chant_per_wave
+    value: 4
+    unit: 
+    note: "\uD608\uBD88 \uC5FC\uBD88 \uD55C \uBC88\uC5D0 \uC7A5\uD310 \uC218"
+  - key: bloodbuddha.chant_interval
+    value: 10
+    unit: s
+    note: "\uD608\uBD88 \uC5FC\uBD88 \uAC04\uACA9 (2\uD398\uC774\uC988\uB294 \uD53C\uC758 \uBE44)"
+  - key: bloodbuddha.arms_ratio
+    value: 0.8
+    unit: 
+    note: "\uD608\uBD88 2\uD398\uC774\uC988 \uD314 \uD718\uB450\uB974\uAE30 \uD53C\uD574 \uBC30\uC728 (\uC138 \uBC88)"
+  - key: bloodbuddha.arms_radius
+    value: 3.5
+    unit: cell
+    note: "\uD608\uBD88 \uD314 \uD718\uB450\uB974\uAE30 \uBC18\uACBD"
+  - key: bloodbuddha.rain_ratio
+    value: 0.5
+    unit: 
+    note: "\uD608\uBD88 \uD53C\uC758 \uBE44 \uD54F\uBC29\uC6B8 \uD53C\uD574 \uBC30\uC728"
+  - key: bloodbuddha.rain_drops
+    value: 6
+    unit: 
+    note: "\uD608\uBD88 \uD53C\uC758 \uBE44 \uD54F\uBC29\uC6B8 \uC218 (0.4\uCD08 \uAC04\uACA9)"
+  - key: bloodbuddha.bleed_dps
+    value: 2
+    unit: 
+    note: "\uD608\uBD88 \uD53C\uC758 \uBE44 \uCD9C\uD608 (\uD50C\uB808\uC774\uC5B4 \uD654\uC0C1 1\uC911\uCCA9 \uCD08\uB2F9)"
+  - key: bloodbuddha.summon_interval
+    value: 15
+    unit: s
+    note: "\uD608\uBD88 \uBAA9\uD0C1\uC2B9 \uBD80\uB974\uAE30 \uAC04\uACA9 (\uBAA9\uD0C1\uC2B9\uC774 \uC5C6\uC744 \uB54C)"
+  - key: meridian.width_after_boss2
+    value: 6
+    unit: "\uCE78"
+    note: "\uD3D0\uC0AC\uCC30 \uBCF4\uC2A4 \uB4A4 \uACBD\uB9E5\uB3C4 \uAC00\uB85C"
+  - key: meridian.height_after_boss2
+    value: 5
+    unit: "\uCE78"
+    note: "\uD3D0\uC0AC\uCC30 \uBCF4\uC2A4 \uB4A4 \uACBD\uB9E5\uB3C4 \uC138\uB85C"

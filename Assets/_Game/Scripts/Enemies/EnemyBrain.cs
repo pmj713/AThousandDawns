@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace AThousandDawns.Enemies
 {
-    public enum EnemyKind { Grunt, Boar, Archer, Hound, Shield, Horn, Bomber, Snake, Nokrim, Assassin, Qingzhu, IronFist, Wraith, Arhat, Moktak, Monk, Lantern, Hyegwang } // 망령부터 폐사찰 (혜광은 고수)
+    public enum EnemyKind { Grunt, Boar, Archer, Hound, Shield, Horn, Bomber, Snake, Nokrim, Assassin, Qingzhu, IronFist, Wraith, Arhat, Moktak, Monk, Lantern, Hyegwang, BloodBuddha } // 망령부터 폐사찰 (혜광 고수 · 혈불 보스)
 
     // 적 등급 (수련치 탭: 일반 1 · 정예 5 · 살수 5 · 고수 15 · 보스 30)
     public enum EnemyRank { Normal, Elite, Assassin, Master, Boss }
