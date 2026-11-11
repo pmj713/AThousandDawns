@@ -1360,6 +1360,28 @@ if "buddhamoves" in EXTRAS:
             sh = pb[f"{s}Arm"].head.copy()
             arm(s, sh + Vector((sx * 0.8 + sign * 0.3, -0.6, -0.05)).normalized() * REACH * 0.98, Vector((0, 0.3, -1)))
     make_action("Arms", [(0, "R"), (7, "L"), (14, "L"), (20, "R"), (27, "R"), (34, "L"), (41, "L"), (52, "idle")], arms_pose)
+
+    # 혈수(Grab, 2페이즈): 오른팔을 옆구리 뒤로 당겨 손을 펴고(예고 0.6초 동안 멈춤) → 앞으로 쭉 내뻗어 움켜쥐고 → 확 끌어당겨요.
+    #   손이 뻗어 나가는 핏빛 먹 손은 Unity(InkEnemyAnimator)가 그려요
+    def grab_pose(stage):
+        if stage == "idle":
+            idle_end_pose(); return
+        sh = pb["RightArm"].head.copy()
+        if stage == "load":
+            heavy(-0.06, -6)
+            bend("Spine", UP, -25)                                          # 오른어깨를 뒤로 감아요
+            arm("Right", sh + Vector((-0.2, 0.35, -0.2)), Vector((-1, 0.4, -0.4)))
+        elif stage == "reach":
+            heavy(-0.14, 18)
+            bend("Spine", UP, 22)                                           # 허리째 내던지듯
+            arm("Right", sh + Vector((0.1, -1, 0.0)).normalized() * REACH, Vector((-1, 0, -1)))   # 쭉 뻗어요
+        else:
+            heavy(-0.1, 4)
+            bend("Spine", UP, -15)
+            arm("Right", sh + Vector((-0.08, -0.15, -0.15)), Vector((-1, 0.3, -0.6)))   # 움켜쥐고 가슴께로 끌어당겨요
+        sl = pb["LeftArm"].head.copy()
+        arm("Left", sl + Vector((0.2, -0.05, -0.55)), Vector((1, 0.3, -0.3)))
+    make_action("Grab", [(0, "load"), (3, "reach"), (8, "reach"), (13, "pull"), (22, "pull"), (32, "idle")], grab_pose)
     rig.animation_data.action = None
     reset_pose()
 
