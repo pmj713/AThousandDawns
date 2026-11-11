@@ -28,8 +28,11 @@ namespace AThousandDawns.Art
         [SerializeField] Material crackDarkMaterial;
 
         const string PouchName = "기물 주머니"; // RoomRun.CreatePouch
+        const string AnchorName = "쇠닻";       // AnchorBrain.PlacePost (던져 꽂은 닻, 길을 막는 원기둥)
+        [SerializeField] Mesh anchorMesh;
+        [SerializeField] Material anchorMaterial;
 
-        const float ScanInterval = 0.2f;
+        const float ScanInterval = 0.1f;   // 새로 생긴 소품이 원래 모양(공·원기둥)으로 보이는 틈을 줄여요
         const string Marker = "Ink Visual";
         float _nextScan;
         readonly List<GameObject> _roots = new List<GameObject>();
@@ -39,6 +42,8 @@ namespace AThousandDawns.Art
             jarMeshes = jars; jarMaterial = jar; lidMaterial = lid; shardMesh = shard;
             crackSprite = crack; rubbleMesh = rubble; rubbleMaterial = rubbleMat;
         }
+
+        public void SetupAnchor(Mesh anchor, Material iron) { anchorMesh = anchor; anchorMaterial = iron; }
 
         public void SetupModels(Mesh pouch, Material silk, Mesh cord, Material cordMat, Mesh stones, Material stoneMat, Mesh dark, Material darkMat)
         {
@@ -52,6 +57,7 @@ namespace AThousandDawns.Art
             if (go.name == "Jar") DressJar(go);
             else if (go.name == "HiddenCrack") DressCrack(go);
             else if (go.name == PouchName) DressPouch(go);
+            else if (go.name == AnchorName) DressAnchor(go);
         }
 
         void Update()
@@ -61,11 +67,12 @@ namespace AThousandDawns.Art
             SceneManager.GetActiveScene().GetRootGameObjects(_roots);
             foreach (var go in _roots)
             {
-                if (go.name != "Jar" && go.name != "HiddenCrack" && go.name != PouchName) continue;
+                if (go.name != "Jar" && go.name != "HiddenCrack" && go.name != PouchName && go.name != AnchorName) continue;
                 if (go.transform.Find(Marker) != null) continue;
                 if (go.name == "Jar") DressJar(go);
                 else if (go.name == "HiddenCrack") DressCrack(go);
-                else DressPouch(go);
+                else if (go.name == PouchName) DressPouch(go);
+                else DressAnchor(go);
             }
         }
 
@@ -97,6 +104,35 @@ namespace AThousandDawns.Art
                 lid.GetComponent<Renderer>().sharedMaterial = lidMaterial;
             }
             visual.gameObject.AddComponent<InkJarShatter>().Setup(shardMesh, jarMaterial);
+        }
+
+        // 던져 꽂은 쇠닻: 원기둥(지름 0.7, 높이 1.2) 대신 땅에 비스듬히 박힌 닻. 닻가지 하나는 땅에 묻히고 하나는 비죽 솟았고,
+        // 위 고리에서 사슬이 늘어져 땅에 끌려요. 둘레에 깨진 흙·돌 부스러기
+        void DressAnchor(GameObject post)
+        {
+            if (anchorMesh == null || anchorMaterial == null) return;
+            var r = post.GetComponent<Renderer>();
+            if (r != null) r.enabled = false;
+            var t = post.transform;
+            var p = t.position;
+            var visual = Child(t, Marker);
+            visual.position = new Vector3(p.x, p.y - t.lossyScale.y, p.z);   // 원기둥 밑면 = 바닥
+            visual.rotation = Quaternion.Euler(0f, (p.x * 61f + p.z * 37f) % 360f, 0f);
+            Unscale(visual, t, 1f);
+            visual.gameObject.AddComponent<MeshFilter>().sharedMesh = anchorMesh;
+            visual.gameObject.AddComponent<MeshRenderer>().sharedMaterial = anchorMaterial;
+            if (rubbleMesh != null && rubbleMaterial != null)
+                for (int i = 0; i < 5; i++)
+                {
+                    var stone = new GameObject("Rubble").transform;
+                    stone.SetParent(visual, false);
+                    float a = i * 72f * Mathf.Deg2Rad;
+                    stone.localPosition = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * (0.45f + (i % 2) * 0.2f);
+                    stone.localRotation = Quaternion.Euler(0f, i * 53f, 0f);
+                    stone.localScale = Vector3.one * (0.14f + (i % 3) * 0.06f);
+                    stone.gameObject.AddComponent<MeshFilter>().sharedMesh = rubbleMesh;
+                    stone.gameObject.AddComponent<MeshRenderer>().sharedMaterial = rubbleMaterial;
+                }
         }
 
         // 기물 주머니: 금색 공 대신 끈 묶인 비단 주머니. 공(0.7×0.6×0.7, 가운데가 높이 0.5)의 밑동에 세워요.

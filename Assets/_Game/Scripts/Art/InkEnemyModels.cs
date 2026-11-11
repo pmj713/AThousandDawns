@@ -129,6 +129,11 @@ namespace AThousandDawns.Art
         static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         float _whirlAngle;
         bool _hasStatue, _statue;   // 석상 나한 (Statue·Wake 동작이 있을 때)
+        RattanBrain _rattan;        // 등패수: 방패를 굴려 던지면 손 방패를 감춰요
+        bool _rattanAway;
+        WaterGhostBrain _waterGhost; // 수귀: 끌고 가는 동안 Drag
+        bool _dragging;
+        float _anchorAway;          // 쇠닻 거한: 던진 닻이 꽂혀 있는 동안 손 닻을 감춰요
         float _wakeFade;
         static readonly Color StatueGray = new Color(0.62f, 0.6f, 0.57f, 1f);
 
@@ -140,6 +145,8 @@ namespace AThousandDawns.Art
             _shieldBrain = brain as ShieldBrain;
             _monk = brain as MonkBrain;
             _buddha = brain as BloodBuddhaBrain;
+            _rattan = brain as RattanBrain;
+            _waterGhost = brain as WaterGhostBrain;
             _brain = brain;
             _animator = animator;
             _modelRest = animator.transform.localRotation;
@@ -167,6 +174,12 @@ namespace AThousandDawns.Art
 
         void Play(string state, float blend) => _animator.CrossFadeInFixedTime(Animator.StringToHash(state), blend, 0, 0f);
 
+        void SetPropVisible(string part, bool visible)
+        {
+            foreach (var r in _animator.GetComponentsInChildren<Renderer>(true))
+                if (r.name.Contains(part)) r.enabled = visible;
+        }
+
         // 몸 색 덧칠 (null이면 원래 색). 무기·소품은 빼요
         void Tint(Color? color)
         {
@@ -186,7 +199,7 @@ namespace AThousandDawns.Art
             if (_shieldBrain != null && !_shieldHidden && _shieldBrain.ShieldBroken)
             {
                 foreach (var r in _animator.GetComponentsInChildren<Renderer>(true))
-                    if (r.name.Contains("_Prop_Shield")) r.enabled = false;
+                    if (r.name.Contains("_Prop_Shield") || r.name.Contains("_Rattan_Shield")) r.enabled = false;
                 _shieldHidden = true;
             }
             if (_buddha != null && _buddha.Phase != _buddhaPhase)
@@ -208,6 +221,25 @@ namespace AThousandDawns.Art
                 }
                 if (_statue) { _animator.SetFloat(SpeedId, 0f); return; }
             }
+            // 등패수: 방패를 굴려 던진 동안엔 손에 방패가 없어요 (부서지면 아예 감춘 채)
+            if (_rattan != null && !_shieldHidden && _rattan.ShieldThrown != _rattanAway)
+            {
+                _rattanAway = _rattan.ShieldThrown;
+                SetPropVisible("_Rattan_Shield", !_rattanAway);
+            }
+            // 쇠닻 거한: 던진 닻이 땅에 꽂혀 있는 동안(약 3초)엔 손이 비어요
+            if (_anchorAway > 0f)
+            {
+                _anchorAway -= Time.deltaTime;
+                if (_anchorAway <= 0f || _brain.IsDead) { _anchorAway = 0f; SetPropVisible("_Weapon_anchor", true); }
+            }
+            // 수귀: 붙잡아 끌고 가는 동안 뒷걸음질 (끝나면 대기로)
+            if (_waterGhost != null && _waterGhost.Dragging != _dragging)
+            {
+                _dragging = _waterGhost.Dragging;
+                if (_dragging) Play("Drag", 0.1f); else _animator.CrossFadeInFixedTime(IdleState, 0.2f, 0);
+            }
+            if (_dragging) { _animator.SetFloat(SpeedId, 0f); return; }
             var phase = _brain.AttackPhase;
             // 금강불괴: 파계승은 버티는 자세(IsStanced), 혜광은 금강불괴 예고 동안 몸이 금빛
             bool gold = _monk != null ? _monk.IsStanced
@@ -242,6 +274,7 @@ namespace AThousandDawns.Art
                         _moving = false;
                         break;
                     case EnemyAttackTimeline.Phase.Active:
+                        if (_move.attack == "닻 던지기") { _anchorAway = 3.2f; SetPropVisible("_Weapon_anchor", false); }   // 닻을 던졌어요
                         _animator.SetFloat(AttackSpeedId, 1f);                              // 한 번 내려찍어요 (돌진·회전은 이어서)
                         if (!string.IsNullOrEmpty(_move.ready)) Play(_move.state, 0.1f);    // 준비 자세에서 박차고 나가요
                         _swung = _move.mode == InkEnemyModels.MoveMode.Swing;

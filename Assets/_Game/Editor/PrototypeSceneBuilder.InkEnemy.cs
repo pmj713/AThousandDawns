@@ -39,6 +39,13 @@ namespace AThousandDawns.EditorTools
             ("Lantern", EnemyKind.Lantern, 4f),
             ("Hyegwang", EnemyKind.Hyegwang, 3.5f),   // 폐사찰 고수
             ("BloodBuddha", EnemyKind.BloodBuddha, 1.5f),   // 폐사찰 보스
+            // 장강 수채
+            ("Pirate", EnemyKind.Pirate, 3.5f),
+            ("Harpooner", EnemyKind.Harpooner, 3f),
+            ("Anchor", EnemyKind.Anchor, 1.8f),
+            ("Rattan", EnemyKind.Rattan, 2.5f),
+            ("WaterGhost", EnemyKind.WaterGhost, 2.5f),
+            ("FlagBearer", EnemyKind.FlagBearer, 3f),
         };
 
         // 패턴 동작: attack(브레인 AttackName, null이면 다른 동작이 이어 부르는 상태) → state.
@@ -53,10 +60,10 @@ namespace AThousandDawns.EditorTools
         }
 
         // 모델 고유 동작 중 반복하는 것
-        static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "ShoulderRun", "Idle", "Run", "Chant", "Rain" };
+        static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "ShoulderRun", "Idle", "Run", "Chant", "Rain", "Drag" };
 
         // 고유 동작만 쓰는 적 (Generic으로 가져와요)
-        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
+        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha", "Pirate", "Harpooner", "Anchor", "Rattan", "WaterGhost", "FlagBearer" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
 
         static readonly Dictionary<string, MoveSpec[]> InkEnemyMoves = new Dictionary<string, MoveSpec[]>
         {
@@ -91,6 +98,26 @@ namespace AThousandDawns.EditorTools
                 new MoveSpec { attack = "선장", state = "Thrust", clips = new[] { "Thrust" } },
                 new MoveSpec { state = "Stance", clips = new[] { "Stance" }, mode = MoveMode.Run },
             },
+            // 장강 수채 — 수적 졸개: 치켜든 갈고리 칼로 내려베고 0.3초 뒤 되베요
+            ["Pirate"] = new[] { new MoveSpec { attack = "두 번 베기", state = "DoubleSlash", clips = new[] { "DoubleSlash" } } },
+            // 작살수: 허리춤에 겨눴다가 앞으로 쭉 찔러 뻗고 잡아채 당겨요
+            ["Harpooner"] = new[] { new MoveSpec { attack = "작살 찌르기", state = "HarpoonThrust", clips = new[] { "HarpoonThrust" } } },
+            // 쇠닻 거한: 닻을 머리 뒤로 감았다가 던지고 두 팔을 뻗어 끌려 날아가요 · 가까우면 앞을 반원으로 휩쓸어요
+            ["Anchor"] = new[]
+            {
+                new MoveSpec { attack = "닻 던지기", state = "AnchorThrow", clips = new[] { "AnchorThrow" } },
+                new MoveSpec { attack = "쇠닻 휘두르기", state = "AnchorSwing", clips = new[] { "AnchorSwing" } },
+            },
+            // 등패수: 기본 공격은 방패를 세운 채 베기(Attack) · 방패 굴리기는 왼팔을 감았다가 앞으로 뿌려요
+            ["Rattan"] = new[] { new MoveSpec { attack = "방패 굴리기", state = "ShieldRoll", clips = new[] { "ShieldRoll" } } },
+            // 수귀: 땅속에서 두 팔을 뻗으며 솟구쳐 붙잡아요 · 끌고 가는 동안 뒷걸음질(Drag, InkEnemyAnimator가 Dragging을 보고)
+            ["WaterGhost"] = new[]
+            {
+                new MoveSpec { attack = "물귀신 손", state = "Emerge", clips = new[] { "Emerge" } },
+                new MoveSpec { state = "Drag", clips = new[] { "Drag" }, mode = MoveMode.Run },
+            },
+            // 깃발수: 예고 1.5초 동안 깃대를 두 손으로 들고 좌우로 세 번 흔들어요 (그대로 재생)
+            ["FlagBearer"] = new[] { new MoveSpec { attack = "지휘", state = "Wave", clips = new[] { "Wave" }, mode = MoveMode.Play } },
             // 혈불 (폐사찰 보스): 손바닥 내려찍기 · 염불(합장 반복) · 피의 비(두 팔을 하늘로 반복) · 팔 휘두르기(2페이즈, 좌우 세 번). 목탁승 부르기는 기본 Attack(손짓)
             ["BloodBuddha"] = new[]
             {
@@ -271,6 +298,7 @@ namespace AThousandDawns.EditorTools
             EditorUtility.SetDirty(body);
             var weapon = GetInkMaterial("Ink_Enemy_Weapon", "#3A3F44", 0.1f);
             var red = GetInkMaterial("Ink_Enemy_Red", "#B3261E", 0.9f);       // 깃발·목도리처럼 알아보는 붉은 천
+            var rattan = GetInkMaterial("Ink_Enemy_Rattan", "#9C7A45", 0.5f);  // 등나무 방패
 
             // 프리팹: 모델 + 재질 + 애니메이터
             var asset = AssetDatabase.LoadAssetAtPath<GameObject>(modelPath);
@@ -289,6 +317,7 @@ namespace AThousandDawns.EditorTools
                     EditorUtility.SetDirty(m);
                 }
                 else if (r.name.Contains("_Red_")) m = red;
+                else if (r.name.Contains("_Rattan_")) m = rattan;
                 else m = r.name.Contains("Weapon") || r.name.Contains("Dao") ? weapon : body;
                 r.sharedMaterials = Enumerable.Repeat(m, Mathf.Max(1, r.sharedMaterials.Length)).ToArray();
             }

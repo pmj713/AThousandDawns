@@ -16,6 +16,7 @@ namespace AThousandDawns.EditorTools
             var cord = GetInkMaterial("Ink_Pouch_Cord", "#C9A04A", 0.6f);    // 금빛 끈
             var dark = GetInkMaterial("Ink_Crack_Dark", "#141210", 0f);      // 금 속 먹빛
             props.SetupModels(GetPouchMesh(), silk, GetPouchCordMesh(), cord, GetCrackStonesMesh(), stoneMat, GetCrackDarkMesh(), dark);
+            props.SetupAnchor(GetPlantedAnchorMesh(), GetInkMaterial("Ink_Anchor_Iron", "#2E3236", 0.1f));   // 쇠닻 거한이 던져 꽂은 닻
         }
 
         // 비단 주머니 (높이 약 0.72, 밑이 바닥 y=0): 돌림 단면 + 세로 주름
@@ -143,6 +144,61 @@ namespace AThousandDawns.EditorTools
                 tris.Add(b); tris.Add(c); tris.Add(d);
             }
             return SaveRunPropMesh("Crack_Dark", verts, tris);
+        }
+
+        // 땅에 비스듬히 꽂힌 쇠닻 (밑이 바닥 y=0): 굵은 닻대·가로 닻채·위 고리, 닻가지 하나는 묻히고 하나는 비죽 솟았어요.
+        // 고리에서 사슬이 늘어져 땅을 따라 끌려요
+        static Mesh GetPlantedAnchorMesh()
+        {
+            var verts = new List<Vector3>();
+            var tris = new List<int>();
+            var tilt = Quaternion.Euler(18f, 0f, 6f);
+            Vector3 P(Vector3 v) => tilt * v;
+            BoxInto(verts, tris, P(new Vector3(0f, 0.55f, 0f)), new Vector3(0.11f, 1.5f, 0.11f), tilt);                       // 닻대
+            BoxInto(verts, tris, P(new Vector3(0f, 1.05f, 0f)), new Vector3(0.72f, 0.08f, 0.08f), tilt);                      // 닻채
+            var ring = new List<Vector3>();
+            for (int k = 0; k <= 12; k++)
+            {
+                float a = k * Mathf.PI * 2f / 12;
+                ring.Add(P(new Vector3(0f, 1.42f + Mathf.Cos(a) * 0.11f, Mathf.Sin(a) * 0.11f)));
+            }
+            TubeInto(ring, 0.03f, 0.03f, verts, tris);                                                                       // 위 고리
+            var up = new List<Vector3>();
+            var down = new List<Vector3>();
+            for (int k = 0; k <= 6; k++)
+            {
+                float u = k / 6f;
+                up.Add(P(new Vector3(0f, -0.2f + 0.62f * u * u, 0.55f * Mathf.Sin(u * Mathf.PI * 0.5f))));               // 비죽 솟은 닻가지
+                down.Add(P(new Vector3(0f, -0.2f + 0.3f * u * u, -0.5f * Mathf.Sin(u * Mathf.PI * 0.5f))));              // 묻힌 닻가지
+            }
+            TubeInto(up, 0.065f, 0.05f, verts, tris);
+            TubeInto(down, 0.065f, 0.05f, verts, tris);
+            BoxInto(verts, tris, up[6] + P(new Vector3(0f, 0.06f, 0.04f)), new Vector3(0.05f, 0.24f, 0.2f), tilt * Quaternion.Euler(-35f, 0f, 0f));   // 닻가지 끝 미늘
+            // 사슬: 고리에서 늘어져 땅에 닿고 뒤로 끌려요. 고리를 번갈아 90° 돌려 엮어요
+            Vector3 start = P(new Vector3(0f, 1.42f, -0.11f));
+            var path = new List<Vector3>();
+            for (int k = 0; k <= 10; k++)
+            {
+                float u = k / 10f;
+                var a = Vector3.Lerp(start, new Vector3(0.15f, 0.03f, -1.1f), u);
+                a.y = Mathf.Lerp(start.y, 0.03f, Mathf.Sqrt(u)) - 0.15f * Mathf.Sin(u * Mathf.PI) * 0.3f;
+                path.Add(a);
+            }
+            path.Add(new Vector3(0.25f, 0.03f, -1.45f));
+            path.Add(new Vector3(0.2f, 0.03f, -1.8f));
+            for (int k = 0; k < path.Count - 1; k++)
+            {
+                Vector3 c = (path[k] + path[k + 1]) * 0.5f, d = (path[k + 1] - path[k]).normalized;
+                var q = Quaternion.LookRotation(d) * Quaternion.Euler(0f, 0f, k % 2 == 0 ? 0f : 90f);
+                var link = new List<Vector3>();
+                for (int j = 0; j <= 8; j++)
+                {
+                    float a = j * Mathf.PI * 2f / 8;
+                    link.Add(c + q * new Vector3(Mathf.Cos(a) * 0.05f, 0f, Mathf.Sin(a) * 0.09f));
+                }
+                TubeInto(link, 0.018f, 0.018f, verts, tris);
+            }
+            return SaveRunPropMesh("Planted_Anchor", verts, tris);
         }
 
         // 금이 지나가는 가로 자리 (높이에 따라 지그재그)
