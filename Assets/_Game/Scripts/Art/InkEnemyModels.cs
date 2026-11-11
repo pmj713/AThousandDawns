@@ -128,6 +128,9 @@ namespace AThousandDawns.Art
         static readonly Color StanceGold = new Color(1f, 0.78f, 0.32f, 1f);
         static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         float _whirlAngle;
+        bool _hasStatue, _statue;   // 석상 나한 (Statue·Wake 동작이 있을 때)
+        float _wakeFade;
+        static readonly Color StatueGray = new Color(0.62f, 0.6f, 0.57f, 1f);
 
         public void Init(EnemyBrain brain, Animator animator, bool windupPlays = false, bool noAttackAnim = false, InkEnemyModels.Move[] moves = null)
         {
@@ -144,6 +147,7 @@ namespace AThousandDawns.Art
             _body = brain.GetComponent<Damageable>();
             if (_body != null) _body.Damaged += OnDamaged;   // 브레인이 먼저 구독해서, 여기 올 땐 경직·쓰러짐이 이미 정해져 있어요
             if (brain.Rank == EnemyRank.Boss || brain.Rank == EnemyRank.Master) flinchAngle = 5f;   // 고수·보스는 덩치가 커서 살짝만 움찔해요
+            _hasStatue = brain.Kind == EnemyKind.Arhat && animator.HasState(0, Animator.StringToHash("Statue")) && animator.HasState(0, Animator.StringToHash("Wake"));
             _lastPos = transform.position;
         }
 
@@ -163,6 +167,18 @@ namespace AThousandDawns.Art
 
         void Play(string state, float blend) => _animator.CrossFadeInFixedTime(Animator.StringToHash(state), blend, 0, 0f);
 
+        // 몸 색 덧칠 (null이면 원래 색). 무기·소품은 빼요
+        void Tint(Color? color)
+        {
+            var block = new MaterialPropertyBlock();
+            foreach (var r in _animator.GetComponentsInChildren<Renderer>(true))
+            {
+                if (r.name.Contains("Weapon") || r.name.Contains("_Prop_")) continue;
+                if (color.HasValue) { r.GetPropertyBlock(block); block.SetColor(BaseColorId, color.Value); r.SetPropertyBlock(block); }
+                else r.SetPropertyBlock(null);
+            }
+        }
+
         void Update()
         {
             if (_brain == null || _animator == null || _animator.runtimeAnimatorController == null) return;
@@ -178,6 +194,19 @@ namespace AThousandDawns.Art
                 _buddhaPhase = _buddha.Phase;
                 foreach (var r in _animator.GetComponentsInChildren<Renderer>(true))
                     if (r.name.Contains("_Phase2_")) r.enabled = _buddhaPhase >= 2;
+            }
+            // 석상 나한: 깨기 전엔 잿빛 석상 자세(Statue)로 굳어 있다가, 깨어나면 몸을 떨고 두 팔을 떨쳐 일어나요(Wake). 잿빛은 서서히 빠져요
+            if (_hasStatue)
+            {
+                bool dormant = !_brain.IsAwake && !_brain.IsDead;
+                if (dormant && !_statue) { _statue = true; _wakeFade = 0f; Play("Statue", 0f); Tint(StatueGray); }
+                else if (!dormant && _statue) { _statue = false; _wakeFade = 1f; _animator.SetFloat(AttackSpeedId, 1f); Play("Wake", 0.05f); }
+                if (_wakeFade > 0f)
+                {
+                    _wakeFade = Mathf.MoveTowards(_wakeFade, 0f, Time.deltaTime / 0.8f);
+                    if (_wakeFade > 0f) Tint(Color.Lerp(Color.white, StatueGray, _wakeFade)); else Tint(null);
+                }
+                if (_statue) { _animator.SetFloat(SpeedId, 0f); return; }
             }
             var phase = _brain.AttackPhase;
             // 금강불괴: 파계승은 버티는 자세(IsStanced), 혜광은 금강불괴 예고 동안 몸이 금빛
@@ -286,7 +315,7 @@ namespace AThousandDawns.Art
         {
             if (_corpse) return;
             _corpse = true;
-            if (_brain.Kind == EnemyKind.Bomber || _brain.Kind == EnemyKind.Lantern) return;   // 터지는 적은 남기지 않아요
+            if (_brain.Kind == EnemyKind.Bomber) return;   // 터지는 적은 남기지 않아요 (등불 귀신은 이제 터지지 않고 쓰러져요)
             var model = _animator.transform;
             var corpse = new GameObject($"{_brain.name} (쓰러짐)");
             corpse.transform.SetPositionAndRotation(model.position, transform.rotation);

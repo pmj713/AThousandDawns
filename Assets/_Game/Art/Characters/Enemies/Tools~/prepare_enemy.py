@@ -1005,6 +1005,36 @@ if "shouldercharge" in EXTRAS:
     rig.animation_data.action = None
     reset_pose()
 
+# 석상 나한 (statue): 방에 석상처럼 서 있다가(Statue, 멈춘 한 자세) 플레이어가 다가오면 깨어나요(Wake).
+#   Statue: 고개를 숙이고 합장한 채 굳은 자세. Wake: 몸을 떨며 어깨를 움츠렸다가 → 고개를 들고 두 팔을 떨쳐 돌가루를 털어내고 → 대기 자세
+if "statue" in EXTRAS:
+    def statue_pose(stage):
+        if stage == "idle":
+            idle_end_pose(); return
+        if stage == "statue":
+            lower_hips(-0.04, FEET)
+            bend("Spine", Vector((1, 0, 0)), 6)
+            bend("Neck", Vector((1, 0, 0)), 22)                              # 고개를 숙여요
+            prayer_arms()
+        elif stage == "tremble":
+            lower_hips(-0.08, FEET)
+            bend("Spine", Vector((1, 0, 0)), 10)
+            bend("Neck", Vector((1, 0, 0)), 14)
+            for s in ("LeftShoulder", "RightShoulder"):
+                bend(s, Vector((0, 1, 0)), 10 if s.startswith("Left") else -10)   # 어깨를 움츠려요
+            prayer_arms(0.03)
+        else:   # burst: 고개를 들고 가슴을 펴며 두 팔을 아래 옆으로 떨쳐요
+            lower_hips(-0.16, FEET)
+            bend("Spine", Vector((1, 0, 0)), -10)
+            bend("Neck", Vector((1, 0, 0)), -12)
+            for s, sx in (("Left", 1), ("Right", -1)):
+                sh = pb[f"{s}Arm"].head.copy()
+                arm(s, sh + Vector((sx * 0.55, -0.2, -0.35)), Vector((sx * 0.3, 1, -0.5)))
+    make_action("Statue", [(0, "statue"), (10, "statue")], statue_pose)
+    make_action("Wake", [(0, "statue"), (5, "tremble"), (8, "tremble"), (13, "burst"), (19, "burst"), (28, "idle")], statue_pose)
+    rig.animation_data.action = None
+    reset_pose()
+
 
 # 돌진 (ChargeReady·ChargeRun·Slam): 준비는 몸을 낮추고 앞으로 숙여 대도를 오른 어깨 위로 치켜든 자세,
 #   돌진은 크게 앞으로 숙인 채 다리를 크게 내딛고 왼팔을 휘저으며 대도를 치켜든 채 달리는 반복 동작 (16프레임),
