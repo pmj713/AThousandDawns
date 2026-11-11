@@ -107,7 +107,20 @@ namespace AThousandDawns.Prototype
             CancelIntrude();
             hunter.Brain = director.Spawn(EnemyKind.Assassin, _intrudeSpot);
             ScaleForRegion(hunter.Brain);
+            ScaleForKills(hunter.Brain);
             Sfx.Play(SfxId.AssassinAppear);
+        }
+
+        // 살수를 해치울수록 다음 살수가 세져요: 이번 판에 쓰러뜨린 살수 1명당 체력 +30% · 공격 +15%
+        public int AssassinsKilled => _record.Kills[(int)EnemyRank.Assassin];
+
+        void ScaleForKills(EnemyBrain assassin)
+        {
+            int killed = AssassinsKilled;
+            if (assassin == null || killed <= 0) return;
+            assassin.Damageable.ScaleMaxHealth(1f + killed * GameConfig.GetOptional("assassin.kill_health", 0.3f));
+            assassin.ScaleAttack(1f + killed * GameConfig.GetOptional("assassin.kill_attack", 0.15f));
+            ShowBanner($"마교 살수 · 동료 {killed}명을 잃고 더 독해졌어요");
         }
 
         // 따라잡힘: 1.5초 경고 (바닥 원) 뒤 나타나요. 싸우는 중이 아니면 문을 잠그고 결투.

@@ -124,6 +124,7 @@ namespace AThousandDawns.Tests
             Assert.AreEqual(path.Dense, _run.RoomHasElite, "짙은 길이면 방마다 정예 1명");
             if (first.Kind == FloorRoomKind.Reward)
             {
+                _run.OpenPouch(); // 기물 주머니
                 yield return WaitUntil(() => _arena.IsChoosing, 2f);
                 _arena.Choose(0);
             }
@@ -134,8 +135,12 @@ namespace AThousandDawns.Tests
             {
                 _run.Enter(reward, 0);
                 yield return ClearFight();
+                Assert.IsTrue(reward.Pouch, "기물 길 보상 방: 비우면 반짝이는 주머니");
+                Assert.IsFalse(_arena.IsChoosing, "바로 고르기 창이 뜨지 않아요");
+                _run.OpenPouch();
+                Assert.IsFalse(reward.Pouch);
                 yield return WaitUntil(() => _arena.IsChoosing, 2f);
-                Assert.IsTrue(_arena.IsChoosing, "기물 길 보상 방: 기물 3개 중 하나");
+                Assert.IsTrue(_arena.IsChoosing, "주머니를 열면 기물 3개 중 하나");
                 _arena.Choose(0);
             }
             Assert.AreEqual(1, _player.Items.Items.Count);

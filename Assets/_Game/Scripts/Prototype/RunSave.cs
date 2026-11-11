@@ -12,7 +12,7 @@ namespace AThousandDawns.Prototype
     [Serializable]
     public sealed class RunSave
     {
-        [Serializable] public sealed class Room { public int x, y, kind, jars; public bool optional, visited, revealed, cleared, found; public string eventId; }
+        [Serializable] public sealed class Room { public int x, y, kind, jars; public bool optional, visited, revealed, cleared, found, pouch; public string eventId; }
         [Serializable] public sealed class Fork { public int reward; public bool dense; }
         [Serializable] public sealed class Item { public string id; public bool onBoard; public int x, y; }
         [Serializable] public sealed class Part { public int kind; public bool onBoard; public int x, y; }

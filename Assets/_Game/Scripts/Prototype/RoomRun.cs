@@ -122,6 +122,7 @@ namespace AThousandDawns.Prototype
             SetGateMarker(false);
             PlaceCrack(null);
             PlaceJars(null);
+            PlacePouch(null);
             ApplyBook();
             bool resume = ResumeRun;
             ResumeRun = false;
@@ -211,7 +212,7 @@ namespace AThousandDawns.Prototype
             var kinds = new List<RewardKind>((RewardKind[])Enum.GetValues(typeof(RewardKind)));
             if (_unlockedParts.Count == 0) kinds.Remove(RewardKind.Part); // 부품 길은 회귀록에서 부품을 연 뒤부터
             if (!_forgeUnlocked) kinds.Remove(RewardKind.Forge); // 대장간 길은 회귀록에서 대장간을 연 뒤부터
-            if (Player.UsesDagger) kinds.Remove(RewardKind.Scroll); // 비도는 초식이 회수로 고정이라 비급 길이 없어요
+            kinds.Remove(RewardKind.Scroll); // 비급은 고수 보상으로만 (초식이 셋뿐이라)
             for (int i = kinds.Count - 1; i > 0; i--)
             {
                 int j = _rng.Next(i + 1);
@@ -324,6 +325,7 @@ namespace AThousandDawns.Prototype
             SetGateMarker(room.Kind == FloorRoomKind.Gate);
             PlaceCrack(room);
             PlaceJars(room);
+            PlacePouch(room);
 
             if (room.HasFight && !room.Cleared)
             {
@@ -370,6 +372,7 @@ namespace AThousandDawns.Prototype
         {
             if (OffersOpen) return; // 기물을 고른 뒤에 움직여요
             var keyboard = Keyboard.current;
+            if (TickPouch()) return; // 기물 주머니 열기
             if (TickCrack(keyboard)) return; // 금 간 벽 부수기 (기연 방)
             if (AtGate && AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Interact))
             {
@@ -398,8 +401,9 @@ namespace AThousandDawns.Prototype
             SetGateMarker(false);
             PlaceCrack(null);
             PlaceJars(null);
-            if (_floor == MasterFloor && !_masterDone && _floor < _floors) EnterMaster(); // 2층 관문: 고수
-            else if (_floor < _floors) BeginFork(_floor + 1);
+            PlacePouch(null);
+            if (_floor < _floors) BeginFork(_floor + 1);
+            else if (!_masterDone) EnterMaster(); // 마지막 층 관문 뒤: 고수 (꺾으면 객잔)
             else EnterInn();
         }
 
@@ -573,8 +577,9 @@ namespace AThousandDawns.Prototype
                 if (GrantTutorialReward()) text += " · 첫 기물";
                 else if (_path.Reward == RewardKind.Item)
                 {
-                    arena.GrantOffer(_path.Dense ? DenseGradeWeights() : RegionGradeWeights()); // 그 지역 표 (짙으면 다음 지역 표)
-                    text += " · 기물 고르기";
+                    _room.Pouch = true; // 반짝이는 주머니: 앞에서 F로 열면 기물 고르기 (RoomRun.Pouch.cs)
+                    PlacePouch(_room);
+                    text += " · 기물 주머니가 나타났어요";
                 }
                 else if (_path.Reward == RewardKind.Forge)
                 {
@@ -856,7 +861,7 @@ namespace AThousandDawns.Prototype
                         where = $"{RegionName} {_floor}층 · {PathLabel(_path)} · 남은 전투 방 {_map.FightsLeft()}{wave}";
                         break;
                     case Phase.Inn: where = $"{RegionName} · 객잔"; break;
-                    case Phase.Master: where = $"{RegionName} 2층 관문 · 고수"; break;
+                    case Phase.Master: where = $"{RegionName} 관문 · 고수"; break;
                     case Phase.Rest: where = $"{RegionName} 보스 층 · 정비실"; break;
                     case Phase.Boss: where = $"{RegionName} 보스 층 · {(arena.Boss != null ? arena.Boss.DisplayName : "보스")}"; break;
                     case Phase.Done: where = "판 끝"; break;

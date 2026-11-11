@@ -12,7 +12,7 @@ using Object = UnityEngine.Object;
 
 namespace AThousandDawns.Tests
 {
-    // 객잔 비급 (25%, 300)과 이혈 (100, 단전 하나 옮기기)
+    // 객잔: 비급은 진열하지 않음 (고수 보상으로만) · 이혈 (100, 단전 하나 옮기기)
     public class InnGoodsTests : InputTestFixture
     {
         PlayerController _player;
@@ -41,23 +41,11 @@ namespace AThousandDawns.Tests
         InnShop Stock(int seed) => InnShop.Stock(GameConfig.Items.Items, _player.Items, null, new System.Random(seed), currentSkill: _player.Skill);
 
         [UnityTest]
-        public IEnumerator 비급은_가끔_나오고_사면_초식이_바뀜()
+        public IEnumerator 비급은_진열하지_않음()
         {
             yield return Load();
-            int withScroll = 0;
-            InnShop shop = null;
-            for (int seed = 1; seed <= 400; seed++)
-            {
-                var s = Stock(seed);
-                if (s.Slots.Any(x => x.Kind == InnShop.SlotKind.Scroll)) { withScroll++; shop ??= s; }
-            }
-            Assert.That(withScroll, Is.InRange(60, 140), "약 25%");
-            int i = shop.Slots.ToList().FindIndex(x => x.Kind == InnShop.SlotKind.Scroll);
-            var slot = shop.Slots[i];
-            Assert.AreEqual(300, slot.Price);
-            Assert.AreNotEqual(_player.Skill, slot.Skill, "지금 초식은 안 나와요");
-            Assert.AreEqual(300, shop.Buy(i, _player, 300));
-            Assert.AreEqual(slot.Skill, _player.Skill);
+            for (int seed = 1; seed <= 200; seed++)
+                Assert.IsFalse(Stock(seed).Slots.Any(x => x.Kind == InnShop.SlotKind.Scroll), "비급은 고수 보상으로만");
         }
 
         [UnityTest]

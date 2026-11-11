@@ -55,7 +55,7 @@ namespace AThousandDawns.Tests
             for (int guard = 0; run.Floor < run.Floors && guard < 10; guard++)
             {
                 run.LeaveFloor();
-                if (run.CurrentPhase == RoomRun.Phase.Master) // 2층 관문: 고수를 쓰러뜨리고 흡성 (은자는 그대로)
+                if (run.CurrentPhase == RoomRun.Phase.Master) // (고수는 마지막 관문 뒤라 여기선 안 나와요)
                 {
                     run.Master.Damageable.ApplyHit(Mathf.CeilToInt(run.Master.Damageable.MaxHealth * 0.55f));
                     yield return WaitUntil(() => run.MasterInfo.Phase == 2 && !run.MasterInfo.IsTransitioning, 4f);
@@ -68,7 +68,14 @@ namespace AThousandDawns.Tests
             }
             Assert.AreEqual(run.Floors, run.Floor);
             run.LeaveFloor();
-            Assert.AreEqual(RoomRun.Phase.Inn, run.CurrentPhase, "마지막 층 관문 → 객잔");
+            Assert.AreEqual(RoomRun.Phase.Master, run.CurrentPhase, "마지막 층 관문 → 고수 (객잔 바로 앞)");
+            run.Master.Damageable.ApplyHit(Mathf.CeilToInt(run.Master.Damageable.MaxHealth * 0.55f));
+            yield return WaitUntil(() => run.MasterInfo.Phase == 2 && !run.MasterInfo.IsTransitioning, 4f);
+            run.Master.Damageable.ApplyHit(99999);
+            yield return WaitUntil(() => run.IsInEvent, 3f);
+            run.ChooseEvent(1); // 흡성 (은자는 그대로)
+            run.CloseEvent();
+            Assert.AreEqual(RoomRun.Phase.Inn, run.CurrentPhase, "고수 → 객잔");
 
             var shop = run.Shop;
             Assert.AreEqual(3, shop.Slots.Count(s => s.Kind == InnShop.SlotKind.Item), "기물 3개");

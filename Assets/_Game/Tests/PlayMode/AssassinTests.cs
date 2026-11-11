@@ -135,12 +135,35 @@ namespace AThousandDawns.Tests
             Assert.IsTrue(run.IsFighting, "문이 잠겨요");
             yield return WaitUntil(() => director.Enemies.Any(e => e.Kind == EnemyKind.Assassin), 3f);
             var assassin = director.Enemies.First(e => e.Kind == EnemyKind.Assassin);
+            float firstHealth = assassin.Damageable.MaxHealth;
             assassin.Damageable.ApplyHit(99999);
             yield return WaitUntil(() => !run.IsFighting, 2f);
             Assert.IsFalse(run.IsDuel);
             Assert.AreEqual(5, run.Tracking, "살수 처치 −2");
             yield return WaitUntil(() => arena.IsChoosing, 2f);
             Assert.IsTrue(arena.IsChoosing, "살수 보상 기물");
+            arena.Choose(0);
+            Assert.AreEqual(1, run.AssassinsKilled);
+
+            // 다음 층 살수는 더 세요 (1명 쓰러뜨림: 체력 +30%)
+            run.LeaveFloor();
+            run.ChooseFork(0);
+            Assert.AreEqual(1, run.Hunters.Count);
+            map = run.Map;
+            foreach (var room in map.Rooms.Where(r => r.HasFight).Take(2).ToList())
+            {
+                run.Enter(room, 0);
+                yield return WaitUntil(() =>
+                {
+                    for (int i = director.Enemies.Count - 1; i >= 0; i--) director.Enemies[i].Damageable.ApplyHit(99999);
+                    return !run.IsFighting;
+                }, 20f);
+                if (arena.IsChoosing) arena.Choose(0);
+            }
+            run.Enter(map.Start, 0);
+            yield return WaitUntil(() => director.Enemies.Any(e => e.Kind == EnemyKind.Assassin), 3f);
+            var second = director.Enemies.First(e => e.Kind == EnemyKind.Assassin);
+            Assert.AreEqual(firstHealth * 1.3f, second.Damageable.MaxHealth, 1f, "동료를 잃은 살수는 체력 +30%");
         }
 
         [UnityTest]

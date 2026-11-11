@@ -3185,3 +3185,15 @@ MonoBehaviour:
     value: 200
     unit: "\uC740\uC790"
     note: "\uAC1D\uC794 \uC18C\uBB38 \uB4E3\uAE30: \uB2E4\uC74C \uCE35 \uAE30\uC5F0 \uBC29 (\uAC1D\uC794\uB9C8\uB2E4 \uD55C \uBC88)"
+  - key: room.hidden_xp
+    value: 30
+    unit: 
+    note: "\uAE30\uC5F0 \uBC29 \uB0A1\uC740 \uCC45\uC744 \uC77D\uB294\uB2E4 \uC218\uB828\uCE58 (\uBE44\uAE09 \uB300\uC2E0)"
+  - key: assassin.kill_health
+    value: 0.3
+    unit: 
+    note: "\uC0B4\uC218: \uC774\uBC88 \uD310\uC5D0 \uC4F0\uB7EC\uB728\uB9B0 \uC0B4\uC218 1\uBA85\uB2F9 \uB2E4\uC74C \uC0B4\uC218 \uCCB4\uB825 +"
+  - key: assassin.kill_attack
+    value: 0.15
+    unit: 
+    note: "\uC0B4\uC218: \uC4F0\uB7EC\uB728\uB9B0 \uC0B4\uC218 1\uBA85\uB2F9 \uB2E4\uC74C \uC0B4\uC218 \uACF5\uACA9 +"

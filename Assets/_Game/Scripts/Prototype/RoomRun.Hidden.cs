@@ -9,7 +9,7 @@ namespace AThousandDawns.Prototype
     // 기연 방 (판구조 기연 15%, 기획 대화 "기연 방: 내공 수위로 찾는 숨은 방"):
     //   층마다 일정 확률로 막다른 숨은 방이 하나 생겨요. 그 방 쪽 문은 벽으로 막혀 있고, 벽에 금이 가 있어요.
     //   금 간 벽 앞에서 F → 벽이 무너지고 길이 열려요. 공력 4 이상 (면벽수련 오 5면 3)이면 층에 들어설 때 지도에 희미하게 보여요.
-    //   들어가면 영약 (공력 +1)이나 비급 (다른 초식) 중 하나. 아주 드물게 (5%) 진전 (그 판 동안 절초 모양)도. 찾은 기연 방은 회귀의 기억 +5.
+    //   들어가면 영약 (공력 +1)이나 수련 기록 (수련치 +30) 중 하나 (비급은 고수 보상으로만). 아주 드물게 (5%) 진전 (그 판 동안 절초 모양)도. 찾은 기연 방은 회귀의 기억 +5.
     public sealed partial class RoomRun
     {
         // 테스트에서 기연 방을 꼭 만들어요
@@ -104,17 +104,13 @@ namespace AThousandDawns.Prototype
             if (combat.plugs[_crackDirection] != null) combat.plugs[_crackDirection].SetActive(false);
             PlaceCrack(null);
             ShowBanner("벽이 무너지고 숨은 동굴이 드러났어요 · 기연 방");
-            Notify("hidden", "기연 방: 벽의 금을 부수면 열리는 숨은 방 · 영약이나 비급을 얻어요");
+            Notify("hidden", "기연 방: 벽의 금을 부수면 열리는 숨은 방 · 영약이나 수련 기록을 얻어요");
         }
 
-        // 영약이나 비급 중 하나
+        // 영약이나 수련 기록 중 하나 (비급은 고수 보상으로만)
         void OpenHiddenRoom(FloorRoom room)
         {
-            var skill = Player.Skill == SkillKind.BambooFlash ? SkillKind.Quake
-                : Player.Skill == SkillKind.Quake ? SkillKind.BambooFlash
-                : _rng.Next(2) == 0 ? SkillKind.BambooFlash : SkillKind.Quake;
-            string skillName = skill == SkillKind.Quake ? "붕산권" : "죽림섬";
-            string skillText = skill == SkillKind.Quake ? "땅을 내리쳐 원형 충격파, 맞은 적을 밀어냄" : "가까운 적에게 3번 순간이동하며 베기";
+            int xp = Mathf.RoundToInt(GameConfig.GetOptional("room.hidden_xp", 30f));
             var v = new EventView
             {
                 Id = "hidden",
@@ -128,8 +124,8 @@ namespace AThousandDawns.Prototype
             });
             v.Choices.Add(new EventChoice
             {
-                Label = $"비급을 펼친다 · 초식이 {skillName}(으)로 바뀌어요 (우클릭: {skillText})",
-                Act = () => { Player.LearnSkill(skill); return $"{skillName}을(를) 깨우쳤어요. 우클릭 초식이 바뀌었어요."; },
+                Label = $"낡은 책을 읽는다 · 수련치 +{xp}",
+                Act = () => { Player.Level?.Add(xp); return $"노고수가 남긴 수련 기록이에요. 수련치 +{xp}"; },
             });
             // 진전: 아주 드물게 유해가 남긴 검결 한 장 (그 판 동안 절초 모양이 바뀌어요)
             if (JinjeonOverride || _rng.NextDouble() < GameConfig.GetOptional("room.hidden_jinjeon_chance", 0.05f))

@@ -155,7 +155,7 @@ namespace AThousandDawns.Prototype
         {
             Phase.Floor => $"{RegionName} {_floor}층",
             Phase.Fork => $"{RegionName} {_floor}층 갈림길",
-            Phase.Master => $"{RegionName} 2층 관문 ({(_master != null ? _master.DisplayName : "고수")})",
+            Phase.Master => $"{RegionName} 관문 ({(_master != null ? _master.DisplayName : "고수")})",
             Phase.Inn => "객잔",
             Phase.Rest => "정비실",
             Phase.Village => "마을",

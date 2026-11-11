@@ -159,6 +159,8 @@ namespace AThousandDawns.Prototype
                 KeyHint.Draw(prompt, $"{interact} 다음 층으로 · 남은 전투 방 {run.Map.FightsLeft()} · 추적도 {run.Tracking}", _big, _big.fontSize);
             if (run != null && run.NearCrack)
                 KeyHint.Draw(prompt, $"벽에 금이 가 있어요 · {interact} 벽을 부수기", _big, _big.fontSize);
+            if (run != null && run.NearPouch)
+                KeyHint.Draw(prompt, $"{interact} 기물 주머니 열기", _big, _big.fontSize);
 
             if (player != null && player.IsDead && run == null) // 판 구조 씬은 결과 화면이 대신 떠요
                 GUI.Label(new Rect(0, UiScale.Height * 0.4f, UiScale.Width, 60), "쓰러졌어요 · F5 키로 다시 시작", _big);

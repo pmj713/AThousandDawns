@@ -8,7 +8,7 @@ namespace AThousandDawns.Prototype
 {
     // 객잔 (첫 버전): 진열 기물 3개 · 금창약 2개 · 숙박. 가격은 은자 시트 (지역과 상관없이 고정).
     // 기물 첫 장은 내 주 키워드 2개(가진 기물에 가장 많은 키워드) 중에서, 나머지는 무작위. 등급은 그 지역 확률표.
-    // 부품 (해금한 것만) · 비급 (25%, 지금 초식이 아닌 것) · 이혈 (단전 하나 옮기기) · 매각 (가진 기물을 판매가의 40%에) · 소문 듣기 (200, 다음 층 기연 방)
+    // 부품 (해금한 것만) · 이혈 (단전 하나 옮기기) · 매각 (가진 기물을 판매가의 40%에) · 소문 듣기 (200, 다음 층 기연 방)
     public sealed class InnShop
     {
         public enum SlotKind { Item, Potion, Lodging, Part, Scroll, MoveDanjeon, Sell, Rumor } // 저장 번호가 밀리지 않게 끝에 붙여요
@@ -69,14 +69,7 @@ namespace AThousandDawns.Prototype
             if (parts != null && parts.Count > 0)
                 shop._slots.Add(new Slot { Kind = SlotKind.Part, Part = parts[rng.Next(parts.Count)], Price = (int)Math.Round(GameConfig.Get("price.part", 100f)) });
 
-            // 비급: 25%로 하나 (은자 시트 B22). 지금 초식이 아닌 고수 초식 중에서. currentSkill이 없으면 (테스트) 안 놓아요.
-            if (currentSkill.HasValue && rng.NextDouble() < GameConfig.GetOptional("inn.scroll_chance", 0.25f))
-            {
-                var skill = currentSkill.Value == SkillKind.BambooFlash ? SkillKind.Quake
-                    : currentSkill.Value == SkillKind.Quake ? SkillKind.BambooFlash
-                    : rng.Next(2) == 0 ? SkillKind.BambooFlash : SkillKind.Quake;
-                shop._slots.Add(new Slot { Kind = SlotKind.Scroll, Skill = skill, Price = (int)Math.Round(GameConfig.GetOptional("price.scroll", 300f)) });
-            }
+            // 비급은 진열하지 않아요 (초식이 셋뿐이라 고수 보상으로만 · SlotKind.Scroll은 예전 저장용으로 남겨 둬요)
 
             // 이혈: 단전 하나 옮기기 (은자 시트 B26)
             shop._slots.Add(new Slot { Kind = SlotKind.MoveDanjeon, Price = (int)Math.Round(GameConfig.GetOptional("price.move_danjeon", 100f)) });

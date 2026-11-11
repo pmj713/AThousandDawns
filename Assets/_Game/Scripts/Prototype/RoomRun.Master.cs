@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace AThousandDawns.Prototype
 {
-    // 고수 (미니보스): 지역마다 한 명이 2층 관문을 지켜요. 2층 관문에서 F → 고수 결투장 → 3층 갈림길.
+    // 고수 (미니보스): 지역마다 한 명이 마지막 층 관문 뒤, 객잔 바로 앞을 지켜요. 관문에서 F → 고수 결투장 → 객잔.
     // 죽림 고수는 둘 중 하나가 판마다 무작위 (같은 시드면 같은 고수):
     //   청죽객: 결투장 14×10, 대나무 기둥 6그루 · 비급 죽림섬
     //   철권 마웅: 결투장 14×10, 사방 돌벽 (돌진을 벽으로 유도해 기절시키기) · 비급 붕산권
@@ -28,7 +28,6 @@ namespace AThousandDawns.Prototype
         public EnemyBrain Master => _master;
         public IMasterBrain MasterInfo => _master as IMasterBrain;
         public bool MasterDone => _masterDone;
-        int MasterFloor => Mathf.RoundToInt(GameConfig.Get("room.master_floor", 2f));
 
         public void EnterMaster()
         {
@@ -47,7 +46,7 @@ namespace AThousandDawns.Prototype
             ScaleForRegion(_master); // 폐사찰: 체력 ×1.8 · 공격 ×1.3
             ((IMasterBrain)_master).SetZone(site.center, site.size);
             OnFightStart();
-            ShowBanner($"{RegionName} 2층 관문 · 고수 {_master.DisplayName}");
+            ShowBanner($"{RegionName} 관문 · 고수 {_master.DisplayName}");
         }
 
         void TickMaster()
@@ -121,7 +120,7 @@ namespace AThousandDawns.Prototype
                     return;
                 }
                 _masterDone = true;
-                BeginFork(_floor + 1);
+                EnterInn(); // 고수 다음은 객잔
             });
         }
     }

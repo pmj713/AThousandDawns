@@ -89,7 +89,7 @@ namespace AThousandDawns.Prototype
                     s.rooms.Add(new RunSave.Room
                     {
                         x = r.Cell.x, y = r.Cell.y, kind = (int)r.Kind, optional = r.Optional, visited = r.Visited, revealed = r.Revealed,
-                        cleared = r.Cleared, found = r.Found, eventId = r.EventId, jars = r.Jars,
+                        cleared = r.Cleared, found = r.Found, eventId = r.EventId, jars = r.Jars, pouch = r.Pouch,
                     });
                 if (_room != null) { s.roomX = _room.Cell.x; s.roomY = _room.Cell.y; }
             }
@@ -216,6 +216,7 @@ namespace AThousandDawns.Prototype
                         room.Found = r.found;
                         room.EventId = r.eventId;
                         room.Jars = r.jars;
+                        room.Pouch = r.pouch;
                     }
                     _map = map;
                     arena.Blocked = false;

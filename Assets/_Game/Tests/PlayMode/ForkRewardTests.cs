@@ -56,9 +56,10 @@ namespace AThousandDawns.Tests
                 Assert.AreEqual(_run.ForkOptions.Count, _run.ForkOptions.Select(p => p.Reward).Distinct().Count(), "같은 보상은 한 번만");
                 foreach (var p in _run.ForkOptions) seen.Add(p.Reward);
             }
-            foreach (var kind in new[] { RoomRun.RewardKind.Silver, RoomRun.RewardKind.Training, RoomRun.RewardKind.Supply, RoomRun.RewardKind.Scroll, RoomRun.RewardKind.Heal })
+            foreach (var kind in new[] { RoomRun.RewardKind.Silver, RoomRun.RewardKind.Training, RoomRun.RewardKind.Supply, RoomRun.RewardKind.Heal })
                 Assert.IsTrue(seen.Contains(kind), $"{kind}도 나와요 (해금 없이)");
             Assert.IsFalse(seen.Contains(RoomRun.RewardKind.Forge), "대장간은 회귀록 해금 뒤");
+            Assert.IsFalse(seen.Contains(RoomRun.RewardKind.Scroll), "비급 길은 없어요 (고수 보상으로만)");
 
             _player.SetWeapon(WeaponKind.Dagger);
             for (int i = 0; i < 40; i++)

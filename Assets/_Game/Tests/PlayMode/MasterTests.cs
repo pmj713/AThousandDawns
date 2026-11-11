@@ -13,7 +13,7 @@ using Object = UnityEngine.Object;
 
 namespace AThousandDawns.Tests
 {
-    // 고수 (청죽객·철권 마웅): 2층 관문 뒤 결투장, 50%에서 2페이즈, 쓰러뜨리면 비급 전수 / 흡성 / 방면 → 3층 갈림길.
+    // 고수 (청죽객·철권 마웅): 마지막 층 관문 뒤 결투장, 50%에서 2페이즈, 쓰러뜨리면 비급 전수 / 흡성 / 방면 → 객잔.
     public class MasterTests : InputTestFixture
     {
         Mouse _mouse;
@@ -47,7 +47,7 @@ namespace AThousandDawns.Tests
             while (!condition() && (Time.time < end || Time.realtimeSinceStartup < realEnd) && Time.realtimeSinceStartup < hardEnd) yield return null;
         }
 
-        // 1층 → 2층 → 2층 관문 → 고수. 쓰러뜨리고 선택 화면까지.
+        // 1층 → 2층 → 3층 → 마지막 관문 → 고수. 쓰러뜨리고 선택 화면까지.
         IEnumerator BeatMaster(EnemyKind kind = EnemyKind.Qingzhu)
         {
             RoomRun.MasterOverride = kind;
@@ -55,12 +55,13 @@ namespace AThousandDawns.Tests
             yield return null;
             _run = Object.FindFirstObjectByType<RoomRun>();
             _player = Object.FindFirstObjectByType<PlayerController>();
-            _run.ChooseFork(0);
-            _run.LeaveFloor();
-            Assert.AreEqual(2, _run.Floor, "1층 관문 → 2층 갈림길 (고수는 2층 관문)");
-            _run.ChooseFork(0);
-            _run.LeaveFloor();
-            Assert.AreEqual(RoomRun.Phase.Master, _run.CurrentPhase, "2층 관문 → 고수 결투장");
+            for (int floor = 1; floor <= 3; floor++)
+            {
+                Assert.AreEqual(floor, _run.Floor);
+                _run.ChooseFork(0);
+                _run.LeaveFloor();
+            }
+            Assert.AreEqual(RoomRun.Phase.Master, _run.CurrentPhase, "마지막 층 관문 → 고수 결투장 (객잔 바로 앞)");
             var master = _run.Master;
             var info = _run.MasterInfo;
             Assert.IsNotNull(master);
@@ -80,14 +81,13 @@ namespace AThousandDawns.Tests
         }
 
         [UnityTest]
-        public IEnumerator 비급_전수를_고르면_초식이_죽림섬으로_바뀌고_3층_갈림길()
+        public IEnumerator 비급_전수를_고르면_초식이_죽림섬으로_바뀌고_객잔으로()
         {
             yield return BeatMaster();
             Assert.IsTrue(_run.ChooseEvent(0));
             Assert.AreEqual(SkillKind.BambooFlash, _player.Skill);
             _run.CloseEvent();
-            Assert.IsTrue(_run.IsForking);
-            Assert.AreEqual(3, _run.Floor);
+            Assert.AreEqual(RoomRun.Phase.Inn, _run.CurrentPhase, "고수 다음은 객잔");
             Assert.IsTrue(_run.MasterDone);
         }
 
@@ -99,7 +99,7 @@ namespace AThousandDawns.Tests
             Assert.AreEqual(SkillKind.Quake, _player.Skill);
             Assert.AreEqual("붕산권", _player.SkillName);
             _run.CloseEvent();
-            Assert.AreEqual(3, _run.Floor);
+            Assert.AreEqual(RoomRun.Phase.Inn, _run.CurrentPhase);
         }
 
         // 철권 마웅을 멀리 두면 돌진하다 벽에 부딪혀 기절 (빈틈)
