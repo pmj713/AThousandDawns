@@ -25,6 +25,8 @@ namespace AThousandDawns.EditorTools
         const string ClerkColor = "#D9C9A8";  // 점소이 (임시)
         const string StoneColor = "#6E6A64";  // 철권 마웅 결투장 돌벽 (임시)
         static readonly Vector3 BossCenter = new Vector3(120f, 0f, 0f);
+        static readonly Vector2 MasterSize = new Vector2(20f, 14f);   // 고수 결투장 (청죽객·철권 마웅/혜광) 안쪽 크기
+        static readonly Vector2 BossSize = new Vector2(24f, 18f);     // 보스 방 (녹림왕/혈불) 안쪽 크기
         static readonly Vector2 CombatSize = new Vector2(20f, 12f);
 
         static void BuildRun(BalanceConfig balance, AThousandDawns.Items.ItemDatabase itemDb)
@@ -80,17 +82,17 @@ namespace AThousandDawns.EditorTools
             clerk.transform.localScale = new Vector3(0.6f, 0.8f, 0.6f);
             clerk.GetComponent<Renderer>().sharedMaterial = GetMaterial("Clerk", ClerkColor, false);
 
-            // 고수 결투장 (청죽객): 14×10, 테두리 대나무 숲, 안에 대나무 기둥 6그루 (몬스터 시트 115행)
+            // 고수 결투장 (청죽객): MasterSize (처음 14×10에서 넓혔어요), 테두리 대나무 숲, 안에 대나무 기둥 6그루 (몬스터 시트 115행)
             var masterRoom = new GameObject("Room_Master").transform;
-            Box("Floor", masterRoom, MasterCenter + new Vector3(0f, -0.1f, 0f), new Vector3(15f, 0.2f, 11f), floorMat);
-            Box("Bamboo_W", masterRoom, MasterCenter + new Vector3(-7.25f, 1.25f, 0f), new Vector3(0.5f, 2.5f, 10.5f), bambooMat);
-            Box("Bamboo_E", masterRoom, MasterCenter + new Vector3(7.25f, 1.25f, 0f), new Vector3(0.5f, 2.5f, 10.5f), bambooMat);
-            Box("Bamboo_N", masterRoom, MasterCenter + new Vector3(0f, 1.25f, 5.25f), new Vector3(15f, 2.5f, 0.5f), bambooMat);
-            Box("Bamboo_S", masterRoom, MasterCenter + new Vector3(0f, 1.25f, -5.25f), new Vector3(15f, 2.5f, 0.5f), bambooMat);
+            Box("Floor", masterRoom, MasterCenter + new Vector3(0f, -0.1f, 0f), new Vector3(MasterSize.x + 1f, 0.2f, MasterSize.y + 1f), floorMat);
+            Box("Bamboo_W", masterRoom, MasterCenter + new Vector3(-MasterSize.x * 0.5f - 0.25f, 1.25f, 0f), new Vector3(0.5f, 2.5f, MasterSize.y + 0.5f), bambooMat);
+            Box("Bamboo_E", masterRoom, MasterCenter + new Vector3(MasterSize.x * 0.5f + 0.25f, 1.25f, 0f), new Vector3(0.5f, 2.5f, MasterSize.y + 0.5f), bambooMat);
+            Box("Bamboo_N", masterRoom, MasterCenter + new Vector3(0f, 1.25f, MasterSize.y * 0.5f + 0.25f), new Vector3(MasterSize.x + 1f, 2.5f, 0.5f), bambooMat);
+            Box("Bamboo_S", masterRoom, MasterCenter + new Vector3(0f, 1.25f, -MasterSize.y * 0.5f - 0.25f), new Vector3(MasterSize.x + 1f, 2.5f, 0.5f), bambooMat);
             Vector3[] masterPillars =
             {
-                new Vector3(-4f, 0f, 2.5f), new Vector3(4f, 0f, 2.5f), new Vector3(-4f, 0f, -2.5f),
-                new Vector3(4f, 0f, -2.5f), new Vector3(-5.5f, 0f, 0f), new Vector3(5.5f, 0f, 0f),
+                new Vector3(-5.5f, 0f, 3.5f), new Vector3(5.5f, 0f, 3.5f), new Vector3(-5.5f, 0f, -3.5f),
+                new Vector3(5.5f, 0f, -3.5f), new Vector3(-7.5f, 0f, 0f), new Vector3(7.5f, 0f, 0f),
             };
             for (int i = 0; i < masterPillars.Length; i++)
             {
@@ -102,27 +104,27 @@ namespace AThousandDawns.EditorTools
                 b.GetComponent<Renderer>().sharedMaterial = bambooMat;
             }
 
-            // 철권 마웅 결투장: 14×10, 사방 돌벽 (기둥 없음, 돌진을 벽으로 유도) (몬스터 시트 116행)
+            // 철권 마웅 결투장: MasterSize, 사방 돌벽 (기둥 없음, 돌진을 벽으로 유도) (몬스터 시트 116행)
             var ironRoom = new GameObject("Room_IronMaster").transform;
             var stoneMat = GetMaterial("Stone", StoneColor, false);
-            Box("Floor", ironRoom, IronMasterCenter + new Vector3(0f, -0.1f, 0f), new Vector3(15f, 0.2f, 11f), floorMat);
-            Box("Stone_W", ironRoom, IronMasterCenter + new Vector3(-7.25f, 1f, 0f), new Vector3(0.5f, 2f, 10.5f), stoneMat);
-            Box("Stone_E", ironRoom, IronMasterCenter + new Vector3(7.25f, 1f, 0f), new Vector3(0.5f, 2f, 10.5f), stoneMat);
-            Box("Stone_N", ironRoom, IronMasterCenter + new Vector3(0f, 1f, 5.25f), new Vector3(15f, 2f, 0.5f), stoneMat);
-            Box("Stone_S", ironRoom, IronMasterCenter + new Vector3(0f, 1f, -5.25f), new Vector3(15f, 2f, 0.5f), stoneMat);
+            Box("Floor", ironRoom, IronMasterCenter + new Vector3(0f, -0.1f, 0f), new Vector3(MasterSize.x + 1f, 0.2f, MasterSize.y + 1f), floorMat);
+            Box("Stone_W", ironRoom, IronMasterCenter + new Vector3(-MasterSize.x * 0.5f - 0.25f, 1f, 0f), new Vector3(0.5f, 2f, MasterSize.y + 0.5f), stoneMat);
+            Box("Stone_E", ironRoom, IronMasterCenter + new Vector3(MasterSize.x * 0.5f + 0.25f, 1f, 0f), new Vector3(0.5f, 2f, MasterSize.y + 0.5f), stoneMat);
+            Box("Stone_N", ironRoom, IronMasterCenter + new Vector3(0f, 1f, MasterSize.y * 0.5f + 0.25f), new Vector3(MasterSize.x + 1f, 2f, 0.5f), stoneMat);
+            Box("Stone_S", ironRoom, IronMasterCenter + new Vector3(0f, 1f, -MasterSize.y * 0.5f - 0.25f), new Vector3(MasterSize.x + 1f, 2f, 0.5f), stoneMat);
 
             BuildVillage(floorMat, wallMat);
 
             // 정비실: 12×10, 북쪽 문은 늘 열려 있어요
             BuildShell("Room_Rest", RestCenter, new Vector2(12f, 10f), floorMat, wallMat);
 
-            // 녹림왕 방: 16×12 (몬스터 시트 결투장), 테두리는 대나무 숲. 들어오면 바로 결투
+            // 녹림왕 방: BossSize (몬스터 시트 16×12에서 넓혔어요), 테두리는 대나무 숲. 들어오면 바로 결투
             var boss = new GameObject("Room_Boss").transform;
-            Box("Floor", boss, BossCenter + new Vector3(0f, -0.1f, 0f), new Vector3(17f, 0.2f, 13f), floorMat);
-            Box("Bamboo_W", boss, BossCenter + new Vector3(-8.25f, 1.25f, 0f), new Vector3(0.5f, 2.5f, 12.5f), bambooMat);
-            Box("Bamboo_E", boss, BossCenter + new Vector3(8.25f, 1.25f, 0f), new Vector3(0.5f, 2.5f, 12.5f), bambooMat);
-            Box("Bamboo_N", boss, BossCenter + new Vector3(0f, 1.25f, 6.25f), new Vector3(17f, 2.5f, 0.5f), bambooMat);
-            Box("Bamboo_S", boss, BossCenter + new Vector3(0f, 1.25f, -6.25f), new Vector3(17f, 2.5f, 0.5f), bambooMat);
+            Box("Floor", boss, BossCenter + new Vector3(0f, -0.1f, 0f), new Vector3(BossSize.x + 1f, 0.2f, BossSize.y + 1f), floorMat);
+            Box("Bamboo_W", boss, BossCenter + new Vector3(-BossSize.x * 0.5f - 0.25f, 1.25f, 0f), new Vector3(0.5f, 2.5f, BossSize.y + 0.5f), bambooMat);
+            Box("Bamboo_E", boss, BossCenter + new Vector3(BossSize.x * 0.5f + 0.25f, 1.25f, 0f), new Vector3(0.5f, 2.5f, BossSize.y + 0.5f), bambooMat);
+            Box("Bamboo_N", boss, BossCenter + new Vector3(0f, 1.25f, BossSize.y * 0.5f + 0.25f), new Vector3(BossSize.x + 1f, 2.5f, 0.5f), bambooMat);
+            Box("Bamboo_S", boss, BossCenter + new Vector3(0f, 1.25f, -BossSize.y * 0.5f - 0.25f), new Vector3(BossSize.x + 1f, 2.5f, 0.5f), bambooMat);
 
             var config = new GameObject("GameConfig").AddComponent<GameConfig>();
             SetRef(config, "balance", LoadBalance());
@@ -167,11 +169,11 @@ namespace AThousandDawns.EditorTools
                 lockArr.GetArrayElementAtIndex(d).objectReferenceValue = locks[d];
                 plugArr.GetArrayElementAtIndex(d).objectReferenceValue = plugs[d];
             }
-            SetSite(runSo.FindProperty("master"), MasterCenter, new Vector2(14f, 10f), new Vector3(0f, 0f, -3.5f), new Vector3(0f, 0f, 99f));
-            SetSite(runSo.FindProperty("ironMaster"), IronMasterCenter, new Vector2(14f, 10f), new Vector3(0f, 0f, -3.5f), new Vector3(0f, 0f, 99f));
+            SetSite(runSo.FindProperty("master"), MasterCenter, MasterSize, new Vector3(0f, 0f, -MasterSize.y * 0.5f + 1.5f), new Vector3(0f, 0f, 99f));
+            SetSite(runSo.FindProperty("ironMaster"), IronMasterCenter, MasterSize, new Vector3(0f, 0f, -MasterSize.y * 0.5f + 1.5f), new Vector3(0f, 0f, 99f));
             SetSite(runSo.FindProperty("inn"), InnCenter, new Vector2(12f, 10f), new Vector3(0f, 0f, -3.5f), new Vector3(0f, 0f, 6.6f));
             SetSite(runSo.FindProperty("rest"), RestCenter, new Vector2(12f, 10f), new Vector3(0f, 0f, -3.5f), new Vector3(0f, 0f, 6.6f));
-            SetSite(runSo.FindProperty("boss"), BossCenter, new Vector2(16f, 12f), new Vector3(0f, 0f, -4.5f), new Vector3(0f, 0f, 99f));
+            SetSite(runSo.FindProperty("boss"), BossCenter, BossSize, new Vector3(0f, 0f, -BossSize.y * 0.5f + 1.5f), new Vector3(0f, 0f, 99f));
             SetSite(runSo.FindProperty("village"), VillageCenter, VillageSize, VillageEntry, VillageExit);
             runSo.ApplyModifiedPropertiesWithoutUndo();
 

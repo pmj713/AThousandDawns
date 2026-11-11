@@ -211,8 +211,8 @@ nokrim.atk,22,,녹림왕 공격 (패턴 피해 = 배율 × 이 값),몬스터!G6
 nokrim.toughness,5,,녹림왕 강인함,몬스터!H62
 nokrim.defense,10%,,녹림왕 방어력,몬스터!I62
 nokrim.move_speed,3,cell/s,녹림왕 이동,몬스터!C114
-nokrim.arena_width,16,cell,결투장 가로 (몬스터 B114 설명),
-nokrim.arena_depth,12,cell,결투장 세로 (몬스터 B114 설명),
+nokrim.arena_width,24,cell,결투장 가로 (몬스터 B114 설명은 16 → 보스 방을 넓혀 24),
+nokrim.arena_depth,18,cell,결투장 세로 (몬스터 B114 설명은 12 → 보스 방을 넓혀 18),
 nokrim.phase2_hp_ratio,0.5,,이 체력 비율 아래면 2페이즈 (몬스터 A94 설명),
 nokrim.transition_time,1.5,s,"페이즈 전환 연출, 무적 (몬스터 A94 설명)",
 nokrim.max_repeat,2,,같은 패턴 연속 최대 (몬스터 A94 설명),

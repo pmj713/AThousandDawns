@@ -625,18 +625,23 @@ def make_action(name, keys, pose):
     """keys의 각 프레임 값으로 pose(값)를 세우고 회전(엉덩이는 위치도)을 키로 넣어요.
     자세는 동작 없이 계산해 두고 (동작이 걸려 있으면 갱신할 때마다 키 값으로 덮여요), 나중에 한꺼번에 키를 넣어요."""
     rig.animation_data_create(); rig.animation_data.action = None
-    poses = []
+    poses, locs = [], []
     for f, val in keys:
         reset_pose()
         pose(val)
         poses.append((f, {p.name: p.rotation_quaternion.copy() for p in pb}, pb["Hips"].location.copy()))
+        locs.append({p.name: p.location.copy() for p in pb})
     # 같은 회전도 q와 -q 두 값이 있어요. 키마다 앞 키와 같은 쪽 값으로 맞춰야 사이를 이을 때 먼 길로 빙글 돌지 않아요
     for (_, prev, _), (_, cur, _) in zip(poses[:-1], poses[1:]):
         for n, q in cur.items():
             if q.dot(prev[n]) < 0:
                 cur[n] = -q
     act = bpy.data.actions.new(name); rig.animation_data.action = act
-    for f, quats, hips in poses:
+    moved = [p.name for p in pb if p.name != "Hips" and any(l[p.name].length > 1e-5 for l in locs)]   # 늘이려고 밀어낸 뼈(팔)만 위치도 키로
+    for (f, quats, hips), lc in zip(poses, locs):
+        for n in moved:
+            pb[n].location = lc[n]
+            pb[n].keyframe_insert("location", frame=f)
         for p in pb:
             p.rotation_quaternion = quats[p.name]
             p.keyframe_insert("rotation_quaternion", frame=f)
@@ -1361,27 +1366,36 @@ if "buddhamoves" in EXTRAS:
             arm(s, sh + Vector((sx * 0.8 + sign * 0.3, -0.6, -0.05)).normalized() * REACH * 0.98, Vector((0, 0.3, -1)))
     make_action("Arms", [(0, "R"), (7, "L"), (14, "L"), (20, "R"), (27, "R"), (34, "L"), (41, "L"), (52, "idle")], arms_pose)
 
-    # 혈수(Grab, 2페이즈): 오른팔을 옆구리 뒤로 당겨 손을 펴고(예고 0.6초 동안 멈춤) → 앞으로 쭉 내뻗어 움켜쥐고 → 확 끌어당겨요.
-    #   손이 뻗어 나가는 핏빛 먹 손은 Unity(InkEnemyAnimator)가 그려요
+    # 혈수(Grab, 2페이즈): 예고(약 0.6초) 내내 오른팔을 혈불 앞(조준 방향)으로 곧게 쭉 뻗고 손바닥을 앞으로 펼친 자세로 버티다가
+    #   (첫 자세로 멈춤) → 판정 뒤 잠깐 그대로 → 움켜쥐고 가슴께로 확 끌어당겨요.
+    #   손바닥(RightHand 뼈)에서 앞으로 나가는 소용돌이는 Unity가 그려요 (아트2의 InkBloodBuddhaFx)
+    ARM_STRETCH = (0.3, 0.45)   # 위팔·아래팔을 이만큼(m, 키 3.2 기준) 더 늘여요 → 팔이 원래의 약 1.8배
     def grab_pose(stage):
         if stage == "idle":
             idle_end_pose(); return
         sh = pb["RightArm"].head.copy()
-        if stage == "load":
-            heavy(-0.06, -6)
-            bend("Spine", UP, -25)                                          # 오른어깨를 뒤로 감아요
-            arm("Right", sh + Vector((-0.2, 0.35, -0.2)), Vector((-1, 0.4, -0.4)))
-        elif stage == "reach":
-            heavy(-0.14, 18)
-            bend("Spine", UP, 22)                                           # 허리째 내던지듯
-            arm("Right", sh + Vector((0.1, -1, 0.0)).normalized() * REACH, Vector((-1, 0, -1)))   # 쭉 뻗어요
+        if stage == "reach":
+            heavy(-0.16, 24)                                                # 상체를 앞으로 크게 숙여요
+            bend("RightShoulder", UP, 38)                                   # 오른 어깨부터 앞으로 크게 내밀고
+            bpy.context.view_layer.update()
+            sh = pb["RightArm"].head.copy()
+            arm("Right", sh + Vector((0.08, -1, 0)).normalized() * REACH * 1.1, Vector((-1, 0, -1)))   # 팔꿈치를 다 펴서 정면으로, 땅과 수평
+            bend("RightHand", Vector((1, 0, 0)), -75)                       # 손목을 젖혀 손바닥이 앞을 봐요 (손가락은 위)
+            # 핏빛 기운으로 팔이 몸 길이만큼 쭈욱 늘어나요: 팔꿈치·손목 뼈를 팔 방향으로 밀어내요 (뼈 축이 팔 방향이 아니라 크기로는 못 늘여요)
+            bpy.context.view_layer.update()
+            along = (pb["RightHand"].head - pb["RightArm"].head).normalized()
+            for n, extra in (("RightForeArm", ARM_STRETCH[0]), ("RightHand", ARM_STRETCH[1])):
+                m = pb[n].matrix.copy()
+                m.translation += along * extra
+                pb[n].matrix = m
+                bpy.context.view_layer.update()
         else:
             heavy(-0.1, 4)
             bend("Spine", UP, -15)
             arm("Right", sh + Vector((-0.08, -0.15, -0.15)), Vector((-1, 0.3, -0.6)))   # 움켜쥐고 가슴께로 끌어당겨요
         sl = pb["LeftArm"].head.copy()
         arm("Left", sl + Vector((0.2, -0.05, -0.55)), Vector((1, 0.3, -0.3)))
-    make_action("Grab", [(0, "load"), (3, "reach"), (8, "reach"), (13, "pull"), (22, "pull"), (32, "idle")], grab_pose)
+    make_action("Grab", [(0, "reach"), (9, "reach"), (14, "pull"), (22, "pull"), (32, "idle")], grab_pose)
     rig.animation_data.action = None
     reset_pose()
 
