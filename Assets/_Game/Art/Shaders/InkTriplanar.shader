@@ -77,6 +77,8 @@ Shader "AThousandDawns/InkTriplanar"
 
             // 지역 색 양 (InkColorZones가 전역으로 정해요): 0 = 재질 채도 그대로(수묵), 1 = 원래 색 전부
             float _InkColorAmount;
+            // 배경 옅게 (InkLookSettings가 전역으로 정해요): 0 = 그대로, 1 = 한지색. 캐릭터가 배경에서 도드라지게
+            float _InkEnvFade;
 
         float Hash13(float3 p)
         {
@@ -193,6 +195,7 @@ Shader "AThousandDawns/InkTriplanar"
 
                 float grain = Hash13(float3(floor(input.positionCS.xy * 0.5), 7.0));
                 color *= 1.0 - (grain - 0.5) * _PaperGrain;
+                color = lerp(color, _PaperColor.rgb, _InkEnvFade * 0.85);
 
                 color = MixFog(color, input.fogFactor);
                 return half4(color, 1.0);
@@ -249,7 +252,7 @@ Shader "AThousandDawns/InkTriplanar"
 
             half4 Frag(Varyings input) : SV_Target
             {
-                return half4(MixFog(_InkColor.rgb, input.fogFactor), 1.0);
+                return half4(MixFog(lerp(_InkColor.rgb, _PaperColor.rgb, _InkEnvFade * 0.6), input.fogFactor), 1.0);
             }
             ENDHLSL
         }
