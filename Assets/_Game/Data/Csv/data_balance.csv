@@ -830,3 +830,7 @@ bloodbuddha.grab_width,1.4,cell,혈불 혈수 폭,
 bloodbuddha.grab_ratio,0.6,,혈불 혈수 피해 배율 (맞으면 끌려와 바로 팔 휘두르기),
 bloodbuddha.grab_stop,2,cell,혈불 혈수: 끌려와 멈추는 거리,
 bloodbuddha.grab_recovery,0.3,s,혈불 혈수 뒤 팔 휘두르기까지,
+knife.scroll_flash_ratio,50%,,비도 + 죽림섬: 회수할 때 순간이동 베기 피해 (초식 피해 대비),비도 비급 (회수에 덧붙음)
+knife.scroll_quake_radius,2.5,칸,비도 + 붕산권: 회수할 때 충격파 반경,비도 비급 (회수에 덧붙음)
+knife.scroll_quake_ratio,60%,,비도 + 붕산권: 충격파 피해 (초식 피해 대비),비도 비급 (회수에 덧붙음)
+knife.scroll_palm_shield,1%,,비도 + 금강장: 돌아온 비도 1개당 보호막 (최대 체력 비율),비도 비급 (회수에 덧붙음)

@@ -71,7 +71,7 @@ namespace AThousandDawns.Tests
             Assert.AreEqual(2, master.Phase);
 
             // 2페이즈 금강불괴 강화: 버티는 동안 맞을 때마다 충격파가 커져요 (최대 +2칸)
-            yield return WaitUntil(() => master.IsVajra, 12f);
+            yield return WaitUntil(() => { player.Heal(9999f); return master.IsVajra; }, 12f);
             Assert.IsTrue(master.IsVajra, "2페이즈에도 금강불괴");
             float radius = master.VajraRadius;
             for (int i = 0; i < 10; i++) master.Damageable.ApplyHit(1);
@@ -103,7 +103,17 @@ namespace AThousandDawns.Tests
             master.SetZone(Vector3.zero, new Vector2(40f, 24f));
 
             int beads = 0;
-            yield return WaitUntil(() => (beads = Object.FindObjectsByType<BeadThrow>(FindObjectsSortMode.None).Length) > 0, 6f);
+            var keep = player.GetComponent<CharacterController>();
+            yield return WaitUntil(() =>
+            {
+                // 4칸 거리를 지켜요 (첫 공격 대기 동안 다가오니까)
+                Vector3 away = player.transform.position - master.transform.position;
+                away.y = 0f;
+                keep.enabled = false;
+                player.transform.position = master.transform.position + (away.sqrMagnitude > 1e-4f ? away.normalized : Vector3.back) * 4f;
+                keep.enabled = true;
+                return (beads = Object.FindObjectsByType<BeadThrow>(FindObjectsSortMode.None).Length) > 0;
+            }, 6f);
             Assert.AreEqual(3, beads, "4칸 거리에서도 염주 세 갈래");
 
             var cc = player.GetComponent<CharacterController>();

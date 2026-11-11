@@ -176,5 +176,55 @@ namespace AThousandDawns.Tests
             player = Object.FindFirstObjectByType<PlayerController>();
             Assert.IsTrue(player.UsesDagger, "출발해도 비도");
         }
+        // 비도는 비급을 배워도 초식이 회수 그대로, 비급은 회수에 효과를 덧붙여요
+        IEnumerator RecallWith(SkillKind skill, float distance, Func<EnemyBrain, IEnumerator> check)
+        {
+            yield return LoadCombat();
+            _player.LearnSkill(skill);
+            var boar = _director.Spawn(EnemyKind.Boar, _player.transform.position + _player.Facing * distance);
+            boar.Damageable.ScaleMaxHealth(10f); // 회수 피해에 죽지 않게
+            yield return null;
+            for (int i = 0; i < 3; i++) _player.ThrowDaggers(1, HitDamageInput.Of(1f), HitTag.Basic, 0f);
+            yield return WaitUntil(() => _player.StuckDaggers(boar.Damageable) == 3, 2f);
+            Assert.AreEqual($"회수 · {PlayerController.SkillLabel(skill)} (비도 3)", _player.SkillName);
+            Press(Mouse.current.rightButton);
+            yield return null;
+            Release(Mouse.current.rightButton);
+            yield return WaitUntil(() => _player.DaggerCount == 0, 2f);
+            Assert.AreEqual(0, _player.DaggerCount, "회수는 그대로");
+            yield return check(boar);
+        }
+
+        [UnityTest]
+        public IEnumerator 비도_금강장은_돌아온_비도만큼_보호막()
+        {
+            yield return RecallWith(SkillKind.Palm, 3f, boar =>
+            {
+                Assert.Greater(_player.Shields.Total, 0, "보호막");
+                return Done();
+            });
+        }
+
+        [UnityTest]
+        public IEnumerator 비도_죽림섬은_꽂힌_적에게_순간이동()
+        {
+            yield return RecallWith(SkillKind.BambooFlash, 4f, boar =>
+            {
+                Assert.Less(Vector3.Distance(_player.transform.position, boar.transform.position), 2.5f, "적 곁으로 순간이동");
+                return Done();
+            });
+        }
+
+        [UnityTest]
+        public IEnumerator 비도_붕산권은_회수와_함께_충격파()
+        {
+            yield return RecallWith(SkillKind.Quake, 1.5f, boar =>
+            {
+                Assert.Greater(Vector3.Distance(_player.transform.position, boar.transform.position), 2.5f, "밀려나요");
+                return Done();
+            });
+        }
+
+        static IEnumerator Done() { yield break; }
     }
 }

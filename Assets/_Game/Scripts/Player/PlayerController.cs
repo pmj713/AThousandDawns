@@ -333,7 +333,7 @@ namespace AThousandDawns.Player
             if (IsCastingSkill)
             {
                 TickSkill(dt);
-                if (Skill == SkillKind.BambooFlash) return; // 죽림섬은 순간이동으로만 움직여요
+                if (Skill == SkillKind.BambooFlash && !UsesDagger) return; // 죽림섬은 순간이동으로만 움직여요 (비도는 회수)
                 UpdateMovement(dt);
                 ApplySkillSpin();
                 return;
@@ -488,6 +488,18 @@ namespace AThousandDawns.Player
         void TickSkill(float dt)
         {
             _skillElapsed += dt;
+            if (RecallSkill) // 비도: 회수 (배운 비급은 회수에 효과를 덧붙여요)
+            {
+                if (!_skillHitDone && _skillElapsed >= D("knife.recall_cast", 0.3f))
+                {
+                    _skillHitDone = true;
+                    var mark = MostStuckTarget();
+                    int returning = DaggerCount;
+                    RecallDaggers();
+                    ScrollOnRecall(mark, returning);
+                }
+                return;
+            }
             if (Skill == SkillKind.BambooFlash)
             {
                 TickBambooFlash();
@@ -501,15 +513,6 @@ namespace AThousandDawns.Player
             if (Skill == SkillKind.Palm)
             {
                 TickPalm();
-                return;
-            }
-            if (RecallSkill) // 비도: 회수
-            {
-                if (!_skillHitDone && _skillElapsed >= D("knife.recall_cast", 0.3f))
-                {
-                    _skillHitDone = true;
-                    RecallDaggers();
-                }
                 return;
             }
             if (!_skillHitDone && _skillElapsed >= _skillHitTime)
@@ -587,7 +590,7 @@ namespace AThousandDawns.Player
         // 베는 동안 몸을 한 바퀴 돌려요 (시험판용 표시). 시전이 끝나면 원래 방향.
         void ApplySkillSpin()
         {
-            if ((Skill == SkillKind.Quake || Skill == SkillKind.Palm) && _skillElapsed < _skillCastTime) return; // 붕산권 · 금강장은 돌지 않아요
+            if ((Skill == SkillKind.Quake || Skill == SkillKind.Palm) && !UsesDagger && _skillElapsed < _skillCastTime) return; // 붕산권 · 금강장은 돌지 않아요
             if (_skillElapsed >= _skillCastTime)
             {
                 _skillElapsed = -1f;
