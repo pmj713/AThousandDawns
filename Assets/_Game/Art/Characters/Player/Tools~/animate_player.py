@@ -520,6 +520,32 @@ for f, pose_fn in ((0, ready_pose),
     pose_fn(); key_all(f)
 actions.append((act, 0, 14))
 
+# 죽림섬(SkillFlash, 비급 · 0.25초 간격으로 3번 순간이동 베기 = 7.5프레임마다):
+#   번갈아 몸을 낮게 숙이고 칼을 가로로 쭉 뻗은 채 "지나간 뒤" 자세 — 1·3번째는 오른쪽 뒤로 베어 넘기고,
+#   2번째는 왼쪽으로 되받아 넘겨요. 마지막엔 칼을 털고 준비 자세로
+def flash_pose(stage):
+    if stage == "ready":
+        ready_pose(); return
+    right = stage in ("cut1", "cut3")
+    if right:   # 왼쪽 앞에서 오른쪽 뒤로 베어 넘긴 끝 (팔이 오른쪽 뒤로 쭉)
+        swing_pose(-40, 62, -75, 4, lean=24, knee=55, left_pull=30)
+        sword = Vector((-0.85, 0.45, -0.1))
+    else:       # 오른쪽에서 왼쪽 앞으로 되받아 넘긴 끝 (팔이 가슴 앞을 지나 왼쪽으로)
+        swing_pose(42, 60, 105, 10, lean=24, knee=55, left_pull=5)
+        sword = Vector((0.75, -0.55, -0.1))
+    set_hips_height(-0.2)
+    bpy.context.view_layer.update()
+    _limb("LeftUpperLeg", "LeftLowerLeg", "LeftFoot", Q_FOOT["Left"] + Vector((0.03, -0.38, 0)), Vector((0, -1, 0)))     # 왼발을 앞으로 깊게 디뎌요
+    _limb("RightUpperLeg", "RightLowerLeg", "RightFoot", Q_FOOT["Right"] + Vector((-0.03, 0.42, 0.02)), Vector((0, -1, 0)))  # 오른발은 뒤로 미끄러져요
+    aim_sword(sword)
+
+
+act = new_action("SkillFlash")
+for f, stage in ((0, "cut1"), (4, "cut1"), (7, "cut2"), (11, "cut2"), (15, "cut3"), (19, "cut3"), (25, "ready")):
+    flash_pose(stage); key_all(f)
+actions.append((act, 0, 25))
+
+
 # 반복 동작은 처음·끝이 같은 키라 이어 붙어요. 보간은 부드럽게(베지어 기본)
 rig.animation_data.action = None
 rest_pose()

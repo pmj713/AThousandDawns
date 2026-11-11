@@ -18,6 +18,7 @@ namespace AThousandDawns.Art
         static readonly int DashId = Animator.StringToHash("Dash");
         static readonly int SkillId = Animator.StringToHash("Skill");
         static readonly int SkillQuakeId = Animator.StringToHash("SkillQuake");
+        static readonly int SkillFlashId = Animator.StringToHash("SkillFlash");
 
         PlayerController _player;
         Animator _animator;
@@ -67,6 +68,11 @@ namespace AThousandDawns.Art
             {
                 _animator.ResetTrigger(AttackId);
                 _animator.SetTrigger(SkillQuakeId);
+            }
+            if (casting && !_wasCasting && _player.Skill == SkillKind.BambooFlash)   // 죽림섬: 좌우로 번갈아 베어 넘기기
+            {
+                _animator.ResetTrigger(AttackId);
+                _animator.SetTrigger(SkillFlashId);
             }
             _wasCasting = casting;
 
