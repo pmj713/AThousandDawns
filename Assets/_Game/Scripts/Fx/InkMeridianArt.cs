@@ -6,6 +6,7 @@ namespace AThousandDawns.Fx
     //   Backdrop: 화면 전체 — 먹 번짐 위로 경혈도(사람 몸 경락선)가 옅게 비치는 어두운 바탕.
     //   Cell:     칸 — 기 색으로 물든 먹 번짐 + 옅은 한지색 붓 네모 테두리. 단전 칸은 아래에 붉은 먹이 번져요.
     //   Panel:    주머니·설명 칸 — 짙은 먹 한 획 바탕.
+    //   Restyle:  버튼·주머니 줄 — 먹 붓 획 바탕 (마우스를 올리면 붉은 먹).
     // 그림: Art/UI/Hud/Resources/HudArt (MeridianBg, InkSwatch, CellFrame, Blot). 없으면 예전처럼 단색.
     public static class InkMeridianArt
     {
@@ -13,7 +14,7 @@ namespace AThousandDawns.Fx
         static readonly Color Plum = new Color(0.78f, 0.27f, 0.24f);
         static readonly Color PanelInk = new Color(0.07f, 0.065f, 0.06f);
 
-        static Texture2D _bg, _swatch, _frame, _blot;
+        static Texture2D _bg, _swatch, _frame, _blot, _button, _buttonHover;
         static bool _loaded;
 
         public static void Backdrop(float width, float height)
@@ -57,7 +58,29 @@ namespace AThousandDawns.Fx
             var old = GUI.color;
             GUI.color = new Color(PanelInk.r, PanelInk.g, PanelInk.b, 0.92f);
             GUI.DrawTexture(Grow(rect, 0.03f), _swatch, ScaleMode.StretchToFill);
+            if (_frame != null) // 옅은 한지색 붓 테두리 (밋밋한 검은 상자로 보이지 않게)
+            {
+                GUI.color = new Color(Paper.r, Paper.g, Paper.b, 0.18f);
+                GUI.DrawTexture(Grow(rect, 0.02f), _frame, ScaleMode.StretchToFill);
+            }
             GUI.color = old;
+        }
+
+        // 버튼·주머니 줄 스타일을 먹 붓 획 바탕으로 (보통 = 짙은 먹, 마우스·누름 = 붉은 먹). 글자색은 한지색.
+        // 고해상도용 scaledBackgrounds도 비워야 Unity 기본 회색 버튼이 다시 나오지 않아요.
+        public static void Restyle(GUIStyle style)
+        {
+            Load();
+            if (_button == null) return;
+            var none = new Texture2D[0];
+            foreach (var (state, tex) in new[] { (style.normal, _button), (style.focused, _button), (style.hover, _buttonHover), (style.active, _buttonHover),
+                                                  (style.onNormal, _buttonHover), (style.onHover, _buttonHover), (style.onActive, _buttonHover), (style.onFocused, _buttonHover) })
+            {
+                state.background = tex;
+                state.scaledBackgrounds = none;
+                state.textColor = Paper;
+            }
+            style.border = new RectOffset(28, 28, 12, 12); // 번진 가장자리는 늘리지 않게
         }
 
         static Rect Grow(Rect r, float ratio)
@@ -82,6 +105,8 @@ namespace AThousandDawns.Fx
             _swatch = Resources.Load<Texture2D>("HudArt/InkSwatch");
             _frame = Resources.Load<Texture2D>("HudArt/CellFrame");
             _blot = Resources.Load<Texture2D>("HudArt/Blot");
+            _button = Resources.Load<Texture2D>("HudArt/InkButton");
+            _buttonHover = Resources.Load<Texture2D>("HudArt/InkButtonHover");
         }
     }
 }

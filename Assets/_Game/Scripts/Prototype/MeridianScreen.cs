@@ -635,6 +635,8 @@ namespace AThousandDawns.Prototype
             _detail = new GUIStyle(_small) { fontSize = 19 };
             _tag = new GUIStyle(_small) { alignment = TextAnchor.UpperRight, fontSize = 16, wordWrap = false };
             _button = new GUIStyle(GUI.skin.button) { fontSize = 17, richText = true };
+            AThousandDawns.Fx.InkMeridianArt.Restyle(_bagButton); // 먹 붓 획 바탕
+            AThousandDawns.Fx.InkMeridianArt.Restyle(_button);
         }
     }
 }
