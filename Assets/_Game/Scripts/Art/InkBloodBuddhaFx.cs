@@ -10,7 +10,7 @@ namespace AThousandDawns.Art
     //   염불: 바닥에 붉은 만다라 인장이 돌며 피어나고 → 떨어지면 번쩍 커지며 사라져요
     //   피의 비: 손바닥 내려찍기와 같은 연출 (그림자가 짙어지며 내려와 → 붉은 먹 손자국이 찍히고 바래요)
     //   팔 휘두르기: 휘두를 때마다 부채꼴 붉은 붓 획이 쓸고 지나가요
-    //   혈수: 혈불이 손을 뻗은 자리에 검은 선·빨간 선 몇 가닥이 나선으로 감겨 들다가, 판정 순간 확 조여 사라져요
+    //   혈수: 혈불 손끝에서 앞으로 넓게 벌어지는 깔때기 나선(검은 선·빨간 선)이 손 쪽으로 감겨 들다가, 판정 순간 확 빨려 들어요
     //   2페이즈 전환: 불상 발밑으로 큰 피 번짐 + 만다라가 퍼져요
     // 그림: Art/Env/BossFx/Resources/BloodBuddhaFx (스프라이트). 씬에 미리 둘 것 없이 게임이 켜지면 저절로 들어요.
     public class InkBloodBuddhaFx : MonoBehaviour
@@ -132,37 +132,38 @@ namespace AThousandDawns.Art
             });
         }
 
-        // 혈수: 혈불이 앞으로 손을 뻗으면 그 손끝에 검은 선·빨간 선 몇 가닥이 나선으로 돌며 안쪽으로 감겨 들어요 —
-        //   예고 동안 커지며 빨라지고, 판정(Grab) 순간 확 조여 빨아들이며 사라져요.
-        class GrabState { public Transform Pivot; public LineRenderer[] Arms; public float T, Windup, PullT = -1f, Phase; }
+        // 혈수: 혈불이 앞으로 손을 뻗으면 손끝에서 앞으로 누운 깔때기 모양 나선(검은 선·빨간 선 몇 가닥)이 생겨요.
+        //   손 쪽은 좁고 앞(플레이어 쪽)으로 갈수록 넓게 벌어지며, 선이 돌면서 손 쪽으로 흘러 들어가요.
+        //   예고 동안 길어지고 빨라지다가, 판정(Grab) 순간 손 쪽으로 확 빨려 들며 사라져요.
+        class GrabState { public Transform Root; public LineRenderer[] Arms; public Vector3 Hand, Dir, Side; public float T, Windup, PullT = -1f, Phase, Length; }
         GrabState _grab;
         static Material _lineMat;
-        const int ArmCount = 5, ArmPoints = 18;
-        const float VortexRadius = 1.4f;
+        const int ArmCount = 6, ArmPoints = 28;
+        const float HandRadius = 0.15f, MouthRadius = 1.7f; // 손 쪽 · 앞쪽 나선 반지름
 
         void GrabStart(BloodBuddhaBrain.FxCue c)
         {
             Vector3 dir = Flatten(c.Dir);
-            var g = new GrabState { Windup = Mathf.Max(0.1f, c.Time) };
+            var g = new GrabState
+            {
+                Windup = Mathf.Max(0.1f, c.Time), Dir = dir, Side = new Vector3(dir.z, 0f, -dir.x),
+                Hand = c.At + dir * 2f + Vector3.up * 1.8f, Length = Mathf.Clamp(c.Length * 0.55f, 3f, 6f),
+            };
             if (_lineMat == null) _lineMat = new Material(Shader.Find("Sprites/Default"));
-            g.Pivot = new GameObject("Blood Vortex").transform; // 카메라를 보는 받침 · 선은 그 평면 안에서 돌아요
-            g.Pivot.SetParent(transform, false);
-            g.Pivot.position = c.At + dir * 2.4f + Vector3.up * 2.2f;
-            g.Pivot.gameObject.AddComponent<InkFaceCamera>();
+            g.Root = new GameObject("Blood Vortex").transform;
+            g.Root.SetParent(transform, false);
             g.Arms = new LineRenderer[ArmCount];
             for (int k = 0; k < ArmCount; k++)
             {
                 var lr = new GameObject("Arm").AddComponent<LineRenderer>();
-                lr.transform.SetParent(g.Pivot, false);
-                lr.useWorldSpace = false;
+                lr.transform.SetParent(g.Root, false);
+                lr.useWorldSpace = true;
                 lr.positionCount = ArmPoints;
                 lr.sharedMaterial = _lineMat;
                 lr.numCapVertices = 2;
-                bool red = k % 2 == 1; // 검·빨·검·빨·검
-                lr.widthCurve = new AnimationCurve(new Keyframe(0f, red ? 0.07f : 0.1f), new Keyframe(1f, 0.01f)); // 바깥 굵게 → 안쪽 가늘게
-                var col = red ? new Color(0.75f, 0.05f, 0.05f) : new Color(0.06f, 0.04f, 0.04f);
-                lr.startColor = new Color(col.r, col.g, col.b, 0f);
-                lr.endColor = col;
+                bool red = k % 2 == 1;
+                // 점 0 = 앞쪽(넓고 굵고 옅게) → 끝 = 손(좁고 가늘고 짙게)
+                lr.widthCurve = new AnimationCurve(new Keyframe(0f, red ? 0.08f : 0.11f), new Keyframe(1f, 0.015f));
                 lr.sortingOrder = 6;
                 g.Arms[k] = lr;
             }
@@ -173,28 +174,30 @@ namespace AThousandDawns.Art
                 bool pulling = g.PullT >= 0f;
                 float pullAge = pulling ? g.T - g.PullT : 0f;
                 float grow = Mathf.Clamp01(g.T / g.Windup);
-                g.Phase += (pulling ? 900f : Mathf.Lerp(150f, 600f, grow)) * dt; // 시계 방향으로 점점 빨리
-                float size = pulling ? Mathf.Lerp(1.15f, 0f, Mathf.Clamp01(pullAge / 0.35f)) : Mathf.Lerp(0.3f, 1f, Mathf.Sqrt(grow));
-                float alpha = pulling ? 1f : Mathf.Lerp(0.3f, 1f, grow);
+                g.Phase += (pulling ? 1100f : Mathf.Lerp(200f, 700f, grow)) * dt; // 돌수록 선이 손 쪽으로 흘러 보여요
+                float reach = pulling ? Mathf.Lerp(1f, 0f, Mathf.Clamp01(pullAge / 0.3f)) : Mathf.Lerp(0.25f, 1f, Mathf.Sqrt(grow)); // 길이 배율
+                float alpha = pulling ? Mathf.Clamp01(1f - (pullAge - 0.15f) / 0.2f) : Mathf.Lerp(0.3f, 1f, grow);
+                float len = g.Length * reach;
                 for (int k = 0; k < ArmCount; k++)
                 {
                     var lr = g.Arms[k];
                     float start = k * 360f / ArmCount;
-                    float outer = VortexRadius * size * (k % 2 == 1 ? 0.85f : 1f);
                     for (int i = 0; i < ArmPoints; i++)
                     {
-                        float s = i / (ArmPoints - 1f);
-                        float r = outer * (1f - s * 0.92f);
-                        float a = (start - g.Phase + s * 220f) * Mathf.Deg2Rad; // 바깥에서 안으로 감겨요
-                        lr.SetPosition(i, new Vector3(Mathf.Cos(a) * r, Mathf.Sin(a) * r, 0f));
+                        float s = i / (ArmPoints - 1f);            // 0 = 앞쪽, 1 = 손
+                        float along = len * (1f - s);
+                        float r = Mathf.Lerp(MouthRadius, HandRadius, s) * Mathf.Lerp(0.6f, 1f, reach);
+                        float a = (start + g.Phase - s * 300f) * Mathf.Deg2Rad; // 손 쪽으로 감겨 들어가는 나선
+                        Vector3 axis = g.Hand + g.Dir * along + Vector3.down * (along * 0.12f); // 앞으로 갈수록 살짝 낮게
+                        lr.SetPosition(i, axis + (g.Side * Mathf.Cos(a) + Vector3.up * Mathf.Sin(a)) * r);
                     }
-                    var ec = lr.endColor;
-                    lr.endColor = new Color(ec.r, ec.g, ec.b, alpha);
-                    lr.startColor = new Color(ec.r, ec.g, ec.b, 0.15f * alpha);
+                    var col = k % 2 == 1 ? new Color(0.75f, 0.05f, 0.05f) : new Color(0.06f, 0.04f, 0.04f);
+                    lr.startColor = new Color(col.r, col.g, col.b, 0.2f * alpha); // 앞쪽은 옅게 퍼져요
+                    lr.endColor = new Color(col.r, col.g, col.b, alpha);
                 }
                 bool done = pulling ? pullAge > 0.4f : g.T > g.Windup + 0.8f; // 얼려서 끊기면 알아서 끝나요
                 if (!done) return true;
-                Destroy(g.Pivot.gameObject);
+                Destroy(g.Root.gameObject);
                 if (_grab == g) _grab = null;
                 return false;
             });
