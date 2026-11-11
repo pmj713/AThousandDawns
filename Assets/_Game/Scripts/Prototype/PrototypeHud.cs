@@ -1,5 +1,6 @@
 ﻿using AThousandDawns.Combat;
 using AThousandDawns.Enemies;
+using AThousandDawns.Fx;
 using AThousandDawns.Items;
 using AThousandDawns.Player;
 using UnityEngine;
@@ -556,10 +557,13 @@ namespace AThousandDawns.Prototype
             if (GUI.Button(new Rect(x, row + 8f, w, rowH), "포기 · 새 기물을 받지 않아요 (Esc)", _card)) arena.DeclinePending();
         }
 
+        float _offerOpenedAt = -1f; // 기물 고르기가 열린 때 (족자 연출)
+
         // 기물 고르기 카드 3장 (시간이 멈춰 있어요). 1·2·3 또는 클릭, Esc 넘기기
         void DrawOffer()
         {
-            if (arena == null || !arena.IsChoosing) return;
+            if (arena == null || !arena.IsChoosing) { _offerOpenedAt = -1f; return; }
+            if (_offerOpenedAt < 0f) _offerOpenedAt = Time.unscaledTime;
             EnsureStyles();
             var offer = arena.Offer;
             var old = GUI.color;
@@ -582,8 +586,11 @@ namespace AThousandDawns.Prototype
                               $"<color=#ff8a7a>주화입마 부작용: {def.sideText}</color>";
                 float cx = x + i * (cardW + gap);
                 bool hasIcon = ItemIcons.Get(def) != null;
-                if (GUI.Button(new Rect(cx, y, cardW, cardH), text, hasIcon ? _cardTop : _card)) arena.Choose(i);
-                ItemIcons.Draw(new Rect(cx + (cardW - icon) * 0.5f, y + 10f, icon, icon), def);
+                // 족자가 위에서 내려와 펼쳐지며 글이 드러나요 (Fx/InkScrollCard). 다 펼쳐진 뒤에 클릭돼요
+                if (!InkScrollCard.Begin(new Rect(cx, y, cardW, cardH), Time.unscaledTime - _offerOpenedAt, i, out bool opened)) continue;
+                if (GUI.Button(new Rect(0f, 0f, cardW, cardH), InkScrollCard.Ink(text), InkScrollCard.Style(hasIcon ? _cardTop : _card)) && opened) arena.Choose(i);
+                ItemIcons.Draw(new Rect((cardW - icon) * 0.5f, 18f, icon, icon), def);
+                InkScrollCard.End();
             }
         }
 
