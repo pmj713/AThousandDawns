@@ -40,6 +40,43 @@ namespace AThousandDawns.EditorTools
             Sprite Mark(string m) => AssetDatabase.LoadAssetAtPath<Sprite>($"{RunPropsArtFolder}/{m}.png");
             new GameObject("Ink Elite Marks").AddComponent<AThousandDawns.Art.InkEliteMarks>()
                 .Setup(Mark(marks[0]), Mark(marks[1]), Mark(marks[2]), mist, line);
+
+            DressHiddenChamberInk(stoneMat);
+        }
+
+        // 기연 방 · 숨은 석실 (InkHiddenChamber): 기연 방에 들어가 있는 동안만 돌 제단 · 노고수 유해 · 옥병 · 책 · 이끼가 켜져요.
+        // 방 가운데·크기는 RoomRun의 전투장(combat) 값을 그대로 읽어요.
+        static void DressHiddenChamberInk(Material stoneMat)
+        {
+            var upright = new[] { "Chamber_Remains", "Chamber_Bottle", "Chamber_Book" };
+            foreach (var n in upright) ImportAsSprite($"{RunPropsArtFolder}/{n}.png");
+            foreach (var n in new[] { "Chamber_Moss", "Chamber_Glow" }) ImportAsCenteredSprite($"{RunPropsArtFolder}/{n}.png"); // 바닥에 눕힐 그림은 가운데 기준
+            Sprite S(string n) => AssetDatabase.LoadAssetAtPath<Sprite>($"{RunPropsArtFolder}/{n}.png");
+
+            var run = Object.FindFirstObjectByType<AThousandDawns.Prototype.RoomRun>(FindObjectsInactive.Include);
+            Vector3 center = Vector3.zero;
+            Vector2 size = new Vector2(20f, 12f);
+            if (run != null)
+            {
+                var so = new SerializedObject(run);
+                var c = so.FindProperty("combat.center");
+                var s = so.FindProperty("combat.size");
+                if (c != null) center = c.vector3Value;
+                if (s != null) size = s.vector2Value;
+            }
+            new GameObject("Ink Hidden Chamber").AddComponent<AThousandDawns.Art.InkHiddenChamber>()
+                .Setup(S("Chamber_Remains"), S("Chamber_Bottle"), S("Chamber_Book"), S("Chamber_Moss"), S("Chamber_Glow"), stoneMat, GetRockMesh(1), center, size);
+        }
+
+        static void ImportAsCenteredSprite(string path)
+        {
+            ImportAsSprite(path);
+            var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+            var settings = new TextureImporterSettings();
+            importer.ReadTextureSettings(settings);
+            settings.spriteAlignment = (int)SpriteAlignment.Center;
+            importer.SetTextureSettings(settings);
+            importer.SaveAndReimport();
         }
 
         // 붓선 셰이더(InkBrushLine) + 알파 그림. 색은 렌더러마다 MaterialPropertyBlock·꼭짓점 색으로 바꿔요
