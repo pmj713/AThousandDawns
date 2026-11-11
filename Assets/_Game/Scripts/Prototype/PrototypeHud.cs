@@ -44,6 +44,7 @@ namespace AThousandDawns.Prototype
         {
             UiScale.Apply(); // 기준 1920×1080, 어떤 창 크기에도 같은 비율
             DrawHud();
+            InkHud.Draw(player); // 수묵 HUD: 초식 · 체력 · 대시 · 금창약 (왼쪽 아래, Fx/InkHud)
             DrawMinimap();
             DrawFork();
             DrawShop();
@@ -136,7 +137,7 @@ namespace AThousandDawns.Prototype
             // 튜토리얼: 조작 안내는 아래 가운데, 상황별 첫 안내는 오른쪽 위 한 줄
             if (run != null && !string.IsNullOrEmpty(run.Hint) && !run.IsPaused)
             {
-                var hintRect = new Rect(UiScale.Width * 0.5f - 560f, UiScale.Height - 150f, 1120f, 52f);
+                var hintRect = new Rect(UiScale.Width * 0.5f - 560f, UiScale.Height - 200f, 1120f, 52f); // 왼쪽 아래 수묵 HUD 위로
                 var oldHint = GUI.color;
                 GUI.color = new Color(0f, 0f, 0f, 0.55f);
                 GUI.DrawTexture(hintRect, Texture2D.whiteTexture);
