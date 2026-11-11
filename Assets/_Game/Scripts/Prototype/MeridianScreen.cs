@@ -176,10 +176,7 @@ namespace AThousandDawns.Prototype
             _hovered = null;
             _hoveredCell = null;
 
-            var old = GUI.color;
-            GUI.color = new Color(0f, 0f, 0f, 0.86f); // 뒤의 HUD 글자가 비치지 않게
-            GUI.DrawTexture(new Rect(0, 0, UiScale.Width, UiScale.Height), Texture2D.whiteTexture);
-            GUI.color = old;
+            AThousandDawns.Fx.InkMeridianArt.Backdrop(UiScale.Width, UiScale.Height); // 먹 번짐 + 경혈도 바탕 (뒤의 HUD 글자가 비치지 않게)
 
             float boardW = board.Width * (CellSize + Gap) - Gap;
             float boardH = board.Height * (CellSize + Gap) - Gap;
@@ -301,7 +298,7 @@ namespace AThousandDawns.Prototype
             }
 
             float t = Mathf.Clamp01(qi / Mathf.Max(3f, board.Power));
-            Fill(rect, qi <= 0 ? EmptyCell : Color.Lerp(LowQi, HighQi, t));
+            AThousandDawns.Fx.InkMeridianArt.Cell(rect, qi <= 0 ? EmptyCell : Color.Lerp(LowQi, HighQi, t), board.IsDanjeon(cell)); // 붓 칸 (기 색으로 물듦)
             string tags = "";
             if (board.IsDanjeon(cell))
             {
@@ -375,7 +372,7 @@ namespace AThousandDawns.Prototype
         void DrawBag(PlayerItems items, Rect area)
         {
             _bagRect = area;
-            GUI.Box(area, GUIContent.none);
+            AThousandDawns.Fx.InkMeridianArt.Panel(area); // 먹 패널
             if (_dragged != null && _dragged.OnBoard)
                 Outline(area, new Color(1f, 0.85f, 0.4f, area.Contains(Event.current.mousePosition) ? 1f : 0.4f), 2f); // 여기로 놓을 수 있어요
             string cap = !items.HasBag ? "없음" : items.BagCapacity < 0 ? $"{items.BagCount}개" : $"{items.BagCount}/{items.BagCapacity}칸";
@@ -439,7 +436,7 @@ namespace AThousandDawns.Prototype
 
         void DrawDetail(PlayerItems items, Rect area)
         {
-            GUI.Box(area, GUIContent.none);
+            AThousandDawns.Fx.InkMeridianArt.Panel(area); // 먹 패널
             if (_acupoint != Acupoint.None)
             {
                 string what = _acupoint == Acupoint.Gihyeol ? $"이 칸의 기가 {items.Board.GihyeolQi} 올라요."
