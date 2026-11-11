@@ -23,6 +23,13 @@ namespace AThousandDawns.Prototype
             EnemyKind.Shield, EnemyKind.Horn, EnemyKind.Bomber, EnemyKind.Snake,
         };
 
+        // 폐사찰 일반 적 5종 + 죽림 궁수·들개 (몬스터 시트 41~45행)
+        public static readonly EnemyKind[] Temple =
+        {
+            EnemyKind.Wraith, EnemyKind.Arhat, EnemyKind.Moktak, EnemyKind.Monk, EnemyKind.Lantern,
+            EnemyKind.Archer, EnemyKind.Hound,
+        };
+
         public static int PackSize(EnemyKind kind) => kind == EnemyKind.Hound ? 2 : 1;
 
         public static int Cost(EnemyKind kind)
@@ -37,9 +44,18 @@ namespace AThousandDawns.Prototype
                 case EnemyKind.Horn: return Key("horn", 2f);
                 case EnemyKind.Bomber: return Key("bomber", 1f);
                 case EnemyKind.Snake: return Key("snake", 1f);
+                case EnemyKind.Wraith: return Key("wraith", 2f);
+                case EnemyKind.Arhat: return Key("arhat", 3f);
+                case EnemyKind.Moktak: return Key("moktak", 2f);
+                case EnemyKind.Monk: return Key("monk", 2f);
+                case EnemyKind.Lantern: return Key("lantern", 1f);
                 default: return 99;
             }
         }
+
+        // 방마다 수를 묶는 적: 멀리서 쏘는 적 (궁수 · 망령), 부르는 적 (나팔수 · 목탁승)
+        static bool IsShooter(EnemyKind kind) => kind == EnemyKind.Archer || kind == EnemyKind.Wraith;
+        static bool IsCaller(EnemyKind kind) => kind == EnemyKind.Horn || kind == EnemyKind.Moktak;
 
         static int Key(string kind, float fallback) => Math.Max(1, (int)Math.Round(GameConfig.Get("room_cost." + kind, fallback)));
 
@@ -55,8 +71,8 @@ namespace AThousandDawns.Prototype
                 foreach (var kind in pool)
                 {
                     if (cost(kind) > left) continue;
-                    if (kind == EnemyKind.Archer && archers >= limits.Archers) continue;
-                    if (kind == EnemyKind.Horn && horns >= limits.Horns) continue;
+                    if (IsShooter(kind) && archers >= limits.Archers) continue;
+                    if (IsCaller(kind) && horns >= limits.Horns) continue;
                     if (kind == EnemyKind.Snake && snakes >= limits.Snakes) continue;
                     candidates.Add(kind);
                 }
@@ -64,8 +80,8 @@ namespace AThousandDawns.Prototype
                 var pick = candidates[rng.Next(candidates.Count)];
                 packs.Add(pick);
                 left -= cost(pick);
-                if (pick == EnemyKind.Archer) archers++;
-                if (pick == EnemyKind.Horn) horns++;
+                if (IsShooter(pick)) archers++;
+                if (IsCaller(pick)) horns++;
                 if (pick == EnemyKind.Snake) snakes++;
             }
 

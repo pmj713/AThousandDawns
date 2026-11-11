@@ -6,7 +6,7 @@ namespace AThousandDawns.Enemies
 {
     // 나팔수: 6칸 거리를 유지하며 도망치다가, 멈춰서 나팔(예고 1.5초) → 졸개 2명 호출. 방마다 최대 2번.
     // 예고 중에 맞히면 끊겨요 (예고 중 경직 규칙의 유일한 예외). 동시 공격 수에는 안 들어가요.
-    public sealed class HornBrain : EnemyBrain
+    public class HornBrain : EnemyBrain // 목탁승 (MoktakBrain)이 이어받아요
     {
         const float CallRadius = 1.2f;
 
@@ -19,6 +19,8 @@ namespace AThousandDawns.Enemies
         protected override bool UsesToken => false;
         protected override bool InterruptibleWindup => true;
         protected override bool RadialTelegraph => true;
+
+        protected virtual EnemyKind SummonKind => EnemyKind.Grunt; // 목탁승은 망령
 
         protected override void ReadTuning()
         {
@@ -48,15 +50,16 @@ namespace AThousandDawns.Enemies
         AudioSource _horn;
 
         // 예고 동안 나팔. 예고가 끊기거나 쓰러지면 나팔도 멈춰요
-        protected override void OnAttackStarted() => _horn = Sfx.PlayStoppable(SfxId.HornBlow);
+        protected override void OnAttackStarted() => _horn = Kind == EnemyKind.Horn ? Sfx.PlayStoppable(SfxId.HornBlow) : null;
         protected override void OnAttackInterrupted() => Sfx.Stop(_horn);
         protected override void OnDied() => Sfx.Stop(_horn);
 
         protected override void OnActiveStarted()
         {
+            Sfx.Stop(_horn, 0.3f); // 소환하면 나팔도 끝
             if (!Director.TryUseSummon()) return;
             for (int i = 0; i < _summonCount; i++)
-                Director.Spawn(EnemyKind.Grunt, Director.FindFreeSpot(transform.position, CallRadius + 0.3f));
+                Director.Spawn(SummonKind, Director.FindFreeSpot(transform.position, CallRadius + 0.3f));
         }
 
         protected override void TickActive(float dt) { }

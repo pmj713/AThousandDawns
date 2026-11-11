@@ -7,7 +7,7 @@ namespace AThousandDawns.Enemies
 {
     // 화약 산적: 1.5칸 안에서 점화(예고 1초) → 1초 동안 속도 70%로 쫓아오다 폭발 (반경 2칸, 다른 적·목인장도 맞음). 한 번 터지면 끝.
     // 먼저 맞히면(쓰러뜨려도) 0.5초 뒤 그 자리에서 터져요. 화상으로 터지는 건 화상이 생기면 붙여요.
-    public sealed class BomberBrain : EnemyBrain
+    public class BomberBrain : EnemyBrain // 등불 귀신 (LanternBrain)이 이어받아요
     {
         public override string AttackName => "자폭";
 
@@ -97,13 +97,15 @@ namespace AThousandDawns.Enemies
             Explode();
         }
 
+        protected virtual void OnBlastHitPlayer() { } // 등불 귀신: 감전
+
         void Explode()
         {
             if (_exploded) return;
             _exploded = true;
             Telegraph.Hide();
             Director.SpawnBurst(transform.position, AttackRange);
-            if (Player != null && !Player.IsDead && ToPlayer().magnitude <= AttackRange + PlayerRadius) TryHitPlayer();
+            if (Player != null && !Player.IsDead && ToPlayer().magnitude <= AttackRange + PlayerRadius && TryHitPlayer()) OnBlastHitPlayer();
             Director.Blast(transform.position, AttackRange, AttackPower, Body);
             Die(); // 이미 쓰러져 있으면 아무 일도 없어요
         }

@@ -2765,3 +2765,235 @@ MonoBehaviour:
     value: 0.06
     unit: 
     note: "\uAE30\uBB3C \uB4F1\uAE09 \uD655\uB960 \uC804\uC124 (\uC7A5\uAC15 \uC218\uCC44)"
+  - key: wraith.hp
+    value: 25
+    unit: 
+    note: "\uB9DD\uB839 \uCCB4\uB825 (\uC9C0\uC5ED \uBC30\uC728 \uC804 \xB7 \uD3D0\uC0AC\uCC30 \xD71.8 = 45)"
+  - key: wraith.atk
+    value: 8
+    unit: 
+    note: "\uB9DD\uB839 \uACF5\uACA9 (\xD71.3 = 10)"
+  - key: wraith.toughness
+    value: 0
+    unit: 
+    note: "\uB9DD\uB839 \uAC15\uC778\uD568"
+  - key: wraith.move_speed
+    value: 2.5
+    unit: cell/s
+    note: "\uB9DD\uB839 \uC774\uB3D9\uC18D\uB3C4"
+  - key: wraith.attack_range
+    value: 9
+    unit: cell
+    note: "\uB9DD\uB839 \uD63C\uBD88\uC744 \uC3D8\uB294 \uAC70\uB9AC"
+  - key: wraith.windup
+    value: 0.9
+    unit: s
+    note: "\uB9DD\uB839 \uD63C\uBD88 \uC608\uACE0"
+  - key: wraith.recovery
+    value: 0.4
+    unit: s
+    note: "\uB9DD\uB839 \uBE48\uD2C8"
+  - key: wraith.attack_interval
+    value: 3
+    unit: s
+    note: "\uB9DD\uB839 \uACF5\uACA9 \uAC04\uACA9"
+  - key: wraith.orb_speed
+    value: 4
+    unit: cell/s
+    note: "\uD63C\uBD88 \uC18D\uB3C4 (\uBCBD \uD1B5\uACFC)"
+  - key: wraith.orb_turn
+    value: 90
+    unit: deg/s
+    note: "\uD63C\uBD88\uC774 \uAEBE\uC774\uB294 \uBE60\uB974\uAE30"
+  - key: wraith.orb_life
+    value: 4
+    unit: s
+    note: "\uD63C\uBD88\uC774 \uC0AC\uB77C\uC9C0\uAE30\uAE4C\uC9C0"
+  - key: arhat.hp
+    value: 112
+    unit: 
+    note: "\uC11D\uC0C1 \uB098\uD55C \uCCB4\uB825 (\uBA67\uB3FC\uC9C0 80 \xD7 1.4 \xB7 \uD3D0\uC0AC\uCC30 \xD71.8 = 202)"
+  - key: arhat.atk
+    value: 18
+    unit: 
+    note: "\uC11D\uC0C1 \uB098\uD55C \uACF5\uACA9 (\uBA67\uB3FC\uC9C0 15 \xD7 1.2 \xB7 \xD71.3 = 23)"
+  - key: arhat.toughness
+    value: 3
+    unit: 
+    note: "\uC11D\uC0C1 \uB098\uD55C \uAC15\uC778\uD568"
+  - key: arhat.move_speed
+    value: 1.6
+    unit: cell/s
+    note: "\uC11D\uC0C1 \uB098\uD55C \uC774\uB3D9\uC18D\uB3C4 (\uB290\uB9BC)"
+  - key: arhat.attack_range
+    value: 5
+    unit: cell
+    note: "\uC11D\uC0C1 \uB098\uD55C \uB3CC\uC9C4\uC744 \uC2DC\uC791\uD558\uB294 \uAC70\uB9AC"
+  - key: arhat.windup
+    value: 1
+    unit: s
+    note: "\uC11D\uC0C1 \uB098\uD55C \uB3CC\uC9C4 \uC608\uACE0"
+  - key: arhat.recovery
+    value: 1
+    unit: s
+    note: "\uC11D\uC0C1 \uB098\uD55C \uBE48\uD2C8"
+  - key: arhat.attack_interval
+    value: 4.5
+    unit: s
+    note: "\uC11D\uC0C1 \uB098\uD55C \uACF5\uACA9 \uAC04\uACA9"
+  - key: arhat.charge_speed
+    value: 9
+    unit: cell/s
+    note: "\uC11D\uC0C1 \uB098\uD55C \uB3CC\uC9C4 \uC18D\uB3C4"
+  - key: arhat.charge_distance
+    value: 4
+    unit: cell
+    note: "\uC11D\uC0C1 \uB098\uD55C \uB3CC\uC9C4 \uAC70\uB9AC"
+  - key: arhat.charge_width
+    value: 1.4
+    unit: cell
+    note: "\uC11D\uC0C1 \uB098\uD55C \uB3CC\uC9C4 \uD3ED"
+  - key: arhat.wall_stun
+    value: 2
+    unit: s
+    note: "\uC11D\uC0C1 \uB098\uD55C \uBCBD\uC5D0 \uBD80\uB52A\uD788\uBA74 \uBA48\uCDA4"
+  - key: arhat.stun
+    value: 0.8
+    unit: s
+    note: "\uC11D\uC0C1 \uB098\uD55C \uB3CC\uC9C4\uC5D0 \uB9DE\uC73C\uBA74 \uAE30\uC808"
+  - key: moktak.hp
+    value: 40
+    unit: 
+    note: "\uBAA9\uD0C1\uC2B9 \uCCB4\uB825 (\xD71.8 = 72)"
+  - key: moktak.atk
+    value: 5
+    unit: 
+    note: "\uBAA9\uD0C1\uC2B9 \uACF5\uACA9"
+  - key: moktak.toughness
+    value: 0
+    unit: 
+    note: "\uBAA9\uD0C1\uC2B9 \uAC15\uC778\uD568"
+  - key: moktak.move_speed
+    value: 2.5
+    unit: cell/s
+    note: "\uBAA9\uD0C1\uC2B9 \uC774\uB3D9\uC18D\uB3C4"
+  - key: moktak.windup
+    value: 1.5
+    unit: s
+    note: "\uBAA9\uD0C1\uC2B9 \uBAA9\uD0C1 \uC608\uACE0 (\uB9DE\uC73C\uBA74 \uB04A\uAE40)"
+  - key: moktak.recovery
+    value: 0.5
+    unit: s
+    note: "\uBAA9\uD0C1\uC2B9 \uBE48\uD2C8"
+  - key: moktak.attack_interval
+    value: 8
+    unit: s
+    note: "\uBAA9\uD0C1\uC2B9 \uD638\uCD9C \uAC04\uACA9"
+  - key: moktak.keep_distance
+    value: 6
+    unit: cell
+    note: "\uBAA9\uD0C1\uC2B9\uC774 \uB450\uB294 \uAC70\uB9AC"
+  - key: moktak.summon_count
+    value: 2
+    unit: 
+    note: "\uBAA9\uD0C1\uC2B9\uC774 \uBD80\uB974\uB294 \uB9DD\uB839 \uC218"
+  - key: monk.hp
+    value: 60
+    unit: 
+    note: "\uD30C\uACC4\uC2B9 \uCCB4\uB825 (\xD71.8 = 108)"
+  - key: monk.atk
+    value: 10
+    unit: 
+    note: "\uD30C\uACC4\uC2B9 \uACF5\uACA9 (\xD71.3 = 13)"
+  - key: monk.toughness
+    value: 2
+    unit: 
+    note: "\uD30C\uACC4\uC2B9 \uAC15\uC778\uD568"
+  - key: monk.move_speed
+    value: 3
+    unit: cell/s
+    note: "\uD30C\uACC4\uC2B9 \uC774\uB3D9\uC18D\uB3C4"
+  - key: monk.attack_range
+    value: 1.5
+    unit: cell
+    note: "\uD30C\uACC4\uC2B9 \uC120\uC7A5 \uBC18\uACBD"
+  - key: monk.windup
+    value: 0.6
+    unit: s
+    note: "\uD30C\uACC4\uC2B9 \uC608\uACE0"
+  - key: monk.recovery
+    value: 0.6
+    unit: s
+    note: "\uD30C\uACC4\uC2B9 \uBE48\uD2C8"
+  - key: monk.attack_interval
+    value: 2.2
+    unit: s
+    note: "\uD30C\uACC4\uC2B9 \uACF5\uACA9 \uAC04\uACA9"
+  - key: monk.lunge
+    value: 1.2
+    unit: cell
+    note: "\uD30C\uACC4\uC2B9 \uC804\uC9C4"
+  - key: monk.stance_time
+    value: 2
+    unit: s
+    note: "\uD30C\uACC4\uC2B9 \uAE08\uAC15\uBD88\uAD34 \uC2DC\uAC04 (\uBC1B\uB294 \uD53C\uD574 1)"
+  - key: monk.stance_cooldown
+    value: 7
+    unit: s
+    note: "\uD30C\uACC4\uC2B9 \uAE08\uAC15\uBD88\uAD34 \uAC04\uACA9"
+  - key: monk.stance_range
+    value: 4
+    unit: cell
+    note: "\uD30C\uACC4\uC2B9\uC774 \uAE08\uAC15\uBD88\uAD34\uB97C \uC4F0\uB294 \uAC70\uB9AC"
+  - key: lantern.hp
+    value: 25
+    unit: 
+    note: "\uB4F1\uBD88 \uADC0\uC2E0 \uCCB4\uB825 (\xD71.8 = 45)"
+  - key: lantern.atk
+    value: 20
+    unit: 
+    note: "\uB4F1\uBD88 \uADC0\uC2E0 \uD3ED\uBC1C (\xD71.3 = 26)"
+  - key: lantern.toughness
+    value: 0
+    unit: 
+    note: "\uB4F1\uBD88 \uADC0\uC2E0 \uAC15\uC778\uD568"
+  - key: lantern.move_speed
+    value: 4
+    unit: cell/s
+    note: "\uB4F1\uBD88 \uADC0\uC2E0 \uC774\uB3D9\uC18D\uB3C4"
+  - key: lantern.attack_range
+    value: 2
+    unit: cell
+    note: "\uB4F1\uBD88 \uADC0\uC2E0 \uD3ED\uBC1C \uBC18\uACBD"
+  - key: lantern.windup
+    value: 1
+    unit: s
+    note: "\uB4F1\uBD88 \uADC0\uC2E0 \uC810\uD654 \uC608\uACE0"
+  - key: lantern.shock_slow
+    value: 0.4
+    unit: 
+    note: "\uB4F1\uBD88 \uADC0\uC2E0 \uAC10\uC804: \uC774\uB3D9\uC18D\uB3C4 \uAC10\uC18C"
+  - key: lantern.shock_time
+    value: 1.5
+    unit: s
+    note: "\uB4F1\uBD88 \uADC0\uC2E0 \uAC10\uC804 \uC2DC\uAC04"
+  - key: room_cost.wraith
+    value: 2
+    unit: 
+    note: "\uBC29 \uC608\uC0B0 \uC810\uC218: \uB9DD\uB839"
+  - key: room_cost.arhat
+    value: 3
+    unit: 
+    note: "\uBC29 \uC608\uC0B0 \uC810\uC218: \uC11D\uC0C1 \uB098\uD55C"
+  - key: room_cost.moktak
+    value: 2
+    unit: 
+    note: "\uBC29 \uC608\uC0B0 \uC810\uC218: \uBAA9\uD0C1\uC2B9"
+  - key: room_cost.monk
+    value: 2
+    unit: 
+    note: "\uBC29 \uC608\uC0B0 \uC810\uC218: \uD30C\uACC4\uC2B9"
+  - key: room_cost.lantern
+    value: 1
+    unit: 
+    note: "\uBC29 \uC608\uC0B0 \uC810\uC218: \uB4F1\uBD88 \uADC0\uC2E0"

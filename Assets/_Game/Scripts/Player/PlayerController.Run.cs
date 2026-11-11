@@ -125,6 +125,13 @@
             return string.IsNullOrEmpty(attack) ? $"{name}에게" : $"{name}의 {attack}에";
         }
 
+        // 기절 (석상 나한 돌진): 그동안 움직이지도 공격하지도 못해요. 맞은 뒤 경직보다 길면 늘려요
+        public void Stagger(float seconds)
+        {
+            if (IsDead || seconds <= 0f) return;
+            _stunTimer = UnityEngine.Mathf.Max(_stunTimer, seconds);
+        }
+
         // 시험판 K 키: 바로 쓰러지기 (결과 화면 확인용)
         public void KillForTest()
         {

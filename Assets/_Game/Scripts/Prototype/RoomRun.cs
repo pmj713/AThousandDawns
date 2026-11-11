@@ -418,7 +418,7 @@ namespace AThousandDawns.Prototype
                 Horns = Mathf.RoundToInt(GameConfig.Get("room.horn_max", 1f)),
                 Snakes = Mathf.RoundToInt(GameConfig.Get("room.snake_max", 2f)),
             };
-            return RoomBudget.Plan(budget, waves, RoomBudget.Bamboo, RoomBudget.Cost, limits, _rng);
+            return RoomBudget.Plan(budget, waves, _region == 0 ? RoomBudget.Bamboo : RoomBudget.Temple, RoomBudget.Cost, limits, _rng); // 지역마다 적 구성
         }
 
         // 짙은 길: 무작위 웨이브에 정예 하나 (방마다 제한은 일반 적과 같이 세요)

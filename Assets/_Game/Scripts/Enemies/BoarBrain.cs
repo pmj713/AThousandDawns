@@ -6,7 +6,7 @@ namespace AThousandDawns.Enemies
 {
     // 멧돼지: 8칸 안이면 예고 뒤 초당 12칸으로 직선 돌진. 돌진 중엔 경직이 없고, 벽·대나무에 부딪히면 2초 기절.
     // 플레이어는 뚫고 지나가요 (한 번만 맞음).
-    public sealed class BoarBrain : EnemyBrain
+    public class BoarBrain : EnemyBrain // 석상 나한 (ArhatBrain)이 이어받아요
     {
         const float ProbeHeight = 0.6f;
         const float MaxStep = 0.25f;
@@ -105,12 +105,15 @@ namespace AThousandDawns.Enemies
 
         protected override void OnAttackFinished() => IsWallStunned = false;
 
+        protected virtual void OnChargeHit() { } // 돌진에 맞혔을 때 (석상 나한: 기절)
+
         void CheckHit()
         {
             if (_hitPlayer) return;
             Vector3 to = ToPlayer();
             if (to.magnitude > _width * 0.5f + PlayerRadius) return;
             _hitPlayer = TryHitPlayer();
+            if (_hitPlayer) OnChargeHit();
         }
     }
 }

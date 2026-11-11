@@ -83,6 +83,37 @@ namespace AThousandDawns.Enemies
                 BodyPosition = new Vector3(0f, 1.2f, 0f), BodyScale = new Vector3(1.3f, 1.2f, 1.3f),
                 MarkPosition = new Vector3(0.8f, 1.3f, 0.7f), MarkScale = new Vector3(0.14f, 0.3f, 2f), // 대도
             },
+            // ── 폐사찰
+            EnemyKind.Wraith => new Shape
+            {
+                Name = "망령", Radius = 0.35f, Height = 1.6f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 1.0f, 0f), BodyScale = new Vector3(0.55f, 0.7f, 0.55f), // 떠 있어요
+                MarkPosition = new Vector3(0f, 1.3f, 0.3f), MarkScale = new Vector3(0.25f, 0.25f, 0.25f), // 혼불
+            },
+            EnemyKind.Arhat => new Shape
+            {
+                Name = "석상 나한", Radius = 0.6f, Height = 2.0f, Primitive = PrimitiveType.Cube,
+                BodyPosition = new Vector3(0f, 1.0f, 0f), BodyScale = new Vector3(1.1f, 2.0f, 0.9f),
+                MarkPosition = new Vector3(0f, 1.3f, 0.5f), MarkScale = new Vector3(0.8f, 0.3f, 0.2f), // 합장한 손
+            },
+            EnemyKind.Moktak => new Shape
+            {
+                Name = "목탁승", Radius = 0.35f, Height = 1.6f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.8f, 0f), BodyScale = new Vector3(0.65f, 0.8f, 0.65f),
+                MarkPosition = new Vector3(0.25f, 1.0f, 0.4f), MarkScale = new Vector3(0.3f, 0.25f, 0.3f), // 목탁
+            },
+            EnemyKind.Monk => new Shape
+            {
+                Name = "파계승", Radius = 0.4f, Height = 1.8f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.9f, 0f), BodyScale = new Vector3(0.75f, 0.9f, 0.75f),
+                MarkPosition = new Vector3(0.35f, 1.0f, 0.4f), MarkScale = new Vector3(0.07f, 0.07f, 1.4f), // 선장
+            },
+            EnemyKind.Lantern => new Shape
+            {
+                Name = "등불 귀신", Radius = 0.35f, Height = 1.4f, Primitive = PrimitiveType.Sphere,
+                BodyPosition = new Vector3(0f, 0.9f, 0f), BodyScale = new Vector3(0.7f, 0.8f, 0.7f),
+                MarkPosition = new Vector3(0f, 1.4f, 0f), MarkScale = new Vector3(0.2f, 0.2f, 0.2f), // 등불 고리
+            },
             _ => new Shape
             {
                 Name = "산적 졸개", Radius = 0.35f, Height = 1.6f, Primitive = PrimitiveType.Capsule,
@@ -104,8 +135,26 @@ namespace AThousandDawns.Enemies
             EnemyKind.Assassin => v.assassin,
             EnemyKind.Qingzhu => v.qingzhu,
             EnemyKind.IronFist => v.ironfist,
+            EnemyKind.Wraith => Tinted(kind, v.grunt, new Color(0.75f, 0.85f, 0.95f)), // 폐사찰: 그림이 생기기 전까지 졸개 재질에 색만
+            EnemyKind.Arhat => Tinted(kind, v.grunt, new Color(0.55f, 0.55f, 0.5f)),
+            EnemyKind.Moktak => Tinted(kind, v.grunt, new Color(0.6f, 0.45f, 0.3f)),
+            EnemyKind.Monk => Tinted(kind, v.grunt, new Color(0.45f, 0.3f, 0.3f)),
+            EnemyKind.Lantern => Tinted(kind, v.grunt, new Color(1f, 0.75f, 0.35f)),
             _ => v.grunt,
         };
+
+        static readonly System.Collections.Generic.Dictionary<EnemyKind, Material> TintedCache = new System.Collections.Generic.Dictionary<EnemyKind, Material>();
+
+        static Material Tinted(EnemyKind kind, Material from, Color color)
+        {
+            if (from == null) return null;
+            if (!TintedCache.TryGetValue(kind, out var m) || m == null)
+            {
+                m = new Material(from) { color = color };
+                TintedCache[kind] = m;
+            }
+            return m;
+        }
 
         public static EnemyBrain Create(EnemyDirector director, EnemyKind kind, Vector3 position, EnemyVisuals visuals)
         {
@@ -158,6 +207,11 @@ namespace AThousandDawns.Enemies
                 EnemyKind.Assassin => root.AddComponent<AssassinBrain>(),
                 EnemyKind.Qingzhu => root.AddComponent<QingzhuBrain>(),
                 EnemyKind.IronFist => root.AddComponent<IronFistBrain>(),
+                EnemyKind.Wraith => root.AddComponent<WraithBrain>(),
+                EnemyKind.Arhat => root.AddComponent<ArhatBrain>(),
+                EnemyKind.Moktak => root.AddComponent<MoktakBrain>(),
+                EnemyKind.Monk => root.AddComponent<MonkBrain>(),
+                EnemyKind.Lantern => root.AddComponent<LanternBrain>(),
                 _ => root.AddComponent<GruntBrain>(),
             };
             if (brain is ShieldBrain shieldBrain) shieldBrain.SetShieldVisual(mark.transform);
