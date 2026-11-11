@@ -11,6 +11,7 @@ namespace AThousandDawns.Fx
     //   체력: 붓 획 하나 — 먹색 바탕 획 위에 매화 홍 획이 줄어들고, 깎인 자리는 한지색으로 잠깐 남았다 따라 줄어요. 보호막은 위에 흰 획.
     //   대시: 붓 ">" 하나가 한 번 — 최대 충전만큼 늘어요(>>>). 찬 것은 짙게, 채워지는 것은 왼쪽부터 먹이 차올라요.
     //   금창약: 호리병 — 남은 만큼 짙게, 마시는 중엔 아래 붉은 줄이 차요.
+    //   기세: 체력 아래 가는 쪽빛 획, 차면 금빛 + 절초 이름 · 키캡. 키워드: HUD 아래 줄 (아이콘 · 개수 · 2·4·6단계 붓점).
     // 그림: Art/UI/Hud/Resources/HudArt (없으면 단색으로 대신해요). 기준 1920×1080 (UiScale) 위에서 그려요.
     // 사용: OnGUI에서 InkHud.Draw(player);
     public static class InkHud
@@ -18,16 +19,18 @@ namespace AThousandDawns.Fx
         static readonly Color Ink = new Color(0.1f, 0.09f, 0.08f);
         static readonly Color Paper = new Color(0.94f, 0.91f, 0.84f);
         static readonly Color Plum = new Color(0.78f, 0.27f, 0.24f); // 매화 홍 #C8463C (HUD 체력과 같은 색)
+        static readonly Color Indigo = new Color(0.22f, 0.32f, 0.52f); // 쪽빛 (기세 차는 중)
+        static readonly Color Gold = new Color(0.93f, 0.74f, 0.3f);    // 금빛 (절초 준비)
 
         const float Margin = 30f;
-        public const float Height = Margin + 112f + 16f; // HUD가 차지하는 위쪽 높이 (아래에 다른 것을 놓을 때)
+        public const float Height = Margin + 112f + 14f + 38f + 18f; // HUD(+키워드 줄)가 차지하는 위쪽 높이 (아래에 다른 것을 놓을 때)
         const float SkillSize = 112f;
-        const float BarW = 400f, BarH = 46f;
+        const float BarW = 400f, BarH = 40f, GaugeW = 330f, GaugeH = 20f, KeywordSize = 38f;
         const float PipSize = 30f, GourdSize = 48f, ChevronW = 26f;
 
         static Texture2D _stroke, _enso, _gourd, _blot, _chevron, _spin, _bamboo, _quake, _recall, _recallGray;
         static bool _loaded;
-        static GUIStyle _number, _small, _badge, _key;
+        static GUIStyle _number, _small, _badge, _gaugeLabel, _key;
         static float _lagHp = -1f;   // 깎인 자리 (따라 줄어드는 체력)
         static float _lagHold;       // 깎인 뒤 잠깐 멈춤
         static float _lastHp = 1f;
@@ -41,13 +44,74 @@ namespace AThousandDawns.Fx
             var skillRect = new Rect(Margin, Margin, SkillSize, SkillSize); // 왼쪽 위 (사용자 지정)
             DrawSkill(player, skillRect);
             float x = skillRect.xMax + 14f;
-            var barRect = new Rect(x, skillRect.y + 14f, BarW, BarH);
+            var barRect = new Rect(x, skillRect.y, BarW, BarH);
             DrawHealth(player, barRect);
-            float row = barRect.yMax + 10f;
+            DrawGauge(player, new Rect(x + 4f, barRect.yMax + 2f, GaugeW, GaugeH));
+            float row = barRect.yMax + GaugeH + 10f;
             float after = DrawDash(player, new Vector2(x + 6f, row));
             DrawPotions(player, new Vector2(Mathf.Max(after + 26f, x + 170f), row - 8f));
+            DrawKeywords(player, new Vector2(Margin, skillRect.yMax + 14f));
             DrawDrinkGauge(player);
             GUI.color = old;
+        }
+
+        // ── 기세 ── 체력 획 아래 가는 쪽빛 획. 차면 금빛으로 일렁이고 끝에 절초 이름 · 키캡.
+        //   기세 200%(면벽수련 기 20)면 가운데 먹 눈금으로 두 칸을 나눠요.
+        static void DrawGauge(PlayerController p, Rect r)
+        {
+            float cap = Mathf.Max(1f, p.GaugeCap);
+            float ratio = Mathf.Clamp01(p.Gauge / cap);
+            bool ready = p.UltimateReady || p.IsCastingUltimate;
+            StrokePart(r, 1f, Ink, 0.7f);
+            float shimmer = ready ? 0.8f + 0.2f * Mathf.Sin(Time.unscaledTime * 6f) : 1f;
+            StrokePart(Shrink(r, 0f, 0.18f), ratio, ready ? Gold : Indigo, shimmer);
+            if (p.DoubleGauge)
+            {
+                Tint(Ink, 0.9f);
+                GUI.DrawTexture(new Rect(r.x + r.width * 0.5f - 1.5f, r.y + 2f, 3f, r.height - 4f), Texture2D.whiteTexture);
+            }
+            string name = p.UsesDagger ? "만천화우" : "만검귀종";
+            Tint(Paper, 1f);
+            if (ready)
+            {
+                Shadowed(new Rect(r.xMax + 8f, r.y - 4f, 120f, r.height + 8f), p.IsCastingUltimate ? $"{name}!" : name, _gaugeLabel, TextAnchor.MiddleLeft);
+                if (!p.IsCastingUltimate)
+                {
+                    GUI.color = Color.white;
+                    KeyHint.Draw(new Rect(r.xMax + 8f + _gaugeLabel.CalcSize(new GUIContent(name)).x + 6f, r.y - 3f, 40f, r.height + 6f), KeyHint.Key(Bind.Ultimate), _key, 12);
+                }
+            }
+            else Shadowed(new Rect(r.x + 14f, r.y - 3f, r.width, r.height + 6f), $"기세 {p.Gauge:0}", _gaugeLabel, TextAnchor.MiddleLeft);
+        }
+
+        // ── 키워드 ── HUD 아래 한 줄. 개수가 있는 키워드만: 아이콘 + 개수, 아래 붓점 셋이 2·4·6단계 (4단계 = 절초 각인)
+        static void DrawKeywords(PlayerController p, Vector2 at)
+        {
+            var keywords = p.Keywords;
+            if (keywords == null) return;
+            float x = at.x;
+            for (int i = 0; i < PlayerKeywords.KeywordCount; i++)
+            {
+                var k = (Keyword)i;
+                int count = keywords.Count(k);
+                if (count <= 0) continue;
+                var cell = new Rect(x, at.y, KeywordSize, KeywordSize);
+                Tint(Ink, 0.85f);
+                Blot(Shrink(cell, -0.1f));
+                var icon = AThousandDawns.Items.ItemIcons.Get(k);
+                Tint(Color.white, 1f);
+                if (icon != null) GUI.DrawTexture(Shrink(cell, 0.12f), icon, ScaleMode.ScaleToFit);
+                else { Tint(Paper, 1f); Shadowed(cell, PlayerKeywords.Label(k).Substring(0, 1), _small); }
+                Tint(Paper, 1f);
+                Shadowed(new Rect(cell.xMax - 18f, cell.yMax - 22f, 24f, 22f), $"{count}", _small);
+                for (int s = 0; s < 3; s++) // 단계 2·4·6
+                {
+                    bool lit = count >= (s + 1) * 2;
+                    Tint(lit ? (s == 1 ? Gold : Plum) : Ink, lit ? 1f : 0.3f);
+                    Blot(new Rect(cell.x + 6f + s * 12f, cell.yMax + 3f, 10f, 10f));
+                }
+                x += KeywordSize + 14f;
+            }
         }
 
         // 금창약 마시기: 머리 위 원형 게이지 (기획 조작 탭). 먹점이 둘레를 따라 매화 홍으로 차올라요
@@ -277,6 +341,7 @@ namespace AThousandDawns.Fx
             _number.normal.textColor = Color.white;
             _small = new GUIStyle(_number) { fontSize = 19 };
             _badge = new GUIStyle(_number) { fontSize = 28 };
+            _gaugeLabel = new GUIStyle(_number) { fontSize = 15 };
             _key = new GUIStyle(GUI.skin.label) { fontSize = 14, alignment = TextAnchor.MiddleCenter };
             _key.normal.textColor = Paper;
         }
