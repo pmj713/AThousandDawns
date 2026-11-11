@@ -21,8 +21,9 @@ namespace AThousandDawns.EditorTools
             var jarMat = GetInkMaterial("Ink_Onggi", "#211712", 0.55f); // 짙은 갈색 유약 옹기 (객잔 술독 Ink_Jar보다 짙게)
             var lidMat = GetInkMaterial("Ink_PaperLid", "#E8DFC8", 0f);
             var jars = new[] { GetJarMesh(0), GetJarMesh(1), GetJarMesh(2) };
-            new GameObject("Ink Run Props").AddComponent<AThousandDawns.Art.InkRunProps>()
-                .Setup(jars, jarMat, lidMat, GetShardMesh(), crack, GetRockMesh(1), stoneMat);
+            var runProps = new GameObject("Ink Run Props").AddComponent<AThousandDawns.Art.InkRunProps>();
+            runProps.Setup(jars, jarMat, lidMat, GetShardMesh(), crack, GetRockMesh(1), stoneMat);
+            DressRunModelsInk(runProps, stoneMat);   // 기물 주머니·금 간 돌벽 3D 모델 (PrototypeSceneBuilder.InkRunModels.cs)
 
             DressGateInk(stoneMat, vortex);
 

@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 namespace AThousandDawns.Art
 {
-    // 수묵 시험판: 판 도중에 게임 코드가 만드는 소품(항아리 "Jar", 금 간 벽 "HiddenCrack")에 수묵 겉모습을 입혀요.
+    // 수묵 시험판: 판 도중에 게임 코드가 만드는 소품(항아리 "Jar", 금 간 벽 "HiddenCrack", 기물 주머니)에 수묵 겉모습을 입혀요.
     // 게임 코드는 그대로 두고, 씬 맨 위에 새로 생긴 이름을 보고 원래 렌더러만 끈 뒤 수묵 모양을 자식으로 달아요.
     // 항아리가 깨지면(게임이 Destroy) 수묵 모양도 같이 사라지고, 그 자리에 사금파리가 흩어져요.
     // 참조(메시·재질·그림)는 씬 빌더(PrototypeSceneBuilder.InkProps)가 채워요.
@@ -17,6 +17,17 @@ namespace AThousandDawns.Art
         [SerializeField] Sprite crackSprite;
         [SerializeField] Mesh rubbleMesh;
         [SerializeField] Material rubbleMaterial;
+        [Header("3D 모델 (PrototypeSceneBuilder.InkRunModels)")]
+        [SerializeField] Mesh pouchMesh;
+        [SerializeField] Material pouchMaterial;
+        [SerializeField] Mesh pouchCordMesh;
+        [SerializeField] Material pouchCordMaterial;
+        [SerializeField] Mesh crackStonesMesh;
+        [SerializeField] Material crackStonesMaterial;
+        [SerializeField] Mesh crackDarkMesh;
+        [SerializeField] Material crackDarkMaterial;
+
+        const string PouchName = "기물 주머니"; // RoomRun.CreatePouch
 
         const float ScanInterval = 0.2f;
         const string Marker = "Ink Visual";
@@ -29,11 +40,18 @@ namespace AThousandDawns.Art
             crackSprite = crack; rubbleMesh = rubble; rubbleMaterial = rubbleMat;
         }
 
+        public void SetupModels(Mesh pouch, Material silk, Mesh cord, Material cordMat, Mesh stones, Material stoneMat, Mesh dark, Material darkMat)
+        {
+            pouchMesh = pouch; pouchMaterial = silk; pouchCordMesh = cord; pouchCordMaterial = cordMat;
+            crackStonesMesh = stones; crackStonesMaterial = stoneMat; crackDarkMesh = dark; crackDarkMaterial = darkMat;
+        }
+
         // 에디터 미리보기용: 지금 바로 입혀요 (아트 → 판 소품 미리보기 저장)
         public void DressNow(GameObject go)
         {
             if (go.name == "Jar") DressJar(go);
             else if (go.name == "HiddenCrack") DressCrack(go);
+            else if (go.name == PouchName) DressPouch(go);
         }
 
         void Update()
@@ -43,10 +61,11 @@ namespace AThousandDawns.Art
             SceneManager.GetActiveScene().GetRootGameObjects(_roots);
             foreach (var go in _roots)
             {
-                if (go.name != "Jar" && go.name != "HiddenCrack") continue;
+                if (go.name != "Jar" && go.name != "HiddenCrack" && go.name != PouchName) continue;
                 if (go.transform.Find(Marker) != null) continue;
                 if (go.name == "Jar") DressJar(go);
-                else DressCrack(go);
+                else if (go.name == "HiddenCrack") DressCrack(go);
+                else DressPouch(go);
             }
         }
 
@@ -80,6 +99,28 @@ namespace AThousandDawns.Art
             visual.gameObject.AddComponent<InkJarShatter>().Setup(shardMesh, jarMaterial);
         }
 
+        // 기물 주머니: 금색 공 대신 끈 묶인 비단 주머니. 공(0.7×0.6×0.7, 가운데가 높이 0.5)의 밑동에 세워요.
+        // 게임이 주머니 크기를 맥동시키니(AnimatePouch) 모델도 같이 숨 쉬어요. 반짝임 불빛은 그대로 둬요
+        void DressPouch(GameObject pouch)
+        {
+            if (pouchMesh == null || pouchMaterial == null) return;
+            var r = pouch.GetComponent<Renderer>();
+            if (r != null) r.enabled = false;
+            var t = pouch.transform;
+            var visual = Child(t, Marker);
+            visual.localPosition = new Vector3(0f, -0.5f, 0f);   // 공 밑면 (지름 1 기준)
+            visual.localRotation = Quaternion.Euler(0f, 20f, 0f); // 매듭(-z)이 카메라(남쪽) 쪽으로, 살짝 비껴
+            Unscale(visual, t, 1f);
+            visual.gameObject.AddComponent<MeshFilter>().sharedMesh = pouchMesh;
+            visual.gameObject.AddComponent<MeshRenderer>().sharedMaterial = pouchMaterial;
+            if (pouchCordMesh != null && pouchCordMaterial != null)
+            {
+                var cord = Child(visual, "Cord");
+                cord.gameObject.AddComponent<MeshFilter>().sharedMesh = pouchCordMesh;
+                cord.gameObject.AddComponent<MeshRenderer>().sharedMaterial = pouchCordMaterial;
+            }
+        }
+
         // 벽에 세로로 난 금: 방 쪽으로 금 그림 한 장, 발밑에 떨어진 돌 부스러기
         void DressCrack(GameObject crack)
         {
@@ -94,10 +135,16 @@ namespace AThousandDawns.Art
             // 그래서 남쪽 담이면 금을 바깥 면(카메라 쪽)에도 그리고, 부스러기는 가려지는 곳 너머에 둬요.
             // 어느 담이든 담 밑에서 방 쪽 바닥으로 금이 이어져 어디서 봐도 보여요.
             bool south = t.forward.z < -0.5f;
+            // 금 간 돌벽 조각: 돌들이 금 양옆으로 밀려 나오고 틈 사이로 먹빛 속이 보여요 (남쪽 담은 바깥 면에도)
+            if (crackStonesMesh != null && crackStonesMaterial != null)
+            {
+                StonePatch(visual, 0f, false);
+                if (south) StonePatch(visual, WallThickness + 0.04f, true);
+            }
             if (crackSprite != null)
             {
-                WallCard(visual, 0f);
-                if (south) WallCard(visual, WallThickness + 0.04f);
+                if (crackStonesMesh == null) WallCard(visual, 0f);   // 돌 조각이 있으면 벽 면 금 그림은 그 아래 가려져요
+                if (south && crackStonesMesh == null) WallCard(visual, WallThickness + 0.04f);
                 // 바닥으로 이어진 금: 담 밑동에서 방 쪽으로 눕혀요
                 var floor = new GameObject("Crack_Floor").transform;
                 floor.SetParent(visual, false);
@@ -123,6 +170,22 @@ namespace AThousandDawns.Art
 
         const float WallThickness = 0.5f; // PrototypeSceneBuilder.BuildShell의 담 두께
         const float WallHeight = 1.5f;
+
+        // 벽 면에 붙인 금 간 돌 조각. depth = 안쪽 면에서 담 속으로 들어간 거리, outer면 바깥 면이라 뒤집어 붙여요
+        void StonePatch(Transform visual, float depth, bool outer)
+        {
+            var patch = Child(visual, outer ? "Crack_Stones_Outer" : "Crack_Stones");
+            patch.localPosition = new Vector3(0f, 0f, depth);
+            patch.localRotation = outer ? Quaternion.Euler(0f, 180f, 0f) : Quaternion.identity;
+            patch.gameObject.AddComponent<MeshFilter>().sharedMesh = crackStonesMesh;
+            patch.gameObject.AddComponent<MeshRenderer>().sharedMaterial = crackStonesMaterial;
+            if (crackDarkMesh != null && crackDarkMaterial != null)
+            {
+                var dark = Child(patch, "Crack_Dark");
+                dark.gameObject.AddComponent<MeshFilter>().sharedMesh = crackDarkMesh;
+                dark.gameObject.AddComponent<MeshRenderer>().sharedMaterial = crackDarkMaterial;
+            }
+        }
 
         // 담 면에 세운 금 그림. depth = 안쪽 면에서 담 속으로 들어간 거리 (두께만큼이면 바깥 면)
         void WallCard(Transform visual, float depth)

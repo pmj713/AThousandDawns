@@ -75,9 +75,16 @@ namespace AThousandDawns.EditorTools
             {
                 new MoveSpec { state = "ShoulderReady", clips = new[] { "ShoulderReady" }, mode = MoveMode.Run },
                 new MoveSpec { attack = "", state = "Charge", clips = new[] { "ShoulderRun" }, mode = MoveMode.Run, speed = 1.2f, ready = "ShoulderReady" },
+                new MoveSpec { state = "Statue", clips = new[] { "Statue" }, mode = MoveMode.Run },   // 깨기 전 잿빛 석상 자세 (InkEnemyAnimator가 IsAwake를 보고)
+                new MoveSpec { state = "Wake", clips = new[] { "Wake" } },                            // 깨어나기: 몸을 떨고 두 팔을 떨쳐 돌가루를 털어요
             },
             // 목탁승: 예고(1.5초) 동안 목탁을 다섯 번 두드려요 (그대로 재생)
-            ["Moktak"] = new[] { new MoveSpec { attack = "", state = "Knock", clips = new[] { "Knock" }, mode = MoveMode.Play } },
+            //   목탁 가호: 같은 목탁 예고 뒤 둘레 적에게 가호를 씌워요 (같은 동작)
+            ["Moktak"] = new[]
+            {
+                new MoveSpec { attack = "", state = "Knock", clips = new[] { "Knock" }, mode = MoveMode.Play },
+                new MoveSpec { attack = "목탁 가호", state = "Bless", clips = new[] { "Knock" }, mode = MoveMode.Play },
+            },
             // 파계승: 선장 찌르기. 금강불괴(Stance)는 공격이 아니라 자세라 InkEnemyAnimator가 IsStanced를 보고 넘어가요
             ["Monk"] = new[]
             {
@@ -88,6 +95,7 @@ namespace AThousandDawns.EditorTools
             ["BloodBuddha"] = new[]
             {
                 new MoveSpec { attack = "손바닥 내려찍기", state = "Palm", clips = new[] { "Palm" } },
+                new MoveSpec { state = "Palm3", clips = new[] { "Palm3" } },   // 2페이즈 손바닥 연타: 오른손·왼손·오른손 0.4초 간격 (InkEnemyAnimator가 Palm 대신 골라요)
                 new MoveSpec { attack = "염불", state = "Chant", clips = new[] { "Chant" }, mode = MoveMode.Loop },
                 new MoveSpec { attack = "피의 비", state = "Rain", clips = new[] { "Rain" }, mode = MoveMode.Loop },
                 new MoveSpec { attack = "팔 휘두르기", state = "Arms", clips = new[] { "Arms" } },
@@ -103,7 +111,12 @@ namespace AThousandDawns.EditorTools
                 new MoveSpec { attack = "축지", state = "Rush", clips = new[] { "StaffSweep" } },
             },
             // 등불 귀신: 귀화 예고 동안 떨며 부풀었다가 터져요
-            ["Lantern"] = new[] { new MoveSpec { attack = "귀화", state = "Ignite", clips = new[] { "Attack" }, mode = MoveMode.Play } },
+            // 등불 귀신: 이제 터지지 않고 플레이어 둘레를 떠돌며 도깨비불 장판을 남겨요 (공격 동작 없이 떠도는 동작 그대로). 귀화(점화)는 옛 패턴
+            ["Lantern"] = new[]
+            {
+                new MoveSpec { attack = "도깨비불", state = "Drift", clips = new[] { "Run" }, mode = MoveMode.Play },
+                new MoveSpec { attack = "귀화", state = "Ignite", clips = new[] { "Attack" }, mode = MoveMode.Play },
+            },
             // 멧돼지: 이름 없는 기본 공격(돌진) — 예고 동안 머리를 숙여 버티다가(Ready) 판정 동안 빠르게 달려요
             ["Boar"] = new[]
             {
