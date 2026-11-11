@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace AThousandDawns.Fx
 {
-    // 수묵 HUD (아트 목록 UI): 왼쪽 아래 한 덩어리.
+    // 수묵 HUD (아트 목록 UI): 왼쪽 위 한 덩어리 (높이 Height). 시험판 글자 목록은 그 아래로.
     //   초식: 원상(먹 동그라미) 안에 초식 그림. 쿨타임 동안 먹물이 덮였다가 위에서부터 걷혀요. 남은 초 · 키캡.
     //         비도 0개면 그림이 회색(회수 불가), 금창약을 마시는 동안은 쿨타임 표시를 숨기고 머리 위 원형 게이지를 띄워요 (기획 시트).
     //   체력: 붓 획 하나 — 먹색 바탕 획 위에 매화 홍 획이 줄어들고, 깎인 자리는 한지색으로 잠깐 남았다 따라 줄어요. 보호막은 위에 흰 획.
@@ -20,6 +20,7 @@ namespace AThousandDawns.Fx
         static readonly Color Plum = new Color(0.78f, 0.27f, 0.24f); // 매화 홍 #C8463C (HUD 체력과 같은 색)
 
         const float Margin = 30f;
+        public const float Height = Margin + 112f + 16f; // HUD가 차지하는 위쪽 높이 (아래에 다른 것을 놓을 때)
         const float SkillSize = 112f;
         const float BarW = 400f, BarH = 46f;
         const float PipSize = 30f, GourdSize = 48f;
@@ -37,8 +38,7 @@ namespace AThousandDawns.Fx
             Load();
             Styles();
             var old = GUI.color;
-            float bottom = UiScale.Height - Margin;
-            var skillRect = new Rect(Margin, bottom - SkillSize, SkillSize, SkillSize);
+            var skillRect = new Rect(Margin, Margin, SkillSize, SkillSize); // 왼쪽 위 (사용자 지정)
             DrawSkill(player, skillRect);
             float x = skillRect.xMax + 14f;
             var barRect = new Rect(x, skillRect.y + 14f, BarW, BarH);
