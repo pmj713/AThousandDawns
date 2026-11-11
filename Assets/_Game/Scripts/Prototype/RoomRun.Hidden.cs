@@ -28,15 +28,22 @@ namespace AThousandDawns.Prototype
         public bool NearCrack => _crackDirection >= 0 && _phase == Phase.Floor && !_fighting
             && Flat(Player.transform.position - CrackPoint(_crackDirection)).magnitude < GameConfig.GetOptional("room.hidden_crack_radius", 2f);
 
-        bool RollHidden() => HiddenOverride || _rng.NextDouble() < GameConfig.GetOptional("room.hidden_chance", 0.15f);
+        bool RollHidden() => HiddenOverride || _rumor || _rng.NextDouble() < GameConfig.GetOptional("room.hidden_chance", 0.15f);
 
-        // 층에 들어설 때: 기운을 느끼면 지도에 희미하게
+        // 객잔 소문 듣기 (은자 탭 B27): 다음 층에 기연 방이 꼭 생기고 처음부터 지도에 보여요
+        bool _rumor;
+        public bool RumorPending => _rumor;
+        public void HearRumor() => _rumor = true;
+
+        // 층에 들어설 때: 기운을 느끼거나 소문을 들었으면 지도에 희미하게
         void SenseHidden()
         {
+            bool rumor = _rumor;
+            _rumor = false;
             var hidden = _map.Hidden;
-            if (hidden == null || !SensesHidden) return;
+            if (hidden == null || (!SensesHidden && !rumor)) return;
             hidden.Revealed = true;
-            ShowBanner("어딘가에서 기연의 기운이 느껴져요 · 지도의 희미한 방");
+            ShowBanner(rumor ? "객잔에서 들은 소문대로 · 지도의 희미한 방이 기연 방이에요" : "어딘가에서 기연의 기운이 느껴져요 · 지도의 희미한 방");
         }
 
         // 지금 방 옆에 찾지 못한 기연 방이 있으면 그쪽 벽에 금을 그려요 (null이면 치움)

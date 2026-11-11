@@ -401,6 +401,7 @@ namespace AThousandDawns.Prototype
                     InnShop.SlotKind.Part => $"<b>부품 {PlayerItems.PartLabel(s.Part)}</b>\n<size=13>경맥도 칸에 놓는 부품 (E · 부품 줄)</size>",
                     InnShop.SlotKind.Scroll => $"<b>비급 {(s.Skill == SkillKind.Quake ? "붕산권" : "죽림섬")}</b>  우클릭 초식이 바뀌어요 (지금 {player.SkillName})\n<size=13>{(s.Skill == SkillKind.Quake ? "땅을 내리쳐 원형 충격파, 맞은 적을 밀어냄" : "가까운 적에게 3번 순간이동하며 베기")}</size>",
                     InnShop.SlotKind.MoveDanjeon => $"<b>이혈</b>  단전 하나를 다른 칸으로 옮겨요\n<size=13>산 뒤 경맥도(E)에서 옮길 단전 → 새 칸{(player.Items.DanjeonMoves > 0 ? $" · 남은 이혈 {player.Items.DanjeonMoves}" : "")}</size>",
+                    InnShop.SlotKind.Rumor => $"<b>소문 듣기</b>  점소이에게 숨은 곳을 물어요\n<size=13>다음 층에 기연 방이 꼭 생기고 처음부터 지도에 보여요</size>",
                     InnShop.SlotKind.Sell => $"<b>매각</b>  가진 기물을 팔아요\n<size=13>객잔 판매가의 {Mathf.RoundToInt(AThousandDawns.Core.GameConfig.GetOptional("inn.sell_ratio", 0.4f) * 100f)}% · 누르면 가진 기물 목록</size>",
                     _ => "<b>숙박</b>  지금 바로 체력 30% 회복",
                 };

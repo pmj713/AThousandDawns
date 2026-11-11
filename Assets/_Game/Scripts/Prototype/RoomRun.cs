@@ -694,6 +694,11 @@ namespace AThousandDawns.Prototype
             int paid = Shop.Buy(index, Player, Silver);
             Silver -= paid;
             ShopNotice = null;
+            if (slot.Kind == InnShop.SlotKind.Rumor)
+            {
+                HearRumor(); // 다음 층에 기연 방
+                ShopNotice = "점소이가 귀띔해 줘요: 다음 층 어딘가에 숨은 동굴이 있대요";
+            }
             // 둘 곳이 없으면 버릴 기물을 고르고, 포기하면 은자를 돌려받아요
             if (slot.Kind == InnShop.SlotKind.Item && Player.Items.Pending == slot.Item)
                 Player.Items.OnPendingResolved(taken =>

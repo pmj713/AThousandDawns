@@ -89,6 +89,29 @@ namespace AThousandDawns.Tests
         }
 
         [UnityTest]
+        public IEnumerator 소문을_들으면_다음_층에_기연_방이_보임()
+        {
+            yield return Load();
+            _run.EnterInn();
+            var shop = _run.Shop;
+            int rumor = shop.Slots.ToList().FindIndex(s => s.Kind == InnShop.SlotKind.Rumor);
+            Assert.GreaterOrEqual(rumor, 0, "소문 듣기 칸은 늘 있어요");
+            Assert.AreEqual(200, shop.Slots[rumor].Price);
+            _run.GiveSilver(200);
+            _run.OpenShop();
+            Assert.IsTrue(_run.Buy(rumor));
+            Assert.IsTrue(_run.RumorPending);
+            Assert.IsTrue(shop.Slots[rumor].Sold, "객잔마다 한 번");
+            _run.CloseShop();
+
+            _run.BeginFork(_run.Floor + 1);
+            _run.ChooseFork(0);
+            Assert.IsNotNull(_run.Map.Hidden, "다음 층에 기연 방이 꼭");
+            Assert.IsTrue(_run.Map.Hidden.Revealed, "처음부터 지도에 보여요");
+            Assert.IsFalse(_run.RumorPending, "한 번 쓰면 끝");
+        }
+
+        [UnityTest]
         public IEnumerator 떠돌이_상인은_고른_기물_하나를_60퍼센트에()
         {
             yield return Load();

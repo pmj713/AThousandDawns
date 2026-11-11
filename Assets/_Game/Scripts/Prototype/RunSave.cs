@@ -32,6 +32,7 @@ namespace AThousandDawns.Prototype
         public List<Room> rooms = new List<Room>();
         public int roomX, roomY;
         public bool masterDone;
+        public bool rumor; // 객잔에서 소문을 들었음 (다음 층 기연 방)
         public int tracking, silver;
         public List<string> usedEvents = new List<string>();
         public int floorPower;

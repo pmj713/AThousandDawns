@@ -52,6 +52,7 @@ namespace AThousandDawns.Prototype
                 pathReward = (int)_path.Reward,
                 pathDense = _path.Dense,
                 masterDone = _masterDone,
+                rumor = _rumor,
                 tracking = Tracking,
                 silver = Silver,
                 floorPower = _floorPower,
@@ -168,6 +169,7 @@ namespace AThousandDawns.Prototype
             Player.UltimateStage = Mathf.Max(0, _region - 1);
             _path = new Path { Reward = (RewardKind)s.pathReward, Dense = s.pathDense };
             _masterDone = s.masterDone;
+            _rumor = s.rumor;
             _floorPower = s.floorPower;
             _floorTaken = s.floorTaken;
             _bossGauge = s.bossGauge;

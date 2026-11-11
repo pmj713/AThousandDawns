@@ -3181,3 +3181,7 @@ MonoBehaviour:
     value: 5
     unit: "\uCD08"
     note: "\uB9CC\uCC9C\uD654\uC6B0 \uBE44 \uC2DC\uAC04 (\uC0C1\uB2E8\uC804)"
+  - key: price.rumor
+    value: 200
+    unit: "\uC740\uC790"
+    note: "\uAC1D\uC794 \uC18C\uBB38 \uB4E3\uAE30: \uB2E4\uC74C \uCE35 \uAE30\uC5F0 \uBC29 (\uAC1D\uC794\uB9C8\uB2E4 \uD55C \uBC88)"

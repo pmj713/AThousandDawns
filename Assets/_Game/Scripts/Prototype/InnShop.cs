@@ -8,10 +8,10 @@ namespace AThousandDawns.Prototype
 {
     // 객잔 (첫 버전): 진열 기물 3개 · 금창약 2개 · 숙박. 가격은 은자 시트 (지역과 상관없이 고정).
     // 기물 첫 장은 내 주 키워드 2개(가진 기물에 가장 많은 키워드) 중에서, 나머지는 무작위. 등급은 그 지역 확률표.
-    // 부품 (해금한 것만) · 비급 (25%, 지금 초식이 아닌 것) · 이혈 (단전 하나 옮기기) · 매각 (가진 기물을 판매가의 40%에). 나중에: 소문 듣기
+    // 부품 (해금한 것만) · 비급 (25%, 지금 초식이 아닌 것) · 이혈 (단전 하나 옮기기) · 매각 (가진 기물을 판매가의 40%에) · 소문 듣기 (200, 다음 층 기연 방)
     public sealed class InnShop
     {
-        public enum SlotKind { Item, Potion, Lodging, Part, Scroll, MoveDanjeon, Sell }
+        public enum SlotKind { Item, Potion, Lodging, Part, Scroll, MoveDanjeon, Sell, Rumor } // 저장 번호가 밀리지 않게 끝에 붙여요
 
         public sealed class Slot
         {
@@ -85,6 +85,7 @@ namespace AThousandDawns.Prototype
             int potionPrice = (int)Math.Round(GameConfig.Get("price.potion", 60f));
             for (int i = 0; i < potions; i++) shop._slots.Add(new Slot { Kind = SlotKind.Potion, Price = potionPrice });
             shop._slots.Add(new Slot { Kind = SlotKind.Lodging, Price = (int)Math.Round(GameConfig.Get("price.lodging", 40f)) });
+            shop._slots.Add(new Slot { Kind = SlotKind.Rumor, Price = (int)Math.Round(GameConfig.GetOptional("price.rumor", 200f)) }); // 소문 듣기: 다음 층 기연 방 (객잔마다 한 번)
             if (priceScale != 1f) foreach (var s in shop._slots) s.Price = (int)Math.Round(s.Price * priceScale); // 면벽수련 은 10: 객잔 −15%
             shop._slots.Add(new Slot { Kind = SlotKind.Sell }); // 매각: 누르면 가진 기물 목록 (RoomRun.OpenSell)
             return shop;
@@ -135,6 +136,7 @@ namespace AThousandDawns.Prototype
                 case SlotKind.Lodging: player.Heal(player.MaxHealth * GameConfig.Get("lodging.heal", 0.3f)); break;
                 case SlotKind.Scroll: player.LearnSkill(slot.Skill); break;
                 case SlotKind.MoveDanjeon: player.Items.DanjeonMoves++; break; // 경맥도에서 옮겨요
+                case SlotKind.Rumor: break; // 다음 층 기연 방은 RoomRun이 (HearRumor)
             }
             slot.Sold = true;
             return slot.Price;
