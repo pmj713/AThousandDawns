@@ -13,13 +13,14 @@ namespace AThousandDawns.Art
         static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
 
         [SerializeField] Texture[] regionTextures;
+        [SerializeField] GameObject bamboo; // 벽 너머 대나무 (죽림에서만)
 
         RoomRun _run;
         InkRegionDressing _dressing;
         Material _material;
         int _shown = -1;
 
-        public void Setup(Texture[] textures) => regionTextures = textures;
+        public void Setup(Texture[] textures, GameObject bambooRoot) { regionTextures = textures; bamboo = bambooRoot; }
 
         void Start()
         {
@@ -42,6 +43,7 @@ namespace AThousandDawns.Art
             if (region == _shown) return;
             _shown = region;
             if (regionTextures[region] != null) _material.SetTexture(BaseMapId, regionTextures[region]);
+            if (bamboo != null) bamboo.SetActive(region == 0);
         }
     }
 }

@@ -9,7 +9,7 @@ namespace AThousandDawns.EditorTools
     {
         const string OutsideArtFolder = "Assets/_Game/Art/Env/Outside";
 
-        static void DressOutsideInk(Material floorMat)
+        static void DressOutsideInk(Material floorMat, Material bambooMat)
         {
             var paths = new[] { $"{OutsideArtFolder}/Ground_Bamboo.png", $"{OutsideArtFolder}/Ground_Temple.png" };
             foreach (var p in paths) ImportAsTiledTexture(p);
@@ -47,7 +47,63 @@ namespace AThousandDawns.EditorTools
             var renderer = ground.GetComponent<MeshRenderer>();
             renderer.sharedMaterial = mat;
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            ground.AddComponent<AThousandDawns.Art.InkOutsideGround>().Setup(textures);
+            var bamboo = DressOutsideBamboo(bambooMat);
+            ground.AddComponent<AThousandDawns.Art.InkOutsideGround>().Setup(textures, bamboo.gameObject);
+        }
+
+        // 벽 너머 대나무 (사용자 요청 "대충 넣어 놓으면"): 방 바닥마다 북·동·서쪽 바깥 띠에 대나무 묶음을 듬성듬성.
+        // 카메라 쪽(남쪽)은 시야를 가리니 비우고, 다른 방 바닥 위에는 세우지 않아요. 보기용이라 충돌 없음.
+        static Transform DressOutsideBamboo(Material bambooMat)
+        {
+            // 방 바닥 찾기: 납작하고 넓은 바닥 높이의 덩어리
+            var floors = new System.Collections.Generic.List<Bounds>();
+            foreach (var r in Object.FindObjectsByType<MeshRenderer>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                var b = r.bounds;
+                if (b.size.y < 0.8f && b.size.x >= 8f && b.size.z >= 6f && b.size.x < 120f && Mathf.Abs(b.max.y) < 0.4f) floors.Add(b);
+            }
+            // 키 큰 것(건물·벽·기존 대나무·마을 소품) 자리도 피해요
+            var tall = new System.Collections.Generic.List<Bounds>();
+            foreach (var r in Object.FindObjectsByType<Renderer>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                var b = r.bounds;
+                if (b.size.y > 0.8f && b.size.x < 60f && b.size.z < 60f) tall.Add(b);
+            }
+            bool Blocked(Vector3 p)
+            {
+                foreach (var t in tall)
+                    if (p.x > t.min.x - 0.6f && p.x < t.max.x + 0.6f && p.z > t.min.z - 0.6f && p.z < t.max.z + 0.6f) return true;
+                return false;
+            }
+            bool OnFloor(Vector3 p, float margin)
+            {
+                foreach (var f in floors)
+                    if (p.x > f.min.x - margin && p.x < f.max.x + margin && p.z > f.min.z - margin && p.z < f.max.z + margin) return true;
+                return false;
+            }
+
+            var root = new GameObject("Ink Outside Bamboo (벽 너머 대나무)").transform;
+            var rng = new System.Random(31);
+            float R(float a, float b) => a + (float)rng.NextDouble() * (b - a);
+            const float Band = 12f, Step = 2.6f;
+            var placed = new System.Collections.Generic.List<Vector3>();
+            int seed = 500;
+            foreach (var f in floors)
+                for (float x = f.min.x - Band; x <= f.max.x + Band; x += Step)
+                for (float z = f.min.z; z <= f.max.z + Band; z += Step) // 남쪽(카메라 쪽) 띠는 빼요
+                {
+                    var p = new Vector3(x + R(-0.9f, 0.9f), 0f, z + R(-0.9f, 0.9f));
+                    if (OnFloor(p, 1.6f)) continue;          // 방 안·벽 바로 옆은 비워요
+                    if (Blocked(p)) continue;
+                    if (rng.NextDouble() < 0.25) continue;   // 듬성듬성
+                    bool near = false;
+                    foreach (var q in placed) if ((q - p).sqrMagnitude < Step * Step * 0.5f) { near = true; break; }
+                    if (near) continue;
+                    placed.Add(p);
+                    BambooCluster(root, p, R(5f, 7.5f), seed++, bambooMat);
+                }
+            StripColliders(root);
+            return root;
         }
     }
 }
