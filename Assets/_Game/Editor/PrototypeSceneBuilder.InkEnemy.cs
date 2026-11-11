@@ -37,6 +37,7 @@ namespace AThousandDawns.EditorTools
             ("Moktak", EnemyKind.Moktak, 2.5f),
             ("Monk", EnemyKind.Monk, 3f),
             ("Lantern", EnemyKind.Lantern, 4f),
+            ("Hyegwang", EnemyKind.Hyegwang, 3.5f),   // 폐사찰 고수
         };
 
         // 패턴 동작: attack(브레인 AttackName, null이면 다른 동작이 이어 부르는 상태) → state.
@@ -54,7 +55,7 @@ namespace AThousandDawns.EditorTools
         static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "ShoulderRun", "Idle", "Run" };
 
         // 고유 동작만 쓰는 적 (Generic으로 가져와요)
-        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
+        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
 
         static readonly Dictionary<string, MoveSpec[]> InkEnemyMoves = new Dictionary<string, MoveSpec[]>
         {
@@ -81,6 +82,13 @@ namespace AThousandDawns.EditorTools
             {
                 new MoveSpec { attack = "선장", state = "Thrust", clips = new[] { "Thrust" } },
                 new MoveSpec { state = "Stance", clips = new[] { "Stance" }, mode = MoveMode.Run },
+            },
+            // 파계승 혜광 (폐사찰 고수): 선장 휘두르기 · 금강불괴(예고 3초 동안 버티는 자세 → 선장을 내리꽂아요) · 염주 던지기
+            ["Hyegwang"] = new[]
+            {
+                new MoveSpec { attack = "선장 휘두르기", state = "StaffSweep", clips = new[] { "StaffSweep" } },
+                new MoveSpec { attack = "금강불괴", state = "Vajra", clips = new[] { "Vajra" } },
+                new MoveSpec { attack = "염주", state = "Beads", clips = new[] { "Beads" } },
             },
             // 등불 귀신: 귀화 예고 동안 떨며 부풀었다가 터져요
             ["Lantern"] = new[] { new MoveSpec { attack = "귀화", state = "Ignite", clips = new[] { "Attack" }, mode = MoveMode.Play } },
@@ -182,7 +190,7 @@ namespace AThousandDawns.EditorTools
             idle = clips["Idle"];
             run = clips["Run"];
             // 플레이어 동작은 Generic에 못 써요: 기본 공격은 고유 Attack(동물 덤비기) 또는 Slam(녹림왕 부하 부르기 등)
-            if (generic) attackClip = new[] { "Attack", "Slam", "Chop", "Punch2" }.Select(n => clips.TryGetValue(n, out var c) ? c : null).FirstOrDefault(c => c != null);
+            if (generic) attackClip = new[] { "Attack", "Slam", "Chop", "Punch2", "StaffSweep" }.Select(n => clips.TryGetValue(n, out var c) ? c : null).FirstOrDefault(c => c != null);
             // 기본 공격에 고유 동작이 있으면 그걸로 (나팔수·궁수 — 예고 동안 그대로 재생해요)
             if (clips.TryGetValue("BlowHorn", out var blow)) attackClip = blow;
             else if (clips.TryGetValue("ShootBow", out var shoot)) attackClip = shoot;
