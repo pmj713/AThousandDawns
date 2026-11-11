@@ -44,6 +44,7 @@ namespace AThousandDawns.Prototype
         {
             UiScale.Apply(); // 기준 1920×1080, 어떤 창 크기에도 같은 비율
             DrawHud();
+            InkHud.Draw(player); // 수묵 HUD: 초식 · 체력 · 대시 · 금창약 (왼쪽 위, Fx/InkHud)
             DrawMinimap();
             DrawFork();
             DrawShop();
@@ -59,7 +60,7 @@ namespace AThousandDawns.Prototype
             EnsureStyles();
             if (_camera == null) _camera = Camera.main;
 
-            GUILayout.BeginArea(new Rect(16, 16, 700, 466), GUI.skin.box);
+            GUILayout.BeginArea(new Rect(16, InkHud.Height, 700, 466), GUI.skin.box); // 왼쪽 위 수묵 HUD 아래
             GUILayout.Label("일조천회 시험판 · 전투", _label);
             GUILayout.Label($"{KeyName(AThousandDawns.Core.Bind.MoveUp)}{KeyName(AThousandDawns.Core.Bind.MoveLeft)}{KeyName(AThousandDawns.Core.Bind.MoveDown)}{KeyName(AThousandDawns.Core.Bind.MoveRight)} 이동 · {KeyName(AThousandDawns.Core.Bind.Attack)}(누르고 있기) 평타 · {KeyName(AThousandDawns.Core.Bind.Skill)} 초식 · {KeyName(AThousandDawns.Core.Bind.Ultimate)} 절초 · {KeyName(AThousandDawns.Core.Bind.Dash)} 대시 · {KeyName(AThousandDawns.Core.Bind.Potion)} 금창약(누르고 있기) · {KeyName(AThousandDawns.Core.Bind.Meridian)} 경맥도", _label);
             GUILayout.Label("부르기 (바로 옆): 1 졸개 · 2 멧돼지 · 3 궁수 · 4 들개 · 5 방패 · 6 나팔수 · 7 화약 · 8 청죽사 · 9 녹림왕 (결투장) · 0 살수 · - 청죽객 · = 철권 마웅 · Shift+숫자 정예", _label);
