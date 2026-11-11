@@ -90,6 +90,7 @@ namespace AThousandDawns.EditorTools
             controller.AddParameter("Dash", AnimatorControllerParameterType.Trigger);
             controller.AddParameter("Skill", AnimatorControllerParameterType.Trigger);
             controller.AddParameter("SkillQuake", AnimatorControllerParameterType.Trigger);
+            controller.AddParameter("SkillFlash", AnimatorControllerParameterType.Trigger);
             var sm = controller.layers[0].stateMachine;
 
             // 동작 길이를 게임 시간(초)에 맞춰 재생 속도를 정해요
@@ -122,6 +123,15 @@ namespace AThousandDawns.EditorTools
                 toQuake.hasExitTime = false; toQuake.duration = 0.03f; toQuake.canTransitionToSelf = true;
                 toQuake.AddCondition(AnimatorConditionMode.If, 0f, "SkillQuake");
             }
+            // 죽림섬(비급): 0.25초 간격 순간이동 베기 3번에 맞춰 좌우로 번갈아 베어 넘겨요 (25프레임을 그대로, 30fps = 0.83초)
+            AnimatorState flash = null;
+            if (all.ContainsKey("SkillFlash"))
+            {
+                flash = State("SkillFlash", 25f / 30f);
+                var toFlash = sm.AddAnyStateTransition(flash);
+                toFlash.hasExitTime = false; toFlash.duration = 0.03f; toFlash.canTransitionToSelf = true;
+                toFlash.AddCondition(AnimatorConditionMode.If, 0f, "SkillFlash");
+            }
             // 평타는 원래 속도로 재생해요. 끝나면 대기로 넘어가고, 다음 타가 오면 이어 베요
             var attacks = new[] { State("Attack1", 0f), State("Attack2", 0f), State("Attack3", 0f) };
             sm.defaultState = idle;
@@ -145,7 +155,7 @@ namespace AThousandDawns.EditorTools
             }
             // 대시·공격이 끝나면: 걷기 스크립트는 공격·대시 중엔 Speed를 0으로 주다가 끝나면 움직임을 풀어요.
             // 그래서 Speed가 오르면 바로 달리기로, 아니면 동작이 끝까지 돈 뒤 대기로
-            foreach (var st in attacks.Append(dash).Append(skill).Append(quake).Where(s => s != null))
+            foreach (var st in attacks.Append(dash).Append(skill).Append(quake).Append(flash).Where(s => s != null))
             {
                 var r = st.AddTransition(run);
                 r.hasExitTime = false; r.duration = 0.1f;
