@@ -88,6 +88,7 @@ namespace AThousandDawns.EditorTools
             ["BloodBuddha"] = new[]
             {
                 new MoveSpec { attack = "손바닥 내려찍기", state = "Palm", clips = new[] { "Palm" } },
+                new MoveSpec { state = "Palm3", clips = new[] { "Palm3" } },   // 2페이즈 손바닥 연타: 오른손·왼손·오른손 0.4초 간격 (InkEnemyAnimator가 Palm 대신 골라요)
                 new MoveSpec { attack = "염불", state = "Chant", clips = new[] { "Chant" }, mode = MoveMode.Loop },
                 new MoveSpec { attack = "피의 비", state = "Rain", clips = new[] { "Rain" }, mode = MoveMode.Loop },
                 new MoveSpec { attack = "팔 휘두르기", state = "Arms", clips = new[] { "Arms" } },

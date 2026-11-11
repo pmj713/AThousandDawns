@@ -1202,7 +1202,10 @@ if "abbotmoves" in EXTRAS:
             "follow": (55, Vector((0.6, -0.6, -0.05)), -0.22, -0.1, Vector((1, -0.35, 0))),
             "end": (60, Vector((0.75, 0.0, -0.2)), -0.16, -0.05, Vector((0.8, 0.6, -0.1))),
         }[stage]
-        lower_hips(lift, FEET, dy=dy)
+        # 2칸 내디디며 휘둘러요: 예고 동안 왼발을 살짝 들고 있다가 판정에 앞으로 크게 내딛고(엉덩이도 앞으로), 오른발은 뒤에 버텨요
+        step = {"load": (Vector((0.02, 0.06, 0.14)), 0.0), "hit": (Vector((0.04, -0.5, 0)), 0.12), "follow": (Vector((0.04, -0.5, 0)), 0.12), "end": (Vector((0.02, -0.4, 0)), 0.08)}[stage]
+        feet = {"Left": FEET["Left"] + step[0], "Right": FEET["Right"] + Vector((0, step[1], 0))}
+        lower_hips(lift - (0.04 if stage != "load" else 0), feet, dy=dy - (0.22 if stage != "load" else 0))
         bend("Spine", UP, twist * 0.6); bend("Spine1", UP, twist * 0.4)
         sh = pb["RightArm"].head.copy()
         arm("Right", sh + wrist.normalized() * REACH * 0.85, Vector((0.2, 0.5, -1)))
@@ -1338,6 +1341,28 @@ if "buddhamoves" in EXTRAS:
         sl = pb["LeftArm"].head.copy()
         arm("Left", sl + Vector((0.15, -0.1, -0.6)), Vector((1, 0.3, -0.3)))
     make_action("Palm", [(0, "raise"), (4, "slam"), (14, "hold"), (26, "idle")], palm_pose)
+
+    # Palm3 (2페이즈 손바닥 연타): 오른손 → 왼손 → 오른손으로 0.4초(12프레임) 간격 세 번 내려찍어요.
+    #   첫 자세(오른손 치켜듦)로 예고를 버티다가 판정부터 재생 — 게임의 연타 원(첫 손바닥 뒤 0.4·0.8초)과 박자가 같아요
+    def palm3_pose(val):
+        stage, side = val
+        if stage == "idle":
+            idle_end_pose(); return
+        sx = 1 if side == "Right" else -1                       # 오른쪽 = -X
+        other = "Left" if side == "Right" else "Right"
+        sh = pb[f"{side}Arm"].head.copy()
+        if stage == "raise":
+            heavy(0.0, -10)
+            bend("Spine", UP, sx * 10)                                  # 치켜드는 쪽 어깨를 뒤로
+            arm(side, sh + Vector((-0.05 * sx, -0.15, 1)).normalized() * REACH * 0.98, Vector((-sx, 0.3, 0)))
+        else:
+            heavy(-0.25, 30)
+            bend("Spine", UP, -sx * 12)                                 # 내려찍는 쪽 어깨가 앞으로
+            arm(side, Vector((sh.x * 0.6, sh.y - 1.1, 0.25)), Vector((-sx, 0.3, 0.3)))
+        so = pb[f"{other}Arm"].head.copy()
+        arm(other, so + Vector((0.15 * sx, -0.1, -0.6)), Vector((sx, 0.3, -0.3)))
+    make_action("Palm3", [(0, ("raise", "Right")), (4, ("slam", "Right")), (10, ("raise", "Left")), (16, ("slam", "Left")),
+                          (22, ("raise", "Right")), (28, ("slam", "Right")), (38, ("slam", "Right")), (50, ("idle", "Right"))], palm3_pose)
 
     def chant_pose(t):
         heavy(-0.03 * (1 + math.sin(2 * math.pi * t)), 8)

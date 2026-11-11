@@ -151,7 +151,13 @@ namespace AThousandDawns.Art
         {
             string name = _brain.AttackName ?? "";   // 이름 없는 공격(멧돼지 돌진 등)은 attack이 ""인 동작
             foreach (var m in _moves)
-                if (m.attack == name) return m;
+                if (m.attack == name)
+                {
+                    // 혈불 2페이즈 손바닥 연타: 한 번 내려찍기 대신 세 번 이어 내려찍는 동작
+                    var move = m;
+                    if (_buddha != null && _buddha.Phase >= 2 && m.state == "Palm" && _animator.HasState(0, Animator.StringToHash("Palm3"))) move.state = "Palm3";
+                    return move;
+                }
             return new InkEnemyModels.Move { state = "Attack", mode = _windupPlays ? InkEnemyModels.MoveMode.Play : InkEnemyModels.MoveMode.Swing };
         }
 
