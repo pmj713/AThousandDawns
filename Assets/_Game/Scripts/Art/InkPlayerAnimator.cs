@@ -23,6 +23,12 @@ namespace AThousandDawns.Art
         static readonly int SkillWaveId = Animator.StringToHash("SkillWave");
         int _vortexLayer = -1;
         float _vortexWeight;
+        static readonly int DaggerFlashId = Animator.StringToHash("DaggerFlash");
+        string _upperState = "SkillVortex";
+        // 비도 순간이동·호신륜이 도는 중인지 (기획·개발이 PlayerController.Dagger.cs에 추가 중이라 이름으로 찾아요 — 들어오기 전에도 컴파일되게)
+        static readonly System.Reflection.PropertyInfo IsDaggerFlashingProp = typeof(AThousandDawns.Player.PlayerController).GetProperty("IsDaggerFlashing");
+        static readonly System.Reflection.PropertyInfo IsHaloingProp = typeof(AThousandDawns.Player.PlayerController).GetProperty("IsHaloing");
+        bool DaggerState(System.Reflection.PropertyInfo prop) => prop != null && (bool)prop.GetValue(_player);
 
         PlayerController _player;
         Animator _animator;
@@ -63,38 +69,45 @@ namespace AThousandDawns.Art
             _wasDashing = dashing;
 
             bool casting = _player.IsCastingSkill;
-            bool vortexSkill = _player.UsesDagger && _player.Skill == SkillKind.Takrang;   // 비도 + 탁랑참: 회수 대신 탁류 소용돌이
-            if (casting && !_wasCasting && !vortexSkill && (_player.Skill == SkillKind.Spin || _player.UsesDagger))   // 비도를 들면 비급을 배워도 초식은 늘 회수 (회선참과 같은 동작)
+            bool dagger = _player.UsesDagger;
+            var skill = _player.Skill;
+            // 비도 초식은 비급마다 달라요: 회선참 = 회수 · 죽림섬 = 비도 순간이동 · 붕산권 = 비도 솟구치기(땅 내리치기)
+            //   · 금강장 = 비도 호신륜(윗몸 층) · 탁랑참 = 탁류 소용돌이(윗몸 층)
+            bool vortexSkill = dagger && skill == SkillKind.Takrang;
+            bool haloSkill = dagger && skill == SkillKind.Palm;
+            bool daggerFlashSkill = dagger && skill == SkillKind.BambooFlash;
+            if (casting && !_wasCasting)
             {
-                _animator.ResetTrigger(AttackId);
-                _animator.SetTrigger(SkillId);
+                int trigger = 0;
+                if (dagger)
+                {
+                    if (skill == SkillKind.Quake) trigger = SkillQuakeId;                                   // 비도 솟구치기: 땅을 내리쳐요
+                    else if (!vortexSkill && !haloSkill && !daggerFlashSkill) trigger = SkillId;            // 회수 (회선참과 같은 동작)
+                }
+                else if (skill == SkillKind.Spin) trigger = SkillId;
+                else if (skill == SkillKind.Quake) trigger = SkillQuakeId;            // 붕산권: 땅 내려치기
+                else if (skill == SkillKind.BambooFlash) trigger = SkillFlashId;      // 죽림섬: 좌우로 번갈아 베어 넘기기
+                else if (skill == SkillKind.Palm) trigger = SkillPalmId;              // 금강장: 왼손바닥 내뻗기
+                else if (skill == SkillKind.Takrang) trigger = SkillWaveId;           // 탁랑참: 머리 위에서 앞으로 길게 내베기
+                if (trigger != 0)
+                {
+                    _animator.ResetTrigger(AttackId);
+                    _animator.SetTrigger(trigger);
+                }
             }
-            if (casting && !_wasCasting && !_player.UsesDagger && _player.Skill == SkillKind.Quake)   // 붕산권: 땅 내려치기
-            {
-                _animator.ResetTrigger(AttackId);
-                _animator.SetTrigger(SkillQuakeId);
-            }
-            if (casting && !_wasCasting && !_player.UsesDagger && _player.Skill == SkillKind.BambooFlash)   // 죽림섬: 좌우로 번갈아 베어 넘기기
-            {
-                _animator.ResetTrigger(AttackId);
-                _animator.SetTrigger(SkillFlashId);
-            }
-            // 금강장: SkillKind.Palm (기획·개발이 추가 중이라 이름으로 비교해요 — 들어오기 전에도 컴파일되게)
-            if (casting && !_wasCasting && !_player.UsesDagger && _player.Skill.ToString() == "Palm")
-            {
-                _animator.ResetTrigger(AttackId);
-                _animator.SetTrigger(SkillPalmId);
-            }
-            if (casting && !_wasCasting && !_player.UsesDagger && _player.Skill == SkillKind.Takrang)   // 탁랑참: 머리 위에서 앞으로 길게 내베기
-            {
-                _animator.ResetTrigger(AttackId);
-                _animator.SetTrigger(SkillWaveId);
-            }
-            // 탁류 소용돌이: 시전부터 비도가 소용돌이치는 동안 윗몸은 손을 뻗어 조종하는 자세 (다리는 걷기·대기 그대로)
+            // 비도 순간이동: 순간이동이 이어지는 동안 좌우로 번갈아 베어 넘겨요
+            _animator.SetBool(DaggerFlashId, daggerFlashSkill && (casting || DaggerState(IsDaggerFlashingProp)));
+            // 비도가 도는 동안 윗몸은 손으로 이끄는 자세 (다리는 걷기·대기 그대로): 탁류 소용돌이 · 비도 호신륜
             if (_vortexLayer < 0) _vortexLayer = _animator.GetLayerIndex("Vortex");
             if (_vortexLayer > 0)
             {
-                bool on = vortexSkill && (casting || _player.IsVortexing);
+                bool on = (vortexSkill && (casting || _player.IsVortexing)) || (haloSkill && (casting || DaggerState(IsHaloingProp)));
+                string state = haloSkill ? "SkillHalo" : "SkillVortex";
+                if (on && state != _upperState)
+                {
+                    _upperState = state;
+                    _animator.CrossFadeInFixedTime(state, 0.1f, _vortexLayer);
+                }
                 _vortexWeight = Mathf.MoveTowards(_vortexWeight, on ? 1f : 0f, Time.deltaTime / (on ? 0.1f : 0.2f));
                 _animator.SetLayerWeight(_vortexLayer, _vortexWeight);
             }

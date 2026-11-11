@@ -45,7 +45,7 @@ namespace AThousandDawns.EditorTools
             foreach (var clip in clips)
             {
                 clip.name = clip.takeName.Split('|').Last();
-                clip.loopTime = clip.name == "Idle" || clip.name == "Run" || clip.name == "SkillVortex";   // 탁류 소용돌이는 2초 동안 반복
+                clip.loopTime = clip.name == "Idle" || clip.name == "Run" || clip.name == "SkillVortex" || clip.name == "SkillHalo" || clip.name == "DaggerFlash";   // 비도 초식(소용돌이·호신륜·순간이동)은 도는 동안 반복
                 // 몸통 위치·방향은 동작에 구워 넣어 캐릭터가 제자리에서 움직여요 (이동은 걷기 스크립트가 해요)
                 clip.lockRootRotation = clip.lockRootHeightY = clip.lockRootPositionXZ = true;
                 clip.keepOriginalOrientation = clip.keepOriginalPositionY = clip.keepOriginalPositionXZ = true;
@@ -93,6 +93,7 @@ namespace AThousandDawns.EditorTools
             controller.AddParameter("SkillFlash", AnimatorControllerParameterType.Trigger);
             controller.AddParameter("SkillPalm", AnimatorControllerParameterType.Trigger);
             controller.AddParameter("SkillWave", AnimatorControllerParameterType.Trigger);
+            controller.AddParameter("DaggerFlash", AnimatorControllerParameterType.Bool);
             var sm = controller.layers[0].stateMachine;
 
             // 동작 길이를 게임 시간(초)에 맞춰 재생 속도를 정해요
@@ -152,6 +153,18 @@ namespace AThousandDawns.EditorTools
                 toWave.hasExitTime = false; toWave.duration = 0.03f; toWave.canTransitionToSelf = true;
                 toWave.AddCondition(AnimatorConditionMode.If, 0f, "SkillWave");
             }
+            // 비도 순간이동(비도 + 죽림섬): 비도 자리로 순간이동하는 동안 좌우로 번갈아 베어 넘기는 자세를 반복해요 (DaggerFlash가 켜져 있는 동안)
+            AnimatorState daggerFlash = null;
+            if (all.ContainsKey("DaggerFlash"))
+            {
+                daggerFlash = State("DaggerFlash", 0f);
+                var toDf = sm.AddAnyStateTransition(daggerFlash);
+                toDf.hasExitTime = false; toDf.duration = 0.03f; toDf.canTransitionToSelf = false;
+                toDf.AddCondition(AnimatorConditionMode.If, 0f, "DaggerFlash");
+                var dfOut = daggerFlash.AddTransition(idle);
+                dfOut.hasExitTime = false; dfOut.duration = 0.1f;
+                dfOut.AddCondition(AnimatorConditionMode.IfNot, 0f, "DaggerFlash");
+            }
             // 평타는 원래 속도로 재생해요. 끝나면 대기로 넘어가고, 다음 타가 오면 이어 베요
             var attacks = new[] { State("Attack1", 0f), State("Attack2", 0f), State("Attack3", 0f) };
             sm.defaultState = idle;
@@ -184,7 +197,7 @@ namespace AThousandDawns.EditorTools
                 b.hasExitTime = true; b.exitTime = 1f; b.duration = 0.12f;
             }
 
-            // 탁류 소용돌이(비도 + 탁랑참): 윗몸만 덮어쓰는 층. 비도가 소용돌이치는 동안 InkPlayerAnimator가 무게를 1로 올려요
+            // 비도 초식 윗몸 층 (탁류 소용돌이 · 비도 호신륜): 비도가 도는 동안 InkPlayerAnimator가 무게를 1로 올려요
             //   (다리는 아래 층의 걷기·대기를 그대로 따라요)
             if (all.TryGetValue("SkillVortex", out var vortexClip))
             {
@@ -203,6 +216,8 @@ namespace AThousandDawns.EditorTools
                 var vs = layers[1].stateMachine.AddState("SkillVortex");
                 vs.motion = vortexClip;
                 layers[1].stateMachine.defaultState = vs;
+                // 비도 호신륜(비도 + 금강장): 같은 윗몸 층에서 두 팔을 몸 앞 비스듬히 벌려 고리를 이끄는 자세 (InkPlayerAnimator가 골라 틀어요)
+                if (all.TryGetValue("SkillHalo", out var haloClip)) layers[1].stateMachine.AddState("SkillHalo").motion = haloClip;
             }
 
             AssetDatabase.SaveAssets();
