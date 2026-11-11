@@ -108,6 +108,44 @@ for w in WEAPONS:
         edge = Vector((0, 0, -1)); edge = (edge - axis * edge.dot(axis)).normalized()
         L, wide = {"dao": (0.62, 0.07), "dagger": (0.26, 0.035), "bigdao": (1.15, 0.16)}[w]   # bigdao: 녹림왕의 대도
         make(f"{NAME}_Weapon_{w}", "RightHand", lambda bm, g=g, a=axis, e=edge, L=L, wd=wide: blade(bm, g, a, e, L, wd))
+    elif w == "khakkhara":
+        # 선장 (파계승): 주먹을 가로지르는 긴 쇠지팡이. 앞(칼끝 방향) 끝에 둥근 고리와 작은 고리들, 뒤 끝에 물미
+        g = grip_of("Right")
+        axis = Vector((0, -1, -0.15)).normalized()
+        side = Vector((0, 0, -1)); side = (side - axis * side.dot(axis)).normalized()
+
+        def build(bm, g=g, a=axis, e=side):
+            box(bm, g + a * 0.4, a, e, 1.75, 0.035, 0.035)                  # 대 (주먹 뒤로 0.45, 앞으로 1.3)
+            head = g + a * 1.36
+            t = a.cross(e).normalized()
+            n = 10
+            for k in range(n):                                              # 둥근 고리 (자루 끝에서 세운 고리)
+                a0, a1 = 2 * math.pi * k / n, 2 * math.pi * (k + 1) / n
+                p0 = head + (a * math.cos(a0) + e * math.sin(a0)) * 0.14
+                p1 = head + (a * math.cos(a1) + e * math.sin(a1)) * 0.14
+                box(bm, (p0 + p1) / 2, (p1 - p0).normalized(), t, (p1 - p0).length + 0.01, 0.025, 0.025)
+            for k in (-1, 1):                                               # 매달린 작은 고리 둘
+                box(bm, head + e * 0.15 * k - a * 0.02, e, t, 0.07, 0.05, 0.02)
+            box(bm, g - a * 0.47, a, e, 0.08, 0.05, 0.05)                   # 물미
+        make(f"{NAME}_Weapon_khakkhara", "RightHand", build)
+    elif w == "moktak":
+        # 목탁 (목탁승): 왼손에 둥근 나무 목탁(가운데 틈), 오른손에 짧은 채
+        gl = grip_of("Left")
+
+        def build_moktak(bm, g=gl):
+            ret = bmesh.ops.create_uvsphere(bm, u_segments=12, v_segments=8, radius=1.0)
+            bmesh.ops.scale(bm, verts=ret["verts"], vec=Vector((0.15, 0.13, 0.12)))
+            bmesh.ops.translate(bm, verts=ret["verts"], vec=g + Vector((0.02, -0.12, 0.02)))
+            box(bm, g + Vector((0.02, -0.12, -0.02)), Vector((1, 0, 0)), Vector((0, 0, 1)), 0.2, 0.02, 0.06)   # 손잡이 쪽 턱
+        make(f"{NAME}_Weapon_moktak", "LeftHand", build_moktak)
+        gr = grip_of("Right")
+        axis = Vector((0, -1, -0.15)).normalized()
+
+        def build_mallet(bm, g=gr, a=axis):
+            box(bm, g + a * 0.12, a, Vector((1, 0, 0)), 0.32, 0.025, 0.025)
+            ret = bmesh.ops.create_uvsphere(bm, u_segments=8, v_segments=6, radius=0.045)
+            bmesh.ops.translate(bm, verts=ret["verts"], vec=g + a * 0.3)
+        make(f"{NAME}_Weapon_mallet", "RightHand", build_mallet)
     elif w == "jian":
         # 곧은 양날 장검 (청죽객): 손잡이·코등이 + 마름모 단면 칼날이 끝으로 뾰족해요
         g = grip_of("Right")
@@ -771,6 +809,20 @@ if "whirl" in EXTRAS:
 #    Generic이라 Unity에서 플레이어 동작을 바로 못 쓰기 때문이에요.
 #    팔다리는 뼈 방향(관절→다음 관절)을 맞추고, 엉덩이·몸통·목·머리·발은 기본 자세에서 돈 만큼(월드 기준)을 그대로 옮겨요.
 #    armspread=<배수>: 몸통이 두꺼우면 팔이 옆구리에 붙어서 바깥으로 벌려요 (기본 1, 날씬하면 작게)
+# 폐사찰 몬스터가 대기·달리기·공격 내내 유지하는 팔 자세
+def prayer_arms(drop=0.0):
+    """합장: 두 손을 가슴 앞에 모아요 (석상 나한)."""
+    chest = (pb["LeftArm"].head + pb["RightArm"].head) / 2
+    for s, sx in (("Left", 0.035), ("Right", -0.035)):
+        arm(s, chest + Vector((sx, -0.26, -0.12 - drop)), Vector((sx * 30, 0.4, -1)))
+
+
+def hold_moktak():
+    """목탁을 왼손에 들고 가슴 앞에 받쳐요 (목탁승)."""
+    chest = (pb["LeftArm"].head + pb["RightArm"].head) / 2
+    arm("Left", chest + Vector((0.1, -0.3, -0.18)), Vector((1, 0.3, -0.6)))
+
+
 HAS_BLADE = bool({"dao", "bigdao", "jian"} & EXTRAS)
 SPREAD = float(next((w.split("=")[1] for w in WEAPONS if w.startswith("armspread=")), "1"))
 player_objs, player_acts = [], []
@@ -829,6 +881,12 @@ if "playeranim" in EXTRAS or "sweep" in EXTRAS:
         if HAS_BLADE:
             fa = (pb["RightHand"].head - pb["RightForeArm"].head).normalized()
             point_blade((fa + Vector((0, -0.12, 0))).normalized(), wrist_bend=90)   # 칼은 팔과 일직선으로 늘어뜨려요
+        if "khakkhara" in WEAPONS:
+            point_blade(Vector((0, -0.15, 1)), wrist_bend=90)                 # 선장은 세워 들고 걸어요
+        if "prayer" in EXTRAS:
+            prayer_arms()                                                    # 석상 나한: 걸을 때도 합장
+        if "moktak" in WEAPONS:
+            hold_moktak()                                                    # 목탁승: 목탁을 가슴 앞에
 
     def bake_player(name):
         act = next(a for a in player_acts if a.name.split("|")[-1] == name)
@@ -909,6 +967,8 @@ if "jianmoves" in EXTRAS:
 # 철권 마웅 어깨 돌진 (shouldercharge): 준비는 낮게 웅크려 오른 어깨를 앞세우고 두 주먹으로 얼굴을 가린 자세,
 #   돌진은 그 자세로 크게 숙여 들이받으며 내달리는 반복 동작 (16프레임)
 if "shouldercharge" in EXTRAS:
+    TWIST = 0 if "prayer" in EXTRAS else 30
+    charge_arms = (lambda: prayer_arms(0.05)) if "prayer" in EXTRAS else (lambda: fists_up())   # 석상 나한: 합장한 채 들이받아요
     def fists_up():
         for s, inward in (("Left", -0.15), ("Right", 0.15)):
             sh = pb[f"{s}Arm"].head.copy()
@@ -917,8 +977,8 @@ if "shouldercharge" in EXTRAS:
     def shoulder_ready(_):
         lower_hips(-0.28, FEET, dy=0.06)
         bend("Spine", Vector((1, 0, 0)), 28)
-        bend("Spine", UP, 30)                                               # 오른 어깨를 앞으로
-        fists_up()
+        bend("Spine", UP, TWIST)                                            # 오른 어깨를 앞으로 (나한은 정면으로)
+        charge_arms()
     make_action("ShoulderReady", [(0, None), (10, None)], shoulder_ready)
     rig.animation_data.action = None
     reset_pose()
@@ -934,8 +994,8 @@ if "shouldercharge" in EXTRAS:
                 feet[s] = base + (Vector((0, -0.1, 0.4)) if s != lead else Vector((0, 0.15, 0.0)))
         lower_hips(-0.2 if phase in (0, 2) else -0.1, feet, dy=-0.05)
         bend("Spine", Vector((1, 0, 0)), 32)
-        bend("Spine", UP, 30 + (5 if lead == "Left" else -5))
-        fists_up()
+        bend("Spine", UP, TWIST + (5 if lead == "Left" else -5))
+        charge_arms()
     make_action("ShoulderRun", [(0, 0), (4, 1), (8, 2), (12, 3), (16, 0)], shoulder_run)
     rig.animation_data.action = None
     reset_pose()
@@ -1023,6 +1083,100 @@ if "quake" in EXTRAS:
         else:
             guard()
     make_action("Quake", [(0, "guard"), (14, "up"), (19, "up"), (24, "slam"), (34, "slam"), (44, "guard")], quake_pose)
+    rig.animation_data.action = None
+    reset_pose()
+
+# ── 폐사찰 몬스터 동작
+# 망령 (float·cast): 땅에서 떠서 발끝을 늘어뜨리고 둥실거려요. Idle·Run을 직접 만들고(플레이어 걷기 대신),
+#   혼불(Cast)은 오른손을 가슴께로 당겼다가(예고 동안 멈춤) 손바닥을 앞으로 쭉 내밀어요
+if "float" in EXTRAS:
+    def float_base(bob, lean=0.0, trail=0.0):
+        hover = 0.22 + bob
+        feet = {s: FEET[s] + Vector((0, 0.06 + trail, hover - 0.03)) for s in FEET}   # 다리를 곧게 늘어뜨린 채 떠 있어요 (발은 엉덩이만큼 떠요)
+        lower_hips(hover, feet)
+        if lean:
+            bend("Spine", Vector((1, 0, 0)), lean)
+        bend("Neck", Vector((1, 0, 0)), 12)                                  # 고개를 떨궈요
+
+    def float_arms(trail=0.0):
+        for s, sx in (("Left", 0.06), ("Right", -0.06)):
+            sh = pb[f"{s}Arm"].head.copy()
+            arm(s, sh + Vector((sx, -0.12 + trail, -0.5)), Vector((sx * 10, 0.5, -0.4)))
+
+    def float_idle(t):
+        float_base(0.05 * math.sin(2 * math.pi * t))
+        float_arms()
+    make_action("Idle", [(f, f / 40) for f in range(0, 41, 5)], float_idle)
+
+    def float_run(t):
+        float_base(0.04 * math.sin(4 * math.pi * t), lean=22, trail=0.35)
+        float_arms(trail=0.35)                                               # 팔이 뒤로 끌려요
+    make_action("Run", [(f, f / 20) for f in range(0, 21, 5)], float_run)
+
+    def cast_pose(stage):
+        float_base(0.0, lean=8)
+        float_arms()
+        sh = pb["RightArm"].head.copy()
+        if stage == "load":
+            arm("Right", sh + Vector((0.12, -0.1, -0.15)), Vector((-0.6, 0.6, -0.5)))    # 손을 가슴께로 당겨요
+        elif stage == "push":
+            arm("Right", sh + Vector((0.08, -1, 0.05)).normalized() * REACH * 1.0, Vector((-0.5, 0, -1)))   # 손바닥을 앞으로
+            aim("RightHand", None, delta=Quaternion(Vector((1, 0, 0)), math.radians(-60)) @ (pb["RightHand"].matrix.to_quaternion() @ B["RightHand"].matrix_local.to_quaternion().inverted()))
+    make_action("Attack", [(0, "load"), (4, "push"), (14, "push"), (24, "rest")], cast_pose)
+    rig.animation_data.action = None
+    reset_pose()
+
+# 목탁승 (knock): 예고 1.5초(45프레임) 동안 왼손 목탁을 오른손 채로 다섯 번 두드려요 (그대로 재생)
+if "knock" in EXTRAS:
+    def knock_pose(hit):
+        bend("Spine", Vector((1, 0, 0)), 6)
+        bend("Neck", Vector((1, 0, 0)), 10)
+        hold_moktak()
+        chest = (pb["LeftArm"].head + pb["RightArm"].head) / 2
+        target = chest + (Vector((0.02, -0.33, -0.08)) if hit else Vector((-0.12, -0.25, 0.14)))   # 목탁 위 · 위로 든 채
+        arm("Right", target, Vector((-1, 0.3, -0.4)))
+    keys = [(0, False)]
+    for k in range(5):
+        keys += [(4 + k * 8, True), (8 + k * 8, False)]
+    keys.append((45, False))
+    make_action("Knock", keys, knock_pose)
+    rig.animation_data.action = None
+    reset_pose()
+
+# 파계승 (staffmoves): 선장 찌르기(Thrust)와 금강불괴(Stance)
+#   Thrust: 선장을 허리춤으로 당겨 겨눴다가(예고 동안 멈춤) 무릎을 굽혀 앞으로 쭉 찔러요. 왼손은 대를 받쳐요
+#   Stance: 말 타듯 다리를 벌려 앉고, 오른손은 선장을 세워 들고 왼손은 가슴 앞에 세워 반합장 (2초 동안 그대로)
+if "staffmoves" in EXTRAS:
+    def staff_support():
+        g, d = blade_now()
+        arm("Left", g + d * 0.35, Vector((1, 0.2, -1)))                      # 왼손으로 대를 받쳐요
+
+    def thrust_pose(stage):
+        if stage == "idle":
+            idle_end_pose()
+            return
+        sh = pb["RightArm"].head.copy()
+        if stage == "load":
+            lower_hips(-0.12, FEET, dy=0.05)
+            bend("Spine", UP, -20)
+            arm("Right", sh + Vector((0.05, 0.2, -0.4)), Vector((-1, 0.4, -0.5)))
+        else:
+            lower_hips(-0.2, FEET, dy=-0.15)
+            bend("Spine", Vector((1, 0, 0)), 10); bend("Spine", UP, 15)
+            arm("Right", sh + Vector((0.12, -1, -0.12)).normalized() * REACH * 0.95, Vector((-0.6, 0.2, -1)))
+        point_blade(Vector((0, -1, -0.05)), wrist_bend=90)                   # 선장 끝이 앞을 겨눠요
+        staff_support()
+    make_action("Thrust", [(0, "load"), (4, "hit"), (14, "hit"), (24, "idle")], thrust_pose)
+
+    def stance_pose(_):
+        feet = {"Left": FEET["Left"] + Vector((0.12, 0, 0)), "Right": FEET["Right"] + Vector((-0.12, 0, 0))}
+        lower_hips(-0.28, feet)
+        sh = pb["RightArm"].head.copy()
+        arm("Right", sh + Vector((-0.12, -0.15, -0.3)), Vector((-1, 0.3, -0.5)))
+        point_blade(Vector((0, -0.1, 1)), wrist_bend=90)                     # 선장을 곧게 세워요
+        chest = (pb["LeftArm"].head + pb["RightArm"].head) / 2
+        arm("Left", chest + Vector((0.02, -0.28, 0.05)), Vector((1, 0.4, -1)))   # 반합장
+    make_action("Stance", [(0, None), (10, None)], stance_pose)
     rig.animation_data.action = None
     reset_pose()
 

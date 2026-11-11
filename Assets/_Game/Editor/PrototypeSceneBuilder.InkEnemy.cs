@@ -31,6 +31,12 @@ namespace AThousandDawns.EditorTools
             ("Boar", EnemyKind.Boar, 2.5f),
             ("Hound", EnemyKind.Hound, 5f),
             ("Snake", EnemyKind.Snake, 4f),
+            // 폐사찰
+            ("Wraith", EnemyKind.Wraith, 2.5f),
+            ("Arhat", EnemyKind.Arhat, 1.6f),
+            ("Moktak", EnemyKind.Moktak, 2.5f),
+            ("Monk", EnemyKind.Monk, 3f),
+            ("Lantern", EnemyKind.Lantern, 4f),
         };
 
         // 패턴 동작: attack(브레인 AttackName, null이면 다른 동작이 이어 부르는 상태) → state.
@@ -48,7 +54,7 @@ namespace AThousandDawns.EditorTools
         static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "ShoulderRun", "Idle", "Run" };
 
         // 고유 동작만 쓰는 적 (Generic으로 가져와요)
-        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
+        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
 
         static readonly Dictionary<string, MoveSpec[]> InkEnemyMoves = new Dictionary<string, MoveSpec[]>
         {
@@ -62,6 +68,22 @@ namespace AThousandDawns.EditorTools
                 // 회전베기(2페이즈): 두 팔을 벌리고 칼끝을 바깥으로 뻗은 자세(Whirl)로 판정 동안 모델째 빙글빙글 (힐윈드처럼)
                 new MoveSpec { attack = "회전베기", state = "Spin", clips = new[] { "Whirl" }, mode = MoveMode.Whirl },
             },
+            // 폐사찰 — 망령: 혼불은 기본 Attack(손을 당겼다 내밀기). 석상 나한: 합장한 채 낮게 숙였다가 들이받으며 돌진
+            ["Arhat"] = new[]
+            {
+                new MoveSpec { state = "ShoulderReady", clips = new[] { "ShoulderReady" }, mode = MoveMode.Run },
+                new MoveSpec { attack = "", state = "Charge", clips = new[] { "ShoulderRun" }, mode = MoveMode.Run, speed = 1.2f, ready = "ShoulderReady" },
+            },
+            // 목탁승: 예고(1.5초) 동안 목탁을 다섯 번 두드려요 (그대로 재생)
+            ["Moktak"] = new[] { new MoveSpec { attack = "", state = "Knock", clips = new[] { "Knock" }, mode = MoveMode.Play } },
+            // 파계승: 선장 찌르기. 금강불괴(Stance)는 공격이 아니라 자세라 InkEnemyAnimator가 IsStanced를 보고 넘어가요
+            ["Monk"] = new[]
+            {
+                new MoveSpec { attack = "선장", state = "Thrust", clips = new[] { "Thrust" } },
+                new MoveSpec { state = "Stance", clips = new[] { "Stance" }, mode = MoveMode.Run },
+            },
+            // 등불 귀신: 귀화 예고 동안 떨며 부풀었다가 터져요
+            ["Lantern"] = new[] { new MoveSpec { attack = "귀화", state = "Ignite", clips = new[] { "Attack" }, mode = MoveMode.Play } },
             // 멧돼지: 이름 없는 기본 공격(돌진) — 예고 동안 머리를 숙여 버티다가(Ready) 판정 동안 빠르게 달려요
             ["Boar"] = new[]
             {
