@@ -21,6 +21,12 @@ namespace AThousandDawns.Player
         int _flashSoundStart; // 죽림섬 소리를 고를 첫 자리 (시전마다 무작위)
         bool _flashChained;
 
+        // 이펙트 신호 (아트: Scripts/Art/InkSkillFx). 판정과 상관없이 그림만 그려요.
+        public enum SkillFxKind { FlashDash, QuakeWave, PalmShield, PalmBlast }
+        public struct SkillFxCue { public SkillFxKind Kind; public Vector3 From, To, Dir; public float Radius, Angle; public int Count; }
+        public static event System.Action<PlayerController, SkillFxCue> SkillCue;
+        void SkillFx(SkillFxCue cue) => SkillCue?.Invoke(this, cue);
+
         public SkillKind Skill { get; private set; }
         public string SkillName => !UsesDagger ? SkillLabel(Skill)
             : Skill == SkillKind.Spin ? $"회수 (비도 {DaggerCount})" : $"회수 · {SkillLabel(Skill)} (비도 {DaggerCount})";
@@ -75,6 +81,7 @@ namespace AThousandDawns.Player
         {
             _hitThisSwing.Clear();
             if (swingFlash != null) swingFlash.Show(transform.position, _facing, radius, 360f, 0.2f);
+            SkillFx(new SkillFxCue { Kind = SkillFxKind.QuakeWave, From = transform.position, Radius = radius });
             var hit = PlayerHit(_skillDamage * ratio);
             hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
             int count = HitSector(radius, 360f, hit, HitTag.Skill);
@@ -122,6 +129,7 @@ namespace AThousandDawns.Player
                     if (to.sqrMagnitude < 1e-4f) return;
                     Vector3 dir = to.normalized;
                     _controller.Move(dir * (to.magnitude + 1f)); // 적을 지나쳐 뒤에 서요 (벽에는 막힘)
+                    SkillFx(new SkillFxCue { Kind = SkillFxKind.FlashDash, From = from, To = transform.position, Dir = dir });
                     _facing = dir;
                     ApplyFacing();
                     _invulnerableTimer = Mathf.Max(_invulnerableTimer, 0.2f);
@@ -139,6 +147,7 @@ namespace AThousandDawns.Player
                     if (returning <= 0) return;
                     int amount = Mathf.Max(1, Mathf.RoundToInt(_maxHealth * GameConfig.GetOptional("knife.scroll_palm_shield", 0.01f) * returning));
                     _shields.Add(amount, GameConfig.GetOptional("skill_palm.shield_duration", 8f), ShieldCap);
+                    SkillFx(new SkillFxCue { Kind = SkillFxKind.PalmShield, From = transform.position, Count = returning });
                     break;
             }
         }
@@ -153,6 +162,7 @@ namespace AThousandDawns.Player
             float radius = GameConfig.GetOptional("skill_palm.radius", 4f);
             float angle = GameConfig.GetOptional("skill_palm.angle", 100f);
             if (swingFlash != null) swingFlash.Show(transform.position, _facing, radius, angle, 0.2f);
+            SkillFx(new SkillFxCue { Kind = SkillFxKind.PalmBlast, From = transform.position, Dir = _facing, Radius = radius, Angle = angle });
             var hit = PlayerHit(_skillDamage * GameConfig.GetOptional("skill_palm.ratio", 1.3f));
             hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
             int count = HitSector(radius, angle, hit, HitTag.Skill);
@@ -218,6 +228,7 @@ namespace AThousandDawns.Player
                 }
             }
             _controller.Move(dir * length); // 벽에는 막히고 적은 지나가요
+            SkillFx(new SkillFxCue { Kind = SkillFxKind.FlashDash, From = from, To = transform.position, Dir = dir });
             Vector3 end = transform.position;
             _facing = dir;
             ApplyFacing();
