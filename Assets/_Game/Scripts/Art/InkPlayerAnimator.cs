@@ -19,6 +19,7 @@ namespace AThousandDawns.Art
         static readonly int SkillId = Animator.StringToHash("Skill");
         static readonly int SkillQuakeId = Animator.StringToHash("SkillQuake");
         static readonly int SkillFlashId = Animator.StringToHash("SkillFlash");
+        static readonly int SkillPalmId = Animator.StringToHash("SkillPalm");
 
         PlayerController _player;
         Animator _animator;
@@ -73,6 +74,12 @@ namespace AThousandDawns.Art
             {
                 _animator.ResetTrigger(AttackId);
                 _animator.SetTrigger(SkillFlashId);
+            }
+            // 금강장: SkillKind.Palm (기획·개발이 추가 중이라 이름으로 비교해요 — 들어오기 전에도 컴파일되게)
+            if (casting && !_wasCasting && _player.Skill.ToString() == "Palm")
+            {
+                _animator.ResetTrigger(AttackId);
+                _animator.SetTrigger(SkillPalmId);
             }
             _wasCasting = casting;
 

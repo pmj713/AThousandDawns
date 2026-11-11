@@ -91,6 +91,7 @@ namespace AThousandDawns.EditorTools
             controller.AddParameter("Skill", AnimatorControllerParameterType.Trigger);
             controller.AddParameter("SkillQuake", AnimatorControllerParameterType.Trigger);
             controller.AddParameter("SkillFlash", AnimatorControllerParameterType.Trigger);
+            controller.AddParameter("SkillPalm", AnimatorControllerParameterType.Trigger);
             var sm = controller.layers[0].stateMachine;
 
             // 동작 길이를 게임 시간(초)에 맞춰 재생 속도를 정해요
@@ -132,6 +133,15 @@ namespace AThousandDawns.EditorTools
                 toFlash.hasExitTime = false; toFlash.duration = 0.03f; toFlash.canTransitionToSelf = true;
                 toFlash.AddCondition(AnimatorConditionMode.If, 0f, "SkillFlash");
             }
+            // 금강장(비급): 왼손바닥을 허리춤에서 앞으로 내뻗어요. 내뻗는 4프레임째가 판정(0.12초)에 오게 0.42초로 재생
+            AnimatorState palm = null;
+            if (all.ContainsKey("SkillPalm"))
+            {
+                palm = State("SkillPalm", 0.42f);
+                var toPalm = sm.AddAnyStateTransition(palm);
+                toPalm.hasExitTime = false; toPalm.duration = 0.03f; toPalm.canTransitionToSelf = true;
+                toPalm.AddCondition(AnimatorConditionMode.If, 0f, "SkillPalm");
+            }
             // 평타는 원래 속도로 재생해요. 끝나면 대기로 넘어가고, 다음 타가 오면 이어 베요
             var attacks = new[] { State("Attack1", 0f), State("Attack2", 0f), State("Attack3", 0f) };
             sm.defaultState = idle;
@@ -155,7 +165,7 @@ namespace AThousandDawns.EditorTools
             }
             // 대시·공격이 끝나면: 걷기 스크립트는 공격·대시 중엔 Speed를 0으로 주다가 끝나면 움직임을 풀어요.
             // 그래서 Speed가 오르면 바로 달리기로, 아니면 동작이 끝까지 돈 뒤 대기로
-            foreach (var st in attacks.Append(dash).Append(skill).Append(quake).Append(flash).Where(s => s != null))
+            foreach (var st in attacks.Append(dash).Append(skill).Append(quake).Append(flash).Append(palm).Where(s => s != null))
             {
                 var r = st.AddTransition(run);
                 r.hasExitTime = false; r.duration = 0.1f;
