@@ -20,6 +20,12 @@ namespace AThousandDawns.Enemies
 
         enum Pattern { None, Sweep, Vajra, Beads, Rush }
 
+        // 이펙트 신호 (아트: Scripts/Art/InkHyegwangFx). 판정과 상관없이 그림만 그려요.
+        public enum FxKind { VajraStart, VajraGrow, VajraBurst, Rush }
+        public struct FxCue { public FxKind Kind; public Vector3 At, Dir; public float Radius, Time, Length, Grow; }
+        public static event System.Action<HyegwangBrain, FxCue> Cue;
+        void Fx(FxCue cue) => Cue?.Invoke(this, cue);
+
         Pattern _pattern, _lastPattern;
         int _repeat, _maxRepeat;
         float _closeDistance, _farDistance, _decisionPause, _transitionTime, _phase2Ratio, _phase2Speed;
@@ -142,6 +148,7 @@ namespace AThousandDawns.Enemies
                     _vajraBonus = 0f;
                     _vajraTimer = Phase == 1 ? _vajraInterval : _vajraInterval2;
                     Body.SetTint(Gold);
+                    Fx(new FxCue { Kind = FxKind.VajraStart, At = transform.position, Radius = _vajraRadius, Time = WindupTime });
                     break;
                 case Pattern.Beads: WindupTime = _beadWindup * (Phase == 2 ? _beadWindup2 : 1f); RecoveryTime = _beadRecovery; break;
                 case Pattern.Rush:
@@ -192,11 +199,13 @@ namespace AThousandDawns.Enemies
                     StartLunge(_sweepLunge, _sweepLungeTime);
                     break;
                 case Pattern.Rush: // 축지: 순식간에 다가가 휘둘러요
+                    Fx(new FxCue { Kind = FxKind.Rush, At = transform.position, Dir = AimDirection, Length = RushLength(), Time = _rushTime });
                     StartLunge(RushLength(), _rushTime);
                     break;
                 case Pattern.Vajra:
                     Body.SetTint(null);
                     Director.SpawnBurst(transform.position, VajraRadius);
+                    Fx(new FxCue { Kind = FxKind.VajraBurst, At = transform.position, Radius = VajraRadius, Grow = _vajraGrowMax > 0f ? _vajraBonus / _vajraGrowMax : 0f });
                     if (ToPlayer().magnitude <= VajraRadius + PlayerRadius) HitPlayer(_vajraRatio, _vajraKnockback);
                     _vajraBonus = 0f;
                     break;
@@ -275,6 +284,7 @@ namespace AThousandDawns.Enemies
             {
                 _vajraBonus = Mathf.Min(_vajraGrowMax, _vajraBonus + _vajraGrow);
                 Telegraph.SetShape(TelegraphShapes.Circle(VajraRadius));
+                Fx(new FxCue { Kind = FxKind.VajraGrow, At = transform.position, Radius = VajraRadius, Grow = _vajraGrowMax > 0f ? _vajraBonus / _vajraGrowMax : 0f });
             }
             if (Phase == 1 && !IsTransitioning && Body.Health <= Body.MaxHealth * _phase2Ratio) StartTransition();
         }
