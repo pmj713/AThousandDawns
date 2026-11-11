@@ -89,6 +89,7 @@ namespace AThousandDawns.EditorTools
             controller.AddParameter("Attack", AnimatorControllerParameterType.Trigger);
             controller.AddParameter("Dash", AnimatorControllerParameterType.Trigger);
             controller.AddParameter("Skill", AnimatorControllerParameterType.Trigger);
+            controller.AddParameter("SkillQuake", AnimatorControllerParameterType.Trigger);
             var sm = controller.layers[0].stateMachine;
 
             // 동작 길이를 게임 시간(초)에 맞춰 재생 속도를 정해요
@@ -111,6 +112,15 @@ namespace AThousandDawns.EditorTools
                 var toSkill = sm.AddAnyStateTransition(skill);
                 toSkill.hasExitTime = false; toSkill.duration = 0.03f; toSkill.canTransitionToSelf = true;
                 toSkill.AddCondition(AnimatorConditionMode.If, 0f, "Skill");
+            }
+            // 붕산권(비급): 왼 주먹을 치켜들었다가 무릎을 굽혀 땅을 내려쳐요. 내려치는 4프레임째가 판정(0.12초)에 오게 0.42초로 재생
+            AnimatorState quake = null;
+            if (all.ContainsKey("SkillQuake"))
+            {
+                quake = State("SkillQuake", 0.42f);
+                var toQuake = sm.AddAnyStateTransition(quake);
+                toQuake.hasExitTime = false; toQuake.duration = 0.03f; toQuake.canTransitionToSelf = true;
+                toQuake.AddCondition(AnimatorConditionMode.If, 0f, "SkillQuake");
             }
             // 평타는 원래 속도로 재생해요. 끝나면 대기로 넘어가고, 다음 타가 오면 이어 베요
             var attacks = new[] { State("Attack1", 0f), State("Attack2", 0f), State("Attack3", 0f) };
@@ -135,7 +145,7 @@ namespace AThousandDawns.EditorTools
             }
             // 대시·공격이 끝나면: 걷기 스크립트는 공격·대시 중엔 Speed를 0으로 주다가 끝나면 움직임을 풀어요.
             // 그래서 Speed가 오르면 바로 달리기로, 아니면 동작이 끝까지 돈 뒤 대기로
-            foreach (var st in skill != null ? attacks.Append(dash).Append(skill) : attacks.Append(dash))
+            foreach (var st in attacks.Append(dash).Append(skill).Append(quake).Where(s => s != null))
             {
                 var r = st.AddTransition(run);
                 r.hasExitTime = false; r.duration = 0.1f;

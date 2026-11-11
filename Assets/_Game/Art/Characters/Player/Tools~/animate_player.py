@@ -448,6 +448,78 @@ for name, preset in (("IKAttack2", ik_attack.ARC2), ("IKAttack3", ik_attack.ARC3
     actions.append((act, 0, preset["end_frame"]))
     print(name, "wrist err cm max %.1f avg %.1f" % (err_max, err_avg))
 
+# 붕산권(SkillQuake, 비급 · 시전 0.35초 ≈ 10프레임, 판정 0.12초 ≈ 4프레임째):
+#   왼 주먹을 머리 위로 치켜들고(칼은 오른손에 쥔 채 뒤로) → 4프레임에 왼무릎을 굽혀 깊게 내려앉으며
+#   왼 주먹으로 앞 땅을 내려쳐요 → 그 자세로 버티다가 → 준비 자세로 일어나요.
+#   손·발이 갈 자리를 정하고 두 마디 팔다리 각도를 계산해요 (뼈대 공간 = 월드, 캐릭터는 -Y를 봐요)
+def _aim(name, target, child):
+    pb, b = pose[name], rig.data.bones[name]
+    head = pb.head.copy()
+    d = (rig.data.bones[child].head_local - b.head_local).normalized().rotation_difference((target - head).normalized())
+    m = (d.to_matrix() @ b.matrix_local.to_3x3()).to_4x4()
+    m.translation = head
+    pb.matrix = m
+    bpy.context.view_layer.update()
+
+
+def _limb(upper, lower, end, target, pole):
+    bpy.context.view_layer.update()
+    B_ = rig.data.bones
+    s = pose[upper].head.copy()
+    l1 = (B_[lower].head_local - B_[upper].head_local).length
+    l2 = (B_[end].head_local - B_[lower].head_local).length
+    v = target - s
+    dist = max(min(v.length, (l1 + l2) * 0.999), abs(l1 - l2) + 1e-3)
+    n = v.normalized()
+    a = (l1 * l1 - l2 * l2 + dist * dist) / (2 * dist)
+    h = math.sqrt(max(l1 * l1 - a * a, 0.0))
+    pp = pole - n * pole.dot(n)
+    pp = pp.normalized() if pp.length > 1e-6 else Z
+    _aim(upper, s + n * a + pp * h, lower)
+    _aim(lower, s + n * dist, end)
+
+
+rest_pose(); bpy.context.view_layer.update()
+Q_FOOT = {s: pose[f"{s}Foot"].head.copy() for s in ("Left", "Right")}
+Q_SH_L = pose["LeftUpperArm"].head.copy()
+Q_HEAD = pose["Head"].head.copy()
+
+
+def quake_pose(stage):
+    rest_pose(); base_arms()
+    hands(95, GRIP, GRIP_THUMB)                                         # 왼손도 주먹
+    if stage == "up":
+        set_rot("Spine", (X, -8)); set_rot("Chest", (X, -6), (Z, 12))   # 가슴을 젖히고 왼어깨를 뒤로 감아요
+        set_hips_height(-0.03)
+        bpy.context.view_layer.update()
+        for s in ("Left", "Right"):
+            _limb(f"{s}UpperLeg", f"{s}LowerLeg", f"{s}Foot", Q_FOOT[s], Vector((0, -1, 0)))
+        _limb("LeftUpperArm", "LeftLowerArm", "LeftHand", Q_HEAD + Vector((0.12, 0.05, 0.42)), Vector((1, 0.3, 0)))   # 왼 주먹을 머리 위로
+        set_rot("RightUpperArm", (Y, -(DOWN_R - 10)), (X, 40)); set_rot("RightLowerArm", (X, -10))
+    else:
+        deep = 1.0 if stage == "slam" else 0.9
+        set_hips_height(-0.36 * deep)                                   # 깊게 내려앉아요
+        set_rot("Hips", (X, 8 * deep))
+        set_rot("Spine", (X, 26 * deep)); set_rot("Chest", (X, 14 * deep), (Z, -8))
+        set_rot("Neck", (X, -28 * deep))                                # 고개는 앞을 봐요
+        bpy.context.view_layer.update()
+        _limb("LeftUpperLeg", "LeftLowerLeg", "LeftFoot", Q_FOOT["Left"] + Vector((0.02, -0.3, 0)), Vector((0, -1, 0)))       # 왼발 앞으로 디디고 무릎 굽혀
+        _limb("RightUpperLeg", "RightLowerLeg", "RightFoot", Q_FOOT["Right"] + Vector((0, 0.42, 0.04)), Vector((0, -1, -0.4)))  # 오른무릎이 땅 가까이
+        fist = Vector((Q_SH_L.x * 0.55, Q_FOOT["Left"].y - 0.55, 0.1))  # 왼 주먹이 앞 땅에 닿아요
+        _limb("LeftUpperArm", "LeftLowerArm", "LeftHand", fist, Vector((1, 0.5, 0)))
+        set_rot("RightUpperArm", (Y, -(DOWN_R - 25)), (X, 55)); set_rot("RightLowerArm", (X, -8))   # 칼은 뒤로 뻗어 균형
+    aim_sword(SWORD_DASH)
+
+
+act = new_action("SkillQuake")
+for f, pose_fn in ((0, ready_pose),
+                   (2, lambda: quake_pose("up")),
+                   (4, lambda: quake_pose("slam")),
+                   (8, lambda: quake_pose("hold")),
+                   (14, ready_pose)):
+    pose_fn(); key_all(f)
+actions.append((act, 0, 14))
+
 # 반복 동작은 처음·끝이 같은 키라 이어 붙어요. 보간은 부드럽게(베지어 기본)
 rig.animation_data.action = None
 rest_pose()
