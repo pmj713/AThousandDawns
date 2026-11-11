@@ -143,6 +143,35 @@ namespace AThousandDawns.Tests
             Assert.Greater(Vector3.Distance(grunt.transform.position, player.transform.position), before + 1f, "밀려나요");
         }
 
+        // 금강장: 조준한 쪽 부채꼴만 맞고 밀려나요. 맞히면 보호막
+        [UnityTest]
+        public IEnumerator 금강장은_앞쪽_적만_치고_밀어내고_보호막()
+        {
+            PrototypeArena.AutoSpawn = false;
+            yield return SceneManager.LoadSceneAsync("Prototype_Combat", LoadSceneMode.Single);
+            yield return null;
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            player.LearnSkill(SkillKind.Palm);
+            Assert.AreEqual("금강장", player.SkillName);
+            var front = director.Spawn(EnemyKind.Boar, player.transform.position + new Vector3(2f, 0f, 0f));
+            var back = director.Spawn(EnemyKind.Boar, player.transform.position + new Vector3(-2f, 0f, 0f));
+            yield return null;
+            Move(_mouse.position, (Vector2)Camera.main.WorldToScreenPoint(front.transform.position));
+            yield return null;
+            float before = Vector3.Distance(front.transform.position, player.transform.position);
+            int shield = player.Shields.Total;
+
+            Press(_mouse.rightButton);
+            yield return null;
+            Release(_mouse.rightButton);
+            yield return new WaitForSeconds(0.5f);
+            Assert.Less(front.Damageable.Health, front.Damageable.MaxHealth, "앞쪽 적은 맞아요");
+            Assert.AreEqual(back.Damageable.MaxHealth, back.Damageable.Health, "뒤쪽 적은 안 맞아요");
+            Assert.Greater(Vector3.Distance(front.transform.position, player.transform.position), before + 0.8f, "밀려나요");
+            Assert.Greater(player.Shields.Total, shield, "맞히면 보호막");
+        }
+
         [UnityTest]
         public IEnumerator 흡성은_공력_1_오르고_기물_최대_기_1_내려감()
         {

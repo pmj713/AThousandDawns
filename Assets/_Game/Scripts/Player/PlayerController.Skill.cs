@@ -9,7 +9,8 @@ namespace AThousandDawns.Player
     // 죽림섬 (청죽객): 가까운 적 쪽으로 3번 순간이동하며 베기 (0.25초 간격). 지나간 직선 위의 적이 모두 맞아요. 베는 동안 무적.
     //   수치는 시트에 아직 없어서 임시 (1번에 회선참 피해의 50%, 사거리 6칸, 폭 1.2칸).
     // 붕산권 (철권 마웅): 땅을 내리쳐 반경 3칸 원형 충격파, 맞은 적을 2칸 밀어내요 (보스·고수는 안 밀림). 임시: 회선참 피해 그대로.
-    public enum SkillKind { Spin, BambooFlash, Quake }
+    // 금강장 (파계승 혜광): 앞으로 장력을 뻗어 부채꼴 4칸 (100도), 회선참 피해 ×1.3 · 맞은 적을 1.5칸 밀어냄. 하나라도 맞히면 보호막 (최대 체력 5%, 8초).
+    public enum SkillKind { Spin, BambooFlash, Quake, Palm }
 
     public sealed partial class PlayerController
     {
@@ -18,7 +19,24 @@ namespace AThousandDawns.Player
         bool _flashChained;
 
         public SkillKind Skill { get; private set; }
-        public string SkillName => Skill == SkillKind.BambooFlash ? "죽림섬" : Skill == SkillKind.Quake ? "붕산권" : UsesDagger ? $"회수 (비도 {DaggerCount})" : "회선참";
+        public string SkillName => Skill == SkillKind.Spin && UsesDagger ? $"회수 (비도 {DaggerCount})" : SkillLabel(Skill);
+
+        // 비급 이름과 한 줄 설명 (고수 보상 · 낡은 서고 · 객잔 공통)
+        public static string SkillLabel(SkillKind s) => s switch
+        {
+            SkillKind.BambooFlash => "죽림섬",
+            SkillKind.Quake => "붕산권",
+            SkillKind.Palm => "금강장",
+            _ => "회선참",
+        };
+
+        public static string SkillText(SkillKind s) => s switch
+        {
+            SkillKind.BambooFlash => "가까운 적에게 3번 순간이동하며 베기",
+            SkillKind.Quake => "땅을 내리쳐 원형 충격파, 맞은 적을 밀어냄",
+            SkillKind.Palm => "앞으로 장력을 뻗어 부채꼴 공격, 밀어내고 맞히면 보호막",
+            _ => "주변을 한 바퀴 베기",
+        };
         // 비도를 들고 기본 초식이면 회선참 대신 회수 (비급 초식은 무기와 상관없이 그대로)
         bool RecallSkill => UsesDagger && Skill == SkillKind.Spin;
 
@@ -50,6 +68,40 @@ namespace AThousandDawns.Player
                 away.y = 0f;
                 if (away.sqrMagnitude > 1e-4f) brain.Displace(away.normalized * push);
             }
+            int thunder = _keywords.Count(Keyword.Noejeong);
+            if (count > 0 && thunder >= 2)
+            {
+                float trigger = DamageFormula.BeforeToughness(hit);
+                Lightning.Chain(_firstHit, transform.position + Vector3.up, trigger, ChainRatio(thunder), _chainTargets, _chainRange, DischargePerStack(thunder));
+                StrikeAfterSkillChain(_firstHit, trigger, thunder);
+            }
+        }
+
+        // 금강장: 회선참과 같은 시전 시간, 판정 순간에 앞쪽 부채꼴 + 밀어내기 · 맞히면 보호막
+        void TickPalm()
+        {
+            if (_skillHitDone || _skillElapsed < _skillHitTime) return;
+            _skillHitDone = true;
+            _hitThisSwing.Clear();
+            Sfx.Play(SfxId.Quake); // 전용 소리가 생기기 전까지 붕산권 소리
+            float radius = GameConfig.GetOptional("skill_palm.radius", 4f);
+            float angle = GameConfig.GetOptional("skill_palm.angle", 100f);
+            if (swingFlash != null) swingFlash.Show(transform.position, _facing, radius, angle, 0.2f);
+            var hit = PlayerHit(_skillDamage * GameConfig.GetOptional("skill_palm.ratio", 1.3f));
+            hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
+            int count = HitSector(radius, angle, hit, HitTag.Skill);
+            Gauge = Mathf.Min(GaugeCap, Gauge + count * _gaugeSkill * GaugeGainMultiplier);
+            float push = GameConfig.GetOptional("skill_palm.knockback", 1.5f);
+            foreach (var target in _hitThisSwing)
+            {
+                if (target == null || !target.TryGetComponent(out AThousandDawns.Enemies.EnemyBrain brain)) continue;
+                Vector3 away = target.transform.position - transform.position;
+                away.y = 0f;
+                if (away.sqrMagnitude > 1e-4f) brain.Displace(away.normalized * push);
+            }
+            if (count > 0)
+                _shields.Add(Mathf.Max(1, Mathf.RoundToInt(_maxHealth * GameConfig.GetOptional("skill_palm.shield", 0.05f))),
+                    GameConfig.GetOptional("skill_palm.shield_duration", 8f), ShieldCap);
             int thunder = _keywords.Count(Keyword.Noejeong);
             if (count > 0 && thunder >= 2)
             {

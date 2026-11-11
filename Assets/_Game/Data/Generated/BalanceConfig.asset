@@ -3014,7 +3014,7 @@ MonoBehaviour:
     unit: cell/s
     note: "\uD30C\uACC4\uC2B9 \uD61C\uAD11 \uC774\uB3D9\uC18D\uB3C4"
   - key: hyegwang.sweep_windup
-    value: 0.7
+    value: 0.5
     unit: s
     note: "\uD61C\uAD11 \uC120\uC7A5 \uD718\uB450\uB974\uAE30 \uC608\uACE0"
   - key: hyegwang.sweep_ratio
@@ -3030,9 +3030,9 @@ MonoBehaviour:
     unit: deg
     note: "\uD61C\uAD11 \uC120\uC7A5 \uD718\uB450\uB974\uAE30 \uAC01\uB3C4"
   - key: hyegwang.vajra_time
-    value: 3
+    value: 1.8
     unit: s
-    note: "\uD61C\uAD11 \uAE08\uAC15\uBD88\uAD34 \uC2DC\uAC04 (\uBC1B\uB294 \uD53C\uD574 1)"
+    note: "\uD61C\uAD11 \uAE08\uAC15\uBD88\uAD34 \uC2DC\uAC04 (\uBC1B\uB294 \uD53C\uD574 1 \xB7 \uB05D\uC5D0 \uCDA9\uACA9\uD30C)"
   - key: hyegwang.vajra_ratio
     value: 1.2
     unit: 
@@ -3058,17 +3058,17 @@ MonoBehaviour:
     unit: cell
     note: "\uD61C\uAD11 \uC5FC\uC8FC\uAC00 \uB0A0\uC544\uAC00\uB294 \uAC70\uB9AC"
   - key: hyegwang.bead_speed
-    value: 10
+    value: 14
     unit: cell/s
     note: "\uD61C\uAD11 \uC5FC\uC8FC \uC18D\uB3C4"
   - key: hyegwang.p2_bead_spread
     value: 25
     unit: deg
-    note: "\uD61C\uAD11 2\uD398\uC774\uC988 \uC5FC\uC8FC \uC138 \uAC08\uB798 \uAC04\uACA9"
+    note: "\uD61C\uAD11 \uC5FC\uC8FC \uAC08\uB798 \uC0AC\uC774 \uAC01\uB3C4"
   - key: hyegwang.p2_windup_ratio
     value: 0.8
     unit: 
-    note: "\uD61C\uAD11 2\uD398\uC774\uC988 \uC608\uACE0 \uC2DC\uAC04 \uBC30\uC728"
+    note: "\uD61C\uAD11 2\uD398\uC774\uC988 \uC120\uC7A5 \uD718\uB450\uB974\uAE30 \uC608\uACE0 \uC2DC\uAC04 \uBC30\uC728"
   - key: bloodbuddha.hp
     value: 1850
     unit: 
@@ -3197,3 +3197,103 @@ MonoBehaviour:
     value: 0.15
     unit: 
     note: "\uC0B4\uC218: \uC4F0\uB7EC\uB728\uB9B0 \uC0B4\uC218 1\uBA85\uB2F9 \uB2E4\uC74C \uC0B4\uC218 \uACF5\uACA9 +"
+  - key: price.alms
+    value: 50
+    unit: "\uC740\uC790"
+    note: "\uD3D0\uC0AC\uCC30 \uC2DC\uC8FC\uD568: \uC2DC\uC8FC\uD558\uB294 \uC740\uC790"
+  - key: event.alms_guard
+    value: 0.1
+    unit: 
+    note: "\uD3D0\uC0AC\uCC30 \uC2DC\uC8FC\uD568 \uC2DC\uC8FC: \uC774\uBC88 \uCE35 \uBC1B\uB294 \uD53C\uD574 \u2212"
+  - key: event.alms_steal
+    value: 80
+    unit: "\uC740\uC790"
+    note: "\uD3D0\uC0AC\uCC30 \uC2DC\uC8FC\uD568 \uD138\uAE30: \uC740\uC790 +"
+  - key: event.alms_wraiths
+    value: 2
+    unit: 
+    note: "\uD3D0\uC0AC\uCC30 \uC2DC\uC8FC\uD568 \uD138\uAE30: \uB2E4\uC74C \uC2F8\uC6B0\uB294 \uBC29\uC5D0 \uB354 \uBD99\uB294 \uB9DD\uB839 \uC218"
+  - key: event.moktak_hidden
+    value: 0.5
+    unit: 
+    note: "\uD3D0\uC0AC\uCC30 \uBAA9\uC5B4 \uC18C\uB9AC: \uC228\uC740 \uC11D\uC2E4(\uAE30\uC5F0) \uD655\uB960 (\uB098\uBA38\uC9C0\uB294 \uB9E4\uBCF5)"
+  - key: event.moktak_monks
+    value: 3
+    unit: 
+    note: "\uD3D0\uC0AC\uCC30 \uBAA9\uC5B4 \uC18C\uB9AC \uB9E4\uBCF5: \uD30C\uACC4\uC2B9 \uC218 (\uC774\uAE30\uBA74 \uD76C\uADC0 \uAE30\uBB3C)"
+  - key: skill_palm.radius
+    value: 4
+    unit: "\uCE78"
+    note: "\uAE08\uAC15\uC7A5 (\uD61C\uAD11 \uBE44\uAE09): \uC55E\uCABD \uBD80\uCC44\uAF34 \uBC18\uACBD"
+  - key: skill_palm.angle
+    value: 100
+    unit: "\uB3C4"
+    note: "\uAE08\uAC15\uC7A5: \uBD80\uCC44\uAF34 \uAC01\uB3C4"
+  - key: skill_palm.ratio
+    value: 1.3
+    unit: 
+    note: "\uAE08\uAC15\uC7A5: \uD53C\uD574 (\uD68C\uC120\uCC38 \uD53C\uD574 \uB300\uBE44)"
+  - key: skill_palm.knockback
+    value: 1.5
+    unit: "\uCE78"
+    note: "\uAE08\uAC15\uC7A5: \uB9DE\uC740 \uC801\uC744 \uBC00\uC5B4\uB0B4\uB294 \uAC70\uB9AC (\uBCF4\uC2A4\xB7\uACE0\uC218\uB294 \uC548 \uBC00\uB9BC)"
+  - key: skill_palm.shield
+    value: 0.05
+    unit: 
+    note: "\uAE08\uAC15\uC7A5: \uD558\uB098\uB77C\uB3C4 \uB9DE\uD788\uBA74 \uBCF4\uD638\uB9C9 (\uCD5C\uB300 \uCCB4\uB825 \uBE44\uC728)"
+  - key: skill_palm.shield_duration
+    value: 8
+    unit: "\uCD08"
+    note: "\uAE08\uAC15\uC7A5: \uBCF4\uD638\uB9C9 \uC720\uC9C0 \uC2DC\uAC04"
+  - key: hyegwang.sweep_lunge
+    value: 2
+    unit: cell
+    note: "\uD61C\uAD11 \uC120\uC7A5 \uD718\uB450\uB974\uAE30: \uB0B4\uB514\uB514\uB294 \uAC70\uB9AC"
+  - key: hyegwang.sweep_lunge_time
+    value: 0.15
+    unit: s
+    note: "\uD61C\uAD11 \uC120\uC7A5 \uD718\uB450\uB974\uAE30: \uB0B4\uB514\uB514\uB294 \uC2DC\uAC04"
+  - key: hyegwang.p2_bead_windup_ratio
+    value: 0.6
+    unit: 
+    note: "\uD61C\uAD11 2\uD398\uC774\uC988 \uC5FC\uC8FC \uC608\uACE0 \uC2DC\uAC04 \uBC30\uC728"
+  - key: hyegwang.p2_vajra_time
+    value: 1
+    unit: s
+    note: "\uD61C\uAD11 2\uD398\uC774\uC988 \uAE08\uAC15\uBD88\uAD34 \uC2DC\uAC04 (\uB05D\uC5D0 \uCDA9\uACA9\uD30C)"
+  - key: hyegwang.p2_vajra_grow
+    value: 0.4
+    unit: cell
+    note: "\uD61C\uAD11 2\uD398\uC774\uC988 \uAE08\uAC15\uBD88\uAD34 \uAC15\uD654: \uBC84\uD2F0\uB294 \uB3D9\uC548 \uB9DE\uC744 \uB54C\uB9C8\uB2E4 \uCDA9\uACA9\uD30C \uBC18\uACBD +"
+  - key: hyegwang.p2_vajra_grow_max
+    value: 2
+    unit: cell
+    note: "\uD61C\uAD11 2\uD398\uC774\uC988 \uAE08\uAC15\uBD88\uAD34 \uAC15\uD654: \uBC18\uACBD \uC99D\uAC00 \uCD5C\uB300"
+  - key: hyegwang.bead_count
+    value: 3
+    unit: 
+    note: "\uD61C\uAD11 \uC5FC\uC8FC \uAC08\uB798 \uC218 (1\uD398\uC774\uC988 \xB7 3\uCE78 \uBC16\uC774\uBA74 \uB358\uC9D0)"
+  - key: hyegwang.p2_bead_count
+    value: 5
+    unit: 
+    note: "\uD61C\uAD11 2\uD398\uC774\uC988 \uC5FC\uC8FC \uAC08\uB798 \uC218"
+  - key: hyegwang.rush_delay
+    value: 2
+    unit: s
+    note: "\uD61C\uAD11 \uCD95\uC9C0: \uD50C\uB808\uC774\uC5B4\uAC00 5\uCE78 \uBC16\uC5D0 \uC774\uB9CC\uD07C \uC788\uC73C\uBA74"
+  - key: hyegwang.rush_windup
+    value: 0.4
+    unit: s
+    note: "\uD61C\uAD11 \uCD95\uC9C0 \uC608\uACE0"
+  - key: hyegwang.rush_time
+    value: 0.2
+    unit: s
+    note: "\uD61C\uAD11 \uCD95\uC9C0: \uB2E4\uAC00\uAC00\uB294 \uC2DC\uAC04 (\uB05D\uC5D0 \uC120\uC7A5 \uD718\uB450\uB974\uAE30 \uD310\uC815)"
+  - key: hyegwang.rush_stop
+    value: 1.5
+    unit: cell
+    note: "\uD61C\uAD11 \uCD95\uC9C0: \uD50C\uB808\uC774\uC5B4 \uC55E \uBA48\uCD94\uB294 \uAC70\uB9AC"
+  - key: hyegwang.rush_max
+    value: 10
+    unit: cell
+    note: "\uD61C\uAD11 \uCD95\uC9C0 \uCD5C\uB300 \uAC70\uB9AC"

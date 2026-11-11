@@ -749,20 +749,20 @@ hyegwang.hp,1100,,파계승 혜광 체력 (폐사찰 ×1.8 = 1980),몬스터!D63
 hyegwang.atk,18,,파계승 혜광 공격 (×1.3 = 23),몬스터!F63
 hyegwang.toughness,0,,파계승 혜광 강인함,몬스터!H63
 hyegwang.move_speed,3.5,cell/s,파계승 혜광 이동속도,
-hyegwang.sweep_windup,0.7,s,혜광 선장 휘두르기 예고,
+hyegwang.sweep_windup,0.5,s,혜광 선장 휘두르기 예고,
 hyegwang.sweep_ratio,1,,혜광 선장 휘두르기 피해 배율,
 hyegwang.sweep_radius,3,cell,혜광 선장 휘두르기 반경,
 hyegwang.sweep_angle,150,deg,혜광 선장 휘두르기 각도,
-hyegwang.vajra_time,3,s,혜광 금강불괴 시간 (받는 피해 1),
+hyegwang.vajra_time,1.8,s,혜광 금강불괴 시간 (받는 피해 1 · 끝에 충격파),
 hyegwang.vajra_ratio,1.2,,혜광 금강불괴 끝 충격파 피해 배율,
 hyegwang.vajra_radius,3.5,cell,혜광 금강불괴 충격파 반경,
 hyegwang.vajra_interval,9,s,혜광 금강불괴 간격 (1페이즈),
 hyegwang.p2_vajra_interval,6,s,혜광 금강불괴 간격 (2페이즈),
 hyegwang.bead_ratio,0.7,,혜광 염주 피해 배율 (가는 길·오는 길 한 번씩),
 hyegwang.bead_range,8,cell,혜광 염주가 날아가는 거리,
-hyegwang.bead_speed,10,cell/s,혜광 염주 속도,
-hyegwang.p2_bead_spread,25,deg,혜광 2페이즈 염주 세 갈래 간격,
-hyegwang.p2_windup_ratio,80%,,혜광 2페이즈 예고 시간 배율,
+hyegwang.bead_speed,14,cell/s,혜광 염주 속도,
+hyegwang.p2_bead_spread,25,deg,혜광 염주 갈래 사이 각도,
+hyegwang.p2_windup_ratio,80%,,혜광 2페이즈 선장 휘두르기 예고 시간 배율,
 bloodbuddha.hp,1850,,혈불 체력 (폐사찰 ×1.8 = 3330),몬스터!D64
 bloodbuddha.atk,24,,혈불 공격 (×1.3 = 31),몬스터!F64
 bloodbuddha.toughness,5,,혈불 강인함,몬스터!H64
@@ -801,3 +801,22 @@ event.alms_steal,80,은자,폐사찰 시주함 털기: 은자 +,2지역 기획 (
 event.alms_wraiths,2,,폐사찰 시주함 털기: 다음 싸우는 방에 더 붙는 망령 수,2지역 기획 (폐사찰 이벤트)
 event.moktak_hidden,50%,,폐사찰 목어 소리: 숨은 석실(기연) 확률 (나머지는 매복),2지역 기획 (폐사찰 이벤트)
 event.moktak_monks,3,,폐사찰 목어 소리 매복: 파계승 수 (이기면 희귀 기물),2지역 기획 (폐사찰 이벤트)
+skill_palm.radius,4,칸,금강장 (혜광 비급): 앞쪽 부채꼴 반경,2지역 기획 (혜광 비급)
+skill_palm.angle,100,도,금강장: 부채꼴 각도,2지역 기획 (혜광 비급)
+skill_palm.ratio,130%,,금강장: 피해 (회선참 피해 대비),2지역 기획 (혜광 비급)
+skill_palm.knockback,1.5,칸,금강장: 맞은 적을 밀어내는 거리 (보스·고수는 안 밀림),2지역 기획 (혜광 비급)
+skill_palm.shield,5%,,금강장: 하나라도 맞히면 보호막 (최대 체력 비율),2지역 기획 (혜광 비급)
+skill_palm.shield_duration,8,초,금강장: 보호막 유지 시간,2지역 기획 (혜광 비급)
+hyegwang.sweep_lunge,2,cell,혜광 선장 휘두르기: 내디디는 거리,
+hyegwang.sweep_lunge_time,0.15,s,혜광 선장 휘두르기: 내디디는 시간,
+hyegwang.p2_bead_windup_ratio,60%,,혜광 2페이즈 염주 예고 시간 배율,
+hyegwang.p2_vajra_time,1,s,혜광 2페이즈 금강불괴 시간 (끝에 충격파),
+hyegwang.p2_vajra_grow,0.4,cell,혜광 2페이즈 금강불괴 강화: 버티는 동안 맞을 때마다 충격파 반경 +,
+hyegwang.p2_vajra_grow_max,2,cell,혜광 2페이즈 금강불괴 강화: 반경 증가 최대,
+hyegwang.bead_count,3,,혜광 염주 갈래 수 (1페이즈 · 3칸 밖이면 던짐),
+hyegwang.p2_bead_count,5,,혜광 2페이즈 염주 갈래 수,
+hyegwang.rush_delay,2,s,혜광 축지: 플레이어가 5칸 밖에 이만큼 있으면,
+hyegwang.rush_windup,0.4,s,혜광 축지 예고,
+hyegwang.rush_time,0.2,s,혜광 축지: 다가가는 시간 (끝에 선장 휘두르기 판정),
+hyegwang.rush_stop,1.5,cell,혜광 축지: 플레이어 앞 멈추는 거리,
+hyegwang.rush_max,10,cell,혜광 축지 최대 거리,

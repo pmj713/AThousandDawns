@@ -71,7 +71,7 @@ namespace AThousandDawns.Prototype
         {
             var others = new List<SkillKind>();
             foreach (SkillKind s in System.Enum.GetValues(typeof(SkillKind)))
-                if (s != Player.Skill) others.Add(s);
+                if (s != Player.Skill && s != SkillKind.Palm) others.Add(s); // 금강장은 혜광에게서만
             if (!dense && others.Count > 1) others = new List<SkillKind> { others[_rng.Next(others.Count)] };
             var v = new EventView
             {
@@ -92,10 +92,8 @@ namespace AThousandDawns.Prototype
             OpenEventView(v, null);
         }
 
-        static string SkillLabel(SkillKind s) => s == SkillKind.Quake ? "붕산권" : s == SkillKind.BambooFlash ? "죽림섬" : "회선참";
+        static string SkillLabel(SkillKind s) => PlayerController.SkillLabel(s);
 
-        static string SkillText(SkillKind s) => s == SkillKind.Quake ? "땅을 내리쳐 원형 충격파, 맞은 적을 밀어냄"
-            : s == SkillKind.BambooFlash ? "가까운 적에게 3번 순간이동하며 베기"
-            : "주변을 한 바퀴 베기";
+        static string SkillText(SkillKind s) => PlayerController.SkillText(s);
     }
 }

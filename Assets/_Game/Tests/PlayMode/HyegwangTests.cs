@@ -32,6 +32,7 @@ namespace AThousandDawns.Tests
         public override void TearDown()
         {
             RoomRun.SeedOverride = 0;
+            PrototypeArena.AutoSpawn = true;
             MetaSave.PathOverride = null;
             if (System.IO.File.Exists(_savePath)) System.IO.File.Delete(_savePath);
             Time.timeScale = 1f;
@@ -69,11 +70,50 @@ namespace AThousandDawns.Tests
             yield return WaitUntil(() => master.Phase == 2 && !master.IsTransitioning, 4f);
             Assert.AreEqual(2, master.Phase);
 
+            // 2페이즈 금강불괴 강화: 버티는 동안 맞을 때마다 충격파가 커져요 (최대 +2칸)
+            yield return WaitUntil(() => master.IsVajra, 12f);
+            Assert.IsTrue(master.IsVajra, "2페이즈에도 금강불괴");
+            float radius = master.VajraRadius;
+            for (int i = 0; i < 10; i++) master.Damageable.ApplyHit(1);
+            Assert.AreEqual(radius + 2f, master.VajraRadius, 0.01f, "맞을수록 커지고 최대 +2칸");
+            yield return WaitUntil(() => !master.IsVajra, 2f);
+            Assert.IsFalse(master.IsVajra, "2페이즈는 1초 만에 터져요");
+            Assert.AreEqual(radius, master.VajraRadius, 0.01f, "터지면 원래대로");
+
             master.Damageable.ApplyHit(99999);
             yield return WaitUntil(() => run.IsInEvent, 3f);
             Assert.AreEqual("master", run.CurrentEvent.Id);
             StringAssert.Contains("혜광", run.CurrentEvent.Title);
             Assert.AreEqual(3, run.CurrentEvent.Choices.Count, "비급 · 흡성 · 방면");
+            Assert.IsTrue(run.ChooseEvent(0), "비급 전수");
+            Assert.AreEqual(SkillKind.Palm, player.Skill, "혜광의 비급은 금강장");
+            Assert.AreEqual("금강장", player.SkillName);
+        }
+
+        // 멀리서만 싸우면: 3칸 밖이면 염주 세 갈래, 5칸 밖에 2초 넘게 있으면 축지로 순식간에 다가와요
+        [UnityTest]
+        public IEnumerator 멀리_있으면_염주_세_갈래와_축지()
+        {
+            PrototypeArena.AutoSpawn = false;
+            yield return SceneManager.LoadSceneAsync("Prototype_Combat", LoadSceneMode.Single);
+            yield return null;
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var master = (HyegwangBrain)director.Spawn(EnemyKind.Hyegwang, player.transform.position + new Vector3(0f, 0f, 4f));
+            master.SetZone(Vector3.zero, new Vector2(40f, 24f));
+
+            int beads = 0;
+            yield return WaitUntil(() => (beads = Object.FindObjectsByType<BeadThrow>(FindObjectsSortMode.None).Length) > 0, 6f);
+            Assert.AreEqual(3, beads, "4칸 거리에서도 염주 세 갈래");
+
+            var cc = player.GetComponent<CharacterController>();
+            cc.enabled = false;
+            player.transform.position = master.transform.position + new Vector3(0f, 0f, -9f);
+            cc.enabled = true;
+            bool rushed = false;
+            yield return WaitUntil(() => (rushed |= master.AttackName == "축지") && Vector3.Distance(master.transform.position, player.transform.position) < 3f, 6f);
+            Assert.IsTrue(rushed, "9칸 떨어져 있으면 축지");
+            Assert.Less(Vector3.Distance(master.transform.position, player.transform.position), 3f, "순식간에 다가와요");
         }
     }
 }

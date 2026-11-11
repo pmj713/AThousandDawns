@@ -9,7 +9,7 @@ namespace AThousandDawns.Prototype
     // 죽림 고수는 둘 중 하나가 판마다 무작위 (같은 시드면 같은 고수):
     //   청죽객: 결투장 14×10, 대나무 기둥 6그루 · 비급 죽림섬
     //   철권 마웅: 결투장 14×10, 사방 돌벽 (돌진을 벽으로 유도해 기절시키기) · 비급 붕산권
-    // 폐사찰 고수는 파계승 혜광 (돌벽 결투장) · 비급은 전용 초식(금강장)이 생기기 전까지 지금 초식이 아닌 고수 초식
+    // 폐사찰 고수는 파계승 혜광 (돌벽 결투장) · 비급 금강장
     // 쓰러뜨리면 기물 대신 셋 중 하나 (기획 대화):
     //   비급 전수: 그 고수의 초식을 얻음 (회선참 대신)
     //   흡성: 공력 +1, 대신 이번 지역 동안 모든 기물의 최대 기 −1
@@ -63,10 +63,9 @@ namespace AThousandDawns.Prototype
             int spare = Price("master.spare_silver", 50f);
             bool iron = _master.Kind == EnemyKind.IronFist;
             bool monk = _master.Kind == EnemyKind.Hyegwang;
-            // 혜광의 비급: 전용 초식(금강장)이 생기기 전까지 지금 초식이 아닌 고수 초식
-            var skill = iron ? SkillKind.Quake : monk ? (Player.Skill == SkillKind.Quake ? SkillKind.BambooFlash : SkillKind.Quake) : SkillKind.BambooFlash;
-            string skillName = skill == SkillKind.Quake ? "붕산권" : "죽림섬";
-            string skillText = skill == SkillKind.Quake ? "땅을 내리쳐 원형 충격파, 맞은 적을 밀어냄" : "가까운 적에게 3번 순간이동하며 베기";
+            var skill = iron ? SkillKind.Quake : monk ? SkillKind.Palm : SkillKind.BambooFlash;
+            string skillName = PlayerController.SkillLabel(skill);
+            string skillText = PlayerController.SkillText(skill);
             var v = new EventView
             {
                 Id = "master",
