@@ -26,7 +26,7 @@ namespace AThousandDawns.Enemies
         enum Pattern { None, Palm, Chant, Arms, BloodRain, Summon, Grab }
 
         // 이펙트 신호 (아트: Scripts/Art/InkBloodBuddhaFx). 판정과 상관없이 그림만 그려요.
-        public enum FxKind { Palm, Chant, Rain, Swing, Grab, Transition }
+        public enum FxKind { Palm, Chant, Rain, Swing, GrabStart, Grab, Transition }
         public struct FxCue
         {
             public FxKind Kind;
@@ -225,6 +225,7 @@ namespace AThousandDawns.Enemies
 
         protected override void OnAttackStarted()
         {
+            if (_pattern == Pattern.Grab) Fx(new FxCue { Kind = FxKind.GrabStart, At = transform.position, Dir = AimDirection, Length = _grabRange, Radius = _grabWidth * 0.5f, Time = _grabWindup });
             if (_pattern != Pattern.Palm) return;
             Vector3 p = Player.transform.position;
             AddMark(p, _palmWindup, _palmRadius, _palmRatio, false);

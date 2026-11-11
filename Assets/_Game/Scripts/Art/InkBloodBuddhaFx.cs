@@ -8,15 +8,15 @@ namespace AThousandDawns.Art
     // 혈불 패턴 이펙트 (붉은 먹). BloodBuddhaBrain.Cue 신호를 듣고 그림만 그려요 — 판정·타이밍은 게임 코드 그대로.
     //   손바닥 (내려찍기·연타): 바닥에 손바닥 그림자가 짙어지며 내려와 → 떨어지는 순간 붉은 먹 손자국이 찍히고 바래요
     //   염불: 바닥에 붉은 만다라 인장이 돌며 피어나고 → 떨어지면 번쩍 커지며 사라져요
-    //   피의 비: 바닥에 옅은 핏자국 예고 → 마지막에 하늘에서 핏방울이 떨어져 → 피가 튀어요
+    //   피의 비: 손바닥 내려찍기와 같은 연출 (그림자가 짙어지며 내려와 → 붉은 먹 손자국이 찍히고 바래요)
     //   팔 휘두르기: 휘두를 때마다 부채꼴 붉은 붓 획이 쓸고 지나가요
-    //   혈수: 핏빛 손이 앞으로 쭉 뻗었다가 돌아와요
+    //   혈수: 혈불 손끝에서 앞으로 넓게 벌어지는 깔때기 나선(검은 선·빨간 선)이 손 쪽으로 감겨 들다가, 판정 순간 확 빨려 들어요
     //   2페이즈 전환: 불상 발밑으로 큰 피 번짐 + 만다라가 퍼져요
     // 그림: Art/Env/BossFx/Resources/BloodBuddhaFx (스프라이트). 씬에 미리 둘 것 없이 게임이 켜지면 저절로 들어요.
     public class InkBloodBuddhaFx : MonoBehaviour
     {
         static InkBloodBuddhaFx _host;
-        static Sprite _palm, _mandala, _drop, _splash, _hand, _slash;
+        static Sprite _palm, _mandala, _drop, _splash, _slash;
         static bool _loaded;
 
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>(); // 매 프레임 부르고, false면 끝
@@ -38,7 +38,8 @@ namespace AThousandDawns.Art
                 case BloodBuddhaBrain.FxKind.Chant: _host.Chant(cue); break;
                 case BloodBuddhaBrain.FxKind.Rain: _host.Rain(cue); break;
                 case BloodBuddhaBrain.FxKind.Swing: _host.Swing(cue); break;
-                case BloodBuddhaBrain.FxKind.Grab: _host.Grab(cue); break;
+                case BloodBuddhaBrain.FxKind.GrabStart: _host.GrabStart(cue, brain); break;
+                case BloodBuddhaBrain.FxKind.Grab: _host.Grab(cue, brain); break;
                 case BloodBuddhaBrain.FxKind.Transition: _host.Transition(cue); break;
             }
         }
@@ -107,36 +108,8 @@ namespace AThousandDawns.Art
             });
         }
 
-        void Rain(BloodBuddhaBrain.FxCue c)
-        {
-            var mark = Flat(_splash, c.At, c.Radius * 1.6f, UnityEngine.Random.Range(0f, 360f), 0.03f);
-            float t = 0f, fall = Mathf.Max(0.05f, c.Time), dropTime = Mathf.Min(0.35f, fall);
-            SpriteRenderer drop = null;
-            bool splashed = false;
-            _live.Add(dt =>
-            {
-                t += dt;
-                if (mark != null && !splashed) mark.color = new Color(0.35f, 0.02f, 0.02f, 0.3f * Mathf.Clamp01(t / fall));
-                if (drop == null && !splashed && t >= fall - dropTime) drop = Upright(_drop, c.At + Vector3.up * 7f, 0.9f);
-                if (drop != null && !splashed) // 하늘에서 떨어져요
-                {
-                    float k = Mathf.Clamp01((t - (fall - dropTime)) / dropTime);
-                    drop.transform.position = c.At + Vector3.up * Mathf.Lerp(7f, 0.1f, k * k);
-                }
-                if (!splashed && t >= fall)
-                {
-                    splashed = true;
-                    if (drop != null) Destroy(drop.gameObject);
-                    if (mark != null) mark.transform.localScale *= 1.6f; // 피가 튀어요
-                }
-                if (!splashed) return true;
-                float a = t - fall;
-                if (mark != null) mark.color = new Color(1f, 1f, 1f, a < 0.4f ? 1f : Mathf.Clamp01(1f - (a - 0.4f) / 0.9f));
-                if (a < 1.3f) return true;
-                if (mark != null) Destroy(mark.gameObject);
-                return false;
-            });
-        }
+        // 피의 비: 손바닥 내려찍기와 같은 연출 (손바닥 그림자가 크고 옅게 → 짙고 작게 내려와 → 붉은 먹 손자국이 찍히고 바래요)
+        void Rain(BloodBuddhaBrain.FxCue c) => Palm(c);
 
         void Swing(BloodBuddhaBrain.FxCue c)
         {
@@ -159,25 +132,89 @@ namespace AThousandDawns.Art
             });
         }
 
-        void Grab(BloodBuddhaBrain.FxCue c)
+        // 혈수: 혈불이 앞으로 손을 뻗으면 손끝에서 앞으로 누운 깔때기 모양 나선(검은 선·빨간 선 몇 가닥)이 생겨요.
+        //   손 쪽은 좁고 앞(플레이어 쪽)으로 갈수록 넓게 벌어지며, 선이 돌면서 손 쪽으로 흘러 들어가요.
+        //   예고 동안 길어지고 빨라지다가, 판정(Grab) 순간 손 쪽으로 확 빨려 들며 사라져요.
+        class GrabState { public Transform Root, Palm; public LineRenderer[] Arms; public Vector3 Hand, Dir, Side; public float T, Windup, PullT = -1f, Phase, Length; }
+        GrabState _grab;
+        static Material _lineMat;
+        const int ArmCount = 4, ArmPoints = 24;
+        const float HandRadius = 0.12f, MouthRadius = 1.1f; // 손 쪽 · 앞쪽 나선 반지름
+
+        void GrabStart(BloodBuddhaBrain.FxCue c, BloodBuddhaBrain brain)
         {
             Vector3 dir = Flatten(c.Dir);
-            var sr = Flat(_hand, c.At, Mathf.Max(2.6f, c.Radius * 4f), Yaw(dir), 0.07f);
-            if (sr == null) return;
-            float t = 0f, length = Mathf.Max(1f, c.Length);
+            var g = new GrabState
+            {
+                Windup = Mathf.Max(0.1f, c.Time), Dir = dir, Side = new Vector3(dir.z, 0f, -dir.x),
+                Hand = c.At + dir * 2f + Vector3.up * 1.8f, Length = Mathf.Clamp(c.Length * 0.28f, 1.5f, 3f), // 절반 길이
+                Palm = brain != null ? FindDeep(brain.transform, "RightHand") : null, // 뻗은 손바닥 중심에서 나와요
+            };
+            if (_lineMat == null) // 마른 붓 획 그림을 선 따라 늘여 그려요 (붓 결이 보이게)
+            {
+                _lineMat = new Material(Shader.Find("Sprites/Default"));
+                var brush = Resources.Load<Texture2D>("HudArt/HpStroke");
+                if (brush != null) _lineMat.mainTexture = brush;
+            }
+            g.Root = new GameObject("Blood Vortex").transform;
+            g.Root.SetParent(transform, false);
+            g.Arms = new LineRenderer[ArmCount];
+            for (int k = 0; k < ArmCount; k++)
+            {
+                var lr = new GameObject("Arm").AddComponent<LineRenderer>();
+                lr.transform.SetParent(g.Root, false);
+                lr.useWorldSpace = true;
+                lr.positionCount = ArmPoints;
+                lr.sharedMaterial = _lineMat;
+                lr.numCapVertices = 2;
+                bool red = k % 2 == 1;
+                // 점 0 = 앞쪽(넓고 굵고 옅게) → 끝 = 손(좁고 가늘고 짙게)
+                lr.textureMode = LineTextureMode.Stretch;
+                lr.widthCurve = new AnimationCurve(new Keyframe(0f, red ? 0.2f : 0.26f), new Keyframe(0.6f, red ? 0.12f : 0.15f), new Keyframe(1f, 0.03f));
+                lr.sortingOrder = 6;
+                g.Arms[k] = lr;
+            }
+            _grab = g;
             _live.Add(dt =>
             {
-                if (sr == null) return false;
-                t += dt;
-                // 0.15초 뻗고 · 0.12초 쥐고 · 0.3초 돌아와요
-                float reach = t < 0.15f ? t / 0.15f : t < 0.27f ? 1f : 1f - (t - 0.27f) / 0.3f;
-                reach = Mathf.Clamp01(reach);
-                sr.transform.position = c.At + dir * (length * Mathf.Sin(reach * Mathf.PI * 0.5f)) + Vector3.up * 0.07f;
-                sr.color = new Color(1f, 1f, 1f, t < 0.27f ? 1f : reach);
-                if (t < 0.57f) return true;
-                Destroy(sr.gameObject);
+                g.T += dt;
+                if (g.Palm != null) g.Hand = g.Palm.position + g.Dir * 0.12f; // 손바닥 중심 (손 뼈에서 앞으로 약 0.1m · 팔이 움직이면 따라가요)
+                bool pulling = g.PullT >= 0f;
+                float pullAge = pulling ? g.T - g.PullT : 0f;
+                float grow = Mathf.Clamp01(g.T / g.Windup);
+                g.Phase += (pulling ? 1100f : Mathf.Lerp(200f, 700f, grow)) * dt; // 돌수록 선이 손 쪽으로 흘러 보여요
+                float reach = pulling ? Mathf.Lerp(1f, 0f, Mathf.Clamp01(pullAge / 0.3f)) : Mathf.Lerp(0.25f, 1f, Mathf.Sqrt(grow)); // 길이 배율
+                float alpha = pulling ? Mathf.Clamp01(1f - (pullAge - 0.15f) / 0.2f) : Mathf.Lerp(0.3f, 1f, grow);
+                float len = g.Length * reach;
+                for (int k = 0; k < ArmCount; k++)
+                {
+                    var lr = g.Arms[k];
+                    float start = k * 360f / ArmCount;
+                    for (int i = 0; i < ArmPoints; i++)
+                    {
+                        float s = i / (ArmPoints - 1f);            // 0 = 앞쪽, 1 = 손
+                        float along = len * (1f - s);
+                        float r = Mathf.Lerp(MouthRadius, HandRadius, s) * Mathf.Lerp(0.6f, 1f, reach);
+                        float a = (start + g.Phase - s * 300f) * Mathf.Deg2Rad; // 손 쪽으로 감겨 들어가는 나선
+                        Vector3 axis = g.Hand + g.Dir * along + Vector3.down * (along * 0.12f); // 앞으로 갈수록 살짝 낮게
+                        lr.SetPosition(i, axis + (g.Side * Mathf.Cos(a) + Vector3.up * Mathf.Sin(a)) * r);
+                    }
+                    var col = k % 2 == 1 ? new Color(0.75f, 0.05f, 0.05f) : new Color(0.06f, 0.04f, 0.04f);
+                    lr.startColor = new Color(col.r, col.g, col.b, 0.35f * alpha); // 앞쪽은 옅게 퍼져요
+                    lr.endColor = new Color(col.r, col.g, col.b, alpha);
+                }
+                bool done = pulling ? pullAge > 0.4f : g.T > g.Windup + 0.8f; // 얼려서 끊기면 알아서 끝나요
+                if (!done) return true;
+                Destroy(g.Root.gameObject);
+                if (_grab == g) _grab = null;
                 return false;
             });
+        }
+
+        void Grab(BloodBuddhaBrain.FxCue c, BloodBuddhaBrain brain)
+        {
+            if (_grab == null) GrabStart(new BloodBuddhaBrain.FxCue { At = c.At, Dir = c.Dir, Length = c.Length, Time = 0.1f }, brain);
+            if (_grab != null && _grab.PullT < 0f) _grab.PullT = _grab.T;
         }
 
         void Transition(BloodBuddhaBrain.FxCue c)
@@ -226,6 +263,14 @@ namespace AThousandDawns.Art
             return sr;
         }
 
+        // 카메라를 보고 선 그림 (높이 height, 폭 width — 폭을 주면 따로 늘여요)
+        SpriteRenderer Upright(Sprite sprite, Vector3 at, float height, float width)
+        {
+            var sr = Upright(sprite, at, height);
+            if (sr != null) sr.transform.localScale = new Vector3(width / Mathf.Max(0.01f, sprite.bounds.size.x), height / Mathf.Max(0.01f, sprite.bounds.size.y), 1f);
+            return sr;
+        }
+
         // 카메라를 보고 선 그림 (높이 height)
         SpriteRenderer Upright(Sprite sprite, Vector3 at, float height)
         {
@@ -241,6 +286,13 @@ namespace AThousandDawns.Art
             return sr;
         }
 
+        static Transform FindDeep(Transform root, string name)
+        {
+            if (root.name == name || root.name.EndsWith(":" + name)) return root;
+            foreach (Transform child in root) { var t = FindDeep(child, name); if (t != null) return t; }
+            return null;
+        }
+
         static Vector3 Flatten(Vector3 v) { v.y = 0f; return v.sqrMagnitude > 0.0001f ? v.normalized : Vector3.forward; }
         static float Yaw(Vector3 dir) => -Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg; // 그림의 +X를 dir로
 
@@ -252,7 +304,6 @@ namespace AThousandDawns.Art
             _mandala = Resources.Load<Sprite>("BloodBuddhaFx/Mandala");
             _drop = Resources.Load<Sprite>("BloodBuddhaFx/Drop");
             _splash = Resources.Load<Sprite>("BloodBuddhaFx/Splash");
-            _hand = Resources.Load<Sprite>("BloodBuddhaFx/Hand");
             _slash = Resources.Load<Sprite>("BloodBuddhaFx/Slash");
         }
     }
