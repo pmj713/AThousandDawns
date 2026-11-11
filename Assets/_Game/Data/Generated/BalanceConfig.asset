@@ -2997,3 +2997,75 @@ MonoBehaviour:
     value: 1
     unit: 
     note: "\uBC29 \uC608\uC0B0 \uC810\uC218: \uB4F1\uBD88 \uADC0\uC2E0"
+  - key: hyegwang.hp
+    value: 1100
+    unit: 
+    note: "\uD30C\uACC4\uC2B9 \uD61C\uAD11 \uCCB4\uB825 (\uD3D0\uC0AC\uCC30 \xD71.8 = 1980)"
+  - key: hyegwang.atk
+    value: 18
+    unit: 
+    note: "\uD30C\uACC4\uC2B9 \uD61C\uAD11 \uACF5\uACA9 (\xD71.3 = 23)"
+  - key: hyegwang.toughness
+    value: 0
+    unit: 
+    note: "\uD30C\uACC4\uC2B9 \uD61C\uAD11 \uAC15\uC778\uD568"
+  - key: hyegwang.move_speed
+    value: 3.5
+    unit: cell/s
+    note: "\uD30C\uACC4\uC2B9 \uD61C\uAD11 \uC774\uB3D9\uC18D\uB3C4"
+  - key: hyegwang.sweep_windup
+    value: 0.7
+    unit: s
+    note: "\uD61C\uAD11 \uC120\uC7A5 \uD718\uB450\uB974\uAE30 \uC608\uACE0"
+  - key: hyegwang.sweep_ratio
+    value: 1
+    unit: 
+    note: "\uD61C\uAD11 \uC120\uC7A5 \uD718\uB450\uB974\uAE30 \uD53C\uD574 \uBC30\uC728"
+  - key: hyegwang.sweep_radius
+    value: 3
+    unit: cell
+    note: "\uD61C\uAD11 \uC120\uC7A5 \uD718\uB450\uB974\uAE30 \uBC18\uACBD"
+  - key: hyegwang.sweep_angle
+    value: 150
+    unit: deg
+    note: "\uD61C\uAD11 \uC120\uC7A5 \uD718\uB450\uB974\uAE30 \uAC01\uB3C4"
+  - key: hyegwang.vajra_time
+    value: 3
+    unit: s
+    note: "\uD61C\uAD11 \uAE08\uAC15\uBD88\uAD34 \uC2DC\uAC04 (\uBC1B\uB294 \uD53C\uD574 1)"
+  - key: hyegwang.vajra_ratio
+    value: 1.2
+    unit: 
+    note: "\uD61C\uAD11 \uAE08\uAC15\uBD88\uAD34 \uB05D \uCDA9\uACA9\uD30C \uD53C\uD574 \uBC30\uC728"
+  - key: hyegwang.vajra_radius
+    value: 3.5
+    unit: cell
+    note: "\uD61C\uAD11 \uAE08\uAC15\uBD88\uAD34 \uCDA9\uACA9\uD30C \uBC18\uACBD"
+  - key: hyegwang.vajra_interval
+    value: 9
+    unit: s
+    note: "\uD61C\uAD11 \uAE08\uAC15\uBD88\uAD34 \uAC04\uACA9 (1\uD398\uC774\uC988)"
+  - key: hyegwang.p2_vajra_interval
+    value: 6
+    unit: s
+    note: "\uD61C\uAD11 \uAE08\uAC15\uBD88\uAD34 \uAC04\uACA9 (2\uD398\uC774\uC988)"
+  - key: hyegwang.bead_ratio
+    value: 0.7
+    unit: 
+    note: "\uD61C\uAD11 \uC5FC\uC8FC \uD53C\uD574 \uBC30\uC728 (\uAC00\uB294 \uAE38\xB7\uC624\uB294 \uAE38 \uD55C \uBC88\uC529)"
+  - key: hyegwang.bead_range
+    value: 8
+    unit: cell
+    note: "\uD61C\uAD11 \uC5FC\uC8FC\uAC00 \uB0A0\uC544\uAC00\uB294 \uAC70\uB9AC"
+  - key: hyegwang.bead_speed
+    value: 10
+    unit: cell/s
+    note: "\uD61C\uAD11 \uC5FC\uC8FC \uC18D\uB3C4"
+  - key: hyegwang.p2_bead_spread
+    value: 25
+    unit: deg
+    note: "\uD61C\uAD11 2\uD398\uC774\uC988 \uC5FC\uC8FC \uC138 \uAC08\uB798 \uAC04\uACA9"
+  - key: hyegwang.p2_windup_ratio
+    value: 0.8
+    unit: 
+    note: "\uD61C\uAD11 2\uD398\uC774\uC988 \uC608\uACE0 \uC2DC\uAC04 \uBC30\uC728"
