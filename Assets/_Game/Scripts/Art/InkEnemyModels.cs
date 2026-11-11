@@ -207,7 +207,6 @@ namespace AThousandDawns.Art
                         _moving = false;
                         break;
                     case EnemyAttackTimeline.Phase.Active:
-                        if (_buddha != null && _move.attack == "혈수") InkBloodHand.Spawn(_buddha, _animator);   // 예고 선을 따라 핏빛 손이 뻗어요
                         _animator.SetFloat(AttackSpeedId, 1f);                              // 한 번 내려찍어요 (돌진·회전은 이어서)
                         if (!string.IsNullOrEmpty(_move.ready)) Play(_move.state, 0.1f);    // 준비 자세에서 박차고 나가요
                         _swung = _move.mode == InkEnemyModels.MoveMode.Swing;

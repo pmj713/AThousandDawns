@@ -60,7 +60,7 @@ namespace AThousandDawns.Enemies
         float _palmGap, _palmFollowTimer;
         float _decisionTimer, _transitionTimer, _chantTimer, _summonTimer, _activeTimer;
         Vector3 _zoneCenter;
-        Vector2 _zoneSize = new Vector2(16f, 12f);
+        Vector2 _zoneSize = new Vector2(24f, 18f);   // 보스 방 크기 (BossSize)
         readonly List<Mark> _marks = new List<Mark>();
 
         public override EnemyKind Kind => EnemyKind.BloodBuddha;

@@ -37,8 +37,8 @@ namespace AThousandDawns.EditorTools
             (string name, Vector3 center, Vector2 size)[] rooms =
             {
                 ("Rest", RestCenter, new Vector2(12f, 10f)), ("Inn", InnCenter, new Vector2(12f, 10f)),
-                ("Master", MasterCenter, new Vector2(14f, 10f)), ("IronMaster", IronMasterCenter, new Vector2(14f, 10f)),
-                ("Boss", BossCenter, new Vector2(16f, 12f)),
+                ("Master", MasterCenter, MasterSize), ("IronMaster", IronMasterCenter, MasterSize),
+                ("Boss", BossCenter, BossSize),
             };
             foreach (var (name, center, size) in rooms)
             {
@@ -62,7 +62,7 @@ namespace AThousandDawns.EditorTools
         {
             var boss = new GameObject("Boss (녹림 산채)").transform;
             boss.SetParent(deco, false);
-            float hx = 8f, hz = 6f;
+            float hx = BossSize.x * 0.5f, hz = BossSize.y * 0.5f;
 
             for (float x = -hx; x <= hx + 0.01f; x += 0.42f, seed++)
             {
@@ -75,7 +75,7 @@ namespace AThousandDawns.EditorTools
                 log.AddComponent<MeshFilter>().sharedMesh = GetSharpLogMesh();
                 log.AddComponent<MeshRenderer>().sharedMaterial = woodMat;
             }
-            for (int s = -1; s <= 1; s += 2) Brazier(boss, BossCenter + new Vector3(s * 7.1f, 0f, hz - 0.9f), stoneMat, seed++);
+            for (int s = -1; s <= 1; s += 2) Brazier(boss, BossCenter + new Vector3(s * (hx - 0.9f), 0f, hz - 0.9f), stoneMat, seed++);
 
             // 불타는 대나무: 녹림왕 방 울타리 대나무(Room_Boss 아래 줄기 묶음)마다 밑동 불꽃, 몇 곳은 중간에도
             var bossRoom = GameObject.Find("Room_Boss");

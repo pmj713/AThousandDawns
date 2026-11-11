@@ -91,7 +91,7 @@ namespace AThousandDawns.EditorTools
                 new MoveSpec { attack = "염불", state = "Chant", clips = new[] { "Chant" }, mode = MoveMode.Loop },
                 new MoveSpec { attack = "피의 비", state = "Rain", clips = new[] { "Rain" }, mode = MoveMode.Loop },
                 new MoveSpec { attack = "팔 휘두르기", state = "Arms", clips = new[] { "Arms" } },
-                new MoveSpec { attack = "혈수", state = "Grab", clips = new[] { "Grab" } },   // 팔을 뒤로 당겼다가 내뻗어 움켜쥐고 끌어당겨요 (핏빛 손은 InkBloodHand)
+                new MoveSpec { attack = "혈수", state = "Grab", clips = new[] { "Grab" } },   // 예고부터 오른팔을 앞으로 쭉 뻗고 손바닥을 펴요, 판정 뒤 움켜쥐고 끌어당겨요 (손바닥 소용돌이는 아트2의 InkBloodBuddhaFx)
             },
             // 파계승 혜광 (폐사찰 고수): 선장 휘두르기 · 금강불괴(예고 3초 동안 버티는 자세 → 선장을 내리꽂아요) · 염주 던지기
             ["Hyegwang"] = new[]
