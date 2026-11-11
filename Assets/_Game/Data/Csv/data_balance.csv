@@ -830,10 +830,10 @@ bloodbuddha.grab_width,1.4,cell,혈불 혈수 폭,
 bloodbuddha.grab_ratio,0.6,,혈불 혈수 피해 배율 (맞으면 끌려와 바로 팔 휘두르기),
 bloodbuddha.grab_stop,2,cell,혈불 혈수: 끌려와 멈추는 거리,
 bloodbuddha.grab_recovery,0.3,s,혈불 혈수 뒤 팔 휘두르기까지,
-knife.scroll_flash_ratio,50%,,비도 + 죽림섬: 회수할 때 순간이동 베기 피해 (초식 피해 대비),비도 비급 (회수에 덧붙음)
-knife.scroll_quake_radius,2.5,칸,비도 + 붕산권: 회수할 때 충격파 반경,비도 비급 (회수에 덧붙음)
-knife.scroll_quake_ratio,60%,,비도 + 붕산권: 충격파 피해 (초식 피해 대비),비도 비급 (회수에 덧붙음)
-knife.scroll_palm_shield,1%,,비도 + 금강장: 돌아온 비도 1개당 보호막 (최대 체력 비율),비도 비급 (회수에 덧붙음)
+knife.scroll_flash_ratio,35%,,비도 + 죽림섬 비도 순간이동: 한 번 베기 피해 (초식 피해 대비),비도 비급 (비도 초식)
+knife.scroll_quake_radius,5,칸,비도 + 붕산권 비도 솟구치기: 솟구치는 비도 범위,비도 비급 (비도 초식)
+knife.scroll_quake_ratio,35%,,비도 솟구치기: 솟구친 비도 하나당 피해 (초식 피해 대비),비도 비급 (비도 초식)
+knife.scroll_palm_shield,4%,,비도 + 금강장 비도 호신륜: 한 번 벨 때 비도 1개당 피해 (초식 피해 대비),비도 비급 (비도 초식)
 arhat.statue_wake,3,cell,석상 나한: 석상으로 서 있다가 이 거리 안이면 깨어남 (그전엔 맞힐 수 없음),폐사찰 적 고유 기믹
 arhat.quake_radius,1.8,cell,석상 나한: 돌진이 끝난 자리 충격파 반경,폐사찰 적 고유 기믹
 arhat.quake_ratio,0.6,,석상 나한: 충격파 피해 배율,폐사찰 적 고유 기믹
@@ -993,3 +993,12 @@ knife.vortex_radius,1.8,칸,탁류 소용돌이: 베는 범위,비도 비급 (�
 knife.vortex_tick,0.4,초,탁류 소용돌이: 베는 간격,비도 비급 (탁류 소용돌이)
 knife.vortex_ratio,6%,,탁류 소용돌이: 한 번 벨 때 비도 1개당 피해 (초식 피해 대비),비도 비급 (탁류 소용돌이)
 knife.vortex_max,12,개,탁류 소용돌이: 피해에 세는 비도 최대 수,비도 비급 (탁류 소용돌이)
+knife.scroll_flash_max,6,곳,비도 순간이동: 순간이동하는 비도 최대 수,비도 비급 (비도 순간이동)
+knife.scroll_flash_gap,0.12,초,비도 순간이동: 순간이동 간격,비도 비급 (비도 순간이동)
+knife.scroll_quake_center,2,칸,비도 솟구치기: 내 둘레 충격파 반경,비도 비급 (비도 솟구치기)
+knife.scroll_quake_center_ratio,50%,,비도 솟구치기: 내 둘레 충격파 피해 (초식 피해 대비),비도 비급 (비도 솟구치기)
+knife.scroll_quake_pop,1.5,칸,비도 솟구치기: 솟구친 비도 하나가 찌르는 반경,비도 비급 (비도 솟구치기)
+knife.scroll_halo_time,3,초,비도 호신륜: 도는 시간 (끝나면 손으로 돌아와요),비도 비급 (비도 호신륜)
+knife.scroll_halo_orbit,1.6,칸,비도 호신륜: 도는 반경,비도 비급 (비도 호신륜)
+knife.scroll_halo_spin,360,°/초,비도 호신륜: 도는 속도,비도 비급 (비도 호신륜)
+knife.scroll_halo_tick,0.3,초,비도 호신륜: 베는 간격,비도 비급 (비도 호신륜)

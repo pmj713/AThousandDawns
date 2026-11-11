@@ -501,15 +501,14 @@ namespace AThousandDawns.Player
                 if (!_skillHitDone && _skillElapsed >= D("knife.recall_cast", 0.3f))
                 {
                     _skillHitDone = true;
-                    if (Skill == SkillKind.Takrang) // 탁류 소용돌이: 회수 대신 앞에 모아 돌려요 (끝나면 돌아와요)
+                    switch (Skill) // 비도 비급: 비급마다 비도를 다루는 초식이 달라요 (끝나면 비도는 손으로 돌아와요)
                     {
-                        StartVortex();
-                        return;
+                        case SkillKind.BambooFlash: StartDaggerFlash(); break; // 비도 순간이동
+                        case SkillKind.Quake: DaggerBurst(); break;            // 비도 솟구치기
+                        case SkillKind.Palm: StartDaggerHalo(); break;         // 비도 호신륜
+                        case SkillKind.Takrang: StartVortex(); break;          // 탁류 소용돌이
+                        default: RecallDaggers(); break;                       // 회수
                     }
-                    var mark = MostStuckTarget();
-                    int returning = DaggerCount;
-                    RecallDaggers();
-                    ScrollOnRecall(mark, returning);
                 }
                 return;
             }

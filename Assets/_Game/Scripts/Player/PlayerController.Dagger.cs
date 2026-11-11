@@ -144,6 +144,8 @@ namespace AThousandDawns.Player
                 if (d.Life <= 0f) RemoveDagger(i);
             }
             TickVortex(dt); // 비도 탁랑참: 탁류 소용돌이
+            TickHalo(dt);   // 비도 금강장: 비도 호신륜
+            TickDaggerFlash(dt); // 비도 죽림섬: 비도 순간이동
             TickDaggerForge(dt); // 융합: 꽂힌 비도 수에 따른 화상·감전·둔화
             // 최대 개수를 넘으면 오래된 것부터
             int max = Mathf.RoundToInt(D("knife.max_count", 15f));
@@ -238,6 +240,164 @@ namespace AThousandDawns.Player
         {
             for (int i = _daggers.Count - 1; i >= 0; i--) RemoveDagger(i);
             _vortexLeft = 0f;
+            _haloLeft = 0f;
+            _flashQueue.Clear();
+        }
+
+        // ── 비도 + 죽림섬: 비도 순간이동
+        //   꽂히거나 떨어진 비도 자리로 가까운 것부터 차례로 순간이동해요 (0.12초 간격, 최대 6곳). 지나간 직선 위의 적을 베고 (1번에 초식 피해 35%),
+        //   그 자리의 비도를 뽑아 손에 거둬요. 순간이동하는 동안 무적. 남은 비도는 그대로 남아요.
+        readonly List<Dagger> _flashQueue = new List<Dagger>();
+        float _daggerFlashTimer;
+
+        public bool IsDaggerFlashing => _flashQueue.Count > 0;
+
+        void StartDaggerFlash()
+        {
+            _flashQueue.Clear();
+            Vector3 from = transform.position;
+            var left = new List<Dagger>();
+            foreach (var d in _daggers) if (!d.Flying && !d.Returning && !d.Vortex) left.Add(d);
+            int max = Mathf.RoundToInt(D("knife.scroll_flash_max", 6f));
+            while (left.Count > 0 && _flashQueue.Count < max) // 가까운 것부터 이어서
+            {
+                int best = 0;
+                for (int i = 1; i < left.Count; i++)
+                    if ((Flatten(left[i].Go.transform.position) - Flatten(from)).sqrMagnitude < (Flatten(left[best].Go.transform.position) - Flatten(from)).sqrMagnitude) best = i;
+                from = left[best].Go.transform.position;
+                _flashQueue.Add(left[best]);
+                left.RemoveAt(best);
+            }
+            _daggerFlashTimer = 0f;
+        }
+
+        void TickDaggerFlash(float dt)
+        {
+            if (_flashQueue.Count == 0) return;
+            _invulnerableTimer = Mathf.Max(_invulnerableTimer, 0.1f);
+            _daggerFlashTimer -= dt;
+            if (_daggerFlashTimer > 0f) return;
+            _daggerFlashTimer = D("knife.scroll_flash_gap", 0.12f);
+            var d = _flashQueue[0];
+            _flashQueue.RemoveAt(0);
+            if (d.Go == null || !_daggers.Contains(d)) return;
+            Vector3 from = transform.position;
+            Vector3 to = Flatten(d.Go.transform.position) - Flatten(from);
+            if (to.sqrMagnitude > 1e-4f)
+            {
+                _controller.Move(to); // 벽에는 막혀요
+                _facing = to.normalized;
+                ApplyFacing();
+            }
+            Sfx.Play(SfxId.BambooFlash);
+            SkillFx(new SkillFxCue { Kind = SkillFxKind.FlashDash, From = from, To = transform.position, Dir = _facing });
+            if (swingFlash != null) swingFlash.Show(transform.position, -_facing, 1.2f, 90f, 0.12f);
+            var hit = PlayerHit(_skillDamage * D("knife.scroll_flash_ratio", 0.35f));
+            hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
+            int count = HitLine(from, transform.position + _facing * 1f, GameConfig.Get("skill_flash.width", 1.2f), hit, HitTag.Skill); // 비도 자리 너머 1칸까지 (적 몸에 막혀 앞에 서도 베요)
+            Gauge = Mathf.Min(GaugeCap, Gauge + count * _gaugeSkill * GaugeGainMultiplier);
+            RemoveDagger(_daggers.IndexOf(d)); // 뽑아 손에 거둬요
+        }
+
+        // ── 비도 + 붕산권: 비도 솟구치기
+        //   땅을 내리쳐 내 둘레 충격파 (반경 2칸, 초식 피해 50%, 밀어냄). 둘레 5칸 안의 꽂히거나 떨어진 비도가 솟구쳐 흩어지며,
+        //   비도마다 반경 1.5칸 안 적을 찔러요 (비도 1개당 35%). 솟구친 비도는 손으로 돌아와요.
+        void DaggerBurst()
+        {
+            Sfx.Play(SfxId.Quake);
+            QuakeBurst(D("knife.scroll_quake_center", 2f), D("knife.scroll_quake_center_ratio", 0.5f), GameConfig.Get("skill_quake.knockback", 2f));
+            float reach = D("knife.scroll_quake_radius", 5f), pop = D("knife.scroll_quake_pop", 1.5f);
+            var hit = PlayerHit(_skillDamage * D("knife.scroll_quake_ratio", 0.35f));
+            hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
+            var targets = FindObjectsByType<Damageable>(FindObjectsSortMode.None);
+            Vector3 me = Flatten(transform.position);
+            int hits = 0;
+            foreach (var d in _daggers)
+            {
+                if (d.Flying || d.Returning || d.Vortex) continue;
+                Vector3 at = Flatten(d.Go.transform.position);
+                if ((at - me).magnitude > reach) continue;
+                SkillFx(new SkillFxCue { Kind = SkillFxKind.QuakeWave, From = at, Radius = pop });
+                foreach (var e in targets)
+                {
+                    if (e == null || e.IsDead || !e.Targetable) continue;
+                    if ((Flatten(e.transform.position) - at).magnitude > pop + e.BodyRadius) continue;
+                    HitTarget(e, hit, HitTag.Skill);
+                    hits++;
+                }
+                d.Stuck = null;
+                d.Go.transform.position = at + Vector3.up * 1.5f; // 솟구쳤다가
+                d.Returning = true;                               // 손으로 돌아와요
+                if (d.Rend != null) d.Rend.enabled = true;
+            }
+            Gauge = Mathf.Min(GaugeCap, Gauge + hits * _gaugeSkill * 0.5f * GaugeGainMultiplier);
+        }
+
+        // ── 비도 + 금강장: 비도 호신륜
+        //   방 안 비도를 모두 끌어와 3초 동안 내 둘레 (반경 1.6칸)를 돌게 해요. 0.3초마다 고리에 닿는 적을 베고 (비도 1개당 초식 피해 4%, 최대 12개),
+        //   고리 안으로 날아오는 화살·작살·검기·염주 같은 투사체를 막아요. 끝나면 손으로 돌아와요.
+        float _haloLeft, _haloTick;
+        public bool IsHaloing => _haloLeft > 0f;
+
+        void StartDaggerHalo()
+        {
+            _haloLeft = D("knife.scroll_halo_time", 3f);
+            _haloTick = 0f;
+            int n = 0;
+            foreach (var d in _daggers)
+            {
+                if (d.Flying || d.Returning || d.Vortex) continue;
+                d.Vortex = true; // 고리 속을 돌아요 (소용돌이와 같은 표시: 남은 비도로 안 셈)
+                d.Stuck = null;
+                d.Angle = n++ * 137.5f;
+                if (d.Rend != null) d.Rend.enabled = true;
+            }
+            Sfx.Play(SfxId.DaggerRecall);
+            SkillFx(new SkillFxCue { Kind = SkillFxKind.PalmShield, From = transform.position, Count = n });
+        }
+
+        void TickHalo(float dt)
+        {
+            if (_haloLeft <= 0f) return;
+            _haloLeft -= dt;
+            float radius = D("knife.scroll_halo_orbit", 1.6f);
+            Vector3 center = transform.position + Vector3.up * 0.8f;
+            int count = 0;
+            foreach (var d in _daggers)
+            {
+                if (!d.Vortex) continue;
+                count++;
+                d.Angle += D("knife.scroll_halo_spin", 360f) * dt;
+                Vector3 at = center + Quaternion.Euler(0f, d.Angle, 0f) * Vector3.forward * radius;
+                d.Go.transform.position = Vector3.MoveTowards(d.Go.transform.position, at, D("knife.return_speed", 30f) * dt);
+                d.Go.transform.rotation = Quaternion.LookRotation(Quaternion.Euler(0f, d.Angle + 90f, 0f) * Vector3.forward);
+            }
+            // 날아오는 투사체를 막아요
+            float block = radius + 0.6f;
+            foreach (var arrow in FindObjectsByType<AThousandDawns.Enemies.Arrow>(FindObjectsSortMode.None))
+                if ((Flatten(arrow.transform.position) - Flatten(transform.position)).magnitude <= block) Destroy(arrow.gameObject);
+            foreach (var bead in FindObjectsByType<AThousandDawns.Enemies.BeadThrow>(FindObjectsSortMode.None))
+                if ((Flatten(bead.transform.position) - Flatten(transform.position)).magnitude <= block) Destroy(bead.gameObject);
+            _haloTick -= dt;
+            if (_haloTick <= 0f && count > 0)
+            {
+                _haloTick = D("knife.scroll_halo_tick", 0.3f);
+                var hit = PlayerHit(_skillDamage * D("knife.scroll_palm_shield", 0.04f) * Mathf.Min(count, Mathf.RoundToInt(D("knife.vortex_max", 12f))));
+                hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
+                int hits = 0;
+                foreach (var e in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+                {
+                    if (e == null || e.IsDead || !e.Targetable) continue;
+                    float dist = (Flatten(e.transform.position) - Flatten(transform.position)).magnitude;
+                    if (dist > radius + 0.6f + e.BodyRadius || dist < 0.3f) continue;
+                    HitTarget(e, hit, HitTag.Skill);
+                    hits++;
+                }
+                Gauge = Mathf.Min(GaugeCap, Gauge + hits * _gaugeSkill * 0.25f * GaugeGainMultiplier);
+            }
+            if (_haloLeft > 0f) return;
+            foreach (var d in _daggers) // 끝: 손으로 돌아와요
+                if (d.Vortex) { d.Vortex = false; d.Returning = true; }
         }
 
         // ── 비도 + 탁랑참: 탁류 소용돌이

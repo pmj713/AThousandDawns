@@ -10,9 +10,8 @@ namespace AThousandDawns.Player
     //   수치는 시트에 아직 없어서 임시 (1번에 회선참 피해의 50%, 사거리 6칸, 폭 1.2칸).
     // 붕산권 (철권 마웅): 땅을 내리쳐 반경 3칸 원형 충격파, 맞은 적을 2칸 밀어내요 (보스·고수는 안 밀림). 임시: 회선참 피해 그대로.
     // 금강장 (파계승 혜광): 앞으로 장력을 뻗어 부채꼴 4칸 (100도), 회선참 피해 ×1.3 · 맞은 적을 1.5칸 밀어냄. 하나라도 맞히면 보호막 (최대 체력 5%, 8초).
-    // 비도는 초식이 늘 회수예요. 배운 비급은 회수에 효과를 덧붙여요 (DaggerScrollText):
-    //   죽림섬: 비도가 가장 많이 꽂힌 적에게 순간이동해 한 번 베기 (회선참 피해 50%) · 붕산권: 회수와 함께 내 둘레 충격파 (반경 2.5칸, 60%, 밀어냄)
-    //   금강장: 돌아온 비도 1개당 보호막 (최대 체력 1%, 8초)
+    // 비도는 비급마다 비도를 다루는 초식이 달라요 (DaggerScrollText, PlayerController.Dagger.cs). 어느 초식이든 끝나면 비도는 손으로 돌아와요.
+    //   회선참: 회수 · 죽림섬: 비도 순간이동 · 붕산권: 비도 솟구치기 · 금강장: 비도 호신륜 · 탁랑참: 탁류 소용돌이
     // 탁랑참 (탁랑객): 앞으로 파도 검기를 내보내 7칸 직선 (폭 1.4칸)의 적을 모두 꿰뚫어요. 회선참 피해 ×1.2 · 맞은 적 1칸 밀어냄.
     //   비도 (탁류 소용돌이): 회수 대신 비도가 모두 앞쪽 4칸 지점에 모여 2초 동안 소용돌이쳐요. 둘레 적을 끌어당겨 베고, 끝나면 손으로 돌아와요 (PlayerController.Dagger.cs).
     public enum SkillKind { Spin, BambooFlash, Quake, Palm, Takrang }
@@ -31,7 +30,17 @@ namespace AThousandDawns.Player
 
         public SkillKind Skill { get; private set; }
         public string SkillName => !UsesDagger ? SkillLabel(Skill)
-            : Skill == SkillKind.Spin ? $"회수 (비도 {DaggerCount})" : Skill == SkillKind.Takrang ? $"탁류 소용돌이 (비도 {DaggerCount})" : $"회수 · {SkillLabel(Skill)} (비도 {DaggerCount})";
+            : $"{DaggerSkillLabel(Skill)} (비도 {DaggerCount})";
+
+        // 비도일 때 초식 이름
+        public static string DaggerSkillLabel(SkillKind s) => s switch
+        {
+            SkillKind.BambooFlash => "비도 순간이동",
+            SkillKind.Quake => "비도 솟구치기",
+            SkillKind.Palm => "비도 호신륜",
+            SkillKind.Takrang => "탁류 소용돌이",
+            _ => "회수",
+        };
 
         // 비급 이름과 한 줄 설명 (고수 보상 · 낡은 서고 · 객잔 공통)
         public static string SkillLabel(SkillKind s) => s switch
@@ -52,16 +61,16 @@ namespace AThousandDawns.Player
             _ => "주변을 한 바퀴 베기",
         };
 
-        // 비도일 때 비급이 회수에 덧붙이는 효과
+        // 비도일 때 그 비급의 초식
         public static string DaggerScrollText(SkillKind s) => s switch
         {
-            SkillKind.BambooFlash => "회수할 때 비도가 가장 많이 꽂힌 적에게 순간이동해 베기",
-            SkillKind.Quake => "회수할 때 내 둘레에 충격파, 적을 밀어냄",
-            SkillKind.Palm => "회수할 때 돌아온 비도 1개당 보호막",
+            SkillKind.BambooFlash => "꽂히거나 떨어진 비도 자리로 차례로 순간이동하며 하나씩 뽑아 베기",
+            SkillKind.Quake => "땅을 내리쳐 둘레 비도를 솟구치게 해 사방의 적을 찌름",
+            SkillKind.Palm => "비도를 모두 끌어와 3초 동안 내 둘레를 돌며 베고 투사체를 막음",
             SkillKind.Takrang => "비도를 앞쪽에 모아 소용돌이, 둘레 적을 끌어당겨 베고 돌아옴",
             _ => "방 안의 비도를 모두 거두며 피해",
         };
-        // 비도를 들면 초식은 늘 회수 (비급은 회수에 효과를 덧붙여요)
+        // 비도를 들면 우클릭은 비도 초식 (회수 · 비도 순간이동 · 비도 솟구치기 · 비도 호신륜 · 탁류 소용돌이)
         bool RecallSkill => UsesDagger;
 
         public void LearnSkill(SkillKind skill)
@@ -104,56 +113,6 @@ namespace AThousandDawns.Player
                 float trigger = DamageFormula.BeforeToughness(hit);
                 Lightning.Chain(_firstHit, transform.position + Vector3.up, trigger, ChainRatio(thunder), _chainTargets, _chainRange, DischargePerStack(thunder));
                 StrikeAfterSkillChain(_firstHit, trigger, thunder);
-            }
-        }
-
-        // ── 비도: 회수에 덧붙는 비급 효과 (회수 직전에 고른 표적 · 돌아온 비도 수)
-
-        Damageable MostStuckTarget()
-        {
-            Damageable best = null;
-            int most = 0;
-            foreach (var d in _daggers)
-            {
-                if (d.Stuck == null || d.Stuck.IsDead || !d.Stuck.Targetable) continue;
-                int n = StuckDaggers(d.Stuck);
-                if (n > most) { most = n; best = d.Stuck; }
-            }
-            return best;
-        }
-
-        void ScrollOnRecall(Damageable mark, int returning)
-        {
-            switch (Skill)
-            {
-                case SkillKind.BambooFlash:
-                    if (mark == null || mark.IsDead) return;
-                    Sfx.Play(SfxId.BambooFlash);
-                    Vector3 from = transform.position, to = mark.transform.position - from;
-                    to.y = 0f;
-                    if (to.sqrMagnitude < 1e-4f) return;
-                    Vector3 dir = to.normalized;
-                    _controller.Move(dir * (to.magnitude + 1f)); // 적을 지나쳐 뒤에 서요 (벽에는 막힘)
-                    SkillFx(new SkillFxCue { Kind = SkillFxKind.FlashDash, From = from, To = transform.position, Dir = dir });
-                    _facing = dir;
-                    ApplyFacing();
-                    _invulnerableTimer = Mathf.Max(_invulnerableTimer, 0.2f);
-                    if (swingFlash != null) swingFlash.Show(transform.position, -dir, 1.2f, 90f, 0.12f);
-                    var hit = PlayerHit(_skillDamage * GameConfig.GetOptional("knife.scroll_flash_ratio", 0.5f));
-                    hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
-                    int count = HitLine(from, transform.position, GameConfig.Get("skill_flash.width", 1.2f), hit, HitTag.Skill);
-                    Gauge = Mathf.Min(GaugeCap, Gauge + count * _gaugeSkill * GaugeGainMultiplier);
-                    break;
-                case SkillKind.Quake:
-                    Sfx.Play(SfxId.Quake);
-                    QuakeBurst(GameConfig.GetOptional("knife.scroll_quake_radius", 2.5f), GameConfig.GetOptional("knife.scroll_quake_ratio", 0.6f), GameConfig.Get("skill_quake.knockback", 2f));
-                    break;
-                case SkillKind.Palm:
-                    if (returning <= 0) return;
-                    int amount = Mathf.Max(1, Mathf.RoundToInt(_maxHealth * GameConfig.GetOptional("knife.scroll_palm_shield", 0.01f) * returning));
-                    _shields.Add(amount, GameConfig.GetOptional("skill_palm.shield_duration", 8f), ShieldCap);
-                    SkillFx(new SkillFxCue { Kind = SkillFxKind.PalmShield, From = transform.position, Count = returning });
-                    break;
             }
         }
 

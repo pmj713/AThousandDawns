@@ -12,7 +12,7 @@ namespace AThousandDawns.Prototype
     // 폐사찰 고수는 파계승 혜광 (돌벽 결투장) · 비급 금강장
     // 장강 수채 고수는 탁랑객 (같은 결투장, 강 위 잔교로 꾸며짐) · 비급 탁랑참
     // 쓰러뜨리면 기물 대신 셋 중 하나 (기획 대화):
-    //   비급 전수: 그 고수의 초식을 얻음 (회선참 대신 · 비도는 회수에 효과가 덧붙음)
+    //   비급 전수: 그 고수의 초식을 얻음 (회선참 대신 · 비도는 비도 초식이 바뀜)
     //   흡성: 공력 +1, 대신 이번 지역 동안 모든 기물의 최대 기 −1
     //   방면: 살려 보냄 → 추적도 0 + 은자
     public sealed partial class RoomRun
@@ -68,7 +68,7 @@ namespace AThousandDawns.Prototype
             bool wave = _master.Kind == EnemyKind.Takrang;
             var skill = iron ? SkillKind.Quake : monk ? SkillKind.Palm : wave ? SkillKind.Takrang : SkillKind.BambooFlash;
             string skillName = PlayerController.SkillLabel(skill);
-            string skillText = Player.UsesDagger ? PlayerController.DaggerScrollText(skill) : PlayerController.SkillText(skill); // 비도는 회수에 덧붙어요
+            string skillText = Player.UsesDagger ? PlayerController.DaggerScrollText(skill) : PlayerController.SkillText(skill); // 비도는 비도 초식
             var v = new EventView
             {
                 Id = "master",
@@ -83,9 +83,9 @@ namespace AThousandDawns.Prototype
             };
             v.Choices.Add(new EventChoice
             {
-                Label = Player.UsesDagger ? $"비급 전수 · 회수에 {skillName}의 기운이 깃들어요 ({skillText})" : $"비급 전수 · 초식이 {skillName}(으)로 바뀌어요 (우클릭: {skillText})",
+                Label = Player.UsesDagger ? $"비급 전수 · 비도 초식이 {PlayerController.DaggerSkillLabel(skill)}(으)로 바뀌어요 ({skillText})" : $"비급 전수 · 초식이 {skillName}(으)로 바뀌어요 (우클릭: {skillText})",
                 Locked = Player.Skill == skill ? "이미 배웠어요" : null,
-                Act = () => { Player.LearnSkill(skill); return Player.UsesDagger ? $"{skillName}을(를) 전수받았어요. 회수할 때 함께 펼쳐져요." : $"{skillName}을(를) 전수받았어요. 우클릭 초식이 바뀌었어요."; },
+                Act = () => { Player.LearnSkill(skill); return Player.UsesDagger ? $"{skillName}을(를) 전수받았어요. 우클릭이 {PlayerController.DaggerSkillLabel(skill)}(으)로 바뀌었어요." : $"{skillName}을(를) 전수받았어요. 우클릭 초식이 바뀌었어요."; },
             });
             v.Choices.Add(new EventChoice
             {

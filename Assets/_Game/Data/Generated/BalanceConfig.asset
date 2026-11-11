@@ -3338,21 +3338,21 @@ MonoBehaviour:
     unit: s
     note: "\uD608\uBD88 \uD608\uC218 \uB4A4 \uD314 \uD718\uB450\uB974\uAE30\uAE4C\uC9C0"
   - key: knife.scroll_flash_ratio
-    value: 0.5
+    value: 0.35
     unit: 
-    note: "\uBE44\uB3C4 + \uC8FD\uB9BC\uC12C: \uD68C\uC218\uD560 \uB54C \uC21C\uAC04\uC774\uB3D9 \uBCA0\uAE30 \uD53C\uD574 (\uCD08\uC2DD \uD53C\uD574 \uB300\uBE44)"
+    note: "\uBE44\uB3C4 + \uC8FD\uB9BC\uC12C \uBE44\uB3C4 \uC21C\uAC04\uC774\uB3D9: \uD55C \uBC88 \uBCA0\uAE30 \uD53C\uD574 (\uCD08\uC2DD \uD53C\uD574 \uB300\uBE44)"
   - key: knife.scroll_quake_radius
-    value: 2.5
+    value: 5
     unit: "\uCE78"
-    note: "\uBE44\uB3C4 + \uBD95\uC0B0\uAD8C: \uD68C\uC218\uD560 \uB54C \uCDA9\uACA9\uD30C \uBC18\uACBD"
+    note: "\uBE44\uB3C4 + \uBD95\uC0B0\uAD8C \uBE44\uB3C4 \uC19F\uAD6C\uCE58\uAE30: \uC19F\uAD6C\uCE58\uB294 \uBE44\uB3C4 \uBC94\uC704"
   - key: knife.scroll_quake_ratio
-    value: 0.6
+    value: 0.35
     unit: 
-    note: "\uBE44\uB3C4 + \uBD95\uC0B0\uAD8C: \uCDA9\uACA9\uD30C \uD53C\uD574 (\uCD08\uC2DD \uD53C\uD574 \uB300\uBE44)"
+    note: "\uBE44\uB3C4 \uC19F\uAD6C\uCE58\uAE30: \uC19F\uAD6C\uCE5C \uBE44\uB3C4 \uD558\uB098\uB2F9 \uD53C\uD574 (\uCD08\uC2DD \uD53C\uD574 \uB300\uBE44)"
   - key: knife.scroll_palm_shield
-    value: 0.01
+    value: 0.04
     unit: 
-    note: "\uBE44\uB3C4 + \uAE08\uAC15\uC7A5: \uB3CC\uC544\uC628 \uBE44\uB3C4 1\uAC1C\uB2F9 \uBCF4\uD638\uB9C9 (\uCD5C\uB300 \uCCB4\uB825 \uBE44\uC728)"
+    note: "\uBE44\uB3C4 + \uAE08\uAC15\uC7A5 \uBE44\uB3C4 \uD638\uC2E0\uB95C: \uD55C \uBC88 \uBCA8 \uB54C \uBE44\uB3C4 1\uAC1C\uB2F9 \uD53C\uD574 (\uCD08\uC2DD \uD53C\uD574 \uB300\uBE44)"
   - key: arhat.statue_wake
     value: 3
     unit: cell
@@ -3989,3 +3989,39 @@ MonoBehaviour:
     value: 12
     unit: "\uAC1C"
     note: "\uD0C1\uB958 \uC18C\uC6A9\uB3CC\uC774: \uD53C\uD574\uC5D0 \uC138\uB294 \uBE44\uB3C4 \uCD5C\uB300 \uC218"
+  - key: knife.scroll_flash_max
+    value: 6
+    unit: "\uACF3"
+    note: "\uBE44\uB3C4 \uC21C\uAC04\uC774\uB3D9: \uC21C\uAC04\uC774\uB3D9\uD558\uB294 \uBE44\uB3C4 \uCD5C\uB300 \uC218"
+  - key: knife.scroll_flash_gap
+    value: 0.12
+    unit: "\uCD08"
+    note: "\uBE44\uB3C4 \uC21C\uAC04\uC774\uB3D9: \uC21C\uAC04\uC774\uB3D9 \uAC04\uACA9"
+  - key: knife.scroll_quake_center
+    value: 2
+    unit: "\uCE78"
+    note: "\uBE44\uB3C4 \uC19F\uAD6C\uCE58\uAE30: \uB0B4 \uB458\uB808 \uCDA9\uACA9\uD30C \uBC18\uACBD"
+  - key: knife.scroll_quake_center_ratio
+    value: 0.5
+    unit: 
+    note: "\uBE44\uB3C4 \uC19F\uAD6C\uCE58\uAE30: \uB0B4 \uB458\uB808 \uCDA9\uACA9\uD30C \uD53C\uD574 (\uCD08\uC2DD \uD53C\uD574 \uB300\uBE44)"
+  - key: knife.scroll_quake_pop
+    value: 1.5
+    unit: "\uCE78"
+    note: "\uBE44\uB3C4 \uC19F\uAD6C\uCE58\uAE30: \uC19F\uAD6C\uCE5C \uBE44\uB3C4 \uD558\uB098\uAC00 \uCC0C\uB974\uB294 \uBC18\uACBD"
+  - key: knife.scroll_halo_time
+    value: 3
+    unit: "\uCD08"
+    note: "\uBE44\uB3C4 \uD638\uC2E0\uB95C: \uB3C4\uB294 \uC2DC\uAC04 (\uB05D\uB098\uBA74 \uC190\uC73C\uB85C \uB3CC\uC544\uC640\uC694)"
+  - key: knife.scroll_halo_orbit
+    value: 1.6
+    unit: "\uCE78"
+    note: "\uBE44\uB3C4 \uD638\uC2E0\uB95C: \uB3C4\uB294 \uBC18\uACBD"
+  - key: knife.scroll_halo_spin
+    value: 360
+    unit: "\xB0/\uCD08"
+    note: "\uBE44\uB3C4 \uD638\uC2E0\uB95C: \uB3C4\uB294 \uC18D\uB3C4"
+  - key: knife.scroll_halo_tick
+    value: 0.3
+    unit: "\uCD08"
+    note: "\uBE44\uB3C4 \uD638\uC2E0\uB95C: \uBCA0\uB294 \uAC04\uACA9"
