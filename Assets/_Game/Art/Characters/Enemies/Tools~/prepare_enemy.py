@@ -1023,13 +1023,13 @@ if "statue" in EXTRAS:
             for s in ("LeftShoulder", "RightShoulder"):
                 bend(s, Vector((0, 1, 0)), 10 if s.startswith("Left") else -10)   # 어깨를 움츠려요
             prayer_arms(0.03)
-        else:   # burst: 고개를 들고 가슴을 펴며 두 팔을 아래 옆으로 떨쳐요
+        else:   # burst: 고개를 들고 가슴을 펴며 두 팔을 아래로 떨쳐 내려요
             lower_hips(-0.16, FEET)
             bend("Spine", Vector((1, 0, 0)), -10)
             bend("Neck", Vector((1, 0, 0)), -12)
             for s, sx in (("Left", 1), ("Right", -1)):
                 sh = pb[f"{s}Arm"].head.copy()
-                arm(s, sh + Vector((sx * 0.55, -0.2, -0.35)), Vector((sx * 0.3, 1, -0.5)))
+                arm(s, sh + Vector((sx * 0.22, -0.18, -0.5)), Vector((sx * 0.3, 1, -0.5)))   # 몸 옆 조금 앞으로 (너무 벌리지 않게)
     make_action("Statue", [(0, "statue"), (10, "statue")], statue_pose)
     make_action("Wake", [(0, "statue"), (5, "tremble"), (8, "tremble"), (13, "burst"), (19, "burst"), (28, "idle")], statue_pose)
     rig.animation_data.action = None
