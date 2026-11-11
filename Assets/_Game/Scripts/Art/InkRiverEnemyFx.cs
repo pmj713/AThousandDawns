@@ -195,7 +195,7 @@ namespace AThousandDawns.Art
                 if (chain != null) // 거한이 끌려오는 동안 사슬이 이어져요
                 {
                     Vector3 hand = giant != null ? giant.transform.position + Vector3.up * 1.4f : from;
-                    Vector3 end = anchor != null ? anchor.transform.parent.position + Vector3.up * 0.9f : stick + Vector3.up * 0.8f; // 꽂힌 뒤엔 3D 닻 고리 높이쯤
+                    Vector3 end = anchor != null ? anchor.transform.parent.position + Vector3.up * 0.9f : stick + Vector3.up * 1.35f; // 꽂힌 뒤엔 3D 닻 고리 높이 (메인 아트: 바닥 위 약 1.35)
                     chain.SetPosition(0, hand);
                     chain.SetPosition(1, end);
                     chain.material.mainTextureScale = new Vector2(Vector3.Distance(hand, end) / 3f, 1f); // 사슬 그림 한 줄(고리 12개)이 3칸마다
