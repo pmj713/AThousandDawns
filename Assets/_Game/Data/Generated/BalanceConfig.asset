@@ -2880,7 +2880,7 @@ MonoBehaviour:
   - key: moktak.windup
     value: 1.5
     unit: s
-    note: "\uBAA9\uD0C1\uC2B9 \uBAA9\uD0C1 \uC608\uACE0 (\uB9DE\uC73C\uBA74 \uB04A\uAE40)"
+    note: "\uBAA9\uD0C1\uC2B9 \uBAA9\uD0C1 \uC608\uACE0 (\uB9DE\uC73C\uBA74 \uB04A\uAE40 \xB7 \uB05D\uB098\uBA74 \uAC00\uD638)"
   - key: moktak.recovery
     value: 0.5
     unit: s
@@ -2888,7 +2888,7 @@ MonoBehaviour:
   - key: moktak.attack_interval
     value: 8
     unit: s
-    note: "\uBAA9\uD0C1\uC2B9 \uD638\uCD9C \uAC04\uACA9"
+    note: "\uBAA9\uD0C1\uC2B9 \uAC00\uD638 \uAC04\uACA9"
   - key: moktak.keep_distance
     value: 6
     unit: cell
@@ -2896,7 +2896,7 @@ MonoBehaviour:
   - key: moktak.summon_count
     value: 2
     unit: 
-    note: "\uBAA9\uD0C1\uC2B9\uC774 \uBD80\uB974\uB294 \uB9DD\uB839 \uC218"
+    note: "\uBAA9\uD0C1\uC2B9\uC774 \uBD80\uB974\uB294 \uB9DD\uB839 \uC218 (\uC9C0\uAE08\uC740 \uBD80\uB974\uC9C0 \uC54A\uACE0 \uAC00\uD638)"
   - key: monk.hp
     value: 60
     unit: 
@@ -2952,7 +2952,7 @@ MonoBehaviour:
   - key: lantern.atk
     value: 20
     unit: 
-    note: "\uB4F1\uBD88 \uADC0\uC2E0 \uD3ED\uBC1C (\xD71.3 = 26)"
+    note: "\uB4F1\uBD88 \uADC0\uC2E0 \uACF5\uACA9 (\xD71.3 = 26 \xB7 \uB3C4\uAE68\uBE44\uBD88 \uC7A5\uD310\uC740 \xD70.5)"
   - key: lantern.toughness
     value: 0
     unit: 
@@ -2964,15 +2964,15 @@ MonoBehaviour:
   - key: lantern.attack_range
     value: 2
     unit: cell
-    note: "\uB4F1\uBD88 \uADC0\uC2E0 \uD3ED\uBC1C \uBC18\uACBD"
+    note: "\uB4F1\uBD88 \uADC0\uC2E0 \uD3ED\uBC1C \uBC18\uACBD (\uC9C0\uAE08\uC740 \uD130\uC9C0\uC9C0 \uC54A\uC544\uC694)"
   - key: lantern.windup
     value: 1
     unit: s
-    note: "\uB4F1\uBD88 \uADC0\uC2E0 \uC810\uD654 \uC608\uACE0"
+    note: "\uB4F1\uBD88 \uADC0\uC2E0 \uC810\uD654 \uC608\uACE0 (\uC9C0\uAE08\uC740 \uD130\uC9C0\uC9C0 \uC54A\uC544\uC694)"
   - key: lantern.shock_slow
     value: 0.4
     unit: 
-    note: "\uB4F1\uBD88 \uADC0\uC2E0 \uAC10\uC804: \uC774\uB3D9\uC18D\uB3C4 \uAC10\uC18C"
+    note: "\uB4F1\uBD88 \uADC0\uC2E0 \uB3C4\uAE68\uBE44\uBD88 \uAC10\uC804: \uC774\uB3D9\uC18D\uB3C4 \uAC10\uC18C"
   - key: lantern.shock_time
     value: 1.5
     unit: s
@@ -3353,3 +3353,639 @@ MonoBehaviour:
     value: 0.01
     unit: 
     note: "\uBE44\uB3C4 + \uAE08\uAC15\uC7A5: \uB3CC\uC544\uC628 \uBE44\uB3C4 1\uAC1C\uB2F9 \uBCF4\uD638\uB9C9 (\uCD5C\uB300 \uCCB4\uB825 \uBE44\uC728)"
+  - key: arhat.statue_wake
+    value: 3
+    unit: cell
+    note: "\uC11D\uC0C1 \uB098\uD55C: \uC11D\uC0C1\uC73C\uB85C \uC11C \uC788\uB2E4\uAC00 \uC774 \uAC70\uB9AC \uC548\uC774\uBA74 \uAE68\uC5B4\uB0A8 (\uADF8\uC804\uC5D4 \uB9DE\uD790 \uC218 \uC5C6\uC74C)"
+  - key: arhat.quake_radius
+    value: 1.8
+    unit: cell
+    note: "\uC11D\uC0C1 \uB098\uD55C: \uB3CC\uC9C4\uC774 \uB05D\uB09C \uC790\uB9AC \uCDA9\uACA9\uD30C \uBC18\uACBD"
+  - key: arhat.quake_ratio
+    value: 0.6
+    unit: 
+    note: "\uC11D\uC0C1 \uB098\uD55C: \uCDA9\uACA9\uD30C \uD53C\uD574 \uBC30\uC728"
+  - key: moktak.ward_radius
+    value: 7
+    unit: cell
+    note: "\uBAA9\uD0C1\uC2B9 \uAC00\uD638: \uB458\uB808 \uC801 \uBC94\uC704"
+  - key: moktak.ward_ratio
+    value: 0.25
+    unit: 
+    note: "\uBAA9\uD0C1\uC2B9 \uAC00\uD638: \uBA3C\uC800 \uB9C9\uB294 \uD53C\uD574 (\uADF8 \uC801 \uCD5C\uB300 \uCCB4\uB825 \uBE44\uC728)"
+  - key: lantern.orbit
+    value: 2.5
+    unit: cell
+    note: "\uB4F1\uBD88 \uADC0\uC2E0: \uD50C\uB808\uC774\uC5B4 \uB458\uB808\uB97C \uB5A0\uB3C4\uB294 \uAC70\uB9AC"
+  - key: lantern.fire_gap
+    value: 0.7
+    unit: s
+    note: "\uB4F1\uBD88 \uADC0\uC2E0: \uB3C4\uAE68\uBE44\uBD88 \uC7A5\uD310\uC744 \uB0A8\uAE30\uB294 \uAC04\uACA9"
+  - key: lantern.fire_radius
+    value: 0.9
+    unit: cell
+    note: "\uB4F1\uBD88 \uADC0\uC2E0: \uB3C4\uAE68\uBE44\uBD88 \uC7A5\uD310 \uBC18\uACBD"
+  - key: lantern.fire_time
+    value: 3.5
+    unit: s
+    note: "\uB4F1\uBD88 \uADC0\uC2E0: \uB3C4\uAE68\uBE44\uBD88 \uC7A5\uD310\uC774 \uB0A8\uB294 \uC2DC\uAC04"
+  - key: lantern.fire_ratio
+    value: 0.5
+    unit: 
+    note: "\uB4F1\uBD88 \uADC0\uC2E0: \uC7A5\uD310 \uD53C\uD574 \uBC30\uC728 (0.5\uCD08\uB9C8\uB2E4)"
+  - key: lantern.split_distance
+    value: 1.2
+    unit: cell
+    note: "\uB4F1\uBD88 \uADC0\uC2E0: \uC4F0\uB7EC\uC9C0\uBA74 \uC591\uC606\uC5D0 \uC7A5\uD310 \uB450 \uAC1C (\uAC04\uACA9)"
+  - key: region.2.health
+    value: 3
+    unit: "\uBC30"
+    note: "\uC7A5\uAC15 \uC218\uCC44 \uC801 \uCCB4\uB825 \uBC30\uC728 (\uC77C\uBC18 \uC801\xB7\uC0B4\uC218\xB7\uACE0\uC218\xB7\uBCF4\uC2A4)"
+  - key: region.2.attack
+    value: 1.6
+    unit: "\uBC30"
+    note: "\uC7A5\uAC15 \uC218\uCC44 \uC801 \uACF5\uACA9 \uBC30\uC728"
+  - key: region.2.silver_room
+    value: 26
+    unit: "\uC740\uC790"
+    note: "\uC7A5\uAC15 \uC218\uCC44 \uC804\uD22C \uBC29 \uD074\uB9AC\uC5B4 \uC740\uC790"
+  - key: enemy.melee_tokens_per_region
+    value: 1
+    unit: 
+    note: "\uB3D9\uC2DC \uACF5\uACA9 (\uADFC\uC811): \uC9C0\uC5ED\uB9C8\uB2E4 +"
+  - key: enemy.melee_tokens_max
+    value: 4
+    unit: 
+    note: "\uB3D9\uC2DC \uACF5\uACA9 (\uADFC\uC811) \uCD5C\uB300"
+  - key: pirate.hp
+    value: 30
+    unit: 
+    note: "\uC218\uC801 \uC878\uAC1C \uCCB4\uB825 (\xD73.0 = 90)"
+  - key: pirate.atk
+    value: 8
+    unit: 
+    note: "\uC218\uC801 \uC878\uAC1C \uACF5\uACA9 (\xD71.6 = 13)"
+  - key: pirate.toughness
+    value: 0
+    unit: 
+    note: "\uC218\uC801 \uC878\uAC1C \uAC15\uC778\uD568"
+  - key: pirate.move_speed
+    value: 3.5
+    unit: cell/s
+    note: "\uC218\uC801 \uC878\uAC1C \uC774\uB3D9"
+  - key: pirate.attack_range
+    value: 1.2
+    unit: cell
+    note: "\uC218\uC801 \uC878\uAC1C \uBCA0\uAE30 \uBC18\uACBD"
+  - key: pirate.lunge
+    value: 1.2
+    unit: cell
+    note: "\uC218\uC801 \uC878\uAC1C \uC804\uC9C4 \uAC70\uB9AC"
+  - key: pirate.lunge_time
+    value: 0.15
+    unit: s
+    note: "\uC218\uC801 \uC878\uAC1C \uC804\uC9C4 \uBCA0\uAE30 \uC2DC\uAC04"
+  - key: pirate.attack_angle
+    value: 70
+    unit: deg
+    note: "\uC218\uC801 \uC878\uAC1C \uBCA0\uAE30 \uAC01\uB3C4"
+  - key: pirate.windup
+    value: 0.6
+    unit: s
+    note: "\uC218\uC801 \uC878\uAC1C \uC608\uACE0"
+  - key: pirate.recovery
+    value: 0.6
+    unit: s
+    note: "\uC218\uC801 \uC878\uAC1C \uBE48\uD2C8"
+  - key: pirate.attack_interval
+    value: 2
+    unit: s
+    note: "\uC218\uC801 \uC878\uAC1C \uACF5\uACA9 \uAC04\uACA9"
+  - key: pirate.second_slash
+    value: 0.3
+    unit: s
+    note: "\uC218\uC801 \uC878\uAC1C \uB458\uC9F8 \uCE7C (\uCCAB \uCE7C \uB4A4)"
+  - key: room_cost.pirate
+    value: 2
+    unit: 
+    note: "\uBC29 \uC608\uC0B0 \uC810\uC218: \uC218\uC801 \uC878\uAC1C (\uB458\uC529)"
+  - key: room_cost.harpooner
+    value: 2
+    unit: 
+    note: "\uBC29 \uC608\uC0B0 \uC810\uC218: \uC791\uC0B4\uC218"
+  - key: room_cost.anchor
+    value: 3
+    unit: 
+    note: "\uBC29 \uC608\uC0B0 \uC810\uC218: \uC1E0\uB2FB \uAC70\uD55C"
+  - key: room_cost.rattan
+    value: 2
+    unit: 
+    note: "\uBC29 \uC608\uC0B0 \uC810\uC218: \uB4F1\uD328\uC218"
+  - key: room_cost.waterghost
+    value: 1
+    unit: 
+    note: "\uBC29 \uC608\uC0B0 \uC810\uC218: \uC218\uADC0"
+  - key: room_cost.flagbearer
+    value: 2
+    unit: 
+    note: "\uBC29 \uC608\uC0B0 \uC810\uC218: \uAE43\uBC1C\uC218"
+  - key: harpooner.hp
+    value: 25
+    unit: 
+    note: "\uC791\uC0B4\uC218 \uCCB4\uB825 (\xD73.0 = 75)"
+  - key: harpooner.atk
+    value: 8
+    unit: 
+    note: "\uC791\uC0B4\uC218 \uACF5\uACA9 (\xD71.6 = 13)"
+  - key: harpooner.toughness
+    value: 0
+    unit: 
+    note: "\uC791\uC0B4\uC218 \uAC15\uC778\uD568"
+  - key: harpooner.move_speed
+    value: 3
+    unit: cell/s
+    note: "\uC791\uC0B4\uC218 \uC774\uB3D9"
+  - key: harpooner.windup
+    value: 0.7
+    unit: s
+    note: "\uC791\uC0B4 \uCC0C\uB974\uAE30 \uC608\uACE0"
+  - key: harpooner.recovery
+    value: 0.8
+    unit: s
+    note: "\uC791\uC0B4\uC218 \uBE48\uD2C8"
+  - key: harpooner.attack_interval
+    value: 2.5
+    unit: s
+    note: "\uC791\uC0B4\uC218 \uACF5\uACA9 \uAC04\uACA9"
+  - key: harpooner.reach
+    value: 4.5
+    unit: cell
+    note: "\uC791\uC0B4 \uCC0C\uB974\uAE30 \uAE38\uC774"
+  - key: harpooner.width
+    value: 0.6
+    unit: cell
+    note: "\uC791\uC0B4 \uCC0C\uB974\uAE30 \uD3ED"
+  - key: harpooner.pull_stop
+    value: 1.5
+    unit: cell
+    note: "\uC791\uC0B4\uC5D0 \uAC78\uB9AC\uBA74 \uC791\uC0B4\uC218 \uC774\uB9CC\uD07C \uC55E\uAE4C\uC9C0 \uB04C\uB824\uC634"
+  - key: harpooner.keep_min
+    value: 3
+    unit: cell
+    note: "\uC791\uC0B4\uC218 \uC720\uC9C0 \uAC70\uB9AC \uCD5C\uC18C (\uB354 \uBD99\uC73C\uBA74 \uBB3C\uB7EC\uB0A8)"
+  - key: harpooner.keep_max
+    value: 4.5
+    unit: cell
+    note: "\uC791\uC0B4\uC218 \uC720\uC9C0 \uAC70\uB9AC \uCD5C\uB300"
+  - key: anchor.hp
+    value: 104
+    unit: 
+    note: "\uC1E0\uB2FB \uAC70\uD55C \uCCB4\uB825 (\uBA67\uB3FC\uC9C0 80 \xD7 1.3 \xB7 \xD73.0 = 312)"
+  - key: anchor.atk
+    value: 15
+    unit: 
+    note: "\uC1E0\uB2FB \uAC70\uD55C \uACF5\uACA9 (\xD71.6 = 24)"
+  - key: anchor.toughness
+    value: 3
+    unit: 
+    note: "\uC1E0\uB2FB \uAC70\uD55C \uAC15\uC778\uD568"
+  - key: anchor.move_speed
+    value: 1.8
+    unit: cell/s
+    note: "\uC1E0\uB2FB \uAC70\uD55C \uC774\uB3D9 (\uB290\uB9BC)"
+  - key: anchor.recovery
+    value: 1.2
+    unit: s
+    note: "\uC1E0\uB2FB \uAC70\uD55C \uBE48\uD2C8"
+  - key: anchor.attack_interval
+    value: 4
+    unit: s
+    note: "\uC1E0\uB2FB \uAC70\uD55C \uACF5\uACA9 \uAC04\uACA9"
+  - key: anchor.throw_min
+    value: 3
+    unit: cell
+    note: "\uB2FB \uB358\uC9C0\uAE30 \uCD5C\uC18C \uAC70\uB9AC"
+  - key: anchor.throw_max
+    value: 8
+    unit: cell
+    note: "\uB2FB \uB358\uC9C0\uAE30 \uCD5C\uB300 \uAC70\uB9AC"
+  - key: anchor.throw_windup
+    value: 1
+    unit: s
+    note: "\uB2FB \uB358\uC9C0\uAE30 \uC608\uACE0"
+  - key: anchor.pull_speed
+    value: 14
+    unit: cell/s
+    note: "\uAF42\uD78C \uB2FB\uC73C\uB85C \uB04C\uB824\uAC00\uB294 \uC18D\uB3C4"
+  - key: anchor.pull_width
+    value: 1.6
+    unit: cell
+    note: "\uB04C\uB824\uAC00\uB294 \uAE38 \uD310\uC815 \uD3ED"
+  - key: anchor.post_time
+    value: 3
+    unit: s
+    note: "\uAF42\uD78C \uC1E0\uB2FB\uC774 \uAE38\uC744 \uB9C9\uB294 \uC2DC\uAC04"
+  - key: anchor.swing_range
+    value: 2.5
+    unit: cell
+    note: "\uC1E0\uB2FB \uD718\uB450\uB974\uAE30\uB97C \uC4F0\uB294 \uAC70\uB9AC"
+  - key: anchor.swing_windup
+    value: 0.8
+    unit: s
+    note: "\uC1E0\uB2FB \uD718\uB450\uB974\uAE30 \uC608\uACE0"
+  - key: anchor.swing_radius
+    value: 2.2
+    unit: cell
+    note: "\uC1E0\uB2FB \uD718\uB450\uB974\uAE30 \uBC18\uACBD"
+  - key: anchor.swing_angle
+    value: 180
+    unit: deg
+    note: "\uC1E0\uB2FB \uD718\uB450\uB974\uAE30 \uAC01\uB3C4"
+  - key: anchor.swing_ratio
+    value: 0.8
+    unit: 
+    note: "\uC1E0\uB2FB \uD718\uB450\uB974\uAE30 \uD53C\uD574 \uBC30\uC728"
+  - key: anchor.swing_knockback
+    value: 1.5
+    unit: cell
+    note: "\uC1E0\uB2FB \uD718\uB450\uB974\uAE30 \uB109\uBC31"
+  - key: rattan.hp
+    value: 60
+    unit: 
+    note: "\uB4F1\uD328\uC218 \uCCB4\uB825 (\xD73.0 = 180)"
+  - key: rattan.atk
+    value: 10
+    unit: 
+    note: "\uB4F1\uD328\uC218 \uACF5\uACA9 (\xD71.6 = 16)"
+  - key: rattan.toughness
+    value: 2
+    unit: 
+    note: "\uB4F1\uD328\uC218 \uAC15\uC778\uD568"
+  - key: rattan.move_speed
+    value: 2.5
+    unit: cell/s
+    note: "\uB4F1\uD328\uC218 \uC774\uB3D9"
+  - key: rattan.attack_range
+    value: 1.5
+    unit: cell
+    note: "\uB4F1\uD328\uC218 \uBCA0\uAE30 \uBC18\uACBD"
+  - key: rattan.lunge
+    value: 1.5
+    unit: cell
+    note: "\uB4F1\uD328\uC218 \uB3CC\uC9C4 \uAC70\uB9AC"
+  - key: rattan.lunge_time
+    value: 0.2
+    unit: s
+    note: "\uB4F1\uD328\uC218 \uB3CC\uC9C4 \uC2DC\uAC04"
+  - key: rattan.attack_angle
+    value: 90
+    unit: deg
+    note: "\uB4F1\uD328\uC218 \uBCA0\uAE30 \uAC01\uB3C4"
+  - key: rattan.windup
+    value: 0.6
+    unit: s
+    note: "\uB4F1\uD328\uC218 \uBCA0\uAE30 \uC608\uACE0"
+  - key: rattan.recovery
+    value: 0.8
+    unit: s
+    note: "\uB4F1\uD328\uC218 \uBE48\uD2C8 (\uBC29\uD328\uB97C \uB0B4\uB9BC)"
+  - key: rattan.attack_interval
+    value: 2.5
+    unit: s
+    note: "\uB4F1\uD328\uC218 \uACF5\uACA9 \uAC04\uACA9"
+  - key: rattan.guard_angle
+    value: 120
+    unit: deg
+    note: "\uB4F1\uD328\uC218 \uC815\uBA74 \uBC29\uC5B4 \uAC01\uB3C4"
+  - key: rattan.guard_ratio
+    value: 0.2
+    unit: 
+    note: "\uB4F1\uD328\uC218 \uC815\uBA74 \uADFC\uC811 \uD53C\uD574 \uBC30\uC728"
+  - key: rattan.turn_speed
+    value: 180
+    unit: deg/s
+    note: "\uB4F1\uD328\uC218 \uB3C4\uB294 \uC18D\uB3C4"
+  - key: rattan.guard_move_speed
+    value: 2
+    unit: cell/s
+    note: "\uB4F1\uD328\uC218 \uBC29\uD328\uB97C \uB4E0 \uCC44 \uB2E4\uAC00\uC624\uB294 \uC18D\uB3C4"
+  - key: rattan.knockback
+    value: 2
+    unit: cell
+    note: "\uB4F1\uD328\uC218 \uBCA0\uAE30 \uB109\uBC31"
+  - key: rattan.ranged_distance
+    value: 3
+    unit: cell
+    note: "\uB4F1\uD328\uC218: \uC774\uBCF4\uB2E4 \uBA40\uB9AC\uC11C \uC628 \uACF5\uACA9\uC740 \uC815\uBA74\uC5D0\uC11C \uB2E4 \uB9C9\uC74C"
+  - key: rattan.throw_min
+    value: 3
+    unit: cell
+    note: "\uBC29\uD328 \uAD74\uB9AC\uAE30 \uCD5C\uC18C \uAC70\uB9AC"
+  - key: rattan.throw_max
+    value: 7
+    unit: cell
+    note: "\uBC29\uD328 \uAD74\uB9AC\uAE30 \uCD5C\uB300 \uAC70\uB9AC"
+  - key: rattan.throw_windup
+    value: 0.7
+    unit: s
+    note: "\uBC29\uD328 \uAD74\uB9AC\uAE30 \uC608\uACE0"
+  - key: rattan.throw_range
+    value: 7
+    unit: cell
+    note: "\uAD74\uB9B0 \uBC29\uD328\uAC00 \uAC00\uB294 \uAC70\uB9AC (\uB3CC\uC544\uC634)"
+  - key: rattan.throw_speed
+    value: 9
+    unit: cell/s
+    note: "\uAD74\uB9B0 \uBC29\uD328 \uC18D\uB3C4"
+  - key: rattan.throw_ratio
+    value: 0.8
+    unit: 
+    note: "\uAD74\uB9B0 \uBC29\uD328 \uD53C\uD574 \uBC30\uC728 (\uAC00\uB294 \uAE38\xB7\uC624\uB294 \uAE38 \uD55C \uBC88\uC529)"
+  - key: rattan.throw_interval
+    value: 7
+    unit: s
+    note: "\uBC29\uD328 \uAD74\uB9AC\uAE30 \uAC04\uACA9"
+  - key: waterghost.hp
+    value: 30
+    unit: 
+    note: "\uC218\uADC0 \uCCB4\uB825 (\xD73.0 = 90)"
+  - key: waterghost.atk
+    value: 6
+    unit: 
+    note: "\uC218\uADC0 \uACF5\uACA9 (\xD71.6 = 10)"
+  - key: waterghost.toughness
+    value: 0
+    unit: 
+    note: "\uC218\uADC0 \uAC15\uC778\uD568"
+  - key: waterghost.move_speed
+    value: 2.5
+    unit: cell/s
+    note: "\uC218\uADC0 \uC228\uC5B4\uC11C \uB2E4\uAC00\uC624\uB294 \uC18D\uB3C4"
+  - key: waterghost.attack_range
+    value: 1.2
+    unit: cell
+    note: "\uC218\uADC0 \uBD99\uC7A1\uAE30 \uBC18\uACBD"
+  - key: waterghost.windup
+    value: 0.5
+    unit: s
+    note: "\uC218\uADC0 \uD280\uC5B4\uB098\uC624\uAE30 \uC608\uACE0 (\uBB3C\uACB0)"
+  - key: waterghost.recovery
+    value: 0.6
+    unit: s
+    note: "\uC218\uADC0 \uBE48\uD2C8"
+  - key: waterghost.attack_interval
+    value: 1
+    unit: s
+    note: "\uC218\uADC0 \uACF5\uACA9 \uAC04\uACA9"
+  - key: waterghost.ambush_distance
+    value: 1.6
+    unit: cell
+    note: "\uC218\uADC0: \uC774 \uAC70\uB9AC \uC548\uC774\uBA74 \uD280\uC5B4\uB098\uC640\uC694"
+  - key: waterghost.drag_time
+    value: 1.5
+    unit: s
+    note: "\uC218\uADC0\uAC00 \uBD99\uC7A1\uACE0 \uB04C\uACE0 \uAC00\uB294 \uC2DC\uAC04 (\uB54C\uB9AC\uAC70\uB098 \uB300\uC2DC\uD558\uBA74 \uD480\uB9BC)"
+  - key: waterghost.drag_speed
+    value: 2.5
+    unit: cell/s
+    note: "\uC218\uADC0\uAC00 \uB04C\uACE0 \uAC00\uB294 \uC18D\uB3C4"
+  - key: waterghost.drag_slow
+    value: 0.6
+    unit: 
+    note: "\uC218\uADC0\uC5D0 \uB04C\uB9AC\uB294 \uB3D9\uC548 \uD50C\uB808\uC774\uC5B4 \uC774\uB3D9\uC18D\uB3C4 \uAC10\uC18C"
+  - key: waterghost.surface_time
+    value: 3
+    unit: s
+    note: "\uC218\uADC0\uAC00 \uB4DC\uB7EC\uB098 \uC788\uB294 \uC2DC\uAC04 (\uADF8\uB2E4\uC74C \uB2E4\uC2DC \uC228\uC74C)"
+  - key: flagbearer.hp
+    value: 40
+    unit: 
+    note: "\uAE43\uBC1C\uC218 \uCCB4\uB825 (\xD73.0 = 120)"
+  - key: flagbearer.atk
+    value: 5
+    unit: 
+    note: "\uAE43\uBC1C\uC218 \uACF5\uACA9 (\uC9C0\uD718\uB9CC \uD574\uC11C \uC548 \uC500)"
+  - key: flagbearer.toughness
+    value: 0
+    unit: 
+    note: "\uAE43\uBC1C\uC218 \uAC15\uC778\uD568"
+  - key: flagbearer.move_speed
+    value: 3
+    unit: cell/s
+    note: "\uAE43\uBC1C\uC218 \uC774\uB3D9"
+  - key: flagbearer.windup
+    value: 1.5
+    unit: s
+    note: "\uAE43\uBC1C \uC9C0\uD718 \uC608\uACE0 (\uB9DE\uC73C\uBA74 \uB04A\uAE40)"
+  - key: flagbearer.recovery
+    value: 0.5
+    unit: s
+    note: "\uAE43\uBC1C\uC218 \uBE48\uD2C8"
+  - key: flagbearer.attack_interval
+    value: 8
+    unit: s
+    note: "\uAE43\uBC1C \uC9C0\uD718 \uAC04\uACA9"
+  - key: flagbearer.keep_distance
+    value: 6
+    unit: cell
+    note: "\uAE43\uBC1C\uC218\uAC00 \uB450\uB294 \uAC70\uB9AC"
+  - key: flagbearer.summon_count
+    value: 0
+    unit: 
+    note: "\uAE43\uBC1C\uC218 \uD638\uCD9C \uC218 (\uC9C0\uAE08\uC740 \uBD80\uB974\uC9C0 \uC54A\uACE0 \uC9C0\uD718)"
+  - key: flagbearer.command_radius
+    value: 7
+    unit: cell
+    note: "\uAE43\uBC1C\uC218 \uC9C0\uD718 \uBC94\uC704"
+  - key: flagbearer.command_haste
+    value: 0.3
+    unit: 
+    note: "\uAE43\uBC1C\uC218 \uC9C0\uD718: \uC774\uB3D9\xB7\uACF5\uACA9 \uBE68\uB77C\uC9D0"
+  - key: flagbearer.command_time
+    value: 5
+    unit: s
+    note: "\uAE43\uBC1C\uC218 \uC9C0\uD718 \uC2DC\uAC04"
+  - key: takrang.hp
+    value: 1100
+    unit: 
+    note: "\uD0C1\uB791\uAC1D \uCCB4\uB825 (\uC7A5\uAC15 \xD73.0 = 3300)"
+  - key: takrang.atk
+    value: 18
+    unit: 
+    note: "\uD0C1\uB791\uAC1D \uACF5\uACA9 (\xD71.6 = 29)"
+  - key: takrang.toughness
+    value: 0
+    unit: 
+    note: "\uD0C1\uB791\uAC1D \uAC15\uC778\uD568"
+  - key: takrang.move_speed
+    value: 3.8
+    unit: cell/s
+    note: "\uD0C1\uB791\uAC1D \uC774\uB3D9\uC18D\uB3C4"
+  - key: takrang.recovery
+    value: 0.6
+    unit: s
+    note: "\uD0C1\uB791\uAC1D \uD328\uD134 \uBE48\uD2C8"
+  - key: takrang.slash_windup
+    value: 0.5
+    unit: s
+    note: "\uD0C1\uB791\uAC1D \uBCA0\uAE30 \uC608\uACE0"
+  - key: takrang.slash_radius
+    value: 2.5
+    unit: cell
+    note: "\uD0C1\uB791\uAC1D \uBCA0\uAE30 \uBC18\uACBD"
+  - key: takrang.slash_angle
+    value: 120
+    unit: deg
+    note: "\uD0C1\uB791\uAC1D \uBCA0\uAE30 \uAC01\uB3C4"
+  - key: takrang.slash_ratio
+    value: 1
+    unit: 
+    note: "\uD0C1\uB791\uAC1D \uBCA0\uAE30 \uD53C\uD574 \uBC30\uC728"
+  - key: takrang.wave_windup
+    value: 0.7
+    unit: s
+    note: "\uD0C1\uB791\uAC1D \uBB3C\uACB0 \uBCA0\uAE30 \uC608\uACE0"
+  - key: takrang.wave_count
+    value: 3
+    unit: 
+    note: "\uD0C1\uB791\uAC1D \uBB3C\uACB0 \uBCA0\uAE30 \uAC08\uB798 \uC218"
+  - key: takrang.p2_wave_count
+    value: 5
+    unit: 
+    note: "\uD0C1\uB791\uAC1D 2\uD398\uC774\uC988 \uBB3C\uACB0 \uBCA0\uAE30 \uAC08\uB798 \uC218"
+  - key: takrang.wave_spread
+    value: 20
+    unit: deg
+    note: "\uD0C1\uB791\uAC1D \uBB3C\uACB0 \uAC08\uB798 \uC0AC\uC774 \uAC01\uB3C4"
+  - key: takrang.wave_range
+    value: 8
+    unit: cell
+    note: "\uD0C1\uB791\uAC1D \uBB3C\uACB0 \uAC80\uAE30 \uAC70\uB9AC"
+  - key: takrang.wave_speed
+    value: 9
+    unit: cell/s
+    note: "\uD0C1\uB791\uAC1D \uBB3C\uACB0 \uAC80\uAE30 \uC18D\uB3C4"
+  - key: takrang.wave_radius
+    value: 0.4
+    unit: cell
+    note: "\uD0C1\uB791\uAC1D \uBB3C\uACB0 \uAC80\uAE30 \uD310\uC815 \uBC18\uACBD"
+  - key: takrang.wave_ratio
+    value: 0.8
+    unit: 
+    note: "\uD0C1\uB791\uAC1D \uBB3C\uACB0 \uAC80\uAE30 \uD53C\uD574 \uBC30\uC728"
+  - key: takrang.flow_delay
+    value: 1.5
+    unit: s
+    note: "\uD0C1\uB791\uAC1D \uD0C1\uB958 \uBCF4\uBC95: \uD50C\uB808\uC774\uC5B4\uAC00 5\uCE78 \uBC16\uC5D0 \uC774\uB9CC\uD07C \uC788\uC73C\uBA74"
+  - key: takrang.flow_windup
+    value: 0.4
+    unit: s
+    note: "\uD0C1\uB791\uAC1D \uD0C1\uB958 \uBCF4\uBC95 \uC608\uACE0"
+  - key: takrang.flow_time
+    value: 0.25
+    unit: s
+    note: "\uD0C1\uB791\uAC1D \uD0C1\uB958 \uBCF4\uBC95: \uC606\uC73C\uB85C \uB3CC\uC544 \uB4E4\uC5B4\uAC00\uB294 \uC2DC\uAC04"
+  - key: takrang.flow_side
+    value: 1.8
+    unit: cell
+    note: "\uD0C1\uB791\uAC1D \uD0C1\uB958 \uBCF4\uBC95: \uD50C\uB808\uC774\uC5B4 \uC606 \uAC70\uB9AC"
+  - key: takrang.flow_reach
+    value: 3
+    unit: cell
+    note: "\uD0C1\uB791\uAC1D \uD0C1\uB958 \uBCF4\uBC95 \uCC0C\uB974\uAE30 \uAE38\uC774"
+  - key: takrang.flow_ratio
+    value: 1.1
+    unit: 
+    note: "\uD0C1\uB791\uAC1D \uD0C1\uB958 \uBCF4\uBC95 \uCC0C\uB974\uAE30 \uD53C\uD574 \uBC30\uC728"
+  - key: takrang.whirl_interval
+    value: 10
+    unit: s
+    note: "\uD0C1\uB791\uAC1D \uC18C\uC6A9\uB3CC\uC774 \uAC04\uACA9"
+  - key: takrang.p2_whirl_interval
+    value: 7
+    unit: s
+    note: "\uD0C1\uB791\uAC1D 2\uD398\uC774\uC988 \uC18C\uC6A9\uB3CC\uC774 \uAC04\uACA9"
+  - key: takrang.whirl_windup
+    value: 1
+    unit: s
+    note: "\uD0C1\uB791\uAC1D \uC18C\uC6A9\uB3CC\uC774 \uC608\uACE0"
+  - key: takrang.whirl_time
+    value: 1.5
+    unit: s
+    note: "\uD0C1\uB791\uAC1D \uC18C\uC6A9\uB3CC\uC774: \uB04C\uC5B4\uB2F9\uAE30\uB294 \uC2DC\uAC04"
+  - key: takrang.whirl_radius
+    value: 4
+    unit: cell
+    note: "\uD0C1\uB791\uAC1D \uC18C\uC6A9\uB3CC\uC774 \uB04C\uC5B4\uB2F9\uAE30\uB294 \uBC94\uC704"
+  - key: takrang.whirl_pull
+    value: 2.5
+    unit: cell/s
+    note: "\uD0C1\uB791\uAC1D \uC18C\uC6A9\uB3CC\uC774 \uB04C\uC5B4\uB2F9\uAE30\uB294 \uC18D\uB3C4 (\uB300\uC2DC\uBA74 \uC548 \uB04C\uB9BC)"
+  - key: takrang.whirl_burst
+    value: 1.8
+    unit: cell
+    note: "\uD0C1\uB791\uAC1D \uC18C\uC6A9\uB3CC\uC774 \uB05D \uD3ED\uBC1C \uBC18\uACBD"
+  - key: takrang.whirl_ratio
+    value: 1.2
+    unit: 
+    note: "\uD0C1\uB791\uAC1D \uC18C\uC6A9\uB3CC\uC774 \uD3ED\uBC1C \uD53C\uD574 \uBC30\uC728"
+  - key: takrang.p2_windup_ratio
+    value: 0.8
+    unit: 
+    note: "\uD0C1\uB791\uAC1D 2\uD398\uC774\uC988 \uC608\uACE0 \uC2DC\uAC04 \uBC30\uC728"
+  - key: skill_takrang.ratio
+    value: 1.2
+    unit: 
+    note: "\uD0C1\uB791\uCC38 (\uD0C1\uB791\uAC1D \uBE44\uAE09): \uD30C\uB3C4 \uAC80\uAE30 \uD53C\uD574 (\uD68C\uC120\uCC38 \uB300\uBE44)"
+  - key: skill_takrang.length
+    value: 7
+    unit: "\uCE78"
+    note: "\uD0C1\uB791\uCC38: \uD30C\uB3C4 \uAC80\uAE30 \uAE38\uC774"
+  - key: skill_takrang.width
+    value: 1.4
+    unit: "\uCE78"
+    note: "\uD0C1\uB791\uCC38: \uD30C\uB3C4 \uAC80\uAE30 \uD3ED"
+  - key: skill_takrang.knockback
+    value: 1
+    unit: "\uCE78"
+    note: "\uD0C1\uB791\uCC38: \uB9DE\uC740 \uC801\uC744 \uBC00\uC5B4\uB0B4\uB294 \uAC70\uB9AC"
+  - key: knife.vortex_distance
+    value: 4
+    unit: "\uCE78"
+    note: "\uBE44\uB3C4 + \uD0C1\uB791\uCC38 \uD0C1\uB958 \uC18C\uC6A9\uB3CC\uC774: \uBC14\uB77C\uBCF4\uB294 \uCABD \uC774 \uAC70\uB9AC\uC5D0 \uBE44\uB3C4\uAC00 \uBAA8\uC5EC\uC694"
+  - key: knife.vortex_time
+    value: 2
+    unit: "\uCD08"
+    note: "\uD0C1\uB958 \uC18C\uC6A9\uB3CC\uC774 \uC2DC\uAC04 (\uB05D\uB098\uBA74 \uBE44\uB3C4\uAC00 \uC190\uC73C\uB85C \uB3CC\uC544\uC640\uC694)"
+  - key: knife.vortex_orbit
+    value: 1.2
+    unit: "\uCE78"
+    note: "\uD0C1\uB958 \uC18C\uC6A9\uB3CC\uC774: \uBE44\uB3C4\uAC00 \uB3C4\uB294 \uBC18\uACBD"
+  - key: knife.vortex_spin
+    value: 540
+    unit: "\xB0/\uCD08"
+    note: "\uD0C1\uB958 \uC18C\uC6A9\uB3CC\uC774: \uB3C4\uB294 \uC18D\uB3C4"
+  - key: knife.vortex_pull_radius
+    value: 3
+    unit: "\uCE78"
+    note: "\uD0C1\uB958 \uC18C\uC6A9\uB3CC\uC774: \uC801\uC744 \uB04C\uC5B4\uB2F9\uAE30\uB294 \uBC94\uC704 (\uBCF4\uC2A4\xB7\uACE0\uC218\uB294 \uC548 \uB04C\uB9BC)"
+  - key: knife.vortex_pull
+    value: 3
+    unit: "\uCE78/\uCD08"
+    note: "\uD0C1\uB958 \uC18C\uC6A9\uB3CC\uC774: \uB04C\uC5B4\uB2F9\uAE30\uB294 \uC18D\uB3C4"
+  - key: knife.vortex_radius
+    value: 1.8
+    unit: "\uCE78"
+    note: "\uD0C1\uB958 \uC18C\uC6A9\uB3CC\uC774: \uBCA0\uB294 \uBC94\uC704"
+  - key: knife.vortex_tick
+    value: 0.4
+    unit: "\uCD08"
+    note: "\uD0C1\uB958 \uC18C\uC6A9\uB3CC\uC774: \uBCA0\uB294 \uAC04\uACA9"
+  - key: knife.vortex_ratio
+    value: 0.06
+    unit: 
+    note: "\uD0C1\uB958 \uC18C\uC6A9\uB3CC\uC774: \uD55C \uBC88 \uBCA8 \uB54C \uBE44\uB3C4 1\uAC1C\uB2F9 \uD53C\uD574 (\uCD08\uC2DD \uD53C\uD574 \uB300\uBE44)"
+  - key: knife.vortex_max
+    value: 12
+    unit: "\uAC1C"
+    note: "\uD0C1\uB958 \uC18C\uC6A9\uB3CC\uC774: \uD53C\uD574\uC5D0 \uC138\uB294 \uBE44\uB3C4 \uCD5C\uB300 \uC218"

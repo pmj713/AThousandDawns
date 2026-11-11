@@ -71,7 +71,7 @@ namespace AThousandDawns.Prototype
         {
             var others = new List<SkillKind>();
             foreach (SkillKind s in System.Enum.GetValues(typeof(SkillKind)))
-                if (s != Player.Skill && s != SkillKind.Palm) others.Add(s); // 금강장은 혜광에게서만
+                if (s != Player.Skill && s != SkillKind.Palm && s != SkillKind.Takrang) others.Add(s); // 금강장 · 탁랑참은 고수에게서만
             if (!dense && others.Count > 1) others = new List<SkillKind> { others[_rng.Next(others.Count)] };
             var v = new EventView
             {

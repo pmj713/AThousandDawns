@@ -501,6 +501,11 @@ namespace AThousandDawns.Player
                 if (!_skillHitDone && _skillElapsed >= D("knife.recall_cast", 0.3f))
                 {
                     _skillHitDone = true;
+                    if (Skill == SkillKind.Takrang) // 탁류 소용돌이: 회수 대신 앞에 모아 돌려요 (끝나면 돌아와요)
+                    {
+                        StartVortex();
+                        return;
+                    }
                     var mark = MostStuckTarget();
                     int returning = DaggerCount;
                     RecallDaggers();
@@ -521,6 +526,11 @@ namespace AThousandDawns.Player
             if (Skill == SkillKind.Palm)
             {
                 TickPalm();
+                return;
+            }
+            if (Skill == SkillKind.Takrang)
+            {
+                TickTakrang();
                 return;
             }
             if (!_skillHitDone && _skillElapsed >= _skillHitTime)
@@ -598,7 +608,7 @@ namespace AThousandDawns.Player
         // 베는 동안 몸을 한 바퀴 돌려요 (시험판용 표시). 시전이 끝나면 원래 방향.
         void ApplySkillSpin()
         {
-            if ((Skill == SkillKind.Quake || Skill == SkillKind.Palm) && !UsesDagger && _skillElapsed < _skillCastTime) return; // 붕산권 · 금강장은 돌지 않아요
+            if ((Skill == SkillKind.Quake || Skill == SkillKind.Palm || Skill == SkillKind.Takrang) && !UsesDagger && _skillElapsed < _skillCastTime) return; // 붕산권 · 금강장 · 탁랑참은 돌지 않아요
             if (_skillElapsed >= _skillCastTime)
             {
                 _skillElapsed = -1f;

@@ -225,6 +225,40 @@ namespace AThousandDawns.Tests
             });
         }
 
+        // 비도 + 탁랑참: 회수 대신 앞쪽에 비도가 모여 소용돌이 → 둘레 적을 끌어당겨 베고, 끝나면 손으로 돌아와요
+        [UnityTest]
+        public IEnumerator 비도_탁랑참은_탁류_소용돌이()
+        {
+            yield return LoadCombat();
+            _player.LearnSkill(SkillKind.Takrang);
+            var boar = _director.Spawn(EnemyKind.Boar, _player.transform.position + _player.Facing * 3f);
+            boar.Damageable.ScaleMaxHealth(10f);
+            yield return null;
+            for (int i = 0; i < 3; i++) _player.ThrowDaggers(1, HitDamageInput.Of(1f), HitTag.Basic, 0f);
+            yield return WaitUntil(() => _player.StuckDaggers(boar.Damageable) == 3, 2f);
+            Assert.AreEqual("탁류 소용돌이 (비도 3)", _player.SkillName);
+
+            Press(Mouse.current.rightButton);
+            yield return null;
+            Release(Mouse.current.rightButton);
+            yield return WaitUntil(() => _player.IsVortexing, 1f);
+            Assert.IsTrue(_player.IsVortexing, "소용돌이가 일어나요");
+            Assert.AreEqual(0, _player.StuckDaggers(boar.Damageable), "꽂힌 비도도 빠져나가 모여요");
+            float hp = boar.Damageable.Health;
+            var boarCc = boar.GetComponent<CharacterController>();
+            float pinEnd = Time.time + 1f;
+            while (Time.time < pinEnd) // 멧돼지가 돌진해 나가지 않게 소용돌이 가운데에 붙잡아 둬요
+            {
+                boarCc.enabled = false;
+                boar.transform.position = new Vector3(_player.VortexCenter.x, 0f, _player.VortexCenter.z);
+                boarCc.enabled = true;
+                yield return null;
+            }
+            Assert.Less(boar.Damageable.Health, hp, "소용돌이 속 적을 베요");
+            yield return WaitUntil(() => !_player.IsVortexing && GameObject.Find("비도") == null, 3f);
+            Assert.IsNull(GameObject.Find("비도"), "끝나면 손으로 돌아와요");
+        }
+
         static IEnumerator Done() { yield break; }
     }
 }

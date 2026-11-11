@@ -32,6 +32,8 @@ namespace AThousandDawns.Player
             public float Gauge;
             public bool Returning;    // 회수: 나에게 날아오는 중 (피해는 회수한 순간에 들어가요)
             public int Pierced;       // 강기: 뚫고 지나간 적 수
+            public bool Vortex;       // 비도 탁랑참: 탁류 소용돌이 속을 도는 중
+            public float Angle;       // 소용돌이 속 자리
             public HashSet<Damageable> HitSet; // 이미 뚫고 지나간 적 (다시 맞지 않게)
             public bool Flying => Flight > 0f;
         }
@@ -47,7 +49,7 @@ namespace AThousandDawns.Player
             get
             {
                 int n = 0;
-                foreach (var d in _daggers) if (!d.Flying && !d.Returning) n++;
+                foreach (var d in _daggers) if (!d.Flying && !d.Returning && !d.Vortex) n++;
                 return n;
             }
         }
@@ -112,6 +114,7 @@ namespace AThousandDawns.Player
             {
                 var d = _daggers[i];
                 if (d.Go == null) { _daggers.RemoveAt(i); continue; }
+                if (d.Vortex) continue; // 소용돌이 속 (TickVortex)
                 if (d.Returning)
                 {
                     if (ReturnDagger(d, dt)) RemoveDagger(i);
@@ -140,12 +143,13 @@ namespace AThousandDawns.Player
                 if (d.Rend != null) d.Rend.enabled = d.Life > blink || Mathf.Repeat(d.Life, 0.25f) > 0.12f; // 마지막 1.5초 깜빡임
                 if (d.Life <= 0f) RemoveDagger(i);
             }
+            TickVortex(dt); // 비도 탁랑참: 탁류 소용돌이
             TickDaggerForge(dt); // 융합: 꽂힌 비도 수에 따른 화상·감전·둔화
             // 최대 개수를 넘으면 오래된 것부터
             int max = Mathf.RoundToInt(D("knife.max_count", 15f));
             while (DaggerCount > max)
                 for (int i = 0; i < _daggers.Count; i++)
-                    if (!_daggers[i].Flying && !_daggers[i].Returning) { RemoveDagger(i); break; }
+                    if (!_daggers[i].Flying && !_daggers[i].Returning && !_daggers[i].Vortex) { RemoveDagger(i); break; }
         }
 
         void FlyDagger(Dagger d, float step)
@@ -233,6 +237,85 @@ namespace AThousandDawns.Player
         public void ClearDaggers()
         {
             for (int i = _daggers.Count - 1; i >= 0; i--) RemoveDagger(i);
+            _vortexLeft = 0f;
+        }
+
+        // ── 비도 + 탁랑참: 탁류 소용돌이
+        //   회수 대신, 방 안 비도가 모두 바라보는 쪽 4칸 지점으로 날아가 2초 동안 소용돌이쳐요 (반경 1.2칸으로 돌아요).
+        //   둘레 3칸 안 적을 가운데로 끌어당기고 (보스·고수는 안 끌림), 반경 1.8칸 안 적을 0.4초마다 벱니다 (비도 1개당 초식 피해 6%, 최대 12개).
+        //   끝나면 비도가 모두 손으로 돌아와요. 비도를 많이 깔아 둘수록 세져요.
+        float _vortexLeft, _vortexTick;
+        Vector3 _vortexCenter;
+
+        public bool IsVortexing => _vortexLeft > 0f;
+        public Vector3 VortexCenter => _vortexCenter;
+
+        void StartVortex()
+        {
+            _vortexCenter = transform.position + _facing * D("knife.vortex_distance", 4f);
+            _vortexCenter.y = 0.8f;
+            _vortexLeft = D("knife.vortex_time", 2f);
+            _vortexTick = 0f;
+            int n = 0;
+            foreach (var d in _daggers)
+            {
+                if (d.Flying || d.Returning) continue;
+                d.Vortex = true;
+                d.Stuck = null;
+                d.Angle = n++ * 137.5f; // 고르게 흩어져 돌아요
+                if (d.Rend != null) d.Rend.enabled = true;
+            }
+            Sfx.Play(SfxId.DaggerRecall);
+        }
+
+        void TickVortex(float dt)
+        {
+            if (_vortexLeft <= 0f) return;
+            _vortexLeft -= dt;
+            float radius = D("knife.vortex_orbit", 1.2f);
+            float spin = D("knife.vortex_spin", 540f);
+            int count = 0;
+            foreach (var d in _daggers)
+            {
+                if (!d.Vortex) continue;
+                count++;
+                d.Angle += spin * dt;
+                Vector3 at = _vortexCenter + Quaternion.Euler(0f, d.Angle, 0f) * Vector3.forward * radius;
+                Vector3 pos = d.Go.transform.position;
+                d.Go.transform.position = Vector3.MoveTowards(pos, at, D("knife.return_speed", 30f) * dt); // 먼저 날아와 모여요
+                Vector3 tangent = Quaternion.Euler(0f, d.Angle + 90f, 0f) * Vector3.forward;
+                d.Go.transform.rotation = Quaternion.LookRotation(tangent);
+            }
+            float pullRadius = D("knife.vortex_pull_radius", 3f), pull = D("knife.vortex_pull", 3f);
+            float cutRadius = D("knife.vortex_radius", 1.8f);
+            Vector3 c = Flatten(_vortexCenter);
+            var targets = FindObjectsByType<Damageable>(FindObjectsSortMode.None);
+            foreach (var e in targets)
+            {
+                if (e == null || e.IsDead || !e.Targetable) continue;
+                Vector3 to = c - Flatten(e.transform.position);
+                if (to.magnitude > pullRadius || to.magnitude < 0.3f) continue;
+                if (e.TryGetComponent(out AThousandDawns.Enemies.EnemyBrain brain)) brain.Displace(to.normalized * Mathf.Min(pull * dt, to.magnitude));
+            }
+            _vortexTick -= dt;
+            if (_vortexTick <= 0f && count > 0)
+            {
+                _vortexTick = D("knife.vortex_tick", 0.4f);
+                var hit = PlayerHit(_skillDamage * D("knife.vortex_ratio", 0.06f) * Mathf.Min(count, Mathf.RoundToInt(D("knife.vortex_max", 12f))));
+                hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
+                int hits = 0;
+                foreach (var e in targets)
+                {
+                    if (e == null || e.IsDead || !e.Targetable) continue;
+                    if ((Flatten(e.transform.position) - c).magnitude > cutRadius + e.BodyRadius) continue;
+                    HitTarget(e, hit, HitTag.Skill);
+                    hits++;
+                }
+                Gauge = Mathf.Min(GaugeCap, Gauge + hits * _gaugeSkill * 0.25f * GaugeGainMultiplier);
+            }
+            if (_vortexLeft > 0f) return;
+            foreach (var d in _daggers) // 끝: 손으로 돌아와요
+                if (d.Vortex) { d.Vortex = false; d.Returning = true; }
         }
 
         // ── 초식 회수

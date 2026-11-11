@@ -13,7 +13,9 @@ namespace AThousandDawns.Player
     // 비도는 초식이 늘 회수예요. 배운 비급은 회수에 효과를 덧붙여요 (DaggerScrollText):
     //   죽림섬: 비도가 가장 많이 꽂힌 적에게 순간이동해 한 번 베기 (회선참 피해 50%) · 붕산권: 회수와 함께 내 둘레 충격파 (반경 2.5칸, 60%, 밀어냄)
     //   금강장: 돌아온 비도 1개당 보호막 (최대 체력 1%, 8초)
-    public enum SkillKind { Spin, BambooFlash, Quake, Palm }
+    // 탁랑참 (탁랑객): 앞으로 파도 검기를 내보내 7칸 직선 (폭 1.4칸)의 적을 모두 꿰뚫어요. 회선참 피해 ×1.2 · 맞은 적 1칸 밀어냄.
+    //   비도 (탁류 소용돌이): 회수 대신 비도가 모두 앞쪽 4칸 지점에 모여 2초 동안 소용돌이쳐요. 둘레 적을 끌어당겨 베고, 끝나면 손으로 돌아와요 (PlayerController.Dagger.cs).
+    public enum SkillKind { Spin, BambooFlash, Quake, Palm, Takrang }
 
     public sealed partial class PlayerController
     {
@@ -29,7 +31,7 @@ namespace AThousandDawns.Player
 
         public SkillKind Skill { get; private set; }
         public string SkillName => !UsesDagger ? SkillLabel(Skill)
-            : Skill == SkillKind.Spin ? $"회수 (비도 {DaggerCount})" : $"회수 · {SkillLabel(Skill)} (비도 {DaggerCount})";
+            : Skill == SkillKind.Spin ? $"회수 (비도 {DaggerCount})" : Skill == SkillKind.Takrang ? $"탁류 소용돌이 (비도 {DaggerCount})" : $"회수 · {SkillLabel(Skill)} (비도 {DaggerCount})";
 
         // 비급 이름과 한 줄 설명 (고수 보상 · 낡은 서고 · 객잔 공통)
         public static string SkillLabel(SkillKind s) => s switch
@@ -37,6 +39,7 @@ namespace AThousandDawns.Player
             SkillKind.BambooFlash => "죽림섬",
             SkillKind.Quake => "붕산권",
             SkillKind.Palm => "금강장",
+            SkillKind.Takrang => "탁랑참",
             _ => "회선참",
         };
 
@@ -45,6 +48,7 @@ namespace AThousandDawns.Player
             SkillKind.BambooFlash => "가까운 적에게 3번 순간이동하며 베기",
             SkillKind.Quake => "땅을 내리쳐 원형 충격파, 맞은 적을 밀어냄",
             SkillKind.Palm => "앞으로 장력을 뻗어 부채꼴 공격, 밀어내고 맞히면 보호막",
+            SkillKind.Takrang => "앞으로 파도 검기, 7칸 직선의 적을 모두 꿰뚫음",
             _ => "주변을 한 바퀴 베기",
         };
 
@@ -54,6 +58,7 @@ namespace AThousandDawns.Player
             SkillKind.BambooFlash => "회수할 때 비도가 가장 많이 꽂힌 적에게 순간이동해 베기",
             SkillKind.Quake => "회수할 때 내 둘레에 충격파, 적을 밀어냄",
             SkillKind.Palm => "회수할 때 돌아온 비도 1개당 보호막",
+            SkillKind.Takrang => "비도를 앞쪽에 모아 소용돌이, 둘레 적을 끌어당겨 베고 돌아옴",
             _ => "방 안의 비도를 모두 거두며 피해",
         };
         // 비도를 들면 초식은 늘 회수 (비급은 회수에 효과를 덧붙여요)
@@ -149,6 +154,39 @@ namespace AThousandDawns.Player
                     _shields.Add(amount, GameConfig.GetOptional("skill_palm.shield_duration", 8f), ShieldCap);
                     SkillFx(new SkillFxCue { Kind = SkillFxKind.PalmShield, From = transform.position, Count = returning });
                     break;
+            }
+        }
+
+        // 탁랑참: 회선참과 같은 시전 시간, 판정 순간에 앞으로 파도 검기
+        void TickTakrang()
+        {
+            if (_skillHitDone || _skillElapsed < _skillHitTime) return;
+            _skillHitDone = true;
+            WaveSlash(_facing, GameConfig.GetOptional("skill_takrang.ratio", 1.2f));
+        }
+
+        // 파도 검기: 앞 직선 위의 적을 모두 꿰뚫고 조금 밀어내요 (탁랑참 · 비도 회수 탁랑참)
+        void WaveSlash(Vector3 dir, float ratio)
+        {
+            Sfx.Play(SfxId.Spin); // 전용 소리가 생기기 전까지 회선참 소리
+            float length = GameConfig.GetOptional("skill_takrang.length", 7f);
+            float width = GameConfig.GetOptional("skill_takrang.width", 1.4f);
+            Vector3 from = transform.position;
+            Vector3 to = from + dir * length;
+            if (swingFlash != null) swingFlash.Show(from + dir * (length * 0.5f), dir, length * 0.5f, 30f, 0.2f);
+            var hit = PlayerHit(_skillDamage * ratio);
+            hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
+            int count = HitLine(from, to, width, hit, HitTag.Skill);
+            Gauge = Mathf.Min(GaugeCap, Gauge + count * _gaugeSkill * GaugeGainMultiplier);
+            float push = GameConfig.GetOptional("skill_takrang.knockback", 1f);
+            foreach (var target in _hitThisSwing)
+                if (target != null && target.TryGetComponent(out AThousandDawns.Enemies.EnemyBrain brain)) brain.Displace(dir * push);
+            int thunder = _keywords.Count(Keyword.Noejeong);
+            if (count > 0 && thunder >= 2)
+            {
+                float trigger = DamageFormula.BeforeToughness(hit);
+                Lightning.Chain(_firstHit, transform.position + Vector3.up, trigger, ChainRatio(thunder), _chainTargets, _chainRange, DischargePerStack(thunder));
+                StrikeAfterSkillChain(_firstHit, trigger, thunder);
             }
         }
 

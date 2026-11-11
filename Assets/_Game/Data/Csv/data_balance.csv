@@ -947,3 +947,49 @@ flagbearer.summon_count,0,,깃발수 호출 수 (지금은 부르지 않고 지�
 flagbearer.command_radius,7,cell,깃발수 지휘 범위,장강 적 고유 기믹
 flagbearer.command_haste,30%,,깃발수 지휘: 이동·공격 빨라짐,장강 적 고유 기믹
 flagbearer.command_time,5,s,깃발수 지휘 시간,장강 적 고유 기믹
+takrang.hp,1100,,탁랑객 체력 (장강 ×3.0 = 3300),몬스터!D65
+takrang.atk,18,,탁랑객 공격 (×1.6 = 29),몬스터!F65
+takrang.toughness,0,,탁랑객 강인함,몬스터!H65
+takrang.move_speed,3.8,cell/s,탁랑객 이동속도,
+takrang.recovery,0.6,s,탁랑객 패턴 빈틈,
+takrang.slash_windup,0.5,s,탁랑객 베기 예고,
+takrang.slash_radius,2.5,cell,탁랑객 베기 반경,
+takrang.slash_angle,120,deg,탁랑객 베기 각도,
+takrang.slash_ratio,1,,탁랑객 베기 피해 배율,
+takrang.wave_windup,0.7,s,탁랑객 물결 베기 예고,
+takrang.wave_count,3,,탁랑객 물결 베기 갈래 수,
+takrang.p2_wave_count,5,,탁랑객 2페이즈 물결 베기 갈래 수,
+takrang.wave_spread,20,deg,탁랑객 물결 갈래 사이 각도,
+takrang.wave_range,8,cell,탁랑객 물결 검기 거리,
+takrang.wave_speed,9,cell/s,탁랑객 물결 검기 속도,
+takrang.wave_radius,0.4,cell,탁랑객 물결 검기 판정 반경,
+takrang.wave_ratio,0.8,,탁랑객 물결 검기 피해 배율,
+takrang.flow_delay,1.5,s,탁랑객 탁류 보법: 플레이어가 5칸 밖에 이만큼 있으면,
+takrang.flow_windup,0.4,s,탁랑객 탁류 보법 예고,
+takrang.flow_time,0.25,s,탁랑객 탁류 보법: 옆으로 돌아 들어가는 시간,
+takrang.flow_side,1.8,cell,탁랑객 탁류 보법: 플레이어 옆 거리,
+takrang.flow_reach,3,cell,탁랑객 탁류 보법 찌르기 길이,
+takrang.flow_ratio,1.1,,탁랑객 탁류 보법 찌르기 피해 배율,
+takrang.whirl_interval,10,s,탁랑객 소용돌이 간격,
+takrang.p2_whirl_interval,7,s,탁랑객 2페이즈 소용돌이 간격,
+takrang.whirl_windup,1,s,탁랑객 소용돌이 예고,
+takrang.whirl_time,1.5,s,탁랑객 소용돌이: 끌어당기는 시간,
+takrang.whirl_radius,4,cell,탁랑객 소용돌이 끌어당기는 범위,
+takrang.whirl_pull,2.5,cell/s,탁랑객 소용돌이 끌어당기는 속도 (대시면 안 끌림),
+takrang.whirl_burst,1.8,cell,탁랑객 소용돌이 끝 폭발 반경,
+takrang.whirl_ratio,1.2,,탁랑객 소용돌이 폭발 피해 배율,
+takrang.p2_windup_ratio,80%,,탁랑객 2페이즈 예고 시간 배율,
+skill_takrang.ratio,120%,,탁랑참 (탁랑객 비급): 파도 검기 피해 (회선참 대비),
+skill_takrang.length,7,칸,탁랑참: 파도 검기 길이,
+skill_takrang.width,1.4,칸,탁랑참: 파도 검기 폭,
+skill_takrang.knockback,1,칸,탁랑참: 맞은 적을 밀어내는 거리,
+knife.vortex_distance,4,칸,비도 + 탁랑참 탁류 소용돌이: 바라보는 쪽 이 거리에 비도가 모여요,비도 비급 (탁류 소용돌이)
+knife.vortex_time,2,초,탁류 소용돌이 시간 (끝나면 비도가 손으로 돌아와요),비도 비급 (탁류 소용돌이)
+knife.vortex_orbit,1.2,칸,탁류 소용돌이: 비도가 도는 반경,비도 비급 (탁류 소용돌이)
+knife.vortex_spin,540,°/초,탁류 소용돌이: 도는 속도,비도 비급 (탁류 소용돌이)
+knife.vortex_pull_radius,3,칸,탁류 소용돌이: 적을 끌어당기는 범위 (보스·고수는 안 끌림),비도 비급 (탁류 소용돌이)
+knife.vortex_pull,3,칸/초,탁류 소용돌이: 끌어당기는 속도,비도 비급 (탁류 소용돌이)
+knife.vortex_radius,1.8,칸,탁류 소용돌이: 베는 범위,비도 비급 (탁류 소용돌이)
+knife.vortex_tick,0.4,초,탁류 소용돌이: 베는 간격,비도 비급 (탁류 소용돌이)
+knife.vortex_ratio,6%,,탁류 소용돌이: 한 번 벨 때 비도 1개당 피해 (초식 피해 대비),비도 비급 (탁류 소용돌이)
+knife.vortex_max,12,개,탁류 소용돌이: 피해에 세는 비도 최대 수,비도 비급 (탁류 소용돌이)

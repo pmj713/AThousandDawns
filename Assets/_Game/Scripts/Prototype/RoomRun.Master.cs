@@ -10,6 +10,7 @@ namespace AThousandDawns.Prototype
     //   청죽객: 결투장 14×10, 대나무 기둥 6그루 · 비급 죽림섬
     //   철권 마웅: 결투장 14×10, 사방 돌벽 (돌진을 벽으로 유도해 기절시키기) · 비급 붕산권
     // 폐사찰 고수는 파계승 혜광 (돌벽 결투장) · 비급 금강장
+    // 장강 수채 고수는 탁랑객 (같은 결투장, 강 위 잔교로 꾸며짐) · 비급 탁랑참
     // 쓰러뜨리면 기물 대신 셋 중 하나 (기획 대화):
     //   비급 전수: 그 고수의 초식을 얻음 (회선참 대신 · 비도는 회수에 효과가 덧붙음)
     //   흡성: 공력 +1, 대신 이번 지역 동안 모든 기물의 최대 기 −1
@@ -36,9 +37,10 @@ namespace AThousandDawns.Prototype
             _room = null;
             _fighting = false;
             _masterChoiceShown = false;
-            var kind = MasterOverride ?? (_region >= 1 ? EnemyKind.Hyegwang // 폐사찰: 파계승 혜광 (장강 수채는 탁랑객이 생기기 전까지 혜광)
+            var kind = MasterOverride ?? (_region >= 2 ? EnemyKind.Takrang // 장강 수채: 탁랑객
+                : _region == 1 ? EnemyKind.Hyegwang // 폐사찰: 파계승 혜광
                 : _rng.Next(2) == 0 ? EnemyKind.Qingzhu : EnemyKind.IronFist);
-            var site = kind == EnemyKind.Qingzhu ? master : ironMaster; // 혜광도 돌벽 결투장
+            var site = kind == EnemyKind.Qingzhu ? master : ironMaster; // 혜광 · 탁랑객도 돌벽 결투장
             MovePlayer(site.entry);
             director.ResetRoom();
             Player.EnterRoom();
@@ -63,17 +65,20 @@ namespace AThousandDawns.Prototype
             int spare = Price("master.spare_silver", 50f);
             bool iron = _master.Kind == EnemyKind.IronFist;
             bool monk = _master.Kind == EnemyKind.Hyegwang;
-            var skill = iron ? SkillKind.Quake : monk ? SkillKind.Palm : SkillKind.BambooFlash;
+            bool wave = _master.Kind == EnemyKind.Takrang;
+            var skill = iron ? SkillKind.Quake : monk ? SkillKind.Palm : wave ? SkillKind.Takrang : SkillKind.BambooFlash;
             string skillName = PlayerController.SkillLabel(skill);
             string skillText = Player.UsesDagger ? PlayerController.DaggerScrollText(skill) : PlayerController.SkillText(skill); // 비도는 회수에 덧붙어요
             var v = new EventView
             {
                 Id = "master",
-                Title = iron ? "철권 마웅이 주먹을 거두었다" : monk ? "혜광이 선장을 내려놓았다" : "청죽객이 검을 내려놓았다",
+                Title = iron ? "철권 마웅이 주먹을 거두었다" : monk ? "혜광이 선장을 내려놓았다" : wave ? "탁랑객이 검을 강물에 꽂았다" : "청죽객이 검을 내려놓았다",
                 Text = iron
                     ? "\"허허, 내 주먹이 꺾였군. 권법을 가져가든, 기운을 가져가든, 그냥 보내 주든 마음대로 하게.\""
                     : monk
                     ? "\"파계한 몸이 또 졌구나. 훔쳐 둔 비급을 가져가든, 이 더러운 내력을 가져가든, 그냥 보내 주든 마음대로 하게.\""
+                    : wave
+                    ? "\"흐린 물도 결국 바다로 가는 법. 내 물결을 가져가든, 기운을 가져가든, 그냥 흘려보내든 마음대로 하게.\""
                     : "\"졌소. 내 검을 가져가든, 기운을 가져가든, 그냥 보내 주든 마음대로 하시오.\"",
             };
             v.Choices.Add(new EventChoice

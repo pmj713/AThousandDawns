@@ -163,6 +163,12 @@ namespace AThousandDawns.Enemies
                 BodyPosition = new Vector3(0f, 0.8f, 0f), BodyScale = new Vector3(0.65f, 0.8f, 0.65f),
                 MarkPosition = new Vector3(0.3f, 1.6f, 0f), MarkScale = new Vector3(0.05f, 1.6f, 0.05f), // 깃대
             },
+            EnemyKind.Takrang => new Shape
+            {
+                Name = "탁랑객", Radius = 0.45f, Height = 1.9f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.95f, 0f), BodyScale = new Vector3(0.7f, 0.95f, 0.7f),
+                MarkPosition = new Vector3(0.3f, 1.0f, 0.5f), MarkScale = new Vector3(0.08f, 0.06f, 1.2f), // 물결 무늬 장검
+            },
             _ => new Shape
             {
                 Name = "산적 졸개", Radius = 0.35f, Height = 1.6f, Primitive = PrimitiveType.Capsule,
@@ -197,6 +203,7 @@ namespace AThousandDawns.Enemies
             EnemyKind.Rattan => Tinted(kind, v.shield != null ? v.shield : v.grunt, new Color(0.65f, 0.55f, 0.35f)),
             EnemyKind.WaterGhost => Tinted(kind, v.grunt, new Color(0.3f, 0.6f, 0.6f)),
             EnemyKind.FlagBearer => Tinted(kind, v.horn != null ? v.horn : v.grunt, new Color(0.6f, 0.3f, 0.25f)),
+            EnemyKind.Takrang => Tinted(kind, v.qingzhu != null ? v.qingzhu : v.grunt, new Color(0.3f, 0.45f, 0.5f)),
             _ => v.grunt,
         };
 
@@ -277,6 +284,7 @@ namespace AThousandDawns.Enemies
                 EnemyKind.Rattan => root.AddComponent<RattanBrain>(),
                 EnemyKind.WaterGhost => root.AddComponent<WaterGhostBrain>(),
                 EnemyKind.FlagBearer => root.AddComponent<FlagBearerBrain>(),
+                EnemyKind.Takrang => root.AddComponent<TakrangBrain>(),
                 _ => root.AddComponent<GruntBrain>(),
             };
             if (brain is ShieldBrain shieldBrain) shieldBrain.SetShieldVisual(mark.transform);
