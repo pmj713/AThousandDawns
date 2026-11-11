@@ -20,7 +20,7 @@ namespace AThousandDawns.Fx
         static readonly Color InkText = new Color(0.12f, 0.1f, 0.09f);
         static Texture2D _paper, _rod;
         static bool _loaded;
-        static GUIStyle _style, _styleFrom;
+        static GUIStyle _style, _styleFrom, _style2, _styleFrom2;
         static Rect _card;
         static float _visible;
 
@@ -79,18 +79,28 @@ namespace AThousandDawns.Fx
         }
 
         // 원래 카드 글꼴·여백을 따르되 바탕 없이 먹색 글 (한지 테두리만큼 여백을 더해요)
+        // (버튼 스타일을 복사하면 고해상도용 바탕 scaledBackgrounds가 남아 어두운 버튼 바탕이 한지를 덮어요 → 빈 스타일에 글꼴·여백만 옮겨요)
         public static GUIStyle Style(GUIStyle from)
         {
-            if (_style == null || _styleFrom != from)
+            if (from == _styleFrom && _style != null) return _style;
+            if (from == _styleFrom2 && _style2 != null) return _style2;
+            var p = from.padding;
+            var style = new GUIStyle
             {
-                _styleFrom = from;
-                _style = new GUIStyle(from);
-                _style.normal.background = _style.hover.background = _style.active.background = _style.focused.background = null;
-                _style.normal.textColor = _style.hover.textColor = _style.active.textColor = _style.focused.textColor = InkText;
-                var p = from.padding;
-                _style.padding = new RectOffset(p.left + 10, p.right + 10, p.top + 8, p.bottom + 10);
-            }
-            return _style;
+                font = from.font,
+                fontSize = from.fontSize,
+                fontStyle = from.fontStyle,
+                richText = true,
+                wordWrap = true,
+                alignment = from.alignment,
+                clipping = TextClipping.Clip,
+                padding = new RectOffset(p.left + 10, p.right + 10, p.top + 8, p.bottom + 10),
+            };
+            style.normal.textColor = style.hover.textColor = style.active.textColor = style.focused.textColor = InkText;
+            // 카드 두 종류(아이콘 있음·없음)를 따로 들고 있어요
+            if (_style == null) { _styleFrom = from; _style = style; }
+            else { _styleFrom2 = from; _style2 = style; }
+            return style;
         }
 
         static readonly Regex ColorTag = new Regex("<color=#([0-9a-fA-F]{6})>");
