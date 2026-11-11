@@ -21,7 +21,7 @@ namespace AThousandDawns.EditorTools
             bool Skip(Transform t)
             {
                 for (var p = t; p != null; p = p.parent)
-                    if (p.name == "Village" || p.name.StartsWith("Room_Boss") || p.name.Contains("Village")) return true;
+                    if (p.name == "Village" || p.name.Contains("Village")) return true;
                 return false;
             }
 
@@ -55,6 +55,18 @@ namespace AThousandDawns.EditorTools
                 temple.Add(piece.gameObject);
             }
 
+            // 3) 보스 방: 녹림 산채(목책·화톳불) 대신 무너진 대웅전 앞마당.
+            //    불타는 죽림 불꽃(InkBurningGroveFX)은 보스 패턴이라 그대로 둬요 (폐사찰에선 무너진 절이 불타요)
+            var camp = Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None).FirstOrDefault(t => t.name == "Boss (녹림 산채)");
+            if (camp != null)
+            {
+                foreach (Transform part in camp)
+                    if (part.name != "Flame") bamboo.Add(part.gameObject);   // 목책·화톳불만 끄고 불꽃은 남겨요
+                var court = BossCourtyard(camp.parent, stoneMat, woodMat, roofX, ref seed);
+                StripColliders(court);
+                temple.Add(court.gameObject);
+            }
+
             var dressing = new GameObject("Ink Region Dressing").AddComponent<AThousandDawns.Art.InkRegionDressing>();
             dressing.SetRegions(new[]
             {
@@ -64,6 +76,86 @@ namespace AThousandDawns.EditorTools
             foreach (var go in temple) go.SetActive(false);   // 처음(죽림)엔 꺼 둬요
 
             DressTempleLook(floorMat, dressing);
+        }
+
+        // 무너진 대웅전 앞마당 (보스 방 16×12, 가운데 BossCenter): 북쪽 담 너머 반쯤 무너진 대웅전 정면,
+        // 북쪽 두 모서리에 넘어진 불상과 큰 향로, 동·서 벽가에 깨진 석등 두 쌍. 가운데 싸움터는 비워요
+        static Transform BossCourtyard(Transform parent, Material stoneMat, Material woodMat, Material roofX, ref int seed)
+        {
+            var court = new GameObject("Boss Temple (대웅전 앞마당)").transform;
+            court.SetParent(parent, true);   // 자리는 월드 기준 (BossCenter)
+            court.position = Vector3.zero; court.rotation = Quaternion.identity;
+            Vector3 c = BossCenter;
+            float hx = 8f, hz = 6f;
+
+            // 대웅전: 북쪽 담 바로 뒤 높은 기단 위에 기둥 다섯, 가운데가 내려앉은 큰 지붕 두 쪽, 앞에 떨어진 처마 조각
+            var hall = new GameObject("Main Hall (대웅전)").transform;
+            hall.SetParent(court, false);
+            hall.position = c + new Vector3(0f, 0f, hz + 3.2f);
+            Block(hall, "Platform", PrimitiveType.Cube, new Vector3(0f, 0.45f, 0f), new Vector3(15f, 0.9f, 4.5f), Quaternion.identity, stoneMat);
+            for (int k = 0; k < 5; k++)
+            {
+                float x = -6f + k * 3f;
+                float h = k == 1 ? 2.2f : k == 3 ? 3.4f : 4.6f;      // 두 기둥은 부러졌어요
+                Block(hall, $"Column_{k + 1}", PrimitiveType.Cylinder, new Vector3(x, 0.9f + h * 0.5f, -1.6f), new Vector3(0.45f, h * 0.5f, 0.45f), Quaternion.identity, woodMat);
+            }
+            for (int s = -1; s <= 1; s += 2)
+            {
+                var roof = new GameObject($"Roof_{(s < 0 ? "W" : "E")}");
+                roof.transform.SetParent(hall, false);
+                roof.transform.localPosition = new Vector3(s * 3.8f, s < 0 ? 5.6f : 4.7f, -0.4f);
+                roof.transform.localRotation = Quaternion.Euler(0f, 0f, s < 0 ? 4f : -16f);   // 동쪽이 내려앉았어요
+                roof.transform.localScale = new Vector3(8.2f, 1.6f, 5.6f);
+                roof.AddComponent<MeshFilter>().sharedMesh = GetRoofCapMesh(true);
+                roof.AddComponent<MeshRenderer>().sharedMaterial = roofX;
+            }
+            var eave = new GameObject("Fallen Eave");
+            eave.transform.SetParent(hall, false);
+            eave.transform.localPosition = new Vector3(4.2f, 0.4f, -2.8f);
+            eave.transform.localRotation = Quaternion.Euler(-12f, 20f, 28f);
+            eave.transform.localScale = new Vector3(3f, 0.8f, 1.6f);
+            eave.AddComponent<MeshFilter>().sharedMesh = GetRoofCapMesh(true);
+            eave.AddComponent<MeshRenderer>().sharedMaterial = roofX;
+            for (int k = 0; k < 4; k++) Rock(hall, $"Rubble_{k + 1}", new Vector3(-5f + k * 3.4f, 0f, -2.6f - (k % 2) * 0.3f), 0.3f + (k % 3) * 0.12f, seed + k, k * 47f, stoneMat, false);
+
+            // 넘어진 불상: 연꽃 받침 위에서 뒤로 넘어간 좌불 (몸·머리·무릎)
+            var buddha = new GameObject("Fallen Buddha (넘어진 불상)").transform;
+            buddha.SetParent(court, false);
+            buddha.position = c + new Vector3(-hx + 1.4f, 0f, hz - 1.3f);
+            buddha.rotation = Quaternion.Euler(0f, 25f, 0f);
+            Block(buddha, "Pedestal", PrimitiveType.Cylinder, new Vector3(0f, 0.25f, 0f), new Vector3(1.6f, 0.25f, 1.6f), Quaternion.identity, stoneMat);
+            Block(buddha, "Lotus", PrimitiveType.Cylinder, new Vector3(0f, 0.6f, 0f), new Vector3(1.3f, 0.12f, 1.3f), Quaternion.identity, stoneMat);
+            Block(buddha, "Body", PrimitiveType.Capsule, new Vector3(0.1f, 0.95f, 0.75f), new Vector3(1.0f, 0.75f, 0.8f), Quaternion.Euler(70f, 0f, 0f), stoneMat);
+            Block(buddha, "Knees", PrimitiveType.Capsule, new Vector3(0f, 0.85f, -0.05f), new Vector3(0.7f, 0.55f, 0.55f), Quaternion.Euler(0f, 0f, 90f), stoneMat);
+            Block(buddha, "Head", PrimitiveType.Sphere, new Vector3(0.6f, 0.4f, 2.1f), new Vector3(0.65f, 0.7f, 0.65f), Quaternion.Euler(20f, 0f, 30f), stoneMat);   // 떨어져 굴러간 머리
+
+            // 큰 향로: 세 발 솥에 뚜껑, 꺼진 재
+            var censer = new GameObject("Censer (향로)").transform;
+            censer.SetParent(court, false);
+            censer.position = c + new Vector3(hx - 1.6f, 0f, hz - 1.4f);
+            Block(censer, "Bowl", PrimitiveType.Sphere, new Vector3(0f, 0.75f, 0f), new Vector3(1.3f, 0.9f, 1.3f), Quaternion.identity, stoneMat);
+            Block(censer, "Rim", PrimitiveType.Cylinder, new Vector3(0f, 1.15f, 0f), new Vector3(1.15f, 0.06f, 1.15f), Quaternion.identity, stoneMat);
+            Block(censer, "Lid", PrimitiveType.Sphere, new Vector3(0f, 1.3f, 0f), new Vector3(0.8f, 0.4f, 0.8f), Quaternion.identity, stoneMat);
+            for (int k = 0; k < 3; k++)
+            {
+                var d = Quaternion.Euler(0f, k * 120f, 0f) * new Vector3(0f, 0f, 0.5f);
+                Block(censer, $"Leg_{k + 1}", PrimitiveType.Cylinder, d + new Vector3(0f, 0.2f, 0f), new Vector3(0.18f, 0.25f, 0.18f), Quaternion.identity, stoneMat);
+            }
+
+            // 동·서 벽가 석등 두 쌍 (하나씩은 넘어졌어요)
+            for (int s = -1; s <= 1; s += 2)
+                for (int k = 0; k < 2; k++)
+                {
+                    var foot = c + new Vector3(s * (hx - 0.8f), 0f, k == 0 ? -1.8f : 2.2f);
+                    var lantern = new GameObject("Lantern Spot").transform;
+                    lantern.SetParent(court, false);
+                    lantern.position = foot;
+                    StoneLantern(lantern, foot, stoneMat, roofX);
+                    if ((k + (s > 0 ? 1 : 0)) % 2 == 1) lantern.rotation = Quaternion.Euler(0f, 0f, s * -78f);   // 넘어진 석등
+                }
+
+            seed += 8;
+            return court;
         }
 
         const string TempleArtFolder = "Assets/_Game/Art/Env/Temple";
