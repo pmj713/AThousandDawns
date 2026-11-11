@@ -33,10 +33,26 @@ namespace AThousandDawns.EditorTools
             Object.Destroy(marker.gameObject, 3f);
         }
 
+        // 정예 졸개를 플레이어 앞에 하나 불러요 (실제로 싸우는 적이에요)
+        [MenuItem(Menu + "정예 철포삼")] static void EliteIron() => Elite(EliteTrait.IronShirt);
+        [MenuItem(Menu + "정예 회춘")] static void EliteRejuv() => Elite(EliteTrait.Rejuvenation);
+        [MenuItem(Menu + "정예 열화")] static void EliteBlaze() => Elite(EliteTrait.Blaze);
+
+        static void Elite(EliteTrait trait)
+        {
+            var (director, player) = Find();
+            if (director == null) return;
+            var enemy = director.Spawn(EnemyKind.Grunt, player.position + player.forward * 4f);
+            enemy.MakeElite(trait);
+        }
+
         [MenuItem(Menu + "궁수 화살", true)]
         [MenuItem(Menu + "살수 표창", true)]
         [MenuItem(Menu + "화약 폭발", true)]
         [MenuItem(Menu + "공격 예고 테두리", true)]
+        [MenuItem(Menu + "정예 철포삼", true)]
+        [MenuItem(Menu + "정예 회춘", true)]
+        [MenuItem(Menu + "정예 열화", true)]
         static bool CanPlay() => Application.isPlaying;
 
         static void Shoot(bool shuriken)
