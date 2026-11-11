@@ -11,7 +11,7 @@ namespace AThousandDawns.EditorTools
 
         static void DressOutsideInk(Material floorMat, Material bambooMat)
         {
-            var paths = new[] { $"{OutsideArtFolder}/Ground_Bamboo.png", $"{OutsideArtFolder}/Ground_Temple.png" };
+            var paths = new[] { $"{OutsideArtFolder}/Ground_Bamboo.png", $"{OutsideArtFolder}/Ground_Temple.png", $"{OutsideArtFolder}/Ground_River.png" }; // 죽림 · 폐사찰 · 장강 수채
             foreach (var p in paths) ImportAsTiledTexture(p);
             var textures = System.Array.ConvertAll(paths, p => AssetDatabase.LoadAssetAtPath<Texture2D>(p));
 
