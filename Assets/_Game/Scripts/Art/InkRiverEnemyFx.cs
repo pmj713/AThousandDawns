@@ -9,7 +9,7 @@ namespace AThousandDawns.Art
 {
     // 장강 수채 적 이펙트 (그림만 — 판정·수치는 게임 코드 그대로).
     //   작살수 (HarpoonerBrain.Thrust): 작살이 밧줄을 끌며 뻗었다 돌아와요. 걸렸으면 밧줄이 플레이어에게 붙은 채 감겨요.
-    //   쇠닻 거한: 꽂힌 쇠닻 기둥("쇠닻")의 회색 원기둥을 숨기고 땅에 꽂힌 쇠닻을 세워요. 던질 땐 닻이 날아가 꽂히고, 거한이 끌려가는 동안 사슬이 이어져요.
+    //   쇠닻 거한: 던질 때 닻 그림이 거한에게서 날아가 꽂히고(0.12초), 거한이 끌려가는 동안 사슬이 이어져요. 꽂힌 닻 모양은 메인 아트의 3D 닻(InkRunProps)이 맡아요.
     //   수귀: 숨어 있는 동안 물결이 퍼지고, 튀어나올 때 물보라, 끌고 가는 동안 바닥에 젖은 물 자국이 남아요.
     //   등패수: 멀리서 온 공격을 정면에서 다 막으면(RattanBrain.FullBlock) 방패 앞에서 불똥이 튀어요. 굴리는 방패("등패")는 등나무 방패 그림이 굴러가요.
     //   깃발수 지휘: 지휘받은 적(IsHastened) 발밑에 붉은 기운이 일렁이고, 움직이면 뒤로 붉은 속도선이 남아요.
@@ -186,15 +186,16 @@ namespace AThousandDawns.Art
                     if (chain != null) Destroy(chain.gameObject);
                     return false;
                 }
-                if (anchor != null) // 날아가 꽂혀요
+                if (anchor != null) // 날아가 꽂혀요 — 꽂힌 뒤 모양은 메인 아트의 3D 닻(InkRunProps.DressAnchor)이 맡아서 그림은 지워요
                 {
                     float k = Mathf.Clamp01(t / 0.12f);
                     anchor.transform.parent.position = Vector3.Lerp(from, stick, k) + Vector3.up * (Mathf.Sin(k * Mathf.PI) * 0.6f);
+                    if (k >= 1f) { Destroy(anchor.transform.parent.gameObject); anchor = null; }
                 }
                 if (chain != null) // 거한이 끌려오는 동안 사슬이 이어져요
                 {
                     Vector3 hand = giant != null ? giant.transform.position + Vector3.up * 1.4f : from;
-                    Vector3 end = anchor != null ? anchor.transform.parent.position + Vector3.up * 0.9f : stick;
+                    Vector3 end = anchor != null ? anchor.transform.parent.position + Vector3.up * 0.9f : stick + Vector3.up * 0.8f; // 꽂힌 뒤엔 3D 닻 고리 높이쯤
                     chain.SetPosition(0, hand);
                     chain.SetPosition(1, end);
                     chain.material.mainTextureScale = new Vector2(Vector3.Distance(hand, end) / 3f, 1f); // 사슬 그림 한 줄(고리 12개)이 3칸마다
