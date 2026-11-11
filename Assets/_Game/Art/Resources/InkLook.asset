@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: AThousandDawns.Art::AThousandDawns.Art.InkLookSettings
   characterInk: 0.5
   characterColor: 0.5
-  characterOutline: 0.5
-  characterBrightness: 0.3
+  characterOutline: 0.2
+  characterBrightness: 0.1
   backgroundFade: 0.2
   screenPaper: 0.6
