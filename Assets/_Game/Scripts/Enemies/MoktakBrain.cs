@@ -6,6 +6,7 @@ namespace AThousandDawns.Enemies
     public sealed class MoktakBrain : HornBrain
     {
         float _radius, _ratio;
+        public static event System.Action<MoktakBrain, UnityEngine.Vector3, float> Struck; // 목탁을 친 자리 · 가호 범위
 
         public override EnemyKind Kind => EnemyKind.Moktak;
         protected override string Key => "moktak";
@@ -30,6 +31,7 @@ namespace AThousandDawns.Enemies
         protected override void OnActiveStarted()
         {
             Director.SpawnBurst(transform.position, 1.5f); // 목탁 소리
+            Struck?.Invoke(this, transform.position, _radius); // 이펙트 신호 (아트: InkTempleEnemyFx)
             foreach (var e in Director.Enemies)
                 if (NeedsWard(e)) e.Damageable.AddWard(UnityEngine.Mathf.Max(1, UnityEngine.Mathf.RoundToInt(e.Damageable.MaxHealth * _ratio)));
         }

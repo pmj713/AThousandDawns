@@ -10,6 +10,7 @@ namespace AThousandDawns.Enemies
         static readonly Color Stone = new Color(0.35f, 0.35f, 0.33f);
 
         float _stun, _wake, _quakeRadius, _quakeRatio;
+        public static event System.Action<ArhatBrain, UnityEngine.Vector3, float> ChargeQuake; // 돌진이 끝나 땅을 울린 자리 · 반경
 
         public override EnemyKind Kind => EnemyKind.Arhat;
         protected override string Key => "arhat";
@@ -44,6 +45,7 @@ namespace AThousandDawns.Enemies
         protected override void OnChargeEnded()
         {
             Director.SpawnBurst(transform.position, _quakeRadius);
+            ChargeQuake?.Invoke(this, transform.position, _quakeRadius); // 이펙트 신호 (아트: InkTempleEnemyFx)
             if (ToPlayer().magnitude <= _quakeRadius + PlayerRadius)
                 Player.TryReceiveHit(AttackPower * _quakeRatio, transform.position, -1f, Body);
         }
