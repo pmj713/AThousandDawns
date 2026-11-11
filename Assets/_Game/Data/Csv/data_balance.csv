@@ -845,3 +845,8 @@ lantern.fire_radius,0.9,cell,등불 귀신: 도깨비불 장판 반경,폐사찰
 lantern.fire_time,3.5,s,등불 귀신: 도깨비불 장판이 남는 시간,폐사찰 적 고유 기믹
 lantern.fire_ratio,0.5,,등불 귀신: 장판 피해 배율 (0.5초마다),폐사찰 적 고유 기믹
 lantern.split_distance,1.2,cell,등불 귀신: 쓰러지면 양옆에 장판 두 개 (간격),폐사찰 적 고유 기믹
+region.2.health,3,배,장강 수채 적 체력 배율 (일반 적·살수·고수·보스),몬스터!B17
+region.2.attack,1.6,배,장강 수채 적 공격 배율,몬스터!C17
+region.2.silver_room,26,은자,장강 수채 전투 방 클리어 은자,은자!B6
+enemy.melee_tokens_per_region,1,,동시 공격 (근접): 지역마다 +,몬스터!C85 설명
+enemy.melee_tokens_max,4,,동시 공격 (근접) 최대,몬스터!C85 설명

@@ -36,7 +36,7 @@ namespace AThousandDawns.Prototype
             _room = null;
             _fighting = false;
             _masterChoiceShown = false;
-            var kind = MasterOverride ?? (_region == 1 ? EnemyKind.Hyegwang // 폐사찰: 파계승 혜광
+            var kind = MasterOverride ?? (_region >= 1 ? EnemyKind.Hyegwang // 폐사찰: 파계승 혜광 (장강 수채는 탁랑객이 생기기 전까지 혜광)
                 : _rng.Next(2) == 0 ? EnemyKind.Qingzhu : EnemyKind.IronFist);
             var site = kind == EnemyKind.Qingzhu ? master : ironMaster; // 혜광도 돌벽 결투장
             MovePlayer(site.entry);

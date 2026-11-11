@@ -4,13 +4,15 @@ using UnityEngine;
 
 namespace AThousandDawns.Prototype
 {
-    // 지역 (판구조 시트): 죽림 → 폐사찰 (→ 장강 수채 → 천마총은 아직). 지역마다 일반 층 3개 · 고수 · 객잔 · 정비실 · 보스.
+    // 지역 (판구조 시트): 죽림 → 폐사찰 → 장강 수채 (→ 천마총은 아직). 지역마다 일반 층 3개 · 고수 · 객잔 · 정비실 · 보스.
     // 보스를 쓰러뜨리면 보상 기물을 고른 뒤 다음 지역 1층 갈림길로 이어져요. 마지막 지역 보스면 판 끝 (승리).
     // 지역 배율 (몬스터 시트 15~17행): 적 체력 · 공격 × 배율 (일반 적 · 살수 · 고수 · 보스 모두).
-    // 폐사찰 일반 적은 RoomBudget.Temple (망령·석상 나한·목탁승·파계승·등불 귀신). 고수·보스는 생기기 전까지 죽림 것을 폐사찰 배율로 써요.
+    // 폐사찰 일반 적은 RoomBudget.Temple (망령·석상 나한·목탁승·파계승·등불 귀신).
+    // 장강 수채 (몬스터 시트 17행: 체력 ×3.0 · 공격 ×1.6, 은자 탭 6행: 방당 26)는 적·고수·보스가 생기기 전까지 폐사찰 것을 장강 배율로 써요.
+    // 동시 근접 공격 (몬스터 B85): 2명에 지역마다 +1, 최대 4명.
     public sealed partial class RoomRun
     {
-        public static readonly string[] RegionNames = { "죽림", "폐사찰" };
+        public static readonly string[] RegionNames = { "죽림", "폐사찰", "장강 수채" };
 
         int _region;
         bool _regionAdvancePending; // 보스 보상을 고른 뒤 다음 지역으로
@@ -22,9 +24,22 @@ namespace AThousandDawns.Prototype
         static float RegionKey(string key, int region, float fallback) =>
             region == 0 ? fallback : GameConfig.GetOptional($"region.{region}.{key}", fallback);
 
-        float RegionHealth => RegionKey("health", _region, _region == 0 ? 1f : 1.8f);
-        float RegionAttack => RegionKey("attack", _region, _region == 0 ? 1f : 1.3f);
-        int RoomSilver => Mathf.RoundToInt(_region == 0 ? GameConfig.Get("silver.room", 18f) : RegionKey("silver_room", _region, 22f));
+        static readonly float[] HealthByRegion = { 1f, 1.8f, 3f }, AttackByRegion = { 1f, 1.3f, 1.6f }, SilverByRegion = { 18f, 22f, 26f };
+        static float ByRegion(float[] table, int region) => table[Mathf.Clamp(region, 0, table.Length - 1)];
+
+        float RegionHealth => RegionKey("health", _region, ByRegion(HealthByRegion, _region));
+        float RegionAttack => RegionKey("attack", _region, ByRegion(AttackByRegion, _region));
+        int RoomSilver => Mathf.RoundToInt(_region == 0 ? GameConfig.Get("silver.room", 18f) : RegionKey("silver_room", _region, ByRegion(SilverByRegion, _region)));
+
+        // 동시 근접 공격: 2명 + 지역마다 1명 (최대 4명). 층에 들어설 때마다 맞춰요 (이어하기 포함)
+        public int MeleeTokensForRegion => Mathf.Min(
+            Mathf.RoundToInt(GameConfig.GetOptional("enemy.melee_tokens_max", 4f)),
+            Mathf.RoundToInt(GameConfig.Get("enemy.melee_tokens", 2f) + _region * GameConfig.GetOptional("enemy.melee_tokens_per_region", 1f)));
+
+        void ApplyRegionRules()
+        {
+            if (director != null && director.MeleeTokens != null) director.MeleeTokens.Capacity = MeleeTokensForRegion;
+        }
 
         // 그 지역 등급표 (등급확률 시트 11~13행). 짙은 길은 다음 지역 표
         float[] RegionGradeWeights() => GradeRow(_region);

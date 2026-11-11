@@ -255,9 +255,44 @@ namespace AThousandDawns.Tests
             boss.Damageable.ApplyHit(Mathf.CeilToInt(boss.Damageable.MaxHealth * 0.55f));
             yield return WaitUntil(() => _arena.BossInfo.Phase == 2 && !_arena.BossInfo.IsTransitioning, 4f);
             boss.Damageable.ApplyHit(99999);
+            yield return WaitUntil(() => _arena.IsChoosing, 3f);
+            Assert.IsFalse(_run.IsDone, "폐사찰 보스 다음은 장강 수채");
+            Assert.AreEqual(5, _player.Items.Board.Height, "경맥도 6×5");
+            _arena.Choose(0);
+            yield return WaitUntil(() => _run.Region == 2, 2f);
+            Assert.AreEqual("장강 수채", _run.RegionName);
+            Assert.AreEqual(1, _run.Floor);
+            Assert.AreEqual(1, _player.UltimateStage, "혈불을 넘으면 중단전");
+        }
+
+        // 장강 수채: 적이 체력 ×3.0, 동시 근접 공격 4명, 보스를 쓰러뜨리면 판 끝 (승리)
+        [UnityTest]
+        public IEnumerator 장강_수채는_적이_더_세고_보스를_쓰러뜨리면_판_끝()
+        {
+            yield return Load();
+            _run.SetRegionForTest(2);
+            bool dense = _run.ForkOptions[0].Dense;
+            _run.ChooseFork(0);
+            Assert.AreEqual("장강 수채", _run.RegionName);
+            Assert.AreEqual(4, _director.MeleeTokens.Capacity, "동시 근접 공격 2 + 지역마다 1 = 4명");
+            var room = _run.Map.Rooms.First(r => r.Kind == FloorRoomKind.Combat);
+            _run.Enter(room, -1);
+            yield return WaitUntil(() => _director.Enemies.Count > 0, 5f);
+            var monk = _director.Enemies.FirstOrDefault(e => e.Kind == EnemyKind.Monk && !e.IsElite);
+            if (monk != null) Assert.AreEqual(60f * 3f * (dense ? 1.3f : 1f), monk.Damageable.MaxHealth, 0.5f, "파계승 체력 60 × 3.0 (짙은 길이면 × 1.3)");
+
+            _run.EnterRest();
+            var cc = _player.GetComponent<CharacterController>();
+            cc.enabled = false;
+            _player.transform.position = new Vector3(60f, 0f, 6.6f);
+            cc.enabled = true;
+            yield return WaitUntil(() => _arena.Boss != null && _arena.Boss.IsAwake, 3f);
+            var boss = _arena.Boss;
+            boss.Damageable.ApplyHit(Mathf.CeilToInt(boss.Damageable.MaxHealth * 0.55f));
+            yield return WaitUntil(() => _arena.BossInfo.Phase == 2 && !_arena.BossInfo.IsTransitioning, 4f);
+            boss.Damageable.ApplyHit(99999);
             yield return WaitUntil(() => _run.IsDone, 3f);
             Assert.IsTrue(_run.IsDone, "마지막 지역 보스 = 판 끝");
-            Assert.AreEqual(5, _player.Items.Board.Height, "경맥도 6×5");
         }
     }
 }
