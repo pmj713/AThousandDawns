@@ -164,11 +164,18 @@ namespace AThousandDawns.Art
                     if (r.name.Contains("_Prop_Shield")) r.enabled = false;
                 _shieldHidden = true;
             }
-            if (_monk != null && _monk.IsStanced != _stanced)
+            var phase = _brain.AttackPhase;
+            // 금강불괴: 파계승은 버티는 자세(IsStanced), 혜광은 금강불괴 예고 동안 몸이 금빛
+            bool gold = _monk != null ? _monk.IsStanced
+                : phase == EnemyAttackTimeline.Phase.Windup && _brain.AttackName == "금강불괴";
+            if (gold != _stanced)
             {
-                _stanced = _monk.IsStanced;
-                if (_stanced) Play("Stance", 0.15f);
-                else _animator.CrossFadeInFixedTime(IdleState, 0.2f, 0);
+                _stanced = gold;
+                if (_monk != null)
+                {
+                    if (_stanced) Play("Stance", 0.15f);
+                    else _animator.CrossFadeInFixedTime(IdleState, 0.2f, 0);
+                }
                 var block = new MaterialPropertyBlock();
                 foreach (var r in _animator.GetComponentsInChildren<Renderer>(true))
                 {
@@ -177,7 +184,6 @@ namespace AThousandDawns.Art
                     else r.SetPropertyBlock(null);
                 }
             }
-            var phase = _brain.AttackPhase;
             if (_noAttack) _last = phase;   // 공격 동작 없이 대기·달리기만
             if (phase != _last)
             {

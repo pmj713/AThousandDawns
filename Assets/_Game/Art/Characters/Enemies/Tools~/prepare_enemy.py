@@ -1152,19 +1152,21 @@ if "staffmoves" in EXTRAS:
         arm("Left", g + d * 0.35, Vector((1, 0.2, -1)))                      # 왼손으로 대를 받쳐요
 
     def thrust_pose(stage):
+        # 찌르기: 선장을 허리 높이에서 앞으로 수평하게 겨눈 준비 자세 그대로, 같은 선을 따라 일직선으로 쭉 찔러요
+        #   (몸통은 틀지 않고, 엉덩이 높이도 같게 — 손과 선장 끝이 한 줄 위에서만 움직여요)
         if stage == "idle":
             idle_end_pose()
             return
-        sh = pb["RightArm"].head.copy()
+        line_x, line_z = SH_R.x + 0.06, SH_R.z - 0.42                      # 찌르는 선 (월드)
         if stage == "load":
-            lower_hips(-0.12, FEET, dy=0.05)
-            bend("Spine", UP, -20)
-            arm("Right", sh + Vector((0.05, 0.2, -0.4)), Vector((-1, 0.4, -0.5)))
+            lower_hips(-0.16, FEET, dy=0.06)
+            wrist = Vector((line_x, SH_R.y + 0.12, line_z))                  # 허리춤으로 당겨 겨눠요
         else:
-            lower_hips(-0.2, FEET, dy=-0.15)
-            bend("Spine", Vector((1, 0, 0)), 10); bend("Spine", UP, 15)
-            arm("Right", sh + Vector((0.12, -1, -0.12)).normalized() * REACH * 0.95, Vector((-0.6, 0.2, -1)))
-        point_blade(Vector((0, -1, -0.05)), wrist_bend=90)                   # 선장 끝이 앞을 겨눠요
+            lower_hips(-0.16, FEET, dy=-0.16)                                # 앞으로 내딛어요
+            wrist = Vector((line_x, SH_R.y - 0.72, line_z))                  # 같은 선을 따라 쭉
+        bend("Spine", Vector((1, 0, 0)), 6)
+        arm("Right", wrist, Vector((-1, 0.3, -0.6)))
+        point_blade(Vector((0, -1, 0)), wrist_bend=90)                       # 선장은 늘 정면 수평
         staff_support()
     make_action("Thrust", [(0, "load"), (4, "hit"), (14, "hit"), (24, "idle")], thrust_pose)
 
@@ -1177,6 +1179,85 @@ if "staffmoves" in EXTRAS:
         chest = (pb["LeftArm"].head + pb["RightArm"].head) / 2
         arm("Left", chest + Vector((0.02, -0.28, 0.05)), Vector((1, 0.4, -1)))   # 반합장
     make_action("Stance", [(0, None), (10, None)], stance_pose)
+    rig.animation_data.action = None
+    reset_pose()
+
+# 파계승 혜광 (abbotmoves): 선장 휘두르기 · 금강불괴 · 염주 던지기
+#   StaffSweep: 선장을 오른쪽 뒤로 감아 겨눴다가(예고 동안 멈춤) 허리째 돌려 앞을 넓게(150°) 가로로 휩쓸어요
+#   Vajra: 예고 3초 동안 말 탄 자세로 선장을 세워 반합장(첫 자세로 멈춤) → 판정에 선장을 땅에 내리꽂으며 두 팔을 벌려요
+#   Beads: 왼손으로 염주를 뒤로 당겼다가(예고 동안 멈춤) 앞으로 휙 던져요
+if "abbotmoves" in EXTRAS:
+    def staff_sweep_pose(stage):
+        if stage == "idle":
+            idle_end_pose()
+            return
+        twist, wrist, lift, dy, staff = {
+            "load": (-55, Vector((-0.7, 0.35, 0.0)), -0.14, 0.06, Vector((-0.3, 1, 0.1))),
+            "hit": (0, Vector((-0.25, -0.9, -0.05)), -0.22, -0.1, Vector((-0.4, -1, 0))),
+            "follow": (55, Vector((0.6, -0.6, -0.05)), -0.22, -0.1, Vector((1, -0.35, 0))),
+            "end": (60, Vector((0.75, 0.0, -0.2)), -0.16, -0.05, Vector((0.8, 0.6, -0.1))),
+        }[stage]
+        lower_hips(lift, FEET, dy=dy)
+        bend("Spine", UP, twist * 0.6); bend("Spine1", UP, twist * 0.4)
+        sh = pb["RightArm"].head.copy()
+        arm("Right", sh + wrist.normalized() * REACH * 0.85, Vector((0.2, 0.5, -1)))
+        point_blade(staff, wrist_bend=60)
+        g, d = blade_now()
+        arm("Left", g + d * 0.4, Vector((1, 0.3, -0.8)))                    # 왼손으로 대를 함께 잡아요
+    make_action("StaffSweep", [(0, "load"), (4, "hit"), (7, "follow"), (11, "end"), (16, "end"), (26, "idle")], staff_sweep_pose)
+
+    def staff_two_hands(right_wrist, staff_dir, pole=Vector((-1, 0.3, -0.5))):
+        arm("Right", right_wrist, pole)
+        point_blade(staff_dir, wrist_bend=90)
+        g, d = blade_now()
+        arm("Left", g + d * 0.35, Vector((1, 0.3, -0.6)))                   # 왼손은 오른손 위로 대를 함께 잡아요
+
+    def vajra_pose(stage):
+        # 금강불괴: 예고 3초 동안 말 탄 자세로 선장을 세워 반합장(첫 자세로 멈춤) →
+        #   판정 순간 선장을 두 손으로 머리 위로 번쩍 들었다가 → 무릎을 깊게 굽히며 앞 땅에 내리꽂아 충격파를 터뜨려요
+        if stage == "idle":
+            idle_end_pose()
+            return
+        feet = {"Left": FEET["Left"] + Vector((0.14, 0, 0)), "Right": FEET["Right"] + Vector((-0.14, 0, 0))}
+        if stage == "stance":
+            lower_hips(-0.3, feet)
+            sh = pb["RightArm"].head.copy()
+            arm("Right", sh + Vector((-0.12, -0.15, -0.3)), Vector((-1, 0.3, -0.5)))
+            point_blade(Vector((0, -0.1, 1)), wrist_bend=90)                # 선장을 곧게 세워요
+            chest = (pb["LeftArm"].head + pb["RightArm"].head) / 2
+            arm("Left", chest + Vector((0.02, -0.28, 0.05)), Vector((1, 0.4, -1)))   # 반합장
+        elif stage == "lift":
+            lower_hips(-0.08, feet)
+            bend("Spine", Vector((1, 0, 0)), -10)                           # 가슴을 젖혀요
+            chest = (pb["LeftArm"].head + pb["RightArm"].head) / 2
+            staff_two_hands(chest + Vector((-0.04, -0.22, 0.35)), Vector((0, 0.1, 1)))    # 두 손으로 선장을 번쩍 들어 올려요 (고리는 위)
+        else:
+            deep = 1.0 if stage == "slam" else 0.92
+            lower_hips(-0.42 * deep, feet, dy=-0.06)
+            bend("Spine", Vector((1, 0, 0)), 30 * deep)                     # 깊게 숙여 내리꽂아요
+            chest = (pb["LeftArm"].head + pb["RightArm"].head) / 2
+            staff_two_hands(chest + Vector((-0.04, -0.4, -0.5)), Vector((0, 0.28, 1)))   # 선장 밑동을 앞 땅에 내리꽂아요 (고리는 위로 서요)
+    make_action("Vajra", [(0, "stance"), (2, "lift"), (4, "slam"), (14, "hold"), (24, "idle")], vajra_pose)
+
+    def beads_pose(stage):
+        # 염주 던지기: 왼손으로 염주를 머리 뒤로 높이 치켜 감았다가(예고 동안 멈춤) 몸을 앞으로 숙이며 위에서 아래로 내던져요
+        if stage == "idle":
+            idle_end_pose()
+            return
+        sh = pb["RightArm"].head.copy()
+        if stage == "load":
+            lower_hips(-0.08, FEET, dy=0.06)
+            bend("Spine", Vector((1, 0, 0)), -12); bend("Spine", UP, 28)    # 젖히며 왼어깨를 뒤로
+            sl = pb["LeftArm"].head.copy()
+            arm("Left", sl + Vector((0.12, 0.3, 0.4)), Vector((1, 0.6, 0.2)))        # 염주를 머리 뒤 위로
+        else:
+            lower_hips(-0.2, FEET, dy=-0.14)
+            bend("Spine", Vector((1, 0, 0)), 22); bend("Spine", UP, -22)    # 숙이며 왼어깨를 앞으로
+            sl = pb["LeftArm"].head.copy()
+            arm("Left", sl + Vector((-0.12, -1, -0.35)).normalized() * REACH * 1.02, Vector((1, 0, -1)))   # 앞 아래로 쭉
+        arm("Right", pb["RightArm"].head + Vector((-0.12, -0.12, -0.38)), Vector((-1, 0.3, -0.5)))
+        point_blade(Vector((0, -0.1, 1)), wrist_bend=90)                    # 선장은 오른손에 세운 채
+    make_action("Beads", [(0, "load"), (3, "throw"), (12, "throw"), (22, "idle")], beads_pose)
     rig.animation_data.action = None
     reset_pose()
 

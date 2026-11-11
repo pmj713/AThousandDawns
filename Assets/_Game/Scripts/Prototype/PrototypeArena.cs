@@ -106,6 +106,17 @@ namespace AThousandDawns.Prototype
             if (keyboard != null)
             {
                 bool elite = keyboard.shiftKey.isPressed; // Shift + 숫자: 정예 (특성은 무작위)
+                bool temple = keyboard.altKey.isPressed;  // Alt + 1~5: 폐사찰 일반 적 (Alt+Shift는 정예)
+                if (temple)
+                {
+                    if (keyboard.digit1Key.wasPressedThisFrame) SpawnKey(EnemyKind.Wraith, elite);
+                    if (keyboard.digit2Key.wasPressedThisFrame) SpawnKey(EnemyKind.Arhat, elite);
+                    if (keyboard.digit3Key.wasPressedThisFrame) SpawnKey(EnemyKind.Moktak, elite);
+                    if (keyboard.digit4Key.wasPressedThisFrame) SpawnKey(EnemyKind.Monk, elite);
+                    if (keyboard.digit5Key.wasPressedThisFrame) SpawnKey(EnemyKind.Lantern, elite);
+                }
+                else
+                {
                 if (keyboard.digit1Key.wasPressedThisFrame) SpawnKey(EnemyKind.Grunt, elite);
                 if (keyboard.digit2Key.wasPressedThisFrame) SpawnKey(EnemyKind.Boar, elite);
                 if (keyboard.digit3Key.wasPressedThisFrame) SpawnKey(EnemyKind.Archer, elite);
@@ -117,7 +128,9 @@ namespace AThousandDawns.Prototype
                 if (keyboard.digit9Key.wasPressedThisFrame) SpawnBossForTest();
                 if (keyboard.digit0Key.wasPressedThisFrame) SpawnKey(EnemyKind.Assassin, false); // 마교 살수
                 if (keyboard.minusKey.wasPressedThisFrame) SpawnMaster(EnemyKind.Qingzhu); // 고수 청죽객
+                }
                 if (keyboard.equalsKey.wasPressedThisFrame) SpawnMaster(EnemyKind.IronFist); // 고수 철권 마웅
+                if (keyboard.leftBracketKey.wasPressedThisFrame) SpawnMaster(EnemyKind.Hyegwang); // 폐사찰 고수 파계승 혜광
                 if (keyboard.gKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.FillGauge();
                 if (keyboard.lKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.GainLevelForTest(); // 시험용 레벨업
                 if (keyboard.kKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.KillForTest(); // 시험용: 바로 쓰러지기

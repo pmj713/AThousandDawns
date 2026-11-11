@@ -546,6 +546,47 @@ for f, stage in ((0, "cut1"), (4, "cut1"), (7, "cut2"), (11, "cut2"), (15, "cut3
 actions.append((act, 0, 25))
 
 
+# 금강장(SkillPalm, 혜광의 비급 · 시전 0.35초, 판정 0.12초 ≈ 4프레임째):
+#   왼손바닥을 허리춤으로 당겨 몸을 틀었다가 → 왼발을 내디디며 허리째 돌려 왼손바닥을 앞으로 곧게 내뻗어요 (손가락은 위, 손바닥은 앞).
+#   칼은 오른손에 쥔 채 뒤로 당겨 균형을 잡아요
+def palm_pose(stage):
+    rest_pose(); base_arms()
+    hands(8, GRIP, GRIP_THUMB)                                          # 왼손은 손가락을 편 손바닥
+    sh = pose["LeftUpperArm"].head.copy()
+    if stage == "load":
+        set_rot("Spine", (Z, -18)); set_rot("Chest", (Z, -12))          # 왼어깨를 뒤로 감아요
+        set_hips_height(-0.04)
+        bpy.context.view_layer.update()
+        for s in ("Left", "Right"):
+            _limb(f"{s}UpperLeg", f"{s}LowerLeg", f"{s}Foot", Q_FOOT[s], Vector((0, -1, 0)))
+        _limb("LeftUpperArm", "LeftLowerArm", "LeftHand", pose["LeftUpperArm"].head + Vector((0.05, 0.12, -0.32)), Vector((1, 0.5, -0.3)))   # 허리춤으로
+    else:
+        deep = 1.0 if stage == "strike" else 0.9
+        set_rot("Spine", (Z, 22 * deep), (X, 6)); set_rot("Chest", (Z, 14 * deep))   # 허리째 돌려 내뻗어요
+        set_hips_height(-0.12 * deep)
+        bpy.context.view_layer.update()
+        _limb("LeftUpperLeg", "LeftLowerLeg", "LeftFoot", Q_FOOT["Left"] + Vector((0.02, -0.32, 0)), Vector((0, -1, 0)))
+        _limb("RightUpperLeg", "RightLowerLeg", "RightFoot", Q_FOOT["Right"] + Vector((0, 0.2, 0)), Vector((0, -1, 0)))
+        s = pose["LeftUpperArm"].head.copy()
+        _limb("LeftUpperArm", "LeftLowerArm", "LeftHand", s + Vector((-0.12, -0.62, 0.0)), Vector((1, 0.3, -0.6)))   # 앞으로 곧게
+    # 손목을 젖혀 손가락은 위, 손바닥은 앞으로
+    bpy.context.view_layer.update()
+    w = pose["LeftHand"].head.copy()
+    _aim("LeftHand", w + Vector((0, -0.25 if stage == "load" else -0.05, 1)).normalized() * 0.1, "LeftMiddleProximal")
+    set_rot("RightUpperArm", (Y, -(DOWN_R - 15)), (X, 35)); set_rot("RightLowerArm", (X, -20))
+    aim_sword(SWORD_RUN)
+
+
+act = new_action("SkillPalm")
+for f, stage in ((0, None), (2, "load"), (4, "strike"), (8, "hold"), (14, None)):
+    if stage is None:
+        ready_pose()
+    else:
+        palm_pose(stage)
+    key_all(f)
+actions.append((act, 0, 14))
+
+
 # 반복 동작은 처음·끝이 같은 키라 이어 붙어요. 보간은 부드럽게(베지어 기본)
 rig.animation_data.action = None
 rest_pose()
