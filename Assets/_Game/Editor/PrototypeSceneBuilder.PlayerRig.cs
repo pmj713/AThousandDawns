@@ -45,7 +45,7 @@ namespace AThousandDawns.EditorTools
             foreach (var clip in clips)
             {
                 clip.name = clip.takeName.Split('|').Last();
-                clip.loopTime = clip.name == "Idle" || clip.name == "Run";
+                clip.loopTime = clip.name == "Idle" || clip.name == "Run" || clip.name == "SkillVortex";   // 탁류 소용돌이는 2초 동안 반복
                 // 몸통 위치·방향은 동작에 구워 넣어 캐릭터가 제자리에서 움직여요 (이동은 걷기 스크립트가 해요)
                 clip.lockRootRotation = clip.lockRootHeightY = clip.lockRootPositionXZ = true;
                 clip.keepOriginalOrientation = clip.keepOriginalPositionY = clip.keepOriginalPositionXZ = true;
@@ -92,6 +92,7 @@ namespace AThousandDawns.EditorTools
             controller.AddParameter("SkillQuake", AnimatorControllerParameterType.Trigger);
             controller.AddParameter("SkillFlash", AnimatorControllerParameterType.Trigger);
             controller.AddParameter("SkillPalm", AnimatorControllerParameterType.Trigger);
+            controller.AddParameter("SkillWave", AnimatorControllerParameterType.Trigger);
             var sm = controller.layers[0].stateMachine;
 
             // 동작 길이를 게임 시간(초)에 맞춰 재생 속도를 정해요
@@ -142,6 +143,15 @@ namespace AThousandDawns.EditorTools
                 toPalm.hasExitTime = false; toPalm.duration = 0.03f; toPalm.canTransitionToSelf = true;
                 toPalm.AddCondition(AnimatorConditionMode.If, 0f, "SkillPalm");
             }
+            // 탁랑참(비급): 칼을 머리 위 뒤로 치켜들었다가 앞으로 길게 내베어 파도 검기를 보내요. 회선참과 같은 시전 0.35초 (5프레임째가 내베기)
+            AnimatorState wave = null;
+            if (all.ContainsKey("SkillWave"))
+            {
+                wave = State("SkillWave", 0.35f);
+                var toWave = sm.AddAnyStateTransition(wave);
+                toWave.hasExitTime = false; toWave.duration = 0.03f; toWave.canTransitionToSelf = true;
+                toWave.AddCondition(AnimatorConditionMode.If, 0f, "SkillWave");
+            }
             // 평타는 원래 속도로 재생해요. 끝나면 대기로 넘어가고, 다음 타가 오면 이어 베요
             var attacks = new[] { State("Attack1", 0f), State("Attack2", 0f), State("Attack3", 0f) };
             sm.defaultState = idle;
@@ -165,13 +175,34 @@ namespace AThousandDawns.EditorTools
             }
             // 대시·공격이 끝나면: 걷기 스크립트는 공격·대시 중엔 Speed를 0으로 주다가 끝나면 움직임을 풀어요.
             // 그래서 Speed가 오르면 바로 달리기로, 아니면 동작이 끝까지 돈 뒤 대기로
-            foreach (var st in attacks.Append(dash).Append(skill).Append(quake).Append(flash).Append(palm).Where(s => s != null))
+            foreach (var st in attacks.Append(dash).Append(skill).Append(quake).Append(flash).Append(palm).Append(wave).Where(s => s != null))
             {
                 var r = st.AddTransition(run);
                 r.hasExitTime = false; r.duration = 0.1f;
                 r.AddCondition(AnimatorConditionMode.Greater, 0.1f, "Speed");
                 var b = st.AddTransition(idle);
                 b.hasExitTime = true; b.exitTime = 1f; b.duration = 0.12f;
+            }
+
+            // 탁류 소용돌이(비도 + 탁랑참): 윗몸만 덮어쓰는 층. 비도가 소용돌이치는 동안 InkPlayerAnimator가 무게를 1로 올려요
+            //   (다리는 아래 층의 걷기·대기를 그대로 따라요)
+            if (all.TryGetValue("SkillVortex", out var vortexClip))
+            {
+                var mask = new AvatarMask { name = "Player_UpperBody" };
+                for (var part = AvatarMaskBodyPart.Root; part < AvatarMaskBodyPart.LastBodyPart; part++)
+                    mask.SetHumanoidBodyPartActive(part, part == AvatarMaskBodyPart.Body || part == AvatarMaskBodyPart.Head
+                        || part == AvatarMaskBodyPart.LeftArm || part == AvatarMaskBodyPart.RightArm
+                        || part == AvatarMaskBodyPart.LeftFingers || part == AvatarMaskBodyPart.RightFingers);
+                AssetDatabase.AddObjectToAsset(mask, controller);
+                controller.AddLayer("Vortex");
+                var layers = controller.layers;
+                layers[1].avatarMask = mask;
+                layers[1].defaultWeight = 0f;
+                layers[1].blendingMode = AnimatorLayerBlendingMode.Override;
+                controller.layers = layers;
+                var vs = layers[1].stateMachine.AddState("SkillVortex");
+                vs.motion = vortexClip;
+                layers[1].stateMachine.defaultState = vs;
             }
 
             AssetDatabase.SaveAssets();

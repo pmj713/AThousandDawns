@@ -1764,6 +1764,58 @@ if "rivermoves" in EXTRAS:
     rig.animation_data.action = None
     reset_pose()
 
+
+# 탁랑객 (takrangmoves, 장강 고수 · 장검):
+#   Slash(베기): 오른쪽 위로 감았다가 앞을 가로로 베어 넘겨요
+#   WaveCut(물결 베기): 깊게 웅크려 칼을 오른쪽 뒤 낮게 감았다가 허리째 크게 휘둘러 왼쪽 위로 뿌려요 (검기가 날아가요)
+#   Glide(탁류 보법): 낮게 웅크려 칼을 허리춤에 겨눈 채(예고) → 미끄러져 들어오며 앞으로 쭉 찔러요
+#   Whirl(소용돌이, 반복): 머리 위에서 칼을 수평으로 빙빙 돌려요 → WhirlEnd: 칼끝을 앞 땅에 내리꽂아 물살을 터뜨려요
+if "takrangmoves" in EXTRAS:
+    TK = {   # twist, wrist, reach, lift, dy, blade, step(왼발 앞으로)
+        "s_load": (-40, Vector((-0.5, 0.2, 0.8)), 0.9, -0.08, 0.05, Vector((-0.3, 0.5, 1)), 0.0),
+        "s_cut": (40, Vector((0.6, -0.75, 0.0)), 0.95, -0.18, -0.12, Vector((1, -0.35, 0.0)), 0.35),
+        "w_load": (-60, Vector((-0.7, 0.45, -0.3)), 0.9, -0.3, 0.1, Vector((-0.4, 0.85, -0.3)), 0.1),
+        "w_mid": (0, Vector((0.0, -1, -0.1)), 0.95, -0.28, -0.12, Vector((0, -1, 0.0)), 0.45),
+        "w_swing": (50, Vector((0.65, -0.6, 0.1)), 0.95, -0.26, -0.15, Vector((1, -0.25, 0.1)), 0.5),
+        "w_end": (60, Vector((0.7, -0.2, 0.5)), 0.9, -0.2, -0.1, Vector((0.6, 0.3, 0.8)), 0.5),
+        "g_ready": (-15, Vector((-0.2, 0.25, -0.35)), 0.8, -0.32, 0.08, Vector((0, -1, 0.05)), 0.2),
+        "g_thrust": (10, Vector((0.05, -1, -0.05)), 1.0, -0.3, -0.3, Vector((0, -1, -0.02)), 0.55),
+        "e_stab": (5, Vector((0.05, -0.55, -0.85)), 0.95, -0.35, -0.15, Vector((0, -0.3, -1)), 0.4),
+    }
+
+    def tk_pose(stage):
+        if stage == "idle":
+            idle_end_pose(); return
+        twist, wrist, reach, lift, dy, blade_dir, step = TK[stage]
+        feet = {"Left": FEET["Left"] + Vector((0, -step, 0)), "Right": FEET["Right"] + Vector((0, step * 0.3, 0))}
+        lower_hips(lift, feet, dy=dy)
+        bend("Spine", UP, twist * 0.6); bend("Spine1", UP, twist * 0.4)
+        sh = pb["RightArm"].head.copy()
+        pole = Vector((-0.6, 0.3, 0)) if wrist.z > 0.3 else Vector((0.2, 0.5, -1))
+        fit_right(sh, [wrist.normalized() * REACH * reach, wrist.normalized() * REACH * reach * 0.9 + Vector((0, 0, 0.05))],
+                  (pole, Vector((-1, 0, 0)), Vector((0, 1, 0)), Vector((-0.5, 0.4, -1))), blade_dir, wrist_bend=80)
+        sl = pb["LeftArm"].head.copy()
+        arm("Left", sl + Vector((0.3, 0.15, -0.45)), Vector((1, 0.3, -0.3)))   # 왼팔은 뒤로 뻗어 균형
+
+    make_action("Slash", [(0, "s_load"), (4, "s_cut"), (12, "s_cut"), (22, "idle")], tk_pose)
+    make_action("WaveCut", [(0, "w_load"), (3, "w_mid"), (5, "w_swing"), (9, "w_end"), (18, "w_end"), (28, "idle")], tk_pose)
+    make_action("Glide", [(0, "g_ready"), (4, "g_thrust"), (12, "g_thrust"), (22, "idle")], tk_pose)
+    make_action("WhirlEnd", [(0, "e_stab"), (3, "e_stab"), (12, "e_stab"), (22, "idle")], tk_pose)
+
+    def whirl_pose(t):
+        # 머리 위에서 손이 작은 원을 그리고 칼날은 수평으로 그 원을 따라 돌아요 (12프레임 한 바퀴, 반복)
+        a = t * 2 * math.pi
+        lower_hips(-0.12, FEET)
+        sh = pb["RightArm"].head.copy()
+        hand_at = sh + Vector((0.18 + 0.12 * math.cos(a), -0.15 + 0.12 * math.sin(a), 0.62))
+        fit_right(sh, [hand_at - sh], (Vector((-1, 0, 0)), Vector((-0.6, 0.3, 0)), Vector((0, 1, 0))),
+                  Vector((-math.sin(a), math.cos(a), 0.05)), wrist_bend=90)
+        sl = pb["LeftArm"].head.copy()
+        arm("Left", sl + Vector((0.12, -0.32, 0.05)), Vector((1, 0.3, -0.6)))   # 왼손은 가슴 앞 검결
+    make_action("Whirl", [(f, f / 12) for f in range(0, 13, 2)], whirl_pose)
+    rig.animation_data.action = None
+    reset_pose()
+
 # 옮겨 굽는 데 쓴 플레이어 뼈대·메시·동작은 지워요 (내보낼 때 같이 나가지 않게)
 for o in player_objs:
     bpy.data.objects.remove(o, do_unlink=True)

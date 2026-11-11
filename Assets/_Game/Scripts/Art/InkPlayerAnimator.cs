@@ -20,6 +20,9 @@ namespace AThousandDawns.Art
         static readonly int SkillQuakeId = Animator.StringToHash("SkillQuake");
         static readonly int SkillFlashId = Animator.StringToHash("SkillFlash");
         static readonly int SkillPalmId = Animator.StringToHash("SkillPalm");
+        static readonly int SkillWaveId = Animator.StringToHash("SkillWave");
+        int _vortexLayer = -1;
+        float _vortexWeight;
 
         PlayerController _player;
         Animator _animator;
@@ -60,7 +63,8 @@ namespace AThousandDawns.Art
             _wasDashing = dashing;
 
             bool casting = _player.IsCastingSkill;
-            if (casting && !_wasCasting && (_player.Skill == SkillKind.Spin || _player.UsesDagger))   // 비도를 들면 비급을 배워도 초식은 늘 회수 (회선참과 같은 동작)
+            bool vortexSkill = _player.UsesDagger && _player.Skill == SkillKind.Takrang;   // 비도 + 탁랑참: 회수 대신 탁류 소용돌이
+            if (casting && !_wasCasting && !vortexSkill && (_player.Skill == SkillKind.Spin || _player.UsesDagger))   // 비도를 들면 비급을 배워도 초식은 늘 회수 (회선참과 같은 동작)
             {
                 _animator.ResetTrigger(AttackId);
                 _animator.SetTrigger(SkillId);
@@ -80,6 +84,19 @@ namespace AThousandDawns.Art
             {
                 _animator.ResetTrigger(AttackId);
                 _animator.SetTrigger(SkillPalmId);
+            }
+            if (casting && !_wasCasting && !_player.UsesDagger && _player.Skill == SkillKind.Takrang)   // 탁랑참: 머리 위에서 앞으로 길게 내베기
+            {
+                _animator.ResetTrigger(AttackId);
+                _animator.SetTrigger(SkillWaveId);
+            }
+            // 탁류 소용돌이: 시전부터 비도가 소용돌이치는 동안 윗몸은 손을 뻗어 조종하는 자세 (다리는 걷기·대기 그대로)
+            if (_vortexLayer < 0) _vortexLayer = _animator.GetLayerIndex("Vortex");
+            if (_vortexLayer > 0)
+            {
+                bool on = vortexSkill && (casting || _player.IsVortexing);
+                _vortexWeight = Mathf.MoveTowards(_vortexWeight, on ? 1f : 0f, Time.deltaTime / (on ? 0.1f : 0.2f));
+                _animator.SetLayerWeight(_vortexLayer, _vortexWeight);
             }
             _wasCasting = casting;
 

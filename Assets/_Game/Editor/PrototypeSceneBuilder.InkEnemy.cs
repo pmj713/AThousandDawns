@@ -46,6 +46,7 @@ namespace AThousandDawns.EditorTools
             ("Rattan", EnemyKind.Rattan, 2.5f),
             ("WaterGhost", EnemyKind.WaterGhost, 2.5f),
             ("FlagBearer", EnemyKind.FlagBearer, 3f),
+            ("Takrang", EnemyKind.Takrang, 3.8f),   // 장강 고수
         };
 
         // 패턴 동작: attack(브레인 AttackName, null이면 다른 동작이 이어 부르는 상태) → state.
@@ -60,10 +61,10 @@ namespace AThousandDawns.EditorTools
         }
 
         // 모델 고유 동작 중 반복하는 것
-        static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "ShoulderRun", "Idle", "Run", "Chant", "Rain", "Drag" };
+        static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "ShoulderRun", "Idle", "Run", "Chant", "Rain", "Drag", "Whirl" };
 
         // 고유 동작만 쓰는 적 (Generic으로 가져와요)
-        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha", "Pirate", "Harpooner", "Anchor", "Rattan", "WaterGhost", "FlagBearer" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
+        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha", "Pirate", "Harpooner", "Anchor", "Rattan", "WaterGhost", "FlagBearer", "Takrang" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
 
         static readonly Dictionary<string, MoveSpec[]> InkEnemyMoves = new Dictionary<string, MoveSpec[]>
         {
@@ -118,6 +119,15 @@ namespace AThousandDawns.EditorTools
             },
             // 깃발수: 예고 1.5초 동안 깃대를 두 손으로 들고 좌우로 세 번 흔들어요 (그대로 재생)
             ["FlagBearer"] = new[] { new MoveSpec { attack = "지휘", state = "Wave", clips = new[] { "Wave" }, mode = MoveMode.Play } },
+            // 탁랑객 (장강 고수, 장검): 베기 · 물결 베기(크게 휘둘러 검기) · 탁류 보법(웅크렸다 미끄러져 찌르기) · 소용돌이(머리 위로 칼을 빙빙 돌리다 땅에 내리꽂아 터뜨려요)
+            ["Takrang"] = new[]
+            {
+                new MoveSpec { attack = "베기", state = "Slash", clips = new[] { "Slash" } },
+                new MoveSpec { attack = "물결 베기", state = "WaveCut", clips = new[] { "WaveCut" } },
+                new MoveSpec { attack = "탁류 보법", state = "Glide", clips = new[] { "Glide" } },
+                new MoveSpec { state = "WhirlEnd", clips = new[] { "WhirlEnd" } },
+                new MoveSpec { attack = "소용돌이", state = "Whirlpool", clips = new[] { "Whirl" }, mode = MoveMode.Loop, after = "WhirlEnd" },
+            },
             // 혈불 (폐사찰 보스): 손바닥 내려찍기 · 염불(합장 반복) · 피의 비(두 팔을 하늘로 반복) · 팔 휘두르기(2페이즈, 좌우 세 번). 목탁승 부르기는 기본 Attack(손짓)
             ["BloodBuddha"] = new[]
             {
