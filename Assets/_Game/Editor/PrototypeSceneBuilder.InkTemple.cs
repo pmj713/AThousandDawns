@@ -502,9 +502,9 @@ namespace AThousandDawns.EditorTools
 
             var look = new GameObject("Ink Region Look").AddComponent<AThousandDawns.Art.InkRegionLook>();
             look.Setup(floorMat,
-                new Texture[] { null, AssetDatabase.LoadAssetAtPath<Texture2D>($"{TempleArtFolder}/Floor_Temple.png"), null },   // 장강 수채 바닥 그림은 아직 (원래 바닥)
-                new[] { bambooGroup, templeGroup, null },   // 장강 수채 먼 배경은 아직 없어요 (끔)
-                new[] { new GameObject("죽림 분위기 (없음)"), air, null },
+                new Texture[] { null, AssetDatabase.LoadAssetAtPath<Texture2D>($"{TempleArtFolder}/Floor_Temple.png") },
+                new[] { bambooGroup, templeGroup },
+                new[] { new GameObject("죽림 분위기 (없음)"), air },
                 dressing);
         }
 
