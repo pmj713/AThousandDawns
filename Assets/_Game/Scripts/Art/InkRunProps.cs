@@ -150,19 +150,30 @@ namespace AThousandDawns.Art
         }
     }
 
-    // 항아리가 깨지면(부모가 Destroy) 사금파리 몇 조각이 튀었다가 바닥에서 옅어져요
+    // 항아리가 깨지면(부모가 Destroy) 사금파리 몇 조각이 튀었다가 바닥에서 옅어져요.
+    // 다른 방으로 넘어갈 때 게임이 남은 항아리를 치우는 것도 Destroy라서, 꾸밀 때의 방(RoomRun.Room)을 기억해 두고
+    // 사라질 때 방이 바뀌었으면 치운 것이라 조용히 사라져요 (깨기는 평타·부딪힘 어느 쪽이든 같은 방에서 일어나요)
     public class InkJarShatter : MonoBehaviour
     {
         Mesh _shard;
         Material _material;
         static bool s_quitting;
+        AThousandDawns.Prototype.RoomRun _run;
+        object _room;
 
-        public void Setup(Mesh shard, Material material) { _shard = shard; _material = material; }
+        public void Setup(Mesh shard, Material material)
+        {
+            _shard = shard;
+            _material = material;
+            _run = FindFirstObjectByType<AThousandDawns.Prototype.RoomRun>();
+            _room = _run != null ? _run.Room : null;
+        }
 
         void OnApplicationQuit() => s_quitting = true;
 
         void OnDestroy()
         {
+            if (_run != null && !ReferenceEquals(_run.Room, _room)) return;   // 방을 옮길 때 치워진 항아리
             if (!Application.isPlaying || s_quitting || _shard == null || !gameObject.scene.isLoaded) return; // 에디터 미리보기·씬을 닫을 때는 만들지 않아요
             var origin = transform.position + Vector3.up * 0.3f;
             for (int i = 0; i < 7; i++)
