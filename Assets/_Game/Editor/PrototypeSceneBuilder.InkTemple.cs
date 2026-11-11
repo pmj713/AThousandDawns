@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 namespace AThousandDawns.EditorTools
@@ -11,7 +12,7 @@ namespace AThousandDawns.EditorTools
     //   마을과 녹림왕 방(불타는 죽림 연출이 대나무에 붙어 있음)은 그대로 둬요.
     public static partial class PrototypeSceneBuilder
     {
-        static void DressTempleInk(Material stoneMat, Material woodMat, Material roofX)
+        static void DressTempleInk(Material floorMat, Material stoneMat, Material woodMat, Material roofX)
         {
             var bamboo = new List<GameObject>();
             var temple = new List<GameObject>();
@@ -61,6 +62,93 @@ namespace AThousandDawns.EditorTools
                 new AThousandDawns.Art.InkRegionDressing.Set { name = "폐사찰", objects = temple.ToArray() },
             });
             foreach (var go in temple) go.SetActive(false);   // 처음(죽림)엔 꺼 둬요
+
+            DressTempleLook(floorMat, dressing);
+        }
+
+        const string TempleArtFolder = "Assets/_Game/Art/Env/Temple";
+
+        // 폐사찰 바탕: 바닥 무늬(깨진 돌판 마당) · 먼 배경(무너진 절 산수화) · 흩날리는 낙엽과 재 · 바닥에 깔린 옅은 안개.
+        // InkRegionLook이 지역에 맞는 것만 켜고 바닥 재질 무늬를 바꿔요
+        static void DressTempleLook(Material floorMat, AThousandDawns.Art.InkRegionDressing dressing)
+        {
+            ImportAsTiledTexture($"{TempleArtFolder}/Floor_Temple.png");
+            ImportAsSprite($"{TempleArtFolder}/Source/Backdrop_Temple.png");
+
+            // 먼 배경: 죽림 배경(Backdrop_Ink) 자리마다 폐사찰 배경을 같이 세우고 둘 중 하나만 켜요
+            var bambooBacks = new List<GameObject>();
+            var templeBacks = new List<GameObject>();
+            foreach (var sr in Object.FindObjectsByType<SpriteRenderer>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                         .Where(s => s.name == "Backdrop_Ink").ToList())
+            {
+                var t = sr.transform;
+                Billboard(t.parent, "Backdrop_Temple", $"{TempleArtFolder}/Source/Backdrop_Temple.png", t.position, sr.bounds.size.y);
+                var temple = t.parent.Find("Backdrop_Temple").gameObject;
+                temple.transform.SetSiblingIndex(t.GetSiblingIndex() + 1);
+                temple.SetActive(false);
+                bambooBacks.Add(sr.gameObject);
+                templeBacks.Add(temple);
+            }
+            var backs = new GameObject("Backdrops by Region").transform;
+            var bambooGroup = Group(backs, "죽림", bambooBacks);
+            var templeGroup = Group(backs, "폐사찰", templeBacks);
+
+            // 분위기: 죽림은 없음, 폐사찰은 낙엽·재 + 바닥 안개
+            var air = new GameObject("Temple Atmosphere (낙엽·안개)");
+            air.SetActive(false);
+            var leafMat = GetShaderMaterial("Ink_Leaf", "Universal Render Pipeline/Unlit");
+            leafMat.SetColor("_BaseColor", new Color(0.32f, 0.25f, 0.18f, 1f));   // 마른 낙엽 먹갈색
+            leafMat.SetFloat("_Cull", 0f);
+            air.AddComponent<AThousandDawns.Art.InkDriftingLeaves>().Setup(leafMat);
+            var mistTex = Resources.Load<Texture2D>("FxArt/InkMist");
+            if (mistTex != null)
+            {
+                var mistMat = GetShaderMaterial("Ink_GroundMist", "Universal Render Pipeline/Unlit");
+                mistMat.SetTexture("_BaseMap", mistTex);
+                mistMat.SetColor("_BaseColor", new Color(0.93f, 0.91f, 0.86f, 0.45f));   // 한지색 옅은 안개
+                mistMat.SetFloat("_Surface", 1f);   // 반투명
+                mistMat.SetFloat("_Blend", 0f);
+                mistMat.SetFloat("_ZWrite", 0f);
+                mistMat.SetOverrideTag("RenderType", "Transparent");
+                mistMat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+                mistMat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                mistMat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                mistMat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                // 층 방 둘레 벽 너머(북·동·서)에 낮게 깐 안개 판
+                foreach (var (pos, size) in new[]
+                         {
+                             (CombatCenter + new Vector3(0f, 0.25f, CombatSize.y * 0.5f + 3f), new Vector2(CombatSize.x + 10f, 6f)),
+                             (CombatCenter + new Vector3(-CombatSize.x * 0.5f - 3f, 0.25f, 0f), new Vector2(6f, CombatSize.y + 6f)),
+                             (CombatCenter + new Vector3(CombatSize.x * 0.5f + 3f, 0.25f, 0f), new Vector2(6f, CombatSize.y + 6f)),
+                         })
+                {
+                    var q = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                    q.name = "Ground Mist";
+                    Object.DestroyImmediate(q.GetComponent<Collider>());
+                    q.transform.SetParent(air.transform, false);
+                    q.transform.SetPositionAndRotation(pos, Quaternion.Euler(90f, 0f, 0f));
+                    q.transform.localScale = new Vector3(size.x, size.y, 1f);
+                    var r = q.GetComponent<Renderer>();
+                    r.sharedMaterial = mistMat;
+                    r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                }
+            }
+
+            var look = new GameObject("Ink Region Look").AddComponent<AThousandDawns.Art.InkRegionLook>();
+            look.Setup(floorMat,
+                new Texture[] { null, AssetDatabase.LoadAssetAtPath<Texture2D>($"{TempleArtFolder}/Floor_Temple.png") },
+                new[] { bambooGroup, templeGroup },
+                new[] { new GameObject("죽림 분위기 (없음)"), air },
+                dressing);
+        }
+
+        // 흩어진 오브젝트를 한 번에 켜고 끄는 묶음: 실제로는 부모를 바꾸지 않고, 켜고 끌 때 같이 따라오게 표시 오브젝트에 매달아요
+        static GameObject Group(Transform parent, string name, List<GameObject> members)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.AddComponent<AThousandDawns.Art.InkActiveMirror>().Setup(members.ToArray());
+            return go;
         }
 
         // 대나무 묶음 자리의 절 소품: 키 큰 자리는 돌기둥·석탑·석등·비석을 돌아가며, 낮은 자리(카메라 쪽)는 무너진 돌담 조각
