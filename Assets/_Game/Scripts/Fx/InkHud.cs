@@ -28,7 +28,7 @@ namespace AThousandDawns.Fx
         const float BarW = 400f, BarH = 40f, GaugeW = 330f, GaugeH = 20f, KeywordSize = 38f;
         const float PipSize = 30f, GourdSize = 48f, ChevronW = 26f;
 
-        static Texture2D _stroke, _enso, _gourd, _blot, _chevron, _spin, _bamboo, _quake, _recall, _recallGray;
+        static Texture2D _stroke, _enso, _gourd, _blot, _chevron, _spin, _bamboo, _quake, _recall, _recallGray, _palm;
         static bool _loaded;
         static GUIStyle _number, _small, _badge, _gaugeLabel, _key;
         static float _lagHp = -1f;   // 깎인 자리 (따라 줄어드는 체력)
@@ -200,6 +200,7 @@ namespace AThousandDawns.Fx
         {
             SkillKind.BambooFlash => _bamboo,
             SkillKind.Quake => _quake,
+            _ when p.Skill.ToString() == "Palm" && _palm != null => _palm, // 금강장 (파계승 혜광의 비급) — 기획 쪽 SkillKind.Palm이 들어오기 전에도 컴파일되게 이름으로
             _ => p.UsesDagger ? _recall : _spin,
         };
 
@@ -358,6 +359,7 @@ namespace AThousandDawns.Fx
             _quake = Resources.Load<Texture2D>("HudArt/Skill_Quake");
             _recall = Resources.Load<Texture2D>("HudArt/Skill_Recall");
             _recallGray = Resources.Load<Texture2D>("HudArt/Skill_Recall_Gray"); // 비도 0개 (회수 불가)
+            _palm = Resources.Load<Texture2D>("HudArt/Skill_Palm");
             _blot = Resources.Load<Texture2D>("HudArt/Blot"); // 흰 모양 (GUI.color로 물들여요)
             _chevron = Resources.Load<Texture2D>("HudArt/Chevron"); // 흰 모양 붓 >
         }
