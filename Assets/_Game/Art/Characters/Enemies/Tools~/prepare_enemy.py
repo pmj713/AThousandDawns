@@ -1012,20 +1012,20 @@ if "statue" in EXTRAS:
         if stage == "idle":
             idle_end_pose(); return
         if stage == "statue":
-            lower_hips(-0.04, FEET)
+            lower_hips(0.0, FEET)                                            # 다리를 쭉 편 채 굳어 있어요
             bend("Spine", Vector((1, 0, 0)), 6)
             bend("Neck", Vector((1, 0, 0)), 22)                              # 고개를 숙여요
             prayer_arms()
         elif stage == "tremble":
-            lower_hips(-0.08, FEET)
+            lower_hips(-0.02, FEET)
             bend("Spine", Vector((1, 0, 0)), 10)
             bend("Neck", Vector((1, 0, 0)), 14)
             for s in ("LeftShoulder", "RightShoulder"):
                 bend(s, Vector((0, 1, 0)), 10 if s.startswith("Left") else -10)   # 어깨를 움츠려요
             prayer_arms(0.03)
         else:   # burst: 고개를 들고 가슴을 펴며 두 팔을 아래로 떨쳐 내려요
-            lower_hips(-0.16, FEET)
-            bend("Spine", Vector((1, 0, 0)), -10)
+            lower_hips(0.0, FEET)                                            # 다리는 쭉 편 채로
+            bend("Spine", Vector((1, 0, 0)), -4)
             bend("Neck", Vector((1, 0, 0)), -12)
             for s, sx in (("Left", 1), ("Right", -1)):
                 sh = pb[f"{s}Arm"].head.copy()
