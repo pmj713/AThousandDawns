@@ -24,7 +24,7 @@ namespace AThousandDawns.Player
         bool _flashChained;
 
         // 이펙트 신호 (아트: Scripts/Art/InkSkillFx). 판정과 상관없이 그림만 그려요.
-        public enum SkillFxKind { FlashDash, QuakeWave, PalmShield, PalmBlast }
+        public enum SkillFxKind { FlashDash, QuakeWave, PalmShield, PalmBlast, WaveSlash }
         public struct SkillFxCue { public SkillFxKind Kind; public Vector3 From, To, Dir; public float Radius, Angle; public int Count; }
         public static event System.Action<PlayerController, SkillFxCue> SkillCue;
         void SkillFx(SkillFxCue cue) => SkillCue?.Invoke(this, cue);
@@ -174,6 +174,7 @@ namespace AThousandDawns.Player
             Vector3 from = transform.position;
             Vector3 to = from + dir * length;
             if (swingFlash != null) swingFlash.Show(from + dir * (length * 0.5f), dir, length * 0.5f, 30f, 0.2f);
+            SkillFx(new SkillFxCue { Kind = SkillFxKind.WaveSlash, From = from, Dir = dir, Radius = length, Angle = width });
             var hit = PlayerHit(_skillDamage * ratio);
             hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
             int count = HitLine(from, to, width, hit, HitTag.Skill);
