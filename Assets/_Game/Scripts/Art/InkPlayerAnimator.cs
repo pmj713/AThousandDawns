@@ -60,23 +60,23 @@ namespace AThousandDawns.Art
             _wasDashing = dashing;
 
             bool casting = _player.IsCastingSkill;
-            if (casting && !_wasCasting && _player.Skill == SkillKind.Spin)
+            if (casting && !_wasCasting && (_player.Skill == SkillKind.Spin || _player.UsesDagger))   // 비도를 들면 비급을 배워도 초식은 늘 회수 (회선참과 같은 동작)
             {
                 _animator.ResetTrigger(AttackId);
                 _animator.SetTrigger(SkillId);
             }
-            if (casting && !_wasCasting && _player.Skill == SkillKind.Quake)   // 붕산권: 땅 내려치기
+            if (casting && !_wasCasting && !_player.UsesDagger && _player.Skill == SkillKind.Quake)   // 붕산권: 땅 내려치기
             {
                 _animator.ResetTrigger(AttackId);
                 _animator.SetTrigger(SkillQuakeId);
             }
-            if (casting && !_wasCasting && _player.Skill == SkillKind.BambooFlash)   // 죽림섬: 좌우로 번갈아 베어 넘기기
+            if (casting && !_wasCasting && !_player.UsesDagger && _player.Skill == SkillKind.BambooFlash)   // 죽림섬: 좌우로 번갈아 베어 넘기기
             {
                 _animator.ResetTrigger(AttackId);
                 _animator.SetTrigger(SkillFlashId);
             }
             // 금강장: SkillKind.Palm (기획·개발이 추가 중이라 이름으로 비교해요 — 들어오기 전에도 컴파일되게)
-            if (casting && !_wasCasting && _player.Skill.ToString() == "Palm")
+            if (casting && !_wasCasting && !_player.UsesDagger && _player.Skill.ToString() == "Palm")
             {
                 _animator.ResetTrigger(AttackId);
                 _animator.SetTrigger(SkillPalmId);
