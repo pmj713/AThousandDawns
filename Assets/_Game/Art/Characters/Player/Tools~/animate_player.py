@@ -625,6 +625,36 @@ act = new_action("SkillVortex")
 for f in range(0, 25, 3):
     vortex_pose(f / 24); key_all(f)
 actions.append((act, 0, 24))
+
+# 비도 순간이동(DaggerFlash, 비도 + 죽림섬 · 반복): 비도 자리로 0.12초마다 순간이동하며 베어 넘겨요.
+#   죽림섬의 베어 넘긴 자세를 4프레임(≈0.13초)마다 좌우로 번갈아 (8프레임 한 바퀴)
+act = new_action("DaggerFlash")
+for f, stage in ((0, "cut1"), (4, "cut2"), (8, "cut1")):
+    flash_pose(stage); key_all(f)
+actions.append((act, 0, 8))
+
+
+# 비도 호신륜(SkillHalo, 비도 + 금강장 · 3초 반복 · 윗몸만 덮어써요):
+#   두 팔을 가슴 높이에서 양옆 앞으로 벌려 손바닥을 아래로 펴고, 비도 고리를 두른 채 손을 천천히 돌려 이끌어요
+def halo_pose(t):
+    rest_pose(); base_arms()
+    hands(8, 8, GRIP_THUMB)
+    a = t * 2 * math.pi
+    set_rot("Spine", (Z, 8 * math.sin(a)), (X, 4)); set_rot("Chest", (Z, 6 * math.sin(a)))
+    bpy.context.view_layer.update()
+    for s, sx in (("Left", 1), ("Right", -1)):
+        sh = pose[f"{s}UpperArm"].head.copy()
+        k = math.sin(a + (0 if s == "Left" else math.pi))
+        _limb(f"{s}UpperArm", f"{s}LowerArm", f"{s}Hand", sh + Vector((sx * 0.22, -0.4 - 0.05 * k, -0.2 + 0.05 * k)), Vector((sx * 0.4, 0.6, -0.6)))   # 팔을 몸 앞 비스듬히 아래로 벌려요
+        bpy.context.view_layer.update()
+        w = pose[f"{s}Hand"].head.copy()
+        _aim(f"{s}Hand", w + Vector((sx * 0.6, -0.6, -0.2)).normalized() * 0.1, f"{s}MiddleProximal")   # 손바닥은 아래, 손끝은 바깥 앞
+
+
+act = new_action("SkillHalo")
+for f in range(0, 25, 4):
+    halo_pose(f / 24); key_all(f)
+actions.append((act, 0, 24))
 # 반복 동작은 처음·끝이 같은 키라 이어 붙어요. 보간은 부드럽게(베지어 기본)
 rig.animation_data.action = None
 rest_pose()
