@@ -29,7 +29,12 @@ namespace AThousandDawns.EditorTools
 
             var mat = GetShaderMaterial("Ink_OutsideGround", floorMat.shader.name);
             mat.CopyPropertiesFromMaterial(floorMat);
-            mat.SetColor("_BaseColor", floorMat.GetColor("_BaseColor") * new Color(0.8f, 0.8f, 0.8f, 1f)); // 방 바닥보다 한 톤 어둡게 (방이 도드라지게)
+            // 방 바닥 재질은 종이색 덧칠이 세고(PaperLift 0.55) 흑백이라 땅 그림이 하얗게 날아가요 → 덧칠 줄이고 색을 조금 남기고 어둡게
+            mat.SetColor("_BaseColor", new Color(0.72f, 0.72f, 0.7f, 1f));
+            mat.SetFloat("_PaperLift", 0.12f);
+            mat.SetFloat("_Saturation", 0.45f);
+            mat.SetFloat("_TileSize", 6f);
+            mat.SetFloat("_OutlineWidth", 0f);
             if (textures[0] != null) mat.SetTexture("_BaseMap", textures[0]);
             EditorUtility.SetDirty(mat);
 
