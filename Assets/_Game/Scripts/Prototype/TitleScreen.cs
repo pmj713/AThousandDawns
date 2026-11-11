@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 namespace AThousandDawns.Prototype
 {
     // 시작 화면 (기획 대화 시작 화면안, IMGUI). 배경·붓글씨 제목·낙관·붓 밑줄·프롤로그는 아트 세션 그림 (Art/UI/Title, 없으면 글자로).
-    //   배경은 진행에 따라 (죽림 → 폐사찰 → 빙궁 → 천마총 → 노을) · 제목은 가로 68% 지점 세로쓰기 · 왼쪽 아래: 버튼 4개 · 오른쪽 아래: 버전
+    //   배경은 진행에 따라 (죽림 → 폐사찰 → 장강 수채 → 천마총 → 노을) · 제목은 가로 68% 지점 세로쓰기 · 왼쪽 아래: 버튼 4개 · 오른쪽 아래: 버전
     //   이어하기 (저장이 있을 때, 처음에 선택) → 판 중간 저장이 있으면 그 방부터, 없으면 마을
     //   시작하기 (저장이 없을 때) → 프롤로그 (글 4장, 넘기기 가능) → 첫 판
     //   설정 (SettingsPanel, 일시정지 메뉴와 같은 창) · 크레딧 · 종료 (확인 없이)
@@ -173,7 +173,7 @@ namespace AThousandDawns.Prototype
             if (bg != null)
             {
                 GUI.DrawTexture(new Rect(0, 0, w, h), bg, ScaleMode.ScaleAndCrop);
-                DrawLeaves(w, h, _meta.bossKills == 2 && _meta.finalBossKills == 0); // 설산 빙궁은 눈
+                DrawLeaves(w, h);
             }
             var title = ItemIcons.TitleArt("Title");
             if (title != null) DrawArtTitle(w, h, title);
@@ -190,7 +190,7 @@ namespace AThousandDawns.Prototype
         public static string BackgroundName(MetaSave meta) =>
             meta.finalBossKills > 0 ? "Bg_TombSunset"
             : meta.bossKills >= 3 ? "Bg_Tomb"
-            : meta.bossKills == 2 ? "Bg_IcePalace"
+            : meta.bossKills == 2 ? "Bg_River"
             : meta.bossKills == 1 ? "Bg_Temple"
             : "Bg_Bamboo";
 
@@ -209,11 +209,11 @@ namespace AThousandDawns.Prototype
             GUI.Label(new Rect(cx - 200f, rect.yMax + 44f, 400f, 30f), "같은 아침을, 천 번.", _small);
         }
 
-        // 날리는 대나무 잎 (설산이면 흰 눈): 시간으로만 위치를 정해 상태가 없어요
-        void DrawLeaves(float w, float h, bool snow)
+        // 날리는 대나무 잎: 시간으로만 위치를 정해 상태가 없어요
+        void DrawLeaves(float w, float h)
         {
             var leaf = ItemIcons.TitleArt("BambooLeaf");
-            if (!snow && leaf == null) return;
+            if (leaf == null) return;
             float t = Time.unscaledTime;
             var oldMatrix = GUI.matrix;
             var oldColor = GUI.color;
@@ -223,12 +223,6 @@ namespace AThousandDawns.Prototype
                 float p = (t * speed + seed) % 1f; // 0 → 1: 오른쪽 위에서 왼쪽 아래로
                 float x = w * (1.05f - p * 1.1f) + Mathf.Sin(t * 0.9f + i) * 40f;
                 float y = h * (-0.05f + p * 1.1f) + i * 37f % (h * 0.3f);
-                if (snow)
-                {
-                    GUI.color = new Color(1f, 1f, 1f, 0.8f);
-                    GUI.DrawTexture(new Rect(x, y, 6f, 6f), Texture2D.whiteTexture);
-                    continue;
-                }
                 float size = 22f + seed * 14f;
                 GUIUtility.RotateAroundPivot(t * (40f + seed * 60f) + i * 40f, new Vector2(x, y));
                 GUI.color = new Color(1f, 1f, 1f, 0.75f);
