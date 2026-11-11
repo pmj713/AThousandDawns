@@ -58,6 +58,15 @@ Shader "AThousandDawns/InkCharacter"
 
             // 지역 색 양 (InkColorZones가 전역으로 정해요): 0 = 재질 채도 그대로(수묵), 1 = 원래 색 전부
             float _InkColorAmount;
+            // 수묵 강도 조절 (InkLookSettings가 전역으로 정해요, 모두 0이면 원래 모습)
+            //   _InkCharSoften: 0 = 수묵 그대로, 1 = 먹 단계·가장자리 먹 없이 원래 색과 부드러운 명암
+            //   _InkCharColorFloor: 지역이 바래도 캐릭터·소품에 남길 최소 색 (0~1)
+            float _InkCharSoften;
+            float _InkCharColorFloor;
+            //   _InkCharOutlineThin: 0 = 붓 외곽선 그대로, 1 = 외곽선 없음 (작은 캐릭터가 먹 덩어리로 뭉개지지 않게)
+            //   _InkCharLift: 0 = 그대로, 1 = 어두운 곳을 크게 밝혀요 (짙은 옷 주름·얼굴이 보이게)
+            float _InkCharOutlineThin;
+            float _InkCharLift;
 
         float Hash13(float3 p)
         {
@@ -160,13 +169,19 @@ Shader "AThousandDawns/InkCharacter"
                 // 바탕색: 채도를 낮추고 종이색 쪽으로 조금 밝혀요
                 half3 baseRgb = _BaseColor.rgb * SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv).rgb;
                 half3 gray = Luminance(baseRgb).xxx;
-                half3 tint = lerp(gray, baseRgb, lerp(_Saturation, 1.0, _InkColorAmount));
+                half3 tint = lerp(gray, baseRgb, max(lerp(_Saturation, 1.0, _InkColorAmount), _InkCharColorFloor));
                 half3 paperLit = lerp(tint, _PaperColor.rgb, lerp(0.35, 0.12, _InkColorAmount));
                 half3 color = lerp(_InkColor.rgb, paperLit, tone);
 
                 // 종이 결
                 float grain = Hash13(float3(floor(input.positionCS.xy * 0.5), 7.0));
                 color *= 1.0 - (grain - 0.5) * _PaperGrain;
+
+                // 수묵 강도 줄이기: 먹 단계·가장자리 먹 대신 원래 색에 부드러운 명암 (캐릭터가 배경에서 또렷하게)
+                half3 plain = lerp(tint, baseRgb, _InkCharSoften) * lerp(0.55, 1.05, lit);
+                color = lerp(color, plain, _InkCharSoften);
+                // 어두운 곳 밝히기 (밝은 곳은 거의 그대로)
+                color = 1.0 - (1.0 - color) * (1.0 - _InkCharLift * 0.5);
 
                 color = MixFog(color, input.fogFactor);
                 return half4(color, 1.0);
@@ -208,7 +223,7 @@ Shader "AThousandDawns/InkCharacter"
                 float3 normalCS = mul((float3x3)UNITY_MATRIX_VP, normalWS);
                 float2 dir = normalize(normalCS.xy + 1e-5);
                 float brush = lerp(1.0, ValueNoise(positionWS * _OutlineNoiseScale) * 1.8, _OutlineJitter);
-                positionCS.xy += dir * (_OutlineWidth * brush * 2.0 / _ScreenParams.xy) * positionCS.w;
+                positionCS.xy += dir * (_OutlineWidth * (1.0 - _InkCharOutlineThin) * brush * 2.0 / _ScreenParams.xy) * positionCS.w;
 
                 output.positionCS = positionCS;
                 output.fogFactor = ComputeFogFactor(positionCS.z);

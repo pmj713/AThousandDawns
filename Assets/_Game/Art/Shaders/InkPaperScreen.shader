@@ -52,6 +52,8 @@ Shader "AThousandDawns/InkPaperScreen"
 
                 // 지역 색 양 (InkColorZones가 전역으로 정해요): 0 = 재질 채도 그대로(수묵), 1 = 원래 색 전부
                 float _InkColorAmount;
+                // 화면 종이 효과 줄이기 (InkLookSettings가 전역으로 정해요): 0 = 그대로, 1 = 효과 없음
+                float _InkScreenSoften;
 
             float Hash12(float2 p)
             {
@@ -73,6 +75,7 @@ Shader "AThousandDawns/InkPaperScreen"
             {
                 float2 uv = input.texcoord;
                 half3 color = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, uv).rgb;
+                half3 original = color;
 
                 // 색 바램: 붉은 기가 강한 곳은 덜 바래요 (공격 예고·결계·플레이어가 읽히게)
                 half luminance = Luminance(color);
@@ -94,6 +97,7 @@ Shader "AThousandDawns/InkPaperScreen"
                 float fiber = Noise2(px * float2(0.012, 0.18)) * 0.6 + Noise2(px.yx * float2(0.015, 0.2)) * 0.4 - 0.5;
                 color *= 1.0 + grain * _Grain + fiber * _Fiber;
 
+                color = lerp(color, original, _InkScreenSoften);
                 return half4(color, 1.0);
             }
             ENDHLSL
