@@ -587,6 +587,44 @@ for f, stage in ((0, None), (2, "load"), (4, "strike"), (8, "hold"), (14, None))
 actions.append((act, 0, 14))
 
 
+
+# 탁랑참(SkillWave, 탁랑객의 비급 · 회선참과 같은 시전 0.35초, 몸은 돌지 않아요):
+#   칼을 머리 위 뒤로 크게 치켜들었다가 → 왼발을 깊게 내디디며 앞으로 길게 내베어 파도 검기를 보내요 → 잠깐 버티다 준비 자세로
+act = new_action("SkillWave")
+for f, args in ((0, None),
+                (3, (175, 100, -12, 0.1)),    # 머리 위 뒤로 크게 치켜들기
+                (5, (80, 0, 22, 1.0)),        # 앞으로 길게 내베기 (판정)
+                (8, (62, 0, 24, 1.0)),
+                (12, None)):
+    if args is None:
+        ready_pose()
+    else:
+        chop_pose(*args)
+    key_all(f)
+actions.append((act, 0, 12))
+
+
+# 탁류 소용돌이(SkillVortex, 비도 + 탁랑참 · 2초 반복 · 윗몸만 덮어써요):
+#   왼손바닥을 앞으로 뻗어 소용돌이를 붙잡고 손을 천천히 둥글게 돌리며 조종해요. 오른손은 검결(두 손가락)로 가슴 앞에
+def vortex_pose(t):
+    rest_pose(); base_arms()
+    hands(8, 70, GRIP_THUMB)
+    a = t * 2 * math.pi
+    set_rot("Spine", (Z, 12 + 4 * math.sin(a)), (X, 6)); set_rot("Chest", (Z, 8))
+    bpy.context.view_layer.update()
+    s = pose["LeftUpperArm"].head.copy()
+    _limb("LeftUpperArm", "LeftLowerArm", "LeftHand", s + Vector((-0.1 + 0.07 * math.cos(a), -0.58, 0.02 + 0.07 * math.sin(a))), Vector((1, 0.3, -0.6)))
+    bpy.context.view_layer.update()
+    w = pose["LeftHand"].head.copy()
+    _aim("LeftHand", w + Vector((0.15 * math.cos(a), -0.1, 1)).normalized() * 0.1, "LeftMiddleProximal")   # 손바닥은 앞, 손끝이 따라 돌아요
+    r = pose["RightUpperArm"].head.copy()
+    _limb("RightUpperArm", "RightLowerArm", "RightHand", r + Vector((0.18, -0.25, -0.12)), Vector((-1, 0.5, -0.6)))   # 검결: 가슴 앞
+
+
+act = new_action("SkillVortex")
+for f in range(0, 25, 3):
+    vortex_pose(f / 24); key_all(f)
+actions.append((act, 0, 24))
 # 반복 동작은 처음·끝이 같은 키라 이어 붙어요. 보간은 부드럽게(베지어 기본)
 rig.animation_data.action = None
 rest_pose()
