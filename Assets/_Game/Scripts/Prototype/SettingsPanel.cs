@@ -8,7 +8,7 @@ namespace AThousandDawns.Prototype
 {
     // 설정창 (시작 화면·일시정지 메뉴가 같이 써요). 줄마다 ◀ 값 ▶, 바꾸면 바로 저장해요.
     // 키보드: 위아래 줄 고르기 · 좌우 값 바꾸기 · Esc 닫기 (패드: 십자 · B)
-    // 소리(음량)는 다른 작업에서 Rows()에 줄을 더해요.
+    // 소리: 전체 · 음악 · 효과음 (0~100%, 10씩).
     public sealed class SettingsPanel
     {
         public sealed class Row
@@ -149,6 +149,9 @@ namespace AThousandDawns.Prototype
             },
             new Row { Section = "게임플레이", Label = "경맥도 기 숫자", Value = () => S.qiNumbers == GameSettings.QiNumbers.Always ? "항상" : "마우스를 올렸을 때만", Step = d => S.qiNumbers = Cycle(S.qiNumbers, d) },
             new Row { Section = "게임플레이", Label = "확인 창", Value = () => S.confirmDialogs ? "켜기 (녹이기 · 단전 · 이혈 전에 묻기)" : "끄기", Step = d => S.confirmDialogs = !S.confirmDialogs },
+            new Row { Section = "소리", Label = "전체 음량", Value = () => $"{S.masterVolume}%", Step = d => S.masterVolume = Mathf.Clamp(S.masterVolume + d * 10, 0, 100) },
+            new Row { Section = "소리", Label = "음악", Value = () => $"{S.musicVolume}%", Step = d => S.musicVolume = Mathf.Clamp(S.musicVolume + d * 10, 0, 100) },
+            new Row { Section = "소리", Label = "효과음", Value = () => $"{S.sfxVolume}%", Step = d => S.sfxVolume = Mathf.Clamp(S.sfxVolume + d * 10, 0, 100) },
             new Row { Section = "접근성", Label = "화면 흔들림", Value = () => $"{S.screenShake}%", Step = d => S.screenShake = Mathf.Clamp(S.screenShake + d * 10, 0, 100) },
             new Row { Section = "조작 키", Label = "기본값으로", Value = () => "좌우를 누르면 모든 키를 처음대로", Step = d => KeyBindings.ResetAll() },
             new Row
@@ -261,7 +264,7 @@ namespace AThousandDawns.Prototype
                 y += 42f;
             }
             GUI.EndScrollView();
-            GUI.Label(new Rect(area.x + 30f, area.yMax - 44f, area.width - 60f, 30f), "위아래 고르기 · 좌우 바꾸기 (조작 키는 Enter·클릭 뒤 새 키) · Esc 닫기   (소리 설정은 아직 없어요)", _hint);
+            GUI.Label(new Rect(area.x + 30f, area.yMax - 44f, area.width - 60f, 30f), "위아래 고르기 · 좌우 바꾸기 (조작 키는 Enter·클릭 뒤 새 키) · Esc 닫기", _hint);
             return GUI.Button(new Rect(area.xMax - 130f, area.y + 22f, 100f, 40f), "닫기", _arrow);
         }
 

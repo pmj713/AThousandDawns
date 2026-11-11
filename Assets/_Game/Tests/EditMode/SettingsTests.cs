@@ -89,5 +89,25 @@ namespace AThousandDawns.Tests
             new GameSettings().Save();
             GameSettings.Reload();
         }
+        [Test]
+        public void 소리는_전체_음악_효과음을_10씩()
+        {
+            new GameSettings().Save();
+            GameSettings.Reload();
+            Assert.AreEqual(100, GameSettings.Current.masterVolume);
+            Assert.AreEqual(80, GameSettings.Current.musicVolume, "음악은 처음 80%");
+            var panel = new SettingsPanel();
+            int Row(string label) => System.Linq.Enumerable.First(System.Linq.Enumerable.Range(0, panel.AllRows.Count), i => panel.AllRows[i].Label == label);
+            panel.Change(Row("전체 음량"), +1);
+            Assert.AreEqual(100, GameSettings.Current.masterVolume, "100이 끝");
+            panel.Change(Row("효과음"), -1);
+            panel.Change(Row("음악"), -1);
+            GameSettings.Reload();
+            Assert.AreEqual(90, GameSettings.Current.sfxVolume, "저장돼요");
+            Assert.AreEqual(70, GameSettings.Current.musicVolume);
+            Assert.AreEqual(0.7f, GameSettings.Current.MusicScale, 1e-4f);
+            new GameSettings().Save();
+            GameSettings.Reload();
+        }
     }
 }

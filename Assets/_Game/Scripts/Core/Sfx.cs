@@ -18,7 +18,7 @@ namespace AThousandDawns.Core
     // 효과음 (VARCO Sound, Audio/SFX). 씬마다 하나 두고 어디서든 Sfx.Play(SfxId.X)로 불러요.
     // 한 소리에 여러 버전이 있으면 무작위로 하나 (평타는 몇 번째 타인지로 고를 수 있어요).
     // 같은 소리가 한꺼번에 여러 번 나면 시끄러워서 소리마다 최소 간격을 둬요. 소리가 없으면(테스트 등) 그냥 넘어가요.
-    // 음량 설정이 생기면 Volume에 곱해요.
+    // 음량: 설정의 효과음 비율을 Volume에 곱해요.
     public sealed class Sfx : MonoBehaviour
     {
         [Serializable]
@@ -31,7 +31,7 @@ namespace AThousandDawns.Core
         [SerializeField] int voices = 8;
         [SerializeField] float minInterval = 0.05f;
 
-        const float Volume = 0.8f;
+        static float Volume => 0.8f * GameSettings.Current.SfxScale; // 설정 → 효과음 (전체 음량은 AudioListener)
 
         static Sfx _instance;
         AudioSource[] _sources;

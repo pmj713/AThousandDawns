@@ -57,15 +57,23 @@ namespace AThousandDawns.Prototype
             PlayMusic();
         }
 
-        // 음량 설정이 생기면 여기서 곱해요
+        AudioSource _music;
+
+        // 음량: 설정의 음악 비율 (설정창에서 바꾸면 LateUpdate가 바로 따라가요)
         void PlayMusic()
         {
             if (music == null) return;
             if (FindAnyObjectByType<AudioListener>() == null) gameObject.AddComponent<AudioListener>();
-            var source = gameObject.AddComponent<AudioSource>();
-            source.clip = music;
-            source.loop = true;
-            source.Play();
+            _music = gameObject.AddComponent<AudioSource>();
+            _music.clip = music;
+            _music.loop = true;
+            _music.volume = GameSettings.Current.MusicScale;
+            _music.Play();
+        }
+
+        void LateUpdate()
+        {
+            if (_music != null) _music.volume = GameSettings.Current.MusicScale;
         }
 
         public string ItemLabel(Item item) => item switch

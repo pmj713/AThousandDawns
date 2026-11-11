@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace AThousandDawns.Core
 {
-    // 설정 (기획 대화 설정창 "첫 버전 필수" 중 소리를 뺀 것). 진행 저장(meta.json)과 따로 settings.json에 둬요.
-    // 진행을 초기화해도 설정은 남아요. 소리(음량 4종)는 다른 작업에서 여기에 칸을 더해요.
+    // 설정 (기획 대화 설정창 "첫 버전 필수"). 진행 저장(meta.json)과 따로 settings.json에 둬요.
+    // 진행을 초기화해도 설정은 남아요.
     [Serializable]
     public sealed class GameSettings
     {
@@ -15,6 +15,11 @@ namespace AThousandDawns.Core
         public enum QiNumbers { Always, Hover }      // 경맥도 기 숫자: 항상 / 마우스를 올렸을 때만
         public enum AspectMode { Auto, Wide16x9, Wide16x10, Ultra21x9 } // 화면 비율: 창에 맞춤 / 고정 (남는 곳은 검은 띠)
 
+        // 소리 (0~100): 전체는 AudioListener, 음악은 RunMusic·시작 화면, 효과음은 Sfx가 곱해요
+        public int masterVolume = 100, musicVolume = 80, sfxVolume = 100;
+        public float MasterScale => Mathf.Clamp01(masterVolume / 100f);
+        public float MusicScale => Mathf.Clamp01(musicVolume / 100f);
+        public float SfxScale => Mathf.Clamp01(sfxVolume / 100f);
         // 화면 (0이면 지금 화면 그대로)
         public int width, height;
         public FullScreenMode screenMode = FullScreenMode.FullScreenWindow;
@@ -90,6 +95,8 @@ namespace AThousandDawns.Core
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void ApplyOnStart()
         {
+            AudioListener.volume = Current.MasterScale; // 전체 음량 (저장할 때마다 다시)
+            Changed += () => AudioListener.volume = Current.MasterScale;
             if (!Application.isEditor) Current.ApplyDisplay();
         }
     }

@@ -4,14 +4,14 @@ namespace AThousandDawns.Prototype
 {
     // 판 BGM (VARCO Sound, Audio/BGM). RoomRun 단계를 보고 곡을 골라 짧게 엇갈려 바꿔요.
     //   마을 → village · 죽림(갈림길·층·고수) → bamboo · 객잔·정비실 → inn · 녹림왕(격파 후 포함) → boss · 결과 창 → result
-    // 음량 설정이 생기면 Volume에 곱해요.
+    // 음량: 설정의 음악 비율 (Volume). 전체 음량은 AudioListener.
     [RequireComponent(typeof(RoomRun))]
     public sealed class RunMusic : MonoBehaviour
     {
         [SerializeField] AudioClip village, bamboo, inn, boss, result;
         [SerializeField] float fadeSeconds = 1.2f;
 
-        const float Volume = 1f;
+        static float Volume => AThousandDawns.Core.GameSettings.Current.MusicScale; // 설정 → 음악 (바꾸면 바로 따라가요)
 
         RoomRun _run;
         AudioSource _current, _previous;
