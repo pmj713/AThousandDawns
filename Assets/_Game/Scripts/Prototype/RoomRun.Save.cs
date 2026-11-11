@@ -61,6 +61,7 @@ namespace AThousandDawns.Prototype
                 floorsCleared = _record.FloorsCleared,
                 hiddenRooms = _record.HiddenRooms,
                 deja = _record.Deja,
+                almsCurse = _almsCurse,
                 playSeconds = _record.PlaySeconds,
                 damageDealt = _record.DamageDealt,
                 maxHit = _record.MaxHit,
@@ -109,7 +110,7 @@ namespace AThousandDawns.Prototype
                 s.boardHeight = board.Height;
                 foreach (var d in board.Danjeons) s.danjeons.Add(new RunSave.Point { x = d.x, y = d.y });
                 foreach (var kv in board.Acupoints) s.acupoints.Add(new RunSave.Point { x = kv.Key.x, y = kv.Key.y, kind = (int)kv.Value });
-                foreach (var it in items.Items) s.items.Add(new RunSave.Item { id = it.Def.id, onBoard = it.OnBoard, x = it.Cell.x, y = it.Cell.y });
+                foreach (var it in items.Items) s.items.Add(new RunSave.Item { id = it.Def.id, onBoard = it.OnBoard, x = it.Cell.x, y = it.Cell.y, purified = it.Purified });
                 foreach (var p in items.Parts) s.parts.Add(new RunSave.Part { kind = (int)p.Kind, onBoard = p.OnBoard, x = p.Cell.x, y = p.Cell.y });
                 s.forge0 = items.ForgeSlot(0).HasValue ? (int)items.ForgeSlot(0).Value : -1;
                 s.forge1 = items.ForgeSlot(1).HasValue ? (int)items.ForgeSlot(1).Value : -1;
@@ -143,7 +144,7 @@ namespace AThousandDawns.Prototype
                 foreach (var it in s.items)
                 {
                     var def = db != null ? FindItem(db, it.id) : null;
-                    if (def != null) items.Restore(def, it.onBoard, new Vector2Int(it.x, it.y));
+                    if (def != null && items.Restore(def, it.onBoard, new Vector2Int(it.x, it.y)) is OwnedItem owned) owned.Purified = it.purified;
                 }
                 items.SetForgeSlot(0, s.forge0 >= 0 ? (Keyword?)s.forge0 : null);
                 items.SetForgeSlot(1, s.forge1 >= 0 ? (Keyword?)s.forge1 : null);
@@ -178,6 +179,7 @@ namespace AThousandDawns.Prototype
             _record.FloorsCleared = s.floorsCleared;
             _record.HiddenRooms = s.hiddenRooms;
             _record.Deja = s.deja;
+            _almsCurse = s.almsCurse;
             _record.PlaySeconds = s.playSeconds;
             _record.DamageDealt = s.damageDealt;
             _record.MaxHit = s.maxHit;

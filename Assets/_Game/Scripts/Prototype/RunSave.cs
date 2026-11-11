@@ -14,7 +14,7 @@ namespace AThousandDawns.Prototype
     {
         [Serializable] public sealed class Room { public int x, y, kind, jars; public bool optional, visited, revealed, cleared, found, pouch; public string eventId; }
         [Serializable] public sealed class Fork { public int reward; public bool dense; }
-        [Serializable] public sealed class Item { public string id; public bool onBoard; public int x, y; }
+        [Serializable] public sealed class Item { public string id; public bool onBoard; public int x, y; public bool purified; }
         [Serializable] public sealed class Part { public int kind; public bool onBoard; public int x, y; }
         [Serializable] public sealed class Point { public int x, y, kind; }
         [Serializable] public sealed class ShopSlot { public int kind, part, skill, price; public string itemId; public bool sold; }
@@ -45,6 +45,7 @@ namespace AThousandDawns.Prototype
         public float playSeconds;
         public int damageDealt, maxHit, damageTaken, maxTracking;
         public int newItems;
+        public int almsCurse;   // 시주함을 턴 뒤 다음 싸우는 방에 붙는 망령 수
         public int[] kills = new int[0];
 
         // 플레이어

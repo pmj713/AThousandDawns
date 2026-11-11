@@ -13,6 +13,7 @@ namespace AThousandDawns.Player
         public Vector2Int Cell;
         public int Qi;         // 놓인 칸의 기 (주머니면 0)
         public int MaxQiBonus; // 놓인 칸의 한혈 (최대 기 +)
+        public bool Purified;  // 참회실: 주화입마 부작용 없음
         public int MaxQi => Def.maxQi + MaxQiBonus;
     }
 
@@ -376,12 +377,12 @@ namespace AThousandDawns.Player
 
         public int Count(string id, int index) => Mathf.RoundToInt(Value(id, index));
 
-        // 경맥도 위 주화입마 기물의 부작용 합 (부작용은 체력을 직접 깎지 않음)
+        // 경맥도 위 주화입마 기물의 부작용 합 (부작용은 체력을 직접 깎지 않음 · 참회실에서 정화한 기물은 빼요)
         public float SideTotal(string kind)
         {
             float sum = 0f;
             foreach (var item in _items)
-                if (item.OnBoard && StateOf(item) == QiState.Deviated && item.Def.side == kind) sum += item.Def.sideValue;
+                if (item.OnBoard && !item.Purified && StateOf(item) == QiState.Deviated && item.Def.side == kind) sum += item.Def.sideValue;
             return sum;
         }
 

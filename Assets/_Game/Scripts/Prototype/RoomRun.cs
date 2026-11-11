@@ -334,6 +334,7 @@ namespace AThousandDawns.Prototype
                 Player.EnterRoom(); // #금강 2단계: 싸우는 방에 들어갈 때마다 보호막
                 OnFightStart();
                 _waves = room.FixedWaves ?? PlanRoom(_floor); // 입문 죽림은 손으로 짠 구성
+                AddAlmsCurse(); // 시주함을 털었으면 망령이 따라와요
                 _wave = -1;
                 _elitesThisRoom = 0;
                 _eliteWave = -1;
@@ -564,6 +565,12 @@ namespace AThousandDawns.Prototype
                 _tombFight = false;
                 arena.GrantOffer(TombWeights()); // 검이 꽂힌 무덤: 전설이 잘 나와요
                 text += " · 망령이 흩어지고 검이 빛나요, 기물 고르기";
+            }
+            if (_ambushFight)
+            {
+                _ambushFight = false;
+                arena.GrantOffer(RareOnlyWeights()); // 목어 소리 매복을 물리침
+                text += " · 파계승들을 물리쳤어요, 희귀 기물";
             }
             if (_escortFight)
             {

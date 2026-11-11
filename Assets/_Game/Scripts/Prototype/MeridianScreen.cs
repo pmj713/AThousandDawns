@@ -473,7 +473,7 @@ namespace AThousandDawns.Prototype
                 def = _dragged.Def;
             }
             string text = $"<b>{def.name}</b>  {Colored(def.keyword)} · {ItemDefinition.GradeLabel(def.grade)}{aux} · 기 {def.minQi}–{def.maxQi}   <color=#ffd27a>{where}</color>\n" +
-                          $"{def.effectText}\n<color=#ff8a7a>주화입마 부작용: {def.sideText}</color>";
+                          $"{def.effectText}\n" + (shown.Purified && def == shown.Def ? "<color=#9ad0ff>정화됨 · 주화입마 부작용 없음 (참회실)</color>" : $"<color=#ff8a7a>주화입마 부작용: {def.sideText}</color>");
             GUI.Label(new Rect(area.x + 10f * K, area.y + 8f * K, area.width - 20f * K, area.height - 16f * K), text, _detail);
         }
 

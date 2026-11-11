@@ -10,7 +10,7 @@ using UnityEngine.InputSystem.Controls;
 
 namespace AThousandDawns.Prototype
 {
-    // 이벤트 방 (기획 대화 이벤트 10종 모두: 첫 버전 6개 + 서툰 대장장이 · 표국 행렬 · 검이 꽂힌 무덤 · 기시감 (회귀 3회 이상)). 층마다 0~1개 (은자 시트 등장 확률 50%), 비전투 막다른 방.
+    // 이벤트 방 (기획 대화 이벤트 10종 모두: 첫 버전 6개 + 서툰 대장장이 · 표국 행렬 · 검이 꽂힌 무덤 · 기시감 (회귀 3회 이상) + 폐사찰 전용 3개 (RoomRun.TempleEvents.cs)). 층마다 0~1개 (은자 시트 등장 확률 50%), 비전투 막다른 방.
     // 같은 판에서 같은 이벤트는 한 번만. 모든 이벤트에 대가 없는 선택지가 있어요.
     // 조건부 선택지(🔒)는 조건이 안 되면 흐리게 조건만 보여 줘요. 그림은 아직 없고 글만 있어요.
     public sealed partial class RoomRun
@@ -41,18 +41,27 @@ namespace AThousandDawns.Prototype
 
         // 이번 층에 이벤트 방을 둘지 (아직 안 나온 이벤트가 남아 있을 때만)
         int RollEventRooms() =>
-            _usedEvents.Count < EventIds.Length && _rng.NextDouble() < GameConfig.Get("event.chance", 0.5f) ? 1 : 0;
+            UnusedEvents().Count > 0 && _rng.NextDouble() < GameConfig.Get("event.chance", 0.5f) ? 1 : 0;
 
         void AssignEvents()
         {
             foreach (var room in _map.Rooms)
             {
                 if (room.Kind != FloorRoomKind.Event) continue;
-                var left = new List<string>();
-                foreach (var id in EventIds) if (!_usedEvents.Contains(id)) left.Add(id);
+                var left = UnusedEvents();
+                if (left.Count == 0) continue;
                 room.EventId = left[_rng.Next(left.Count)];
                 _usedEvents.Add(room.EventId);
             }
+        }
+
+        // 이 지역에서 나올 수 있고 아직 안 나온 이벤트 (폐사찰부터 사찰 이벤트 3개가 더해져요)
+        List<string> UnusedEvents()
+        {
+            var left = new List<string>();
+            foreach (var id in EventIds) if (!_usedEvents.Contains(id)) left.Add(id);
+            if (_region >= 1) foreach (var id in TempleEventIds) if (!_usedEvents.Contains(id)) left.Add(id);
+            return left;
         }
 
         // 층을 떠날 때: 이번 층 효과를 되돌려요
@@ -371,7 +380,8 @@ namespace AThousandDawns.Prototype
                     break;
 
                 default:
-                    return null;
+                    if (!BuildTempleEvent(v, id)) return null; // RoomRun.TempleEvents.cs
+                    break;
             }
             return v;
         }

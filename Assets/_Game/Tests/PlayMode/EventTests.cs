@@ -34,6 +34,7 @@ namespace AThousandDawns.Tests
         public override void TearDown()
         {
             RoomRun.SeedOverride = 0;
+            RoomRun.MoktakOverride = -1;
             Time.timeScale = 1f;
             if (MetaSave.PathOverride != null && System.IO.File.Exists(MetaSave.PathOverride)) System.IO.File.Delete(MetaSave.PathOverride);
             MetaSave.PathOverride = null;
@@ -236,6 +237,87 @@ namespace AThousandDawns.Tests
             Assert.AreEqual(3, _run.Tracking);
             Assert.AreEqual(1, _player.Potions);
             _run.CloseEvent();
+        }
+
+        // ── 폐사찰 전용 이벤트
+
+        [UnityTest]
+        public IEnumerator 시주함_시주하면_받는_피해_감소_털면_다음_방에_망령()
+        {
+            yield return Load();
+            _run.GiveSilver(100);
+            _run.OpenEventForTest("almsbox");
+            Assert.IsTrue(_run.ChooseEvent(Index("시주한다")));
+            Assert.AreEqual(50, _run.Silver);
+            Assert.AreEqual(-0.1f, _player.RunTakenIncrease, 1e-4f);
+            _run.CloseEvent();
+
+            _run.OpenEventForTest("almsbox");
+            Assert.IsTrue(_run.ChooseEvent(Index("턴다")));
+            Assert.AreEqual(130, _run.Silver);
+            Assert.AreEqual(2, _run.AlmsCurse);
+            _run.CloseEvent();
+
+            var fight = _run.Map.Rooms.First(r => r.HasFight);
+            _run.Enter(fight, 0);
+            Assert.AreEqual(0, _run.AlmsCurse, "한 번만 따라와요");
+            yield return WaitUntil(() => _director.Enemies.Count(e => e.Kind == EnemyKind.Wraith) >= 2, 5f);
+            Assert.AreEqual(2, _director.Enemies.Count(e => e.Kind == EnemyKind.Wraith), "죽림에도 망령 2마리");
+
+            _run.LeaveFloor();
+            Assert.AreEqual(0f, _player.RunTakenIncrease, 1e-4f, "시주 효과는 이번 층만");
+        }
+
+        [UnityTest]
+        public IEnumerator 참회실_기물을_바치면_같은_등급_다른_기물이고_부작용이_없음()
+        {
+            yield return Load();
+            _run.OpenEventForTest("penance");
+            Assert.AreEqual("바꿀 수 있는 기물이 없어요", _run.CurrentEvent.Choices[Index("기물을 바친다")].Locked);
+            _run.CloseEvent();
+
+            var def = AThousandDawns.Core.GameConfig.Items.Items.First(d => d.grade == AThousandDawns.Items.ItemGrade.Uncommon);
+            var cell = _player.Items.Add(def).Cell;
+            _run.OpenEventForTest("penance");
+            Assert.IsTrue(_run.ChooseEvent(Index("기물을 바친다")));
+            Assert.AreEqual("penance_pick", _run.CurrentEvent.Id);
+            Assert.IsTrue(_run.ChooseEvent(0));
+            _run.CloseEvent();
+            Assert.AreEqual(1, _player.Items.Items.Count);
+            var now = _player.Items.Items[0];
+            Assert.AreNotEqual(def.id, now.Def.id, "다른 기물");
+            Assert.AreEqual(def.grade, now.Def.grade, "같은 등급");
+            Assert.AreEqual(cell, now.Cell, "같은 자리");
+            Assert.IsTrue(now.Purified, "정화됨");
+        }
+
+        [UnityTest]
+        public IEnumerator 목어_소리_석실이면_기연_보상_매복이면_파계승_3명_이기면_희귀_기물()
+        {
+            yield return Load();
+            RoomRun.MoktakOverride = 0;
+            _run.OpenEventForTest("moktak");
+            Assert.IsTrue(_run.ChooseEvent(Index("소리를 따라간다")));
+            Assert.AreEqual("hidden", _run.CurrentEvent.Id, "기연 방 보상 창");
+            Assert.IsTrue(_run.ChooseEvent(0));
+            _run.CloseEvent();
+
+            yield return Load();
+            RoomRun.MoktakOverride = 1;
+            _run.OpenEventForTest("moktak");
+            Assert.IsTrue(_run.ChooseEvent(Index("소리를 따라간다")));
+            Assert.IsFalse(_run.IsInEvent, "창이 닫히고 전투");
+            Assert.IsTrue(_run.IsFighting);
+            int monks = 0;
+            yield return WaitUntil(() =>
+            {
+                monks = Mathf.Max(monks, _director.Enemies.Count(e => e.Kind == EnemyKind.Monk));
+                for (int i = _director.Enemies.Count - 1; i >= 0; i--) _director.Enemies[i].Damageable.ApplyHit(99999);
+                return !_run.IsFighting;
+            }, 20f);
+            Assert.AreEqual(3, monks, "파계승 3명");
+            yield return WaitUntil(() => _arena.IsChoosing, 2f);
+            Assert.IsTrue(_arena.Offer.All(d => d.grade == AThousandDawns.Items.ItemGrade.Rare), "희귀 기물만");
         }
     }
 }
