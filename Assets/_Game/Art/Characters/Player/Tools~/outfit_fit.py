@@ -5,7 +5,7 @@
 #   3) 색으로 나눠요 (텍스처 색): 붉은색 → Cloth_Red, 흰색 → Cloth_Light, 나머지 → Cloth_Dark (Unity가 이름으로 재질을 골라요)
 #   4) 뼈 가중치는 가까운 몸에서 옮겨 오고, 도포 아랫단은 골반 가중치를 섞어 다리 사이가 찢어지지 않게
 import bpy, bmesh, math, os
-from mathutils import Vector
+from mathutils import Vector, Quaternion
 from mathutils.bvhtree import BVHTree
 
 TARGET_TRIS = 16000
@@ -359,4 +359,45 @@ def fit(rig, parts, glb):
         o.parent = rig
         o.modifiers.new("Armature", 'ARMATURE').object = rig
     print("OUTFIT pieces", [(o.name, len(o.data.polygons)) for o in made])
+    hide_covered_skin(parts, made)
     return made
+
+
+COVER_REACH = 0.15      # 피부에서 바깥으로 이 안에 옷이 있으면 덮인 곳
+SKIN_PARTS = ("Torso", "Arm_", "Thigh_", "Calf_")   # 머리·손·발은 드러나는 곳이라 그대로
+
+
+def hide_covered_skin(parts, cloth):
+    """옷에 덮인 피부를 지워요. 움직일 때 몸이 옷을 뚫고 나와 어깨·허벅지·종아리 살이 보이지 않게.
+    피부 점마다 바깥(법선) 쪽으로 광선을 쏴서 COVER_REACH 안에 옷이 있으면 덮인 점이에요.
+    목·손목처럼 옷 밖으로 드러난 곳은 광선이 옷에 안 닿아서 남아요. 기본 자세(A자)에서 재요."""
+    verts, polys = [], []
+    for o in cloth:
+        base = len(verts)
+        verts += [o.matrix_world @ v.co for v in o.data.vertices]
+        polys += [[base + i for i in p.vertices] for p in o.data.polygons]
+    if not polys:
+        return
+    bvh = BVHTree.FromPolygons(verts, polys)
+    for o in parts:
+        name = o.name.replace("Player_", "")
+        if not name.startswith(SKIN_PARTS):
+            continue
+        n3 = o.matrix_world.to_3x3()
+        bm = bmesh.new(); bm.from_mesh(o.data)
+        bm.normal_update()
+        covered = []
+        for v in bm.verts:
+            p = o.matrix_world @ v.co
+            nrm = (n3 @ v.normal).normalized()
+            # 법선 한 줄과 둘레로 35° 기운 여섯 줄: 옷의 작은 구멍·깃 틈은 한 줄로는 빠져나가서, 절반 넘게 옷에 닿으면 덮인 점
+            side = nrm.orthogonal().normalized()
+            rays = [nrm] + [(nrm + (Quaternion(nrm, k * math.pi / 3) @ side) * 0.7).normalized() for k in range(6)]
+            hits = sum(1 for d in rays if bvh.ray_cast(p + nrm * 0.002, d, COVER_REACH)[0] is not None)
+            # 피부가 옷 밖으로 튀어나온 점: 바로 안쪽(3cm 안)에 옷이 있어요 (어깨 위처럼 옷이 몸에 딱 붙는 곳)
+            poking = bvh.ray_cast(p - nrm * 0.002, -nrm, 0.03)[0] is not None
+            if hits * 2 > len(rays) or poking:
+                covered.append(v)
+        bmesh.ops.delete(bm, geom=covered, context='VERTS')
+        bm.to_mesh(o.data); bm.free()
+        print("SKIN hidden", o.name, len(covered))
