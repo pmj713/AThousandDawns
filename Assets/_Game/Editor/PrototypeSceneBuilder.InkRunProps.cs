@@ -33,6 +33,13 @@ namespace AThousandDawns.EditorTools
             var shaft = GetInkMaterial("Ink_ArrowShaft", "#1C1A19", 0f);
             var feather = GetInkMaterial("Ink_ArrowFeather", "#D9D2C2", 0f);
             new GameObject("Ink Projectiles").AddComponent<AThousandDawns.Art.InkProjectiles>().Setup(line, blot, mist, shaft, feather);
+
+            // 정예 적 표시 (InkEliteMarks): 머리 위 붓 표식, 발밑 붓 고리, 몸 둘레 먹 연기
+            var marks = new[] { "Elite_IronShirt", "Elite_Rejuvenation", "Elite_Blaze" };
+            foreach (var m in marks) ImportAsSprite($"{RunPropsArtFolder}/{m}.png");
+            Sprite Mark(string m) => AssetDatabase.LoadAssetAtPath<Sprite>($"{RunPropsArtFolder}/{m}.png");
+            new GameObject("Ink Elite Marks").AddComponent<AThousandDawns.Art.InkEliteMarks>()
+                .Setup(Mark(marks[0]), Mark(marks[1]), Mark(marks[2]), mist, line);
         }
 
         // 붓선 셰이더(InkBrushLine) + 알파 그림. 색은 렌더러마다 MaterialPropertyBlock·꼭짓점 색으로 바꿔요
