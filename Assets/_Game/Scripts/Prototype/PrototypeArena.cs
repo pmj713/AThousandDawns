@@ -136,6 +136,12 @@ namespace AThousandDawns.Prototype
                 if (keyboard.lKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.GainLevelForTest(); // 시험용 레벨업
                 if (keyboard.kKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.KillForTest(); // 시험용: 바로 쓰러지기
                 if (keyboard.vKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.SetWeapon(director.Player.UsesDagger ? WeaponKind.Sword : WeaponKind.Dagger); // 시험용: 검 ↔ 비도
+                if (keyboard.hKey.wasPressedThisFrame && director != null && director.Player != null) // 시험용: 비급 바꾸기 (회선참 → 죽림섬 → 붕산권 → 금강장 → 회선참)
+                {
+                    var p = director.Player;
+                    p.LearnSkill((SkillKind)(((int)p.Skill + 1) % System.Enum.GetValues(typeof(SkillKind)).Length));
+                    Debug.Log($"[시험] 비급: {PlayerController.SkillLabel(p.Skill)} · 지금 초식 {p.SkillName}");
+                }
                 if (keyboard.oKey.wasPressedThisFrame && director != null && director.Player != null && director.Player.Items != null) CycleForge(director.Player.Items, keyboard.shiftKey.isPressed ? 1 : 0); // 시험용: 무기 홈
                 if (keyboard.pKey.wasPressedThisFrame && director != null && director.Player != null && director.Player.Items != null) // 시험용: 부품 셋
                 {

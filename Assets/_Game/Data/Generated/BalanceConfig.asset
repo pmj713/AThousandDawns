@@ -862,13 +862,13 @@ MonoBehaviour:
     unit: cell/s
     note: "\uB179\uB9BC\uC655 \uC774\uB3D9"
   - key: nokrim.arena_width
-    value: 16
+    value: 24
     unit: cell
-    note: "\uACB0\uD22C\uC7A5 \uAC00\uB85C (\uBAAC\uC2A4\uD130 B114 \uC124\uBA85)"
+    note: "\uACB0\uD22C\uC7A5 \uAC00\uB85C (\uBAAC\uC2A4\uD130 B114 \uC124\uBA85\uC740 16 \u2192 \uBCF4\uC2A4 \uBC29\uC744 \uB113\uD600 24)"
   - key: nokrim.arena_depth
-    value: 12
+    value: 18
     unit: cell
-    note: "\uACB0\uD22C\uC7A5 \uC138\uB85C (\uBAAC\uC2A4\uD130 B114 \uC124\uBA85)"
+    note: "\uACB0\uD22C\uC7A5 \uC138\uB85C (\uBAAC\uC2A4\uD130 B114 \uC124\uBA85\uC740 12 \u2192 \uBCF4\uC2A4 \uBC29\uC744 \uB113\uD600 18)"
   - key: nokrim.phase2_hp_ratio
     value: 0.5
     unit: 
@@ -3297,3 +3297,59 @@ MonoBehaviour:
     value: 10
     unit: cell
     note: "\uD61C\uAD11 \uCD95\uC9C0 \uCD5C\uB300 \uAC70\uB9AC"
+  - key: bloodbuddha.p2_palm_hits
+    value: 3
+    unit: 
+    note: "\uD608\uBD88 2\uD398\uC774\uC988 \uC190\uBC14\uB2E5 \uC5F0\uD0C0 \uD69F\uC218 (\uD50C\uB808\uC774\uC5B4 \uC790\uB9AC\uB97C \uB530\uB77C\uAC10)"
+  - key: bloodbuddha.p2_palm_gap
+    value: 0.4
+    unit: s
+    note: "\uD608\uBD88 2\uD398\uC774\uC988 \uC190\uBC14\uB2E5 \uC5F0\uD0C0 \uAC04\uACA9"
+  - key: bloodbuddha.grab_far
+    value: 6
+    unit: cell
+    note: "\uD608\uBD88 \uD608\uC218: \uD50C\uB808\uC774\uC5B4\uAC00 \uC774\uBCF4\uB2E4 \uBA40\uB9AC"
+  - key: bloodbuddha.grab_delay
+    value: 2
+    unit: s
+    note: "\uD608\uBD88 \uD608\uC218: \uBA40\uB9AC \uC788\uB294 \uC2DC\uAC04\uC774 \uC774\uB9CC\uD07C\uC774\uBA74"
+  - key: bloodbuddha.grab_windup
+    value: 0.6
+    unit: s
+    note: "\uD608\uBD88 \uD608\uC218 \uC608\uACE0 (\uC9C1\uC120)"
+  - key: bloodbuddha.grab_range
+    value: 10
+    unit: cell
+    note: "\uD608\uBD88 \uD608\uC218 \uAE38\uC774"
+  - key: bloodbuddha.grab_width
+    value: 1.4
+    unit: cell
+    note: "\uD608\uBD88 \uD608\uC218 \uD3ED"
+  - key: bloodbuddha.grab_ratio
+    value: 0.6
+    unit: 
+    note: "\uD608\uBD88 \uD608\uC218 \uD53C\uD574 \uBC30\uC728 (\uB9DE\uC73C\uBA74 \uB04C\uB824\uC640 \uBC14\uB85C \uD314 \uD718\uB450\uB974\uAE30)"
+  - key: bloodbuddha.grab_stop
+    value: 2
+    unit: cell
+    note: "\uD608\uBD88 \uD608\uC218: \uB04C\uB824\uC640 \uBA48\uCD94\uB294 \uAC70\uB9AC"
+  - key: bloodbuddha.grab_recovery
+    value: 0.3
+    unit: s
+    note: "\uD608\uBD88 \uD608\uC218 \uB4A4 \uD314 \uD718\uB450\uB974\uAE30\uAE4C\uC9C0"
+  - key: knife.scroll_flash_ratio
+    value: 0.5
+    unit: 
+    note: "\uBE44\uB3C4 + \uC8FD\uB9BC\uC12C: \uD68C\uC218\uD560 \uB54C \uC21C\uAC04\uC774\uB3D9 \uBCA0\uAE30 \uD53C\uD574 (\uCD08\uC2DD \uD53C\uD574 \uB300\uBE44)"
+  - key: knife.scroll_quake_radius
+    value: 2.5
+    unit: "\uCE78"
+    note: "\uBE44\uB3C4 + \uBD95\uC0B0\uAD8C: \uD68C\uC218\uD560 \uB54C \uCDA9\uACA9\uD30C \uBC18\uACBD"
+  - key: knife.scroll_quake_ratio
+    value: 0.6
+    unit: 
+    note: "\uBE44\uB3C4 + \uBD95\uC0B0\uAD8C: \uCDA9\uACA9\uD30C \uD53C\uD574 (\uCD08\uC2DD \uD53C\uD574 \uB300\uBE44)"
+  - key: knife.scroll_palm_shield
+    value: 0.01
+    unit: 
+    note: "\uBE44\uB3C4 + \uAE08\uAC15\uC7A5: \uB3CC\uC544\uC628 \uBE44\uB3C4 1\uAC1C\uB2F9 \uBCF4\uD638\uB9C9 (\uCD5C\uB300 \uCCB4\uB825 \uBE44\uC728)"
