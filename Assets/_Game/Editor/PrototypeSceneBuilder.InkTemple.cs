@@ -496,11 +496,18 @@ namespace AThousandDawns.EditorTools
                 }
             }
 
+            // 장강 수채 (지역 2, 아트2): 젖은 나무 널판 바닥 · 물안개와 갈대 솜 (먼 배경은 게임 중 숨겨서 폐사찰 것을 그대로 둬요)
+            const string RiverFloor = "Assets/_Game/Art/Env/River/Floor_River.png";
+            ImportAsTiledTexture(RiverFloor);
+            var riverAir = new GameObject("River Atmosphere (물안개·갈대 솜)");
+            riverAir.SetActive(false);
+            riverAir.AddComponent<AThousandDawns.Art.InkRiverAir>();
+
             var look = new GameObject("Ink Region Look").AddComponent<AThousandDawns.Art.InkRegionLook>();
             look.Setup(floorMat,
-                new Texture[] { null, AssetDatabase.LoadAssetAtPath<Texture2D>($"{TempleArtFolder}/Floor_Temple.png") },
-                new[] { bambooGroup, templeGroup },
-                new[] { new GameObject("죽림 분위기 (없음)"), air },
+                new Texture[] { null, AssetDatabase.LoadAssetAtPath<Texture2D>($"{TempleArtFolder}/Floor_Temple.png"), AssetDatabase.LoadAssetAtPath<Texture2D>(RiverFloor) },
+                new[] { bambooGroup, templeGroup, templeGroup },
+                new[] { new GameObject("죽림 분위기 (없음)"), air, riverAir },
                 dressing);
         }
 
