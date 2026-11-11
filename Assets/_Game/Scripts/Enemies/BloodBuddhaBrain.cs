@@ -25,6 +25,17 @@ namespace AThousandDawns.Enemies
 
         enum Pattern { None, Palm, Chant, Arms, BloodRain, Summon, Grab }
 
+        // 이펙트 신호 (아트: Scripts/Art/InkBloodBuddhaFx). 판정과 상관없이 그림만 그려요.
+        public enum FxKind { Palm, Chant, Rain, Swing, Grab, Transition }
+        public struct FxCue
+        {
+            public FxKind Kind;
+            public Vector3 At, Dir;
+            public float Radius, Time, Angle, Length;
+        }
+        public static event System.Action<BloodBuddhaBrain, FxCue> Cue;
+        void Fx(FxCue cue) => Cue?.Invoke(this, cue);
+
         struct Mark
         {
             public Vector3 At;
@@ -281,6 +292,7 @@ namespace AThousandDawns.Enemies
             float side = _swingsDone == 1 ? 35f : -35f;
             _swingsDone++;
             Vector3 dir = Quaternion.Euler(0f, side, 0f) * AimDirection;
+            Fx(new FxCue { Kind = FxKind.Swing, At = transform.position, Dir = dir, Radius = _armsRadius, Angle = _armsAngle });
             if (HitShapes.InSector(transform.position, dir, _armsRadius, _armsAngle, Player.transform.position, PlayerRadius))
                 HitPlayer(_armsRatio);
         }
@@ -299,6 +311,7 @@ namespace AThousandDawns.Enemies
         // 혈수: 앞 직선 위에 있으면 맞고 혈불 앞으로 끌려와요
         void Grab()
         {
+            Fx(new FxCue { Kind = FxKind.Grab, At = transform.position, Dir = AimDirection, Length = _grabRange, Radius = _grabWidth * 0.5f });
             Vector3 rel = Player.transform.position - transform.position;
             rel.y = 0f;
             float along = Vector3.Dot(rel, AimDirection);
@@ -327,6 +340,7 @@ namespace AThousandDawns.Enemies
             marker.SetPose(at, Vector3.forward);
             marker.SetProgress(0f);
             _marks.Add(new Mark { At = at, Timer = fall, Total = fall, Radius = radius, Ratio = ratio, Bleed = bleed, Marker = marker });
+            Fx(new FxCue { Kind = bleed ? FxKind.Rain : _pattern == Pattern.Chant ? FxKind.Chant : FxKind.Palm, At = at, Radius = radius, Time = fall });
         }
 
         void TickMarks(float dt)
@@ -377,6 +391,7 @@ namespace AThousandDawns.Enemies
             _transitionTimer = _transitionTime;
             Body.Targetable = false;
             Director.SpawnBurst(transform.position, 3f); // 불상이 갈라져요
+            Fx(new FxCue { Kind = FxKind.Transition, At = transform.position, Radius = 3f, Time = _transitionTime });
         }
 
         void EnterPhase2()
