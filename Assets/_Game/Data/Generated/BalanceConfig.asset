@@ -3149,3 +3149,35 @@ MonoBehaviour:
     value: 5
     unit: "\uCE78"
     note: "\uD3D0\uC0AC\uCC30 \uBCF4\uC2A4 \uB4A4 \uACBD\uB9E5\uB3C4 \uC138\uB85C"
+  - key: ultimate.sword_count_s1
+    value: 12
+    unit: 
+    note: "\uB9CC\uAC80\uADC0\uC885 \uAC80 \uC790\uB8E8 \uC218 (\uC911\uB2E8\uC804)"
+  - key: ultimate.sword_count_s2
+    value: 16
+    unit: 
+    note: "\uB9CC\uAC80\uADC0\uC885 \uAC80 \uC790\uB8E8 \uC218 (\uC0C1\uB2E8\uC804)"
+  - key: ultimate.scar_ratio
+    value: 0.25
+    unit: 
+    note: "\uC911\uB2E8\uC804 \uAC80\uD754: \uAC80\uC774 \uAF42\uD78C \uC801\uC744 0.5\uCD08\uB9C8\uB2E4 4\uBC88 (\uD55C \uC790\uB8E8 \uD53C\uD574 \xD7 \uC774 \uAC12 \xB7 \uD55C \uC801 \uCD5C\uB300 18)"
+  - key: ultimate.finale_damage
+    value: 100
+    unit: 
+    note: "\uC0C1\uB2E8\uC804 \uB9C8\uBB34\uB9AC (\uAC70\uB300\uD55C \uAC80 \xB7 \uB9C8\uBB34\uB9AC \uD68C\uC218) \uD53C\uD574"
+  - key: knife.ultimate_count_s1
+    value: 40
+    unit: "\uBC1C"
+    note: "\uB9CC\uCC9C\uD654\uC6B0 \uBE44\uB3C4 \uC218 (\uC911\uB2E8\uC804)"
+  - key: knife.ultimate_count_s2
+    value: 50
+    unit: "\uBC1C"
+    note: "\uB9CC\uCC9C\uD654\uC6B0 \uBE44\uB3C4 \uC218 (\uC0C1\uB2E8\uC804)"
+  - key: knife.ultimate_time_s1
+    value: 5
+    unit: "\uCD08"
+    note: "\uB9CC\uCC9C\uD654\uC6B0 \uBE44 \uC2DC\uAC04 (\uC911\uB2E8\uC804 \xB7 \uBC94\uC704 \uBC16 \uC801\uB3C4 \uCAD3\uC544\uAC10)"
+  - key: knife.ultimate_time_s2
+    value: 5
+    unit: "\uCD08"
+    note: "\uB9CC\uCC9C\uD654\uC6B0 \uBE44 \uC2DC\uAC04 (\uC0C1\uB2E8\uC804)"

@@ -591,7 +591,7 @@ namespace AThousandDawns.Prototype
         // 절초 이름 (무기) + 진전 (예: 만검귀종 · 진전 검진)
         static string UltimateLabel(PlayerController p)
         {
-            string name = p.UsesDagger ? "만천화우" : "만검귀종";
+            string name = (p.UsesDagger ? "만천화우" : "만검귀종") + (p.UltimateStage > 0 ? $" ({p.UltimateStageName})" : ""); // 경지가 오르면 표시
             var form = p.ActiveUltimateForm;
             return form == AThousandDawns.Combat.UltimateForm.None ? name : $"{name} <color=#ffd27a>· 진전 {AThousandDawns.Combat.UltimateForms.Name(form)}</color>";
         }

@@ -63,6 +63,7 @@ namespace AThousandDawns.Prototype
             if (!_regionAdvancePending || OffersOpen || (Player.Items != null && Player.Items.Pending != null)) return;
             _regionAdvancePending = false;
             _region++;
+            Player.UltimateStage = Mathf.Max(0, _region - 1); // 절초 경지: 폐사찰 보스를 넘으면 중단전 (무기 시트 52행)
             _masterDone = false;
             _masterChoiceShown = false;
             BeginFork(1);

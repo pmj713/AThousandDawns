@@ -82,6 +82,14 @@ namespace AThousandDawns.Combat
             public HashSet<Damageable> Returned; // 회류: 돌아오며 맞힌 적
         }
 
+        // 경지 (Begin 전에 정해요): 검흔 = 검이 처음 꽂힌 적을 0.5초마다 4번 (한 자루 피해 × 비율, 한 적에 한 번) · 마무리 = 다 내린 뒤 가장 센 적에게 큰 검 한 번 (× 비율)
+        public float ScarRatio { get; set; }
+        public float FinaleRatio { get; set; }
+        const float ScarInterval = 0.5f;
+        const int ScarTicks = 4;
+        readonly List<(Damageable target, int left, float timer)> _scars = new List<(Damageable, int, float)>();
+        readonly HashSet<Damageable> _scarred = new HashSet<Damageable>();
+
         readonly Dictionary<Damageable, int> _bloomHits = new Dictionary<Damageable, int>();
         readonly Dictionary<Damageable, float> _orbitCooldown = new Dictionary<Damageable, float>();
         readonly List<Damageable> _orbitKeys = new List<Damageable>();
@@ -129,6 +137,7 @@ namespace AThousandDawns.Combat
             _landed = 0;
             _bloomHits.Clear();
             _orbitCooldown.Clear();
+            _scarred.Clear();
             _orbitLeft = 0f;
 
             // 검진: 검이 한꺼번에 나와 시전한 사람 둘레를 돌아요 (떨어지지 않음)
@@ -145,6 +154,7 @@ namespace AThousandDawns.Combat
         void Update()
         {
             float dt = Time.deltaTime;
+            TickScars(dt); // 검흔은 비가 끝나도 이어져요
             if (_orbitLeft > 0f)
             {
                 TickOrbit(dt);
@@ -190,6 +200,7 @@ namespace AThousandDawns.Combat
             {
                 _finishPending = false;
                 if (Form == UltimateForm.Bloom) BurstBloom();
+                if (FinaleRatio > 0f) Finale();
                 Finished?.Invoke(_totalDamage);
             }
         }
@@ -365,6 +376,39 @@ namespace AThousandDawns.Combat
             if (target == null || target.IsDead || !target.Targetable) return;
             Strike(target, 1f);
             if (Form == UltimateForm.Bloom) _bloomHits[target] = _bloomHits.TryGetValue(target, out int n) ? n + 1 : 1; // 산화: 꽂힌 수
+            if (ScarRatio > 0f && _scarred.Add(target)) _scars.Add((target, ScarTicks, ScarInterval)); // 중단전 검흔
+        }
+
+        void TickScars(float dt)
+        {
+            for (int i = _scars.Count - 1; i >= 0; i--)
+            {
+                var (target, left, timer) = _scars[i];
+                timer -= dt;
+                if (timer > 0f)
+                {
+                    _scars[i] = (target, left, timer);
+                    continue;
+                }
+                if (target == null || target.IsDead) { _scars.RemoveAt(i); continue; }
+                Strike(target, ScarRatio);
+                if (--left <= 0) _scars.RemoveAt(i);
+                else _scars[i] = (target, left, ScarInterval);
+            }
+        }
+
+        // 상단전 마무리: 가장 센 적에게 큰 검 한 자루 (비도면 큰 비도)
+        void Finale()
+        {
+            Damageable best = null;
+            foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+                if (!d.IsDead && d.Targetable && InArea(_center, _area, d) && (Owner == null || d.transform != Owner) && (best == null || d.Health > best.Health)) best = d;
+            if (best == null) return;
+            Strike(best, FinaleRatio);
+            var body = CreateSword();
+            body.localScale = Vector3.one * 3f;
+            body.position = Ground(best.transform.position) + Vector3.up * RestHeight;
+            _swords.Add(new Sword { Body = body, Target = best, Point = Ground(best.transform.position), Landed = true });
         }
 
         // 칼끝이 원점(아래)에 오는 검: 날 + 코등이 + 손잡이 (비도면 작은 비도, 기울기는 SpawnSword에서)

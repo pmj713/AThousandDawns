@@ -11,6 +11,12 @@ namespace AThousandDawns.Player
     {
         public UltimateForm UltimateForm { get; set; }
 
+        // 절초 경지 0 하단전 · 1 중단전 · 2 상단전 (판 안에서 지역 보스를 넘을 때마다, RoomRun이 정해요)
+        public int UltimateStage { get; set; }
+        public string UltimateStageName => UltimateStage >= 2 ? "상단전" : UltimateStage == 1 ? "중단전" : "하단전";
+
+        static string StageKey(string key, int stage) => stage == 0 ? key : $"{key}_s{stage}";
+
         public UltimateForm ActiveUltimateForm =>
             UltimateForm != UltimateForm.None && UltimateForms.ForDagger(UltimateForm) == UsesDagger ? UltimateForm : UltimateForm.None;
 
@@ -20,9 +26,14 @@ namespace AThousandDawns.Player
         void BeginUltimateRain(HitDamageInput hit)
         {
             var form = ActiveUltimateForm;
-            int count = UsesDagger ? Mathf.RoundToInt(D("knife.ultimate_count", 24f)) : _ultimateSwordCount;
-            float time = UsesDagger ? D("knife.ultimate_time", 3f) : _ultimateCastTime;
-            Vector2 area = _ultimateArea;
+            // 경지 (무기 시트 51~66행): 하단전 → 중단전 (검 12자루 + 검흔 · 비도 40발 5초, 범위 밖도 쫓아감) → 상단전 (검 16 · 비도 50 + 마무리 100)
+            int stage = Mathf.Clamp(UltimateStage, 0, 2);
+            int count = UsesDagger ? Mathf.RoundToInt(D(StageKey("knife.ultimate_count", stage), stage == 0 ? 24f : stage == 1 ? 40f : 50f))
+                : stage == 0 ? _ultimateSwordCount : Mathf.RoundToInt(J(StageKey("ultimate.sword_count", stage), stage == 1 ? 12f : 16f));
+            float time = UsesDagger ? D(StageKey("knife.ultimate_time", stage), stage == 0 ? 3f : 5f) : _ultimateCastTime;
+            Vector2 area = UsesDagger && stage >= 1 ? new Vector2(999f, 999f) : _ultimateArea; // 중단전 비도: 방 어디든 쫓아가요
+            swordRain.ScarRatio = !UsesDagger && stage >= 1 ? J("ultimate.scar_ratio", 0.25f) : 0f; // 검흔: 0.5초마다 한 자루의 25% × 4번 (한 적에 한 번)
+            swordRain.FinaleRatio = stage >= 2 ? J("ultimate.finale_damage", 100f) / Mathf.Max(1f, UsesDagger ? D("knife.ultimate_damage", 6f) : J("ultimate.sword_damage", 18f)) : 0f;
             switch (form)
             {
                 case UltimateForm.OneSword: // 큰 검 한 자루 = 원래 검 모두 × 배율

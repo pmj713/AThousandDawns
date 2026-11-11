@@ -165,6 +165,7 @@ namespace AThousandDawns.Prototype
             Tracking = s.tracking;
             _floor = s.floor;
             _region = s.region;
+            Player.UltimateStage = Mathf.Max(0, _region - 1);
             _path = new Path { Reward = (RewardKind)s.pathReward, Dense = s.pathDense };
             _masterDone = s.masterDone;
             _floorPower = s.floorPower;

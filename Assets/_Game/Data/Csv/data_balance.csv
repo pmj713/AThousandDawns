@@ -783,3 +783,11 @@ bloodbuddha.bleed_dps,2,,혈불 피의 비 출혈 (플레이어 화상 1중첩 �
 bloodbuddha.summon_interval,15,s,혈불 목탁승 부르기 간격 (목탁승이 없을 때),
 meridian.width_after_boss2,6,칸,폐사찰 보스 뒤 경맥도 가로,
 meridian.height_after_boss2,5,칸,폐사찰 보스 뒤 경맥도 세로,
+ultimate.sword_count_s1,12,,만검귀종 검 자루 수 (중단전),무기!C55
+ultimate.sword_count_s2,16,,만검귀종 검 자루 수 (상단전),무기!D55
+ultimate.scar_ratio,25%,,중단전 검흔: 검이 꽂힌 적을 0.5초마다 4번 (한 자루 피해 × 이 값 · 한 적 최대 18),무기!C57
+ultimate.finale_damage,100,,상단전 마무리 (거대한 검 · 마무리 회수) 피해,무기!D58
+knife.ultimate_count_s1,40,발,만천화우 비도 수 (중단전),무기!C62
+knife.ultimate_count_s2,50,발,만천화우 비도 수 (상단전),무기!D62
+knife.ultimate_time_s1,5,초,만천화우 비 시간 (중단전 · 범위 밖 적도 쫓아감),무기!C61
+knife.ultimate_time_s2,5,초,만천화우 비 시간 (상단전),무기!D61

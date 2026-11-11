@@ -111,6 +111,47 @@ namespace AThousandDawns.Tests
         }
 
         [UnityTest]
+        public IEnumerator 중단전_상단전은_검이_늘고_검흔과_마무리()
+        {
+            yield return Load(WeaponKind.Sword, UltimateForm.None);
+            var took = new float[1];
+            var target = Spawn(new Vector3(4f, 0f, 0f), 200f);
+            yield return Ultimate(took);
+            yield return new WaitForSeconds(2.2f); // 검흔이 다 들어갈 때까지 (하단전은 없음)
+            float low = Lost(target);
+            target.ApplyHit(999999);
+
+            _player.UltimateStage = 1;
+            target = Spawn(new Vector3(4f, 0f, 0f), 200f);
+            yield return Ultimate(took);
+            yield return new WaitForSeconds(2.2f);
+            float mid = Lost(target);
+            Assert.Greater(mid, low * 1.45f, "중단전: 검 12자루 + 검흔 (하단전 8자루의 약 1.6배)");
+            target.ApplyHit(999999);
+
+            _player.UltimateStage = 2;
+            target = Spawn(new Vector3(4f, 0f, 0f), 200f);
+            yield return Ultimate(took);
+            yield return new WaitForSeconds(2.2f);
+            Assert.Greater(Lost(target), mid * 1.4f, "상단전: 16자루 + 마무리 100");
+        }
+
+        [UnityTest]
+        public IEnumerator 중단전_만천화우는_범위_밖_적도_쫓아감()
+        {
+            yield return Load(WeaponKind.Dagger, UltimateForm.None);
+            var took = new float[1];
+            var far = Spawn(new Vector3(0f, 0f, 9f)); // 절초 범위 (세로 12칸, 가운데에서 6칸) 밖
+            yield return Ultimate(took);
+            Assert.AreEqual(0f, Lost(far), "하단전은 범위 안만");
+
+            _player.UltimateStage = 1;
+            yield return Ultimate(took);
+            Assert.Greater(Lost(far), 0f, "중단전은 범위 밖도");
+            Assert.GreaterOrEqual(took[0], 4.5f, "5초 동안 내려요");
+        }
+
+        [UnityTest]
         public IEnumerator 회귀록_새_기물_묶음은_기물_6종을_미리_보여줌()
         {
             yield return Load(WeaponKind.Sword, UltimateForm.None);
