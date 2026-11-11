@@ -17,6 +17,7 @@ namespace AThousandDawns.Art
         static readonly int AttackId = Animator.StringToHash("Attack");
         static readonly int DashId = Animator.StringToHash("Dash");
         static readonly int SkillId = Animator.StringToHash("Skill");
+        static readonly int SkillQuakeId = Animator.StringToHash("SkillQuake");
 
         PlayerController _player;
         Animator _animator;
@@ -61,6 +62,11 @@ namespace AThousandDawns.Art
             {
                 _animator.ResetTrigger(AttackId);
                 _animator.SetTrigger(SkillId);
+            }
+            if (casting && !_wasCasting && _player.Skill == SkillKind.Quake)   // 붕산권: 땅 내려치기
+            {
+                _animator.ResetTrigger(AttackId);
+                _animator.SetTrigger(SkillQuakeId);
             }
             _wasCasting = casting;
 
