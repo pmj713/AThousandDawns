@@ -10,6 +10,8 @@ namespace AThousandDawns.Prototype
     {
         GameObject _pouch;
         Light _pouchLight;
+        public static event System.Action<Vector3> PouchOpened; // 주머니를 연 자리 (이펙트용)
+        public GameObject PouchObject => _pouch;              // 놓인 주머니 (이펙트가 따라붙어요)
 
         public bool NearPouch => _pouch != null && _pouch.activeSelf && _phase == Phase.Floor && !_fighting && _room != null && _room.Pouch && !OffersOpen
             && Flat(Player.transform.position - _pouch.transform.position).magnitude < GameConfig.GetOptional("room.pouch_radius", 1.6f);
@@ -71,6 +73,7 @@ namespace AThousandDawns.Prototype
         {
             if (_room == null || !_room.Pouch) return;
             _room.Pouch = false;
+            if (_pouch != null) PouchOpened?.Invoke(_pouch.transform.position); // 이펙트 신호 (아트: InkPouchFx)
             PlacePouch(null);
             arena.GrantOffer(_path.Dense ? DenseGradeWeights() : RegionGradeWeights()); // 그 지역 표 (짙으면 다음 지역 표)
         }
