@@ -120,6 +120,11 @@ namespace AThousandDawns.Art
         [SerializeField] float flinchAngle = 12f, flinchTime = 0.2f, staggerAngle = 24f;
         float _flinchTimer, _staggerTime, _staggerBlend;
         bool _corpse;
+        // 파계승 금강불괴: 자세(Stance)로 넘어가 버티는 동안 몸이 금빛으로 물들어요
+        MonkBrain _monk;
+        bool _stanced;
+        static readonly Color StanceGold = new Color(1f, 0.78f, 0.32f, 1f);
+        static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         float _whirlAngle;
 
         public void Init(EnemyBrain brain, Animator animator, bool windupPlays = false, bool noAttackAnim = false, InkEnemyModels.Move[] moves = null)
@@ -128,6 +133,7 @@ namespace AThousandDawns.Art
             _noAttack = noAttackAnim;
             _moves = moves ?? Array.Empty<InkEnemyModels.Move>();
             _shieldBrain = brain as ShieldBrain;
+            _monk = brain as MonkBrain;
             _brain = brain;
             _animator = animator;
             _modelRest = animator.transform.localRotation;
@@ -157,6 +163,19 @@ namespace AThousandDawns.Art
                 foreach (var r in _animator.GetComponentsInChildren<Renderer>(true))
                     if (r.name.Contains("_Prop_Shield")) r.enabled = false;
                 _shieldHidden = true;
+            }
+            if (_monk != null && _monk.IsStanced != _stanced)
+            {
+                _stanced = _monk.IsStanced;
+                if (_stanced) Play("Stance", 0.15f);
+                else _animator.CrossFadeInFixedTime(IdleState, 0.2f, 0);
+                var block = new MaterialPropertyBlock();
+                foreach (var r in _animator.GetComponentsInChildren<Renderer>(true))
+                {
+                    if (r.name.Contains("Weapon")) continue;
+                    if (_stanced) { r.GetPropertyBlock(block); block.SetColor(BaseColorId, StanceGold); r.SetPropertyBlock(block); }
+                    else r.SetPropertyBlock(null);
+                }
             }
             var phase = _brain.AttackPhase;
             if (_noAttack) _last = phase;   // 공격 동작 없이 대기·달리기만
@@ -246,7 +265,7 @@ namespace AThousandDawns.Art
         {
             if (_corpse) return;
             _corpse = true;
-            if (_brain.Kind == EnemyKind.Bomber) return;
+            if (_brain.Kind == EnemyKind.Bomber || _brain.Kind == EnemyKind.Lantern) return;   // 터지는 적은 남기지 않아요
             var model = _animator.transform;
             var corpse = new GameObject($"{_brain.name} (쓰러짐)");
             corpse.transform.SetPositionAndRotation(model.position, transform.rotation);

@@ -124,7 +124,7 @@ if KIND == "quad":
         bone(f"Leg{key}2", knee, ankle, f"Leg{key}1", True)
         bone(f"Leg{key}3", ankle, toe, f"Leg{key}2", True)
     BELLY = belly
-else:
+elif KIND == "snake":
     # 뱀: 몸 가운데 선을 따라 12마디 (각 마디의 높이·옆 위치는 그 구간 정점 평균)
     n = 12
     pts = []
@@ -139,6 +139,10 @@ else:
     bone("Root", (0, 0, 0), (0, 0, 0.1))
     for i in range(n):
         bone(f"Seg{i}", pts[i], pts[i + 1], "Root" if i == 0 else f"Seg{i - 1}", i > 0)
+else:
+    # 떠다니는 물체 (등불 귀신): 밑동 Root와 몸통 뼈 하나
+    bone("Root", (0, 0, 0), (0, 0, 0.1))
+    bone("Body", (0, 0, 0), (0, 0, TOP), "Root")
 bpy.ops.object.mode_set(mode='OBJECT')
 
 # ── 무게: 정점마다 가장 가까운 뼈 마디 둘을 거리로 나눠요 (다리 뼈는 다리 기둥 정점에만)
@@ -182,7 +186,7 @@ X, Z = Vector((1, 0, 0)), Vector((0, 0, 1))
 
 def reset_pose():
     for p in pb:
-        p.rotation_quaternion = Quaternion(); p.location = (0, 0, 0)
+        p.rotation_quaternion = Quaternion(); p.location = (0, 0, 0); p.scale = (1, 1, 1)
     bpy.context.view_layer.update()
 
 
@@ -207,10 +211,12 @@ def lift(dz, dy=0.0):
 def make_action(name, keys, pose):
     rig.animation_data_create(); rig.animation_data.action = None
     poses = []
+    scales = {}
     for f, val in keys:
         reset_pose()
         pose(val)
         poses.append((f, {p.name: p.rotation_quaternion.copy() for p in pb}, pb["Root"].location.copy()))
+        scales[f] = {p.name: p.scale.copy() for p in pb}
     for (_, prev, _), (_, cur, _) in zip(poses[:-1], poses[1:]):
         for n, q in cur.items():
             if q.dot(prev[n]) < 0:
@@ -222,6 +228,9 @@ def make_action(name, keys, pose):
             p.keyframe_insert("rotation_quaternion", frame=f)
         pb["Root"].location = root
         pb["Root"].keyframe_insert("location", frame=f)
+        for p in pb:                                                  # 크기 (등불이 부풀 때)
+            p.scale = scales[f][p.name]
+            p.keyframe_insert("scale", frame=f)
     act.use_fake_user = True
     rig.animation_data.action = None
     reset_pose()
@@ -283,7 +292,7 @@ if KIND == "quad":
         else:
             pass
     make_action("Attack", [(0, 0), (4, 1), (9, 2), (18, 3)], attack_pose)
-else:
+elif KIND == "snake":
     SEGS = [f"Seg{i}" for i in range(12)]          # 꼬리 → 머리 (부모 → 자식)
 
     def wave(t, amp, raise_head=0.0):
@@ -364,6 +373,25 @@ else:
         else:
             wave(0.0, 4, 8)
     make_action("Attack", [(0, 0), (3, 1), (8, 2), (16, 3)], attack_pose)
+
+else:
+    # 등불 귀신: 바닥에서 떠서 둥실거리며 흔들려요. 귀화(Attack, 예고 1초 동안 그대로 재생)는 부풀며 떨다가 터지기 직전 크게 부풀어요
+    def hover(t, lean=0.0, sway=6.0):
+        lift(0.45 + 0.06 * math.sin(2 * math.pi * t))
+        turn("Body", Vector((0, 1, 0)), sway * math.sin(2 * math.pi * t + 1.0))
+        if lean:
+            turn("Body", X, lean)
+
+    make_action("Idle", [(f, f / 40) for f in range(0, 41, 5)], lambda t: hover(t))
+    make_action("Run", [(f, f / 20) for f in range(0, 21, 5)], lambda t: hover(t * 2, lean=18, sway=10))
+
+    def ignite(k):
+        hover(0.0, sway=0.0)
+        shake = 7.0 * k * (1 if int(k * 20) % 2 == 0 else -1)                # 점점 세게 떨어요
+        turn("Body", Vector((0, 1, 0)), shake)
+        s = 1.0 + 0.35 * k * k                                               # 점점 부풀어요
+        pb["Body"].scale = (s, s, s)
+    make_action("Attack", [(f, f / 30) for f in range(0, 31, 3)], ignite)
 
 # 내보내기 (Generic, 플레이어·사람형 적과 같은 축 설정)
 bpy.ops.object.select_all(action='DESELECT')
