@@ -203,6 +203,120 @@ for w in WEAPONS:
                 j = (k + 1) % 16
                 bm.faces.new((front[k], back[k], back[j], front[j]))
         make(f"{NAME}_Weapon_shield", "LeftForeArm", build)
+    elif w == "hooksword":
+        # 갈고리 칼 (수적 졸개): 외날 칼 끝이 등 쪽으로 둥글게 말려 갈고리가 돼요
+        g = grip_of("Right")
+        axis = Vector((0, -1, -0.15)).normalized()
+        edge = Vector((0, 0, -1)); edge = (edge - axis * edge.dot(axis)).normalized()
+
+        def build(bm, g=g, a=axis, e=edge):
+            blade(bm, g, a, e, 0.58, 0.06)
+            t = a.cross(e).normalized()
+            tip = g + a * (0.095 + 0.58)
+            c = tip - e * 0.055
+            pts = [c + (e * math.cos(k * math.pi / 5) + a * math.sin(k * math.pi / 5)) * 0.055 for k in range(6)]
+            for p0, p1 in zip(pts[:-1], pts[1:]):
+                box(bm, (p0 + p1) / 2, (p1 - p0).normalized(), t, (p1 - p0).length + 0.012, 0.022, 0.012)
+        make(f"{NAME}_Weapon_hooksword", "RightHand", build)
+    elif w == "harpoon":
+        # 작살 (작살수): 긴 나무 자루(주먹 뒤 0.8, 앞 1.2) 끝에 미늘 둘 달린 쇠 작살촉, 꽁무니에 밧줄 고리
+        g = grip_of("Right")
+        axis = Vector((0, -1, -0.1)).normalized()
+        side = Vector((1, 0, 0)); side = (side - axis * side.dot(axis)).normalized()
+
+        def build(bm, g=g, a=axis, e=side):
+            box(bm, g + a * 0.2, a, e, 2.0, 0.04, 0.04)                       # 자루
+            head = g + a * 1.2
+            box(bm, head + a * 0.14, a, e, 0.3, 0.035, 0.02)                  # 촉
+            box(bm, head + a * 0.33, a, e, 0.08, 0.018, 0.012)                # 뾰족한 끝
+            for k in (-1, 1):                                                 # 뒤로 젖힌 미늘
+                d = (a * -0.6 + e * k).normalized()
+                box(bm, head + a * 0.22 + d * 0.06, d, a.cross(e).normalized(), 0.13, 0.02, 0.012)
+            t = a.cross(e).normalized()
+            tail = g - a * 0.8
+            for k in range(8):                                                # 꽁무니 밧줄 고리
+                a0, a1 = 2 * math.pi * k / 8, 2 * math.pi * (k + 1) / 8
+                p0 = tail - a * 0.06 + (a * math.cos(a0) + t * math.sin(a0)) * 0.06
+                p1 = tail - a * 0.06 + (a * math.cos(a1) + t * math.sin(a1)) * 0.06
+                box(bm, (p0 + p1) / 2, (p1 - p0).normalized(), e, (p1 - p0).length + 0.01, 0.02, 0.02)
+        make(f"{NAME}_Weapon_harpoon", "RightHand", build)
+    elif w == "anchor":
+        # 쇠닻 (쇠닻 거한): 오른손에 쥔 고리 아래로 굵은 닻대가 늘어지고, 밑에 위로 휜 닻가지 둘, 위쪽에 가로 닻채
+        g = grip_of("Right")
+        down = Vector((0, 0.15, -1)).normalized()
+        side = Vector((0, 1, 0)); side = (side - down * side.dot(down)).normalized()   # 닻가지는 앞뒤로 (다리에 박히지 않게)
+        t = down.cross(side).normalized()
+
+        def build(bm, g=g, dn=down, e=side, t=t):
+            for k in range(10):                                               # 손에 쥔 고리
+                a0, a1 = 2 * math.pi * k / 10, 2 * math.pi * (k + 1) / 10
+                p0 = g + (dn * math.cos(a0) + e * math.sin(a0)) * 0.08
+                p1 = g + (dn * math.cos(a1) + e * math.sin(a1)) * 0.08
+                box(bm, (p0 + p1) / 2, (p1 - p0).normalized(), t, (p1 - p0).length + 0.01, 0.035, 0.035)
+            box(bm, g + dn * 0.68, dn, e, 1.2, 0.09, 0.09)                    # 닻대
+            box(bm, g + dn * 0.25, t, e, 0.55, 0.06, 0.06)                    # 닻채 (가로)
+            bottom = g + dn * 1.26
+            for s in (-1, 1):                                                 # 위로 휜 닻가지와 미늘
+                pts = [bottom + e * s * 0.42 * math.sin(k * math.pi / 8) - dn * 0.42 * (1 - math.cos(k * math.pi / 8)) for k in range(5)]
+                for p0, p1 in zip(pts[:-1], pts[1:]):
+                    box(bm, (p0 + p1) / 2, (p1 - p0).normalized(), t, (p1 - p0).length + 0.03, 0.08, 0.08)
+                fl = pts[-1]
+                box(bm, fl - dn * 0.06 + e * s * 0.05, (e * s - dn).normalized(), t, 0.2, 0.15, 0.03)
+        make(f"{NAME}_Weapon_anchor", "RightHand", build)
+    elif w == "rattan":
+        # 등패 (등패수): 왼팔 바깥에 둥글고 볼록한 등나무 방패, 가운데 쇠 배꼽 (등나무 빛 _Rattan_)
+        f = B["LeftForeArm"]
+        c = f.head_local.lerp(f.tail_local, 0.55)
+        out = Vector((1, -0.6, 0)).normalized()
+
+        def build(bm, c=c, out=out):
+            r = 0.44
+            u = Vector((0, 0, 1)); v = out.cross(u).normalized()
+            rings = []
+            for i, rr in enumerate((0.0, 0.12, 0.24, 0.35, r)):
+                dome = 0.16 * (1 - (rr / r) ** 2)                             # 가운데가 볼록
+                if rr == 0:
+                    rings.append([bm.verts.new(c + out * (0.06 + dome + 0.02))])
+                else:
+                    rings.append([bm.verts.new(c + out * (0.06 + dome) + (u * math.cos(k * math.pi / 8) + v * math.sin(k * math.pi / 8)) * rr) for k in range(16)])
+            for k in range(16):
+                bm.faces.new((rings[0][0], rings[1][k], rings[1][(k + 1) % 16]))
+            for r0, r1 in zip(rings[1:-1], rings[2:]):
+                for k in range(16):
+                    j = (k + 1) % 16
+                    bm.faces.new((r0[k], r1[k], r1[j], r0[j]))
+            back = [bm.verts.new(c + out * 0.05 + (u * math.cos(k * math.pi / 8) + v * math.sin(k * math.pi / 8)) * r) for k in range(16)]
+            for k in range(16):
+                j = (k + 1) % 16
+                bm.faces.new((rings[-1][k], back[k], back[j], rings[-1][j]))
+            bm.faces.new(list(reversed(back)))
+        make(f"{NAME}_Rattan_Shield", "LeftForeArm", build)
+    elif w == "flagpole":
+        # 큰 깃대 (깃발수): 오른손에 세워 쥔 긴 장대(아래 0.6, 위 2.6), 꼭대기 창날, 위쪽에 큰 붉은 깃발 (_Red_)
+        g = grip_of("Right")
+        up = Vector((0, 0, 1))
+        side = Vector((1, 0, 0))
+
+        def build_pole(bm, g=g):
+            box(bm, g + up * 1.0, up, side, 3.2, 0.05, 0.05)
+            box(bm, g + up * 2.7, up, side, 0.22, 0.04, 0.012)                 # 창날
+            box(bm, g + up * 2.56, side, FWD, 0.14, 0.03, 0.03)                # 깃대 머리 가로대
+        make(f"{NAME}_Weapon_flagpole", "RightHand", build_pole)
+
+        def build_flag(bm, g=g):
+            # 장대에서 바깥(+X 쪽, 몸 반대편)으로 뻗은 1.2 × 0.85 깃발, 끝이 두 갈래로 갈라져요 (양면은 셰이더가 아니라 두께로)
+            top, bot = g + up * 2.5, g + up * 1.65
+            ends = [(0.0, top, bot), (0.6, top + side * 0.6 - up * 0.04, bot + side * 0.6 + up * 0.03), (1.2, top + side * 1.2 - up * 0.1, bot + side * 1.2 + up * 0.1)]
+            vs_ = []
+            for _, a, b in ends:
+                vs_.append((bm.verts.new(a + FWD * 0.01), bm.verts.new(b + FWD * 0.01), bm.verts.new(a - FWD * 0.01), bm.verts.new(b - FWD * 0.01)))
+            notch = bm.verts.new((ends[2][1] + ends[2][2]) / 2 - side * 0.25)
+            for (a0, b0, a1_, b1_), (a2, b2, a3, b3) in zip(vs_[:-1], vs_[1:]):
+                bm.faces.new((a0, b0, b2, a2)); bm.faces.new((a1_, a3, b3, b1_))
+                bm.faces.new((a0, a2, a3, a1_)); bm.faces.new((b0, b1_, b3, b2))
+            a2, b2, a3, b3 = vs_[-1]
+            bm.faces.new((a2, notch, b2)); bm.faces.new((a3, b3, notch))
+        make(f"{NAME}_Red_Flag", "RightHand", build_flag)
     elif w == "bomb":
         g = grip_of("Right") + FWD * 0.04
 
@@ -595,6 +709,13 @@ def bend(name, axis, deg):
 
 
 BLADE_REST = Vector((0, -1, -0.15)).normalized()   # 기본 자세에서 오른손 칼(dao·bigdao·jian)이 뻗는 방향
+# 장강 수적 무기는 쥔 방향이 칼과 달라요: 깃대는 위로, 쇠닻대는 아래로, 작살은 거의 수평 앞으로
+if "flagpole" in WEAPONS:
+    BLADE_REST = Vector((0, 0, 1))
+elif "anchor" in WEAPONS:
+    BLADE_REST = Vector((0, 0.15, -1)).normalized()
+elif "harpoon" in WEAPONS:
+    BLADE_REST = Vector((0, -1, -0.1)).normalized()
 MAX_TWIST = math.pi if "generic" in EXTRAS else math.radians(85)   # Humanoid는 넘으면 Unity가 잘라서 칼이 튀어요 (Generic은 한계 없음)
 
 
@@ -828,7 +949,7 @@ def hold_moktak():
     arm("Left", chest + Vector((0.1, -0.3, -0.18)), Vector((1, 0.3, -0.6)))
 
 
-HAS_BLADE = bool({"dao", "bigdao", "jian"} & EXTRAS)
+HAS_BLADE = bool({"dao", "bigdao", "jian", "hooksword"} & EXTRAS)
 SPREAD = float(next((w.split("=")[1] for w in WEAPONS if w.startswith("armspread=")), "1"))
 player_objs, player_acts = [], []
 if "playeranim" in EXTRAS or "sweep" in EXTRAS:
@@ -886,6 +1007,10 @@ if "playeranim" in EXTRAS or "sweep" in EXTRAS:
         if HAS_BLADE:
             fa = (pb["RightHand"].head - pb["RightForeArm"].head).normalized()
             point_blade((fa + Vector((0, -0.12, 0))).normalized(), wrist_bend=90)   # 칼은 팔과 일직선으로 늘어뜨려요
+        if "harpoon" in WEAPONS or "flagpole" in WEAPONS:
+            point_blade(Vector((0, -0.2, 1)), wrist_bend=90)                 # 작살·깃대는 세워 들고 걸어요
+        if "anchor" in WEAPONS:
+            point_blade(Vector((0, 0.25, -1)), wrist_bend=90)                # 쇠닻은 아래로 늘어뜨려 끌어요
         if "khakkhara" in WEAPONS:
             point_blade(Vector((0, -0.15, 1)), wrist_bend=90)                 # 선장은 세워 들고 걸어요
         if "prayer" in EXTRAS:
@@ -1451,6 +1576,191 @@ if "buddhamoves" in EXTRAS:
         sl = pb["LeftArm"].head.copy()
         arm("Left", sl + Vector((0.2, -0.05, -0.55)), Vector((1, 0.3, -0.3)))
     make_action("Grab", [(0, "reach"), (9, "reach"), (14, "pull"), (22, "pull"), (32, "idle")], grab_pose)
+    rig.animation_data.action = None
+    reset_pose()
+
+
+# 장강 수적 (rivermoves): 무기에 따라 동작을 만들어요
+#   갈고리 칼(수적 졸개) DoubleSlash: 치켜든 채 버티다가(예고) 앞으로 내려베고 0.3초(9프레임) 뒤 반대로 한 번 더
+#   등패수(dao+rattan) Attack: 방패를 앞에 세운 채 한 번 내디디며 베기 · ShieldRoll: 왼팔을 몸 앞으로 감았다가 앞으로 뿌려 방패를 굴려요
+#   작살수 HarpoonThrust: 두 손으로 작살을 허리춤에 겨눴다가 앞으로 쭉 찔러 뻗고 → 잡아채듯 뒤로 당겨요
+#   쇠닻 거한 AnchorThrow: 닻을 머리 뒤로 치켜 감았다가 앞으로 던지고, 두 팔을 앞으로 뻗어 날아가는 자세로 버텨요 · AnchorSwing: 앞을 반원으로 휩쓸어요
+#   수귀 Emerge: 땅속에서 두 팔을 뻗으며 솟구쳐 붙잡아요 · Drag: 붙잡은 채 뒷걸음질 (반복)
+#   깃발수 Wave: 깃대를 두 손으로 들고 좌우로 크게 세 번 흔들어요 (예고 1.5초 동안 그대로 재생)
+if "rivermoves" in EXTRAS:
+    def free_left_back():
+        sl = pb["LeftArm"].head.copy()
+        arm("Left", sl + Vector((0.25, 0.12, -0.5)), Vector((1, 0.3, -0.3)))
+
+    def shield_guard():
+        sl = pb["LeftArm"].head.copy()
+        arm("Left", sl + Vector((0.05, -0.36, -0.18)), Vector((1, 0.3, -0.5)))
+
+    SLASH = {   # twist, wrist, reach, lift, dy, blade
+        "load": (-35, Vector((-0.45, 0.15, 0.9)), 0.9, -0.06, 0.05, Vector((-0.2, 0.3, 1))),
+        "cut1": (25, Vector((0.35, -0.75, -0.6)), 0.95, -0.2, -0.12, Vector((0.6, -0.5, -1))),     # 오른 위에서 왼 아래로 내려베요
+        "reload": (30, Vector((0.4, -0.15, 0.8)), 0.85, -0.14, -0.1, Vector((0.3, 0.3, 1))),
+        "cut2": (-25, Vector((-0.45, -0.7, -0.45)), 0.95, -0.22, -0.2, Vector((-0.9, -0.5, -0.6))),   # 왼 위에서 오른 아래로 되베요
+    }
+
+    def slash_pose(val):
+        stage, left = val
+        if stage == "idle":
+            idle_end_pose(); return
+        twist, wrist, reach, lift, dy, blade_dir = SLASH[stage]
+        step = stage != "load"
+        feet = {"Left": FEET["Left"] + (Vector((0, -0.35, 0)) if step else Vector()), "Right": FEET["Right"]}
+        lower_hips(lift, feet, dy=dy)
+        bend("Spine", UP, twist * 0.6); bend("Spine1", UP, twist * 0.4)
+        sh = pb["RightArm"].head.copy()
+        pole = Vector((-0.6, 0.3, 0)) if wrist.z > 0.3 else Vector((0.2, 0.5, -1))
+        arm("Right", sh + wrist.normalized() * REACH * reach, pole)
+        point_blade(blade_dir, wrist_bend=80)
+        left()
+
+    if "hooksword" in WEAPONS:
+        make_action("DoubleSlash", [(0, ("load", free_left_back)), (3, ("cut1", free_left_back)), (7, ("reload", free_left_back)),
+                                    (12, ("cut2", free_left_back)), (18, ("cut2", free_left_back)), (28, ("idle", None))], slash_pose)
+    if "rattan" in WEAPONS:
+        make_action("Attack", [(0, ("load", shield_guard)), (4, ("cut1", shield_guard)), (14, ("cut1", shield_guard)), (24, ("idle", None))], slash_pose)
+
+        def roll_pose(stage):
+            if stage == "idle":
+                idle_end_pose(); return
+            sl = pb["LeftArm"].head.copy()
+            if stage == "wind":
+                lower_hips(-0.14, FEET, dy=0.04)
+                bend("Spine", UP, 35)                                         # 왼 어깨를 안으로 감아요
+                arm("Left", sl + Vector((-0.4, -0.05, -0.3)), Vector((1, 0.5, -0.5)))
+            else:
+                feet = {"Left": FEET["Left"] + Vector((0, -0.35, 0)), "Right": FEET["Right"]}
+                lower_hips(-0.2, feet, dy=-0.12)
+                bend("Spine", UP, -30)
+                arm("Left", sl + Vector((0.3, -0.6, -0.15)), Vector((1, 0.2, -0.6)))   # 앞으로 뿌려요
+            sh = pb["RightArm"].head.copy()
+            arm("Right", sh + Vector((-0.2, 0.1, -0.55)), Vector((-1, 0.3, -0.3)))
+            point_blade(Vector((-0.2, -1, -0.5)), wrist_bend=60)
+        make_action("ShieldRoll", [(0, "wind"), (4, "throw"), (14, "throw"), (24, "idle")], roll_pose)
+
+    if "harpoon" in WEAPONS:
+        def harpoon_pose(stage):
+            if stage == "idle":
+                idle_end_pose(); return
+            sh = pb["RightArm"].head.copy()
+            if stage == "load":
+                lower_hips(-0.12, FEET, dy=0.08)
+                bend("Spine", UP, -20)
+                arm("Right", sh + Vector((-0.05, 0.22, -0.42)), Vector((-1, 0.3, -0.5)))   # 허리춤 뒤
+                point_blade(Vector((0, -1, 0.08)), wrist_bend=90)
+            elif stage == "thrust":
+                feet = {"Left": FEET["Left"] + Vector((0, -0.45, 0)), "Right": FEET["Right"]}
+                lower_hips(-0.18, feet, dy=-0.25)
+                bend("Spine", Vector((1, 0, 0)), 12)
+                fit_right(sh, [Vector((0.12, -0.78, -0.18)), Vector((0.05, -0.72, -0.26)), Vector((0.16, -0.66, -0.08))], ALL_POLES, Vector((0, -1, -0.05)), wrist_bend=90)   # 앞으로 쭉 (작살촉이 앞을 보게 팔꿈치 방향을 골라요)
+            else:   # yank: 잡아채 뒤로 당겨요
+                lower_hips(-0.14, FEET, dy=0.12)
+                bend("Spine", Vector((1, 0, 0)), -8)
+                arm("Right", sh + Vector((-0.05, 0.3, -0.3)), Vector((-1, 0.3, -0.5)))
+                point_blade(Vector((0, -1, 0.15)), wrist_bend=90)
+            g, d = blade_now()
+            arm("Left", g + d * 0.5, Vector((1, 0.3, -0.5)))               # 왼손은 자루 앞쪽
+        make_action("HarpoonThrust", [(0, "load"), (4, "thrust"), (12, "thrust"), (17, "yank"), (22, "yank"), (32, "idle")], harpoon_pose)
+
+    if "anchor" in WEAPONS:
+        def anchor_throw(stage):
+            if stage == "idle":
+                idle_end_pose(); return
+            sh = pb["RightArm"].head.copy()
+            sl = pb["LeftArm"].head.copy()
+            if stage == "wind":
+                lower_hips(-0.16, FEET, dy=0.1)
+                bend("Spine", Vector((1, 0, 0)), -12); bend("Spine", UP, -25)
+                arm("Right", sh + Vector((-0.05, 0.35, 0.75)), Vector((-1, 0.3, 0)))   # 머리 뒤로 치켜 감아요
+                point_blade(Vector((0, 0.8, -0.6)), wrist_bend=60)                     # 닻이 등 뒤로 늘어져요
+                arm("Left", sl + Vector((0.2, -0.3, 0.05)), Vector((1, 0.3, -0.5)))
+            elif stage == "throw":
+                feet = {"Left": FEET["Left"] + Vector((0, -0.5, 0)), "Right": FEET["Right"]}
+                lower_hips(-0.22, feet, dy=-0.25)
+                bend("Spine", Vector((1, 0, 0)), 22); bend("Spine", UP, 20)
+                arm("Right", sh + Vector((0.05, -0.85, 0.05)), Vector((-1, 0, -0.5)))
+                point_blade(Vector((0, -1, 0.2)), wrist_bend=60)
+                arm("Left", sl + Vector((0.3, 0.2, -0.4)), Vector((1, 0.3, -0.3)))
+            else:   # fly: 사슬에 끌려 날아가요 — 두 팔을 앞으로 뻗고 몸을 숙여 다리는 뒤로
+                feet = {"Left": FEET["Left"] + Vector((0, 0.45, 0.35)), "Right": FEET["Right"] + Vector((0, 0.3, 0.15))}
+                lower_hips(0.05, feet, dy=-0.1)
+                bend("Spine", Vector((1, 0, 0)), 30)
+                arm("Right", sh + Vector((0.05, -0.85, -0.05)), Vector((-1, 0, -0.5)))
+                point_blade(Vector((0, -1, 0)), wrist_bend=60)
+                arm("Left", sl + Vector((-0.05, -0.85, -0.05)), Vector((1, 0, -0.5)))
+        make_action("AnchorThrow", [(0, "wind"), (4, "throw"), (8, "fly"), (30, "fly"), (40, "idle")], anchor_throw)
+
+        def anchor_swing(stage):
+            if stage == "idle":
+                idle_end_pose(); return
+            twist, wrist, lift, want = {
+                "load": (-55, Vector((-0.75, 0.4, -0.2)), -0.16, Vector((-0.6, 0.6, -0.4))),
+                "hit": (0, Vector((-0.2, -0.95, -0.2)), -0.24, Vector((0, -1, -0.25))),
+                "follow": (55, Vector((0.65, -0.55, -0.2)), -0.24, Vector((1, -0.4, -0.25))),
+                "end": (60, Vector((0.7, 0.1, -0.4)), -0.16, Vector((0.6, 0.5, -0.8))),
+            }[stage]
+            lower_hips(lift, FEET, dy=-0.05)
+            bend("Spine", UP, twist * 0.6); bend("Spine1", UP, twist * 0.4)
+            sh = pb["RightArm"].head.copy()
+            arm("Right", sh + wrist.normalized() * REACH * 0.9, Vector((0.2, 0.5, -1)))
+            point_blade(want, wrist_bend=60)
+            g, d = blade_now()
+            arm("Left", g + d * 0.25, Vector((1, 0.3, -0.8)))              # 왼손도 닻대를 잡아요
+        make_action("AnchorSwing", [(0, "load"), (4, "hit"), (7, "follow"), (11, "end"), (16, "end"), (26, "idle")], anchor_swing)
+
+    if "ghostmoves" in EXTRAS:
+        def ghost_pose(val):
+            stage, sink = val
+            if stage == "idle":
+                idle_end_pose(); return
+            down = Vector((0, 0, -sink))
+            if stage == "drag":
+                lower_hips(-0.06 - sink, {"Left": FEET["Left"] + down, "Right": FEET["Right"] + down}, dy=0.06)
+            else:
+                lower_hips(-sink, {"Left": FEET["Left"] + down, "Right": FEET["Right"] + down})
+            bend("Spine", Vector((1, 0, 0)), 18 if stage != "drag" else -10)
+            for s, sx in (("Left", 1), ("Right", -1)):
+                sh = pb[f"{s}Arm"].head.copy()
+                if stage == "rise":
+                    arm(s, sh + Vector((sx * 0.1, -0.35, 0.75)), Vector((sx, 0.3, 0)))      # 하늘로 손을 뻗으며 솟구쳐요
+                else:
+                    arm(s, sh + Vector((-sx * 0.05, -0.75, -0.15)), Vector((sx, 0.3, -0.6)))   # 앞을 움켜쥐어요
+        make_action("Emerge", [(0, ("rise", 1.9)), (5, ("rise", 0.4)), (8, ("grab", 0.0)), (12, ("grab", 0.0)), (20, ("grab", 0.0))], ghost_pose)
+
+        def drag_pose(phase):
+            # 붙잡은 채 뒷걸음질: 한 발씩 뒤로 (16프레임 반복)
+            back = "Left" if phase in (0, 1) else "Right"
+            k = (0.0, 1.0, 0.0, 1.0)[phase]
+            feet = {}
+            for s in ("Left", "Right"):
+                if s == back:
+                    feet[s] = FEET[s] + Vector((0, 0.3 * k, 0.15 * k))
+                else:
+                    feet[s] = FEET[s] + Vector((0, -0.15, 0))
+            lower_hips(-0.07, feet, dy=0.08)
+            bend("Spine", Vector((1, 0, 0)), -12)
+            for s, sx in (("Left", 1), ("Right", -1)):
+                sh = pb[f"{s}Arm"].head.copy()
+                arm(s, sh + Vector((-sx * 0.05, -0.7, -0.2)), Vector((sx, 0.3, -0.6)))
+        make_action("Drag", [(0, 0), (4, 1), (8, 2), (12, 3), (16, 0)], drag_pose)
+
+    if "flagpole" in WEAPONS:
+        def wave_pose(stage):
+            if stage == "idle":
+                idle_end_pose(); return
+            tilt = {"up": 0.0, "left": 0.7, "right": -0.7}[stage]
+            lower_hips(-0.08, FEET)
+            bend("Spine", UP, -tilt * 15)
+            sh = pb["RightArm"].head.copy()
+            arm("Right", sh + Vector((0.15 + tilt * 0.15, -0.25, 0.5)), Vector((-1, 0.3, -0.3)))   # 오른손을 높이
+            point_blade(Vector((tilt, -0.15, 1)), wrist_bend=90)
+            g, d = blade_now()
+            arm("Left", g - d * 0.45, Vector((1, 0.3, -0.5)))              # 왼손은 장대 아래쪽
+        make_action("Wave", [(0, "up"), (6, "left"), (14, "right"), (22, "left"), (30, "right"), (38, "up"), (46, "idle")], wave_pose)
     rig.animation_data.action = None
     reset_pose()
 
