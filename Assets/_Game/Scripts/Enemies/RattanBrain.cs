@@ -10,6 +10,7 @@ namespace AThousandDawns.Enemies
     public sealed class RattanBrain : ShieldBrain
     {
         float _ranged, _throwMin, _throwMax, _throwRange, _throwSpeed, _throwRatio, _throwInterval, _throwTimer, _awayLeft;
+        public static event System.Action<RattanBrain, Vector3> FullBlock; // 멀리서 온 공격을 정면에서 다 막은 순간 (공격이 온 자리) · 아트: InkRiverEnemyFx
         bool _throwing;
 
         public override EnemyKind Kind => EnemyKind.Rattan;
@@ -37,7 +38,9 @@ namespace AThousandDawns.Enemies
         {
             Vector3 to = attacker - transform.position;
             to.y = 0f;
-            return to.magnitude >= _ranged ? 0f : guardRatio;
+            if (to.magnitude < _ranged) return guardRatio;
+            FullBlock?.Invoke(this, attacker);
+            return 0f;
         }
 
         protected override void TickAlways(float dt)

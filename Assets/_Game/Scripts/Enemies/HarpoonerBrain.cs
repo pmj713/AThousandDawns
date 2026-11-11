@@ -9,6 +9,7 @@ namespace AThousandDawns.Enemies
     public sealed class HarpoonerBrain : EnemyBrain
     {
         float _reach, _width, _stop, _keepMin, _keepMax;
+        public static event System.Action<HarpoonerBrain, Vector3, Vector3, float, bool> Thrust; // 작살 찌르기: 자리 · 방향 · 길이 · 끌어왔는지 (아트: InkRiverEnemyFx)
 
         public override EnemyKind Kind => EnemyKind.Harpooner;
         protected override string Key => "harpooner";
@@ -45,8 +46,9 @@ namespace AThousandDawns.Enemies
             rel.y = 0f;
             float along = Vector3.Dot(rel, AimDirection);
             float side = Mathf.Abs(Vector3.Dot(rel, new Vector3(AimDirection.z, 0f, -AimDirection.x)));
-            if (along < 0f || along > _reach + PlayerRadius || side > _width * 0.5f + PlayerRadius) return;
-            if (TryHitPlayer()) Player.PullToward(transform.position, _stop + BodyRadius);
+            bool pulled = !(along < 0f || along > _reach + PlayerRadius || side > _width * 0.5f + PlayerRadius) && TryHitPlayer();
+            Thrust?.Invoke(this, transform.position, AimDirection, _reach, pulled);
+            if (pulled) Player.PullToward(transform.position, _stop + BodyRadius);
         }
 
         protected override void TickActive(float dt) { }
