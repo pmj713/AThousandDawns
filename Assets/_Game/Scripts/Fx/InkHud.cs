@@ -196,12 +196,13 @@ namespace AThousandDawns.Fx
             KeyHint.Draw(new Rect(r.x, r.yMax - 16f, r.width, 28f), KeyHint.Key(Bind.Skill), _key, 14);
         }
 
-        static Texture2D SkillIcon(PlayerController p) => p.Skill switch
+        // 비도를 들면 비급을 배워도 초식은 늘 "회수" (비급은 회수에 효과만 덧붙여요) → 회수 그림
+        static Texture2D SkillIcon(PlayerController p) => p.UsesDagger ? _recall : p.Skill switch
         {
             SkillKind.BambooFlash => _bamboo,
             SkillKind.Quake => _quake,
             _ when p.Skill.ToString() == "Palm" && _palm != null => _palm, // 금강장 (파계승 혜광의 비급) — 기획 쪽 SkillKind.Palm이 들어오기 전에도 컴파일되게 이름으로
-            _ => p.UsesDagger ? _recall : _spin,
+            _ => _spin,
         };
 
         // ── 체력 ──
