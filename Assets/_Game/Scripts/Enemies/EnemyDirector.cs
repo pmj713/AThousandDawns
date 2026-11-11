@@ -181,6 +181,7 @@ namespace AThousandDawns.Enemies
         public void ResetRoom()
         {
             SummonsLeft = Mathf.RoundToInt(GameConfig.Get("horn.summon_max", 2f));
+            GhostFire.ClearAll(); // 방을 옮기면 도깨비불 장판도 사라져요
         }
 
         public bool IsFree(Vector3 p, float radius)

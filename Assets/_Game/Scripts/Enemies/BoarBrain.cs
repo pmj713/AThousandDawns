@@ -96,16 +96,22 @@ namespace AThousandDawns.Enemies
                 {
                     IsWallStunned = true;
                     Sfx.Play(SfxId.BoarCrash);
+                    OnChargeEnded();
                     Attack.EndActive(_wallStun);
                     return;
                 }
             }
-            if (_traveled >= _chargeDistance - 1e-4f) Attack.EndActive();
+            if (_traveled >= _chargeDistance - 1e-4f)
+            {
+                OnChargeEnded();
+                Attack.EndActive();
+            }
         }
 
         protected override void OnAttackFinished() => IsWallStunned = false;
 
         protected virtual void OnChargeHit() { } // 돌진에 맞혔을 때 (석상 나한: 기절)
+        protected virtual void OnChargeEnded() { } // 돌진이 끝난 자리에서 (석상 나한: 충격파)
 
         void CheckHit()
         {

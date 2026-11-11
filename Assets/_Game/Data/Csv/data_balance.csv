@@ -715,11 +715,11 @@ moktak.hp,40,,목탁승 체력 (×1.8 = 72),몬스터!F43
 moktak.atk,5,,목탁승 공격,몬스터!G43
 moktak.toughness,0,,목탁승 강인함,몬스터!H43
 moktak.move_speed,2.5,cell/s,목탁승 이동속도,
-moktak.windup,1.5,s,목탁승 목탁 예고 (맞으면 끊김),
+moktak.windup,1.5,s,목탁승 목탁 예고 (맞으면 끊김 · 끝나면 가호),
 moktak.recovery,0.5,s,목탁승 빈틈,
-moktak.attack_interval,8,s,목탁승 호출 간격,
+moktak.attack_interval,8,s,목탁승 가호 간격,
 moktak.keep_distance,6,cell,목탁승이 두는 거리,
-moktak.summon_count,2,,목탁승이 부르는 망령 수,
+moktak.summon_count,2,,목탁승이 부르는 망령 수 (지금은 부르지 않고 가호),
 monk.hp,60,,파계승 체력 (×1.8 = 108),몬스터!F44
 monk.atk,10,,파계승 공격 (×1.3 = 13),몬스터!G44
 monk.toughness,2,,파계승 강인함,몬스터!H44
@@ -733,12 +733,12 @@ monk.stance_time,2,s,파계승 금강불괴 시간 (받는 피해 1),
 monk.stance_cooldown,7,s,파계승 금강불괴 간격,
 monk.stance_range,4,cell,파계승이 금강불괴를 쓰는 거리,
 lantern.hp,25,,등불 귀신 체력 (×1.8 = 45),몬스터!F45
-lantern.atk,20,,등불 귀신 폭발 (×1.3 = 26),몬스터!G45
+lantern.atk,20,,등불 귀신 공격 (×1.3 = 26 · 도깨비불 장판은 ×0.5),몬스터!G45
 lantern.toughness,0,,등불 귀신 강인함,몬스터!H45
 lantern.move_speed,4,cell/s,등불 귀신 이동속도,
-lantern.attack_range,2,cell,등불 귀신 폭발 반경,
-lantern.windup,1,s,등불 귀신 점화 예고,
-lantern.shock_slow,40%,,등불 귀신 감전: 이동속도 감소,
+lantern.attack_range,2,cell,등불 귀신 폭발 반경 (지금은 터지지 않아요),
+lantern.windup,1,s,등불 귀신 점화 예고 (지금은 터지지 않아요),
+lantern.shock_slow,40%,,등불 귀신 도깨비불 감전: 이동속도 감소,
 lantern.shock_time,1.5,s,등불 귀신 감전 시간,
 room_cost.wraith,2,,방 예산 점수: 망령,
 room_cost.arhat,3,,방 예산 점수: 석상 나한,
@@ -834,3 +834,14 @@ knife.scroll_flash_ratio,50%,,비도 + 죽림섬: 회수할 때 순간이동 베
 knife.scroll_quake_radius,2.5,칸,비도 + 붕산권: 회수할 때 충격파 반경,비도 비급 (회수에 덧붙음)
 knife.scroll_quake_ratio,60%,,비도 + 붕산권: 충격파 피해 (초식 피해 대비),비도 비급 (회수에 덧붙음)
 knife.scroll_palm_shield,1%,,비도 + 금강장: 돌아온 비도 1개당 보호막 (최대 체력 비율),비도 비급 (회수에 덧붙음)
+arhat.statue_wake,3,cell,석상 나한: 석상으로 서 있다가 이 거리 안이면 깨어남 (그전엔 맞힐 수 없음),폐사찰 적 고유 기믹
+arhat.quake_radius,1.8,cell,석상 나한: 돌진이 끝난 자리 충격파 반경,폐사찰 적 고유 기믹
+arhat.quake_ratio,0.6,,석상 나한: 충격파 피해 배율,폐사찰 적 고유 기믹
+moktak.ward_radius,7,cell,목탁승 가호: 둘레 적 범위,폐사찰 적 고유 기믹
+moktak.ward_ratio,25%,,목탁승 가호: 먼저 막는 피해 (그 적 최대 체력 비율),폐사찰 적 고유 기믹
+lantern.orbit,2.5,cell,등불 귀신: 플레이어 둘레를 떠도는 거리,폐사찰 적 고유 기믹
+lantern.fire_gap,0.7,s,등불 귀신: 도깨비불 장판을 남기는 간격,폐사찰 적 고유 기믹
+lantern.fire_radius,0.9,cell,등불 귀신: 도깨비불 장판 반경,폐사찰 적 고유 기믹
+lantern.fire_time,3.5,s,등불 귀신: 도깨비불 장판이 남는 시간,폐사찰 적 고유 기믹
+lantern.fire_ratio,0.5,,등불 귀신: 장판 피해 배율 (0.5초마다),폐사찰 적 고유 기믹
+lantern.split_distance,1.2,cell,등불 귀신: 쓰러지면 양옆에 장판 두 개 (간격),폐사찰 적 고유 기믹

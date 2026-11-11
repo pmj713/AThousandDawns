@@ -20,7 +20,7 @@ namespace AThousandDawns.Enemies
         protected override bool InterruptibleWindup => true;
         protected override bool RadialTelegraph => true;
 
-        protected virtual EnemyKind SummonKind => EnemyKind.Grunt; // 목탁승은 망령
+        protected virtual EnemyKind SummonKind => EnemyKind.Grunt;
 
         protected override void ReadTuning()
         {

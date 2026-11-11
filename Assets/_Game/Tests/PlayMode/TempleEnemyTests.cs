@@ -84,24 +84,39 @@ namespace AThousandDawns.Tests
         }
 
         [UnityTest]
-        public IEnumerator 석상_나한_돌진에_맞으면_기절()
+        public IEnumerator 석상_나한은_가까이_가야_깨어나고_돌진에_맞으면_기절()
         {
             yield return Load();
-            Spawn(EnemyKind.Arhat, 3.5f);
+            var arhat = (ArhatBrain)Spawn(EnemyKind.Arhat, 5f);
+            yield return new WaitForSeconds(1f);
+            Assert.IsTrue(arhat.IsDormant, "멀리 있으면 석상");
+            Assert.IsFalse(arhat.Damageable.Targetable, "석상은 맞힐 수 없어요");
+
+            var cc = _player.GetComponent<CharacterController>();
+            cc.enabled = false;
+            _player.transform.position = arhat.transform.position - _player.Facing * 2.5f;
+            cc.enabled = true;
             float hp = _player.Health;
             yield return WaitUntil(() => _player.Health < hp, 8f);
+            Assert.IsFalse(arhat.IsDormant, "3칸 안이면 깨어나요");
+            Assert.IsTrue(arhat.Damageable.Targetable);
             Assert.Less(_player.Health, hp, "돌진에 맞았어요");
             yield return new WaitForSeconds(0.5f);
             Assert.IsTrue(_player.IsStunned, "맞은 뒤 0.5초가 지나도 아직 기절 (0.8초)");
         }
 
         [UnityTest]
-        public IEnumerator 목탁승은_망령을_부름()
+        public IEnumerator 목탁승은_둘레_적에게_가호()
         {
             yield return Load();
             Spawn(EnemyKind.Moktak, 6f);
-            yield return WaitUntil(() => _director.Count(EnemyKind.Wraith) > 0, 8f);
-            Assert.AreEqual(2, _director.Count(EnemyKind.Wraith), "망령 2마리");
+            var grunt = Spawn(EnemyKind.Grunt, 4f);
+            yield return WaitUntil(() => grunt.Damageable.Ward > 0, 8f);
+            Assert.AreEqual(Mathf.RoundToInt(grunt.Damageable.MaxHealth * 0.25f), grunt.Damageable.Ward, "최대 체력 25%만큼 가호");
+            float hp = grunt.Damageable.Health;
+            grunt.Damageable.ApplyHit(5);
+            Assert.AreEqual(hp, grunt.Damageable.Health, "가호가 먼저 막아요");
+            Assert.AreEqual(0, _director.Count(EnemyKind.Wraith), "망령은 부르지 않아요");
         }
 
         [UnityTest]
@@ -118,13 +133,27 @@ namespace AThousandDawns.Tests
         }
 
         [UnityTest]
-        public IEnumerator 등불_귀신이_터지면_감전()
+        public IEnumerator 등불_귀신은_도깨비불을_남기고_쓰러지면_둘로_갈라짐()
         {
             yield return Load();
             var lantern = (LanternBrain)Spawn(EnemyKind.Lantern, 3f);
-            yield return WaitUntil(() => lantern == null || lantern.Exploded, 8f);
-            Assert.Greater(_player.SlowLeft, 0f, "감전: 잠시 느려져요");
-            Assert.AreEqual(0.4f, _player.SlowRatio, 0.01f);
+            yield return WaitUntil(() => lantern.FiresDropped >= 2, 8f);
+            Assert.GreaterOrEqual(lantern.FiresDropped, 2, "떠돌며 장판을 남겨요");
+            Assert.Greater(GhostFire.Count, 0);
+            int before = lantern.FiresDropped;
+            lantern.Damageable.ApplyHit(99999);
+            yield return null;
+            Assert.AreEqual(before + 2, lantern.FiresDropped, "불씨가 둘로 갈라져요");
+
+            var fire = Object.FindObjectsByType<GhostFire>(FindObjectsSortMode.None)[0];
+            var cc = _player.GetComponent<CharacterController>();
+            cc.enabled = false;
+            _player.transform.position = fire.transform.position;
+            cc.enabled = true;
+            float hp = _player.Health;
+            yield return WaitUntil(() => _player.Health < hp, 2f);
+            Assert.Less(_player.Health, hp, "장판에 서 있으면 맞아요");
+            Assert.AreEqual(0.4f, _player.SlowRatio, 0.01f, "감전: 잠시 느려져요");
         }
     }
 }

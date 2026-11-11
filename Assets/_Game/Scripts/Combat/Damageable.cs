@@ -88,6 +88,13 @@ namespace AThousandDawns.Combat
         public void ApplyHit(int amount, bool reacts = true, PopupStyle style = PopupStyle.Normal)
         {
             if (IsDead) return;
+            if (Ward > 0 && amount > 0) // 가호가 먼저 막아요
+            {
+                int absorbed = Mathf.Min(Ward, amount);
+                Ward -= absorbed;
+                amount -= absorbed;
+                if (Ward == 0) SetTint(null);
+            }
             if (!invincible) Health = Mathf.Max(0f, Health - amount);
             if (reacts) _flashTimer = 0.08f;
             DamagePopups.Spawn(transform.position + Vector3.up * 2.2f, amount, style);
@@ -98,6 +105,17 @@ namespace AThousandDawns.Combat
         }
 
         public bool LastHitReacts { get; private set; } = true;
+
+        // 목탁승 가호: 이만큼의 피해를 먼저 막아요. 가호가 있는 동안 몸이 금빛이에요 (다 깎이면 원래 색)
+        static readonly Color WardColor = new Color(1f, 0.82f, 0.4f);
+        public int Ward { get; private set; }
+
+        public void AddWard(int amount)
+        {
+            if (IsDead || amount <= 0) return;
+            Ward = Mathf.Max(Ward, amount);
+            SetTint(WardColor);
+        }
 
         // 빙결처럼 몸 색을 바꿔 둘 때 (null이면 원래 색)
         public void SetTint(Color? tint)
