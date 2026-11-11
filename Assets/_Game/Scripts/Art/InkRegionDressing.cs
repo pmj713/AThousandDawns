@@ -22,6 +22,8 @@ namespace AThousandDawns.Art
         RoomRun _run;
         int _shown = -1;
 
+        public int PreviewRegion => previewRegion;
+
         public void SetRegions(Set[] list) => regions = list ?? Array.Empty<Set>();
 
         void Start() => Show(0);
