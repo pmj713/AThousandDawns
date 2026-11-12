@@ -11,6 +11,14 @@ namespace AThousandDawns.Art
         [SerializeField] GameObject[] pillars = new GameObject[0];   // 깨진 돌기둥 (지름 0.8, 높이 2.4) 변형들
         [SerializeField] GameObject statue;                          // 석불 (1.6 × 1.4, 높이 2.6), 앞이 -Z
         [SerializeField] GameObject wall;                            // 무너진 담 (길이 3, 두께 0.5, 높이 1.2), 길이가 X
+        [SerializeField] GameObject coffin;                          // 천마총 무너진 관 (2 × 1, 높이 1), 길이가 X
+        [SerializeField] GameObject miasmaPillar;                    // 천마총 마기 기둥 (1 × 1, 높이 2.6)
+        [SerializeField] GameObject bloodPoolRim;                    // 천마총 혈지 가장자리 돌·뼈 (3.5 × 2.5, 핏물 표면은 아트 2)
+
+        public void SetupTomb(GameObject coffinModel, GameObject miasmaModel, GameObject poolRimModel)
+        {
+            coffin = coffinModel; miasmaPillar = miasmaModel; bloodPoolRim = poolRimModel;
+        }
 
         public void Setup(GameObject[] pillarModels, GameObject statueModel, GameObject wallModel)
         {
@@ -28,7 +36,9 @@ namespace AThousandDawns.Art
             {
                 i++;
                 if (f.Go == null || f.Go.GetComponent<InkFeatureLink>() != null) continue;
-                GameObject model = f.Kind switch
+                // 천마총 종류(Coffin · MiasmaPillar · BloodPool)는 게임 코드가 들어오기 전에도 컴파일되게 이름으로 골라요
+                string kind = f.Kind.ToString();
+                GameObject model = kind == "Coffin" ? coffin : kind == "MiasmaPillar" ? miasmaPillar : kind == "BloodPool" ? bloodPoolRim : f.Kind switch
                 {
                     RoomRun.FeatureKind.Pillar => pillars.Length > 0 ? pillars[i % pillars.Length] : null,
                     RoomRun.FeatureKind.Statue => statue,
@@ -37,14 +47,16 @@ namespace AThousandDawns.Art
                 };
                 if (model == null) continue;
                 var r = f.Go.GetComponent<Renderer>();
-                if (r != null) r.enabled = false;
+                if (r != null && kind != "BloodPool") r.enabled = false;   // 혈지 바닥판은 아트 2가 핏물로 그려요
                 // 상자는 크기를 늘린 물체라 그 자식으로 두면 돌렸을 때 찌그러져요. 따로 세우고 상자가 사라지면 같이 지워요
                 float yaw;
                 var scale = Vector3.one;
-                if (f.Kind == RoomRun.FeatureKind.Wall)
+                if (f.Kind == RoomRun.FeatureKind.Wall || kind == "Coffin" || kind == "BloodPool")
                 {
-                    yaw = (f.Size.y > f.Size.x ? 90f : 0f) + (i % 2) * 180f;   // 무너진 쪽이 담마다 달라 보이게
-                    scale.x = Mathf.Max(f.Size.x, f.Size.y) / 3f;               // 담 길이를 맞춰요
+                    yaw = (f.Size.y > f.Size.x ? 90f : 0f) + (i % 2) * 180f;   // 긴 쪽에 맞춰 돌리고, 무너진·밀려난 쪽이 저마다 달라 보이게
+                    float baseLen = kind == "Coffin" ? 2f : kind == "BloodPool" ? 3.5f : 3f;
+                    scale.x = Mathf.Max(f.Size.x, f.Size.y) / baseLen;          // 길이를 맞춰요
+                    if (kind == "BloodPool") scale.z = Mathf.Min(f.Size.x, f.Size.y) / 2.5f;
                 }
                 else if (f.Kind == RoomRun.FeatureKind.Statue)
                     yaw = f.Center.z >= 0f ? 0f : 180f;                         // 석불은 방 가운데 쪽을 봐요 (앞이 -Z)
