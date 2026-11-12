@@ -124,7 +124,7 @@ namespace AThousandDawns.Art
 
         void Crescent(Vector3 at, Vector3 dir, float width, float life, float delay)
         {
-            var sr = Flat(_crescent, at, width, Yaw(dir) - 90f, 0.9f, 7); // 활 등이 앞으로
+            var sr = Flat(_crescent, at, width, CrescentYaw(dir), 0.9f, 7); // 활 등이 앞으로
             if (sr == null) return;
             if (!_ownCrescent) sr.color = Dark;
             Color baseColor = sr.color;
@@ -162,10 +162,10 @@ namespace AThousandDawns.Art
             if (wave == null || _waves.Contains(wave)) return;
             _waves.Add(wave);
             foreach (var r in wave.GetComponentsInChildren<Renderer>()) r.enabled = false;
-            var sr = Flat(_crescent, wave.position, 1.8f, Yaw(dir) - 90f, 1f, 7);
+            var sr = Flat(_crescent, wave.position, 1.8f, CrescentYaw(dir), 1f, 7);
             if (sr == null) return;
             if (!_ownCrescent) sr.color = Dark;
-            var rim = Flat(_crescent, wave.position, 2.1f, Yaw(dir) - 90f, 0.98f, 6); // 붉은 테
+            var rim = Flat(_crescent, wave.position, 2.1f, CrescentYaw(dir), 0.98f, 6); // 붉은 테
             if (rim != null) rim.color = new Color(Blood.r, Blood.g, Blood.b, 0.8f);
             var trail = Line(wave.position, wave.position, Dark, 0.5f, 5);
             Vector3 start = wave.position;
@@ -646,6 +646,7 @@ namespace AThousandDawns.Art
 
         static Vector3 Flat(Vector3 v) { v.y = 0f; return v.sqrMagnitude > 1e-4f ? v.normalized : Vector3.forward; }
         static float Yaw(Vector3 dir) => -Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg;
+        static float CrescentYaw(Vector3 dir) => _ownCrescent ? Yaw(dir) + 180f : Yaw(dir) - 90f; // 천마 초승달은 볼록한 등이 그림 왼쪽, 혈불 것은 아래
 
         SpriteRenderer Flat(Sprite sprite, Vector3 at, float width, float yaw, float height, int order)
         {
