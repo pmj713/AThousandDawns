@@ -96,6 +96,7 @@ namespace AThousandDawns.Prototype
 
         static float KeyWidth(Bind bind, float keyH)
         {
+            if (Pad.Active) return keyH * 1.25f; // 패드 낙관은 둥글게 한 칸
             if (IsMouse(bind, out _)) return keyH * 1.1f;
             string label = KeyBindings.Label(bind);
             if (label.Length <= 1) return keyH * 1.15f;
@@ -106,6 +107,11 @@ namespace AThousandDawns.Prototype
         static void DrawKey(Rect slot, Bind bind, int fontSize)
         {
             float keyH = slot.height;
+            if (Pad.Active) // 패드: 버튼 이름을 붉은 낙관에 (아트 InkPadUi)
+            {
+                AThousandDawns.Fx.InkPadUi.Seal(new Rect(slot.center.x - keyH * 0.55f, slot.center.y - keyH * 0.55f, keyH * 1.1f, keyH * 1.1f), KeyBindings.Label(bind));
+                return;
+            }
             if (IsMouse(bind, out bool right))
             {
                 ItemIcons.Draw(new Rect(slot.center.x - keyH * 0.6f, slot.y - keyH * 0.1f, keyH * 1.2f, keyH * 1.2f), ItemIcons.Mouse(right));

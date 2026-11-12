@@ -40,17 +40,45 @@ namespace AThousandDawns.Fx
             Stroke(new Vector2(o.xMax, o.center.y), o.height + 8f, t, 90f);   // 오른쪽
         }
 
+        // 붉은 둥근 낙관 안에 버튼 이름 (A · B · LB · Start …). 이름이 길면 글자를 줄여요
+        public static void Seal(Rect seal, string button)
+        {
+            Load();
+            Styles();
+            var old = GUI.color;
+            if (_seal != null) { GUI.color = Color.white; GUI.DrawTexture(seal, _seal, ScaleMode.ScaleToFit); }
+            else { Tint(new Color(0.75f, 0.15f, 0.1f), 1f); GUI.DrawTexture(seal, Texture2D.whiteTexture); }
+            GUI.color = Paper;
+            float size = Mathf.Min(seal.width, seal.height);
+            _letter.fontSize = Mathf.RoundToInt(size * (button != null && button.Length > 2 ? 0.3f : button != null && button.Length > 1 ? 0.42f : 0.55f));
+            GUI.Label(seal, button, _letter);
+            GUI.color = old;
+        }
+
+        // 아래 가운데 한 줄 안내: (버튼, 설명)들을 붉은 낙관으로. 옅은 먹 띠 위에
+        public static void Hints(float centerX, float y, float size, params (string button, string text)[] items)
+        {
+            Load();
+            Styles();
+            float total = 0f;
+            _label.fontSize = Mathf.RoundToInt(size * 0.6f);
+            foreach (var (_, text) in items) total += size + 6f + _label.CalcSize(new GUIContent(text)).x + 18f;
+            float x = centerX - total * 0.5f;
+            var old = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.45f);
+            GUI.DrawTexture(new Rect(x - 16f, y - 8f, total + 32f, size + 16f), Texture2D.whiteTexture);
+            GUI.color = Color.white;
+            foreach (var (button, text) in items) x += Button(new Vector2(x, y), button, text, size);
+            GUI.color = old;
+        }
+
         public static float Button(Vector2 at, string button, string text, float size = 30f)
         {
             Load();
             Styles();
             var old = GUI.color;
             var seal = new Rect(at.x, at.y, size, size);
-            if (_seal != null) { GUI.color = Color.white; GUI.DrawTexture(seal, _seal, ScaleMode.ScaleToFit); }
-            else { Tint(new Color(0.75f, 0.15f, 0.1f), 1f); GUI.DrawTexture(seal, Texture2D.whiteTexture); }
-            GUI.color = Paper;
-            _letter.fontSize = Mathf.RoundToInt(size * 0.55f);
-            GUI.Label(seal, button, _letter);
+            Seal(seal, button);
             float w = 0f;
             if (!string.IsNullOrEmpty(text))
             {

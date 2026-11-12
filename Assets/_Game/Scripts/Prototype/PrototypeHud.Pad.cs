@@ -26,14 +26,7 @@ namespace AThousandDawns.Prototype
         {
             if (!Pad.Active || _padMarkFrame != Time.frameCount) return;
             const float size = 34f;
-            float w = 300f, x = (UiScale.Width - w) * 0.5f, y = UiScale.Height - size - 24f;
-            var old = GUI.color;
-            GUI.color = new Color(0f, 0f, 0f, 0.45f);
-            GUI.DrawTexture(new Rect(x - 16f, y - 8f, w + 32f, size + 16f), Texture2D.whiteTexture);
-            GUI.color = Color.white;
-            x += AThousandDawns.Fx.InkPadUi.Button(new Vector2(x, y), "A", "고르기", size);
-            AThousandDawns.Fx.InkPadUi.Button(new Vector2(x, y), "B", "닫기", size);
-            GUI.color = old;
+            AThousandDawns.Fx.InkPadUi.Hints(UiScale.Width * 0.5f, UiScale.Height - size - 24f, size, ("A", "고르기"), ("B", "닫기"));
         }
     }
 }
