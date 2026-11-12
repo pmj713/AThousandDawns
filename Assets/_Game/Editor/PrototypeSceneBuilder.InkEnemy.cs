@@ -55,6 +55,7 @@ namespace AThousandDawns.EditorTools
             ("DemonGuard", EnemyKind.DemonGuard, 2.5f),
             ("BloodBomber", EnemyKind.BloodBomber, 3f),
             ("BloodShadow", EnemyKind.BloodShadow, 4f),   // 천마총 고수
+            ("HeavenlyDemon", EnemyKind.HeavenlyDemon, 3.5f),   // 최종 보스
         };
 
         // 패턴 동작: attack(브레인 AttackName, null이면 다른 동작이 이어 부르는 상태) → state.
@@ -69,10 +70,10 @@ namespace AThousandDawns.EditorTools
         }
 
         // 모델 고유 동작 중 반복하는 것
-        static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "ShoulderRun", "Idle", "Run", "Chant", "Rain", "Drag", "Whirl" };
+        static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "ShoulderRun", "Idle", "Run", "Chant", "Rain", "Drag", "Whirl", "Captive" };
 
         // 고유 동작만 쓰는 적 (Generic으로 가져와요)
-        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha", "Pirate", "Harpooner", "Anchor", "Rattan", "WaterGhost", "FlagBearer", "Takrang", "IronDragon", "Cultist", "BloodArcher", "BloodShaman", "DemonGuard", "BloodBomber", "BloodShadow" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
+        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha", "Pirate", "Harpooner", "Anchor", "Rattan", "WaterGhost", "FlagBearer", "Takrang", "IronDragon", "Cultist", "BloodArcher", "BloodShaman", "DemonGuard", "BloodBomber", "BloodShadow", "HeavenlyDemon", "CaptiveHero" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
 
         static readonly Dictionary<string, MoveSpec[]> InkEnemyMoves = new Dictionary<string, MoveSpec[]>
         {
@@ -168,6 +169,20 @@ namespace AThousandDawns.EditorTools
                 new MoveSpec { attack = "혈영 베기", state = "Slash", clips = new[] { "Slash" } },
                 new MoveSpec { attack = "혈선", state = "Lunge", clips = new[] { "Lunge" } },
                 new MoveSpec { attack = "혈영보", state = "ShadowRush", clips = new[] { "ShadowRush" } },
+            },
+            // 천마 (최종 보스, 장검): 천마일검(단정한 일검) · 천마군림(2페이즈부터 크게 휘두르기) · 십자 검기(연속 베기) · 마기 장판(땅 찍기)
+            //   · 마기 손아귀(왼손을 뻗었다 끌어당기기) · 흡인(두 팔 펼쳐 3초 버티다 터뜨리기) · 검비(같은 자세로 검이 떨어지는 동안).
+            //   페이즈 전환엔 Ascend, 페이즈별 몸 텍스처는 InkEnemyAnimator가 바꿔요
+            ["HeavenlyDemon"] = new[]
+            {
+                new MoveSpec { attack = "천마일검", state = "Slash1", clips = new[] { "Slash1" } },
+                new MoveSpec { attack = "천마군림", state = "DemonSweep", clips = new[] { "DemonSweep" } },
+                new MoveSpec { attack = "십자 검기", state = "CrossCut", clips = new[] { "Combo" } },
+                new MoveSpec { attack = "마기 장판", state = "MiasmaChop", clips = new[] { "Chop" } },
+                new MoveSpec { attack = "마기 손아귀", state = "Grip", clips = new[] { "Grip" } },
+                new MoveSpec { attack = "흡인", state = "Pull", clips = new[] { "Burst" }, mode = MoveMode.Play, seconds = 3.0f },
+                new MoveSpec { attack = "검비", state = "SwordRain", clips = new[] { "Burst" }, mode = MoveMode.Play, seconds = 2.5f },
+                new MoveSpec { state = "Ascend", clips = new[] { "Ascend" } },
             },
             // 혈불 (폐사찰 보스): 손바닥 내려찍기 · 염불(합장 반복) · 피의 비(두 팔을 하늘로 반복) · 팔 휘두르기(2페이즈, 좌우 세 번). 목탁승 부르기는 기본 Attack(손짓)
             ["BloodBuddha"] = new[]
