@@ -465,7 +465,7 @@ namespace AThousandDawns.Prototype
             const float w = 760f, rowH = 52f;
             int rows = ev.Result != null ? 1 : ev.Choices.Count;
             // 이벤트 그림: 전체 id (blood_pool) → 없으면 뒤 _부분을 떼어 가며 (smith_pick → smith). 선택지가 많으면 띠를 낮춰요
-            string artId = ev.Id;
+            string artId = ev.Art ?? ev.Id;
             Texture2D art = null;
             while (!string.IsNullOrEmpty(artId) && (art = AThousandDawns.Items.ItemIcons.EventArt(artId)) == null)
             {
