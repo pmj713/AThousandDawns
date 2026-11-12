@@ -48,6 +48,12 @@ namespace AThousandDawns.EditorTools
             ("FlagBearer", EnemyKind.FlagBearer, 3f),
             ("Takrang", EnemyKind.Takrang, 3.8f),   // 장강 고수
             ("IronDragon", EnemyKind.IronDragon, 2f),   // 장강 보스
+            // 천마총
+            ("Cultist", EnemyKind.Cultist, 3.5f),
+            ("BloodArcher", EnemyKind.BloodArcher, 3f),
+            ("BloodShaman", EnemyKind.BloodShaman, 3f),
+            ("DemonGuard", EnemyKind.DemonGuard, 2.5f),
+            ("BloodBomber", EnemyKind.BloodBomber, 3f),
         };
 
         // 패턴 동작: attack(브레인 AttackName, null이면 다른 동작이 이어 부르는 상태) → state.
@@ -65,7 +71,7 @@ namespace AThousandDawns.EditorTools
         static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "ShoulderRun", "Idle", "Run", "Chant", "Rain", "Drag", "Whirl" };
 
         // 고유 동작만 쓰는 적 (Generic으로 가져와요)
-        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha", "Pirate", "Harpooner", "Anchor", "Rattan", "WaterGhost", "FlagBearer", "Takrang", "IronDragon" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
+        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha", "Pirate", "Harpooner", "Anchor", "Rattan", "WaterGhost", "FlagBearer", "Takrang", "IronDragon", "Cultist", "BloodArcher", "BloodShaman", "DemonGuard", "BloodBomber" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
 
         static readonly Dictionary<string, MoveSpec[]> InkEnemyMoves = new Dictionary<string, MoveSpec[]>
         {
@@ -139,6 +145,21 @@ namespace AThousandDawns.EditorTools
                 new MoveSpec { attack = "물기둥", state = "Stomp", clips = new[] { "Stomp" } },
                 new MoveSpec { state = "Roar", clips = new[] { "Roar" } },
             },
+            // 천마총 — 마교도: 곡도를 치켜들었다 내려베기 (광폭이어도 같은 베기, 광폭에 들면 InkEnemyAnimator가 Frenzy를 한 번 틀고 몸을 붉게)
+            ["Cultist"] = new[]
+            {
+                new MoveSpec { attack = "베기", state = "Slash", clips = new[] { "Attack" } },
+                new MoveSpec { attack = "광폭 베기", state = "FrenzySlash", clips = new[] { "Attack" }, speed = 1.3f },
+                new MoveSpec { state = "Frenzy", clips = new[] { "Frenzy" }, mode = MoveMode.Play },
+            },
+            // 혈궁수: 0.8초 겨누고 0.25초 간격 세 발 — 활 당기기를 예고부터 그대로 재생 (1.4초에 끝나게)
+            ["BloodArcher"] = new[] { new MoveSpec { attack = "혈시 3연발", state = "TripleShot", clips = new[] { "ShootBow" }, mode = MoveMode.Play, seconds = 1.4f } },
+            // 혈인: 1.2초 예고 동안 두 팔을 하늘로 들어 쓰러진 자를 일으켜요 (그대로 재생)
+            ["BloodShaman"] = new[] { new MoveSpec { attack = "혈인술", state = "Raise", clips = new[] { "Raise" }, mode = MoveMode.Play, seconds = 1.4f } },
+            // 천마 근위: 평소 공격은 기본 Attack(방패 세운 채 베기) · 반격: 0.3초 안에 빠르게 되받아 베기
+            ["DemonGuard"] = new[] { new MoveSpec { attack = "반격", state = "Counter", clips = new[] { "Attack" }, mode = MoveMode.Play, seconds = 0.5f } },
+            // 혈폭자: 핏덩이를 머리 위로 들었다가 내던져요
+            ["BloodBomber"] = new[] { new MoveSpec { attack = "핏덩이", state = "Throw", clips = new[] { "Attack" } } },
             // 혈불 (폐사찰 보스): 손바닥 내려찍기 · 염불(합장 반복) · 피의 비(두 팔을 하늘로 반복) · 팔 휘두르기(2페이즈, 좌우 세 번). 목탁승 부르기는 기본 Attack(손짓)
             ["BloodBuddha"] = new[]
             {

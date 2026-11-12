@@ -139,6 +139,8 @@ namespace AThousandDawns.Art
         float _anchorAway;          // 쇠닻 거한: 던진 닻이 꽂혀 있는 동안 손 닻을 감춰요
         IronDragonBrain _dragon;    // 수채주 철룡: 2페이즈 전환에 포효
         bool _roaring;
+        CultistBrain _cultist;      // 마교도: 광폭
+        bool _frenzied;
         float _wakeFade;
         static readonly Color StatueGray = new Color(0.62f, 0.6f, 0.57f, 1f);
 
@@ -153,6 +155,7 @@ namespace AThousandDawns.Art
             _rattan = brain as RattanBrain;
             _waterGhost = brain as WaterGhostBrain;
             _dragon = brain as IronDragonBrain;
+            _cultist = brain as CultistBrain;
             if (Resources.Load<Texture2D>($"{brain.Kind}_P2") != null) _phaseProp = brain.GetType().GetProperty("Phase");
             _brain = brain;
             _animator = animator;
@@ -206,7 +209,7 @@ namespace AThousandDawns.Art
             if (_shieldBrain != null && !_shieldHidden && _shieldBrain.ShieldBroken)
             {
                 foreach (var r in _animator.GetComponentsInChildren<Renderer>(true))
-                    if (r.name.Contains("_Prop_Shield") || r.name.Contains("_Rattan_Shield")) r.enabled = false;
+                    if (r.name.Contains("_Prop_Shield") || r.name.Contains("_Rattan_Shield") || r.name.Contains("_Weapon_towershield")) r.enabled = false;
                 _shieldHidden = true;
             }
             if (_buddha != null && _buddha.Phase != _buddhaPhase)
@@ -272,6 +275,14 @@ namespace AThousandDawns.Art
                         r.SetPropertyBlock(block);
                     }
                 }
+            }
+            // 마교도: 체력이 절반 아래로 떨어져 광폭에 들면 낮게 웅크려 칼을 끄는 자세를 한 번 보이고, 몸이 붉게 물들어요
+            if (_cultist != null && !_frenzied && _cultist.IsFrenzied)
+            {
+                _frenzied = true;
+                _animator.SetFloat(AttackSpeedId, 1f);
+                Play("Frenzy", 0.1f);
+                Tint(new Color(1f, 0.55f, 0.52f, 1f));
             }
             var phase = _brain.AttackPhase;
             // 금강불괴: 파계승은 버티는 자세(IsStanced), 혜광은 금강불괴 예고 동안 몸이 금빛
