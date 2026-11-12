@@ -127,6 +127,9 @@ namespace AThousandDawns.Art
         bool _stanced;
         static readonly Color StanceGold = new Color(1f, 0.78f, 0.32f, 1f);
         static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+        static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
+        System.Reflection.PropertyInfo _phaseProp;   // 천마: 페이즈별 모습 (Phase가 있고 페이즈 텍스처가 있는 적만)
+        int _shownPhase = 1;
         float _whirlAngle;
         bool _hasStatue, _statue;   // 석상 나한 (Statue·Wake 동작이 있을 때)
         RattanBrain _rattan;        // 등패수: 방패를 굴려 던지면 손 방패를 감춰요
@@ -150,6 +153,7 @@ namespace AThousandDawns.Art
             _rattan = brain as RattanBrain;
             _waterGhost = brain as WaterGhostBrain;
             _dragon = brain as IronDragonBrain;
+            if (Resources.Load<Texture2D>($"{brain.Kind}_P2") != null) _phaseProp = brain.GetType().GetProperty("Phase");
             _brain = brain;
             _animator = animator;
             _modelRest = animator.transform.localRotation;
@@ -250,6 +254,25 @@ namespace AThousandDawns.Art
                 if (_roaring) { _animator.SetFloat(AttackSpeedId, 1f); Play("Roar", 0.1f); }
             }
             if (_roaring) { _animator.SetFloat(SpeedId, 0f); return; }
+            // 천마: 페이즈마다 몸 텍스처를 갈아 끼워요 (1 정갈한 검객 → 2 핏빛 마기 무늬 → 3 몸이 갈라져 금이 붉게 달아올라요).
+            //   텍스처는 HeavenlyDemon/Resources/HeavenlyDemon_P2·P3 (Enemies/Tools~/phase_textures.py). 브레인이 들어오기 전에도 컴파일되게 Phase는 이름으로 읽어요
+            if (_phaseProp != null)
+            {
+                int ph = (int)_phaseProp.GetValue(_brain);
+                if (ph != _shownPhase)
+                {
+                    _shownPhase = ph;
+                    var tex = ph >= 2 ? Resources.Load<Texture2D>($"{_brain.Kind}_P{Mathf.Min(ph, 3)}") : null;
+                    var block = new MaterialPropertyBlock();
+                    foreach (var r in _animator.GetComponentsInChildren<Renderer>(true))
+                    {
+                        if (r.name.Contains("Weapon") || r.name.Contains("_Prop_")) continue;
+                        r.GetPropertyBlock(block);
+                        if (tex != null) block.SetTexture(BaseMapId, tex); else block.Clear();
+                        r.SetPropertyBlock(block);
+                    }
+                }
+            }
             var phase = _brain.AttackPhase;
             // 금강불괴: 파계승은 버티는 자세(IsStanced), 혜광은 금강불괴 예고 동안 몸이 금빛
             bool gold = _monk != null ? _monk.IsStanced
