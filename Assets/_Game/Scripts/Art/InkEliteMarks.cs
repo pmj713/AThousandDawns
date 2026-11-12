@@ -5,7 +5,7 @@ using UnityEngine;
 namespace AThousandDawns.Art
 {
     // 수묵 시험판: 정예 적을 수묵 모델에서도 알아보게 해요 (게임 코드·적 모델 파일은 그대로).
-    //   머리 위: 원래 도형(네모·공·기둥) 대신 카메라를 보는 붓 표식 그림 (철포삼 쇠 방패 · 회춘 새싹 · 열화 불꽃), 천천히 위아래로 떠요
+    //   머리 위: 원래 도형(네모·공·기둥) 대신 카메라를 보는 붓 표식 그림 (철포삼 쇠 방패 · 회춘 새싹 · 열화 불꽃 · 분열 금 간 보랏빛 먹 원), 천천히 위아래로 떠요
     //   특성이 둘이면 (장강 수채부터) 표식을 둘 쌓고 발밑 고리도 둘 (둘째는 조금 크게 반대로 돌아요), 연기는 두 색을 섞어요
     //   몸 둘레: 먹·붉은 기운. 발밑에 붓으로 그은 고리, 몸 둘레로 피어오르는 먹 연기 (특성 색이 살짝 섞여요)
     // 적 본체 자식으로 달아서 모델이 움찔·회전해도 흔들리지 않고, 숨은 적(풀숲 청죽사 등)이면 같이 숨어요.
@@ -76,7 +76,7 @@ namespace AThousandDawns.Art
             // 머리 위 표식 (특성마다 하나씩 쌓아요)
             for (int i = 0; i < traits.Count; i++)
             {
-                var sprite = traits[i] == EliteTrait.IronShirt ? ironMark : traits[i] == EliteTrait.Rejuvenation ? rejuvMark : blazeMark;
+                var sprite = IsSplit(traits[i]) ? SplitMark : traits[i] == EliteTrait.IronShirt ? ironMark : traits[i] == EliteTrait.Rejuvenation ? rejuvMark : blazeMark;
                 if (sprite == null) continue;
                 var mark = new GameObject("Mark");
                 mark.transform.SetParent(aura.transform, false);
@@ -136,7 +136,21 @@ namespace AThousandDawns.Art
             return aura;
         }
 
-        static Color Tint(EliteTrait t) => t == EliteTrait.IronShirt ? new Color(0.25f, 0.28f, 0.34f)
+        // 분열 (EliteTrait.Split, 천마총 기획): 금 간 먹 원이 둘로 갈라지는 보랏빛 표식. 그림은 Resources/EliteFx/Split (씬을 다시 만들지 않아도 돼요)
+        static Sprite _splitMark;
+        static bool _splitLoaded;
+        static Sprite SplitMark
+        {
+            get
+            {
+                if (!_splitLoaded) { _splitLoaded = true; _splitMark = Resources.Load<Sprite>("EliteFx/Split"); }
+                return _splitMark;
+            }
+        }
+        static bool IsSplit(EliteTrait t) => t.ToString() == "Split"; // 특성이 main에 들어오기 전에도 컴파일되게 이름으로
+
+        static Color Tint(EliteTrait t) => IsSplit(t) ? new Color(0.4f, 0.18f, 0.52f)
+            : t == EliteTrait.IronShirt ? new Color(0.25f, 0.28f, 0.34f)
             : t == EliteTrait.Rejuvenation ? new Color(0.22f, 0.42f, 0.26f)
             : new Color(0.62f, 0.16f, 0.08f);
     }
