@@ -21,6 +21,7 @@ namespace AThousandDawns.Art
         static readonly int SkillFlashId = Animator.StringToHash("SkillFlash");
         static readonly int SkillPalmId = Animator.StringToHash("SkillPalm");
         static readonly int SkillWaveId = Animator.StringToHash("SkillWave");
+        static readonly int SkillDashId = Animator.StringToHash("SkillDash");
         int _vortexLayer = -1;
         float _vortexWeight;
         static readonly int DaggerFlashId = Animator.StringToHash("DaggerFlash");
@@ -89,6 +90,7 @@ namespace AThousandDawns.Art
                 else if (skill == SkillKind.BambooFlash) trigger = SkillFlashId;      // 죽림섬: 좌우로 번갈아 베어 넘기기
                 else if (skill == SkillKind.Palm) trigger = SkillPalmId;              // 금강장: 왼손바닥 내뻗기
                 else if (skill == SkillKind.Takrang) trigger = SkillWaveId;           // 탁랑참: 머리 위에서 앞으로 길게 내베기
+                else if (skill == SkillKind.BloodShadow) trigger = SkillDashId;       // 혈영참: 앞으로 쏜살같이 지나가며 베기
                 if (trigger != 0)
                 {
                     _animator.ResetTrigger(AttackId);

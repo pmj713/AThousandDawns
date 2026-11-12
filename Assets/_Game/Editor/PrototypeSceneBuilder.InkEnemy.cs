@@ -54,6 +54,7 @@ namespace AThousandDawns.EditorTools
             ("BloodShaman", EnemyKind.BloodShaman, 3f),
             ("DemonGuard", EnemyKind.DemonGuard, 2.5f),
             ("BloodBomber", EnemyKind.BloodBomber, 3f),
+            ("BloodShadow", EnemyKind.BloodShadow, 4f),   // 천마총 고수
         };
 
         // 패턴 동작: attack(브레인 AttackName, null이면 다른 동작이 이어 부르는 상태) → state.
@@ -71,7 +72,7 @@ namespace AThousandDawns.EditorTools
         static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "ShoulderRun", "Idle", "Run", "Chant", "Rain", "Drag", "Whirl" };
 
         // 고유 동작만 쓰는 적 (Generic으로 가져와요)
-        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha", "Pirate", "Harpooner", "Anchor", "Rattan", "WaterGhost", "FlagBearer", "Takrang", "IronDragon", "Cultist", "BloodArcher", "BloodShaman", "DemonGuard", "BloodBomber" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
+        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha", "Pirate", "Harpooner", "Anchor", "Rattan", "WaterGhost", "FlagBearer", "Takrang", "IronDragon", "Cultist", "BloodArcher", "BloodShaman", "DemonGuard", "BloodBomber", "BloodShadow" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
 
         static readonly Dictionary<string, MoveSpec[]> InkEnemyMoves = new Dictionary<string, MoveSpec[]>
         {
@@ -160,6 +161,14 @@ namespace AThousandDawns.EditorTools
             ["DemonGuard"] = new[] { new MoveSpec { attack = "반격", state = "Counter", clips = new[] { "Attack" }, mode = MoveMode.Play, seconds = 0.5f } },
             // 혈폭자: 핏덩이를 머리 위로 들었다가 내던져요
             ["BloodBomber"] = new[] { new MoveSpec { attack = "핏덩이", state = "Throw", clips = new[] { "Attack" } } },
+            // 혈영검마 (천마총 고수, 장검): 혈영 베기(가로베기) · 혈선(바닥까지 낮췄다 튀어나가 찌르기) · 혈영보(뒤로 순간이동해 세 번 베어 파고들기).
+            //   2페이즈 전환 동안엔 ShadowRush 첫 자세(낮게 웅크림)로 버텨요 (InkEnemyAnimator)
+            ["BloodShadow"] = new[]
+            {
+                new MoveSpec { attack = "혈영 베기", state = "Slash", clips = new[] { "Slash" } },
+                new MoveSpec { attack = "혈선", state = "Lunge", clips = new[] { "Lunge" } },
+                new MoveSpec { attack = "혈영보", state = "ShadowRush", clips = new[] { "ShadowRush" } },
+            },
             // 혈불 (폐사찰 보스): 손바닥 내려찍기 · 염불(합장 반복) · 피의 비(두 팔을 하늘로 반복) · 팔 휘두르기(2페이즈, 좌우 세 번). 목탁승 부르기는 기본 Attack(손짓)
             ["BloodBuddha"] = new[]
             {

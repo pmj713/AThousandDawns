@@ -655,6 +655,17 @@ act = new_action("SkillHalo")
 for f in range(0, 25, 4):
     halo_pose(f / 24); key_all(f)
 actions.append((act, 0, 24))
+
+# 혈영참(SkillDash, 혈영검마의 비급 · 회선참과 같은 시전 0.35초, 몸은 돌지 않아요):
+#   낮게 웅크려 칼을 왼쪽 허리로 감았다가 → 앞으로 4칸 쏜살같이 지나가며 베어, 칼이 오른쪽 뒤로 쭉 뻗은 "지나간 뒤" 자세로 멈춰요 → 준비 자세로
+act = new_action("SkillDash")
+for f, stage in ((0, None), (2, "cut2"), (5, "cut1"), (9, "cut1"), (12, None)):
+    if stage is None:
+        ready_pose()
+    else:
+        flash_pose(stage)
+    key_all(f)
+actions.append((act, 0, 12))
 # 반복 동작은 처음·끝이 같은 키라 이어 붙어요. 보간은 부드럽게(베지어 기본)
 rig.animation_data.action = None
 rest_pose()
