@@ -204,11 +204,13 @@ namespace AThousandDawns.Tests
             try
             {
                 GameSettings.Current.screenShake = 0;
-                AThousandDawns.Fx.ScreenShake.Kick(5f, 0.5f);
-                Assert.AreEqual(0f, AThousandDawns.Fx.ScreenShake.Current, "0%면 꺼짐");
+                float before = AThousandDawns.Fx.ScreenShake.Current; // 앞 테스트에서 맞은 흔들림이 아직 잦아드는 중일 수 있어요
+                AThousandDawns.Fx.ScreenShake.Kick(50f, 5f);
+                Assert.LessOrEqual(AThousandDawns.Fx.ScreenShake.Current, before + 0.001f, "0%면 새로 흔들리지 않아요");
                 GameSettings.Current.screenShake = 50;
-                AThousandDawns.Fx.ScreenShake.Kick(0.4f, 0.5f);
-                Assert.AreEqual(0.2f, AThousandDawns.Fx.ScreenShake.Current, 0.01f, "50%면 절반");
+                AThousandDawns.Fx.ScreenShake.Kick(40f, 5f); // 남은 흔들림보다 훨씬 세게
+                Assert.AreEqual(20f, AThousandDawns.Fx.ScreenShake.Current, 0.1f, "50%면 절반");
+                AThousandDawns.Fx.ScreenShake.Stop(); // 다음 테스트에 남지 않게
             }
             finally { GameSettings.Current.screenShake = old; }
         }

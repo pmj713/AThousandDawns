@@ -22,6 +22,8 @@ namespace AThousandDawns.Fx
             }
         }
 
+        public static void Stop() => _duration = 0f; // 바로 멈춰요 (테스트 · 장면 전환)
+
         // strength: 최대 흔들림 (칸), duration: 잦아드는 시간 (초)
         public static void Kick(float strength, float duration)
         {
