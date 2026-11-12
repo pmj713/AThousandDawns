@@ -136,7 +136,8 @@ namespace AThousandDawns.Art
         bool _rattanAway;
         WaterGhostBrain _waterGhost; // 수귀: 끌고 가는 동안 Drag
         bool _dragging;
-        float _anchorAway;          // 쇠닻 거한: 던진 닻이 꽂혀 있는 동안 손 닻을 감춰요
+        float _anchorAway;          // 손 소품을 던진 동안 감춰요 (쇠닻 거한 닻 · 철룡 유성추)
+        string _thrownProp = "_Weapon_anchor";
         System.Reflection.PropertyInfo _transitionProp;   // 페이즈 전환 중인지 (IsTransitioning이 있고 전환 자세가 있는 적만)
         string _transitionState;
         bool _roaring;
@@ -244,7 +245,7 @@ namespace AThousandDawns.Art
             if (_anchorAway > 0f)
             {
                 _anchorAway -= Time.deltaTime;
-                if (_anchorAway <= 0f || _brain.IsDead) { _anchorAway = 0f; SetPropVisible("_Weapon_anchor", true); }
+                if (_anchorAway <= 0f || _brain.IsDead) { _anchorAway = 0f; SetPropVisible(_thrownProp, true); }
             }
             // 수귀: 붙잡아 끌고 가는 동안 뒷걸음질 (끝나면 대기로)
             if (_waterGhost != null && _waterGhost.Dragging != _dragging)
@@ -328,7 +329,8 @@ namespace AThousandDawns.Art
                         _moving = false;
                         break;
                     case EnemyAttackTimeline.Phase.Active:
-                        if (_move.attack == "닻 던지기") { _anchorAway = 3.2f; SetPropVisible("_Weapon_anchor", false); }   // 닻을 던졌어요
+                        if (_move.attack == "닻 던지기") { _thrownProp = "_Weapon_anchor"; _anchorAway = 3.2f; SetPropVisible(_thrownProp, false); }   // 닻을 던졌어요 (꽂힌 동안)
+                        if (_move.attack == "사슬 당기기") { _thrownProp = "_Weapon_meteor"; _anchorAway = 0.9f; SetPropVisible(_thrownProp, false); }   // 유성추가 사슬째 날아갔어요 (이펙트가 그려요)
                         _animator.SetFloat(AttackSpeedId, 1f);                              // 한 번 내려찍어요 (돌진·회전은 이어서)
                         if (!string.IsNullOrEmpty(_move.ready)) Play(_move.state, 0.1f);    // 준비 자세에서 박차고 나가요
                         _swung = _move.mode == InkEnemyModels.MoveMode.Swing;

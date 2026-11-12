@@ -136,6 +136,7 @@ namespace AThousandDawns.EditorTools
                 new MoveSpec { attack = "탁류 보법", state = "Glide", clips = new[] { "Glide" } },
                 new MoveSpec { state = "WhirlEnd", clips = new[] { "WhirlEnd" } },
                 new MoveSpec { attack = "소용돌이", state = "Whirlpool", clips = new[] { "Whirl" }, mode = MoveMode.Loop, after = "WhirlEnd" },
+                new MoveSpec { state = "Ascend", clips = new[] { "Ascend" } },   // 2페이즈 전환: 웅크렸다가 칼을 치켜들고 일어서요
             },
             // 수채주 철룡 (장강 보스, 유성추): 휘두르기 · 내려찍기 · 사슬 당기기 · 수하 부르기(호령) · 물기둥(땅 구르기). 2페이즈 전환엔 Roar (InkEnemyAnimator가 IsTransitioning을 보고)
             ["IronDragon"] = new[]
@@ -155,7 +156,7 @@ namespace AThousandDawns.EditorTools
                 new MoveSpec { state = "Frenzy", clips = new[] { "Frenzy" }, mode = MoveMode.Play },
             },
             // 혈궁수: 0.8초 겨누고 0.25초 간격 세 발 — 활 당기기를 예고부터 그대로 재생 (1.4초에 끝나게)
-            ["BloodArcher"] = new[] { new MoveSpec { attack = "혈시 3연발", state = "TripleShot", clips = new[] { "ShootBow" }, mode = MoveMode.Play, seconds = 1.4f } },
+            ["BloodArcher"] = new[] { new MoveSpec { attack = "혈시 3연발", state = "TripleShot", clips = new[] { "TripleShot" }, mode = MoveMode.Play, seconds = 1.4f } },   // 0.8초에 첫 발, 0.25초마다 다시 메겨 두 발 더
             // 혈인: 1.2초 예고 동안 두 팔을 하늘로 들어 쓰러진 자를 일으켜요 (그대로 재생)
             ["BloodShaman"] = new[] { new MoveSpec { attack = "혈인술", state = "Raise", clips = new[] { "Raise" }, mode = MoveMode.Play, seconds = 1.4f } },
             // 천마 근위: 평소 공격은 기본 Attack(방패 세운 채 베기) · 반격: 0.3초 안에 빠르게 되받아 베기

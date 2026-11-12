@@ -839,6 +839,8 @@ if "shootbow" in EXTRAS:
         arm("Left", bow_wrist, Vector((0.4, 0, -1)))                        # 팔꿈치는 바깥·아래
         arm("Right", wrist_r, Vector((-0.5, 0.7, 0.25)))                    # 당기는 팔꿈치는 옆·뒤·위로
     make_action("ShootBow", [(0, nock), (4, nock), (19, cheek), (21, cheek), (23, flick), (30, flick)], shoot_pose)
+    # TripleShot (혈궁수 혈시 3연발, 1.4초 = 42프레임): 0.8초에 첫 발, 0.25초마다 재빨리 다시 메겨 두 발 더
+    make_action("TripleShot", [(0, nock), (4, nock), (22, cheek), (24, flick), (26, nock), (30, cheek), (31, flick), (33, nock), (37, cheek), (39, flick), (42, flick)], shoot_pose)
     scene.frame_start, scene.frame_end = 0, 30
 
     scene.frame_set(19); bpy.context.view_layer.update()
@@ -1856,12 +1858,13 @@ if "takrangmoves" in EXTRAS:
         a = t * 2 * math.pi
         lower_hips(-0.12, FEET)
         sh = pb["RightArm"].head.copy()
-        hand_at = sh + Vector((0.18 + 0.12 * math.cos(a), -0.15 + 0.12 * math.sin(a), 0.62))
-        fit_right(sh, [hand_at - sh], (Vector((-1, 0, 0)), Vector((-0.6, 0.3, 0)), Vector((0, 1, 0))),
-                  Vector((-math.sin(a), math.cos(a), 0.05)), wrist_bend=90)
+        hand_at = sh + Vector((0.06 + 0.07 * math.cos(a), 0.07 * math.sin(a), REACH * 0.9))   # 손을 어깨 바로 위로 곧게 (아래팔이 서면 칼은 비틀기만으로 수평)
+        arm("Right", hand_at, Vector((-1, 0.3, 0)))
+        point_blade(Vector((-math.sin(a), math.cos(a), 0.0)), wrist_bend=0)
         sl = pb["LeftArm"].head.copy()
         arm("Left", sl + Vector((0.12, -0.32, 0.05)), Vector((1, 0.3, -0.6)))   # 왼손은 가슴 앞 검결
     make_action("Whirl", [(f, f / 12) for f in range(0, 13, 2)], whirl_pose)
+    make_action("Ascend", [(0, "g_ready"), (18, "g_ready"), (30, "s_load"), (50, "s_load"), (60, "idle")], tk_pose)   # 2페이즈 전환: 웅크렸다가 칼을 치켜들고 일어서요
     rig.animation_data.action = None
     reset_pose()
 
@@ -2040,7 +2043,7 @@ if "demonmoves" in EXTRAS:
         "r_cut1": (45, Vector((0.65, -0.7, 0.05)), 0.95, -0.3, -0.3, Vector((1, -0.25, 0.0)), 0.6, "back"),
         "r_cut2": (-45, Vector((-0.6, -0.7, 0.1)), 0.95, -0.3, -0.3, Vector((-1, -0.25, 0.05)), 0.6, "back"),
         "l_ready": (-10, Vector((-0.15, 0.3, -0.35)), 0.8, -0.45, 0.12, Vector((0, -1, 0.05)), 0.35, "sign"),
-        "l_thrust": (8, Vector((0.05, -1, -0.05)), 1.0, -0.32, -0.38, Vector((0, -1, -0.02)), 0.65, "back"),
+        "l_thrust": (8, Vector((0.05, -1, 0.25)), 1.0, -0.32, -0.38, Vector((0, -1, 0.5)), 0.65, "back"),   # 몸을 숙인 만큼 위로 겨눠 칼끝이 수평
         "s_load": (-35, Vector((-0.5, 0.15, 0.6)), 0.9, -0.1, 0.05, Vector((-0.3, 0.5, 1)), 0.1, "sign"),
         "s_cut": (35, Vector((0.6, -0.75, 0.0)), 0.95, -0.18, -0.12, Vector((1, -0.35, 0.0)), 0.35, "sign"),
         "h_ready": (0, Vector((0.0, -0.6, -0.2)), 0.8, -0.04, 0.0, Vector((0, -0.6, 0.8)), 0.0, "sign"),
