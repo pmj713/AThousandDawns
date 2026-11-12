@@ -4581,3 +4581,131 @@ MonoBehaviour:
     value: 1
     unit: 
     note: "\uBC29 \uC608\uC0B0 \uC810\uC218: \uD608\uD3ED\uC790"
+  - key: bloodshadow.hp
+    value: 1100
+    unit: 
+    note: "\uD608\uC601\uAC80\uB9C8 \uCCB4\uB825 (\uC784\uC2DC \xB7 \uCC9C\uB9C8\uCD1D \xD74.5 = 4950)"
+  - key: bloodshadow.atk
+    value: 18
+    unit: 
+    note: "\uD608\uC601\uAC80\uB9C8 \uACF5\uACA9 (\uC784\uC2DC \xB7 \xD72.0 = 36)"
+  - key: bloodshadow.toughness
+    value: 0
+    unit: 
+    note: "\uD608\uC601\uAC80\uB9C8 \uAC15\uC778\uD568"
+  - key: bloodshadow.move_speed
+    value: 4
+    unit: cell/s
+    note: "\uD608\uC601\uAC80\uB9C8 \uC774\uB3D9\uC18D\uB3C4"
+  - key: bloodshadow.recovery
+    value: 0.6
+    unit: s
+    note: "\uD608\uC601\uAC80\uB9C8 \uD328\uD134 \uBE48\uD2C8"
+  - key: bloodshadow.slash_windup
+    value: 0.5
+    unit: s
+    note: "\uD608\uC601\uAC80\uB9C8 \uD608\uC601 \uBCA0\uAE30 \uC608\uACE0"
+  - key: bloodshadow.slash_radius
+    value: 2.6
+    unit: cell
+    note: "\uD608\uC601\uAC80\uB9C8 \uD608\uC601 \uBCA0\uAE30 \uBC18\uACBD"
+  - key: bloodshadow.slash_angle
+    value: 120
+    unit: deg
+    note: "\uD608\uC601\uAC80\uB9C8 \uD608\uC601 \uBCA0\uAE30 \uAC01\uB3C4"
+  - key: bloodshadow.slash_ratio
+    value: 1
+    unit: 
+    note: "\uD608\uC601\uAC80\uB9C8 \uD608\uC601 \uBCA0\uAE30 \uD53C\uD574 \uBC30\uC728"
+  - key: bloodshadow.line_windup
+    value: 0.6
+    unit: s
+    note: "\uD608\uC601\uAC80\uB9C8 \uD608\uC120 \uC608\uACE0"
+  - key: bloodshadow.line_min
+    value: 3
+    unit: cell
+    note: "\uD608\uC601\uAC80\uB9C8 \uD608\uC120\uC744 \uC4F0\uB294 \uCD5C\uC18C \uAC70\uB9AC"
+  - key: bloodshadow.line_max
+    value: 6
+    unit: cell
+    note: "\uD608\uC601\uAC80\uB9C8 \uD608\uC120\uC744 \uC4F0\uB294 \uCD5C\uB300 \uAC70\uB9AC"
+  - key: bloodshadow.line_length
+    value: 4
+    unit: cell
+    note: "\uD608\uC601\uAC80\uB9C8 \uD608\uC120 \uB3CC\uC9C4 \uAC70\uB9AC"
+  - key: bloodshadow.line_width
+    value: 1.2
+    unit: cell
+    note: "\uD608\uC601\uAC80\uB9C8 \uD608\uC120 \uD3ED"
+  - key: bloodshadow.line_ratio
+    value: 1
+    unit: 
+    note: "\uD608\uC601\uAC80\uB9C8 \uD608\uC120 \uD53C\uD574 \uBC30\uC728"
+  - key: bloodshadow.line_time
+    value: 0.2
+    unit: s
+    note: "\uD608\uC601\uAC80\uB9C8 \uD608\uC120 \uB3CC\uC9C4 \uC2DC\uAC04"
+  - key: bloodshadow.blink_delay
+    value: 1.5
+    unit: s
+    note: "\uD608\uC601\uAC80\uB9C8 \uD608\uC601\uBCF4: \uD50C\uB808\uC774\uC5B4\uAC00 5\uCE78 \uBC16\uC5D0 \uC774\uB9CC\uD07C \uC788\uC73C\uBA74"
+  - key: bloodshadow.blink_windup
+    value: 0.4
+    unit: s
+    note: "\uD608\uC601\uAC80\uB9C8 \uD608\uC601\uBCF4 \uC608\uACE0"
+  - key: bloodshadow.blink_behind
+    value: 1.5
+    unit: cell
+    note: "\uD608\uC601\uAC80\uB9C8 \uD608\uC601\uBCF4: \uD50C\uB808\uC774\uC5B4 \uB4A4 \uAC70\uB9AC"
+  - key: bloodshadow.echo_delay
+    value: 0.5
+    unit: s
+    note: "\uD608\uC601\uAC80\uB9C8 \uC794\uC0C1\uC774 \uB2E4\uC2DC \uBCA0\uAE30\uAE4C\uC9C0 (2\uD398\uC774\uC988\uB294 0.5 \xB7 1.0\uCD08 \uB450 \uBC88)"
+  - key: bloodshadow.echo_ratio
+    value: 0.6
+    unit: 
+    note: "\uD608\uC601\uAC80\uB9C8 \uC794\uC0C1 \uD53C\uD574 \uBC30\uC728"
+  - key: bloodshadow.lifesteal
+    value: 0.3
+    unit: 
+    note: "\uD608\uC601\uAC80\uB9C8 \uD761\uD608: \uB9DE\uD78C \uACF5\uACA9\uB825\uC758 \uC774\uB9CC\uD07C \uD68C\uBCF5"
+  - key: bloodshadow.p2_windup_ratio
+    value: 0.8
+    unit: 
+    note: "\uD608\uC601\uAC80\uB9C8 2\uD398\uC774\uC988 \uC608\uACE0 \uC2DC\uAC04 \uBC30\uC728"
+  - key: skill_bloodshadow.length
+    value: 4
+    unit: "\uCE78"
+    note: "\uD608\uC601\uCC38 (\uD608\uC601\uAC80\uB9C8 \uBE44\uAE09): \uB3CC\uC9C4 \uAC70\uB9AC"
+  - key: skill_bloodshadow.ratio
+    value: 0.8
+    unit: 
+    note: "\uD608\uC601\uCC38: \uB3CC\uC9C4 \uBCA0\uAE30 \uD53C\uD574 (\uD68C\uC120\uCC38 \uB300\uBE44)"
+  - key: skill_bloodshadow.width
+    value: 1.2
+    unit: "\uCE78"
+    note: "\uD608\uC601\uCC38: \uBCA0\uB294 \uD3ED"
+  - key: skill_bloodshadow.echo_delay
+    value: 0.4
+    unit: "\uCD08"
+    note: "\uD608\uC601\uCC38: \uC794\uC0C1\uC774 \uB2E4\uC2DC \uBCA0\uAE30\uAE4C\uC9C0"
+  - key: skill_bloodshadow.echo_ratio
+    value: 0.5
+    unit: 
+    note: "\uD608\uC601\uCC38: \uC794\uC0C1 \uD53C\uD574 (\uD68C\uC120\uCC38 \uB300\uBE44)"
+  - key: knife.scroll_shadow_max
+    value: 8
+    unit: "\uAC1C"
+    note: "\uBE44\uB3C4 + \uD608\uC601\uCC38 \uD608\uC601 \uC794\uC0C1: \uC794\uC0C1\uC774 \uC0DD\uAE30\uB294 \uBE44\uB3C4 \uCD5C\uB300 \uC218"
+  - key: knife.scroll_shadow_radius
+    value: 1.5
+    unit: "\uCE78"
+    note: "\uD608\uC601 \uC794\uC0C1: \uC794\uC0C1\uC774 \uBCA0\uB294 \uBC18\uACBD"
+  - key: knife.scroll_shadow_delay
+    value: 0.3
+    unit: "\uCD08"
+    note: "\uD608\uC601 \uC794\uC0C1: \uC794\uC0C1\uC774 \uBCA0\uAE30\uAE4C\uC9C0"
+  - key: knife.scroll_shadow_ratio
+    value: 0.3
+    unit: 
+    note: "\uD608\uC601 \uC794\uC0C1: \uC794\uC0C1 \uD558\uB098 \uD53C\uD574 (\uCD08\uC2DD \uD53C\uD574 \uB300\uBE44)"

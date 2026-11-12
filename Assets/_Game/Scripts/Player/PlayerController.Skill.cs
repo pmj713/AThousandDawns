@@ -14,7 +14,7 @@ namespace AThousandDawns.Player
     //   회선참: 회수 · 죽림섬: 비도 순간이동 · 붕산권: 비도 솟구치기 · 금강장: 비도 호신륜 · 탁랑참: 탁류 소용돌이
     // 탁랑참 (탁랑객): 앞으로 파도 검기를 내보내 7칸 직선 (폭 1.4칸)의 적을 모두 꿰뚫어요. 회선참 피해 ×1.2 · 맞은 적 1칸 밀어냄.
     //   비도 (탁류 소용돌이): 회수 대신 비도가 모두 앞쪽 4칸 지점에 모여 2초 동안 소용돌이쳐요. 둘레 적을 끌어당겨 베고, 끝나면 손으로 돌아와요 (PlayerController.Dagger.cs).
-    public enum SkillKind { Spin, BambooFlash, Quake, Palm, Takrang }
+    public enum SkillKind { Spin, BambooFlash, Quake, Palm, Takrang, BloodShadow } // 혈영참: PlayerController.BloodShadow.cs
 
     public sealed partial class PlayerController
     {
@@ -23,7 +23,7 @@ namespace AThousandDawns.Player
         bool _flashChained;
 
         // 이펙트 신호 (아트: Scripts/Art/InkSkillFx). 판정과 상관없이 그림만 그려요.
-        public enum SkillFxKind { FlashDash, QuakeWave, PalmShield, PalmBlast, WaveSlash }
+        public enum SkillFxKind { FlashDash, QuakeWave, PalmShield, PalmBlast, WaveSlash, ShadowCut }
         public struct SkillFxCue { public SkillFxKind Kind; public Vector3 From, To, Dir; public float Radius, Angle; public int Count; }
         public static event System.Action<PlayerController, SkillFxCue> SkillCue;
         void SkillFx(SkillFxCue cue) => SkillCue?.Invoke(this, cue);
@@ -39,6 +39,7 @@ namespace AThousandDawns.Player
             SkillKind.Quake => "비도 솟구치기",
             SkillKind.Palm => "비도 호신륜",
             SkillKind.Takrang => "탁류 소용돌이",
+            SkillKind.BloodShadow => "혈영 잔상",
             _ => "회수",
         };
 
@@ -49,6 +50,7 @@ namespace AThousandDawns.Player
             SkillKind.Quake => "붕산권",
             SkillKind.Palm => "금강장",
             SkillKind.Takrang => "탁랑참",
+            SkillKind.BloodShadow => "혈영참",
             _ => "회선참",
         };
 
@@ -58,6 +60,7 @@ namespace AThousandDawns.Player
             SkillKind.Quake => "땅을 내리쳐 원형 충격파, 맞은 적을 밀어냄",
             SkillKind.Palm => "앞으로 장력을 뻗어 부채꼴 공격, 밀어내고 맞히면 보호막",
             SkillKind.Takrang => "앞으로 파도 검기, 7칸 직선의 적을 모두 꿰뚫음",
+            SkillKind.BloodShadow => "잔상을 남기며 4칸 돌진해 베고, 잔상이 같은 길을 한 번 더 벰",
             _ => "주변을 한 바퀴 베기",
         };
 
@@ -68,6 +71,7 @@ namespace AThousandDawns.Player
             SkillKind.Quake => "땅을 내리쳐 둘레 비도를 솟구치게 해 사방의 적을 찌름",
             SkillKind.Palm => "비도를 모두 끌어와 3초 동안 내 둘레를 돌며 베고 투사체를 막음",
             SkillKind.Takrang => "비도를 앞쪽에 모아 소용돌이, 둘레 적을 끌어당겨 베고 돌아옴",
+            SkillKind.BloodShadow => "비도 자리마다 잔상이 나타나 둘레를 베고, 비도는 손으로 돌아옴",
             _ => "방 안의 비도를 모두 거두며 피해",
         };
         // 비도를 들면 우클릭은 비도 초식 (회수 · 비도 순간이동 · 비도 솟구치기 · 비도 호신륜 · 탁류 소용돌이)

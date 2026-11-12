@@ -288,6 +288,7 @@ namespace AThousandDawns.Player
             TickMartialItemTimers(dt);
             TickEcho(dt); // 면벽수련 쾌 20: 잔상
             TickDaggers(dt); // 비도: 날아가기 · 꽂힘 · 사라짐
+            TickShadowEchoes(dt); // 혈영참 잔상
             TickBurn(dt);
             if (IsDead) return;
 
@@ -507,6 +508,7 @@ namespace AThousandDawns.Player
                         case SkillKind.Quake: DaggerBurst(); break;            // 비도 솟구치기
                         case SkillKind.Palm: StartDaggerHalo(); break;         // 비도 호신륜
                         case SkillKind.Takrang: StartVortex(); break;          // 탁류 소용돌이
+                        case SkillKind.BloodShadow: DaggerShadows(); break;   // 혈영 잔상
                         default: RecallDaggers(); break;                       // 회수
                     }
                 }
@@ -530,6 +532,11 @@ namespace AThousandDawns.Player
             if (Skill == SkillKind.Takrang)
             {
                 TickTakrang();
+                return;
+            }
+            if (Skill == SkillKind.BloodShadow)
+            {
+                TickBloodShadow();
                 return;
             }
             if (!_skillHitDone && _skillElapsed >= _skillHitTime)
@@ -607,7 +614,7 @@ namespace AThousandDawns.Player
         // 베는 동안 몸을 한 바퀴 돌려요 (시험판용 표시). 시전이 끝나면 원래 방향.
         void ApplySkillSpin()
         {
-            if ((Skill == SkillKind.Quake || Skill == SkillKind.Palm || Skill == SkillKind.Takrang) && !UsesDagger && _skillElapsed < _skillCastTime) return; // 붕산권 · 금강장 · 탁랑참은 돌지 않아요
+            if ((Skill == SkillKind.Quake || Skill == SkillKind.Palm || Skill == SkillKind.Takrang || Skill == SkillKind.BloodShadow) && !UsesDagger && _skillElapsed < _skillCastTime) return; // 붕산권 · 금강장 · 탁랑참 · 혈영참은 돌지 않아요
             if (_skillElapsed >= _skillCastTime)
             {
                 _skillElapsed = -1f;

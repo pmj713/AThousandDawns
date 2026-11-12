@@ -1141,3 +1141,35 @@ room_cost.bloodarcher,2,,방 예산 점수: 혈궁수,
 room_cost.bloodshaman,2,,방 예산 점수: 혈인,
 room_cost.demonguard,3,,방 예산 점수: 천마 근위,
 room_cost.bloodbomber,1,,방 예산 점수: 혈폭자,
+bloodshadow.hp,1100,,혈영검마 체력 (임시 · 천마총 ×4.5 = 4950),4지역 기획 (고수 · 시트에 아직 없음)
+bloodshadow.atk,18,,혈영검마 공격 (임시 · ×2.0 = 36),4지역 기획 (고수)
+bloodshadow.toughness,0,,혈영검마 강인함,4지역 기획 (고수)
+bloodshadow.move_speed,4,cell/s,혈영검마 이동속도,
+bloodshadow.recovery,0.6,s,혈영검마 패턴 빈틈,
+bloodshadow.slash_windup,0.5,s,혈영검마 혈영 베기 예고,
+bloodshadow.slash_radius,2.6,cell,혈영검마 혈영 베기 반경,
+bloodshadow.slash_angle,120,deg,혈영검마 혈영 베기 각도,
+bloodshadow.slash_ratio,1,,혈영검마 혈영 베기 피해 배율,
+bloodshadow.line_windup,0.6,s,혈영검마 혈선 예고,
+bloodshadow.line_min,3,cell,혈영검마 혈선을 쓰는 최소 거리,
+bloodshadow.line_max,6,cell,혈영검마 혈선을 쓰는 최대 거리,
+bloodshadow.line_length,4,cell,혈영검마 혈선 돌진 거리,
+bloodshadow.line_width,1.2,cell,혈영검마 혈선 폭,
+bloodshadow.line_ratio,1,,혈영검마 혈선 피해 배율,
+bloodshadow.line_time,0.2,s,혈영검마 혈선 돌진 시간,
+bloodshadow.blink_delay,1.5,s,혈영검마 혈영보: 플레이어가 5칸 밖에 이만큼 있으면,
+bloodshadow.blink_windup,0.4,s,혈영검마 혈영보 예고,
+bloodshadow.blink_behind,1.5,cell,혈영검마 혈영보: 플레이어 뒤 거리,
+bloodshadow.echo_delay,0.5,s,혈영검마 잔상이 다시 베기까지 (2페이즈는 0.5 · 1.0초 두 번),
+bloodshadow.echo_ratio,0.6,,혈영검마 잔상 피해 배율,
+bloodshadow.lifesteal,30%,,혈영검마 흡혈: 맞힌 공격력의 이만큼 회복,
+bloodshadow.p2_windup_ratio,80%,,혈영검마 2페이즈 예고 시간 배율,
+skill_bloodshadow.length,4,칸,혈영참 (혈영검마 비급): 돌진 거리,
+skill_bloodshadow.ratio,80%,,혈영참: 돌진 베기 피해 (회선참 대비),
+skill_bloodshadow.width,1.2,칸,혈영참: 베는 폭,
+skill_bloodshadow.echo_delay,0.4,초,혈영참: 잔상이 다시 베기까지,
+skill_bloodshadow.echo_ratio,50%,,혈영참: 잔상 피해 (회선참 대비),
+knife.scroll_shadow_max,8,개,비도 + 혈영참 혈영 잔상: 잔상이 생기는 비도 최대 수,비도 비급 (비도 초식)
+knife.scroll_shadow_radius,1.5,칸,혈영 잔상: 잔상이 베는 반경,비도 비급 (비도 초식)
+knife.scroll_shadow_delay,0.3,초,혈영 잔상: 잔상이 베기까지,비도 비급 (비도 초식)
+knife.scroll_shadow_ratio,30%,,혈영 잔상: 잔상 하나 피해 (초식 피해 대비),비도 비급 (비도 초식)
