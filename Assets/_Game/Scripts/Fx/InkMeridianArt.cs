@@ -77,7 +77,9 @@ namespace AThousandDawns.Fx
                                                   (style.onNormal, _buttonHover), (style.onHover, _buttonHover), (style.onActive, _buttonHover), (style.onFocused, _buttonHover) })
             {
                 state.background = tex;
-                state.scaledBackgrounds = none;
+#if UNITY_EDITOR
+                state.scaledBackgrounds = none; // 에디터 전용 (빌드에는 고해상도 바탕이 없어요)
+#endif
                 state.textColor = Paper;
             }
             style.border = new RectOffset(28, 28, 12, 12); // 번진 가장자리는 늘리지 않게

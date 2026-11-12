@@ -31,6 +31,7 @@ namespace AThousandDawns.Tests
 
         public override void TearDown()
         {
+            Pad.Reset(); // 다음 테스트가 패드 이름을 보지 않게
             RoomRun.SeedOverride = 0;
             if (System.IO.File.Exists(MetaSave.PathOverride)) System.IO.File.Delete(MetaSave.PathOverride);
             MetaSave.PathOverride = null;

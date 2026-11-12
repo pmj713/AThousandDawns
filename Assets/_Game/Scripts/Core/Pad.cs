@@ -12,7 +12,21 @@ namespace AThousandDawns.Core
         static int _stickFrame = -1;
         static Vector2Int _stickDir;
 
-        public static bool Active { get; private set; }
+        static bool _active;
+
+        // 키보드를 누르거나 마우스를 움직이면 꺼져요 (키 이름이 다시 키보드로)
+        public static bool Active
+        {
+            get
+            {
+                var k = Keyboard.current;
+                if (_active && k != null && k.anyKey.wasPressedThisFrame) _active = false;
+                return _active;
+            }
+            private set => _active = value;
+        }
+
+        public static void Reset() => _active = false; // 테스트 · 장면 전환
 
         static Gamepad G => Gamepad.current;
 
