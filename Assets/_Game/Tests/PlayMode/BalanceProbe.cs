@@ -128,7 +128,7 @@ namespace AThousandDawns.Tests
 
         // 방 하나 전체: 그 지역 2층 싸우는 방을 방 구성마다 (실제 웨이브 · 정예 · 엄폐물 · 물 · 혈지 그대로).
         // 화력은 가장 가까운 적에게 (부르는 적 · 갈라진 적도), 플레이어는 방 가운데 가만히. 방을 비울 때까지 시간과 받은 피해.
-        IEnumerator Room(int region, int layout, int karma, bool dense, float limit = 120f)
+        IEnumerator Room(int region, int layout, int karma, bool dense, float limit = 120f, bool moving = false)
         {
             new MetaSave { runs = 1, finalBossKills = karma > 0 ? karma : 0, karma = karma, karmaMax = karma, tutorialFloorDone = true }.Save();
             RoomRun.SkipVillage = true;
@@ -151,6 +151,8 @@ namespace AThousandDawns.Tests
             run.Enter(room, 0);
             Vector3 home = player.transform.position;
             float dps = BaseDps * Firepower[region];
+            var cc = player.GetComponent<CharacterController>();
+            float angle = 0f;
             Time.timeScale = 4f;
             float t = 0f, taken = 0f, carry = 0f, last = player.Health;
             int hits = 0, spawned = 0;
@@ -161,6 +163,12 @@ namespace AThousandDawns.Tests
                 yield return null;
                 t += Time.deltaTime;
                 if (player.Health < last) { taken += last - player.Health; hits++; }
+                if (moving) // 가운데를 반지름 3칸으로 돌며 움직여요 (멈춰 있지 않은 플레이어)
+                {
+                    angle += Time.deltaTime * 1.1f;
+                    Vector3 want = home + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * 3f;
+                    cc.Move(want - player.transform.position);
+                }
                 player.Heal(9999f);
                 last = player.Health;
                 if (arena.IsChoosing) arena.Choose(0);
@@ -186,7 +194,7 @@ namespace AThousandDawns.Tests
             RoomRun.SeedOverride = 0;
             string[] names = region == 0 ? RoomRun.BambooLayoutNames : region == 1 ? RoomRun.TempleLayoutNames : region == 2 ? RoomRun.RiverLayoutNames : RoomRun.TombLayoutNames;
             float bars = taken / MaxHealth[region];
-            Write($"방\tr{region}\tk{karma}\t{(dense ? "짙은 길" : "옅은 길")} · {names[Mathf.Clamp(layout, 0, 3)]}\t적 {spawned} · 웨이브 {run.WaveCount}\t처치 {(run.IsFighting ? $"못함({t:0}초)" : t.ToString("0.0") + "초")}\t받은 피해 {taken:0} ({bars:0.00}칸)\t초당 {taken / Mathf.Max(1f, t):0.0}\t맞은 수 {hits}");
+            Write($"방{(moving ? "(움직임)" : "")}\tr{region}\tk{karma}\t{(dense ? "짙은 길" : "옅은 길")} · {names[Mathf.Clamp(layout, 0, 3)]}\t적 {spawned} · 웨이브 {run.WaveCount}\t처치 {(run.IsFighting ? $"못함({t:0}초)" : t.ToString("0.0") + "초")}\t받은 피해 {taken:0} ({bars:0.00}칸)\t초당 {taken / Mathf.Max(1f, t):0.0}\t맞은 수 {hits}");
         }
 
         [UnityTest]
@@ -199,6 +207,18 @@ namespace AThousandDawns.Tests
                     yield return Room(r, layout, 0, false);
             for (int r = 0; r < 4; r++) yield return Room(r, 0, 0, true); // 짙은 길 (정예)
             yield return Room(3, 0, 6, true);                               // 천마총 짙은 길 · 업보 6
+        }
+
+        // 같은 방들을 플레이어가 움직이며 (가운데 둘레 반지름 3칸): 다가가야 깨는 적 · 지나간 자리 장판 · 꺾여 오는 혼불이 제대로 들어가요
+        [UnityTest]
+        [Timeout(1800000)]
+        public IEnumerator 방_전체_움직임()
+        {
+            File.AppendAllText(ReportPath, "\n움직이는 플레이어\n", Encoding.UTF8);
+            for (int r = 0; r < 4; r++)
+                for (int layout = 0; layout < 4; layout++)
+                    yield return Room(r, layout, 0, false, 120f, true);
+            for (int r = 0; r < 4; r++) yield return Room(r, 0, 0, true, 120f, true);
         }
 
         // 보스 하나만 다시 잴 때 (예: --filter "AThousandDawns.Tests.BalanceProbe.보스_하나")

@@ -33,7 +33,7 @@ namespace AThousandDawns.EditorTools
                 scenes = scenes.ToArray(),
                 locationPathName = OutputPath,
                 target = BuildTarget.StandaloneWindows64,
-                options = BuildOptions.None,
+                options = System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-cleanbuild") >= 0 ? BuildOptions.CleanBuildCache : BuildOptions.None, // -cleanbuild: 빌드 캐시를 비우고 새로
             };
             var report = BuildPipeline.BuildPlayer(options);
             var s = report.summary;
