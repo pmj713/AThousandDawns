@@ -14,7 +14,7 @@ namespace AThousandDawns.Art
     public class InkSkillFx : MonoBehaviour
     {
         static InkSkillFx _host;
-        static Sprite _quake, _palm, _wave, _glint, _ring;
+        static Sprite _quake, _palm, _wave, _glint, _ring, _rock;
         static Texture2D _brush;
         static Material _lineMat;
         static bool _loaded;
@@ -34,8 +34,14 @@ namespace AThousandDawns.Art
             if (_host == null) _host = new GameObject("Ink Skill Fx").AddComponent<InkSkillFx>();
             switch (c.Kind)
             {
-                case PlayerController.SkillFxKind.FlashDash: _host.FlashDash(c); break;
-                case PlayerController.SkillFxKind.QuakeWave: _host.QuakeWave(c); break;
+                case PlayerController.SkillFxKind.FlashDash:
+                    _host.FlashDash(c);
+                    if (player != null && player.UsesDagger) _host.DaggerPluck(c.To); // 비도 순간이동: 비도를 뽑는 반짝임
+                    break;
+                case PlayerController.SkillFxKind.QuakeWave:
+                    _host.QuakeWave(c);
+                    if (player != null && player.UsesDagger && c.Radius < 1.9f) _host.DirtBurst(c.From); // 비도 솟구치기: 비도 자리마다 흙이 튀어요 (내 둘레 충격파는 반경 2라 빼요)
+                    break;
                 case PlayerController.SkillFxKind.PalmShield: _host.PalmShield(player, c); break;
                 case PlayerController.SkillFxKind.PalmBlast: _host.PalmBlast(c); break;
             }
@@ -44,6 +50,7 @@ namespace AThousandDawns.Art
         void Update()
         {
             float dt = Time.deltaTime;
+            TickHalo(dt);
             for (int i = _live.Count - 1; i >= 0; i--)
                 if (!_live[i](dt)) _live.RemoveAt(i);
         }
@@ -71,6 +78,114 @@ namespace AThousandDawns.Art
                 if (jade != null) Destroy(jade.gameObject);
                 return false;
             });
+        }
+
+        // ── 비도 순간이동: 도착한 비도 자리에서 은빛 반짝임 (비도를 뽑아 거둬요)
+        void DaggerPluck(Vector3 at)
+        {
+            Vector3 p = at + Vector3.up * 0.4f;
+            var flash = Upright(_glint, p, 0.9f);
+            if (flash != null)
+            {
+                float t = 0f;
+                Vector3 unit = flash.transform.localScale;
+                flash.color = new Color(0.85f, 0.95f, 1f); // 은빛
+                _live.Add(dt =>
+                {
+                    if (flash == null) return false;
+                    t += dt;
+                    flash.transform.localScale = unit * Mathf.Sin(Mathf.Clamp01(t / 0.25f) * Mathf.PI) * 1.3f;
+                    if (t < 0.25f) return true;
+                    Destroy(flash.gameObject);
+                    return false;
+                });
+            }
+        }
+
+        // ── 비도 솟구치기: 비도 자리에서 흙덩이가 튀어 올라요
+        void DirtBurst(Vector3 at)
+        {
+            if (_rock == null) return;
+            for (int i = 0; i < 6; i++)
+            {
+                float a = i / 6f * Mathf.PI * 2f + UnityEngine.Random.Range(-0.4f, 0.4f);
+                var v = new Vector3(Mathf.Cos(a) * UnityEngine.Random.Range(1f, 2.2f), UnityEngine.Random.Range(3f, 4.5f), Mathf.Sin(a) * UnityEngine.Random.Range(1f, 2.2f));
+                var sr = Upright(_rock, at + Vector3.up * 0.1f, UnityEngine.Random.Range(0.12f, 0.22f));
+                if (sr == null) continue;
+                sr.color = new Color(0.55f, 0.45f, 0.35f); // 흙빛
+                float t = 0f, spin = UnityEngine.Random.Range(-600f, 600f);
+                var go = sr.gameObject;
+                _live.Add(dt =>
+                {
+                    if (go == null) return false;
+                    t += dt;
+                    v += Vector3.down * 14f * dt;
+                    go.transform.position += v * dt;
+                    sr.transform.Rotate(0f, 0f, spin * dt, Space.Self);
+                    if (go.transform.position.y > 0.05f && t < 1.2f) return true;
+                    Destroy(go);
+                    return false;
+                });
+            }
+        }
+
+        // ── 비도 호신륜: 도는 동안 금빛 고리 잔광, 막아 사라진 투사체 자리에 불똥
+        SpriteRenderer _halo;
+        readonly Dictionary<Transform, Vector3> _incoming = new Dictionary<Transform, Vector3>();
+        PlayerController _haloPlayer;
+
+        void TickHalo(float dt)
+        {
+            if (_haloPlayer == null) _haloPlayer = FindAnyObjectByType<PlayerController>();
+            bool on = _haloPlayer != null && _haloPlayer.IsHaloing;
+            if (on && _halo == null) _halo = Flat(_ring, _haloPlayer.transform.position, 1.6f * 2.3f, 0f, 0.8f);
+            if (_halo != null)
+            {
+                if (!on) { Destroy(_halo.gameObject); _halo = null; _incoming.Clear(); return; }
+                var p = _haloPlayer.transform.position;
+                _halo.transform.position = new Vector3(p.x, 0.8f, p.z);
+                _halo.transform.Rotate(0f, 0f, -360f * dt, Space.Self);
+                _halo.color = new Color(1f, 0.92f, 0.65f, 0.55f + 0.2f * Mathf.Sin(Time.time * 12f));
+                // 투사체를 지켜보다가 고리 가까이서 사라지면 막힌 거예요
+                var seen = new HashSet<Transform>();
+                foreach (var a in FindObjectsByType<AThousandDawns.Enemies.Arrow>(FindObjectsSortMode.None)) { seen.Add(a.transform); _incoming[a.transform] = a.transform.position; }
+                foreach (var b in FindObjectsByType<AThousandDawns.Enemies.BeadThrow>(FindObjectsSortMode.None)) { seen.Add(b.transform); _incoming[b.transform] = b.transform.position; }
+                var gone = new List<Transform>();
+                foreach (var pair in _incoming)
+                {
+                    if (pair.Key != null && seen.Contains(pair.Key)) continue;
+                    Vector3 last = pair.Value; last.y = 0f;
+                    Vector3 me = new Vector3(p.x, 0f, p.z);
+                    if ((last - me).magnitude <= 1.6f + 1.2f) Deflect(pair.Value);
+                    gone.Add(pair.Key);
+                }
+                foreach (var g in gone) _incoming.Remove(g);
+            }
+        }
+
+        void Deflect(Vector3 at)
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                var sr = Upright(_glint, at, UnityEngine.Random.Range(0.15f, 0.25f));
+                if (sr == null) return;
+                var v = UnityEngine.Random.onUnitSphere * UnityEngine.Random.Range(2.5f, 4f);
+                v.y = Mathf.Abs(v.y) + 0.5f;
+                float t = 0f;
+                var go = sr.gameObject;
+                Vector3 unit = go.transform.localScale;
+                _live.Add(dt =>
+                {
+                    if (go == null) return false;
+                    t += dt;
+                    v += Vector3.down * 8f * dt;
+                    go.transform.position += v * dt;
+                    go.transform.localScale = unit * (1f - t / 0.3f);
+                    if (t < 0.3f) return true;
+                    Destroy(go);
+                    return false;
+                });
+            }
         }
 
         // ── 붕산권: 황토빛 먹 충격파 고리
@@ -245,6 +360,7 @@ namespace AThousandDawns.Art
             _wave = Resources.Load<Sprite>("SkillFx/GoldWave");
             _glint = Resources.Load<Sprite>("PouchFx/Glint");
             _ring = Resources.Load<Sprite>("PouchFx/Ring");
+            _rock = Resources.Load<Sprite>("TempleFx/Rock");
             _brush = Resources.Load<Texture2D>("HudArt/HpStroke");
             _lineMat = new Material(Shader.Find("Sprites/Default"));
             if (_brush != null) _lineMat.mainTexture = _brush;

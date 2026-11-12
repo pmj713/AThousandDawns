@@ -28,7 +28,7 @@ namespace AThousandDawns.Fx
         const float BarW = 400f, BarH = 40f, GaugeW = 330f, GaugeH = 20f, KeywordSize = 38f;
         const float PipSize = 30f, GourdSize = 48f, ChevronW = 26f;
 
-        static Texture2D _stroke, _enso, _gourd, _blot, _chevron, _spin, _bamboo, _quake, _recall, _recallGray, _palm, _takrang, _takrangVortex;
+        static Texture2D _stroke, _enso, _gourd, _blot, _chevron, _spin, _bamboo, _quake, _recall, _recallGray, _palm, _takrang, _takrangVortex, _daggerFlash, _daggerBurst, _daggerHalo;
         static bool _loaded;
         static GUIStyle _number, _small, _badge, _gaugeLabel, _key;
         static float _lagHp = -1f;   // 깎인 자리 (따라 줄어드는 체력)
@@ -198,7 +198,7 @@ namespace AThousandDawns.Fx
 
         // 비도를 들면 비급을 배워도 초식은 늘 "회수" (비급은 회수에 효과만 덧붙여요) → 회수 그림
         // 비도 + 탁랑참만 따로 "탁류 소용돌이" 그림
-        static Texture2D SkillIcon(PlayerController p) => p.UsesDagger ? (p.Skill == SkillKind.Takrang && _takrangVortex != null ? _takrangVortex : _recall) : p.Skill switch
+        static Texture2D SkillIcon(PlayerController p) => p.UsesDagger ? DaggerIcon(p.Skill) : p.Skill switch
         {
             SkillKind.Takrang when _takrang != null => _takrang,
             SkillKind.BambooFlash => _bamboo,
@@ -206,6 +206,16 @@ namespace AThousandDawns.Fx
             _ when p.Skill.ToString() == "Palm" && _palm != null => _palm, // 금강장 (파계승 혜광의 비급) — 기획 쪽 SkillKind.Palm이 들어오기 전에도 컴파일되게 이름으로
             _ => _spin,
         };
+
+        // 비도: 비급마다 초식이 달라요 (회선참=회수 · 죽림섬=비도 순간이동 · 붕산권=비도 솟구치기 · 금강장=비도 호신륜 · 탁랑참=탁류 소용돌이). 그림이 없으면 회수 그림
+        static Texture2D DaggerIcon(SkillKind s) => (s switch
+        {
+            SkillKind.BambooFlash => _daggerFlash,
+            SkillKind.Quake => _daggerBurst,
+            SkillKind.Palm => _daggerHalo,
+            SkillKind.Takrang => _takrangVortex,
+            _ => null,
+        }) ?? _recall;
 
         // ── 체력 ──
         static void DrawHealth(PlayerController p, Rect r)
@@ -365,6 +375,9 @@ namespace AThousandDawns.Fx
             _palm = Resources.Load<Texture2D>("HudArt/Skill_Palm");
             _takrang = Resources.Load<Texture2D>("HudArt/Skill_Takrang");
             _takrangVortex = Resources.Load<Texture2D>("HudArt/Skill_TakrangVortex");
+            _daggerFlash = Resources.Load<Texture2D>("HudArt/Skill_DaggerFlash");
+            _daggerBurst = Resources.Load<Texture2D>("HudArt/Skill_DaggerBurst");
+            _daggerHalo = Resources.Load<Texture2D>("HudArt/Skill_DaggerHalo");
             _blot = Resources.Load<Texture2D>("HudArt/Blot"); // 흰 모양 (GUI.color로 물들여요)
             _chevron = Resources.Load<Texture2D>("HudArt/Chevron"); // 흰 모양 붓 >
         }
