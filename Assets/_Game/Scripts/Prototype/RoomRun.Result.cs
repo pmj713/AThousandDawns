@@ -115,6 +115,7 @@ namespace AThousandDawns.Prototype
         public void ShowResult(bool victory)
         {
             if (IsShowingResult) return;
+            _record.Karma = _karma;
             var weights = RunRecord.Weights.FromConfig();
             int memory = _record.Memory(weights);
             var meta = MetaSave.Load();
@@ -123,7 +124,7 @@ namespace AThousandDawns.Prototype
             meta.runs++;
             meta.bestFloors = Mathf.Max(meta.bestFloors, _record.FloorsCleared);
             meta.bossKills += _record.Kills[(int)EnemyRank.Boss];
-            if (_record.FinalBoss) { meta.finalBossKills++; RecordRelics(meta); } // 천마 격파 (지닌 기물은 유품록에)
+            if (_record.FinalBoss) { meta.finalBossKills++; RecordRelics(meta); UnlockKarma(meta); } // 천마 격파 (지닌 기물은 유품록에)
             meta.Save();
             RunSave.Delete(); // 판이 끝났으니 이어할 것도 없어요
             _saveDirty = false;

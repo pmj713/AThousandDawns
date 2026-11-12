@@ -103,7 +103,7 @@ namespace AThousandDawns.Prototype
                     else ShowBanner("동굴 입구가 막혀 있어요 · 회귀록에서 면벽수련을 피우면 열려요");
                     break;
                 case VillageSpot.Shrine:
-                    if (VillageMeta.finalBossKills > 0) { OpenRelicBook(); Notify("relic", "유품록: 천마를 쓰러뜨린 판에 지녔던 기물을 골라 두면 다음 판을 지니고 시작해요"); }
+                    if (VillageMeta.finalBossKills > 0) { if (KarmaMax > 0) OpenShrineMenu(); else OpenRelicBook(); Notify("relic", "유품록: 천마를 쓰러뜨린 판에 지녔던 기물을 골라 두면 다음 판을 지니고 시작해요"); }
                     else ShowBanner("닫힌 사당 · 첫 천마 격파 후 열려요");
                     break;
                 case VillageSpot.Rack:

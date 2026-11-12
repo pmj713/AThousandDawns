@@ -30,7 +30,7 @@ namespace AThousandDawns.Prototype
 
         float RegionHealth => RegionKey("health", _region, ByRegion(HealthByRegion, _region));
         float RegionAttack => RegionKey("attack", _region, ByRegion(AttackByRegion, _region));
-        int RoomSilver => Mathf.RoundToInt(_region == 0 ? GameConfig.Get("silver.room", 18f) : RegionKey("silver_room", _region, ByRegion(SilverByRegion, _region)));
+        int RoomSilver => Mathf.RoundToInt((_region == 0 ? GameConfig.Get("silver.room", 18f) : RegionKey("silver_room", _region, ByRegion(SilverByRegion, _region))) * KarmaSilver); // 업보 5단계: −20%
 
         // 동시 근접 공격: 2명 + 지역마다 1명 (최대 4명). 층에 들어설 때마다 맞춰요 (이어하기 포함)
         public int MeleeTokensForRegion => Mathf.Min(
@@ -44,9 +44,15 @@ namespace AThousandDawns.Prototype
         void RollSecondTrait(EnemyBrain elite)
         {
             if (elite == null || !elite.IsElite || _rng.NextDouble() >= SecondTraitChance) return;
+            AddRandomTrait(elite);
+        }
+
+        void AddRandomTrait(EnemyBrain elite)
+        {
+            if (elite == null || !elite.IsElite) return;
             var traits = new System.Collections.Generic.List<EliteTrait>();
             foreach (EliteTrait t in System.Enum.GetValues(typeof(EliteTrait)))
-                if (t != elite.Trait && EnemyBrain.Allows(elite.Kind, t)) traits.Add(t);
+                if (!elite.HasTrait(t) && EnemyBrain.Allows(elite.Kind, t)) traits.Add(t);
             if (traits.Count > 0) elite.AddEliteTrait(traits[_rng.Next(traits.Count)]);
         }
 
@@ -89,12 +95,13 @@ namespace AThousandDawns.Prototype
             };
         }
 
-        // 나온 적에 지역 배율 (체력은 지금 체력 비율 그대로 늘어요)
+        // 나온 적에 지역 배율 · 업보 (체력은 지금 체력 비율 그대로 늘어요)
         void ScaleForRegion(EnemyBrain enemy)
         {
-            if (enemy == null || _region == 0) return;
-            enemy.Damageable.ScaleMaxHealth(RegionHealth);
-            enemy.ScaleAttack(RegionAttack);
+            if (enemy == null) return;
+            float health = RegionHealth * KarmaHealth(enemy), attack = RegionAttack * KarmaAttack; // 업보 1·4·6단계
+            if (health != 1f) enemy.Damageable.ScaleMaxHealth(health);
+            if (attack != 1f) enemy.ScaleAttack(attack);
         }
 
         // 보스 보상을 고른 뒤 (ClearRoom 대신 Tick에서): 다음 지역 1층 갈림길

@@ -134,6 +134,7 @@ namespace AThousandDawns.Prototype
                 else
                 {
                     GrantRelics(); // 유품록에서 고른 유품
+                    StartKarma(); // 업보 3단계: 추적도 3
                     if (StartsTutorial()) BeginTutorialFloor(); // 처음엔 입문 죽림
                     else BeginFork(1);
                 }
@@ -535,6 +536,7 @@ namespace AThousandDawns.Prototype
                 {
                     enemy.MakeElite(_eliteTrait);
                     RollSecondTrait(enemy); // 장강 수채부터 특성 둘
+                    AddKarmaTrait(enemy); // 업보 2단계: 하나 더
                     _elitesThisRoom++;
                 }
                 if (health != 1f) enemy.Damageable.ScaleMaxHealth(health);

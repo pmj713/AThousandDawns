@@ -25,6 +25,8 @@ namespace AThousandDawns.Core
         public List<string> seenItems = new List<string>(); // 한 번이라도 얻어 본 기물 (기물 도감)
         public List<string> relics = new List<string>();     // 유품록: 천마를 격파한 판에 지녔던 기물
         public List<string> relicPicks = new List<string>(); // 사당에서 고른, 다음 판에 지니고 시작할 유품
+        public int karma;    // 사당에서 고른 업보 단계 (다음 판에 걸려요)
+        public int karmaMax; // 열린 업보 단계 (열린 가장 높은 단계로 천마를 격파하면 +1)
 
         // 테스트에서 실제 저장 파일을 건드리지 않게 바꿔요
         public static string PathOverride;

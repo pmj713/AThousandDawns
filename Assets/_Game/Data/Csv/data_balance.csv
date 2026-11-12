@@ -1237,3 +1237,9 @@ event.altar_tracking,3,,천마총 마교 제단 부수기: 추적도 +,4지역 �
 event.altar_silver,120,은자,천마총 마교 제단 부수기: 은자 +,4지역 기획 (천마총 이벤트)
 relic.base_capacity,1,칸,유품록 기본 기억 용량 (첫 천마 격파 후. 회귀록 유품 가지 봉우리마다 +1),유품록 기획
 relic.cost_legendary,2,칸,전설 유품이 차지하는 기억 (나머지 등급은 1),유품록 기획
+memory.karma_bonus,10%,,회귀의 기억: 업보 단계마다 얻는 기억 + (합계에),기억!B12
+karma.health,15%,,업보 1단계: 적 체력 +,업보 기획
+karma.start_tracking,3,,업보 3단계: 판을 이 추적도로 시작,업보 기획
+karma.attack,15%,,업보 4단계: 적 공격 +,업보 기획
+karma.silver_cut,20%,,업보 5단계: 방 은자 −,업보 기획
+karma.boss_health,25%,,업보 6단계: 고수·보스 체력 + (1단계와 곱해요),업보 기획

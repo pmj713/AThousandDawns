@@ -4965,3 +4965,27 @@ MonoBehaviour:
     value: 2
     unit: "\uCE78"
     note: "\uC804\uC124 \uC720\uD488\uC774 \uCC28\uC9C0\uD558\uB294 \uAE30\uC5B5 (\uB098\uBA38\uC9C0 \uB4F1\uAE09\uC740 1)"
+  - key: memory.karma_bonus
+    value: 0.1
+    unit: 
+    note: "\uD68C\uADC0\uC758 \uAE30\uC5B5: \uC5C5\uBCF4 \uB2E8\uACC4\uB9C8\uB2E4 \uC5BB\uB294 \uAE30\uC5B5 + (\uD569\uACC4\uC5D0)"
+  - key: karma.health
+    value: 0.15
+    unit: 
+    note: "\uC5C5\uBCF4 1\uB2E8\uACC4: \uC801 \uCCB4\uB825 +"
+  - key: karma.start_tracking
+    value: 3
+    unit: 
+    note: "\uC5C5\uBCF4 3\uB2E8\uACC4: \uD310\uC744 \uC774 \uCD94\uC801\uB3C4\uB85C \uC2DC\uC791"
+  - key: karma.attack
+    value: 0.15
+    unit: 
+    note: "\uC5C5\uBCF4 4\uB2E8\uACC4: \uC801 \uACF5\uACA9 +"
+  - key: karma.silver_cut
+    value: 0.2
+    unit: 
+    note: "\uC5C5\uBCF4 5\uB2E8\uACC4: \uBC29 \uC740\uC790 \u2212"
+  - key: karma.boss_health
+    value: 0.25
+    unit: 
+    note: "\uC5C5\uBCF4 6\uB2E8\uACC4: \uACE0\uC218\xB7\uBCF4\uC2A4 \uCCB4\uB825 + (1\uB2E8\uACC4\uC640 \uACF1\uD574\uC694)"

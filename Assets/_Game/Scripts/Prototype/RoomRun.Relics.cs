@@ -10,6 +10,7 @@ namespace AThousandDawns.Prototype
     // 기억 용량 = 기본 1 + 회귀록 유품 가지 봉우리 (최대 5).
     public sealed partial class RoomRun
     {
+        public static event System.Action<string, bool> RelicToggled; // 유품을 고르거나 뺄 때 (기물 id, 골랐는지)
         const int RelicsPerPage = 7;
         int _relicPage;
 
@@ -92,6 +93,7 @@ namespace AThousandDawns.Prototype
             var meta = MetaSave.Load();
             if (!meta.relicPicks.Remove(id)) meta.relicPicks.Add(id);
             meta.Save();
+            RelicToggled?.Invoke(id, meta.relicPicks.Contains(id));
         }
     }
 }
