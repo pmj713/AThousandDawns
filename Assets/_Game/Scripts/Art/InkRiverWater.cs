@@ -11,12 +11,13 @@ namespace AThousandDawns.Art
     //       흘러가며 나타났다 사라져요 (물살이 셀수록 빨리). 가장자리엔 갈대 몇 포기.
     //   고인 물 (웅덩이): 둥근 먹 웅덩이 위로 잔잔한 물결 고리가 가끔 번져요.
     //   발밑 (RoomRun.PlayerInWater): 물에 들어가 있는 동안 발밑에 물결 고리가 번지고, 움직이면 물보라가 튀어요.
-    // 그림: Art/Env/RiverFx/Resources/RiverWater (WaterSheet · RippleStroke · Pond · Reeds), RiverFx (Ripple · Splash).
+    //   죽림 개울 (RoomRun.Region == 0): 쪽빛 대신 맑은 연둣빛 물판 · 연둣빛 물결 획, 갈대 대신 댓잎이 빙글 돌며 떠내려가요.
+    // 그림: Art/Env/RiverFx/Resources/RiverWater (WaterSheet · RippleStroke · Pond · Reeds · StreamSheet · StreamStroke), TitleArt/BambooLeaf, RiverFx (Ripple · Splash).
     // 방이 바뀔 때 (RoomRun.LayoutChanged) 다시 깔아요.
     public class InkRiverWater : MonoBehaviour
     {
         static InkRiverWater _host;
-        static Sprite _sheet, _stroke, _pond, _reeds, _ring, _splash;
+        static Sprite _sheet, _stroke, _pond, _reeds, _ring, _splash, _streamSheet, _streamStroke, _leaf;
         static bool _loaded;
 
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
@@ -51,7 +52,7 @@ namespace AThousandDawns.Art
             {
                 if (f.Kind != RoomRun.FeatureKind.Water) continue;
                 if (f.Go != null) foreach (var r in f.Go.GetComponentsInChildren<Renderer>()) r.enabled = false;
-                if (f.Current.sqrMagnitude > 1e-4f) Flowing(f);
+                if (f.Current.sqrMagnitude > 1e-4f) Flowing(f, run.Region == 0);
                 else Still(f);
             }
         }
@@ -65,21 +66,22 @@ namespace AThousandDawns.Art
         }
 
         // ── 흐르는 물: 물판 + 물살 방향으로 흐르는 먹 물결 획
-        void Flowing(RoomRun.RoomFeature f)
+        void Flowing(RoomRun.RoomFeature f, bool bamboo)
         {
-            var body = Sheet(_sheet, f.Center, f.Size * 1.08f, 0.03f, 2);
+            var body = Sheet(bamboo && _streamSheet != null ? _streamSheet : _sheet, f.Center, f.Size * 1.08f, 0.03f, 2); // 죽림 개울은 맑은 연둣빛
             if (body != null) body.color = new Color(1f, 1f, 1f, 0.92f);
             Vector3 dir = f.Current.normalized;
             float speed = f.Current.magnitude;
             Vector2 half = f.Size * 0.5f;
             int count = Mathf.Clamp(Mathf.RoundToInt(f.Size.x * f.Size.y / 2.2f), 6, 40);
-            for (int i = 0; i < count; i++) Stroke(f.Center, half, dir, speed, UnityEngine.Random.value);
-            Reeds(f, 3);
+            for (int i = 0; i < count; i++) Stroke(f.Center, half, dir, speed, UnityEngine.Random.value, bamboo && _streamStroke != null ? _streamStroke : _stroke);
+            if (bamboo) { for (int i = 0; i < 4; i++) Leaf(f.Center, half, dir, speed, i / 4f); }
+            if (!bamboo) Reeds(f, 3); // 죽림은 둘레가 대숲이라 갈대 없이
         }
 
-        void Stroke(Vector3 center, Vector2 half, Vector3 dir, float speed, float startPhase)
+        void Stroke(Vector3 center, Vector2 half, Vector3 dir, float speed, float startPhase, Sprite sprite)
         {
-            var sr = Flat(_stroke, center, UnityEngine.Random.Range(0.9f, 1.6f), Yaw(dir), 0.05f, 3);
+            var sr = Flat(sprite, center, UnityEngine.Random.Range(0.9f, 1.6f), Yaw(dir), 0.05f, 3);
             if (sr == null) return;
             float life = 0f, total = 0f;
             Vector3 pos = Vector3.zero;
@@ -103,6 +105,30 @@ namespace AThousandDawns.Art
                 sr.transform.position = new Vector3(pos.x, 0.05f, pos.z);
                 float k = life / total;
                 sr.color = new Color(1f, 1f, 1f, Mathf.Sin(k * Mathf.PI) * 0.85f);
+                return true;
+            });
+        }
+
+        // 죽림 개울: 댓잎이 물살 따라 빙글 돌며 떠내려가요
+        void Leaf(Vector3 center, Vector2 half, Vector3 dir, float speed, float startPhase)
+        {
+            var sr = Flat(_leaf, center, UnityEngine.Random.Range(0.3f, 0.45f), UnityEngine.Random.Range(0f, 360f), 0.06f, 4);
+            if (sr == null) return;
+            Vector3 side = new Vector3(dir.z, 0f, -dir.x);
+            float along = Mathf.Abs(Vector3.Dot(new Vector3(half.x, 0f, half.y), dir)), across = Mathf.Abs(Vector3.Dot(new Vector3(half.x, 0f, half.y), side));
+            float s = Mathf.Lerp(-along, along, startPhase), lane = UnityEngine.Random.Range(-0.6f, 0.6f) * across, spin = UnityEngine.Random.Range(-40f, 40f), seed = UnityEngine.Random.Range(0f, 10f);
+            float drift = Mathf.Max(0.5f, speed * 1.2f);
+            _live.Add(dt =>
+            {
+                if (sr == null) return false;
+                s += drift * dt;
+                if (s > along) { s = -along; lane = UnityEngine.Random.Range(-0.6f, 0.6f) * across; }
+                float wobble = Mathf.Sin(Time.time * 1.7f + seed) * 0.12f;
+                var p = center + dir * s + side * (lane + wobble);
+                sr.transform.position = new Vector3(p.x, 0.06f, p.z);
+                sr.transform.Rotate(0f, 0f, spin * dt, Space.Self);
+                float edge = Mathf.Clamp01((along - Mathf.Abs(s)) / 0.8f); // 끝에서 나타나고 사라져요
+                sr.color = new Color(1f, 1f, 1f, edge);
                 return true;
             });
         }
@@ -268,6 +294,10 @@ namespace AThousandDawns.Art
             _stroke = Resources.Load<Sprite>("RiverWater/RippleStroke");
             _pond = Resources.Load<Sprite>("RiverWater/Pond");
             _reeds = Resources.Load<Sprite>("RiverWater/Reeds");
+            _streamSheet = Resources.Load<Sprite>("RiverWater/StreamSheet");
+            _streamStroke = Resources.Load<Sprite>("RiverWater/StreamStroke");
+            var leaf = Resources.Load<Texture2D>("TitleArt/BambooLeaf"); // 제목 화면의 날리는 댓잎
+            if (leaf != null) _leaf = Sprite.Create(leaf, new Rect(0, 0, leaf.width, leaf.height), new Vector2(0.5f, 0.5f), leaf.width);
             _ring = Resources.Load<Sprite>("RiverFx/Ripple");
             _splash = Resources.Load<Sprite>("RiverFx/Splash");
         }
