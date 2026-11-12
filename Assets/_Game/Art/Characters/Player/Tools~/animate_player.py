@@ -758,6 +758,27 @@ act = new_action("CombatIdleDagger")
 for f in range(0, 41, 8):
     dagger_idle_pose(f / 40); key_all(f)
 actions.append((act, 0, 40))
+
+# 등장(Spawn · 18프레임, 플레이어 동작을 옮겨 입는 사람형 적이 방에 나타날 때): 낮게 웅크려 고개 숙였다가 → 일어서며 칼을 앞으로 고쳐 잡고 → 준비 자세
+def spawn_pose(low):
+    ready_pose()
+    set_hips_height(-0.32 if low else -0.1)
+    bpy.context.view_layer.update()
+    for s in ("Left", "Right"):
+        _limb(f"{s}UpperLeg", f"{s}LowerLeg", f"{s}Foot", Q_FOOT[s] + Vector((0, 0.05 if low else 0.0, 0)), Vector((0, -1, 0)))
+    set_rot("Spine", (X, 28 if low else 8)); set_rot("Neck", (X, 18 if low else -4))
+    if low:
+        set_rot("RightUpperArm", (Y, -(DOWN_R - 5)), (X, 25)); set_rot("LeftUpperArm", (Y, DOWN_L - 5), (X, 25))
+        aim_sword(Vector((0.0, -0.3, -1)))
+    else:
+        aim_sword(Vector((0.15, -0.9, -0.3)))
+
+
+act = new_action("Spawn")
+for f, low in ((0, True), (6, True), (12, False)):
+    spawn_pose(low); key_all(f)
+ready_pose(); key_all(18)
+actions.append((act, 0, 18))
 # 반복 동작은 처음·끝이 같은 키라 이어 붙어요. 보간은 부드럽게(베지어 기본)
 rig.animation_data.action = None
 rest_pose()

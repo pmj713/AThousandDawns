@@ -2143,6 +2143,32 @@ if "captive" in EXTRAS:
     rig.animation_data.action = None
     reset_pose()
 
+
+# 등장(Spawn, 모든 playeranim 사람형 · 18프레임): 방에 나타날 때 낮게 웅크린 채 고개를 숙였다가 → 일어서며 고개를 들고
+#   무기 쥔 손을 앞으로 한 번 고쳐 잡아요 → 대기 자세 (InkEnemyAnimator가 처음 한 번 틀어요)
+if "playeranim" in EXTRAS:
+    def spawn_pose(stage):
+        if stage == "idle":
+            idle_end_pose(); return
+        low = stage == "crouch"
+        lower_hips(-0.45 if low else -0.18, FEET, dy=0.06 if low else 0.02)
+        bend("Spine", Vector((1, 0, 0)), 30 if low else 8); bend("Neck", Vector((1, 0, 0)), 20 if low else -6)
+        for s, sx in (("Left", 1), ("Right", -1)):
+            sh = pb[f"{s}Arm"].head.copy()
+            if low:
+                arm(s, sh + Vector((sx * 0.12, -0.25, -0.55)), Vector((sx, 0.3, -0.3)))           # 팔을 늘어뜨려 땅을 짚을 듯
+                if s == "Right" and HAS_BLADE:
+                    point_blade(Vector((0, -0.3, -1)), wrist_bend=60)                           # 칼끝은 땅으로
+            elif s == "Right":
+                arm(s, sh + Vector((0.05, -0.42, -0.3)), Vector((-1, 0.3, -0.5)))                # 무기 쥔 손을 앞으로 고쳐 잡아요
+                if HAS_BLADE:
+                    point_blade(Vector((0.2, -1, -0.35)), wrist_bend=60)                         # 칼끝을 앞으로 겨눠요
+            else:
+                arm(s, sh + Vector((0.25, -0.1, -0.45)), Vector((1, 0.3, -0.3)))
+    make_action("Spawn", [(0, "crouch"), (6, "crouch"), (12, "rise"), (18, "idle")], spawn_pose)
+    rig.animation_data.action = None
+    reset_pose()
+
 # 옮겨 굽는 데 쓴 플레이어 뼈대·메시·동작은 지워요 (내보낼 때 같이 나가지 않게)
 for o in player_objs:
     bpy.data.objects.remove(o, do_unlink=True)
