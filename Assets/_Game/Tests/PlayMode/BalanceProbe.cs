@@ -138,11 +138,9 @@ namespace AThousandDawns.Tests
 
         [UnityTest]
         [Timeout(1800000)]
-        public IEnumerator 조정_확인()
+        public IEnumerator 조정_확인() // 최근에 고친 적만 다시 재요 (그때그때 바꿔 써요)
         {
-            yield return Fight(EnemyKind.HeavenlyDemon, 3, 0, 4f, 300f, "보스");
-            yield return Fight(EnemyKind.HeavenlyDemon, 3, 6, 4f, 300f, "보스");
-            yield return Fight(EnemyKind.BloodShadow, 3, 0, 4f, 180f, "고수");
+            yield return Fight(EnemyKind.BloodBomber, 3, 0, 3f, 15f, "일반", false);
         }
 
         [UnityTest]

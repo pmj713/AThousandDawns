@@ -4989,3 +4989,11 @@ MonoBehaviour:
     value: 0.25
     unit: 
     note: "\uC5C5\uBCF4 6\uB2E8\uACC4: \uACE0\uC218\xB7\uBCF4\uC2A4 \uCCB4\uB825 + (1\uB2E8\uACC4\uC640 \uACF1\uD574\uC694)"
+  - key: river.water_slow
+    value: 0.3
+    unit: 
+    note: "\uC7A5\uAC15 \uC218\uCC44 \uBC29 \uBB3C: \uB4E4\uC5B4\uAC00 \uC788\uB294 \uB3D9\uC548 \uC774\uB3D9 \uC18D\uB3C4 \u2212"
+  - key: river.current
+    value: 1.2
+    unit: cell/s
+    note: "\uC7A5\uAC15 \uC218\uCC44 \uBC29 \uD750\uB974\uB294 \uBB3C (\uC5EC\uC6B8 \xB7 \uBB3C\uAE38): \uBB3C\uC0B4 \uCABD\uC73C\uB85C \uBBF8\uB294 \uC18D\uB3C4 (\uB300\uC2DC \uC911\uC5D4 \uC548 \uBC00\uB824\uC694)"

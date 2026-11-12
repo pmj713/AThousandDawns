@@ -25,8 +25,12 @@ namespace AThousandDawns.Prototype
             for (int i = 0; i < room.Jars; i++)
             {
                 // 모서리 쪽 벽가에 (문 앞은 피해서)
-                float sx = rng.Next(2) == 0 ? -1f : 1f, sz = rng.Next(2) == 0 ? -1f : 1f;
-                var p = combat.center + new Vector3(sx * halfX * (0.55f + 0.4f * (float)rng.NextDouble()), 0f, sz * halfZ * (0.6f + 0.35f * (float)rng.NextDouble()));
+                Vector3 p = combat.center;
+                for (int tries = 0; tries < 8 && (tries == 0 || InSolid(p, 0.5f)); tries++) // 폐사찰 석불 · 담 안은 피해요 (RoomRun.Layout)
+                {
+                    float sx = rng.Next(2) == 0 ? -1f : 1f, sz = rng.Next(2) == 0 ? -1f : 1f;
+                    p = combat.center + new Vector3(sx * halfX * (0.55f + 0.4f * (float)rng.NextDouble()), 0f, sz * halfZ * (0.6f + 0.35f * (float)rng.NextDouble()));
+                }
                 var jar = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 jar.name = "Jar";
                 var col = jar.GetComponent<Collider>();

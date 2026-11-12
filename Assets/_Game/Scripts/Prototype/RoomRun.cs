@@ -182,6 +182,7 @@ namespace AThousandDawns.Prototype
                 case Phase.Floor:
                     TickHunt(Time.deltaTime);
                     TickJars(); // 항아리는 싸우는 중에도 부딪히면 깨져요
+                    TickWater(Time.deltaTime); // 장강 물: 느려지고 물살에 밀려요
                     if (_fighting) TickFight();
                     else TickFloorExits();
                     break;
@@ -331,6 +332,7 @@ namespace AThousandDawns.Prototype
             }
             SetGateMarker(room.Kind == FloorRoomKind.Gate);
             PlaceCrack(room);
+            PlaceLayout(room); // 폐사찰 · 장강 방 구성 (항아리보다 먼저: 항아리가 석불 · 담을 비켜요)
             PlaceJars(room);
             PlacePouch(room);
             PlaceEventProp(room); // 천마총 이벤트 방 소품
@@ -409,6 +411,7 @@ namespace AThousandDawns.Prototype
             SetLocks(false);
             SetGateMarker(false);
             PlaceCrack(null);
+            PlaceLayout(null);
             PlaceJars(null);
             PlacePouch(null);
             if (_floor < _floors) BeginFork(_floor + 1);
