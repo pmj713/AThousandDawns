@@ -2160,6 +2160,27 @@ if BOSS_DEFEAT:
             shL = pb["LeftArm"].head.copy(); shR = pb["RightArm"].head.copy()
             arm("Left", shL + Vector((0.1, -0.4, -0.45)), Vector((1, 0.3, -0.3)))            # 왼손으로 무릎을 짚고
             arm("Right", shR + Vector((-0.12, -0.08, -0.62)), Vector((-1, 0.3, -0.2)))       # 칼 쥔 팔은 축 늘어져요
+        elif BOSS_DEFEAT in ("sword", "chest"):
+            # 한쪽 무릎 (녹림과 같은 다리). sword: 오른손 검을 앞 땅에 꽂아 짚고 기대요 · chest: 왼손으로 가슴을 움켜쥐고 오른팔은 늘어져요
+            feet = {"Left": FEET["Left"] + Vector((0, -0.25, 0)), "Right": FEET["Right"] + Vector((0, 0.5, 0.0))}
+            lower_hips(-0.55, feet, dy=0.1)
+            bend("Spine", Vector((1, 0, 0)), 18 if BOSS_DEFEAT == "sword" else 28); bend("Neck", Vector((1, 0, 0)), 30)
+            shL = pb["LeftArm"].head.copy(); shR = pb["RightArm"].head.copy()
+            if BOSS_DEFEAT == "sword":
+                arm("Left", shL + Vector((0.1, -0.4, -0.45)), Vector((1, 0.3, -0.3)))        # 왼손은 무릎에
+                arm("Right", shR + Vector((0.02, -0.5, -0.32)), Vector((-1, 0.3, -0.4)))    # 검 쥔 손은 앞으로 내밀어
+                if HAS_BLADE:
+                    point_blade(Vector((0.05, -0.15, -1)), wrist_bend=40)                  # 칼끝을 땅에 꽂아요
+            else:
+                arm("Left", shL + Vector((-0.2, -0.22, -0.18)), Vector((1, 0.3, -0.5)))     # 가슴을 움켜쥐어요
+                arm("Right", shR + Vector((-0.1, -0.06, -0.62)), Vector((-1, 0.3, -0.2)))
+        elif BOSS_DEFEAT == "fists":
+            feet = {s: FEET[s] + Vector((0, 0.45, 0)) for s in ("Left", "Right")}
+            lower_hips(-0.72, feet, dy=0.1)
+            bend("Spine", Vector((1, 0, 0)), 42); bend("Neck", Vector((1, 0, 0)), 28)      # 앞으로 크게 숙여
+            for s, sx in (("Left", 1), ("Right", -1)):
+                sh = pb[f"{s}Arm"].head.copy()
+                arm(s, Vector((sh.x + sx * 0.05, sh.y - 0.42, 0.06)), Vector((sx, 0.4, 0.2)))   # 두 주먹으로 땅을 짚어요
         elif BOSS_DEFEAT == "buddha":
             feet = {s: FEET[s] + Vector((-sx * 0.12, -0.15, 0)) for s, sx in (("Left", -1), ("Right", 1))}
             lower_hips(-0.85, feet, dy=0.05)

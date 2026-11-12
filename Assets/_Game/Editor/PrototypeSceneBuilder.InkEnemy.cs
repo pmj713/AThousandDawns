@@ -140,6 +140,7 @@ namespace AThousandDawns.EditorTools
             // 탁랑객 (장강 고수, 장검): 베기 · 물결 베기(크게 휘둘러 검기) · 탁류 보법(웅크렸다 미끄러져 찌르기) · 소용돌이(머리 위로 칼을 빙빙 돌리다 땅에 내리꽂아 터뜨려요)
             ["Takrang"] = new[]
             {
+                new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },   // 최후: 마지막 자세로 무너진 뒤 먹으로 흩어져요 (InkCorpse.Style.Dissolve)
                 new MoveSpec { attack = "베기", state = "Slash", clips = new[] { "Slash" } },
                 new MoveSpec { attack = "물결 베기", state = "WaveCut", clips = new[] { "WaveCut" } },
                 new MoveSpec { attack = "탁류 보법", state = "Glide", clips = new[] { "Glide" } },
@@ -177,6 +178,7 @@ namespace AThousandDawns.EditorTools
             //   2페이즈 전환 동안엔 ShadowRush 첫 자세(낮게 웅크림)로 버텨요 (InkEnemyAnimator)
             ["BloodShadow"] = new[]
             {
+                new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },   // 최후: 마지막 자세로 무너진 뒤 먹으로 흩어져요 (InkCorpse.Style.Dissolve)
                 new MoveSpec { attack = "혈영 베기", state = "Slash", clips = new[] { "Slash" } },
                 new MoveSpec { attack = "혈선", state = "Lunge", clips = new[] { "Lunge" } },
                 new MoveSpec { attack = "혈영보", state = "ShadowRush", clips = new[] { "ShadowRush" } },
@@ -210,6 +212,7 @@ namespace AThousandDawns.EditorTools
             // 파계승 혜광 (폐사찰 고수): 선장 휘두르기 · 금강불괴(예고 3초 동안 버티는 자세 → 선장을 내리꽂아요) · 염주 던지기
             ["Hyegwang"] = new[]
             {
+                new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },   // 최후: 마지막 자세로 무너진 뒤 먹으로 흩어져요 (InkCorpse.Style.Dissolve)
                 new MoveSpec { attack = "선장 휘두르기", state = "StaffSweep", clips = new[] { "StaffSweep" } },
                 new MoveSpec { attack = "금강불괴", state = "Vajra", clips = new[] { "Vajra" } },
                 new MoveSpec { attack = "염주", state = "Beads", clips = new[] { "Beads" } },
@@ -232,6 +235,7 @@ namespace AThousandDawns.EditorTools
             // 청죽객: 쾌검 3연격(베기 셋을 0.3초씩) · 죽림섬(순간이동 베기 0.25초씩) · 대나무 베기(내려찍기)
             ["Qingzhu"] = new[]
             {
+                new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },   // 최후: 마지막 자세로 무너진 뒤 먹으로 흩어져요 (InkCorpse.Style.Dissolve)
                 // 고유 동작 (Generic): 내려베기 → 되받아 가로베기 → 찌르기 / 좌우 번갈아 가로베기 4번 / 머리 위에서 내려베기
                 new MoveSpec { attack = "쾌검 3연격", state = "Combo", clips = new[] { "Combo" } },
                 new MoveSpec { attack = "죽림섬", state = "Flash", clips = new[] { "Flash" } },
@@ -240,6 +244,7 @@ namespace AThousandDawns.EditorTools
             // 철권 마웅: 주먹 2연타(고유 동작) · 붕산권(예고부터 치켜들었다 땅 내려치기) · 돌진(달리기)
             ["IronFist"] = new[]
             {
+                new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },   // 최후: 마지막 자세로 무너진 뒤 먹으로 흩어져요 (InkCorpse.Style.Dissolve)
                 new MoveSpec { attack = "주먹 2연타", state = "Jab", clips = new[] { "Punch2" } },
                 new MoveSpec { attack = "붕산권", state = "Quake", clips = new[] { "Quake" }, mode = MoveMode.Play },
                 new MoveSpec { state = "ShoulderReady", clips = new[] { "ShoulderReady" }, mode = MoveMode.Run },
