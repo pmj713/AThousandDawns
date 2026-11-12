@@ -215,9 +215,8 @@ namespace AThousandDawns.Fx
         // 먹 얼룩: 가장자리가 번진 그림을 크게 키워 덮어요. 그림이 없으면 단색
         void DrawInk(Vector2 center, float w, float h)
         {
-            float far = 0f;
-            foreach (var corner in new[] { Vector2.zero, new Vector2(w, 0f), new Vector2(0f, h), new Vector2(w, h) })
-                far = Mathf.Max(far, Vector2.Distance(center, corner));
+            // 가장 먼 화면 귀퉁이까지 (매 프레임 배열을 만들지 않게 바로 계산)
+            float far = Mathf.Sqrt(Mathf.Pow(Mathf.Max(center.x, w - center.x), 2f) + Mathf.Pow(Mathf.Max(center.y, h - center.y), 2f));
             if (_blot == null)
             {
                 GUI.color = new Color(Ink.r, Ink.g, Ink.b, _ink);
@@ -256,15 +255,16 @@ namespace AThousandDawns.Fx
             else { GUI.color = new Color(0.22f, 0.14f, 0.09f); GUI.DrawTexture(rod, Texture2D.whiteTexture); }
         }
 
+        GUIStyle _dawnStyle;
+
         // 첫 회귀: 먹 위로 번진 한지에 글 한 줄, 그 아래 一朝千回가 먹 번지듯 떠올라요
         void DrawDawn(float w, float h)
         {
-            var style = new GUIStyle(GUI.skin.label)
-            {
-                alignment = TextAnchor.MiddleCenter,
-                fontSize = Mathf.RoundToInt(h * 0.04f),
-                normal = { textColor = Ink },
-            };
+            int fontSize = Mathf.RoundToInt(h * 0.04f);
+            if (_dawnStyle == null) // 한 번만 만들어요 (글자 크기만 화면에 맞춰 바꿔요)
+                _dawnStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, normal = { textColor = Ink } };
+            _dawnStyle.fontSize = fontSize;
+            var style = _dawnStyle;
             GUI.color = new Color(1f, 1f, 1f, _line);
             GUI.Label(new Rect(0, h * 0.12f, w, h * 0.1f), "그날 아침으로 돌아왔다", style);
             if (_title != null && _titleAlpha > 0f)

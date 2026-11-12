@@ -183,18 +183,21 @@ namespace AThousandDawns.Art
             {
                 t += dt;
                 float k = Mathf.Clamp01(t / 0.4f);
-                foreach (var lr in new[] { ink, red })
-                {
-                    if (lr == null) continue;
-                    var c = lr.startColor;
-                    lr.startColor = lr.endColor = new Color(c.r, c.g, c.b, 1f - k);
-                    lr.SetPosition(0, Vector3.Lerp(a, b, k * 0.85f)); // 꼬리부터 걷혀요
-                }
+                Fade(ink, a, b, k);
+                Fade(red, a, b, k);
                 if (k < 1f) return true;
                 if (ink != null) Destroy(ink.gameObject);
                 if (red != null) Destroy(red.gameObject);
                 return false;
             });
+        }
+
+        static void Fade(LineRenderer lr, Vector3 a, Vector3 b, float k)
+        {
+            if (lr == null) return;
+            var c = lr.startColor;
+            lr.startColor = lr.endColor = new Color(c.r, c.g, c.b, 1f - k);
+            lr.SetPosition(0, Vector3.Lerp(a, b, k * 0.85f)); // 꼬리부터 걷혀요
         }
 
         void RingCut(Vector3 at, float radius)

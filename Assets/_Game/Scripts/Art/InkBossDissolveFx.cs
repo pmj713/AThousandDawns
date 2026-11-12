@@ -17,6 +17,7 @@ namespace AThousandDawns.Art
         static bool _hooked;
 
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
+        const int MaxLive = 400; // 동시에 움직이는 그림 상한
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Init()
@@ -91,6 +92,7 @@ namespace AThousandDawns.Art
         // 먹물 방울: 경계에서 바깥·위로 튀었다가 떨어지며 옅어져요
         void Drop(Vector3 at, float edge)
         {
+            if (_live.Count > MaxLive) return; // 한꺼번에 많이 터져도 이 이상은 그리지 않아요
             float a = UnityEngine.Random.Range(0f, Mathf.PI * 2f), r = UnityEngine.Random.Range(0.25f, 0.6f);
             var start = at + new Vector3(Mathf.Cos(a) * r, edge, Mathf.Sin(a) * r);
             var sr = Upright(_drop, start, UnityEngine.Random.Range(0.08f, 0.16f));
@@ -115,6 +117,7 @@ namespace AThousandDawns.Art
         // 먹 연기: 경계에서 피어올라 위로 흩날려요
         void Smoke(Vector3 at, float edge)
         {
+            if (_live.Count > MaxLive) return; // 한꺼번에 많이 터져도 이 이상은 그리지 않아요
             Vector2 r = UnityEngine.Random.insideUnitCircle * 0.5f;
             var start = at + new Vector3(r.x, Mathf.Max(0f, edge - 0.3f), r.y);
             var sr = Upright(_wisp, start, UnityEngine.Random.Range(0.5f, 0.85f), true);

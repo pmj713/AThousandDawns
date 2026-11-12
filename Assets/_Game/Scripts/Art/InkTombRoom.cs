@@ -20,6 +20,7 @@ namespace AThousandDawns.Art
         static bool _loaded;
 
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
+        const int MaxLive = 400; // 동시에 움직이는 그림 상한
         readonly List<Rect> _pools = new List<Rect>(); // 혈지 자리 (x·z)
         Transform _room; // 방이 바뀌면 통째로 지워요
 
@@ -184,6 +185,7 @@ namespace AThousandDawns.Art
 
         void Rise(Sprite sprite, Vector3 at, float width, float lift, float life, Color color)
         {
+            if (_live.Count > MaxLive) return; // 한꺼번에 많이 터져도 이 이상은 그리지 않아요
             var sr = Upright(sprite, at, width, 6, true, _room);
             if (sr == null) return;
             var pivot = sr.transform.parent;
@@ -205,6 +207,7 @@ namespace AThousandDawns.Art
 
         void Ring(Sprite sprite, Vector3 at, float size, float life, Color color, float height, Transform parent, float spin = 0f, float from = 0.4f)
         {
+            if (_live.Count > MaxLive) return; // 한꺼번에 많이 터져도 이 이상은 그리지 않아요
             var sr = Flat(sprite, at, size, UnityEngine.Random.Range(0f, 360f), height, 4, parent);
             if (sr == null) return;
             Vector3 unit = sr.transform.localScale;

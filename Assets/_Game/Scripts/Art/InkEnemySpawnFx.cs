@@ -17,7 +17,10 @@ namespace AThousandDawns.Art
 
         readonly HashSet<EnemyBrain> _seen = new HashSet<EnemyBrain>();
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
+        const int MaxLive = 400; // 동시에 움직이는 그림 상한
         float _scan;
+        EnemyDirector _director;
+        float _findDirector;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Init()
@@ -39,8 +42,10 @@ namespace AThousandDawns.Art
             if (_scan <= 0f)
             {
                 _scan = 0.05f; // 등장 동작 시작과 거의 같이
-                _seen.RemoveWhere(e => e == null);
-                foreach (var e in FindObjectsByType<EnemyBrain>(FindObjectsSortMode.None))
+                if (_director == null && (_findDirector -= 0.05f) <= 0f) { _findDirector = 1f; _director = FindAnyObjectByType<EnemyDirector>(); } // 전체 검색은 1초에 한 번만
+                var list = _director != null ? _director.Enemies : null;
+                if (list != null && _seen.Count > 64) _seen.RemoveWhere(e => e == null);
+                if (list != null) foreach (var e in list)
                 {
                     if (e == null || !_seen.Add(e) || e.IsDead || e.IsHidden) continue;
                     switch (e.Kind)
@@ -74,6 +79,7 @@ namespace AThousandDawns.Art
 
         void Chip(Vector3 at)
         {
+            if (_live.Count > MaxLive) return; // 한꺼번에 많이 터져도 이 이상은 그리지 않아요
             var sr = Upright(_rock, at + Vector3.up * 0.1f, UnityEngine.Random.Range(0.1f, 0.18f), false);
             if (sr == null) return;
             sr.color = new Color(0.55f, 0.45f, 0.35f);
@@ -158,6 +164,7 @@ namespace AThousandDawns.Art
 
         void Rise(Vector3 at)
         {
+            if (_live.Count > MaxLive) return; // 한꺼번에 많이 터져도 이 이상은 그리지 않아요
             var sr = Upright(_wisp, at, UnityEngine.Random.Range(0.4f, 0.65f), true);
             if (sr == null) return;
             var pivot = sr.transform.parent;
@@ -181,6 +188,7 @@ namespace AThousandDawns.Art
 
         void Puff(Vector3 at, float size, float life, Color color)
         {
+            if (_live.Count > MaxLive) return; // 한꺼번에 많이 터져도 이 이상은 그리지 않아요
             var sr = Flat(_splash, at, size, 0.05f);
             if (sr == null) return;
             Vector3 unit = sr.transform.localScale;

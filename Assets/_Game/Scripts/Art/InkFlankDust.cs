@@ -1,24 +1,13 @@
 using System.Collections.Generic;
-using System.Reflection;
 using AThousandDawns.Enemies;
 using UnityEngine;
 
 namespace AThousandDawns.Art
 {
     // 엄폐물 너머 우회 (EnemyBrain.IsFlanking): 플레이어를 못 보고 돌아 들어오는 적의 발밑에 작은 먹 먼지가 튀어요.
-    // 신호가 main에 들어오기 전에도 컴파일되게 속성은 이름으로 찾아요. 그림: BloodBuddhaFx/Splash (먹빛으로 물들여요).
+    // 그림: BloodBuddhaFx/Splash (먹빛으로 물들여요).
     public class InkFlankDust : MonoBehaviour
     {
-        static readonly System.Func<EnemyBrain, bool> IsFlanking = Find();
-
-        static System.Func<EnemyBrain, bool> Find() // 속성이든 필드든
-        {
-            var prop = typeof(EnemyBrain).GetProperty("IsFlanking", BindingFlags.Public | BindingFlags.Instance);
-            if (prop != null && prop.PropertyType == typeof(bool)) return e => (bool)prop.GetValue(e);
-            var field = typeof(EnemyBrain).GetField("IsFlanking", BindingFlags.Public | BindingFlags.Instance);
-            if (field != null && field.FieldType == typeof(bool)) return e => (bool)field.GetValue(e);
-            return null;
-        }
         static Sprite _puff;
 
         readonly Dictionary<EnemyBrain, (Vector3 last, float timer)> _seen = new Dictionary<EnemyBrain, (Vector3, float)>();
@@ -30,7 +19,6 @@ namespace AThousandDawns.Art
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Init()
         {
-            if (IsFlanking == null) return;
             _puff = Resources.Load<Sprite>("BloodBuddhaFx/Splash");
             if (_puff == null) return;
             var go = new GameObject("Ink Flank Dust");
@@ -51,7 +39,7 @@ namespace AThousandDawns.Art
                 var (last, timer) = _seen.TryGetValue(e, out var s) ? s : (p, 0f);
                 timer -= dt;
                 bool moving = (p - last).sqrMagnitude > 0.0004f;
-                if (timer <= 0f && moving && IsFlanking(e))
+                if (timer <= 0f && moving && e.IsFlanking)
                 {
                     timer = 0.22f;
                     Puff(p - (p - last).normalized * 0.25f);

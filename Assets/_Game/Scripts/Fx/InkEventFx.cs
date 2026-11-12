@@ -33,6 +33,19 @@ namespace AThousandDawns.Fx
         static void OnRelic(string itemId, bool picked) =>
             Play(picked ? RelicStamp : RelicWipe, "relic_book", AThousandDawns.Items.ItemIcons.Get(itemId));
 
+        // 그림마다 같은 자리에 같은 모양이 나오게, 정해진 씨앗에서 같은 순서로 나오는 난수 (System.Random을 매 프레임 만들지 않게)
+        sealed class SeqRandom
+        {
+            uint _s;
+            public void Reset(uint seed) => _s = seed * 747796405u + 2891336453u;
+            public double NextDouble()
+            {
+                _s ^= _s << 13; _s ^= _s >> 17; _s ^= _s << 5;
+                return (_s & 0xFFFFFF) / (double)0x1000000;
+            }
+        }
+        static readonly SeqRandom _rng = new SeqRandom();
+
         public static void Play(string kind, string eventId, Texture2D icon = null)
         {
             _kind = kind;
@@ -63,7 +76,8 @@ namespace AThousandDawns.Fx
             var oldMatrix = _matrix = GUI.matrix;
             GUI.BeginGroup(art); // 그림 밖으로는 안 그려요
             var r = new Rect(0f, 0f, art.width, art.height);
-            var rand = new System.Random(_seed);
+            var rand = _rng; // 같은 순서의 난수를 매 프레임 다시 (새로 만들지 않고 처음으로 되돌려요)
+            rand.Reset((uint)_seed);
             switch (_kind)
             {
                 case BloodSeep: Seep(r, t, rand); break;
@@ -78,7 +92,7 @@ namespace AThousandDawns.Fx
         }
 
         // ── 피의 연못: 핏자국이 번지고 핏줄이 뻗어요
-        static void Seep(Rect r, float t, System.Random rand)
+        static void Seep(Rect r, float t, SeqRandom rand)
         {
             var c = new Vector2(r.width * 0.5f, r.height * 0.66f);
             float grow = Smooth(t / 2.2f);
@@ -123,7 +137,7 @@ namespace AThousandDawns.Fx
         }
 
         // ── 마교 제단 (바친다): 기물이 핏빛 불길에 녹아내려요
-        static void Melt(Rect r, float t, System.Random rand)
+        static void Melt(Rect r, float t, SeqRandom rand)
         {
             var c = new Vector2(r.width * 0.5f, r.height * 0.5f);
             float size = r.height * 0.42f, baseY = c.y + size * 0.5f;
@@ -222,7 +236,7 @@ namespace AThousandDawns.Fx
         }
 
         // ── 마교 제단 (부순다): 먹 금이 가고 돌 조각이 튀어 떨어져요
-        static void Break(Rect r, float t, System.Random rand)
+        static void Break(Rect r, float t, SeqRandom rand)
         {
             var c = new Vector2(r.width * 0.5f, r.height * 0.55f);
             if (_stroke != null) // 금: 가운데서 지그재그로 뻗고 남아요

@@ -34,6 +34,7 @@ namespace AThousandDawns.Art
         static readonly Color Qi = new Color(1f, 0.88f, 0.55f);           // 내력 (금빛)
 
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
+        const int MaxLive = 400; // 동시에 움직이는 그림 상한
         readonly HashSet<GhostFire> _dressed = new HashSet<GhostFire>();
         HeavenlyDemonBrain _boss;
         float _scan, _bossScan;
@@ -98,11 +99,11 @@ namespace AThousandDawns.Art
         {
             float dt = Time.deltaTime;
             _scan -= dt;
-            if (_scan <= 0f) { _scan = 0.1f; DressMiasmaPools(); DressWaves(); }
+            if (_scan <= 0f && _boss != null) { _scan = 0.1f; DressMiasmaPools(); } // 천마가 있을 때만 (십자 검기는 Cross 신호로 받아요)
             _bossScan -= dt;
             if (_boss == null && _bossScan <= 0f)
             {
-                _bossScan = 0.5f;
+                _bossScan = 1f;
                 _boss = FindAnyObjectByType<HeavenlyDemonBrain>();
             }
             TickPull(dt);
@@ -124,6 +125,7 @@ namespace AThousandDawns.Art
 
         void Crescent(Vector3 at, Vector3 dir, float width, float life, float delay)
         {
+            if (_live.Count > MaxLive) return; // 한꺼번에 많이 터져도 이 이상은 그리지 않아요
             var sr = Flat(_crescent, at, width, CrescentYaw(dir), 0.9f, 7); // 활 등이 앞으로
             if (sr == null) return;
             if (!_ownCrescent) sr.color = Dark;
@@ -148,14 +150,6 @@ namespace AThousandDawns.Art
 
         // ── 십자 검기: "천마 검기" 화살에 검은 초승달을 입혀요
         readonly HashSet<Transform> _waves = new HashSet<Transform>();
-
-        void DressWaves()
-        {
-            _waves.RemoveWhere(w => w == null);
-            foreach (var arrow in FindObjectsByType<Arrow>(FindObjectsSortMode.None))
-                if (arrow.gameObject.name == "천마 검기" && !_waves.Contains(arrow.transform))
-                    Wave(arrow.transform, Flat(arrow.transform.forward));
-        }
 
         void Wave(Transform wave, Vector3 dir)
         {
@@ -290,12 +284,8 @@ namespace AThousandDawns.Art
                     tip = root + dir * reach;
                 }
                 hand.transform.position = tip;
-                foreach (var lr in new[] { armInk, armRed })
-                {
-                    if (lr == null) continue;
-                    lr.SetPosition(0, root);
-                    lr.SetPosition(1, tip - dir * 0.6f);
-                }
+                SetArm(armInk, root, tip - dir * 0.6f);
+                SetArm(armRed, root, tip - dir * 0.6f);
                 float end = outTime + hold + back;
                 float a = t > end ? 1f - (t - end) / 0.15f : 1f;
                 hand.color = new Color(hand.color.r, hand.color.g, hand.color.b, a);
@@ -308,6 +298,13 @@ namespace AThousandDawns.Art
                 if (_graspHand == hand.transform) _graspTarget = null;
                 return false;
             });
+        }
+
+        static void SetArm(LineRenderer lr, Vector3 a, Vector3 b)
+        {
+            if (lr == null) return;
+            lr.SetPosition(0, a);
+            lr.SetPosition(1, b);
         }
 
         // ── 천마군림 환영: 그림자 검객이 짙어지다가 베고 흩어져요
@@ -488,6 +485,7 @@ namespace AThousandDawns.Art
 
         void RisingWisp(Vector3 at, float width, float life)
         {
+            if (_live.Count > MaxLive) return; // 한꺼번에 많이 터져도 이 이상은 그리지 않아요
             var sr = Upright(_wisp, at, width, 6, bottom: true);
             if (sr == null) return;
             var pivot = sr.transform.parent;
@@ -529,13 +527,8 @@ namespace AThousandDawns.Art
             if (on) _fogRadius = Mathf.MoveTowards(_fogRadius, target, dt * Mathf.Max(1.5f, (_fogRadius - target) * 2f));
             float half = _fogRadius / MiasmaHole; // 텍스처 구멍 반지름(MiasmaHole)이 안전 반경에 맞게
             float tt = Time.time;
-            foreach (var (sr, spin, phase) in new[] { (_fogA, 6f, 0f), (_fogB, -9f, 1.7f) })
-            {
-                sr.transform.position = new Vector3(c.x, sr.transform.position.y, c.z);
-                sr.transform.localScale = Vector3.one * (half * 2f / Mathf.Max(0.01f, sr.sprite.bounds.size.x)) * (1f + 0.012f * Mathf.Sin(tt * 1.3f + phase));
-                sr.transform.Rotate(0f, 0f, spin * dt, Space.Self);
-                sr.color = new Color(1f, 1f, 1f, (0.72f + 0.1f * Mathf.Sin(tt * 0.9f + phase)) * _fogAlpha);
-            }
+            FogLayer(_fogA, c, half, 6f, 0f, tt, dt);
+            FogLayer(_fogB, c, half, -9f, 1.7f, tt, dt);
             if (!on) return;
             _wispSpawn -= dt; // 경계에서 마기 연기가 피어올라요
             while (_wispSpawn <= 0f)
@@ -545,6 +538,15 @@ namespace AThousandDawns.Art
                 float r = _fogRadius + UnityEngine.Random.Range(0.1f, 1.6f);
                 RisingWisp(c + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * r, UnityEngine.Random.Range(0.6f, 1.2f), UnityEngine.Random.Range(0.9f, 1.4f));
             }
+        }
+
+        void FogLayer(SpriteRenderer sr, Vector3 c, float half, float spin, float phase, float tt, float dt)
+        {
+            if (sr == null) return;
+            sr.transform.position = new Vector3(c.x, sr.transform.position.y, c.z);
+            sr.transform.localScale = Vector3.one * (half * 2f / Mathf.Max(0.01f, sr.sprite.bounds.size.x)) * (1f + 0.012f * Mathf.Sin(tt * 1.3f + phase));
+            sr.transform.Rotate(0f, 0f, spin * dt, Space.Self);
+            sr.color = new Color(1f, 1f, 1f, (0.72f + 0.1f * Mathf.Sin(tt * 0.9f + phase)) * _fogAlpha);
         }
 
         const float MiasmaHole = 0.3f; // 안개 텍스처에서 구멍 반지름 (텍스처 반 폭 = 1)
@@ -628,6 +630,7 @@ namespace AThousandDawns.Art
 
         void Mist(Vector3 at, float size)
         {
+            if (_live.Count > MaxLive) return; // 한꺼번에 많이 터져도 이 이상은 그리지 않아요
             var sr = Flat(_splash, at, size, UnityEngine.Random.Range(0f, 360f), 0.04f, 4);
             if (sr == null) return;
             Vector3 unit = sr.transform.localScale;

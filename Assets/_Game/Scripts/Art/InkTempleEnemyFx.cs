@@ -22,6 +22,7 @@ namespace AThousandDawns.Art
         static bool _loaded;
 
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
+        const int MaxLive = 400; // 동시에 움직이는 그림 상한
         readonly Dictionary<EnemyBrain, SpriteRenderer> _wards = new Dictionary<EnemyBrain, SpriteRenderer>();
         readonly HashSet<GhostFire> _dressed = new HashSet<GhostFire>();
         EnemyDirector _director;
@@ -232,6 +233,7 @@ namespace AThousandDawns.Art
 
         void Chip(Vector3 at)
         {
+            if (_live.Count > MaxLive) return; // 한꺼번에 많이 터져도 이 이상은 그리지 않아요
             var sr = Upright(_rock, at, UnityEngine.Random.Range(0.07f, 0.13f), 7);
             if (sr == null) return;
             sr.color = new Color(0.6f, 0.58f, 0.54f);

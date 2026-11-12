@@ -65,7 +65,8 @@ namespace AThousandDawns.Prototype
             }
 
             float keyH = fontSize * 1.5f;
-            var parts = new List<(bool isKey, string part, float width)>();
+            var parts = Parts; // 매 프레임 새로 만들지 않고 비워서 다시 써요
+            parts.Clear();
             float total = 0f;
             foreach (var (isKey, part) in Split(text))
             {
@@ -80,11 +81,24 @@ namespace AThousandDawns.Prototype
                 if (isKey) DrawKey(new Rect(x, cy - keyH * 0.5f, width, keyH), ParseBind(part), fontSize);
                 else
                 {
-                    var leftAligned = new GUIStyle(textStyle) { alignment = TextAnchor.MiddleLeft };
-                    GUI.Label(new Rect(x, rect.y, width + 2f, rect.height), part, leftAligned);
+                    GUI.Label(new Rect(x, rect.y, width + 2f, rect.height), part, LeftAligned(textStyle));
                 }
                 x += width;
             }
+        }
+
+        static readonly List<(bool isKey, string part, float width)> Parts = new List<(bool, string, float)>();
+        static readonly Dictionary<GUIStyle, GUIStyle> LeftStyles = new Dictionary<GUIStyle, GUIStyle>();
+
+        // 글 조각용 왼쪽 정렬 스타일 (원래 스타일마다 한 번만 만들어요)
+        static GUIStyle LeftAligned(GUIStyle from)
+        {
+            if (!LeftStyles.TryGetValue(from, out var s))
+            {
+                s = new GUIStyle(from) { alignment = TextAnchor.MiddleLeft };
+                LeftStyles[from] = s;
+            }
+            return s;
         }
 
         static bool IsMouse(Bind bind, out bool right)

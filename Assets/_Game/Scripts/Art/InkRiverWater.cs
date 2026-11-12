@@ -21,6 +21,7 @@ namespace AThousandDawns.Art
         static bool _loaded;
 
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
+        const int MaxLive = 400; // 동시에 움직이는 그림 상한
         RoomRun _run;
         PlayerController _player;
         float _footTimer;
@@ -173,6 +174,7 @@ namespace AThousandDawns.Art
 
         void Ring(Vector3 at, float size, float life, float alpha)
         {
+            if (_live.Count > MaxLive) return; // 한꺼번에 많이 터져도 이 이상은 그리지 않아요
             var sr = Flat(_ring, at, size, UnityEngine.Random.Range(0f, 360f), 0.027f, 4);
             if (sr == null) return;
             Vector3 unit = sr.transform.localScale;
@@ -192,6 +194,7 @@ namespace AThousandDawns.Art
 
         void Splash(Vector3 at)
         {
+            if (_live.Count > MaxLive) return; // 한꺼번에 많이 터져도 이 이상은 그리지 않아요
             var sr = Upright(_splash, at + new Vector3(UnityEngine.Random.Range(-0.2f, 0.2f), 0f, UnityEngine.Random.Range(-0.2f, 0.2f)), 0.55f, 6, bottom: true);
             if (sr == null) return;
             Vector3 unit = sr.transform.localScale;

@@ -133,6 +133,8 @@ namespace AThousandDawns.Art
         SpriteRenderer _halo;
         readonly Dictionary<Transform, Vector3> _incoming = new Dictionary<Transform, Vector3>();
         PlayerController _haloPlayer;
+        readonly HashSet<Transform> _seen = new HashSet<Transform>(); // 매 프레임 새로 만들지 않게
+        readonly List<Transform> _gone = new List<Transform>();
 
         void TickHalo(float dt)
         {
@@ -147,10 +149,12 @@ namespace AThousandDawns.Art
                 _halo.transform.Rotate(0f, 0f, -360f * dt, Space.Self);
                 _halo.color = new Color(1f, 0.92f, 0.65f, 0.55f + 0.2f * Mathf.Sin(Time.time * 12f));
                 // 투사체를 지켜보다가 고리 가까이서 사라지면 막힌 거예요
-                var seen = new HashSet<Transform>();
+                var seen = _seen;
+                seen.Clear();
                 foreach (var a in FindObjectsByType<AThousandDawns.Enemies.Arrow>(FindObjectsSortMode.None)) { seen.Add(a.transform); _incoming[a.transform] = a.transform.position; }
                 foreach (var b in FindObjectsByType<AThousandDawns.Enemies.BeadThrow>(FindObjectsSortMode.None)) { seen.Add(b.transform); _incoming[b.transform] = b.transform.position; }
-                var gone = new List<Transform>();
+                var gone = _gone;
+                gone.Clear();
                 foreach (var pair in _incoming)
                 {
                     if (pair.Key != null && seen.Contains(pair.Key)) continue;
