@@ -207,8 +207,8 @@ namespace AThousandDawns.Art
                 var source = fire.GetComponent<Renderer>();
                 if (source != null) source.enabled = false;
                 float radius = fire.transform.localScale.x * 0.5f;
-                var pool = Flat(_splash, fire.transform.position, radius * 2.4f, UnityEngine.Random.Range(0f, 360f), 0.035f, 4);
-                var ring = Flat(_ring, fire.transform.position, radius * 2.2f, UnityEngine.Random.Range(0f, 360f), 0.04f, 4);
+                var pool = Flat(_splash, fire.transform.position, radius * 2.4f, UnityEngine.Random.Range(0f, 360f), 0.022f, 4);
+                var ring = Flat(_ring, fire.transform.position, radius * 2.2f, UnityEngine.Random.Range(0f, 360f), 0.024f, 4);
                 var wisps = new List<(SpriteRenderer sr, Vector3 at, float seed)>();
                 for (int i = 0; i < 4; i++)
                 {
@@ -522,8 +522,8 @@ namespace AThousandDawns.Art
             Vector3 c = _boss != null ? _boss.ZoneCenter : Vector3.zero;
             if (_fogA == null)
             {
-                _fogA = Flat(_miasmaA, c, 1f, 0f, 0.05f, 3);
-                _fogB = Flat(_miasmaB, c, 1f, 0f, 0.07f, 3);
+                _fogA = Flat(_miasmaA, c, 1f, 0f, 0.022f, 3);
+                _fogB = Flat(_miasmaB, c, 1f, 0f, 0.023f, 3);
                 _fogRadius = on ? target + 4f : 0f; // 가장자리에서부터 차올라요
             }
             if (on) _fogRadius = Mathf.MoveTowards(_fogRadius, target, dt * Mathf.Max(1.5f, (_fogRadius - target) * 2f));

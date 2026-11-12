@@ -74,7 +74,7 @@ namespace AThousandDawns.Art
 
         void Pool(Vector3 center, Vector2 size)
         {
-            var sr = Sheet(_pool, center, new Vector2(size.x * 0.9f, size.y * 0.86f), 0.03f, 2, _room); // 메인 아트 가장자리 돌(Feature_BloodPoolRim) 안쪽에
+            var sr = Sheet(_pool, center, new Vector2(size.x * 0.9f, size.y * 0.86f), 0.021f, 2, _room); // 메인 아트 가장자리 돌(Feature_BloodPoolRim) 안쪽에
             if (sr == null) return;
             Vector3 unit = sr.transform.localScale;
             float timer = 0.5f, seed = UnityEngine.Random.Range(0f, 10f);
@@ -89,7 +89,7 @@ namespace AThousandDawns.Art
                 if (timer > 0f) return true;
                 timer = UnityEngine.Random.Range(1f, 2f);
                 var at = center + new Vector3(UnityEngine.Random.Range(-0.35f, 0.35f) * size.x, 0f, UnityEngine.Random.Range(-0.3f, 0.3f) * size.y);
-                Ring(_ripple, at, UnityEngine.Random.Range(0.7f, 1.2f), 1.4f, new Color(0.55f, 0.06f, 0.06f, 0.6f), 0.05f, room);
+                Ring(_ripple, at, UnityEngine.Random.Range(0.7f, 1.2f), 1.4f, new Color(0.55f, 0.06f, 0.06f, 0.6f), 0.024f, room);
                 return true;
             });
         }
@@ -129,7 +129,7 @@ namespace AThousandDawns.Art
                     return false;
                 });
             }
-            Ring(_ripple, body.position, 1.6f, 0.7f, new Color(0.7f, 0.08f, 0.07f, 0.8f), 0.06f, _room);
+            Ring(_ripple, body.position, 1.6f, 0.7f, new Color(0.7f, 0.08f, 0.07f, 0.8f), 0.027f, _room);
             // 혈지 위에 있는 동안 몸 둘레로 핏빛 기운이 감돌아요
             float spawn = 0f;
             _live.Add(dt =>

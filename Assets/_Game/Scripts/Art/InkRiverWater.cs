@@ -68,7 +68,7 @@ namespace AThousandDawns.Art
         // ── 흐르는 물: 물판 + 물살 방향으로 흐르는 먹 물결 획
         void Flowing(RoomRun.RoomFeature f, bool bamboo)
         {
-            var body = Sheet(bamboo && _streamSheet != null ? _streamSheet : _sheet, f.Center, f.Size * 1.08f, 0.03f, 2); // 죽림 개울은 맑은 연둣빛
+            var body = Sheet(bamboo && _streamSheet != null ? _streamSheet : _sheet, f.Center, f.Size * 1.08f, 0.021f, 2); // 죽림 개울은 맑은 연둣빛
             if (body != null) body.color = new Color(1f, 1f, 1f, 0.92f);
             Vector3 dir = f.Current.normalized;
             float speed = f.Current.magnitude;
@@ -81,7 +81,7 @@ namespace AThousandDawns.Art
 
         void Stroke(Vector3 center, Vector2 half, Vector3 dir, float speed, float startPhase, Sprite sprite)
         {
-            var sr = Flat(sprite, center, UnityEngine.Random.Range(0.9f, 1.6f), Yaw(dir), 0.05f, 3);
+            var sr = Flat(sprite, center, UnityEngine.Random.Range(0.9f, 1.6f), Yaw(dir), 0.024f, 3);
             if (sr == null) return;
             float life = 0f, total = 0f;
             Vector3 pos = Vector3.zero;
@@ -102,7 +102,7 @@ namespace AThousandDawns.Art
                 pos += dir * drift * dt;
                 Vector3 local = pos - center;
                 if (Mathf.Abs(local.x) > half.x || Mathf.Abs(local.z) > half.y) Respawn(0f); // 물판 끝에 닿으면 다른 자리에서
-                sr.transform.position = new Vector3(pos.x, 0.05f, pos.z);
+                sr.transform.position = new Vector3(pos.x, 0.024f, pos.z);
                 float k = life / total;
                 sr.color = new Color(1f, 1f, 1f, Mathf.Sin(k * Mathf.PI) * 0.85f);
                 return true;
@@ -112,7 +112,7 @@ namespace AThousandDawns.Art
         // 죽림 개울: 댓잎이 물살 따라 빙글 돌며 떠내려가요
         void Leaf(Vector3 center, Vector2 half, Vector3 dir, float speed, float startPhase)
         {
-            var sr = Flat(_leaf, center, UnityEngine.Random.Range(0.3f, 0.45f), UnityEngine.Random.Range(0f, 360f), 0.06f, 4);
+            var sr = Flat(_leaf, center, UnityEngine.Random.Range(0.3f, 0.45f), UnityEngine.Random.Range(0f, 360f), 0.026f, 4);
             if (sr == null) return;
             Vector3 side = new Vector3(dir.z, 0f, -dir.x);
             float along = Mathf.Abs(Vector3.Dot(new Vector3(half.x, 0f, half.y), dir)), across = Mathf.Abs(Vector3.Dot(new Vector3(half.x, 0f, half.y), side));
@@ -125,7 +125,7 @@ namespace AThousandDawns.Art
                 if (s > along) { s = -along; lane = UnityEngine.Random.Range(-0.6f, 0.6f) * across; }
                 float wobble = Mathf.Sin(Time.time * 1.7f + seed) * 0.12f;
                 var p = center + dir * s + side * (lane + wobble);
-                sr.transform.position = new Vector3(p.x, 0.06f, p.z);
+                sr.transform.position = new Vector3(p.x, 0.026f, p.z);
                 sr.transform.Rotate(0f, 0f, spin * dt, Space.Self);
                 float edge = Mathf.Clamp01((along - Mathf.Abs(s)) / 0.8f); // 끝에서 나타나고 사라져요
                 sr.color = new Color(1f, 1f, 1f, edge);
@@ -136,7 +136,7 @@ namespace AThousandDawns.Art
         // ── 고인 물: 둥근 웅덩이 + 가끔 번지는 물결 고리
         void Still(RoomRun.RoomFeature f)
         {
-            var body = Sheet(_pond != null ? _pond : _sheet, f.Center, f.Size * 1.15f, 0.03f, 2);
+            var body = Sheet(_pond != null ? _pond : _sheet, f.Center, f.Size * 1.15f, 0.021f, 2);
             if (body != null) body.color = new Color(1f, 1f, 1f, 0.95f);
             Vector2 half = f.Size * 0.5f;
             float timer = UnityEngine.Random.Range(0f, 1.5f);
@@ -173,7 +173,7 @@ namespace AThousandDawns.Art
 
         void Ring(Vector3 at, float size, float life, float alpha)
         {
-            var sr = Flat(_ring, at, size, UnityEngine.Random.Range(0f, 360f), 0.06f, 4);
+            var sr = Flat(_ring, at, size, UnityEngine.Random.Range(0f, 360f), 0.027f, 4);
             if (sr == null) return;
             Vector3 unit = sr.transform.localScale;
             float t = 0f;

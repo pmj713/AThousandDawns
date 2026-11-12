@@ -78,7 +78,7 @@ namespace AThousandDawns.Art
         {
             var go = new GameObject("Flank Dust");
             go.transform.SetParent(transform, false);
-            go.transform.position = new Vector3(at.x, 0.05f, at.z);
+            go.transform.position = new Vector3(at.x, 0.026f, at.z);
             go.transform.rotation = Quaternion.Euler(90f, Random.Range(0f, 360f), 0f);
             var unit = Vector3.one * (0.55f / Mathf.Max(0.01f, _puff.bounds.size.x));
             go.transform.localScale = unit;
