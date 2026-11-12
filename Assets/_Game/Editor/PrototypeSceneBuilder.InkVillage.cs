@@ -43,6 +43,7 @@ namespace AThousandDawns.EditorTools
 
             BuildVillageInn(deco, c + new Vector3(-hx + 1.5f, 0f, 0f), stoneMat, woodMat, plaster, roofX, roofZ);
             BuildPlumTree(deco, c + RoomRun.TreeOffset + new Vector3(0f, 0f, 1f));
+            BuildRegressionStele(deco, c + RoomRun.TreeOffset + new Vector3(-2.2f, 0f, 2.4f), -18f, stoneMat, dark); // 회귀 비석: 매화나무 왼쪽 뒤, 마을 가운데 쪽으로 살짝 돌려요 (PrototypeSceneBuilder.InkStele.cs)
             BuildVillageCave(deco, c + RoomRun.CaveOffset, stoneMat, dark);
             BuildVillageShrine(deco, c + RoomRun.ShrineOffset + new Vector3(-1f, 0f, -1f), stoneMat, woodMat, plaster, roofX);
             BuildVillageGate(deco, c + new Vector3(VillageExit.x, 0f, -hz - 0.25f), stoneMat, woodMat, roofX);
