@@ -415,8 +415,11 @@ namespace AThousandDawns.Art
             foreach (var r in model.GetComponentsInChildren<Renderer>(true))
                 if (!r.name.Contains("_Prop_Shield") || !_shieldHidden) r.enabled = true;
             bool beast = _brain.Kind == EnemyKind.Boar || _brain.Kind == EnemyKind.Hound || _brain.Kind == EnemyKind.Snake;
+            // 무거운 갑옷·술사는 앞으로 고꾸라져요, 혈폭자는 부풀어 터지고, 수귀는 물 밑으로 꺼져요
+            bool forward = _brain.Kind == EnemyKind.DemonGuard || _brain.Kind == EnemyKind.BloodShaman || _brain.Kind == EnemyKind.Arhat;
+            var style = _brain.Kind == EnemyKind.BloodBomber ? InkCorpse.Style.Swell : _brain.Kind == EnemyKind.WaterGhost ? InkCorpse.Style.Sink : InkCorpse.Style.Fall;
             corpse.AddComponent<InkCorpse>().Init(_animator, beast ? Vector3.forward : Vector3.right,
-                _brain.Kind == EnemyKind.Snake ? 160f : beast ? 88f : -85f);
+                _brain.Kind == EnemyKind.Snake ? 160f : beast ? 88f : forward ? 80f : -85f, style);
             enabled = false;
         }
 
@@ -426,33 +429,59 @@ namespace AThousandDawns.Art
         }
     }
 
-    // 쓰러진 적: 발을 축으로 넘어가(점점 빨리) 살짝 튕긴 뒤, 잠시 누워 있다가 땅속으로 가라앉아 사라져요
+    // 쓰러진 적: 발을 축으로 넘어가(점점 빨리) 살짝 튕긴 뒤, 잠시 누워 있다가 땅속으로 가라앉아 사라져요.
+    //   Swell(혈폭자): 넘어가지 않고 1.2초 동안 부들부들 떨며 부풀어 오르다가 터지는 순간 사라져요 (터짐은 게임·이펙트)
+    //   Sink(수귀): 선 채로 물 밑으로 꺼지듯 빠르게 가라앉아요
     public class InkCorpse : MonoBehaviour
     {
+        public enum Style { Fall, Swell, Sink }
         const float FallTime = 0.4f, LieTime = 1.2f, SinkTime = 1.4f, SinkDepth = 0.8f;
+        const float SwellScale = 1.4f, GhostSinkTime = 0.7f, GhostSinkDepth = 2.4f;
+        float _swellTime = 1.2f;   // 혈폭자 터지기까지 (bloodbomber.blast_fuse)
         Animator _animator;
         Vector3 _axis;
         float _angle, _t;
         Quaternion _start;
-        Vector3 _startPos;
+        Vector3 _startPos, _startScale;
+        Style _style;
 
-        public void Init(Animator animator, Vector3 localAxis, float angle)
+        public void Init(Animator animator, Vector3 localAxis, float angle, Style style = Style.Fall)
         {
             _animator = animator;
             _axis = localAxis;
             _angle = angle;
+            _style = style;
             _start = transform.rotation;
             _startPos = transform.position;
+            _startScale = transform.localScale;
+            if (style == Style.Swell) _swellTime = Mathf.Max(0.1f, AThousandDawns.Core.GameConfig.Get("bloodbomber.blast_fuse", 1.2f));
             if (_animator != null)
             {
                 _animator.SetFloat(Animator.StringToHash("Speed"), 0f);
-                _animator.speed = 0.3f;                      // 넘어가는 동안 굳어 가요
+                _animator.speed = style == Style.Fall ? 0.3f : 0f;   // 넘어가는 동안 굳어 가요
             }
         }
 
         void Update()
         {
             _t += Time.deltaTime;
+            if (_style == Style.Swell)
+            {
+                float k = Mathf.Clamp01(_t / _swellTime);
+                float shake = 0.02f + 0.06f * k;                                 // 터질 때가 가까울수록 크게 떨어요
+                transform.localScale = _startScale * (1f + (SwellScale - 1f) * k * k) + Vector3.one * Mathf.Sin(_t * 60f) * shake * 0.3f;
+                transform.position = _startPos + new Vector3(Mathf.Sin(_t * 71f), 0f, Mathf.Cos(_t * 53f)) * shake;
+                if (k >= 1f) Destroy(gameObject);
+                return;
+            }
+            if (_style == Style.Sink)
+            {
+                float s = Mathf.Clamp01(_t / GhostSinkTime);
+                transform.position = _startPos + Vector3.down * GhostSinkDepth * s * s;
+                transform.rotation = _start * Quaternion.AngleAxis(12f * s, Vector3.right);   // 뒤로 살짝 젖혀지며
+                if (s >= 1f) Destroy(gameObject);
+                return;
+            }
             float fall = Mathf.Clamp01(_t / FallTime);
             float a = fall * fall;                          // 점점 빨리 넘어가요
             if (fall >= 1f)
