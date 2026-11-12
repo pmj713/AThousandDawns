@@ -11,11 +11,15 @@ namespace AThousandDawns.EditorTools
     //  - 무너진 관 (길이 2 · X, 폭 1, 높이 1): 검은 돌관 앞벽이 깨져 넘어가고, 뚜껑은 뒤로 밀려나 비스듬히 걸쳤고, 안팎에 뼈
     //  - 마기 기둥 (1 × 1, 높이 2.6): 계단 받침 위 가늘어지는 검은 오벨리스크, 네 면에 붉은 마문 새김, 뾰족한 꼭대기
     //  - 혈지 가장자리 (3.5 · X × 2.5 · Z, 바닥판): 둘레의 깨진 검은 돌과 뼈만. 가운데 핏물 표면은 아트 2가 그려요
+    // 죽림 방 구성 모델
+    //  - 빽빽한 대숲 둘 (지름 0.7, 높이 3): 흙 둔덕 위 대나무 서너 그루 덤불, 죽순과 마른 잎
+    //  - 쓰러진 대나무 (길이 3.5 · X, 폭 0.4, 높이 0.5): 둥치 셋이 엇갈려 쓰러졌고, 한쪽 끝은 부러진 밑동, 잎 다발
+    //  - 개울가 (폭 2 · X, 길이 12 · Z): 물가 양쪽 조약돌과 풀 포기, 디딤돌 둘만. 물 표면은 아트 2가 그려요
     public static partial class PrototypeSceneBuilder
     {
         const string FeatureFolder = "Assets/_Game/Art/Env/Temple/Features";
 
-        static void DressRoomFeatures(Material stoneMat, Material roofX)
+        static void DressRoomFeatures(Material stoneMat, Material bambooMat, Material roofX)
         {
             EnsureFolder(FeatureFolder);
             var moss = GetInkMaterial("Ink_Temple_Moss", "#5E6B3A", 0.5f);
@@ -40,6 +44,17 @@ namespace AThousandDawns.EditorTools
                 SaveFeature(CollapsedCoffin(marble, dark, bone, blood), "Feature_TombCoffin"),
                 SaveFeature(MiasmaPillar(marble, red, dark), "Feature_MiasmaPillar"),
                 SaveFeature(BloodPoolRim(marble, bone, blood), "Feature_BloodPoolRim"));
+
+            // 죽림 (지역 0)
+            var bambooEarth = GetInkMaterial("Ink_Bamboo_Earth", "#4A4334", 0.35f);
+            features.SetupBamboo(
+                new[]
+                {
+                    SaveFeature(BambooClump(bambooMat, bambooEarth, 3), "Feature_BambooClump_A"),
+                    SaveFeature(BambooClump(bambooMat, bambooEarth, 8), "Feature_BambooClump_B"),
+                },
+                SaveFeature(FallenBamboo(bambooMat, bambooEarth), "Feature_FallenBamboo"),
+                SaveFeature(StreamBank(stoneMat), "Feature_StreamBank"));
         }
 
         static GameObject SaveFeature(GameObject root, string name)
@@ -148,6 +163,65 @@ namespace AThousandDawns.EditorTools
                 tile.AddComponent<MeshFilter>().sharedMesh = GetRoofCapMesh(true);
                 tile.AddComponent<MeshRenderer>().sharedMaterial = roofX;
             }
+            return root;
+        }
+
+        static GameObject BambooClump(Material bamboo, Material earth, int seed)
+        {
+            var root = new GameObject("Bamboo Clump (대숲 덤불)");
+            var t = root.transform;
+            Block(t, "Mound", PrimitiveType.Sphere, Vector3.zero, new Vector3(0.85f, 0.22f, 0.8f), Quaternion.identity, earth);
+            // 큰 묶음 하나 + 옆에 낮은 묶음 하나로 서너 그루 (지름 0.7 안쪽)
+            BambooCluster(t, new Vector3(-0.08f, 0f, -0.1f), 3f, seed, bamboo, 0.75f);
+            BambooCluster(t, new Vector3(0.18f, 0f, -0.2f), 2.1f, seed + 1, bamboo, 0.6f).localScale = new Vector3(0.8f, 1f, 0.8f);
+            // 죽순과 마른 잎
+            for (int k = 0; k < 2; k++)
+                Block(t, "Shoot", PrimitiveType.Capsule, new Vector3(k == 0 ? 0.3f : -0.32f, 0.1f, k == 0 ? 0.2f : -0.25f), new Vector3(0.07f, 0.12f + k * 0.04f, 0.07f), Quaternion.Euler(k * 8f, 0f, k * 6f - 3f), bamboo);
+            FoliageCards(t, "Litter", "Bush_A", new Vector3(0.05f, 0.12f, 0.3f), 0.28f, 2, seed * 23f);
+            return root;
+        }
+
+        static GameObject FallenBamboo(Material bamboo, Material earth)
+        {
+            var root = new GameObject("Fallen Bamboo (쓰러진 대나무)");
+            var t = root.transform;
+            // 줄기 메시는 발밑이 원점이고 +Y로 뻗어요. Z로 -90도 눕히면 +X로 뻗어요
+            void Log(Vector3 foot, float width, float length, float yaw, float tilt)
+            {
+                var s = Stalk(t, foot, width, length, 0f, bamboo);
+                s.localRotation = Quaternion.Euler(0f, yaw, -90f + tilt);
+            }
+            Log(new Vector3(-1.7f, 0.09f, 0.08f), 0.18f, 3.4f, 2f, 0f);
+            Log(new Vector3(1.7f, 0.08f, -0.1f), 0.16f, 3.2f, 182f, 0f);
+            Log(new Vector3(-1.4f, 0.27f, 0f), 0.15f, 2.6f, -4f, -3f);   // 위에 걸친 둥치
+            // 부러진 밑동: 왼쪽 끝에 짧게 선 그루터기와 쪼개진 끝, 반대쪽 끝엔 잎 다발
+            Stalk(t, new Vector3(-1.62f, 0f, -0.12f), 0.2f, 0.42f, 40f, bamboo);
+            Block(t, "Split", PrimitiveType.Cube, new Vector3(-1.62f, 0.44f, -0.12f), new Vector3(0.05f, 0.1f, 0.12f), Quaternion.Euler(0f, 40f, 18f), bamboo);
+            FoliageCards(t, "Leaves", "BambooLeaves_A", new Vector3(1.55f, 0.18f, 0.05f), 0.45f, 2, 30f);
+            FoliageCards(t, "Leaves", "BambooLeaves_B", new Vector3(0.6f, 0.22f, 0.1f), 0.32f, 2, 80f);
+            Block(t, "Dirt", PrimitiveType.Sphere, new Vector3(-1.65f, 0f, -0.1f), new Vector3(0.6f, 0.12f, 0.5f), Quaternion.identity, earth);
+            return root;
+        }
+
+        static GameObject StreamBank(Material stone)
+        {
+            var root = new GameObject("Stream Bank (개울가)");
+            var t = root.transform;
+            // 물가 양쪽(x = ±1)을 따라 조약돌과 풀 포기를 듬성듬성 (가운데 물길은 비워요)
+            int seed = 0;
+            for (int side = -1; side <= 1; side += 2)
+                for (float z = -5.7f; z <= 5.7f; z += 0.55f, seed++)
+                {
+                    float jitter = ((seed * 37) % 7 - 3) * 0.05f;
+                    var p = new Vector3(side * (1.02f + jitter), 0f, z + ((seed * 13) % 5 - 2) * 0.06f);
+                    if (seed % 4 != 3)
+                        Rock(t, "Pebble", p, 0.14f + (seed * 11 % 5) * 0.04f, seed, seed * 47f, stone, false);
+                    if (seed % 3 == 0)
+                        FoliageCards(t, "Grass", seed % 2 == 0 ? "Bush_A" : "Bush_B", p + new Vector3(side * 0.28f, 0.12f, 0.1f), 0.3f + (seed % 3) * 0.06f, 2, seed * 29f);
+                }
+            // 물속 디딤돌 둘 (물 위로 조금 솟게)
+            Rock(t, "Stepping Stone", new Vector3(-0.35f, -0.05f, -2.4f), 0.4f, 1, 20f, stone, false);
+            Rock(t, "Stepping Stone", new Vector3(0.4f, -0.05f, 3.1f), 0.35f, 2, 70f, stone, false);
             return root;
         }
 
