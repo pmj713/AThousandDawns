@@ -22,6 +22,17 @@ namespace AThousandDawns.Fx
         static Texture2D _splash, _drop, _flame, _rock, _stroke, _blot, _seal;
         static bool _loaded;
 
+        // 유품록: 고르거나 뺄 때 (RoomRun.RelicToggled)
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        static void Init()
+        {
+            AThousandDawns.Prototype.RoomRun.RelicToggled -= OnRelic;
+            AThousandDawns.Prototype.RoomRun.RelicToggled += OnRelic;
+        }
+
+        static void OnRelic(string itemId, bool picked) =>
+            Play(picked ? RelicStamp : RelicWipe, "relic_book", AThousandDawns.Items.ItemIcons.Get(itemId));
+
         public static void Play(string kind, string eventId, Texture2D icon = null)
         {
             _kind = kind;

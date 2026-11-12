@@ -45,6 +45,7 @@ namespace AThousandDawns.Prototype
             UiScale.Apply(); // 기준 1920×1080, 어떤 창 크기에도 같은 비율
             DrawHud();
             InkHud.Draw(player); // 수묵 HUD: 초식 · 체력 · 대시 · 금창약 (왼쪽 위, Fx/InkHud)
+            if (run != null && !run.InVillage && !run.IsShowingResult) InkHud.DrawKarma(run.Karma); // 판 중 업보 단계 (위 가운데, 0이면 숨김)
             DrawMinimap();
             DrawFork();
             DrawShop();
