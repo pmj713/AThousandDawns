@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using AThousandDawns.Core;
 using AThousandDawns.Enemies;
 using AThousandDawns.Player;
@@ -82,6 +83,31 @@ namespace AThousandDawns.Tests
             grunt.Damageable.ApplyHit(99999);
             yield return null;
             Assert.AreEqual(before + 5, _player.Level.Xp, "정예 처치 수련치 5");
+        }
+
+        // 장강 수채부터: 특성 둘 (체력 배율은 한 번만, 이름 앞에 둘 다, 효과도 둘 다)
+        [UnityTest]
+        public IEnumerator 특성_둘인_정예()
+        {
+            yield return LoadScene();
+            PlacePlayer(new Vector3(0f, 0f, -3f));
+            var grunt = _director.Spawn(EnemyKind.Grunt, new Vector3(0f, 0f, 4f));
+            float baseHp = grunt.Damageable.MaxHealth, baseTough = grunt.Damageable.Toughness;
+            grunt.MakeElite(EliteTrait.Rejuvenation);
+            grunt.AddEliteTrait(EliteTrait.IronShirt);
+            grunt.AddEliteTrait(EliteTrait.IronShirt); // 같은 특성은 한 번만
+            Assert.AreEqual(2, grunt.Traits.Count);
+            Assert.AreEqual(EliteTrait.Rejuvenation, grunt.Trait, "첫 특성");
+            Assert.IsTrue(grunt.IsIronShirt);
+            Assert.AreEqual(baseHp * GameConfig.Get("elite.hp_mult", 3f), grunt.Damageable.MaxHealth, 0.01f, "체력 배율은 한 번만");
+            Assert.AreEqual(baseTough + GameConfig.Get("elite.iron_toughness", 2f), grunt.Damageable.Toughness, 0.01f, "철포삼 강인함");
+            StringAssert.StartsWith("회춘·철포삼 · ", grunt.DisplayName);
+            Assert.AreEqual(2, grunt.GetComponentsInChildren<Transform>().Count(t => t.name.StartsWith("Elite_")), "머리 위 표시 둘");
+
+            var shield = _director.Spawn(EnemyKind.Shield, new Vector3(3f, 0f, 4f));
+            shield.MakeElite(EliteTrait.Blaze);
+            shield.AddEliteTrait(EliteTrait.IronShirt);
+            Assert.AreEqual(1, shield.Traits.Count, "방패형 + 철포삼은 둘째로도 안 붙어요");
         }
 
         [UnityTest]

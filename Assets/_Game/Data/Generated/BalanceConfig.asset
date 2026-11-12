@@ -4181,3 +4181,11 @@ MonoBehaviour:
     value: 60
     unit: "\uC740\uC790"
     note: "\uC7A5\uAC15 \uBC43\uC0AC\uACF5: \uBC43\uC0AF (\uB2E4\uC74C \uCE35 \uC9C0\uB3C4\uAC00 \uB2E4 \uBCF4\uC784)"
+  - key: elite.second_trait.r2
+    value: 0.5
+    unit: 
+    note: "\uC7A5\uAC15 \uC218\uCC44 \uC815\uC608: \uD2B9\uC131\uC774 \uD558\uB098 \uB354 \uBD99\uC744 \uD655\uB960 (1~2\uAC1C)"
+  - key: elite.second_trait.r3
+    value: 1
+    unit: 
+    note: "\uCC9C\uB9C8\uCD1D \uC815\uC608: \uD2B9\uC131\uC774 \uD558\uB098 \uB354 \uBD99\uC744 \uD655\uB960 (\uB298 2\uAC1C)"

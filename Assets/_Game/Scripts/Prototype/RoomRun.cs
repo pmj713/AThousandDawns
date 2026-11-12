@@ -529,6 +529,7 @@ namespace AThousandDawns.Prototype
                 if (p.elite)
                 {
                     enemy.MakeElite(_eliteTrait);
+                    RollSecondTrait(enemy); // 장강 수채부터 특성 둘
                     _elitesThisRoom++;
                 }
                 if (health != 1f) enemy.Damageable.ScaleMaxHealth(health);

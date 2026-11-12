@@ -36,6 +36,19 @@ namespace AThousandDawns.Prototype
             Mathf.RoundToInt(GameConfig.GetOptional("enemy.melee_tokens_max", 4f)),
             Mathf.RoundToInt(GameConfig.Get("enemy.melee_tokens", 2f) + _region * GameConfig.GetOptional("enemy.melee_tokens_per_region", 1f)));
 
+        // 정예 특성 수 (몬스터 B142): 죽림·폐사찰 하나, 장강 수채 1~2개 (반반), 천마총 둘
+        static readonly float[] SecondTraitByRegion = { 0f, 0f, 0.5f, 1f };
+        public float SecondTraitChance => GameConfig.GetOptional($"elite.second_trait.r{_region}", ByRegion(SecondTraitByRegion, _region));
+
+        void RollSecondTrait(EnemyBrain elite)
+        {
+            if (elite == null || !elite.IsElite || _rng.NextDouble() >= SecondTraitChance) return;
+            var traits = new System.Collections.Generic.List<EliteTrait>();
+            foreach (EliteTrait t in System.Enum.GetValues(typeof(EliteTrait)))
+                if (t != elite.Trait && EnemyBrain.Allows(elite.Kind, t)) traits.Add(t);
+            if (traits.Count > 0) elite.AddEliteTrait(traits[_rng.Next(traits.Count)]);
+        }
+
         void ApplyRegionRules()
         {
             if (director != null && director.MeleeTokens != null) director.MeleeTokens.Capacity = MeleeTokensForRegion;

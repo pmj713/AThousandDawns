@@ -1,10 +1,11 @@
 ﻿using AThousandDawns.Combat;
 using AThousandDawns.Core;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace AThousandDawns.Enemies
 {
-    // 정예 특성 (몬스터 탭 정예 첫 버전). 죽림은 하나만 붙어요.
+    // 정예 특성 (몬스터 탭 정예 첫 버전). 죽림·폐사찰은 하나, 장강 수채는 1~2개 (반반), 천마총은 2개 (몬스터 B142).
     public enum EliteTrait { None, IronShirt, Rejuvenation, Blaze }
 
     // 정예: 일반 적에 특성 하나를 붙인 강화판 (몬스터 탭 정예 공통 규칙).
@@ -16,13 +17,16 @@ namespace AThousandDawns.Enemies
     {
         static Material _ironMat, _rejuvMat, _blazeMat;
 
-        EliteTrait _trait;
-        float _sinceHit;
+        readonly List<EliteTrait> _traits = new List<EliteTrait>(); // 장강 수채부터 둘까지 (몬스터 B142)
+        float _sinceHit, _eliteScale = 1f;
+        string _baseName;
 
         public bool IsElite { get; private set; }
-        public EliteTrait Trait => _trait;
-        public bool IsIronShirt => _trait == EliteTrait.IronShirt;
-        public bool IsBlaze => _trait == EliteTrait.Blaze;
+        public EliteTrait Trait => _traits.Count > 0 ? _traits[0] : EliteTrait.None; // 첫 특성
+        public IReadOnlyList<EliteTrait> Traits => _traits;
+        public bool HasTrait(EliteTrait trait) => _traits.Contains(trait);
+        public bool IsIronShirt => HasTrait(EliteTrait.IronShirt);
+        public bool IsBlaze => HasTrait(EliteTrait.Blaze);
 
         public static string TraitLabel(EliteTrait trait) => trait switch
         {
@@ -45,26 +49,41 @@ namespace AThousandDawns.Enemies
         {
             if (IsElite || !Allows(Kind, trait)) return;
             IsElite = true;
-            _trait = trait;
+            _baseName = DisplayName;
             Body.ScaleMaxHealth(GameConfig.Get("elite.hp_mult", 3f));
             AttackPower *= GameConfig.Get("elite.atk_mult", 1.2f);
             float scale = GameConfig.Get("elite.scale", 1.2f);
             if (_visual != null) _visual.localScale *= scale;
-            DisplayName = $"{TraitLabel(trait)} · {DisplayName}";
-
-            if (trait == EliteTrait.IronShirt) Body.AddToughness(GameConfig.Get("elite.iron_toughness", 2f));
-            if (trait == EliteTrait.Blaze) Status.BurnTakenMultiplier = GameConfig.Get("elite.blaze_burn_taken", 0.5f);
-            BuildTraitMark(trait, scale);
+            _eliteScale = scale;
+            ApplyTrait(trait);
         }
 
-        void BuildTraitMark(EliteTrait trait, float scale)
+        // 장강 수채부터: 정예에 특성을 하나 더 (체력·공격 배율은 한 번만)
+        public void AddEliteTrait(EliteTrait trait)
+        {
+            if (!IsElite || HasTrait(trait) || !Allows(Kind, trait)) return;
+            ApplyTrait(trait);
+        }
+
+        void ApplyTrait(EliteTrait trait)
+        {
+            _traits.Add(trait);
+            var labels = new List<string>();
+            foreach (var t in _traits) labels.Add(TraitLabel(t));
+            DisplayName = $"{string.Join("·", labels)} · {_baseName}";
+            if (trait == EliteTrait.IronShirt) Body.AddToughness(GameConfig.Get("elite.iron_toughness", 2f));
+            if (trait == EliteTrait.Blaze) Status.BurnTakenMultiplier = GameConfig.Get("elite.blaze_burn_taken", 0.5f);
+            BuildTraitMark(trait, _eliteScale, _traits.Count - 1);
+        }
+
+        void BuildTraitMark(EliteTrait trait, float scale, int index)
         {
             var shape = trait == EliteTrait.IronShirt ? PrimitiveType.Cube : trait == EliteTrait.Rejuvenation ? PrimitiveType.Sphere : PrimitiveType.Cylinder;
             var mark = GameObject.CreatePrimitive(shape);
             mark.name = $"Elite_{trait}";
             EnemyFactory.StripCollider(mark);
             mark.transform.SetParent(transform, false);
-            mark.transform.localPosition = Vector3.up * (Height * scale + 0.35f);
+            mark.transform.localPosition = Vector3.up * (Height * scale + 0.35f + index * 0.4f); // 둘째 특성은 그 위에
             mark.transform.localScale = trait == EliteTrait.Blaze ? new Vector3(0.22f, 0.2f, 0.22f) : Vector3.one * 0.28f;
             var color = trait == EliteTrait.IronShirt ? new Color(0.72f, 0.75f, 0.8f)   // 쇠빛
                 : trait == EliteTrait.Rejuvenation ? new Color(0.45f, 0.85f, 0.45f)    // 초록 숨결
@@ -79,7 +98,7 @@ namespace AThousandDawns.Enemies
         // 회춘: 3초 동안 안 맞고, 화상이 없으면 회복
         void TickElite(float dt)
         {
-            if (_trait != EliteTrait.Rejuvenation) return;
+            if (!HasTrait(EliteTrait.Rejuvenation)) return;
             _sinceHit += dt;
             if (_sinceHit < GameConfig.Get("elite.rejuv_delay", 3f) || Status.BurnStacks > 0) return;
             Body.Heal(Body.MaxHealth * GameConfig.Get("elite.rejuv_ratio", 0.1f) * dt);
@@ -88,7 +107,7 @@ namespace AThousandDawns.Enemies
         // 열화: 죽은 자리에 불길
         void OnEliteDied()
         {
-            if (_trait != EliteTrait.Blaze) return;
+            if (!HasTrait(EliteTrait.Blaze)) return;
             EnemyFirePatch.Create(transform.position, Player, Director.Visuals.fire,
                 GameConfig.Get("elite.blaze_fire_radius", 1.5f),
                 GameConfig.Get("elite.blaze_fire_life", 4f),
