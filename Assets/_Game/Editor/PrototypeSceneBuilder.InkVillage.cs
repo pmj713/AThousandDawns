@@ -48,6 +48,7 @@ namespace AThousandDawns.EditorTools
             BuildVillageShrine(deco, c + RoomRun.ShrineOffset + new Vector3(-1f, 0f, -1f), stoneMat, woodMat, plaster, roofX);
             BuildVillageGate(deco, c + new Vector3(VillageExit.x, 0f, -hz - 0.25f), stoneMat, woodMat, roofX);
             BuildWeaponRack(deco, c + RoomRun.RackOffset + new Vector3(0f, 0f, -0.6f), woodMat, iron);
+            BuildVillageLife(deco, c, stoneMat, woodMat, dark, roofX); // 우물·빨랫줄·장작더미·장독대·닭장 (PrototypeSceneBuilder.InkVillageLife.cs)
 
             // 담 너머 북쪽 대나무 숲과 먼 풍경 (남쪽은 카메라를 가리지 않게 비워요)
             var ring = new GameObject("Forest (Village)").transform;
