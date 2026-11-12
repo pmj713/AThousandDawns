@@ -427,6 +427,8 @@ namespace AThousandDawns.Art
             // 무거운 갑옷·술사는 앞으로 고꾸라져요, 혈폭자는 부풀어 터지고, 수귀는 물 밑으로 꺼져요
             bool forward = _brain.Kind == EnemyKind.DemonGuard || _brain.Kind == EnemyKind.BloodShaman || _brain.Kind == EnemyKind.Arhat;
             var style = _brain.Kind == EnemyKind.BloodBomber ? InkCorpse.Style.Swell : _brain.Kind == EnemyKind.WaterGhost ? InkCorpse.Style.Sink : InkCorpse.Style.Fall;
+            // 천마: 넘어지지 않고 검을 떨군 채 무릎 꿇고 고개를 숙여 엔딩 내내 남아요
+            if (_animator.HasState(0, Animator.StringToHash("Defeat"))) { style = InkCorpse.Style.Kneel; _animator.SetFloat(AttackSpeedId, 1f); Play("Defeat", 0.15f); }
             corpse.AddComponent<InkCorpse>().Init(_animator, beast ? Vector3.forward : Vector3.right,
                 _brain.Kind == EnemyKind.Snake ? 160f : beast ? 88f : forward ? 80f : -85f, style);
             enabled = false;
@@ -443,7 +445,7 @@ namespace AThousandDawns.Art
     //   Sink(수귀): 선 채로 물 밑으로 꺼지듯 빠르게 가라앉아요
     public class InkCorpse : MonoBehaviour
     {
-        public enum Style { Fall, Swell, Sink }
+        public enum Style { Fall, Swell, Sink, Kneel }
         const float FallTime = 0.4f, LieTime = 1.2f, SinkTime = 1.4f, SinkDepth = 0.8f;
         const float SwellScale = 1.4f, GhostSinkTime = 0.7f, GhostSinkDepth = 2.4f;
         float _swellTime = 1.2f;   // 혈폭자 터지기까지 (bloodbomber.blast_fuse)
@@ -467,13 +469,51 @@ namespace AThousandDawns.Art
             if (_animator != null)
             {
                 _animator.SetFloat(Animator.StringToHash("Speed"), 0f);
-                _animator.speed = style == Style.Fall ? 0.3f : 0f;   // 넘어가는 동안 굳어 가요
+                _animator.speed = style == Style.Fall ? 0.3f : style == Style.Kneel ? 1f : 0f;   // 넘어가는 동안 굳어 가요 (무릎 꿇기는 동작을 끝까지)
             }
+            if (style == Style.Kneel && _animator != null) DropWeapon();
         }
 
+        // 손의 무기를 그 자세 그대로 떼어 내 바닥으로 떨어뜨려요 (스킨 메시를 지금 모양으로 구워서)
+        Transform _dropped;
+        Vector3 _dropFrom;
+        Quaternion _dropRot;
+        float _dropDown;
+
+        void DropWeapon()
+        {
+            foreach (var sr in _animator.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                if (!sr.name.Contains("_Weapon_")) continue;
+                var mesh = new Mesh();
+                sr.BakeMesh(mesh, true);
+                var go = new GameObject("Dropped Weapon");
+                go.transform.SetPositionAndRotation(sr.transform.position, sr.transform.rotation);
+                go.transform.localScale = Vector3.one;
+                go.AddComponent<MeshFilter>().sharedMesh = mesh;
+                go.AddComponent<MeshRenderer>().sharedMaterials = sr.sharedMaterials;
+                go.transform.SetParent(transform, true);
+                sr.enabled = false;
+                _dropped = go.transform;
+                _dropFrom = go.transform.position;
+                _dropRot = go.transform.rotation;
+                _dropDown = Mathf.Max(0f, go.GetComponent<MeshRenderer>().bounds.min.y - transform.position.y - 0.02f);
+                break;
+            }
+        }
         void Update()
         {
             _t += Time.deltaTime;
+            if (_style == Style.Kneel)
+            {
+                if (_dropped != null)   // 칼이 기울며 툭 떨어져 바닥에 누워요
+                {
+                    float k = Mathf.Clamp01(_t / 0.35f);
+                    _dropped.position = _dropFrom + Vector3.down * _dropDown * k * k;
+                    _dropped.rotation = Quaternion.Slerp(_dropRot, Quaternion.Euler(0f, _dropRot.eulerAngles.y, 0f) * Quaternion.Euler(0f, 0f, 90f), k);
+                }
+                return;   // 사라지지 않고 엔딩 내내 남아요
+            }
             if (_style == Style.Swell)
             {
                 float k = Mathf.Clamp01(_t / _swellTime);
