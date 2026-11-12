@@ -2027,6 +2027,66 @@ if "tombmoves" in EXTRAS:
     rig.animation_data.action = None
     reset_pose()
 
+
+# 혈영검마·천마 (demonmoves, 장검):
+#   혈영검마 — ShadowRush: 낮게 웅크렸다가 번개처럼 오른쪽·왼쪽·오른쪽 세 번 베어 넘기며 파고들어요 (잔상은 이펙트)
+#              Lunge: 몸을 바닥까지 낮췄다가 튀어나가며 일직선으로 찔러요 · Slash: 가볍게 한 번 가로베기
+#   천마 — Slash1: 곧게 선 채 단정한 일검 (1페이즈) · DemonSweep: 칼을 머리 위로 치켜들었다가 허리째 크게 휘둘러요 (2페이즈)
+#          Burst: 칼끝을 땅으로 내리고 두 팔을 펼쳐 가슴을 젖혀 마기를 터뜨려요 (3페이즈, 그대로 재생)
+#          Ascend: 페이즈가 바뀔 때 무릎을 꿇었다가 천천히 일어서며 두 팔을 펼쳐요
+if "demonmoves" in EXTRAS:
+    DM = {   # twist, wrist, reach, lift, dy, blade, step(왼발 앞으로), left(왼팔: back 뒤로 · sign 검결 · wide 펼침)
+        "r_ready": (-30, Vector((-0.4, 0.3, -0.3)), 0.85, -0.38, 0.1, Vector((-0.3, 1, 0.2)), 0.25, "back"),
+        "r_cut1": (45, Vector((0.65, -0.7, 0.05)), 0.95, -0.3, -0.3, Vector((1, -0.25, 0.0)), 0.6, "back"),
+        "r_cut2": (-45, Vector((-0.6, -0.7, 0.1)), 0.95, -0.3, -0.3, Vector((-1, -0.25, 0.05)), 0.6, "back"),
+        "l_ready": (-10, Vector((-0.15, 0.3, -0.35)), 0.8, -0.45, 0.12, Vector((0, -1, 0.05)), 0.35, "sign"),
+        "l_thrust": (8, Vector((0.05, -1, -0.05)), 1.0, -0.32, -0.38, Vector((0, -1, -0.02)), 0.65, "back"),
+        "s_load": (-35, Vector((-0.5, 0.15, 0.6)), 0.9, -0.1, 0.05, Vector((-0.3, 0.5, 1)), 0.1, "sign"),
+        "s_cut": (35, Vector((0.6, -0.75, 0.0)), 0.95, -0.18, -0.12, Vector((1, -0.35, 0.0)), 0.35, "sign"),
+        "h_ready": (0, Vector((0.0, -0.6, -0.2)), 0.8, -0.04, 0.0, Vector((0, -0.6, 0.8)), 0.0, "sign"),
+        "h_cut": (5, Vector((0.05, -0.9, -0.3)), 0.95, -0.12, -0.12, Vector((0.1, -0.7, -0.7)), 0.3, "sign"),
+        "d_up": (-20, Vector((-0.1, 0.1, 1)), 0.95, -0.1, 0.05, Vector((-0.2, 0.6, 0.8)), 0.1, "wide"),
+        "d_sweep": (50, Vector((0.7, -0.6, -0.05)), 0.95, -0.3, -0.2, Vector((1, -0.3, -0.05)), 0.5, "wide"),
+        "d_end": (65, Vector((0.7, 0.0, 0.3)), 0.9, -0.24, -0.15, Vector((0.6, 0.5, 0.5)), 0.5, "wide"),
+        "b_burst": (0, Vector((0.35, -0.25, -0.75)), 0.95, -0.2, 0.05, Vector((0.1, -0.2, -1)), 0.2, "wide"),
+        "a_kneel": (0, Vector((0.15, -0.35, -0.75)), 0.9, -0.7, 0.05, Vector((0, -0.1, -1)), 0.35, "down"),
+    }
+
+    def dm_pose(stage):
+        if stage == "idle":
+            idle_end_pose(); return
+        twist, wrist, reach, lift, dy, blade_dir, step, left = DM[stage]
+        feet = {"Left": FEET["Left"] + Vector((0, -step, 0)), "Right": FEET["Right"] + Vector((0, step * 0.3, 0))}
+        lower_hips(lift, feet, dy=dy)
+        bend("Spine", UP, twist * 0.6); bend("Spine1", UP, twist * 0.4)
+        if stage == "b_burst":
+            bend("Spine", Vector((1, 0, 0)), -16); bend("Neck", Vector((1, 0, 0)), -20)      # 가슴을 젖히고 하늘을 봐요
+        sh = pb["RightArm"].head.copy()
+        pole = Vector((-0.6, 0.3, 0)) if wrist.z > 0.3 else Vector((0.2, 0.5, -1))
+        fit_right(sh, [wrist.normalized() * REACH * reach, wrist.normalized() * REACH * reach * 0.9 + Vector((0, 0, 0.05))],
+                  (pole, Vector((-1, 0, 0)), Vector((0, 1, 0)), Vector((-0.5, 0.4, -1))), blade_dir, wrist_bend=80)
+        sl = pb["LeftArm"].head.copy()
+        if left == "back":
+            arm("Left", sl + Vector((0.3, 0.2, -0.4)), Vector((1, 0.3, -0.3)))
+        elif left == "sign":
+            arm("Left", sl + Vector((-0.12, -0.32, -0.05)), Vector((1, 0.3, -0.6)))          # 검결: 가슴 앞
+        elif left == "wide":
+            arm("Left", sl + Vector((0.6, -0.2, 0.25)), Vector((1, 0.3, 0)))                 # 크게 펼쳐요
+        else:
+            arm("Left", sl + Vector((0.15, -0.3, -0.6)), Vector((1, 0.3, -0.5)))             # 무릎 위에
+
+    if "bloodshadow" in EXTRAS:
+        make_action("ShadowRush", [(0, "r_ready"), (3, "r_cut1"), (7, "r_cut2"), (11, "r_cut1"), (18, "r_cut1"), (28, "idle")], dm_pose)
+        make_action("Lunge", [(0, "l_ready"), (3, "l_thrust"), (12, "l_thrust"), (22, "idle")], dm_pose)
+        make_action("Slash", [(0, "s_load"), (4, "s_cut"), (12, "s_cut"), (22, "idle")], dm_pose)
+    if "heavenly" in EXTRAS:
+        make_action("Slash1", [(0, "h_ready"), (4, "h_cut"), (14, "h_cut"), (24, "idle")], dm_pose)
+        make_action("DemonSweep", [(0, "d_up"), (4, "d_sweep"), (8, "d_end"), (18, "d_end"), (30, "idle")], dm_pose)
+        make_action("Burst", [(0, "idle"), (8, "b_burst"), (36, "b_burst"), (46, "idle")], dm_pose)
+        make_action("Ascend", [(0, "a_kneel"), (20, "a_kneel"), (40, "b_burst"), (52, "b_burst"), (60, "idle")], dm_pose)
+    rig.animation_data.action = None
+    reset_pose()
+
 # 옮겨 굽는 데 쓴 플레이어 뼈대·메시·동작은 지워요 (내보낼 때 같이 나가지 않게)
 for o in player_objs:
     bpy.data.objects.remove(o, do_unlink=True)
