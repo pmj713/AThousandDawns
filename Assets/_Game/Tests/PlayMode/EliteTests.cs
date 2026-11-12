@@ -14,7 +14,7 @@ using Object = UnityEngine.Object;
 
 namespace AThousandDawns.Tests
 {
-    // 정예 (몬스터 탭 정예 첫 버전): 공통 배율과 특성 셋 (철포삼 · 회춘 · 열화).
+    // 정예 (몬스터 탭 정예 첫 버전): 공통 배율과 특성 넷 (철포삼 · 회춘 · 열화 · 분열).
     public class EliteTests : InputTestFixture
     {
         PlayerController _player;
@@ -169,6 +169,48 @@ namespace AThousandDawns.Tests
             var fire = Object.FindFirstObjectByType<EnemyFirePatch>();
             Assert.IsNotNull(fire, "죽은 자리에 불길");
             Assert.Less(Vector3.Distance(new Vector3(at.x, 0f, at.z), new Vector3(fire.transform.position.x, 0f, fire.transform.position.z)), 0.1f);
+        }
+
+        // 분열: 쓰러지면 정예가 아닌 같은 적 둘 (체력 35%), 터지는 적 · 숨는 청죽사는 분열 없음
+        [UnityTest]
+        public IEnumerator 분열은_쓰러지면_작은_둘로_갈라짐()
+        {
+            Assert.IsFalse(EnemyBrain.Allows(EnemyKind.Bomber, EliteTrait.Split), "자폭형 + 분열");
+            Assert.IsFalse(EnemyBrain.Allows(EnemyKind.Snake, EliteTrait.Split), "숨는 청죽사 + 분열");
+            yield return LoadScene();
+            var plain = _director.Spawn(EnemyKind.Grunt, _player.transform.position + new Vector3(-4f, 0f, 6f));
+            float baseHealth = plain.Damageable.MaxHealth;
+            var elite = _director.Spawn(EnemyKind.Grunt, _player.transform.position + new Vector3(0f, 0f, 6f));
+            elite.MakeElite(EliteTrait.Split);
+            StringAssert.StartsWith("분열", elite.DisplayName);
+            int before = EnemyBrain.SplitChildren;
+            elite.Damageable.ApplyHit(99999);
+            yield return null;
+            Assert.AreEqual(before + 2, EnemyBrain.SplitChildren, "둘로 갈라져요");
+            var children = _director.Enemies.Where(e => e != null && e != plain && !e.IsDead && e.Kind == EnemyKind.Grunt).ToList();
+            Assert.AreEqual(2, children.Count);
+            foreach (var c in children)
+            {
+                Assert.IsFalse(c.IsElite, "갈라진 것은 정예가 아니에요 (다시 갈라지지 않아요)");
+                Assert.AreEqual(baseHealth * 0.35f, c.Damageable.MaxHealth, 1f, "체력 35%");
+            }
+        }
+
+        // 설정 · 접근성 "화면 흔들림": 0%면 흔들리지 않아요
+        [Test]
+        public void 화면_흔들림은_설정이_0이면_꺼짐()
+        {
+            int old = GameSettings.Current.screenShake;
+            try
+            {
+                GameSettings.Current.screenShake = 0;
+                AThousandDawns.Fx.ScreenShake.Kick(5f, 0.5f);
+                Assert.AreEqual(0f, AThousandDawns.Fx.ScreenShake.Current, "0%면 꺼짐");
+                GameSettings.Current.screenShake = 50;
+                AThousandDawns.Fx.ScreenShake.Kick(0.4f, 0.5f);
+                Assert.AreEqual(0.2f, AThousandDawns.Fx.ScreenShake.Current, 0.01f, "50%면 절반");
+            }
+            finally { GameSettings.Current.screenShake = old; }
         }
     }
 }

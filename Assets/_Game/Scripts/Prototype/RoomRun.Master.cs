@@ -91,7 +91,7 @@ namespace AThousandDawns.Prototype
             {
                 Label = Player.UsesDagger ? $"비급 전수 · 비도 초식이 {PlayerController.DaggerSkillLabel(skill)}(으)로 바뀌어요 ({skillText})" : $"비급 전수 · 초식이 {skillName}(으)로 바뀌어요 (우클릭: {skillText})",
                 Locked = Player.Skill == skill ? "이미 배웠어요" : null,
-                Act = () => { Player.LearnSkill(skill); return Player.UsesDagger ? $"{skillName}을(를) 전수받았어요. 우클릭이 {PlayerController.DaggerSkillLabel(skill)}(으)로 바뀌었어요." : $"{skillName}을(를) 전수받았어요. 우클릭 초식이 바뀌었어요."; },
+                Act = () => { Player.LearnSkill(skill); Notify("scroll", "비급: 우클릭 초식이 바뀌어요 · 비도를 들면 비급마다 회수 초식이 달라요"); return Player.UsesDagger ? $"{skillName}을(를) 전수받았어요. 우클릭이 {PlayerController.DaggerSkillLabel(skill)}(으)로 바뀌었어요." : $"{skillName}을(를) 전수받았어요. 우클릭 초식이 바뀌었어요."; },
             });
             v.Choices.Add(new EventChoice
             {

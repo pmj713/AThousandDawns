@@ -4997,3 +4997,23 @@ MonoBehaviour:
     value: 1.2
     unit: cell/s
     note: "\uC7A5\uAC15 \uC218\uCC44 \uBC29 \uD750\uB974\uB294 \uBB3C (\uC5EC\uC6B8 \xB7 \uBB3C\uAE38): \uBB3C\uC0B4 \uCABD\uC73C\uB85C \uBBF8\uB294 \uC18D\uB3C4 (\uB300\uC2DC \uC911\uC5D4 \uC548 \uBC00\uB824\uC694)"
+  - key: elite.split_count
+    value: 2
+    unit: 
+    note: "\uC815\uC608 \uBD84\uC5F4: \uC4F0\uB7EC\uC9C0\uBA74 \uAC08\uB77C\uC838 \uB098\uC624\uB294 \uC218 (\uC815\uC608 \uC544\uB2D8)"
+  - key: elite.split_health
+    value: 0.35
+    unit: 
+    note: "\uC815\uC608 \uBD84\uC5F4: \uAC08\uB77C\uC9C4 \uC801 \uCCB4\uB825 (\uADF8 \uC9C0\uC5ED \uCCB4\uB825 \uB300\uBE44)"
+  - key: shake.hit
+    value: 0.25
+    unit: cell
+    note: "\uD654\uBA74 \uD754\uB4E4\uB9BC: \uB9DE\uC558\uC744 \uB54C \uCD5C\uB300 \uC138\uAE30 (\uBC1B\uC740 \uD53C\uD574 \uBE44\uC728\uB9CC\uD07C \xB7 \uC124\uC815 % \uACF1\uD568)"
+  - key: shake.ultimate
+    value: 0.2
+    unit: cell
+    note: "\uD654\uBA74 \uD754\uB4E4\uB9BC: \uC808\uCD08\uB97C \uC4F8 \uB54C"
+  - key: shake.boss
+    value: 0.4
+    unit: cell
+    note: "\uD654\uBA74 \uD754\uB4E4\uB9BC: \uBCF4\uC2A4\uAC00 \uC4F0\uB7EC\uC9C8 \uB54C"

@@ -441,6 +441,7 @@ namespace AThousandDawns.Enemies
             OnEliteDied();
             OnDied();
             AnyDied?.Invoke(this);
+            if (Rank == EnemyRank.Boss) AThousandDawns.Fx.ScreenShake.Kick(GameConfig.GetOptional("shake.boss", 0.4f), 0.6f); // 보스가 쓰러질 때
             Destroy(gameObject, DeathDelay);
         }
 

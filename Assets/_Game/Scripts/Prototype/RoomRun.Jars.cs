@@ -65,6 +65,7 @@ namespace AThousandDawns.Prototype
             Destroy(_jars[index]);
             _jars.RemoveAt(index);
             Sfx.Play(SfxId.JarBreak);
+            Notify("jar", "항아리: 부딪히거나 공격하면 깨지고 은자가 나와요 · 싸우는 중에도 돼요");
             _room.Jars = Mathf.Max(0, _room.Jars - 1);
             int silver = BoostSilver(Mathf.RoundToInt(GameConfig.GetOptional("jar.silver", 1f)));
             Silver += silver;

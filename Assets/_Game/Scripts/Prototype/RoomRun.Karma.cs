@@ -80,6 +80,7 @@ namespace AThousandDawns.Prototype
 
         public void OpenKarmaView()
         {
+            Notify("karma", "업보: 짊어지면 판이 험해지는 대신 얻는 기억이 늘어요 · 열린 가장 높은 단계로 천마를 격파하면 다음 단계가 열려요");
             int max = KarmaMax;
             float bonus = GameConfig.GetOptional("memory.karma_bonus", 0.1f);
             var v = new EventView

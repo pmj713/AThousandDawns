@@ -422,6 +422,7 @@ namespace AThousandDawns.Player
             _flashTimer = 0.12f;
             if (dealt > 0) DamagePopups.Spawn(transform.position + Vector3.up * 2f, dealt, PopupStyle.Player); // 보호막이 다 막으면 숫자 없음
             Hurt?.Invoke(dealt);
+            if (dealt > 0) AThousandDawns.Fx.ScreenShake.Kick(GameConfig.GetOptional("shake.hit", 0.25f) * Mathf.Clamp01(0.3f + dealt / Mathf.Max(1f, MaxHealth) * 4f), 0.25f); // 받은 피해만큼 화면이 흔들려요 (설정 %)
             if (TryRevive()) return true;
             // 열화 정예: 맞을 때마다 화상 (화살·폭발처럼 주인이 있는 공격 포함)
             if (attacker != null && attacker.TryGetComponent(out AThousandDawns.Enemies.EnemyBrain brain) && brain.IsBlaze)
@@ -446,6 +447,7 @@ namespace AThousandDawns.Player
             Gauge = Mathf.Max(0f, Gauge - _gaugeMax);
             _ultimateTimer = _ultimateCastTime;
             Sfx.Play(SfxId.Ultimate); // 절초 만검귀종
+            AThousandDawns.Fx.ScreenShake.Kick(GameConfig.GetOptional("shake.ultimate", 0.2f), 0.4f);
             _invulnerableTimer = Mathf.Max(_invulnerableTimer, _ultimateCastTime);
 
             _combo.Cancel();

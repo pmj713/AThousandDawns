@@ -541,6 +541,7 @@ namespace AThousandDawns.Prototype
                     RollSecondTrait(enemy); // 장강 수채부터 특성 둘
                     AddKarmaTrait(enemy); // 업보 2단계: 하나 더
                     _elitesThisRoom++;
+                    Notify("elite", "정예: 머리 위 표식이 특성이에요 · 철포삼 네모 · 회춘 공 · 열화 기둥 · 분열 캡슐 (무공 요결에서 자세히)");
                 }
                 if (health != 1f) enemy.Damageable.ScaleMaxHealth(health);
                 ScaleForRegion(enemy); // 폐사찰: 체력 ×1.8 · 공격 ×1.3

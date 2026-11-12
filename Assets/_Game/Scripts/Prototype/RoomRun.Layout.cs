@@ -48,6 +48,8 @@ namespace AThousandDawns.Prototype
                 RoomLayout = LayoutOverride >= 0 ? LayoutOverride : rng.Next(4);
                 if (_region == 1) BuildTempleLayout(RoomLayout);
                 else BuildRiverLayout(RoomLayout);
+                if (_region == 1 && RoomLayout > 0) Notify("temple_layout", "폐사찰: 방마다 돌기둥 · 석불 · 무너진 담이 달라요 · 화살과 돌진을 막는 엄폐물이에요");
+                if (_region == 2 && RoomLayout > 0) Notify("river_water", "장강의 물: 들어가면 느려지고 흐르는 물은 물살 쪽으로 밀어요 · 대시 중엔 안 밀려요");
             }
             LayoutChanged?.Invoke(this);
         }
