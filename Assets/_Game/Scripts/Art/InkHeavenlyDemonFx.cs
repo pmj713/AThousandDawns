@@ -196,8 +196,7 @@ namespace AThousandDawns.Art
             _dressed.RemoveWhere(f => f == null);
             foreach (var fire in FindObjectsByType<GhostFire>(FindObjectsSortMode.None))
             {
-                if (fire.name != "마기 장판" || _dressed.Contains(fire)) continue;
-                _dressed.Add(fire);
+                if (!_dressed.Add(fire) || fire.name != "마기 장판") continue; // 이름은 처음 볼 때 한 번만
                 var source = fire.GetComponent<Renderer>();
                 if (source != null) source.enabled = false;
                 float radius = fire.transform.localScale.x * 0.5f;

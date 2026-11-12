@@ -21,6 +21,7 @@ namespace AThousandDawns.Art
 
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
         readonly HashSet<GameObject> _dressed = new HashSet<GameObject>();
+        readonly HashSet<GameObject> _roots = new HashSet<GameObject>(); // 이름을 이미 확인한 씬 루트
         readonly Dictionary<TakrangBrain, (SpriteRenderer whirl, Vector3 last, float trail)> _masters = new Dictionary<TakrangBrain, (SpriteRenderer, Vector3, float)>();
         PlayerController _player;
         SpriteRenderer _playerVortex;
@@ -149,7 +150,8 @@ namespace AThousandDawns.Art
         void DressWaves()
         {
             _dressed.RemoveWhere(g => g == null);
-            foreach (var root in SceneManager.GetActiveScene().GetRootGameObjects())
+            InkRootWatch.Prune(_roots);
+            foreach (var root in InkRootWatch.New(_roots)) // 처음 보는 루트만 이름을 확인해요
             {
                 if (root.name != "물결 검기" || _dressed.Contains(root)) continue;
                 _dressed.Add(root);

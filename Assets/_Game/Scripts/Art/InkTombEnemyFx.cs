@@ -24,6 +24,7 @@ namespace AThousandDawns.Art
         readonly HashSet<EnemyBrain> _revived = new HashSet<EnemyBrain>();
         readonly Dictionary<DemonGuardBrain, int> _counters = new Dictionary<DemonGuardBrain, int>();
         readonly HashSet<GameObject> _globs = new HashSet<GameObject>();
+        readonly HashSet<GameObject> _roots = new HashSet<GameObject>(); // 이름을 이미 확인한 씬 루트
         EnemyDirector _director;
         float _scan;
 
@@ -183,7 +184,8 @@ namespace AThousandDawns.Art
         void DressGlobs()
         {
             _globs.RemoveWhere(g => g == null);
-            foreach (var root in SceneManager.GetActiveScene().GetRootGameObjects())
+            InkRootWatch.Prune(_roots);
+            foreach (var root in InkRootWatch.New(_roots)) // 처음 보는 루트만 이름을 확인해요
             {
                 if (root.name != "핏덩이" || _globs.Contains(root) || root.GetComponent<BloodBurst>() == null) continue;
                 _globs.Add(root);
