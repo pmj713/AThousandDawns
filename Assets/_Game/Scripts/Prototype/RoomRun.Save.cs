@@ -62,6 +62,7 @@ namespace AThousandDawns.Prototype
                 hiddenRooms = _record.HiddenRooms,
                 deja = _record.Deja,
                 almsCurse = _almsCurse,
+                ferry = _ferry,
                 playSeconds = _record.PlaySeconds,
                 damageDealt = _record.DamageDealt,
                 maxHit = _record.MaxHit,
@@ -180,6 +181,7 @@ namespace AThousandDawns.Prototype
             _record.HiddenRooms = s.hiddenRooms;
             _record.Deja = s.deja;
             _almsCurse = s.almsCurse;
+            _ferry = s.ferry;
             _record.PlaySeconds = s.playSeconds;
             _record.DamageDealt = s.damageDealt;
             _record.MaxHit = s.maxHit;

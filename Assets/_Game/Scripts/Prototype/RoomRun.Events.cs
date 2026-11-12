@@ -55,12 +55,13 @@ namespace AThousandDawns.Prototype
             }
         }
 
-        // 이 지역에서 나올 수 있고 아직 안 나온 이벤트 (폐사찰에서만 사찰 이벤트 3개가 더해져요)
+        // 이 지역에서 나올 수 있고 아직 안 나온 이벤트 (폐사찰에서만 사찰 이벤트 3개, 장강 수채에서만 수채 이벤트 3개가 더해져요)
         List<string> UnusedEvents()
         {
             var left = new List<string>();
             foreach (var id in EventIds) if (!_usedEvents.Contains(id)) left.Add(id);
             if (_region == 1) foreach (var id in TempleEventIds) if (!_usedEvents.Contains(id)) left.Add(id);
+            if (_region >= 2) foreach (var id in RiverEventIds) if (!_usedEvents.Contains(id)) left.Add(id);
             return left;
         }
 
@@ -380,7 +381,7 @@ namespace AThousandDawns.Prototype
                     break;
 
                 default:
-                    if (!BuildTempleEvent(v, id)) return null; // RoomRun.TempleEvents.cs
+                    if (!BuildTempleEvent(v, id) && !BuildRiverEvent(v, id)) return null; // RoomRun.TempleEvents.cs · RoomRun.RiverEvents.cs
                     break;
             }
             return v;

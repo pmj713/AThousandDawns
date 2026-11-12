@@ -1036,3 +1036,8 @@ irondragon.p2_geyser_ratio,0.7,,철룡 물기둥 피해 배율,
 irondragon.p2_water_count,3,,철룡 2페이즈 물길 수 (배가 부서지며 생김),
 irondragon.p2_water_radius,2.5,cell,철룡 물길 반경,
 irondragon.p2_water_slow,30%,,철룡 물길 안 이동속도 감소,
+event.wreck_tracking,2,,장강 난파선 뒤지기: 추적도 +,3지역 기획 (장강 이벤트)
+event.toll_silver,100,은자,장강 수적 통행세: 내는 은자,3지역 기획 (장강 이벤트)
+event.toll_reward,150,은자,장강 수적 통행세 거절 전투: 이기면 은자 +,3지역 기획 (장강 이벤트)
+event.toll_sneak_tracking,3,,장강 수적 통행세 몰래 지나가기: 추적도 +,3지역 기획 (장강 이벤트)
+event.ferry_silver,60,은자,장강 뱃사공: 뱃삯 (다음 층 지도가 다 보임),3지역 기획 (장강 이벤트)

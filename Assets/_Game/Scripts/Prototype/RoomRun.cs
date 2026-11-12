@@ -267,6 +267,7 @@ namespace AThousandDawns.Prototype
                 Mathf.RoundToInt(GameConfig.Get("room.optional_rooms", 2f)), events, RollHidden());
             AssignEvents();
             SenseHidden();
+            RevealFerry(); // 뱃사공: 지도가 다 보여요
             _phase = Phase.Floor;
             ShowBanner($"{RegionName} {_floor}층 · {PathLabel(_path)}");
             BeginHunt();
@@ -567,6 +568,13 @@ namespace AThousandDawns.Prototype
                 _tombFight = false;
                 arena.GrantOffer(TombWeights()); // 검이 꽂힌 무덤: 전설이 잘 나와요
                 text += " · 망령이 흩어지고 검이 빛나요, 기물 고르기";
+            }
+            if (_tollFight)
+            {
+                _tollFight = false;
+                int toll = BoostSilver(Mathf.RoundToInt(GameConfig.Get("event.toll_reward", 150f)));
+                Silver += toll;
+                text += $" · 수적들이 달아났어요, 은자 +{toll}";
             }
             if (_ambushFight)
             {

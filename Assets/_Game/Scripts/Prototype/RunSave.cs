@@ -46,6 +46,7 @@ namespace AThousandDawns.Prototype
         public int damageDealt, maxHit, damageTaken, maxTracking;
         public int newItems;
         public int almsCurse;   // 시주함을 턴 뒤 다음 싸우는 방에 붙는 망령 수
+        public bool ferry;     // 뱃사공: 다음 층 지도가 다 보여요
         public int[] kills = new int[0];
 
         // 플레이어

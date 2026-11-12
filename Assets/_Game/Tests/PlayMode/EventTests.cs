@@ -319,5 +319,75 @@ namespace AThousandDawns.Tests
             yield return WaitUntil(() => _arena.IsChoosing, 2f);
             Assert.IsTrue(_arena.Offer.All(d => d.grade == AThousandDawns.Items.ItemGrade.Rare), "희귀 기물만");
         }
+
+        // ── 장강 수채 전용 이벤트
+
+        [UnityTest]
+        public IEnumerator 난파선_뒤지면_추적도와_일반이_없는_기물_고르기()
+        {
+            yield return Load();
+            int tracking = _run.Tracking;
+            _run.OpenEventForTest("wreck");
+            Assert.IsTrue(_run.ChooseEvent(Index("짐칸을 뒤진다")));
+            Assert.AreEqual(tracking + 2, _run.Tracking);
+            _run.CloseEvent();
+            yield return WaitUntil(() => _arena.IsChoosing, 2f);
+            Assert.IsTrue(_arena.IsChoosing);
+            Assert.IsFalse(_arena.Offer.Any(d => d.grade == AThousandDawns.Items.ItemGrade.Common), "일반은 안 나와요");
+        }
+
+        [UnityTest]
+        public IEnumerator 수적_통행세_내거나_싸우거나_몰래_지나감()
+        {
+            yield return Load();
+            _run.OpenEventForTest("toll");
+            Assert.AreEqual("은자가 모자라요", _run.CurrentEvent.Choices[Index("통행세를 낸다")].Locked);
+            int tracking = _run.Tracking;
+            Assert.IsTrue(_run.ChooseEvent(Index("몰래 지나간다")));
+            Assert.AreEqual(tracking + 3, _run.Tracking);
+            _run.CloseEvent();
+
+            _run.GiveSilver(100);
+            _run.OpenEventForTest("toll");
+            Assert.IsTrue(_run.ChooseEvent(Index("통행세를 낸다")));
+            Assert.AreEqual(0, _run.Silver);
+            _run.CloseEvent();
+
+            _run.OpenEventForTest("toll");
+            Assert.IsTrue(_run.ChooseEvent(Index("거절한다")));
+            Assert.IsFalse(_run.IsInEvent, "창이 닫히고 전투");
+            Assert.IsTrue(_run.IsFighting);
+            int pirates = 0, elites = 0;
+            yield return WaitUntil(() =>
+            {
+                pirates = Mathf.Max(pirates, _director.Enemies.Count(e => e.Kind == EnemyKind.Pirate));
+                elites = Mathf.Max(elites, _director.Enemies.Count(e => e.IsElite));
+                for (int i = _director.Enemies.Count - 1; i >= 0; i--) _director.Enemies[i].Damageable.ApplyHit(99999);
+                return !_run.IsFighting;
+            }, 20f);
+            Assert.AreEqual(3, pirates, "수적 셋");
+            Assert.AreEqual(1, elites, "정예 하나");
+            Assert.GreaterOrEqual(_run.Silver, 150, "이기면 은자 +150");
+        }
+
+        [UnityTest]
+        public IEnumerator 뱃사공에게_삯을_내면_다음_층_지도가_다_보임()
+        {
+            yield return Load();
+            _run.OpenEventForTest("ferry");
+            Assert.AreEqual("은자가 모자라요", _run.CurrentEvent.Choices[Index("뱃삯을 낸다")].Locked);
+            _run.CloseEvent();
+            _run.GiveSilver(60);
+            _run.OpenEventForTest("ferry");
+            Assert.IsTrue(_run.ChooseEvent(Index("뱃삯을 낸다")));
+            Assert.AreEqual(0, _run.Silver);
+            Assert.IsTrue(_run.FerryPending);
+            _run.CloseEvent();
+
+            _run.LeaveFloor();
+            _run.ChooseFork(0);
+            Assert.IsFalse(_run.FerryPending, "한 층만");
+            Assert.IsTrue(_run.Map.Rooms.All(r => r.Revealed), "지도가 다 보여요");
+        }
     }
 }
