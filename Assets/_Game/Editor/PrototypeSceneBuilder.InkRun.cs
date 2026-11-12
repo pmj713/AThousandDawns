@@ -34,6 +34,7 @@ namespace AThousandDawns.EditorTools
             Build(); // 원래 시험판 씬 둘 (Prototype_Run · Prototype_Combat)
             var scene = EditorSceneManager.OpenScene(RunScenePath, OpenSceneMode.Single);
             DressRunInk();
+            CheckScriptFiles(scene);
             EditorSceneManager.SaveScene(scene, InkRunScenePath);
 
             // 처음부터(F5)·재시작이 빌드 순번으로 씬을 다시 불러서 빌드 목록에 넣어 둬요
@@ -42,6 +43,20 @@ namespace AThousandDawns.EditorTools
             EditorBuildSettings.scenes = scenes.ToArray();
             AssetDatabase.SaveAssets();
             Debug.Log($"[수묵 시험판] {InkRunScenePath} 를 만들었어요.");
+        }
+
+        // 씬에 붙인 컴포넌트마다 스크립트 파일(MonoScript)을 찾을 수 있는지 봐요. 클래스가 제 이름의 파일에 있지 않으면
+        // 에디터에서는 돌아가도 씬에 스크립트가 guid 없이 저장돼, 실행 파일이 그 씬을 "corrupted"로 읽고 꺼져요
+        static void CheckScriptFiles(UnityEngine.SceneManagement.Scene scene)
+        {
+            foreach (var root in scene.GetRootGameObjects())
+                foreach (var mb in root.GetComponentsInChildren<MonoBehaviour>(true))
+                {
+                    if (mb == null) continue;
+                    var script = MonoScript.FromMonoBehaviour(mb);
+                    if (script == null || string.IsNullOrEmpty(AssetDatabase.GetAssetPath(script)))
+                        Debug.LogError($"[수묵 시험판] {mb.GetType().FullName} ({mb.name}): 클래스 이름과 같은 이름의 .cs 파일이 없어요. 빌드에서 씬이 깨져요 — 클래스를 제 이름의 파일로 옮겨 주세요", mb);
+                }
         }
 
         static void DressRunInk()
