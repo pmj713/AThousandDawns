@@ -45,6 +45,12 @@ namespace AThousandDawns.Enemies
         readonly List<Mark> _marks = new List<Mark>();
         readonly List<GameObject> _water = new List<GameObject>();
 
+        // 이펙트 신호 (아트: Scripts/Art/InkIronDragonFx). 판정과 상관없이 그림만 그려요.
+        public enum FxKind { Slam, Geyser, Hook, Swing, Transition }
+        public struct FxCue { public FxKind Kind; public Vector3 At, Dir; public float Radius, Time, Length, Angle; public bool Hooked; }
+        public static event System.Action<IronDragonBrain, FxCue> Cue;
+        void Fx(FxCue cue) => Cue?.Invoke(this, cue);
+
         public override EnemyKind Kind => EnemyKind.IronDragon;
         protected override string Key => "irondragon";
         protected override bool UsesToken => false;
@@ -217,6 +223,7 @@ namespace AThousandDawns.Enemies
             {
                 case Pattern.Swing:
                     Director.SpawnBurst(transform.position + AimDirection * (_swingRadius * 0.5f), _swingRadius * 0.4f);
+                    Fx(new FxCue { Kind = FxKind.Swing, At = transform.position, Dir = AimDirection, Radius = _swingRadius, Angle = _swingAngle });
                     if (HitShapes.InSector(transform.position, AimDirection, _swingRadius, _swingAngle, Player.transform.position, PlayerRadius))
                         Player.TryReceiveHit(AttackPower * _swingRatio, transform.position, _swingKnockback, Body);
                     break;
@@ -243,10 +250,11 @@ namespace AThousandDawns.Enemies
             rel.y = 0f;
             float along = Vector3.Dot(rel, AimDirection);
             float side = Mathf.Abs(Vector3.Dot(rel, new Vector3(AimDirection.z, 0f, -AimDirection.x)));
-            if (along < 0f || along > _hookRange + PlayerRadius || side > _hookWidth * 0.5f + PlayerRadius) return;
-            if (!Player.TryReceiveHit(AttackPower * _hookRatio, transform.position, 0f, Body)) return;
+            if (along < 0f || along > _hookRange + PlayerRadius || side > _hookWidth * 0.5f + PlayerRadius) { Fx(new FxCue { Kind = FxKind.Hook, At = transform.position, Dir = AimDirection, Length = _hookRange }); return; }
+            if (!Player.TryReceiveHit(AttackPower * _hookRatio, transform.position, 0f, Body)) { Fx(new FxCue { Kind = FxKind.Hook, At = transform.position, Dir = AimDirection, Length = _hookRange }); return; }
             Player.PullToward(transform.position, _hookStop);
             _hooked = true;
+            Fx(new FxCue { Kind = FxKind.Hook, At = transform.position, Dir = AimDirection, Length = _hookRange, Hooked = true });
         }
 
         void Geyser()
@@ -276,6 +284,7 @@ namespace AThousandDawns.Enemies
             marker.SetPose(at, Vector3.forward);
             marker.SetProgress(0f);
             _marks.Add(new Mark { At = at, Timer = fall, Total = fall, Radius = radius, Ratio = ratio, Marker = marker });
+            Fx(new FxCue { Kind = _pattern == Pattern.Geyser ? FxKind.Geyser : FxKind.Slam, At = at, Radius = radius, Time = fall });
         }
 
         void TickMarks(float dt)
@@ -372,6 +381,7 @@ namespace AThousandDawns.Enemies
             _transitionTimer = _transitionTime;
             Body.Targetable = false;
             Director.SpawnBurst(transform.position, 3f); // 배가 부서져요
+            Fx(new FxCue { Kind = FxKind.Transition, At = transform.position, Radius = 3f, Time = _transitionTime });
         }
 
         void EnterPhase2()
