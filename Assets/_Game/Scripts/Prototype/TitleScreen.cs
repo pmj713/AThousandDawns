@@ -41,6 +41,9 @@ namespace AThousandDawns.Prototype
 
         [SerializeField] AudioClip music; // 시작 화면 BGM (VARCO Sound, Audio/BGM/Title.mp3)
 
+        // 배경 그림 위 움직임 (화면 너비, 높이, 배경 그림 이름). 아트 쪽이 걸어요 (잎·제목·메뉴보다 아래에 그려져요)
+        public static event System.Action<float, float, string> BackdropFx;
+
         MetaSave _meta;
         int _underlineFor = -1;   // 붓 밑줄을 긋기 시작한 메뉴
         float _underlineAt;
@@ -187,6 +190,7 @@ namespace AThousandDawns.Prototype
             if (bg != null)
             {
                 GUI.DrawTexture(new Rect(0, 0, w, h), bg, ScaleMode.ScaleAndCrop);
+                BackdropFx?.Invoke(w, h, BackgroundName(_meta)); // 흐르는 안개·빛 번짐 (아트: InkTitleBackdrop)
                 DrawLeaves(w, h);
             }
             var title = ItemIcons.TitleArt("Title");
