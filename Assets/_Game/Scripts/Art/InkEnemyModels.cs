@@ -141,6 +141,7 @@ namespace AThousandDawns.Art
         System.Reflection.PropertyInfo _transitionProp;   // 페이즈 전환 중인지 (IsTransitioning이 있고 전환 자세가 있는 적만)
         string _transitionState;
         bool _hasIntro, _introDone;   // 보스·고수 등장 연출 (Intro 상태가 있을 때, 깨어나는 순간 한 번)
+        bool _hasSpawn;               // 일반 적 등장: 처음 한 번 웅크렸다 일어서요
         bool _roaring;
         CultistBrain _cultist;      // 마교도: 광폭
         bool _frenzied;
@@ -171,6 +172,7 @@ namespace AThousandDawns.Art
             if (_body != null) _body.Damaged += OnDamaged;   // 브레인이 먼저 구독해서, 여기 올 땐 경직·쓰러짐이 이미 정해져 있어요
             if (brain.Rank == EnemyRank.Boss || brain.Rank == EnemyRank.Master) flinchAngle = 5f;   // 고수·보스는 덩치가 커서 살짝만 움찔해요
             _hasStatue = brain.Kind == EnemyKind.Arhat && animator.HasState(0, Animator.StringToHash("Statue")) && animator.HasState(0, Animator.StringToHash("Wake"));
+            _hasSpawn = !_hasIntro && !_hasStatue && animator.HasState(0, Animator.StringToHash("Spawn"));
             _lastPos = transform.position;
         }
 
@@ -296,6 +298,13 @@ namespace AThousandDawns.Art
                 _animator.SetFloat(AttackSpeedId, 1f);
                 Play("Frenzy", 0.1f);
                 Tint(new Color(1f, 0.55f, 0.52f, 1f));
+            }
+            // 일반 적 등장: 처음 나타난 순간 웅크렸다 일어서요 (곧바로 공격하면 공격 동작이 이어받아요)
+            if (_hasSpawn)
+            {
+                _hasSpawn = false;
+                _animator.SetFloat(AttackSpeedId, 1f);
+                Play("Spawn", 0f);
             }
             // 보스·고수 등장: 깨어나는 순간(방에 들어오면) 위세 있는 동작을 한 번 보여요. 곧바로 공격하면 공격 동작이 이어받아요
             if (_hasIntro && !_introDone && _brain.IsAwake && !_brain.IsDead)

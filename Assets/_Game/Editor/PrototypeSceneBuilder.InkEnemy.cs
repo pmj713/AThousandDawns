@@ -369,6 +369,11 @@ namespace AThousandDawns.EditorTools
             // 등장 연출 (보스·고수가 깨어나는 순간 한 번, InkEnemyAnimator): 저마다 위세 있는 동작을 1.4초에 그대로 재생해요
             if (IntroClips.TryGetValue(name, out var introName) && clips.TryGetValue(introName, out var introClip))
                 AddMove("Intro", new[] { introClip }, MoveMode.Play, 1.4f, 0f);
+            // 등장 (일반 적이 방에 나타날 때 한 번, InkEnemyAnimator): 웅크렸다 일어서며 무기를 고쳐 잡아요.
+            //   Generic은 모델 고유 Spawn만 (플레이어 Humanoid 동작은 Generic에 못 써요), Humanoid는 플레이어 Spawn을 옮겨 입어요
+            bool ownSpawn = AssetDatabase.LoadAllAssetsAtPath(modelPath).OfType<AnimationClip>().Any(c => c.name.Split('|').Last() == "Spawn");
+            if ((ownSpawn || !generic) && clips.TryGetValue("Spawn", out var spawnClip))
+                AddMove("Spawn", new[] { spawnClip }, MoveMode.Play, 0.7f, 0f);
 
             // 재질: 수묵 캐릭터 셰이더 + VARCO 색 텍스처. 채도는 지역 색 양(_InkColorAmount)을 따라요
             var body = GetInkMaterial($"Ink_{name}_Body", "#FFFFFF", 0.45f);
