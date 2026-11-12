@@ -192,6 +192,7 @@ namespace AThousandDawns.EditorTools
                 new MoveSpec { attack = "흡인", state = "Pull", clips = new[] { "Burst" }, mode = MoveMode.Play, seconds = 3.0f },
                 new MoveSpec { attack = "검비", state = "SwordRain", clips = new[] { "Burst" }, mode = MoveMode.Play, seconds = 2.5f },
                 new MoveSpec { state = "Ascend", clips = new[] { "Ascend" } },
+                new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },   // 격파: 무릎 꿇고 고개 숙인 채 멈춰요 (엔딩 내내, InkCorpse)
             },
             // 혈불 (폐사찰 보스): 손바닥 내려찍기 · 염불(합장 반복) · 피의 비(두 팔을 하늘로 반복) · 팔 휘두르기(2페이즈, 좌우 세 번). 목탁승 부르기는 기본 Attack(손짓)
             ["BloodBuddha"] = new[]

@@ -124,6 +124,7 @@ namespace AThousandDawns.EditorTools
             DressRoomsInk(stoneMat, woodMat, bambooMat, roofX);
             DressVillageInk(floorMat, stoneMat, woodMat, bambooMat, roofX); // 마을 (PrototypeSceneBuilder.InkVillage.cs)
             DressKarmaLanterns(stoneMat, roofX); // 사당 앞 업보 등불 여섯 (PrototypeSceneBuilder.InkKarma.cs)
+            new GameObject("Ink Ending Dawn (천마 격파 새벽빛)").AddComponent<AThousandDawns.Art.InkEndingDawn>();
             DressRunPropsInk(stoneMat); // 항아리·금 간 벽·관문 (PrototypeSceneBuilder.InkRunProps.cs)
             DressTempleInk(floorMat, stoneMat, woodMat, roofX); // 폐사찰 꾸밈: 지역이 바뀌면 대나무 대신 무너진 절 (PrototypeSceneBuilder.InkTemple.cs)
             DressOutsideInk(floorMat, bambooMat); // 맵 바깥 땅 + 벽 너머 대나무: 벽 너머 흰 빈 곳을 지역별 수묵 땅으로 (PrototypeSceneBuilder.InkOutside.cs)

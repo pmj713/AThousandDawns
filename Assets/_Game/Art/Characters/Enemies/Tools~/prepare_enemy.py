@@ -2095,6 +2095,21 @@ if "demonmoves" in EXTRAS:
         make_action("Burst", [(0, "idle"), (8, "b_burst"), (36, "b_burst"), (46, "idle")], dm_pose)
         make_action("Ascend", [(0, "a_kneel"), (20, "a_kneel"), (40, "b_burst"), (52, "b_burst"), (60, "idle")], dm_pose)
         make_action("Grip", [(0, "g_reach"), (6, "g_reach"), (11, "g_pull"), (20, "g_pull"), (30, "idle")], dm_pose)   # 마기 손아귀: 뻗었다가 끌어당기기
+        # Defeat (천마 격파 · 엔딩 내내 이 자세로 남아요): 휘청이다 털썩 무릎을 꿇고, 두 손을 무릎에 얹은 채 고개를 깊이 숙여요 (검은 Unity가 손에서 떨궈요)
+        def defeat_pose(stage):
+            if stage == "idle":
+                idle_end_pose(); return
+            kneel = stage == "kneel"
+            feet = {s: FEET[s] + (Vector((0, 0.45, 0)) if kneel else Vector((0, 0.15 if s == "Right" else -0.1, 0))) for s in ("Left", "Right")}
+            lower_hips(-0.7 if kneel else -0.25, feet, dy=0.1 if kneel else 0.05)
+            bend("Spine", Vector((1, 0, 0)), 22 if kneel else -10); bend("Neck", Vector((1, 0, 0)), 38 if kneel else -15)
+            for s, sx in (("Left", 1), ("Right", -1)):
+                sh = pb[f"{s}Arm"].head.copy()
+                if kneel:
+                    arm(s, sh + Vector((sx * 0.12, -0.32, -0.62)), Vector((sx, 0.3, -0.3)))   # 무릎 위에 손
+                else:
+                    arm(s, sh + Vector((sx * 0.45, 0.05, -0.35)), Vector((sx, 0.3, -0.3)))    # 휘청이며 팔이 벌어져요
+        make_action("Defeat", [(0, "stagger"), (10, "stagger"), (22, "kneel"), (40, "kneel")], defeat_pose)
     rig.animation_data.action = None
     reset_pose()
 
