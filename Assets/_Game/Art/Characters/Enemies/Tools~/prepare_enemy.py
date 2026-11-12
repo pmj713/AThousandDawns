@@ -2050,6 +2050,8 @@ if "demonmoves" in EXTRAS:
         "d_end": (65, Vector((0.7, 0.0, 0.3)), 0.9, -0.24, -0.15, Vector((0.6, 0.5, 0.5)), 0.5, "wide"),
         "b_burst": (0, Vector((0.35, -0.25, -0.75)), 0.95, -0.2, 0.05, Vector((0.1, -0.2, -1)), 0.2, "wide"),
         "a_kneel": (0, Vector((0.15, -0.35, -0.75)), 0.9, -0.7, 0.05, Vector((0, -0.1, -1)), 0.35, "down"),
+        "g_reach": (-25, Vector((-0.2, 0.3, -0.5)), 0.85, -0.16, -0.12, Vector((-0.2, 0.6, -0.8)), 0.4, "reach"),
+        "g_pull": (20, Vector((-0.2, 0.25, -0.5)), 0.85, -0.22, 0.12, Vector((-0.2, 0.6, -0.8)), 0.0, "pull"),
     }
 
     def dm_pose(stage):
@@ -2072,6 +2074,11 @@ if "demonmoves" in EXTRAS:
             arm("Left", sl + Vector((-0.12, -0.32, -0.05)), Vector((1, 0.3, -0.6)))          # 검결: 가슴 앞
         elif left == "wide":
             arm("Left", sl + Vector((0.6, -0.2, 0.25)), Vector((1, 0.3, 0)))                 # 크게 펼쳐요
+        elif left == "reach":
+            arm("Left", sl + Vector((-0.05, -0.85, 0.05)), Vector((1, 0, -0.5)))              # 왼손을 앞으로 쭉 뻗어 마기로 붙잡아요
+            bend("LeftHand", Vector((1, 0, 0)), -60)                                         # 손바닥이 앞을 봐요
+        elif left == "pull":
+            arm("Left", sl + Vector((0.05, -0.25, -0.15)), Vector((1, 0.3, -0.5)))            # 움켜쥐고 가슴께로 끌어당겨요
         else:
             arm("Left", sl + Vector((0.15, -0.3, -0.6)), Vector((1, 0.3, -0.5)))             # 무릎 위에
 
@@ -2084,6 +2091,7 @@ if "demonmoves" in EXTRAS:
         make_action("DemonSweep", [(0, "d_up"), (4, "d_sweep"), (8, "d_end"), (18, "d_end"), (30, "idle")], dm_pose)
         make_action("Burst", [(0, "idle"), (8, "b_burst"), (36, "b_burst"), (46, "idle")], dm_pose)
         make_action("Ascend", [(0, "a_kneel"), (20, "a_kneel"), (40, "b_burst"), (52, "b_burst"), (60, "idle")], dm_pose)
+        make_action("Grip", [(0, "g_reach"), (6, "g_reach"), (11, "g_pull"), (20, "g_pull"), (30, "idle")], dm_pose)   # 마기 손아귀: 뻗었다가 끌어당기기
     rig.animation_data.action = None
     reset_pose()
 
