@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Linq;
 using System.Text;
 using AThousandDawns.Core;
 using AThousandDawns.Enemies;
@@ -123,6 +124,81 @@ namespace AThousandDawns.Tests
             yield return Fight(EnemyKind.HeavenlyDemon, 3, 6, 4f, 300f, "보스");
             foreach (var (k, r) in masters) yield return Fight(k, r, 0, 4f, 120f, "고수");
             yield return Fight(EnemyKind.BloodShadow, 3, 6, 4f, 180f, "고수");
+        }
+
+        // 방 하나 전체: 그 지역 2층 싸우는 방을 방 구성마다 (실제 웨이브 · 정예 · 엄폐물 · 물 · 혈지 그대로).
+        // 화력은 가장 가까운 적에게 (부르는 적 · 갈라진 적도), 플레이어는 방 가운데 가만히. 방을 비울 때까지 시간과 받은 피해.
+        IEnumerator Room(int region, int layout, int karma, bool dense, float limit = 120f)
+        {
+            new MetaSave { runs = 1, finalBossKills = karma > 0 ? karma : 0, karma = karma, karmaMax = karma, tutorialFloorDone = true }.Save();
+            RoomRun.SkipVillage = true;
+            RoomRun.SeedOverride = 1000 + region * 10 + layout;
+            RoomRun.LayoutOverride = layout;
+            PrototypeArena.AutoSpawn = true;
+            yield return SceneManager.LoadSceneAsync("Prototype_Run", LoadSceneMode.Single);
+            yield return null;
+            var run = Object.FindFirstObjectByType<RoomRun>();
+            var arena = Object.FindFirstObjectByType<PrototypeArena>();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            run.SetRegionForTest(region);
+            run.BeginFork(2);
+            int pick = 0;
+            for (int i = 0; i < run.ForkOptions.Count; i++) if (run.ForkOptions[i].Dense == dense) { pick = i; break; }
+            run.ChooseFork(pick);
+            var room = run.Map.Rooms.FirstOrDefault(r => r.HasFight && r.FixedWaves == null && r.Kind == FloorRoomKind.Combat);
+            if (room == null) { Write($"방\tr{region}\t구성 {layout}\t싸우는 방 없음"); yield break; }
+            run.Enter(room, 0);
+            Vector3 home = player.transform.position;
+            float dps = BaseDps * Firepower[region];
+            Time.timeScale = 4f;
+            float t = 0f, taken = 0f, carry = 0f, last = player.Health;
+            int hits = 0, spawned = 0;
+            var seen = new System.Collections.Generic.HashSet<EnemyBrain>();
+            float realEnd = Time.realtimeSinceStartup + limit;
+            while (run.IsFighting && t < limit && Time.realtimeSinceStartup < realEnd)
+            {
+                yield return null;
+                t += Time.deltaTime;
+                if (player.Health < last) { taken += last - player.Health; hits++; }
+                player.Heal(9999f);
+                last = player.Health;
+                if (arena.IsChoosing) arena.Choose(0);
+                // 깨어 있는 가장 가까운 적. 없으면 숨어 있는 적 (풀숲 청죽사 · 수귀처럼 다가가야 깨는 적은 실제로는 플레이어가 찾아가요)
+                EnemyBrain target = null, hidden = null;
+                float best = float.MaxValue, bestHidden = float.MaxValue;
+                foreach (var e in director.Enemies)
+                {
+                    if (e == null || e.IsDead) continue;
+                    if (seen.Add(e)) spawned++;
+                    float d = (e.transform.position - home).sqrMagnitude;
+                    if (e.IsAwake && e.Damageable.Targetable) { if (d < best) { best = d; target = e; } }
+                    else if (d < bestHidden) { bestHidden = d; hidden = e; }
+                }
+                if (target == null) target = hidden;
+                if (target == null) continue;
+                carry += dps * Time.deltaTime;
+                int dmg = Mathf.FloorToInt(carry);
+                if (dmg > 0) { target.Damageable.ApplyHit(dmg, false); carry -= dmg; }
+            }
+            Time.timeScale = 1f;
+            RoomRun.LayoutOverride = -1;
+            RoomRun.SeedOverride = 0;
+            string[] names = region == 0 ? RoomRun.BambooLayoutNames : region == 1 ? RoomRun.TempleLayoutNames : region == 2 ? RoomRun.RiverLayoutNames : RoomRun.TombLayoutNames;
+            float bars = taken / MaxHealth[region];
+            Write($"방\tr{region}\tk{karma}\t{(dense ? "짙은 길" : "옅은 길")} · {names[Mathf.Clamp(layout, 0, 3)]}\t적 {spawned} · 웨이브 {run.WaveCount}\t처치 {(run.IsFighting ? $"못함({t:0}초)" : t.ToString("0.0") + "초")}\t받은 피해 {taken:0} ({bars:0.00}칸)\t초당 {taken / Mathf.Max(1f, t):0.0}\t맞은 수 {hits}");
+        }
+
+        [UnityTest]
+        [Timeout(1800000)]
+        public IEnumerator 방_전체()
+        {
+            File.AppendAllText(ReportPath, "\n구분\t지역\t업보\t길 · 구성\t적 · 웨이브\t처치\t받은 피해 (칸)\t초당\t맞은 수\n", Encoding.UTF8);
+            for (int r = 0; r < 4; r++)
+                for (int layout = 0; layout < 4; layout++)
+                    yield return Room(r, layout, 0, false);
+            for (int r = 0; r < 4; r++) yield return Room(r, 0, 0, true); // 짙은 길 (정예)
+            yield return Room(3, 0, 6, true);                               // 천마총 짙은 길 · 업보 6
         }
 
         // 보스 하나만 다시 잴 때 (예: --filter "AThousandDawns.Tests.BalanceProbe.보스_하나")

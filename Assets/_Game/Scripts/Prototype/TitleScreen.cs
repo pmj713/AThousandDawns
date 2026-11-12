@@ -15,7 +15,10 @@ namespace AThousandDawns.Prototype
     // 마우스·키보드(위아래·Enter·Esc)·게임패드(십자·A·B) 모두 돼요.
     public sealed class TitleScreen : MonoBehaviour
     {
-        public const string RunScene = "Prototype_Run";
+        // 판 씬: 수묵으로 꾸민 판 (씬 빌더 "시험판 씬 만들기 (수묵)")이 빌드 목록에 있으면 그것, 없으면 회색 상자 판.
+        // 판 재시작 · 마을 귀환은 지금 씬 번호를 다시 불러서, 처음 들어가는 씬만 고르면 끝까지 같은 씬이에요.
+        public const string InkRunScene = "Prototype_Run_Ink", PlainRunScene = "Prototype_Run";
+        public static string RunScene => Application.CanStreamedLevelBeLoaded(InkRunScene) ? InkRunScene : PlainRunScene;
 
         public enum View { Menu, Prologue, Settings, Records, Credits }
         public enum Item { Continue, Settings, Records, Credits, Quit }

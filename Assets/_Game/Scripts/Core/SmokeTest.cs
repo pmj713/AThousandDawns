@@ -48,7 +48,7 @@ namespace AThousandDawns.Core
             foreach (var folder in ArtFolders) Line($"Resources/{folder}: 그림 {Resources.LoadAll<Texture2D>(folder).Length}장");
 
             yield return Measure("시작 화면", 3f);
-            yield return Load("Prototype_Run");
+            yield return Load(AThousandDawns.Prototype.TitleScreen.RunScene); // 시작 화면이 들어가는 판 (수묵이 있으면 수묵)
             Line($"설정 {(GameConfig.Balance != null ? "있음" : "없음 ←")} · 기물 {(GameConfig.Items != null ? GameConfig.Items.Items.Count : 0)}개 (판 씬의 GameConfig)");
             yield return Measure("판 (첫 방)", 5f);
             Line("끝");

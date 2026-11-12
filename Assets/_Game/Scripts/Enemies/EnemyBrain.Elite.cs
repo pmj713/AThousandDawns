@@ -124,6 +124,7 @@ namespace AThousandDawns.Enemies
                 var child = Director.SpawnSummon(Kind, at);
                 if (child == null) continue;
                 child.Body.ScaleMaxHealth(health);
+                child.IsSplitChild = true;
                 child.DisplayName = $"갈라진 {child.DisplayName}";
                 SplitChildren++;
                 if (first == null) first = child; else if (second == null) second = child;
@@ -132,6 +133,7 @@ namespace AThousandDawns.Enemies
         }
 
         public static int SplitChildren { get; private set; } // 테스트용: 지금까지 갈라져 나온 수
+        public bool IsSplitChild { get; private set; } // 분열 정예에서 갈라져 나온 작은 적 (아트: 조금 작게)
         public static event System.Action<EnemyBrain, Vector3, EnemyBrain, EnemyBrain> SplitApart; // 쓰러진 정예, 쓰러진 자리, 갈라진 둘 (없으면 null)
 
         // 열화: 죽은 자리에 불길 · 분열: 둘로 갈라져요
