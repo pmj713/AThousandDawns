@@ -5017,3 +5017,35 @@ MonoBehaviour:
     value: 0.4
     unit: cell
     note: "\uD654\uBA74 \uD754\uB4E4\uB9BC: \uBCF4\uC2A4\uAC00 \uC4F0\uB7EC\uC9C8 \uB54C"
+  - key: tomb.pool_heal
+    value: 0.05
+    unit: 
+    note: "\uCC9C\uB9C8\uCD1D \uD608\uC9C0: \uC704\uC5D0 \uC120 \uC801\uC774 \uCD08\uB2F9 \uD68C\uBCF5\uD558\uB294 \uCD5C\uB300 \uCCB4\uB825 \uBE44\uC728"
+  - key: tomb.miasma_first
+    value: 3
+    unit: s
+    note: "\uCC9C\uB9C8\uCD1D \uB9C8\uAE30 \uAE30\uB465: \uC2F8\uC6C0\uC774 \uC2DC\uC791\uB418\uACE0 \uCCAB \uBD84\uCD9C\uAE4C\uC9C0"
+  - key: tomb.miasma_interval
+    value: 6
+    unit: s
+    note: "\uCC9C\uB9C8\uCD1D \uB9C8\uAE30 \uAE30\uB465: \uBD84\uCD9C \uAC04\uACA9"
+  - key: tomb.miasma_fuse
+    value: 1
+    unit: s
+    note: "\uCC9C\uB9C8\uCD1D \uB9C8\uAE30 \uAE30\uB465: \uBD84\uCD9C \uC608\uACE0 (\uBC14\uB2E5 \uC6D0)"
+  - key: tomb.miasma_radius
+    value: 2.5
+    unit: cell
+    note: "\uCC9C\uB9C8\uCD1D \uB9C8\uAE30 \uAE30\uB465: \uBD84\uCD9C \uBC18\uACBD"
+  - key: tomb.miasma_damage
+    value: 12
+    unit: 
+    note: "\uCC9C\uB9C8\uCD1D \uB9C8\uAE30 \uAE30\uB465: \uBD84\uCD9C \uD53C\uD574 (\uC9C0\uC5ED \uACF5\uACA9 \uBC30\uC728 \xB7 \uC5C5\uBCF4\uB97C \uACF1\uD568 \u2192 24)"
+  - key: enemy.avoid_look
+    value: 1.2
+    unit: cell
+    note: "\uC801 \uAE38\uCC3E\uAE30: \uAC00\uB824\uB294 \uCABD\uC73C\uB85C \uC774\uB9CC\uD07C \uC548\uC5D0 \uC7A5\uC560\uBB3C\uC774 \uC788\uC73C\uBA74 \uB3CC\uC544\uAC00\uC694"
+  - key: enemy.avoid_hold
+    value: 0.6
+    unit: s
+    note: "\uC801 \uAE38\uCC3E\uAE30: \uD55C \uBC88 \uACE0\uB978 \uC6B0\uD68C \uBC29\uD5A5\uC744 \uC720\uC9C0\uD558\uB294 \uC2DC\uAC04"

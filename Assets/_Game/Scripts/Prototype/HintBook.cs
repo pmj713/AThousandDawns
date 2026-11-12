@@ -88,6 +88,8 @@ namespace AThousandDawns.Prototype
                 Text = "폐사찰은 방마다 돌기둥 · 석불 · 무너진 담이 달라요.\n사람도 화살도 돌진도 막는 엄폐물이에요. 궁수와 돌진하는 적을 그 뒤에서 상대해 봐요." },
             new Entry { Id = "river_water", Group = "판", Title = "장강의 물",
                 Text = "장강 수채 방에는 여울 · 웅덩이 · 물길이 있어요. 물에 들어가면 느려지고, 흐르는 물은 물살 쪽으로 밀어요.\n대시 중엔 밀리지 않아요. 수적과 수귀는 물에 익숙해서 그대로예요." },
+            new Entry { Id = "tomb_layout", Group = "판", Title = "천마총 방 구성",
+                Text = "천마총은 방마다 무너진 관 · 마기 기둥 · 혈지가 달라요.\n마기 기둥은 싸우는 동안 6초마다 둘레에 마기를 뿜어요 (예고 1초). 혈지 위에 선 적은 회복하니 끌어내서 싸워요." },
             new Entry { Id = "jar", Group = "판", Title = "항아리",
                 Text = "방 벽가의 항아리는 부딪히거나 공격하면 깨지고 은자가 나와요. 싸우는 중에도 돼요.\n한 번 깬 항아리는 그 층에서 다시 나오지 않아요." },
             new Entry { Id = "meditation", Group = "회귀", Title = "면벽수련",

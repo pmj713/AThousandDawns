@@ -326,9 +326,42 @@ namespace AThousandDawns.Enemies
         {
             velocity += Separation() * MoveSpeed;
             velocity.y = 0f;
+            velocity = Steer(velocity, dt);
             var flags = Controller.Move(velocity * dt);
             if ((flags & CollisionFlags.Sides) != 0) StrafeSign = -StrafeSign;
             return flags;
+        }
+
+        // 앞이 막혔으면 돌아가요 (폐사찰 석불 · 무너진 담, 천마총 관 같은 엄폐물 뒤의 플레이어를 향해 벽에 비비지 않게).
+        // 가려던 쪽으로 lookAhead칸 안에 장애물이 있으면 ±45° · ±90° 중 트인 쪽으로 틀고, 한 번 고른 쪽은 잠깐 유지해요 (좌우로 떨지 않게).
+        float _avoidSign, _avoidTimer;
+
+        public bool IsDetouring => _avoidTimer > 0f; // 테스트용
+
+        Vector3 Steer(Vector3 velocity, float dt)
+        {
+            if (_avoidTimer > 0f) _avoidTimer -= dt;
+            float speed = velocity.magnitude;
+            if (speed < 0.05f) return velocity;
+            Vector3 dir = velocity / speed;
+            float look = Mathf.Min(GameConfig.GetOptional("enemy.avoid_look", 1.2f), ToPlayer().magnitude - 0.3f); // 플레이어 너머의 벽은 보지 않아요 (벽에 붙은 플레이어에게도 다가가게)
+            if (look < 0.15f) return velocity;
+            float radius = Controller != null ? Controller.radius * 0.9f : 0.35f;
+            Vector3 origin = transform.position + Vector3.up * 0.5f;
+            if (ObstacleProbe.Distance(origin, dir, radius, look) >= look) return velocity;
+            if (_avoidTimer <= 0f || _avoidSign == 0f) // 새로 막혔으면 더 트인 쪽을 골라요
+            {
+                float left = ObstacleProbe.Distance(origin, Quaternion.Euler(0f, -60f, 0f) * dir, radius, look * 2f);
+                float right = ObstacleProbe.Distance(origin, Quaternion.Euler(0f, 60f, 0f) * dir, radius, look * 2f);
+                _avoidSign = right >= left ? 1f : -1f;
+            }
+            _avoidTimer = GameConfig.GetOptional("enemy.avoid_hold", 0.6f);
+            foreach (float angle in new[] { 45f, 90f, 135f })
+            {
+                Vector3 turned = Quaternion.Euler(0f, angle * _avoidSign, 0f) * dir;
+                if (ObstacleProbe.Distance(origin, turned, radius, look) >= look) return turned * speed;
+            }
+            return Quaternion.Euler(0f, 90f * _avoidSign, 0f) * dir * speed; // 다 막혔으면 옆으로
         }
 
         // 분리 없이 그대로 움직여요 (돌진·전진 베기).
