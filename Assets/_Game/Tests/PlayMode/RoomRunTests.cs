@@ -295,6 +295,43 @@ namespace AThousandDawns.Tests
             yield return WaitUntil(() => _arena.BossInfo.Phase == 2 && !_arena.BossInfo.IsTransitioning, 4f);
             Assert.AreEqual(3, ((IronDragonBrain)boss).WaterCount, "배가 부서지며 물길 3곳");
             boss.Damageable.ApplyHit(99999);
+            yield return WaitUntil(() => _arena.IsChoosing, 3f);
+            Assert.IsFalse(_run.IsDone, "철룡 다음은 천마총");
+            Assert.AreEqual(6, _player.Items.Board.Height, "경맥도 6×6");
+            _arena.Choose(0);
+            yield return WaitUntil(() => _run.Region == 3, 2f);
+            Assert.AreEqual("천마총", _run.RegionName);
+            Assert.AreEqual(2, _player.UltimateStage, "철룡을 넘으면 상단전");
+        }
+
+        // 천마총: 마지막 지역. 적 체력 ×4.5, 동시 근접 공격 4명 (최대), 보스를 쓰러뜨리면 판 끝 (승리)
+        [UnityTest]
+        public IEnumerator 천마총은_마지막_지역이고_적이_가장_셈()
+        {
+            yield return Load();
+            _run.SetRegionForTest(3);
+            bool dense = _run.ForkOptions[0].Dense;
+            _run.ChooseFork(0);
+            Assert.AreEqual("천마총", _run.RegionName);
+            Assert.IsTrue(_run.LastRegion);
+            Assert.AreEqual(4, _director.MeleeTokens.Capacity, "동시 근접 공격 최대 4명");
+            Assert.AreEqual(1f, _run.SecondTraitChance, 1e-4f, "정예는 늘 특성 둘");
+            var room = _run.Map.Rooms.First(r => r.Kind == FloorRoomKind.Combat);
+            _run.Enter(room, -1);
+            yield return WaitUntil(() => _director.Enemies.Count > 0, 5f);
+            var pirate = _director.Enemies.FirstOrDefault(e => e.Kind == EnemyKind.Pirate && !e.IsElite);
+            if (pirate != null) Assert.AreEqual(30f * 4.5f * (dense ? 1.3f : 1f), pirate.Damageable.MaxHealth, 0.5f, "체력 × 4.5 (천마총 적이 생기기 전까지 장강 적)");
+
+            _run.EnterRest();
+            var cc = _player.GetComponent<CharacterController>();
+            cc.enabled = false;
+            _player.transform.position = new Vector3(60f, 0f, 6.6f);
+            cc.enabled = true;
+            yield return WaitUntil(() => _arena.Boss != null && _arena.Boss.IsAwake, 3f);
+            var boss = _arena.Boss;
+            boss.Damageable.ApplyHit(Mathf.CeilToInt(boss.Damageable.MaxHealth * 0.55f));
+            yield return WaitUntil(() => _arena.BossInfo.Phase == 2 && !_arena.BossInfo.IsTransitioning, 4f);
+            boss.Damageable.ApplyHit(99999);
             yield return WaitUntil(() => _run.IsDone, 3f);
             Assert.IsTrue(_run.IsDone, "마지막 지역 보스 = 판 끝");
         }

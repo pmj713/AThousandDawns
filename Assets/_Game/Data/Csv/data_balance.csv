@@ -1043,3 +1043,16 @@ event.toll_sneak_tracking,3,,장강 수적 통행세 몰래 지나가기: 추적
 event.ferry_silver,60,은자,장강 뱃사공: 뱃삯 (다음 층 지도가 다 보임),3지역 기획 (장강 이벤트)
 elite.second_trait.r2,50%,,장강 수채 정예: 특성이 하나 더 붙을 확률 (1~2개),몬스터!B142
 elite.second_trait.r3,100%,,천마총 정예: 특성이 하나 더 붙을 확률 (늘 2개),몬스터!B142
+region.3.health,4.5,배,천마총 적 체력 배율 (일반 적·살수·고수·보스),몬스터!B18
+region.3.attack,2,배,천마총 적 공격 배율,몬스터!C18
+region.3.silver_room,30,은자,천마총 전투 방 클리어 은자,은자!B7
+item_grade.r3.common,40%,,기물 등급 확률 일반 (천마총 = 장강 짙은 길),등급확률!B14
+item_grade.r3.uncommon,31%,,기물 등급 확률 고급 (천마총),등급확률!C14
+item_grade.r3.rare,21%,,기물 등급 확률 희귀 (천마총),등급확률!D14
+item_grade.r3.legendary,8%,,기물 등급 확률 전설 (천마총),등급확률!E14
+item_grade.r3_dense.common,34%,,기물 등급 확률 일반 (천마총 짙은 길 전용),등급확률!B15
+item_grade.r3_dense.uncommon,32%,,기물 등급 확률 고급 (천마총 짙은 길),등급확률!C15
+item_grade.r3_dense.rare,24%,,기물 등급 확률 희귀 (천마총 짙은 길),등급확률!D15
+item_grade.r3_dense.legendary,10%,,기물 등급 확률 전설 (천마총 짙은 길),등급확률!E15
+meridian.width_after_boss3,6,,장강 수채 보스 격파 뒤 경맥도 가로,4지역 기획 (6×6)
+meridian.height_after_boss3,6,,장강 수채 보스 격파 뒤 경맥도 세로,4지역 기획 (6×6)
