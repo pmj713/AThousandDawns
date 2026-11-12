@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using AThousandDawns.Enemies;
+using AThousandDawns.Player;
 using UnityEngine;
 
 namespace AThousandDawns.Art
@@ -10,6 +11,9 @@ namespace AThousandDawns.Art
     //     목탁을 칠 때(MoktakBrain.Struck) 금빛 소리 물결이 가호 범위까지 두 겹으로 퍼져요.
     //   등불 귀신 도깨비불(GhostFire): 불투명한 하늘색 원판은 숨기고, 투명한 푸른 불 장판 + 일렁이는 푸른 불꽃으로 바꿔요 (끝 무렵 흐려지는 것도 그대로).
     //   석상 나한 돌진 끝(ArhatBrain.ChargeQuake): 갈라진 땅 충격파와 돌 부스러기가 튀었다 떨어져요.
+    //   석상 나한이 깨어나기 전 (IsDormant, 플레이어 4칸 안): 가까워질수록 석상 앞면에 먹 금이 늘고 돌 부스러기가 떨어져요. 깨어나면 금은 사라져요.
+    //   망령 혼불(WraithOrb): 꺾여 오는 길이 보이게 지나간 자리에 짧은 푸른 먹 꼬리를 남겨요.
+    //   도깨비불 장판이 생기는 순간: 푸른 빛 고리가 번쩍이며 퍼져요.
     // 그림: TempleFx(GhostPool · GhostWisp · Rock), PouchFx(Ring · Glint · Burst), SkillFx(QuakeRing).
     public class InkTempleEnemyFx : MonoBehaviour
     {
@@ -50,7 +54,8 @@ namespace AThousandDawns.Art
             float dt = Time.deltaTime;
             TickWards(dt);
             _scan -= dt;
-            if (_scan <= 0f) { _scan = 0.1f; DressGhostFires(); }
+            if (_scan <= 0f) { _scan = 0.1f; DressGhostFires(); DressOrbs(); }
+            TickStatues(dt);
             for (int i = _live.Count - 1; i >= 0; i--)
                 if (!_live[i](dt)) _live.RemoveAt(i);
         }
@@ -157,6 +162,143 @@ namespace AThousandDawns.Art
             }
         }
 
+        // ── 석상 나한: 깨어나기 전 금 · 부스러기
+
+        const float StatueWarn = 4f;
+        readonly Dictionary<EnemyBrain, (List<LineRenderer> cracks, float chip)> _statues = new Dictionary<EnemyBrain, (List<LineRenderer>, float)>();
+        PlayerController _player;
+        static Material _crackMat, _trailMat;
+
+        void TickStatues(float dt)
+        {
+            if (_director == null || _director.Enemies == null) return;
+            if (_player == null) _player = FindAnyObjectByType<PlayerController>();
+            if (_player == null) return;
+            foreach (var e in _director.Enemies)
+            {
+                if (!(e is ArhatBrain a) || a.IsDead || !a.IsDormant) continue;
+                Vector3 d = _player.transform.position - a.transform.position;
+                d.y = 0f;
+                float k = Mathf.Clamp01((StatueWarn - d.magnitude) / (StatueWarn - 3f)); // 4칸에서 0 → 3칸(깨어남)에서 1
+                if (k <= 0f && !_statues.ContainsKey(a)) continue;
+                if (!_statues.TryGetValue(a, out var s)) s = (new List<LineRenderer>(), 0f);
+                int want = Mathf.CeilToInt(k * 5f);
+                while (s.cracks.Count < want) s.cracks.Add(Crack(a)); // 한 번 간 금은 물러나도 남아요
+                s.chip -= dt;
+                if (k > 0f && s.chip <= 0f)
+                {
+                    s.chip = Mathf.Lerp(0.45f, 0.08f, k);
+                    Chip(a.transform.position + Vector3.up * UnityEngine.Random.Range(0.8f, Mathf.Max(1f, a.Height)) + UnityEngine.Random.insideUnitSphere * 0.3f);
+                }
+                _statues[a] = s;
+            }
+            List<EnemyBrain> woke = null;
+            foreach (var pair in _statues)
+                if (pair.Key == null || pair.Key.IsDead || !((ArhatBrain)pair.Key).IsDormant) (woke ??= new List<EnemyBrain>()).Add(pair.Key);
+            if (woke == null) return;
+            foreach (var e in woke) // 깨어나면 금은 사라져요 (깨어나는 동작이 이어받아요)
+            {
+                foreach (var lr in _statues[e].cracks) if (lr != null) Destroy(lr.gameObject);
+                _statues.Remove(e);
+            }
+        }
+
+        LineRenderer Crack(EnemyBrain e)
+        {
+            if (_crackMat == null) _crackMat = new Material(Shader.Find("Sprites/Default"));
+            var cam = Camera.main != null ? Camera.main.transform : null;
+            Vector3 right = cam != null ? cam.right : Vector3.right, up = cam != null ? cam.up : Vector3.up;
+            Vector3 toCam = cam != null ? -cam.forward : Vector3.back;
+            float h = Mathf.Max(1.2f, e.Height);
+            Vector3 p = e.transform.position + Vector3.up * UnityEngine.Random.Range(h * 0.35f, h * 0.85f) + right * UnityEngine.Random.Range(-0.25f, 0.25f) + toCam * 0.5f;
+            var lr = new GameObject("Statue Crack").AddComponent<LineRenderer>();
+            lr.transform.SetParent(transform, false);
+            lr.useWorldSpace = true;
+            lr.sharedMaterial = _crackMat;
+            lr.alignment = LineAlignment.View;
+            lr.positionCount = 5;
+            float ang = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
+            Vector3 dir = (right * Mathf.Cos(ang) + up * Mathf.Sin(ang)).normalized, side = Vector3.Cross(dir, toCam).normalized;
+            for (int i = 0; i < 5; i++) // 지그재그 금
+            {
+                lr.SetPosition(i, p);
+                p += dir * UnityEngine.Random.Range(0.08f, 0.16f) + side * UnityEngine.Random.Range(-0.07f, 0.07f);
+            }
+            lr.widthCurve = new AnimationCurve(new Keyframe(0f, 0.045f), new Keyframe(1f, 0.008f));
+            lr.startColor = lr.endColor = new Color(0.06f, 0.05f, 0.05f, 0.95f);
+            lr.sortingOrder = 7;
+            return lr;
+        }
+
+        void Chip(Vector3 at)
+        {
+            var sr = Upright(_rock, at, UnityEngine.Random.Range(0.07f, 0.13f), 7);
+            if (sr == null) return;
+            sr.color = new Color(0.6f, 0.58f, 0.54f);
+            var pivot = sr.transform.parent;
+            var v = new Vector3(UnityEngine.Random.Range(-0.3f, 0.3f), 0f, UnityEngine.Random.Range(-0.3f, 0.3f));
+            float t = 0f;
+            _live.Add(dt =>
+            {
+                if (pivot == null) return false;
+                t += dt;
+                v += Vector3.down * 9f * dt;
+                pivot.position += v * dt;
+                if (pivot.position.y > 0.03f && t < 1.2f) return true;
+                Destroy(pivot.gameObject);
+                return false;
+            });
+        }
+
+        // ── 망령 혼불: 지나간 자리에 짧은 푸른 먹 꼬리
+
+        void DressOrbs()
+        {
+            foreach (var orb in FindObjectsByType<WraithOrb>(FindObjectsSortMode.None))
+            {
+                if (orb.GetComponent<TrailRenderer>() != null) continue;
+                if (_trailMat == null)
+                {
+                    _trailMat = new Material(Shader.Find("Sprites/Default"));
+                    var brush = Resources.Load<Texture2D>("HudArt/HpStroke");
+                    if (brush != null) _trailMat.mainTexture = brush;
+                }
+                var trail = orb.gameObject.AddComponent<TrailRenderer>();
+                trail.sharedMaterial = _trailMat;
+                trail.time = 0.5f;
+                trail.minVertexDistance = 0.08f;
+                trail.alignment = LineAlignment.View;
+                trail.textureMode = LineTextureMode.Stretch;
+                trail.widthCurve = new AnimationCurve(new Keyframe(0f, 0.38f), new Keyframe(1f, 0f));
+                var g = new Gradient();
+                g.SetKeys(new[] { new GradientColorKey(new Color(0.55f, 0.8f, 1f), 0f), new GradientColorKey(new Color(0.15f, 0.25f, 0.5f), 1f) },
+                          new[] { new GradientAlphaKey(0.85f, 0f), new GradientAlphaKey(0f, 1f) });
+                trail.colorGradient = g;
+                trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                trail.sortingOrder = 6;
+            }
+        }
+
+        // 도깨비불 장판이 생기는 순간: 푸른 빛 고리가 번쩍이며 퍼져요
+        void Flash(Vector3 at, float radius)
+        {
+            var ring = Flat(_ring, at, radius * 2f, UnityEngine.Random.Range(0f, 360f), 0.028f);
+            var glow = Flat(_pool, at, radius * 2.6f, UnityEngine.Random.Range(0f, 360f), 0.029f);
+            Vector3 ru = ring != null ? ring.transform.localScale : Vector3.one, gu = glow != null ? glow.transform.localScale : Vector3.one;
+            float t = 0f;
+            _live.Add(dt =>
+            {
+                t += dt;
+                float k = t / 0.45f;
+                if (ring != null) { ring.transform.localScale = ru * Mathf.Lerp(0.5f, 1.4f, Mathf.Sqrt(Mathf.Clamp01(k))); ring.color = new Color(0.75f, 0.9f, 1f, 1f - k); }
+                if (glow != null) { glow.transform.localScale = gu * Mathf.Lerp(0.8f, 1.1f, k); glow.color = new Color(1f, 1f, 1f, 0.9f * (1f - k) * (1f - k)); }
+                if (k < 1f) return true;
+                if (ring != null) Destroy(ring.gameObject);
+                if (glow != null) Destroy(glow.gameObject);
+                return false;
+            });
+        }
+
         // ── 등불 귀신 도깨비불
 
         void DressGhostFires()
@@ -169,7 +311,8 @@ namespace AThousandDawns.Art
                 var source = fire.GetComponent<Renderer>();
                 if (source != null) source.enabled = false; // 불투명한 하늘색 원판은 숨기고 (흐려지는 값은 그 재질 알파를 읽어요)
                 float radius = fire.transform.localScale.x * 0.5f;
-                var pool = Flat(_pool, fire.transform.position, radius * 2.3f, UnityEngine.Random.Range(0f, 360f), 0.035f);
+                var pool = Flat(_pool, fire.transform.position, radius * 2.3f, UnityEngine.Random.Range(0f, 360f), 0.023f); // 공격 예고(0.03) 아래
+                Flash(fire.transform.position, radius); // 생기는 순간 번쩍
                 var wisps = new List<(SpriteRenderer sr, Vector3 at, float seed)>();
                 int n = Mathf.Clamp(Mathf.RoundToInt(radius * 3f), 2, 5);
                 for (int i = 0; i < n; i++)
