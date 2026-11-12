@@ -483,8 +483,11 @@ namespace AThousandDawns.Art
             _animator.SetFloat(SpeedId, busy || Time.deltaTime <= 0f ? 0f : d.magnitude / Time.deltaTime);
         }
 
+        int _lastHit;   // 마지막으로 받은 피해 (크게 맞아 쓰러지면 날아가듯 넘어가요)
+
         void OnDamaged(Damageable body, int amount)
         {
+            _lastHit = amount;
             if (_brain == null || _animator == null) return;
             if (_brain.IsDead) { MakeCorpse(); return; }
             if (!body.LastHitReacts) return;            // 화상·번개 같은 파생 피해는 움찔하지 않아요
@@ -518,9 +521,46 @@ namespace AThousandDawns.Art
                 _animator.SetFloat(AttackSpeedId, 1f);
                 Play("Defeat", 0.15f);
             }
-            corpse.AddComponent<InkCorpse>().Init(_animator, beast ? Vector3.forward : Vector3.right,
+            var c = corpse.AddComponent<InkCorpse>();
+            bool varied = style == InkCorpse.Style.Fall && !beast && !forward && _brain.Kind != EnemyKind.Lantern && _brain.Kind != EnemyKind.Wraith;
+            if (varied) VariedFall(c, corpse.transform);
+            else c.Init(_animator, beast ? Vector3.forward : Vector3.right,
                 _brain.Kind == EnemyKind.Snake ? 160f : beast ? 88f : forward ? 80f : -85f, style);
             enabled = false;
+        }
+
+        // 사람형 적이 쓰러지는 갈래 (매번 같지 않게). 넘어가는 쪽은 플레이어 반대쪽(맞은 쪽)이 기준이에요
+        //  - 크게 맞음(마지막 한 방이 최대 체력의 1/4 이상): 맞은 반대쪽으로 미끄러지며 날아가듯 넘어가요
+        //  - 그 밖엔 무작위로: 뒤로 넘어가기 · 앞으로 고꾸라지기(맞은 쪽으로) · 무릎부터 주저앉았다 앞으로 · 옆으로 돌며 쓰러지기
+        static AThousandDawns.Player.PlayerController s_player;
+        void VariedFall(InkCorpse corpse, Transform t)
+        {
+            if (s_player == null) s_player = FindFirstObjectByType<AThousandDawns.Player.PlayerController>();
+            var away = s_player != null ? t.position - s_player.transform.position : -t.forward;
+            away.y = 0f;
+            away = away.sqrMagnitude > 1e-4f ? away.normalized : -t.forward;
+            float max = _body != null ? _body.MaxHealth : 1f;
+            bool heavy = max > 0f && _lastHit >= max * 0.25f;
+            int pick = UnityEngine.Random.Range(0, 100);
+            // 위를 dir 쪽으로 넘기는 회전축 (월드 기준을 시체 기준으로 바꿔 넘겨요)
+            Vector3 Axis(Vector3 dir) => Quaternion.Inverse(t.rotation) * Vector3.Cross(Vector3.up, dir);
+            if (heavy)
+                corpse.Init(_animator, Axis(away), 88f, InkCorpse.Style.Fall, away * 1.1f);
+            else if (pick < 40)
+                corpse.Init(_animator, Axis(away), 85f, InkCorpse.Style.Fall);
+            else if (pick < 62)
+                corpse.Init(_animator, Axis(-away), 80f, InkCorpse.Style.Fall);
+            else if (pick < 84)
+            {
+                // 무릎부터: 등장 동작의 웅크린 첫 자세(있으면)로 털썩 주저앉았다가 앞으로
+                if (_animator.HasState(0, Animator.StringToHash("Spawn"))) _animator.Play("Spawn", 0, 0f);
+                corpse.Init(_animator, Axis(-away), 72f, InkCorpse.Style.Fall, Vector3.zero, crumple: true);
+            }
+            else
+            {
+                var side = Vector3.Cross(Vector3.up, away) * (pick % 2 == 0 ? 1f : -1f);
+                corpse.Init(_animator, Axis(side), 86f, InkCorpse.Style.Fall, Vector3.zero, twist: pick % 2 == 0 ? 50f : -50f);
+            }
         }
 
         void OnDestroy()
@@ -553,12 +593,19 @@ namespace AThousandDawns.Art
         Vector3 _startPos, _startScale;
         Style _style;
 
-        public void Init(Animator animator, Vector3 localAxis, float angle, Style style = Style.Fall)
+        // slide: 넘어가는 동안 미끄러지는 거리(월드, 날아가듯) · crumple: 웅크린 채 잠깐 버티다 넘어가요 · twist: 넘어가며 몸을 이만큼 비틀어요(도)
+        Vector3 _slide;
+        float _delay, _twist;
+
+        public void Init(Animator animator, Vector3 localAxis, float angle, Style style = Style.Fall, Vector3 slide = default, bool crumple = false, float twist = 0f)
         {
             _animator = animator;
             _axis = localAxis;
             _angle = angle;
             _style = style;
+            _slide = slide;
+            _delay = crumple ? 0.22f : 0f;
+            _twist = twist;
             _start = transform.rotation;
             _startPos = transform.position;
             _startScale = transform.localScale;
@@ -566,7 +613,7 @@ namespace AThousandDawns.Art
             if (_animator != null)
             {
                 _animator.SetFloat(Animator.StringToHash("Speed"), 0f);
-                _animator.speed = style == Style.Fall ? 0.3f : style == Style.Kneel || style == Style.Dissolve ? 1f : 0f;   // 넘어가는 동안 굳어 가요 (마지막 동작은 끝까지)
+                _animator.speed = style == Style.Fall ? (crumple ? 0f : 0.3f) : style == Style.Kneel || style == Style.Dissolve ? 1f : 0f;   // 넘어가는 동안 굳어 가요 (마지막 동작은 끝까지, 주저앉기는 웅크린 자세 그대로)
             }
             if ((style == Style.Kneel || style == Style.Dissolve) && _animator != null) DropWeapon();
         }
@@ -657,17 +704,22 @@ namespace AThousandDawns.Art
                 if (s >= 1f) Destroy(gameObject);
                 return;
             }
-            float fall = Mathf.Clamp01(_t / FallTime);
+            float ft = Mathf.Max(0f, _t - _delay);         // 주저앉기는 웅크린 채 잠깐 버틴 뒤 넘어가요
+            float fall = Mathf.Clamp01(ft / FallTime);
             float a = fall * fall;                          // 점점 빨리 넘어가요
             if (fall >= 1f)
             {
-                float b = _t - FallTime;                    // 바닥에 닿고 살짝 튕겨요
+                float b = ft - FallTime;                    // 바닥에 닿고 살짝 튕겨요
                 a = 1f - 0.08f * Mathf.Max(0f, Mathf.Sin(b * 18f)) * Mathf.Exp(-b * 8f);
                 if (_animator != null) _animator.speed = 0f;
             }
-            transform.rotation = _start * Quaternion.AngleAxis(_angle * a, _axis);
-            float sink = Mathf.Clamp01((_t - FallTime - LieTime) / SinkTime);
-            transform.position = _startPos + Vector3.down * SinkDepth * sink * sink;
+            // 옆으로 쓰러질 땐 넘어가며 몸을 비틀어요 (발밑 축으로 돌고 나서 넘어가요)
+            var twist = Quaternion.AngleAxis(_twist * Mathf.SmoothStep(0f, 1f, fall), Vector3.up);
+            transform.rotation = twist * _start * Quaternion.AngleAxis(_angle * a, _axis);
+            // 날아가듯: 넘어가는 동안 맞은 반대쪽으로 미끄러지다 바닥에 닿으며 멈춰요
+            float slide = 1f - (1f - Mathf.Clamp01(ft / (FallTime * 1.3f))) * (1f - Mathf.Clamp01(ft / (FallTime * 1.3f)));
+            float sink = Mathf.Clamp01((ft - FallTime - LieTime) / SinkTime);
+            transform.position = _startPos + _slide * slide + Vector3.down * SinkDepth * sink * sink;
             if (sink >= 1f) Destroy(gameObject);
         }
     }
