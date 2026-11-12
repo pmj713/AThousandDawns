@@ -57,6 +57,53 @@ namespace AThousandDawns.Fx
             GUI.color = old;
         }
 
+        // ── 업보 ── 화면 위 가운데: 핏빛 낙관 "업" + 단계 숫자, 아래 등불 6개 중 단계만큼 붉게 (0이면 숨김)
+        public const int KarmaMax = 6;
+
+        public static void DrawKarma(int karma)
+        {
+            if (karma <= 0 || Event.current.type != EventType.Repaint) return;
+            Load();
+            Styles();
+            var old = GUI.color;
+            const float seal = 46f, gap = 8f;
+            float numW = 34f, w = seal + gap + numW;
+            float x = (UiScale.Width - w) * 0.5f, y = 14f;
+            var sealRect = new Rect(x, y, seal, seal);
+            float pulse = 0.9f + 0.1f * Mathf.Sin(Time.unscaledTime * 2.2f); // 불씨처럼 은은히
+            Tint(Ink, 0.55f); // 먹 번짐 바탕
+            if (_blot != null) GUI.DrawTexture(Shrink(new Rect(x - 18f, y - 6f, w + 36f, seal + 26f), 0f), _blot, ScaleMode.StretchToFill);
+            Tint(BloodCrust, 1f);
+            GUI.DrawTexture(sealRect, Texture2D.whiteTexture); // 낙관
+            Tint(BloodEdge, 0.9f * pulse);
+            GUI.DrawTexture(Shrink(sealRect, 0.06f), Texture2D.whiteTexture);
+            Tint(Paper, 1f);
+            Shadowed(sealRect, "업", _small);
+            Tint(new Color(1f, 0.55f, 0.48f), 1f);
+            Shadowed(new Rect(sealRect.xMax + gap, y, numW, seal), Mathf.Min(karma, 99).ToString(), _badge, TextAnchor.MiddleLeft);
+            const float dot = 9f, dotGap = 5f; // 등불: 켜진 만큼 붉게
+            float dx = (UiScale.Width - (KarmaMax * dot + (KarmaMax - 1) * dotGap)) * 0.5f;
+            for (int i = 0; i < KarmaMax; i++)
+            {
+                bool lit = i < karma;
+                Tint(lit ? BloodEdge : Ink, lit ? pulse : 0.45f);
+                GUI.DrawTexture(new Rect(dx + i * (dot + dotGap), y + seal + 6f, dot, dot * 1.25f), Texture2D.whiteTexture);
+            }
+            GUI.color = old;
+        }
+
+        // 결과 화면의 업보 줄: 붉은 붓 획이 왼쪽부터 그어져요 (age = 줄이 나타난 뒤 초)
+        public static void KarmaRow(Rect r, float age)
+        {
+            if (Event.current.type != EventType.Repaint) return;
+            Load();
+            var old = GUI.color;
+            float k = Mathf.Clamp01(age / 0.35f);
+            StrokePart(r, k, BloodCrust, 0.85f);
+            StrokePart(Shrink(r, 0f, 0.3f), k, BloodEdge, 0.35f);
+            GUI.color = old;
+        }
+
         // ── 기세 ── 체력 획 아래 가는 쪽빛 획. 차면 금빛으로 일렁이고 끝에 절초 이름 · 키캡.
         //   기세 200%(면벽수련 기 20)면 가운데 먹 눈금으로 두 칸을 나눠요.
         static void DrawGauge(PlayerController p, Rect r)
