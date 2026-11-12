@@ -3,9 +3,9 @@ using UnityEngine;
 
 namespace AThousandDawns.Art
 {
-    // 방 구성(RoomRun.RoomFeatures)의 기본판 상자에 수묵 모델을 입혀요: 돌기둥 · 석불 · 무너진 담, 천마총 관 · 마기 기둥 · 혈지, 죽림 대숲 · 쓰러진 대나무 · 개울가.
+    // 방 구성(RoomRun.RoomFeatures)의 기본판 상자에 수묵 모델을 입혀요: 돌기둥 · 석불 · 무너진 담, 천마총 관 · 마기 기둥 · 혈지, 죽림 대숲 · 쓰러진 대나무 · 개울가, 장강 물가 · 웅덩이 둘레.
     // 상자의 충돌체는 그대로 두고 그림(Renderer)만 꺼서, 그 자리에 모델을 세워요 (상자가 치워지면 같이 사라져요).
-    // 물(Water)과 혈지의 표면은 아트 2가 그려요. 죽림 개울엔 물가 조약돌·풀만 둘러요. 모델 프리팹은 씬 빌더(PrototypeSceneBuilder.InkFeatures)가 채워요
+    // 물(Water)과 혈지의 표면은 아트 2가 그려요. 죽림 개울엔 조약돌·풀, 장강 물엔 젖은 돌·갈대 물가만 둘러요. 모델 프리팹은 씬 빌더(PrototypeSceneBuilder.InkFeatures)가 채워요
     public class InkRoomFeatures : MonoBehaviour
     {
         [SerializeField] GameObject[] pillars = new GameObject[0];   // 깨진 돌기둥 (지름 0.8, 높이 2.4) 변형들
@@ -18,7 +18,13 @@ namespace AThousandDawns.Art
         [SerializeField] GameObject fallenBamboo;                    // 죽림 쓰러진 대나무 (3.5 × 0.4, 높이 0.5), 길이가 X
         [SerializeField] GameObject streamBank;                      // 죽림 개울가 조약돌·풀 (폭 2 · X, 길이 12 · Z)
 
-        const int BambooRegion = 0;   // 죽림. 다른 지역의 물(장강 수채)엔 물가를 두르지 않아요
+        [SerializeField] GameObject[] riverBanks = new GameObject[0];   // 장강 물띠 물가 토막 (길이 4 · Z, 물 폭 2.6 · X) 변형들
+        [SerializeField] GameObject riverPoolRim;                    // 장강 웅덩이 둘레 (4 × 3)
+
+        const int BambooRegion = 0;   // 죽림 개울엔 조약돌·풀
+        const int RiverRegion = 2;    // 장강 수채 여울·물길엔 물가 토막, 웅덩이엔 둘레
+        const float RiverSegment = 4f;     // 물가 토막 길이
+        const float RiverEndClear = 1.5f;  // 물띠 양끝(문 앞)은 비워요
 
         public void Setup(GameObject[] pillarModels, GameObject statueModel, GameObject wallModel)
         {
@@ -35,6 +41,11 @@ namespace AThousandDawns.Art
             bambooClumps = clumpModels; fallenBamboo = fallenModel; streamBank = bankModel;
         }
 
+        public void SetupRiver(GameObject[] bankSegments, GameObject poolRim)
+        {
+            riverBanks = bankSegments; riverPoolRim = poolRim;
+        }
+
         void OnEnable() => RoomRun.LayoutChanged += Dress;
         void OnDisable() => RoomRun.LayoutChanged -= Dress;
 
@@ -49,6 +60,11 @@ namespace AThousandDawns.Art
                 // 죽림 종류(BambooClump · FallenBamboo)는 게임 코드가 들어오기 전에도 컴파일되게 이름으로 골라요
                 string kind = f.Kind.ToString();
                 bool clump = kind == "BambooClump", fallen = kind == "FallenBamboo";
+                if (f.Kind == RoomRun.FeatureKind.Water && run.Region == RiverRegion)
+                {
+                    DressRiver(f, i);
+                    continue;
+                }
                 bool bank = f.Kind == RoomRun.FeatureKind.Water && run.Region == BambooRegion;
                 GameObject model = clump ? (bambooClumps.Length > 0 ? bambooClumps[i % bambooClumps.Length] : null)
                     : fallen ? fallenBamboo
@@ -93,6 +109,40 @@ namespace AThousandDawns.Art
                 inst.transform.localScale = scale;
                 f.Go.AddComponent<InkFeatureLink>().model = inst;
             }
+        }
+
+        // 장강 물: 고인 웅덩이는 둘레 모델을 크기에 맞춰 하나, 흐르는 물띠는 물가 토막을 길이만큼 이어 붙여요 (돌·갈대가 찌그러지지 않게).
+        // 물 바닥판의 그림은 아트 2가 표면으로 쓰니 그대로 둬요
+        void DressRiver(RoomRun.RoomFeature f, int i)
+        {
+            bool alongX = f.Size.x > f.Size.y;
+            GameObject holder;
+            if (f.Current == Vector3.zero)
+            {
+                if (riverPoolRim == null) return;
+                holder = Instantiate(riverPoolRim, f.Center, Quaternion.Euler(0f, (alongX ? 0f : 90f) + (i % 2) * 180f, 0f));
+                holder.name = $"{riverPoolRim.name} ({f.Go.name})";
+                holder.transform.localScale = new Vector3(Mathf.Max(f.Size.x, f.Size.y) / 4f, 1f, Mathf.Min(f.Size.x, f.Size.y) / 3f);
+            }
+            else
+            {
+                if (riverBanks.Length == 0) return;
+                // 토막은 길이가 Z예요. 물띠가 X로 길면 돌려요
+                holder = new GameObject($"River Banks ({f.Go.name})");
+                holder.transform.SetPositionAndRotation(f.Center, Quaternion.Euler(0f, alongX ? 90f : 0f, 0f));
+                float length = Mathf.Max(f.Size.x, f.Size.y) - RiverEndClear * 2f;
+                float width = Mathf.Min(f.Size.x, f.Size.y) / 2.6f;
+                int count = Mathf.Max(1, Mathf.FloorToInt(length / RiverSegment));
+                float start = -count * RiverSegment * 0.5f + RiverSegment * 0.5f;
+                for (int k = 0; k < count; k++)
+                {
+                    var seg = Instantiate(riverBanks[(k + i) % riverBanks.Length], holder.transform);
+                    seg.transform.localPosition = new Vector3(0f, 0f, start + k * RiverSegment);
+                    seg.transform.localRotation = Quaternion.Euler(0f, (k % 2) * 180f, 0f);   // 거리가 양쪽 물가에 번갈아 놓이게
+                    seg.transform.localScale = new Vector3(width, 1f, 1f);
+                }
+            }
+            f.Go.AddComponent<InkFeatureLink>().model = holder;
         }
     }
 
