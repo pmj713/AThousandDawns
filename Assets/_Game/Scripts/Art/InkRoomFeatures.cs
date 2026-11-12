@@ -36,27 +36,28 @@ namespace AThousandDawns.Art
             {
                 i++;
                 if (f.Go == null || f.Go.GetComponent<InkFeatureLink>() != null) continue;
-                // 천마총 종류(Coffin · MiasmaPillar · BloodPool)는 게임 코드가 들어오기 전에도 컴파일되게 이름으로 골라요
-                string kind = f.Kind.ToString();
-                GameObject model = kind == "Coffin" ? coffin : kind == "MiasmaPillar" ? miasmaPillar : kind == "BloodPool" ? bloodPoolRim : f.Kind switch
+                GameObject model = f.Kind switch
                 {
                     RoomRun.FeatureKind.Pillar => pillars.Length > 0 ? pillars[i % pillars.Length] : null,
                     RoomRun.FeatureKind.Statue => statue,
                     RoomRun.FeatureKind.Wall => wall,
+                    RoomRun.FeatureKind.Coffin => coffin,
+                    RoomRun.FeatureKind.MiasmaPillar => miasmaPillar,
+                    RoomRun.FeatureKind.BloodPool => bloodPoolRim,
                     _ => null,
                 };
                 if (model == null) continue;
                 var r = f.Go.GetComponent<Renderer>();
-                if (r != null && kind != "BloodPool") r.enabled = false;   // 혈지 바닥판은 아트 2가 핏물로 그려요
+                if (r != null && f.Kind != RoomRun.FeatureKind.BloodPool) r.enabled = false;   // 혈지 바닥판은 아트 2가 핏물로 그려요
                 // 상자는 크기를 늘린 물체라 그 자식으로 두면 돌렸을 때 찌그러져요. 따로 세우고 상자가 사라지면 같이 지워요
                 float yaw;
                 var scale = Vector3.one;
-                if (f.Kind == RoomRun.FeatureKind.Wall || kind == "Coffin" || kind == "BloodPool")
+                if (f.Kind == RoomRun.FeatureKind.Wall || f.Kind == RoomRun.FeatureKind.Coffin || f.Kind == RoomRun.FeatureKind.BloodPool)
                 {
                     yaw = (f.Size.y > f.Size.x ? 90f : 0f) + (i % 2) * 180f;   // 긴 쪽에 맞춰 돌리고, 무너진·밀려난 쪽이 저마다 달라 보이게
-                    float baseLen = kind == "Coffin" ? 2f : kind == "BloodPool" ? 3.5f : 3f;
+                    float baseLen = f.Kind == RoomRun.FeatureKind.Coffin ? 2f : f.Kind == RoomRun.FeatureKind.BloodPool ? 3.5f : 3f;
                     scale.x = Mathf.Max(f.Size.x, f.Size.y) / baseLen;          // 길이를 맞춰요
-                    if (kind == "BloodPool") scale.z = Mathf.Min(f.Size.x, f.Size.y) / 2.5f;
+                    if (f.Kind == RoomRun.FeatureKind.BloodPool) scale.z = Mathf.Min(f.Size.x, f.Size.y) / 2.5f;
                 }
                 else if (f.Kind == RoomRun.FeatureKind.Statue)
                     yaw = f.Center.z >= 0f ? 0f : 180f;                         // 석불은 방 가운데 쪽을 봐요 (앞이 -Z)
