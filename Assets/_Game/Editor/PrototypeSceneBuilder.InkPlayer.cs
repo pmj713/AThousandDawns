@@ -32,6 +32,11 @@ namespace AThousandDawns.EditorTools
 
             if (player.GetComponent<AThousandDawns.Art.InkPlayerAnimator>() == null)
                 player.gameObject.AddComponent<AThousandDawns.Art.InkPlayerAnimator>();
+
+            // 허리춤 주머니 (회귀록 "주머니" 봉우리를 피운 판에만 보여요): 주머니 메시를 삼베 색·짙은 끈으로
+            var bag = player.GetComponent<AThousandDawns.Art.InkPlayerBag>();
+            if (bag == null) bag = player.gameObject.AddComponent<AThousandDawns.Art.InkPlayerBag>();
+            bag.Setup(GetPouchMesh(), GetInkMaterial("Ink_Bag_Hemp", "#8A7656", 0.35f), GetPouchCordMesh(), GetInkMaterial("Ink_Bag_Cord", "#3A2D22", 0.3f));
         }
     }
 }
