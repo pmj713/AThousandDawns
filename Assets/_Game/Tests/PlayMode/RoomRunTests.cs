@@ -289,8 +289,11 @@ namespace AThousandDawns.Tests
             cc.enabled = true;
             yield return WaitUntil(() => _arena.Boss != null && _arena.Boss.IsAwake, 3f);
             var boss = _arena.Boss;
+            Assert.IsInstanceOf<IronDragonBrain>(boss, "장강 수채 보스는 수채주 철룡");
+            Assert.AreEqual(5700f, boss.Damageable.MaxHealth, 1f, "1900 × 3.0");
             boss.Damageable.ApplyHit(Mathf.CeilToInt(boss.Damageable.MaxHealth * 0.55f));
             yield return WaitUntil(() => _arena.BossInfo.Phase == 2 && !_arena.BossInfo.IsTransitioning, 4f);
+            Assert.AreEqual(3, ((IronDragonBrain)boss).WaterCount, "배가 부서지며 물길 3곳");
             boss.Damageable.ApplyHit(99999);
             yield return WaitUntil(() => _run.IsDone, 3f);
             Assert.IsTrue(_run.IsDone, "마지막 지역 보스 = 판 끝");
