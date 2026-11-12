@@ -148,6 +148,73 @@ namespace AThousandDawns.Art
         float _wakeFade;
         static readonly Color StatueGray = new Color(0.62f, 0.6f, 0.57f, 1f);
 
+        // 몸에 덧입히는 표시 (InkCharacter의 _AuraColor · _CrackColor)
+        //  - 분열해 나온 적(IsSplitChild): 모델 0.8배, 몸 군데군데 보랏빛 금 (체력이 적어 약하다는 표시)
+        //  - 특성 둘 이상 정예: 특성 색을 섞은 은은한 가장자리 기운이 숨 쉬듯 (하나면 머리 위 표식만)
+        static readonly int AuraId = Shader.PropertyToID("_AuraColor");
+        static readonly int CrackId = Shader.PropertyToID("_CrackColor");
+        static readonly System.Reflection.PropertyInfo SplitChildProp = typeof(EnemyBrain).GetProperty("IsSplitChild");   // 들어오기 전에도 컴파일되게
+        static readonly Color SplitCrack = new Color(0.62f, 0.32f, 0.85f, 1f);
+        Renderer[] _bodyRenderers;
+        Color _aura, _crack;
+        float _age;
+        bool _splitShown;
+        int _auraTraits;
+        MaterialPropertyBlock _overlayBlock;
+        bool _overlayUsed;
+
+        static Color TraitGlow(EliteTrait t) => t == EliteTrait.Split ? new Color(0.66f, 0.42f, 0.9f)
+            : t == EliteTrait.IronShirt ? new Color(0.62f, 0.7f, 0.84f)
+            : t == EliteTrait.Rejuvenation ? new Color(0.42f, 0.82f, 0.52f)
+            : new Color(1f, 0.45f, 0.2f);   // 열화
+
+        // 덧입힌 표시를 다시 얹어요 (몸 색 덧칠이 블록을 지운 뒤에도)
+        void ApplyOverlay()
+        {
+            if (_bodyRenderers == null) return;
+            if (_aura.a > 0f || _crack.a > 0f) _overlayUsed = true;
+            if (!_overlayUsed) return;   // 한 번도 안 썼으면 블록을 건드리지 않아요 (SRP 배칭 유지)
+            if (_overlayBlock == null) _overlayBlock = new MaterialPropertyBlock();
+            foreach (var r in _bodyRenderers)
+            {
+                if (r == null) continue;
+                r.GetPropertyBlock(_overlayBlock);
+                _overlayBlock.SetColor(AuraId, _aura);
+                _overlayBlock.SetColor(CrackId, _crack);
+                r.SetPropertyBlock(_overlayBlock);
+            }
+        }
+
+        void TickOverlay()
+        {
+            _age += Time.deltaTime;
+            // 분열해 나온 적: 나온 직후(1초 안)에 한 번 알아봐요
+            if (!_splitShown && SplitChildProp != null && _age < 1f && (bool)SplitChildProp.GetValue(_brain))
+            {
+                _splitShown = true;
+                _animator.transform.localScale *= 0.8f;
+                _modelScale *= 0.8f;
+                _crack = SplitCrack;
+                ApplyOverlay();
+            }
+            // 특성이 둘 이상인 정예: 특성 색 기운 (특성이 늘면 다시 섞어요)
+            int count = _brain.IsElite ? _brain.Traits.Count : 0;
+            if (count != _auraTraits)
+            {
+                _auraTraits = count;
+                if (count < 2) { _aura = Color.clear; ApplyOverlay(); }
+            }
+            if (_auraTraits >= 2 && !_brain.IsDead)
+            {
+                var mix = Color.black;
+                foreach (var t in _brain.Traits) mix += TraitGlow(t);
+                mix /= _brain.Traits.Count;
+                float strength = (_auraTraits >= 3 ? 0.55f : 0.38f) * (0.75f + 0.25f * Mathf.Sin(Time.time * 2.4f));
+                _aura = new Color(mix.r, mix.g, mix.b, strength);
+                ApplyOverlay();
+            }
+        }
+
         public void Init(EnemyBrain brain, Animator animator, bool windupPlays = false, bool noAttackAnim = false, InkEnemyModels.Move[] moves = null)
         {
             _windupPlays = windupPlays;
@@ -174,6 +241,10 @@ namespace AThousandDawns.Art
             _hasStatue = brain.Kind == EnemyKind.Arhat && animator.HasState(0, Animator.StringToHash("Statue")) && animator.HasState(0, Animator.StringToHash("Wake"));
             _hasSpawn = !_hasIntro && !_hasStatue && animator.HasState(0, Animator.StringToHash("Spawn"));
             _lastPos = transform.position;
+            var body = new System.Collections.Generic.List<Renderer>();
+            foreach (var r in animator.GetComponentsInChildren<Renderer>(true))
+                if (!r.name.Contains("Weapon") && !r.name.Contains("_Prop_")) body.Add(r);
+            _bodyRenderers = body.ToArray();
         }
 
         InkEnemyModels.Move PickMove()
@@ -208,11 +279,13 @@ namespace AThousandDawns.Art
                 if (color.HasValue) { r.GetPropertyBlock(block); block.SetColor(BaseColorId, color.Value); r.SetPropertyBlock(block); }
                 else r.SetPropertyBlock(null);
             }
+            ApplyOverlay();
         }
 
         void Update()
         {
             if (_brain == null || _animator == null || _animator.runtimeAnimatorController == null) return;
+            TickOverlay();
             // 방패병: 대시 공격으로 방패가 부서지면 방패 소품을 감춰요
             if (_shieldBrain != null && !_shieldHidden && _shieldBrain.ShieldBroken)
             {
@@ -289,6 +362,7 @@ namespace AThousandDawns.Art
                         if (tex != null) block.SetTexture(BaseMapId, tex); else block.Clear();
                         r.SetPropertyBlock(block);
                     }
+                    ApplyOverlay();
                 }
             }
             // 마교도: 체력이 절반 아래로 떨어져 광폭에 들면 낮게 웅크려 칼을 끄는 자세를 한 번 보이고, 몸이 붉게 물들어요
@@ -332,6 +406,7 @@ namespace AThousandDawns.Art
                     if (_stanced) { r.GetPropertyBlock(block); block.SetColor(BaseColorId, StanceGold); r.SetPropertyBlock(block); }
                     else r.SetPropertyBlock(null);
                 }
+                ApplyOverlay();
             }
             if (_noAttack) _last = phase;   // 공격 동작 없이 대기·달리기만
             if (phase != _last)

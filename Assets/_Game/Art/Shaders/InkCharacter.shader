@@ -21,6 +21,10 @@ Shader "AThousandDawns/InkCharacter"
         _RimPower ("Rim Power", Range(0.5, 8)) = 2.5
         _PaperGrain ("Paper Grain", Range(0, 0.2)) = 0.06
 
+        [Header(Overlay)]
+        _AuraColor ("Aura (가장자리 기운, a = 세기)", Color) = (0, 0, 0, 0)
+        _CrackColor ("Crack (갈라진 금, a = 양)", Color) = (0, 0, 0, 0)
+
         [Header(Brush Outline)]
         _OutlineWidth ("Outline Width (px)", Range(0, 8)) = 3
         _OutlineJitter ("Outline Brush Jitter", Range(0, 1)) = 0.7
@@ -54,6 +58,8 @@ Shader "AThousandDawns/InkCharacter"
             half _OutlineWidth;
             half _OutlineJitter;
             float _OutlineNoiseScale;
+            half4 _AuraColor;
+            half4 _CrackColor;
         CBUFFER_END
 
             // 지역 색 양 (InkColorZones가 전역으로 정해요): 0 = 재질 채도 그대로(수묵), 1 = 원래 색 전부
@@ -97,6 +103,26 @@ Shader "AThousandDawns/InkCharacter"
         {
             return (ValueNoise(p) * 0.5 + ValueNoise(p * 2.03) * 0.25 + ValueNoise(p * 4.01) * 0.125) / 0.875;
         }
+
+        // 3D 보로노이 칸 경계까지 거리 (가장 가까운 두 점 거리 차, 0이면 경계 위)
+        float VoronoiEdge(float3 p)
+        {
+            float3 i = floor(p);
+            float3 f = frac(p);
+            float d1 = 8.0, d2 = 8.0;
+            for (int z = -1; z <= 1; z++)
+            for (int y = -1; y <= 1; y++)
+            for (int x = -1; x <= 1; x++)
+            {
+                float3 o = float3(x, y, z);
+                float3 c = i + o;
+                float3 r = o + float3(Hash13(c), Hash13(c + 17.1), Hash13(c + 31.7)) - f;
+                float d = dot(r, r);
+                if (d < d1) { d2 = d1; d1 = d; }
+                else if (d < d2) d2 = d;
+            }
+            return sqrt(d2) - sqrt(d1);
+        }
         ENDHLSL
 
         // 몸통: 먹 농담 단계 + 번짐 + 가장자리 먹 + 종이 결
@@ -128,6 +154,7 @@ Shader "AThousandDawns/InkCharacter"
                 float3 normalWS : TEXCOORD1;
                 half fogFactor : TEXCOORD2;
                 float2 uv : TEXCOORD3;
+                float3 positionOS : TEXCOORD4;
             };
 
             Varyings Vert(Attributes input)
@@ -139,6 +166,7 @@ Shader "AThousandDawns/InkCharacter"
                 output.normalWS = TransformObjectToWorldNormal(input.normalOS);
                 output.fogFactor = ComputeFogFactor(pos.positionCS.z);
                 output.uv = TRANSFORM_TEX(input.uv, _BaseMap);
+                output.positionOS = input.positionOS.xyz;
                 return output;
             }
 
@@ -182,6 +210,25 @@ Shader "AThousandDawns/InkCharacter"
                 color = lerp(color, plain, _InkCharSoften);
                 // 어두운 곳 밝히기 (밝은 곳은 거의 그대로)
                 color = 1.0 - (1.0 - color) * (1.0 - _InkCharLift * 0.5);
+
+                // 갈라진 금 (분열해 나온 적): 몸 군데군데 보로노이 경계를 따라 짙은 금, 둘레는 금 색으로 번져요 (물체 공간이라 몸에 붙어 다녀요)
+                if (_CrackColor.a > 0.001)
+                {
+                    float3 po = input.positionOS;
+                    float3 warp = float3(ValueNoise(po * 3.0), ValueNoise(po * 3.0 + 7.3), ValueNoise(po * 3.0 + 13.7)) - 0.5;   // 금이 구불구불하게
+                    float edge = VoronoiEdge((po + warp * 0.12) * 5.0);
+                    float patch = smoothstep(0.55, 0.66, ValueNoise(po * 2.2 + 3.1));   // 금이 몰린 몇 군데만
+                    float core = (1.0 - smoothstep(0.024, 0.07, edge)) * patch;
+                    float halo = (1.0 - smoothstep(0.05, 0.2, edge)) * patch;
+                    color = lerp(color, _CrackColor.rgb, halo * 0.45 * _CrackColor.a);
+                    color = lerp(color, _CrackColor.rgb * 0.22, core * _CrackColor.a);
+                }
+                // 가장자리 기운 (정예 특성 색): 실루엣 가장자리가 은은히 물들어요
+                if (_AuraColor.a > 0.001)
+                {
+                    float glow = pow(1.0 - saturate(dot(n, v)), 2.2);
+                    color = lerp(color, _AuraColor.rgb, saturate(glow * _AuraColor.a * 1.6));
+                }
 
                 color = MixFog(color, input.fogFactor);
                 return half4(color, 1.0);
