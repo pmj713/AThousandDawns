@@ -1,3 +1,5 @@
+using System.Reflection;
+using AThousandDawns.Enemies;
 using UnityEngine;
 
 namespace AThousandDawns.Art
@@ -15,6 +17,28 @@ namespace AThousandDawns.Art
         SpriteRenderer _ra, _rb, _rs;
         Vector3 _from, _dirA, _dirB, _unitA, _unitB, _unitS;
         float _t;
+
+        // 신호: EnemyBrain.SplitApart (쓰러진 정예, 쓰러진 자리, 갈라진 둘). 신호가 main에 들어오기 전에도 컴파일되게 이름으로 찾아 붙여요
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        static void Init()
+        {
+            var ev = typeof(EnemyBrain).GetEvent("SplitApart", BindingFlags.Public | BindingFlags.Static);
+            if (ev == null || _hooked) return;
+            var handler = System.Delegate.CreateDelegate(ev.EventHandlerType, typeof(InkSplitBurst).GetMethod(nameof(OnSplit), BindingFlags.NonPublic | BindingFlags.Static), false);
+            if (handler == null) return;
+            ev.AddEventHandler(null, handler);
+            _hooked = true;
+        }
+
+        static bool _hooked;
+
+        static void OnSplit(EnemyBrain elite, Vector3 at, EnemyBrain a, EnemyBrain b)
+        {
+            Vector3 side = elite != null ? elite.transform.right : Vector3.right; // 갈라진 둘은 좌우로 벌어져 서요
+            Vector3 dirA = a != null ? a.transform.position - at : -side;
+            Vector3 dirB = b != null ? b.transform.position - at : side;
+            Play(at, dirA, dirB);
+        }
 
         public static void Play(Vector3 at, Vector3 dirA, Vector3 dirB)
         {
