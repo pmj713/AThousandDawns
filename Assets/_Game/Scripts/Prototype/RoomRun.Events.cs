@@ -25,6 +25,7 @@ namespace AThousandDawns.Prototype
         public sealed class EventView
         {
             public string Id, Title, Text, Result;
+            public string Art; // 그림 id (비우면 Id로 찾아요. 고수 창처럼 같은 Id에 그림만 다를 때)
             public List<EventChoice> Choices = new List<EventChoice>();
         }
 

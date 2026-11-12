@@ -75,6 +75,7 @@ namespace AThousandDawns.Prototype
             var v = new EventView
             {
                 Id = "master",
+                Art = iron ? "master_iron" : monk ? "master_monk" : wave ? "master_wave" : shadow ? "master_shadow" : "master_bamboo", // 고수마다 그림 (EventArt/master_*)
                 Title = iron ? "철권 마웅이 주먹을 거두었다" : monk ? "혜광이 선장을 내려놓았다" : wave ? "탁랑객이 검을 강물에 꽂았다" : shadow ? "혈영검마의 잔상이 흩어졌다" : "청죽객이 검을 내려놓았다",
                 Text = iron
                     ? "\"허허, 내 주먹이 꺾였군. 권법을 가져가든, 기운을 가져가든, 그냥 보내 주든 마음대로 하게.\""
