@@ -6,7 +6,7 @@ using UnityEngine.InputSystem.Controls;
 namespace AThousandDawns.Core
 {
     // 바꿀 수 있는 키 (설정 → 조작 키). 값은 Input System 경로 ("<Keyboard>/f", "<Mouse>/leftButton")로 settings.json에 저장해요.
-    // 일시정지(Esc)와 창 안의 위아래·Enter는 고정이에요. 게임패드 배치는 따로 (게임패드 작업에서).
+    // 일시정지(Esc)와 창 안의 위아래·Enter는 고정이에요. 게임패드는 고정 배치 (PadPressed).
     public enum Bind { MoveUp, MoveDown, MoveLeft, MoveRight, Attack, Skill, Dash, Ultimate, Potion, Interact, Meridian }
 
     public static class KeyBindings
@@ -35,7 +35,16 @@ namespace AThousandDawns.Core
         }
 
         // 이번 프레임에 눌렀는지 (상호작용·경맥도처럼 Input Action 없이 읽는 키)
-        public static bool Pressed(Bind bind) => InputSystem.FindControl(Path(bind)) is ButtonControl b && b.wasPressedThisFrame;
+        public static bool Pressed(Bind bind) => (InputSystem.FindControl(Path(bind)) is ButtonControl b && b.wasPressedThisFrame) || PadPressed(bind);
+
+        // 게임패드 고정 배치: 상호작용 B(동) · 경맥도 Select · 대시 A(남) (평타 · 초식 · 절초 · 금창약은 PlayerInputReader)
+        static bool PadPressed(Bind bind)
+        {
+            var g = Gamepad.current;
+            if (g == null) return false;
+            var c = bind == Bind.Interact ? g.buttonEast : bind == Bind.Meridian ? g.selectButton : bind == Bind.Dash ? g.buttonSouth : null;
+            return c != null && c.wasPressedThisFrame;
+        }
 
         // 화면에 보이는 이름 ("F", "좌클릭", "Space")
         public static string Label(Bind bind) => LabelOf(Path(bind));

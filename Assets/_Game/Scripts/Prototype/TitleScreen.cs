@@ -11,14 +11,14 @@ namespace AThousandDawns.Prototype
     //   배경은 진행에 따라 (죽림 → 폐사찰 → 장강 수채 → 천마총 → 노을) · 제목은 가로 68% 지점 세로쓰기 · 왼쪽 아래: 버튼 4개 · 오른쪽 아래: 버전
     //   이어하기 (저장이 있을 때, 처음에 선택) → 판 중간 저장이 있으면 그 방부터, 없으면 마을
     //   시작하기 (저장이 없을 때) → 프롤로그 (글 4장, 넘기기 가능) → 첫 판
-    //   설정 (SettingsPanel, 일시정지 메뉴와 같은 창) · 크레딧 · 종료 (확인 없이)
+    //   설정 (SettingsPanel, 일시정지 메뉴와 같은 창) · 회귀 기록 (HintBookPanel 기록 탭) · 크레딧 · 종료 (확인 없이)
     // 마우스·키보드(위아래·Enter·Esc)·게임패드(십자·A·B) 모두 돼요.
     public sealed class TitleScreen : MonoBehaviour
     {
         public const string RunScene = "Prototype_Run";
 
-        public enum View { Menu, Prologue, Settings, Credits }
-        public enum Item { Continue, Settings, Credits, Quit }
+        public enum View { Menu, Prologue, Settings, Records, Credits }
+        public enum Item { Continue, Settings, Records, Credits, Quit }
 
         static readonly Color Paper = new Color32(0xEF, 0xE6, 0xD2, 0xFF); // 색감 시트 마을 바탕
         static readonly Color Ink = new Color32(0x2B, 0x28, 0x25, 0xFF);
@@ -45,6 +45,7 @@ namespace AThousandDawns.Prototype
         int _underlineFor = -1;   // 붓 밑줄을 긋기 시작한 메뉴
         float _underlineAt;
         public SettingsPanel Settings { get; } = new SettingsPanel();
+        public HintBookPanel Records { get; } = new HintBookPanel { Tab = 2 }; // 회귀 기록 (무공 요결 창의 기록 탭과 같은 창)
         [System.NonSerialized] GUIStyle _titleBig, _titleSmall, _subtitle, _hint, _menu, _menuOn, _info, _small, _body, _sealText;
 
         void Awake()
@@ -80,6 +81,7 @@ namespace AThousandDawns.Prototype
         {
             Item.Continue => HasSave ? "이어하기" : "시작하기",
             Item.Settings => "설정",
+            Item.Records => "회귀 기록",
             Item.Credits => "크레딧",
             _ => "종료",
         };
@@ -104,8 +106,8 @@ namespace AThousandDawns.Prototype
             switch (Current)
             {
                 case View.Menu:
-                    if (up) { Selected = (Selected + 3) % 4; Sfx.Play(SfxId.UiMove); }
-                    if (down) { Selected = (Selected + 1) % 4; Sfx.Play(SfxId.UiMove); }
+                    if (up) { Selected = (Selected + 4) % 5; Sfx.Play(SfxId.UiMove); }
+                    if (down) { Selected = (Selected + 1) % 5; Sfx.Play(SfxId.UiMove); }
                     if (ok) Choose((Item)Selected);
                     break;
                 case View.Prologue:
@@ -114,6 +116,9 @@ namespace AThousandDawns.Prototype
                     break;
                 case View.Settings:
                     if (Settings.TickKeys()) Current = View.Menu;
+                    break;
+                case View.Records:
+                    if (Records.TickKeys()) Current = View.Menu;
                     break;
                 default:
                     if (back || ok) Current = View.Menu;
@@ -135,6 +140,7 @@ namespace AThousandDawns.Prototype
                     }
                     break;
                 case Item.Settings: Current = View.Settings; break;
+                case Item.Records: Records.Refresh(); Current = View.Records; break;
                 case Item.Credits: Current = View.Credits; break;
                 default:
 #if UNITY_EDITOR
@@ -189,6 +195,7 @@ namespace AThousandDawns.Prototype
 
             if (Current == View.Menu) DrawMenu(h);
             else if (Current == View.Settings) { if (Settings.Draw(new Rect(80f, (h - 760f) * 0.5f, 900f, 760f))) Current = View.Menu; }
+            else if (Current == View.Records) { if (Records.Draw(new Rect((w - 1200f) * 0.5f, (h - 760f) * 0.5f, 1200f, 760f))) Current = View.Menu; }
             else DrawPanel(w, h);
 
             GUI.Label(new Rect(w - 260f, h - 50f, 230f, 30f), $"v{Application.version} 시험판", _small);
@@ -260,8 +267,8 @@ namespace AThousandDawns.Prototype
 
         void DrawMenu(float h)
         {
-            float x = 120f, y = h - 360f;
-            for (int i = 0; i < 4; i++)
+            float x = 120f, y = h - 420f;
+            for (int i = 0; i < 5; i++)
             {
                 var item = (Item)i;
                 var rect = new Rect(x, y + i * 64f, 320f, 56f);

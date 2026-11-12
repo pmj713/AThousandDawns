@@ -153,6 +153,8 @@ namespace AThousandDawns.Prototype
 
             if (IsForking)
             {
+                ForkCursor = AThousandDawns.Core.Pad.Step(ForkCursor, _forkOptions.Count, true); // 게임패드: 좌우로 고르고 A
+                if (AThousandDawns.Core.Pad.Confirm && _forkOptions.Count > 0) { ChooseFork(ForkCursor); return; }
                 var keyboard = Keyboard.current;
                 if (keyboard == null) return;
                 if (keyboard.digit1Key.wasPressedThisFrame) ChooseFork(0);
@@ -197,10 +199,13 @@ namespace AThousandDawns.Prototype
 
         // ── 갈림길
 
+        public int ForkCursor { get; private set; } // 게임패드로 고른 갈래
+
         public void BeginFork(int floor)
         {
             _floor = floor;
             _forkOptions = RollFork();
+            ForkCursor = 0;
             arena.Blocked = true;
             Player.enabled = false; // 고르는 클릭이 평타로 남지 않게
             Time.timeScale = 0f;
@@ -702,12 +707,14 @@ namespace AThousandDawns.Prototype
         void TickShopKeys()
         {
             var keyboard = Keyboard.current;
-            if (keyboard == null) return;
             if (IsSelling)
             {
                 TickSellKeys(keyboard);
                 return;
             }
+            ShopCursor = AThousandDawns.Core.Pad.Step(ShopCursor, Shop.Slots.Count, false, i => Shop.Slots[i].Sold); // 게임패드: 위아래 · A 사기 · B 닫기 (B는 상호작용)
+            if (AThousandDawns.Core.Pad.Confirm && Shop.Slots.Count > 0) { Buy(ShopCursor); return; }
+            if (keyboard == null) { if (AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Interact)) CloseShop(); return; }
             if (keyboard.escapeKey.wasPressedThisFrame || AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Interact))
             {
                 CloseShop();
@@ -716,6 +723,8 @@ namespace AThousandDawns.Prototype
             for (int i = 0; i < Shop.Slots.Count && i < 9; i++)
                 if (((KeyControl)keyboard[(Key)((int)Key.Digit1 + i)]).wasPressedThisFrame) Buy(i);
         }
+
+        public int ShopCursor { get; private set; } // 게임패드로 고른 진열 칸
 
         public bool Buy(int index)
         {

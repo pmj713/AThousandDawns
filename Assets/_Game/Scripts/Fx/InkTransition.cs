@@ -171,7 +171,7 @@ namespace AThousandDawns.Fx
         static bool SkipPressed()
         {
             var k = Keyboard.current;
-            return k != null && (k.enterKey.wasPressedThisFrame || k.numpadEnterKey.wasPressedThisFrame || k.escapeKey.wasPressedThisFrame);
+            return (k != null && (k.enterKey.wasPressedThisFrame || k.numpadEnterKey.wasPressedThisFrame || k.escapeKey.wasPressedThisFrame)) || AThousandDawns.Core.Pad.Confirm; // 패드 A로도 넘겨요
         }
 
         static float EaseIn(float t) => t * t;

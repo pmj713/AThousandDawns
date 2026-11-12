@@ -416,6 +416,7 @@ namespace AThousandDawns.Prototype
                 GUI.enabled = !s.Sold;
                 bool itemRow = s.Kind == InnShop.SlotKind.Item && ItemIcons.Get(s.Item) != null;
                 if (GUI.Button(new Rect(x, y + i * (rowH + 6f), w, rowH), text, itemRow ? _cardLeft : _card)) run.Buy(i);
+                if (i == run.ShopCursor) PadMark(new Rect(x, y + i * (rowH + 6f), w, rowH));
                 if (itemRow) ItemIcons.Draw(new Rect(x + 8f, y + i * (rowH + 6f) + 4f, rowH - 8f, rowH - 8f), s.Item, s.Sold ? 0.4f : 1f);
                 GUI.enabled = true;
             }
@@ -433,6 +434,7 @@ namespace AThousandDawns.Prototype
             float listH = Mathf.Min(items.Count * (rowH + 6f), UiScale.Height - 220f);
             float x = (UiScale.Width - w) * 0.5f, y = (UiScale.Height - listH) * 0.5f;
             GUI.Label(new Rect(0, y - 56f, UiScale.Width, 40f), $"매각 · 은자 {run.Silver} · 숫자 키 또는 클릭 · {KeyName(AThousandDawns.Core.Bind.Interact)} 진열대로", _big);
+            if (AThousandDawns.Core.Pad.Active) _sellScroll.y = Mathf.Clamp(_sellScroll.y, run.SellCursor * (rowH + 6f) + rowH - listH, run.SellCursor * (rowH + 6f)); // 패드 커서가 보이게
             _sellScroll = GUI.BeginScrollView(new Rect(x, y, w + 20f, listH), _sellScroll, new Rect(0, 0, w, items.Count * (rowH + 6f)));
             for (int i = 0; i < items.Count; i++)
             {
@@ -445,6 +447,7 @@ namespace AThousandDawns.Prototype
                     run.Sell(i);
                     break;
                 }
+                if (i == run.SellCursor) PadMark(new Rect(0, i * (rowH + 6f), w, rowH));
                 ItemIcons.Draw(new Rect(8f, i * (rowH + 6f) + 4f, rowH - 8f, rowH - 8f), it.Def);
             }
             GUI.EndScrollView();
@@ -498,6 +501,7 @@ namespace AThousandDawns.Prototype
                 GUI.enabled = c.Locked == null;
                 if (GUI.Button(new Rect(x, top + i * (rowH + 6f), w, rowH), text, _card)) run.ChooseEvent(i);
                 GUI.enabled = true;
+                if (i == ev.Cursor) PadMark(new Rect(x, top + i * (rowH + 6f), w, rowH)); // 게임패드로 고른 선택지
             }
         }
 
@@ -525,6 +529,7 @@ namespace AThousandDawns.Prototype
                 var end = new Vector2(mapRect.x + mapRect.width * (i + 1f) / (options.Count + 1f), mapRect.y + mapRect.height * 0.2f);
                 if (ForkCard(end, cardW, cardH).Contains(mouse)) hover = i;
             }
+            if (hover < 0 && AThousandDawns.Core.Pad.Active) hover = run.ForkCursor; // 게임패드로 고른 갈래도 같은 강조
             var ends = AThousandDawns.Fx.InkForkMap.Draw(mapRect, dense, hover);
             for (int i = 0; i < options.Count; i++)
             {
@@ -533,6 +538,7 @@ namespace AThousandDawns.Prototype
                 string text = $"<size=13>[{i + 1}]</size>  <b><size=21>{RoomRun.RewardLabel(p.Reward)}</size></b>\n{qi}\n\n{run.PathDetail(p)}";
                 var card = ForkCard(ends[i], cardW, cardH);
                 if (GUI.Button(card, text, _card)) run.ChooseFork(i, GUIUtility.GUIToScreenPoint(ends[i])); // 고른 길 끝에서 먹이 번져요
+                if (i == run.ForkCursor) PadMark(card);
             }
         }
 
@@ -563,6 +569,7 @@ namespace AThousandDawns.Prototype
                 string where = it.OnBoard ? $"경맥도 ({it.Cell.x + 1},{it.Cell.y + 1})" : "주머니";
                 string text = $"<size=13>[{(i < 9 ? (i + 1).ToString() : "-")}]</size>  버리기 · <b>{it.Def.name}</b>  {Colored(it.Def.keyword)} · {GradeColored(it.Def.grade)} · {where}";
                 if (GUI.Button(new Rect(x, row, w, rowH), text, _cardLeftSmall)) arena.Discard(i);
+                if (i == arena.DiscardCursor) PadMark(new Rect(x, row, w, rowH));
                 ItemIcons.Draw(new Rect(x + 10f, row + 3f, rowH - 6f, rowH - 6f), it.Def);
                 row += rowH + 4f;
             }
@@ -586,7 +593,7 @@ namespace AThousandDawns.Prototype
             const float cardW = 320f, cardH = 360f, gap = 20f, icon = 96f;
             float total = offer.Count * cardW + (offer.Count - 1) * gap;
             float x = (UiScale.Width - total) * 0.5f, y = (UiScale.Height - cardH) * 0.5f;
-            GUI.Label(new Rect(0, y - 56f, UiScale.Width, 40f), "기물 고르기 · 1 2 3 또는 클릭 · Esc 넘기기", _big);
+            GUI.Label(new Rect(0, y - 56f, UiScale.Width, 40f), "기물 고르기 · 1 2 3 또는 클릭 · Esc 넘기기 (패드: 좌우 · A · B)", _big);
             for (int i = 0; i < offer.Count; i++)
             {
                 var def = offer[i];
@@ -604,6 +611,7 @@ namespace AThousandDawns.Prototype
                 ItemIcons.Draw(new Rect((cardW - icon) * 0.5f, 18f, icon, icon), def);
                 InkScrollCard.End();
             }
+            if (arena.OfferCursor < offer.Count) PadMark(new Rect(x + arena.OfferCursor * (cardW + gap), y, cardW, cardH)); // 게임패드로 고른 카드
         }
 
         static string KeyName(AThousandDawns.Core.Bind bind) => AThousandDawns.Core.KeyBindings.Label(bind); // 설정에서 바꾼 키 이름

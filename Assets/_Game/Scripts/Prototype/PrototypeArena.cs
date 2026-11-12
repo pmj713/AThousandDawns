@@ -287,6 +287,9 @@ namespace AThousandDawns.Prototype
                 Time.timeScale = 0f;
                 player.enabled = false;
             }
+            DiscardCursor = AThousandDawns.Core.Pad.Step(DiscardCursor, player.Items.Items.Count); // 게임패드: 위아래 · A 버리고 받기 · B 새 기물 포기
+            if (AThousandDawns.Core.Pad.Confirm) { Discard(DiscardCursor); return true; }
+            if (AThousandDawns.Core.Pad.Back) { DeclinePending(); return true; }
             if (keyboard == null) return true;
             if (keyboard.escapeKey.wasPressedThisFrame) DeclinePending();
             else
@@ -298,6 +301,9 @@ namespace AThousandDawns.Prototype
                     }
             return true;
         }
+
+        public int DiscardCursor { get; private set; } // 게임패드로 고른 버릴 기물
+        public int OfferCursor { get; private set; }   // 게임패드로 고른 기물 카드
 
         public void Discard(int index)
         {
@@ -328,6 +334,9 @@ namespace AThousandDawns.Prototype
 
             if (IsChoosing)
             {
+                OfferCursor = AThousandDawns.Core.Pad.Step(OfferCursor, Offer.Count, true); // 게임패드: 좌우 · A 고르기 · B 넘기기
+                if (AThousandDawns.Core.Pad.Confirm && Offer.Count > 0) { Choose(OfferCursor); return true; }
+                if (AThousandDawns.Core.Pad.Back) { CloseOffer(); return true; }
                 if (keyboard == null) return true;
                 if (keyboard.digit1Key.wasPressedThisFrame) Choose(0);
                 else if (keyboard.digit2Key.wasPressedThisFrame) Choose(1);
@@ -349,6 +358,7 @@ namespace AThousandDawns.Prototype
             var db = GameConfig.Items;
             var weights = RoomRun.ApplyLuck(_offerWeights.Count > 0 ? _offerWeights.Dequeue() : _gradeWeights, Luck);
             _offer = db == null ? null : ItemOffer.Roll(db.Available, player.Items.Has, _choiceCount, weights, () => UnityEngine.Random.value);
+            OfferCursor = 0;
             if (_offer == null || _offer.Count == 0)
             {
                 _offer = null;

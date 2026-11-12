@@ -28,6 +28,15 @@ namespace AThousandDawns.Core
         public int karma;    // 사당에서 고른 업보 단계 (다음 판에 걸려요)
         public int karmaMax; // 열린 업보 단계 (열린 가장 높은 단계로 천마를 격파하면 +1)
 
+        // 회귀 기록 (무공 요결 창 "회귀 기록" 탭)
+        public float totalPlaySeconds;     // 모든 판 플레이 시간 합
+        public int bestKarma = -1;         // 천마를 격파한 가장 높은 업보 단계 (-1: 아직)
+        public int bestRegion;             // 가장 깊이 간 지역 (0 죽림 ~ 3 천마총)
+        public List<NameCount> deathCauses = new List<NameCount>(); // 쓰러뜨린 것 (마지막으로 때린 적 · 기술)
+        public List<NameCount> itemCounts = new List<NameCount>();  // 판이 끝날 때 지닌 기물 (판마다 1)
+        public List<NameCount> skillCounts = new List<NameCount>(); // 판이 끝날 때 쓰던 초식
+        public List<RunLog> recentRuns = new List<RunLog>();        // 최근 판 (새 판이 앞, 최대 10)
+
         // 테스트에서 실제 저장 파일을 건드리지 않게 바꿔요
         public static string PathOverride;
 
@@ -45,6 +54,10 @@ namespace AThousandDawns.Core
                     if (meta.seenItems == null) meta.seenItems = new List<string>();
                     if (meta.relics == null) meta.relics = new List<string>();
                     if (meta.relicPicks == null) meta.relicPicks = new List<string>();
+                    if (meta.deathCauses == null) meta.deathCauses = new List<NameCount>();
+                    if (meta.itemCounts == null) meta.itemCounts = new List<NameCount>();
+                    if (meta.skillCounts == null) meta.skillCounts = new List<NameCount>();
+                    if (meta.recentRuns == null) meta.recentRuns = new List<RunLog>();
                     return meta;
                 }
             }
@@ -66,5 +79,34 @@ namespace AThousandDawns.Core
                 Debug.LogWarning($"[MetaSave] 저장하지 못했어요: {e.Message}");
             }
         }
+
+        // 이름별 횟수 +1 (회귀 기록)
+        public static void Bump(List<NameCount> list, string name)
+        {
+            if (list == null || string.IsNullOrEmpty(name)) return;
+            var found = list.Find(n => n.name == name);
+            if (found != null) found.count++;
+            else list.Add(new NameCount { name = name, count = 1 });
+        }
+    }
+
+    [Serializable]
+    public sealed class NameCount
+    {
+        public string name;
+        public int count;
+    }
+
+    // 최근 판 한 줄 (회귀 기록)
+    [Serializable]
+    public sealed class RunLog
+    {
+        public int run;          // 제N회 회귀
+        public bool victory;
+        public string where;     // 결과 화면의 결말 ("천마 격파" · "폐사찰 2층 · 혜광의 염주에 쓰러짐")
+        public int floors;
+        public float seconds;
+        public int karma;
+        public int memory;
     }
 }

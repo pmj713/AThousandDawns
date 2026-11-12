@@ -89,11 +89,11 @@ namespace AThousandDawns.Prototype
                 if (keyboard == null) return true;
                 if (_book != null && _book.IsOpen)
                 {
-                    if (keyboard.bKey.wasPressedThisFrame) _book.Close();
+                    if (keyboard.bKey.wasPressedThisFrame || AThousandDawns.Core.Pad.North || AThousandDawns.Core.Pad.Back) _book.Close();
                     return true;
                 }
-                if (keyboard.bKey.wasPressedThisFrame && _book != null) _book.Open(); // 회귀록
-                else if (keyboard.enterKey.wasPressedThisFrame) Restart();
+                if ((keyboard.bKey.wasPressedThisFrame || AThousandDawns.Core.Pad.North) && _book != null) _book.Open(); // 회귀록 (패드 Y)
+                else if (keyboard.enterKey.wasPressedThisFrame || AThousandDawns.Core.Pad.Confirm) Restart(); // 패드 A
                 return true;
             }
             if (Player.IsDead)
@@ -126,6 +126,8 @@ namespace AThousandDawns.Prototype
             meta.bestFloors = Mathf.Max(meta.bestFloors, _record.FloorsCleared);
             meta.bossKills += _record.Kills[(int)EnemyRank.Boss];
             if (_record.FinalBoss) { meta.finalBossKills++; RecordRelics(meta); UnlockKarma(meta); } // 천마 격파 (지닌 기물은 유품록에)
+            string where = victory ? (_record.FinalBoss ? "천마 격파" : $"{RegionName} 돌파") : $"{WhereText()} · {DeathCause()}";
+            RecordHistory(meta, victory, where, memory); // 회귀 기록 (RoomRun.History)
             meta.Save();
             RunSave.Delete(); // 판이 끝났으니 이어할 것도 없어요
             _saveDirty = false;
@@ -133,7 +135,7 @@ namespace AThousandDawns.Prototype
             Result = new ResultView
             {
                 Victory = victory,
-                Where = victory ? (_record.FinalBoss ? "천마 격파" : $"{RegionName} 돌파") : $"{WhereText()} · {DeathCause()}",
+                Where = where,
                 Lines = _record.Lines(weights),
                 Memory = memory,
                 StoredMemory = meta.memory,

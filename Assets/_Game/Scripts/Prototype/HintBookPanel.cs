@@ -23,7 +23,12 @@ namespace AThousandDawns.Prototype
         public IReadOnlyList<HintBook.Entry> Entries => _entries;
         public int LockedCount { get; private set; }
 
-        public bool CodexTab { get; set; }
+        // 탭: 0 무공 요결 · 1 기물 도감 · 2 회귀 기록
+        public int Tab { get; set; }
+        public bool CodexTab { get => Tab == 1; set => Tab = value ? 1 : 0; }
+        public bool RecordTab => Tab == 2;
+        MetaSave _meta;
+        Vector2 _recordScroll;
         public int CodexSelected { get; private set; }
         public IReadOnlyList<ItemDefinition> CodexItems => _items;
         public int SeenCount { get; private set; }
@@ -33,6 +38,7 @@ namespace AThousandDawns.Prototype
         public void Refresh()
         {
             var meta = MetaSave.Load();
+            _meta = meta;
             _entries = HintBook.Unlocked(meta);
             LockedCount = HintBook.All.Length - _entries.Count;
             Selected = Mathf.Clamp(Selected, 0, Mathf.Max(0, _entries.Count - 1));
@@ -61,7 +67,13 @@ namespace AThousandDawns.Prototype
             bool down = (k != null && (k.downArrowKey.wasPressedThisFrame || k.sKey.wasPressedThisFrame)) || (pad != null && pad.dpad.down.wasPressedThisFrame);
             bool tab = (k != null && (k.tabKey.wasPressedThisFrame || k.leftArrowKey.wasPressedThisFrame || k.rightArrowKey.wasPressedThisFrame))
                 || (pad != null && (pad.leftShoulder.wasPressedThisFrame || pad.rightShoulder.wasPressedThisFrame));
-            if (tab) CodexTab = !CodexTab;
+            if (tab) Tab = (Tab + ((k != null && k.leftArrowKey.wasPressedThisFrame) || (pad != null && pad.leftShoulder.wasPressedThisFrame) ? 2 : 1)) % 3;
+            if (RecordTab)
+            {
+                if (up) _recordScroll.y = Mathf.Max(0f, _recordScroll.y - 60f);
+                if (down) _recordScroll.y += 60f;
+                return (k != null && k.escapeKey.wasPressedThisFrame) || (pad != null && pad.buttonEast.wasPressedThisFrame);
+            }
             int count = CodexTab ? _items.Count : _entries.Count;
             if (count > 0)
             {
@@ -81,14 +93,20 @@ namespace AThousandDawns.Prototype
             GUI.DrawTexture(area, Texture2D.whiteTexture);
             GUI.color = old;
 
-            if (GUI.Button(new Rect(area.x + 30f, area.y + 20f, 180f, 44f), "무공 요결", CodexTab ? _tab : _tabOn)) CodexTab = false;
-            if (GUI.Button(new Rect(area.x + 230f, area.y + 20f, 320f, 44f), $"기물 도감 {SeenCount}/{_items.Count}", CodexTab ? _tabOn : _tab)) CodexTab = true;
+            if (GUI.Button(new Rect(area.x + 30f, area.y + 20f, 180f, 44f), "무공 요결", Tab == 0 ? _tabOn : _tab)) Tab = 0;
+            if (GUI.Button(new Rect(area.x + 230f, area.y + 20f, 320f, 44f), $"기물 도감 {SeenCount}/{_items.Count}", Tab == 1 ? _tabOn : _tab)) Tab = 1;
+            if (GUI.Button(new Rect(area.x + 570f, area.y + 20f, 220f, 44f), "회귀 기록", Tab == 2 ? _tabOn : _tab)) Tab = 2;
             bool close = GUI.Button(new Rect(area.xMax - 130f, area.y + 22f, 100f, 40f), "닫기");
 
             var listArea = new Rect(area.x + 30f, area.y + 80f, 300f, area.height - 140f);
             var text = new Rect(listArea.xMax + 30f, area.y + 80f, area.xMax - listArea.xMax - 60f, area.height - 140f);
             string footer;
-            if (CodexTab)
+            if (RecordTab)
+            {
+                DrawRecords(new Rect(area.x + 30f, area.y + 80f, area.width - 60f, area.height - 140f));
+                footer = _meta != null && _meta.runs > 0 ? $"회귀 {_meta.runs}회째" : "아직 끝낸 판이 없어요";
+            }
+            else if (CodexTab)
             {
                 int selected = CodexSelected;
                 DrawList(listArea, ref _codexScroll, _items.Count, i => PlayerKeywords.Label(_items[i].keyword), i => Seen(_items[i]) ? _items[i].name : "???", ref selected);
@@ -117,8 +135,58 @@ namespace AThousandDawns.Prototype
                 }
                 footer = LockedCount > 0 ? $"아직 모르는 요결 {LockedCount}개 · 그 상황을 처음 겪으면 펼쳐져요" : "모든 요결을 펼쳤어요";
             }
-            GUI.Label(new Rect(area.x + 30f, area.yMax - 44f, area.width - 60f, 30f), $"{footer}   ·   Tab 요결/도감 · 위아래 고르기 · Esc 닫기", _hint);
+            GUI.Label(new Rect(area.x + 30f, area.yMax - 44f, area.width - 60f, 30f), $"{footer}   ·   Tab 요결 · 도감 · 기록 · 위아래 고르기 · Esc 닫기", _hint);
             return close;
+        }
+
+        // 회귀 기록 탭: 왼쪽 요약 · 순위, 오른쪽 최근 판
+        void DrawRecords(Rect area)
+        {
+            var m = _meta;
+            if (m == null || m.runs <= 0)
+            {
+                GUI.Label(new Rect(area.x, area.y, area.width, 40f), "아직 끝낸 판이 없어요. 판이 끝나면 여기에 회귀의 기록이 쌓여요.", _body);
+                return;
+            }
+            float half = area.width * 0.5f - 20f;
+            var left = new Rect(area.x, area.y, half, area.height);
+            var right = new Rect(area.x + half + 40f, area.y, half, area.height);
+
+            string region = RoomRun.RegionNames[Mathf.Clamp(m.bestRegion, 0, RoomRun.RegionNames.Length - 1)];
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"회귀 {m.runs}회 · 플레이 시간 {RunRecord.Clock(m.totalPlaySeconds)}");
+            sb.AppendLine($"가장 깊이 간 곳 {region} · 가장 많이 돌파한 층 {m.bestFloors}");
+            sb.AppendLine($"천마 격파 {m.finalBossKills}회 · 지역 보스 처치 {m.bossKills}");
+            sb.AppendLine(m.bestKarma >= 0 ? $"업보 최고 {m.bestKarma}단계로 천마 격파 (열린 단계 {m.karmaMax})" : "아직 업보를 지고 천마를 격파하지 못했어요");
+            sb.AppendLine($"모은 회귀의 기억 {m.totalMemory}");
+            sb.AppendLine();
+            AppendTop(sb, "쓰러뜨린 것", m.deathCauses, 5, "회");
+            AppendTop(sb, "끝까지 지닌 기물", m.itemCounts, 5, "판");
+            AppendTop(sb, "쓰던 초식", m.skillCounts, 3, "판");
+            GUI.Label(left, sb.ToString(), _body);
+
+            GUI.Label(new Rect(right.x, right.y, right.width, 36f), "최근 판", _title);
+            var list = new Rect(right.x, right.y + 46f, right.width, right.height - 46f);
+            const float rowH = 64f;
+            _recordScroll = GUI.BeginScrollView(list, _recordScroll, new Rect(0, 0, list.width - 20f, m.recentRuns.Count * rowH));
+            for (int i = 0; i < m.recentRuns.Count; i++)
+            {
+                var r = m.recentRuns[i];
+                string karma = r.karma > 0 ? $" · 업보 {r.karma}" : "";
+                string head = r.victory ? $"<color=#e8c06a>제{r.run}회 · {r.where}</color>" : $"제{r.run}회 · {r.where}";
+                GUI.Label(new Rect(0, i * rowH, list.width - 24f, rowH - 4f), $"{head}\n<color=#bdbdbd>{r.floors}층 돌파 · {RunRecord.Clock(r.seconds)}{karma} · 기억 +{r.memory}</color>", _body);
+            }
+            GUI.EndScrollView();
+        }
+
+        static void AppendTop(System.Text.StringBuilder sb, string title, List<NameCount> list, int top, string unit)
+        {
+            if (list == null || list.Count == 0) return;
+            var sorted = new List<NameCount>(list);
+            sorted.Sort((a, b) => b.count.CompareTo(a.count));
+            sb.AppendLine(title);
+            for (int i = 0; i < sorted.Count && i < top; i++) sb.AppendLine($"   {i + 1}. {sorted[i].name} · {sorted[i].count}{unit}");
+            sb.AppendLine();
         }
 
         // 요결 항목 그림 (아트: Resources/HintArt/<항목 id>, 16:9). 없으면 글만

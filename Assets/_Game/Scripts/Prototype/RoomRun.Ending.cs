@@ -54,7 +54,7 @@ namespace AThousandDawns.Prototype
         {
             if (!_ending) StartEnding();
             var keyboard = Keyboard.current;
-            bool skip = KeyBindings.Pressed(Bind.Interact) || (keyboard != null && (keyboard.enterKey.wasPressedThisFrame || keyboard.escapeKey.wasPressedThisFrame));
+            bool skip = KeyBindings.Pressed(Bind.Interact) || Pad.Confirm || (keyboard != null && (keyboard.enterKey.wasPressedThisFrame || keyboard.escapeKey.wasPressedThisFrame));
             float lineTime = GameConfig.GetOptional("ending.line_time", 4f);
             if ((skip && Time.unscaledTime - _lineStart > 0.3f) || Time.unscaledTime - _lineStart >= lineTime) AdvanceEnding(); // 막 뜬 줄은 잠깐 못 넘겨요 (보상 고르던 키가 이어지지 않게)
             return _endingDone;

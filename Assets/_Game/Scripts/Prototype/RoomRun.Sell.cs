@@ -28,14 +28,19 @@ namespace AThousandDawns.Prototype
             ShopNotice = null;
         }
 
+        public int SellCursor { get; private set; } // 게임패드로 고른 팔 기물
+
         // 1~9로 팔기, F·Esc 진열대로 돌아가기
         void TickSellKeys(Keyboard keyboard)
         {
-            if (keyboard.escapeKey.wasPressedThisFrame || KeyBindings.Pressed(Bind.Interact))
+            SellCursor = Pad.Step(SellCursor, Player.Items.Items.Count); // 게임패드: 위아래 · A 팔기 · B 돌아가기
+            if (Pad.Confirm && Player.Items.Items.Count > 0) { Sell(UnityEngine.Mathf.Min(SellCursor, Player.Items.Items.Count - 1)); return; }
+            if ((keyboard != null && keyboard.escapeKey.wasPressedThisFrame) || KeyBindings.Pressed(Bind.Interact))
             {
                 CloseSell();
                 return;
             }
+            if (keyboard == null) return;
             for (int i = 0; i < Player.Items.Items.Count && i < 9; i++)
                 if (((KeyControl)keyboard[(Key)((int)Key.Digit1 + i)]).wasPressedThisFrame)
                 {

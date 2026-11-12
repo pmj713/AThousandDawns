@@ -27,6 +27,7 @@ namespace AThousandDawns.Prototype
             public string Id, Title, Text, Result;
             public string Art; // 그림 id (비우면 Id로 찾아요. 고수 창처럼 같은 Id에 그림만 다를 때)
             public List<EventChoice> Choices = new List<EventChoice>();
+            public int Cursor; // 게임패드로 고른 선택지 (Pad.Active일 때 창이 표시해요)
         }
 
         public static readonly string[] EventIds = { "doctor", "pharmacy", "gambler", "captive", "shrine", "scripture", "escort", "smith", "tomb", "deja", "peddler" };
@@ -94,6 +95,7 @@ namespace AThousandDawns.Prototype
         void OpenEventView(EventView view, Action after)
         {
             CurrentEvent = view;
+            if (view != null) view.Cursor = Math.Max(0, view.Choices.FindIndex(c => c.Locked == null)); // 패드 커서는 처음 고를 수 있는 선택지에서
             _afterEvent = after;
             if (CurrentEvent == null) return;
             arena.Blocked = true;
@@ -118,12 +120,21 @@ namespace AThousandDawns.Prototype
         void TickEventKeys()
         {
             var keyboard = Keyboard.current;
-            if (keyboard == null) return;
             if (CurrentEvent.Result != null)
             {
-                if (AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Interact) || keyboard.enterKey.wasPressedThisFrame || keyboard.escapeKey.wasPressedThisFrame || keyboard.digit1Key.wasPressedThisFrame) CloseEvent();
+                if (AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Interact) || AThousandDawns.Core.Pad.Confirm
+                    || (keyboard != null && (keyboard.enterKey.wasPressedThisFrame || keyboard.escapeKey.wasPressedThisFrame || keyboard.digit1Key.wasPressedThisFrame))) CloseEvent();
                 return;
             }
+            // 게임패드: 위아래로 고르고 (잠긴 선택지는 건너뛰어요) A로 골라요
+            var view = CurrentEvent;
+            view.Cursor = AThousandDawns.Core.Pad.Step(view.Cursor, view.Choices.Count, false, i => view.Choices[i].Locked != null);
+            if (AThousandDawns.Core.Pad.Confirm && view.Cursor < view.Choices.Count && view.Choices[view.Cursor].Locked == null)
+            {
+                ChooseEvent(view.Cursor);
+                return;
+            }
+            if (keyboard == null) return;
             for (int i = 0; i < CurrentEvent.Choices.Count && i < 9; i++)
                 if (((KeyControl)keyboard[(Key)((int)Key.Digit1 + i)]).wasPressedThisFrame)
                 {
