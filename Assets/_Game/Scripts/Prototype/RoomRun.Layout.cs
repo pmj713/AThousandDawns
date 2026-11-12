@@ -9,11 +9,12 @@ namespace AThousandDawns.Prototype
     //   폐사찰: 빈 마당 · 기둥 회랑 (돌기둥 6) · 불상 (벽 앞 석불 둘) · 무너진 벽 (낮은 담 넷). 충돌체가 있어 사람·화살·돌진을 막아요.
     //   장강 수채: 마른 바닥 · 여울 (가운데 가로로 흐르는 얕은 물) · 웅덩이 (고인 물 둘) · 물길 (가운데 세로로 흐르는 물).
     //     물 안에서는 느려지고 (river.water_slow), 흐르는 물은 물살 쪽으로 밀어요 (river.current, 대시 중엔 안 밀려요). 수채 적은 물에 익숙해서 그대로예요.
+    //   천마총: 빈 묘실 · 무너진 관 · 마기 기둥 · 혈지 (RoomRun.TombLayout).
     // 모두 문 사이 십자 길 · 방 가운데 · 고정 대나무 기둥 6개 · 청죽사 풀숲 자리를 비켜 놓아요.
     // 그림은 아트 쪽이 RoomFeatures를 읽어 바꿔 그려요 (기본판은 단색 상자).
     public sealed partial class RoomRun
     {
-        public enum FeatureKind { Pillar, Statue, Wall, Water }
+        public enum FeatureKind { Pillar, Statue, Wall, Water, Coffin, MiasmaPillar, BloodPool }
 
         public sealed class RoomFeature
         {
@@ -28,6 +29,7 @@ namespace AThousandDawns.Prototype
 
         public static readonly string[] TempleLayoutNames = { "빈 마당", "기둥 회랑", "불상", "무너진 벽" };
         public static readonly string[] RiverLayoutNames = { "마른 바닥", "여울", "웅덩이", "물길" };
+        public static readonly string[] TombLayoutNames = { "빈 묘실", "무너진 관", "마기 기둥", "혈지" };
 
         readonly List<RoomFeature> _features = new List<RoomFeature>();
         public IReadOnlyList<RoomFeature> RoomFeatures => _features;
@@ -42,14 +44,16 @@ namespace AThousandDawns.Prototype
             foreach (var f in _features) if (f.Go != null) Destroy(f.Go);
             _features.Clear();
             RoomLayout = -1;
-            if (room != null && room.HasFight && room.FixedWaves == null && (_region == 1 || _region == 2))
+            if (room != null && room.HasFight && room.FixedWaves == null && (_region == 1 || _region == 2 || _region == 3))
             {
                 var rng = new System.Random(Seed ^ (room.Cell.x * 92837111) ^ (room.Cell.y * 689287499) ^ (_floor * 283923481) ^ _region);
                 RoomLayout = LayoutOverride >= 0 ? LayoutOverride : rng.Next(4);
                 if (_region == 1) BuildTempleLayout(RoomLayout);
-                else BuildRiverLayout(RoomLayout);
+                else if (_region == 2) BuildRiverLayout(RoomLayout);
+                else BuildTombLayout(RoomLayout);
                 if (_region == 1 && RoomLayout > 0) Notify("temple_layout", "폐사찰: 방마다 돌기둥 · 석불 · 무너진 담이 달라요 · 화살과 돌진을 막는 엄폐물이에요");
                 if (_region == 2 && RoomLayout > 0) Notify("river_water", "장강의 물: 들어가면 느려지고 흐르는 물은 물살 쪽으로 밀어요 · 대시 중엔 안 밀려요");
+                if (_region == 3 && RoomLayout > 1) Notify("tomb_layout", "천마총: 마기 기둥은 때마다 둘레에 마기를 뿜고, 혈지 위의 적은 회복해요 · 끌어내서 싸워요");
             }
             LayoutChanged?.Invoke(this);
         }
@@ -79,11 +83,11 @@ namespace AThousandDawns.Prototype
         void AddSolid(FeatureKind kind, Vector2 at, Vector2 size, float height)
         {
             var go = GameObject.CreatePrimitive(kind == FeatureKind.Pillar ? PrimitiveType.Cylinder : PrimitiveType.Cube);
-            go.name = kind == FeatureKind.Pillar ? "돌기둥" : kind == FeatureKind.Statue ? "석불" : "무너진 담";
+            go.name = kind == FeatureKind.Pillar ? "돌기둥" : kind == FeatureKind.Statue ? "석불" : kind == FeatureKind.Coffin ? "무너진 관" : kind == FeatureKind.MiasmaPillar ? "마기 기둥" : "무너진 담";
             Vector3 center = combat.center + new Vector3(at.x, 0f, at.y);
             go.transform.position = center + Vector3.up * height * 0.5f;
             go.transform.localScale = kind == FeatureKind.Pillar ? new Vector3(size.x, height * 0.5f, size.y) : new Vector3(size.x, height, size.y);
-            go.GetComponent<Renderer>().material.color = kind == FeatureKind.Statue ? new Color(0.42f, 0.38f, 0.33f) : new Color(0.5f, 0.48f, 0.45f);
+            go.GetComponent<Renderer>().material.color = kind == FeatureKind.Statue ? new Color(0.42f, 0.38f, 0.33f) : kind == FeatureKind.Coffin ? new Color(0.2f, 0.18f, 0.2f) : kind == FeatureKind.MiasmaPillar ? new Color(0.15f, 0.08f, 0.1f) : new Color(0.5f, 0.48f, 0.45f);
             _features.Add(new RoomFeature { Kind = kind, Center = center, Size = size, Go = go });
         }
 
@@ -135,6 +139,7 @@ namespace AThousandDawns.Prototype
         // 층 방에서 매 프레임: 물에 들어가면 느려지고 흐르는 물은 밀어요
         void TickWater(float dt)
         {
+            TickTombFeatures(dt); // 천마총 혈지 · 마기 기둥 (RoomRun.TombLayout)
             if (_features.Count == 0 || Player == null || Player.IsDead) return;
             var w = WaterAt(Player.transform.position);
             if (w == null) return;
@@ -147,7 +152,7 @@ namespace AThousandDawns.Prototype
         {
             foreach (var f in _features)
             {
-                if (f.Kind == FeatureKind.Water) continue;
+                if (f.Kind == FeatureKind.Water || f.Kind == FeatureKind.BloodPool) continue;
                 if (Mathf.Abs(p.x - f.Center.x) <= f.Size.x * 0.5f + margin && Mathf.Abs(p.z - f.Center.z) <= f.Size.y * 0.5f + margin) return true;
             }
             return false;

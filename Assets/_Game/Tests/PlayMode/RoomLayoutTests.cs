@@ -151,5 +151,87 @@ namespace AThousandDawns.Tests
             Assert.Greater(player.SlowRatio, 0f);
             Assert.Less(Vector3.Distance(p0, player.transform.position), 0.2f, "고인 물은 밀지 않아요");
         }
+
+        [UnityTest]
+        public IEnumerator 천마총_방_구성은_관_마기_기둥_혈지()
+        {
+            yield return Load(3);
+            var run = Object.FindFirstObjectByType<RoomRun>();
+            var director = Object.FindFirstObjectByType<AThousandDawns.Enemies.EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var room = run.Map.Rooms.First(r => r.HasFight && r.FixedWaves == null);
+            Vector3 c = RoomCenter(run);
+            int[] counts = { 0, 4, 2, 2 };
+            for (int layout = 0; layout < 4; layout++)
+            {
+                RoomRun.LayoutOverride = layout;
+                run.Enter(room, 0);
+                Assert.AreEqual(counts[layout], run.RoomFeatures.Count, RoomRun.TombLayoutNames[layout]);
+                foreach (var f in run.RoomFeatures)
+                {
+                    if (f.Kind == RoomRun.FeatureKind.BloodPool) continue;
+                    Vector3 local = f.Center - c;
+                    Assert.IsFalse(Mathf.Abs(local.x) < f.Size.x * 0.5f + 1.5f || Mathf.Abs(local.z) < f.Size.y * 0.5f + 1.5f, $"{f.Kind}: 십자 길은 비워요");
+                    foreach (var b in Bamboo) Assert.IsFalse(Overlaps(f, c, b, 0.5f), $"{f.Kind} · 대나무 {b}");
+                    foreach (var b in Bushes) Assert.IsFalse(Overlaps(f, c, b, 0.5f), $"{f.Kind} · 풀숲 {b}");
+                }
+                yield return null;
+            }
+
+            // 마기 기둥: 싸우는 동안 때마다 분출
+            RoomRun.LayoutOverride = 2;
+            var fight = run.Map.Rooms.Where(r => r.HasFight && r.FixedWaves == null && !r.Cleared).Skip(1).First();
+            run.Enter(fight, 0);
+            int pulses = run.MiasmaPulses;
+            yield return WaitUntil(() => { player.Heal(9999f); return run.MiasmaPulses > pulses; }, 6f);
+            Assert.Greater(run.MiasmaPulses, pulses, "마기 기둥이 뿜어요");
+
+            // 혈지: 위에 선 적은 회복
+            RoomRun.LayoutOverride = 3;
+            run.Enter(fight, 0);
+            var pool = run.RoomFeatures.First(f => f.Kind == RoomRun.FeatureKind.BloodPool);
+            var grunt = director.Spawn(AThousandDawns.Enemies.EnemyKind.Grunt, pool.Center);
+            bool healedSignal = false;
+            System.Action<AThousandDawns.Enemies.EnemyBrain> onHeal = e => healedSignal |= e == grunt;
+            RoomRun.BloodPoolHealed += onHeal;
+            try
+            {
+                grunt.Damageable.ApplyHit(Mathf.CeilToInt(grunt.Damageable.MaxHealth * 0.5f));
+                float hurt = grunt.Damageable.Health;
+                yield return WaitUntil(() => grunt == null || grunt.Damageable.Health > hurt + 1f || !run.InBloodPool(grunt.transform.position), 3f);
+                Assert.IsTrue(healedSignal, "혈지 회복 신호");
+                Assert.Greater(grunt.Damageable.Health, hurt, "혈지 위에서 회복해요");
+            }
+            finally { RoomRun.BloodPoolHealed -= onHeal; }
+        }
+
+        // 적 길찾기: 플레이어와 적 사이에 담이 있으면 벽에 비비지 않고 돌아와요
+        [UnityTest]
+        public IEnumerator 적은_담을_돌아서_다가와요()
+        {
+            AThousandDawns.Prototype.PrototypeArena.AutoSpawn = false;
+            try
+            {
+                yield return SceneManager.LoadSceneAsync("Prototype_Combat", LoadSceneMode.Single);
+                yield return null;
+                var director = Object.FindFirstObjectByType<AThousandDawns.Enemies.EnemyDirector>();
+                var player = Object.FindFirstObjectByType<PlayerController>();
+                Vector3 home = player.transform.position;
+                var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                wall.transform.position = home + new Vector3(0f, 0.6f, 3f);
+                wall.transform.localScale = new Vector3(4f, 1.2f, 0.5f);
+                var grunt = director.Spawn(AThousandDawns.Enemies.EnemyKind.Grunt, home + new Vector3(0f, 0f, 6f));
+                bool detoured = false;
+                yield return WaitUntil(() =>
+                {
+                    player.Heal(9999f);
+                    detoured |= grunt.IsDetouring;
+                    return Vector3.Distance(grunt.transform.position, player.transform.position) < 1.8f;
+                }, 8f);
+                Assert.IsTrue(detoured, "담 앞에서 돌아가요");
+                Assert.Less(Vector3.Distance(grunt.transform.position, player.transform.position), 1.8f, "담을 돌아 플레이어에게 와요");
+            }
+            finally { AThousandDawns.Prototype.PrototypeArena.AutoSpawn = true; }
+        }
     }
 }
