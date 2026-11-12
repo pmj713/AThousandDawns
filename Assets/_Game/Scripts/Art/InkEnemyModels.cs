@@ -134,6 +134,8 @@ namespace AThousandDawns.Art
         WaterGhostBrain _waterGhost; // 수귀: 끌고 가는 동안 Drag
         bool _dragging;
         float _anchorAway;          // 쇠닻 거한: 던진 닻이 꽂혀 있는 동안 손 닻을 감춰요
+        IronDragonBrain _dragon;    // 수채주 철룡: 2페이즈 전환에 포효
+        bool _roaring;
         float _wakeFade;
         static readonly Color StatueGray = new Color(0.62f, 0.6f, 0.57f, 1f);
 
@@ -147,6 +149,7 @@ namespace AThousandDawns.Art
             _buddha = brain as BloodBuddhaBrain;
             _rattan = brain as RattanBrain;
             _waterGhost = brain as WaterGhostBrain;
+            _dragon = brain as IronDragonBrain;
             _brain = brain;
             _animator = animator;
             _modelRest = animator.transform.localRotation;
@@ -240,6 +243,13 @@ namespace AThousandDawns.Art
                 if (_dragging) Play("Drag", 0.1f); else _animator.CrossFadeInFixedTime(IdleState, 0.2f, 0);
             }
             if (_dragging) { _animator.SetFloat(SpeedId, 0f); return; }
+            // 수채주 철룡: 2페이즈 전환(배가 부서지는 2초) 동안 휘청 물러났다가 포효해요
+            if (_dragon != null && _dragon.IsTransitioning != _roaring)
+            {
+                _roaring = _dragon.IsTransitioning;
+                if (_roaring) { _animator.SetFloat(AttackSpeedId, 1f); Play("Roar", 0.1f); }
+            }
+            if (_roaring) { _animator.SetFloat(SpeedId, 0f); return; }
             var phase = _brain.AttackPhase;
             // 금강불괴: 파계승은 버티는 자세(IsStanced), 혜광은 금강불괴 예고 동안 몸이 금빛
             bool gold = _monk != null ? _monk.IsStanced
