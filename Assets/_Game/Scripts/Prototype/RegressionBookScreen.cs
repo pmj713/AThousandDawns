@@ -96,10 +96,53 @@ namespace AThousandDawns.Prototype
         {
             if (_noticeTimer > 0f) _noticeTimer -= Time.unscaledDeltaTime;
             if (!IsOpen) return;
+            TickPad();
+            if (!IsOpen) return;
             var keyboard = Keyboard.current;
             if (keyboard == null) return;
             if (keyboard.escapeKey.wasPressedThisFrame) Close();
             if (keyboard.mKey.wasPressedThisFrame && MeditationOpen) _meditation = !_meditation;
+        }
+
+        // ── 게임패드: 회귀록은 십자키로 봉우리 순서대로 (→↓ 다음 · ←↑ 이전) · A 피우기 · Y 면벽수련 · B 닫기
+        //    면벽수련은 위아래 심법 · 좌우 − / + · X 모두 되돌리기
+        public int PadRow { get; private set; }
+        public bool PadActive => IsOpen && AThousandDawns.Core.Pad.Active;
+        public string SelectedNode => _selected; // 테스트용
+        public string Notice => _notice;
+
+        void TickPad()
+        {
+            var _ = AThousandDawns.Core.Pad.Active;
+            if (AThousandDawns.Core.Pad.Back) { Close(); return; }
+            if (AThousandDawns.Core.Pad.North && MeditationOpen) { _meditation = !_meditation; return; }
+            if (_meditation)
+            {
+                PadRow = AThousandDawns.Core.Pad.Step(PadRow, Meditation.Arts.Length);
+                int add = AThousandDawns.Core.Pad.Left ? -1 : AThousandDawns.Core.Pad.Right ? 1 : 0;
+                if (add != 0 && Meditation.Add(_meta, (Meditation.Art)PadRow, add)) _meta.Save();
+                if (AThousandDawns.Core.Pad.West) { Meditation.Reset(_meta); _meta.Save(); }
+                return;
+            }
+            var dir = new Vector2(AThousandDawns.Core.Pad.Left ? -1 : AThousandDawns.Core.Pad.Right ? 1 : 0, AThousandDawns.Core.Pad.Up ? -1 : AThousandDawns.Core.Pad.Down ? 1 : 0);
+            if (dir != Vector2.zero) MoveSelection(dir);
+            if (AThousandDawns.Core.Pad.Confirm && _selected != null && !BloomSelected())
+            {
+                var node = RegressionBook.Find(_selected);
+                _notice = node != null ? RegressionBook.Blocker(_meta, node) : null;
+                _noticeTimer = 2f;
+            }
+        }
+
+        // 봉우리 순서대로 (가지마다 해금 순서): 오른쪽 · 아래 다음, 왼쪽 · 위 이전. 처음엔 첫 봉우리
+        // (가지가 비스듬히 뻗어 있어 방향으로 찾으면 엉뚱한 봉우리로 뛰어서, 순서로 옮겨요)
+        void MoveSelection(Vector2 dir)
+        {
+            var nodes = RegressionBook.Nodes;
+            int at = System.Array.FindIndex(nodes, n => n.Id == _selected);
+            int step = dir.x > 0f || dir.y > 0f ? 1 : -1;
+            at = at < 0 ? 0 : (at + step + nodes.Length) % nodes.Length;
+            _selected = nodes[at].Id;
         }
 
         void OnGUI()
@@ -250,6 +293,7 @@ namespace AThousandDawns.Prototype
                 int p = Meditation.Points(_meta, art);
                 var row = new Rect(60, y, UiScale.Width - 120, 120);
                 Fill(row, new Color(1f, 1f, 1f, 0.55f));
+                if (PadActive && i == PadRow) Fill(new Rect(row.x - 10, row.y, 10, row.height), new Color(0.75f, 0.15f, 0.1f)); // 게임패드로 고른 심법
                 GUI.Label(new Rect(row.x + 20, row.y + 10, 260, 40), $"<b>{info.Name}</b> {info.Theme}", _title);
                 GUI.Label(new Rect(row.x + 20, row.y + 60, 300, 30), $"포인트당 {info.PerPoint}", _small);
                 if (GUI.Button(new Rect(row.x + 330, row.y + 30, 56, 56), "−", _button) && Meditation.Add(_meta, art, -1)) _meta.Save();

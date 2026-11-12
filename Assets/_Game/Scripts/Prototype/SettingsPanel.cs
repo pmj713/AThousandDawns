@@ -31,7 +31,7 @@ namespace AThousandDawns.Prototype
             for (int i = KeyBindings.Count - 1; i >= 0; i--)
             {
                 var bind = (Bind)i;
-                _rows.Insert(at, new Row { Section = "조작 키", Label = KeyBindings.Names[i], Key = bind, Value = () => KeyBindings.Label(bind), Step = d => { } });
+                _rows.Insert(at, new Row { Section = "조작 키", Label = KeyBindings.Names[i], Key = bind, Value = () => KeyBindings.KeyLabel(bind), Step = d => { } });
             }
         }
 
@@ -250,7 +250,7 @@ namespace AThousandDawns.Prototype
                 {
                     // 조작 키: 누르면 바꾸기 대기
                     var keyRect = new Rect(rect.x + 290f, rect.y + 3f, rect.width - 300f, 32f);
-                    string label = ListeningRow == i ? "<color=#ffd27a>바꿀 키를 누르세요 (Esc 취소)</color>" : KeyBindings.Label(row.Key.Value);
+                    string label = ListeningRow == i ? "<color=#ffd27a>바꿀 키를 누르세요 (Esc 취소)</color>" : KeyBindings.KeyLabel(row.Key.Value);
                     if (GUI.Button(keyRect, label, _arrow) && ListeningRow < 0) { Selected = i; Change(i, +1); }
                 }
                 else

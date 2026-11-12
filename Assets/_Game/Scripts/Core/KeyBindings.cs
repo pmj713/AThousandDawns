@@ -47,7 +47,25 @@ namespace AThousandDawns.Core
         }
 
         // 화면에 보이는 이름 ("F", "좌클릭", "Space")
-        public static string Label(Bind bind) => LabelOf(Path(bind));
+        public static string Label(Bind bind) => Pad.Active ? PadLabel(bind) : LabelOf(Path(bind)); // 패드를 쓰는 중이면 패드 버튼 이름
+
+        // 키보드 · 마우스 이름 (설정의 조작 키 줄처럼 패드와 상관없이)
+        public static string KeyLabel(Bind bind) => LabelOf(Path(bind));
+
+        // 패드 버튼 이름 (이동은 넷을 이어 쓰는 곳이 많아 위로 이동에만 "왼쪽 스틱")
+        public static string PadLabel(Bind bind) => bind switch
+        {
+            Bind.MoveUp => "왼쪽 스틱",
+            Bind.MoveDown or Bind.MoveLeft or Bind.MoveRight => "",
+            Bind.Attack => "X",
+            Bind.Skill => "Y",
+            Bind.Dash => "A",
+            Bind.Ultimate => "RB",
+            Bind.Potion => "LB",
+            Bind.Interact => "B",
+            Bind.Meridian => "Select",
+            _ => "",
+        };
 
         public static string LabelOf(string path)
         {

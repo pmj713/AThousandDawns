@@ -23,6 +23,9 @@ namespace AThousandDawns.Core
         public static bool Confirm => Pressed(G?.buttonSouth);
         public static bool Back => Pressed(G?.buttonEast);
         public static bool North => Pressed(G?.buttonNorth);
+        public static bool West => Pressed(G?.buttonWest);
+        public static bool LeftShoulder => Pressed(G?.leftShoulder);
+        public static bool RightShoulder => Pressed(G?.rightShoulder);
         public static bool Start => Pressed(G?.startButton);
 
         static bool Pressed(UnityEngine.InputSystem.Controls.ButtonControl b)

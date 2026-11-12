@@ -149,6 +149,7 @@ namespace AThousandDawns.Prototype
             if (TickResult()) return; // 쓰러짐·판 끝 → 결과 화면
             if (TickPause()) return;  // Esc 일시정지
             TickTutorial();
+            if (Player.Items != null && Player.Items.BagCount > 0) Notify("bag", $"주머니: 넣어 둔 기물은 효과가 없지만 들고 다녀요 · {KeyName(Bind.Meridian)} 경맥도에서 칸에 놓으면 다시 힘을 써요");
             TickAutosave();
 
             if (IsForking)

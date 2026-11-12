@@ -130,5 +130,71 @@ namespace AThousandDawns.Tests
             panel.Refresh();
             Assert.IsTrue(panel.RecordTab, "회귀 기록 탭");
         }
+
+        // 경맥도: 십자키 칸 옮기기 · A 집기 → 옮겨 A 놓기 · X 주머니로
+        [UnityTest]
+        public IEnumerator 경맥도를_패드로_집고_놓음()
+        {
+            yield return Load();
+            var run = Object.FindFirstObjectByType<RoomRun>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            run.ChooseFork(0);
+            var items = player.Items;
+            var board = items.Board;
+            if (board.Danjeons.Count == 0) items.AddDanjeon(new Vector2Int(board.Width - 1, board.Height - 1));
+            var def = GameConfig.Items.Items.First(d => d.grade == AThousandDawns.Items.ItemGrade.Common);
+            var item = items.Add(def);
+            Assert.IsNotNull(item);
+            Assert.AreEqual(new Vector2Int(0, 0), item.Cell, "왼쪽 위부터 놓여요");
+            var meridian = Object.FindFirstObjectByType<MeridianScreen>();
+            meridian.TryOpen();
+            Assert.IsTrue(meridian.IsOpen);
+
+            yield return Tap(_pad.buttonSouth);
+            Assert.AreEqual(item, meridian.Held, "A로 집어요");
+            yield return Tap(_pad.dpad.right);
+            Assert.AreEqual(new Vector2Int(1, 0), meridian.PadCell);
+            yield return Tap(_pad.buttonSouth);
+            Assert.IsNull(meridian.Held);
+            Assert.AreEqual(new Vector2Int(1, 0), item.Cell, "A로 놓아요");
+
+            yield return Tap(_pad.buttonEast);
+            Assert.IsFalse(meridian.IsOpen, "아무것도 안 집었으면 B로 닫아요");
+        }
+
+        // 회귀록: 십자키로 봉우리 고르기 · A 피우기
+        [UnityTest]
+        public IEnumerator 회귀록을_패드로_피움()
+        {
+            new MetaSave { runs = 1, memory = 9999, tutorialFloorDone = true }.Save();
+            yield return Load();
+            var run = Object.FindFirstObjectByType<RoomRun>();
+            Assert.IsTrue(run.InVillage);
+            run.UseSpot(RoomRun.VillageSpot.Tree);
+            Assert.IsTrue(run.Book.IsOpen);
+            int before = MetaSave.Load().bloomed.Count;
+            for (int i = 0; i < 4 && MetaSave.Load().bloomed.Count == before; i++)
+            {
+                yield return Tap(_pad.dpad.up);
+                Assert.IsNotNull(run.Book.SelectedNode, "십자키로 봉우리를 골라요");
+                yield return Tap(_pad.buttonSouth);
+            }
+            Assert.Greater(MetaSave.Load().bloomed.Count, before, $"뿌리 위 봉우리를 A로 피워요 (골랐던 봉우리 {run.Book.SelectedNode} · {run.Book.Notice})");
+            yield return Tap(_pad.buttonEast);
+            Assert.IsFalse(run.Book.IsOpen, "B로 닫아요");
+        }
+
+        // 패드를 쓰는 동안 키 이름은 패드 버튼으로 (설정의 조작 키 줄은 그대로 키보드)
+        [UnityTest]
+        public IEnumerator 패드를_쓰면_키_이름이_패드_버튼()
+        {
+            yield return Load();
+            yield return Tap(_pad.dpad.up);
+            Assert.IsTrue(Pad.Active);
+            Assert.AreEqual("B", KeyBindings.Label(Bind.Interact));
+            Assert.AreEqual("F", KeyBindings.KeyLabel(Bind.Interact));
+            var entry = HintBook.All.First(e => e.Id == "basic_floor");
+            StringAssert.Contains("B를 누르면", KeyHint.Plain(entry.Text), "무공 요결도 패드 버튼으로");
+        }
     }
 }

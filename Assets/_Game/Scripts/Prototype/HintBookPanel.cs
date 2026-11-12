@@ -131,7 +131,7 @@ namespace AThousandDawns.Prototype
                         GUI.DrawTexture(new Rect(text.x, bodyY, text.width, cardH), card, ScaleMode.ScaleAndCrop);
                         bodyY += cardH + 16f;
                     }
-                    GUI.Label(new Rect(text.x, bodyY, text.width, text.yMax - bodyY), e.Text, _body);
+                    GUI.Label(new Rect(text.x, bodyY, text.width, text.yMax - bodyY), KeyHint.Plain(e.Text), _body); // 키 이름은 지금 키 · 패드 버튼으로
                 }
                 footer = LockedCount > 0 ? $"아직 모르는 요결 {LockedCount}개 · 그 상황을 처음 겪으면 펼쳐져요" : "모든 요결을 펼쳤어요";
             }

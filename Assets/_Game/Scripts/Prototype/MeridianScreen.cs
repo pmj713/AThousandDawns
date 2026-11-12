@@ -72,10 +72,10 @@ namespace AThousandDawns.Prototype
             if (_noticeTimer > 0f) _noticeTimer -= Time.unscaledDeltaTime;
             UpdateAutoOpen();
             var keyboard = Keyboard.current;
-            if (keyboard == null) return;
             if (IsOpen)
             {
-                if (AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Meridian) || keyboard.escapeKey.wasPressedThisFrame) Close();
+                if (TickPad()) return; // 게임패드 커서 (B는 놓기 취소가 먼저)
+                if (AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Meridian) || (keyboard != null && keyboard.escapeKey.wasPressedThisFrame) || AThousandDawns.Core.Pad.Back) Close();
                 return;
             }
             if (AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Meridian)) TryOpen();
@@ -290,7 +290,7 @@ namespace AThousandDawns.Prototype
             var board = items.Board;
             int qi = board.QiAt(cell);
             var item = items.At(cell);
-            bool hover = rect.Contains(Event.current.mousePosition);
+            bool hover = rect.Contains(Event.current.mousePosition) || (PadActive && cell == PadCell); // 게임패드 커서 칸도 마우스를 올린 것처럼
             if (hover)
             {
                 _hoveredCell = cell;
@@ -557,6 +557,56 @@ namespace AThousandDawns.Prototype
                 return;
             }
             if (button == 0 && item != null) _dragged = item; // 끌기 시작 (손을 떼는 곳에 놓여요)
+        }
+
+        // ── 게임패드: 십자키 칸 옮기기 · A 집기/놓기 (혈자리 · 부품 · 단전도 A) · X 주머니로 · Y 주머니 기물 꺼내기 · LB/RB 혈자리 종류 · B 놓기 취소
+        public Vector2Int PadCell { get; private set; }
+        public bool PadActive => IsOpen && AThousandDawns.Core.Pad.Active;
+        public OwnedItem Held => _dragged; // 지금 집은 기물 (마우스로 끄는 중이거나 패드로 집은 것)
+        int _padBagIndex;
+
+        // 패드 입력을 썼으면 true (B로 놓기를 취소했으면 창을 닫지 않아요)
+        bool TickPad()
+        {
+            var items = Player != null ? Player.Items : null;
+            if (items == null) return false;
+            var pad = AThousandDawns.Core.Pad.Active; // 읽기만 해도 스틱 방향을 갱신해요
+            var board = items.Board;
+            int dx = AThousandDawns.Core.Pad.Left ? -1 : AThousandDawns.Core.Pad.Right ? 1 : 0;
+            int dy = AThousandDawns.Core.Pad.Up ? -1 : AThousandDawns.Core.Pad.Down ? 1 : 0;
+            if (dx != 0 || dy != 0)
+                PadCell = new Vector2Int(Mathf.Clamp(PadCell.x + dx, 0, board.Width - 1), Mathf.Clamp(PadCell.y + dy, 0, board.Height - 1));
+
+            if (AThousandDawns.Core.Pad.Confirm)
+            {
+                if (_dragged != null) { items.Place(_dragged, PadCell); _dragged = null; }
+                else OnCellClicked(items, PadCell, 0, false);
+                return true;
+            }
+            if (AThousandDawns.Core.Pad.West) { OnCellClicked(items, PadCell, 1, false); return true; }
+            if (AThousandDawns.Core.Pad.North && _dragged == null && !Busy)
+            {
+                var bag = new System.Collections.Generic.List<OwnedItem>();
+                foreach (var it in items.Items) if (!it.OnBoard) bag.Add(it);
+                if (bag.Count == 0) Notice("주머니가 비어 있어요");
+                else { _dragged = bag[_padBagIndex++ % bag.Count]; Notice($"{_dragged.Def.name} · 놓을 칸에서 A"); }
+                return true;
+            }
+            bool picking = Player.Level != null && Player.Level.Pending > 0 && board.Danjeons.Count > 0;
+            if (picking && (AThousandDawns.Core.Pad.LeftShoulder || AThousandDawns.Core.Pad.RightShoulder))
+            {
+                int step = AThousandDawns.Core.Pad.LeftShoulder ? 2 : 1; // 기혈 → 통혈 → 한혈 → (없음)
+                _acupoint = (Acupoint)(((int)_acupoint + step) % 4);
+                return true;
+            }
+            if (AThousandDawns.Core.Pad.Back && (_dragged != null || _acupoint != Acupoint.None || _moveFrom.HasValue))
+            {
+                _dragged = null;
+                _acupoint = Acupoint.None;
+                _moveFrom = null;
+                return true;
+            }
+            return false;
         }
 
         // ── 표시 도우미
