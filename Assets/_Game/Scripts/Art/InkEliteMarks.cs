@@ -147,7 +147,7 @@ namespace AThousandDawns.Art
                 return _splitMark;
             }
         }
-        static bool IsSplit(EliteTrait t) => t.ToString() == "Split"; // 특성이 main에 들어오기 전에도 컴파일되게 이름으로
+        static bool IsSplit(EliteTrait t) => t == EliteTrait.Split;
 
         static Color Tint(EliteTrait t) => IsSplit(t) ? new Color(0.4f, 0.18f, 0.52f)
             : t == EliteTrait.IronShirt ? new Color(0.25f, 0.28f, 0.34f)
