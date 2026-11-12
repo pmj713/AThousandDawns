@@ -169,6 +169,7 @@ namespace AThousandDawns.Art
         readonly Dictionary<EnemyBrain, (List<LineRenderer> cracks, float chip)> _statues = new Dictionary<EnemyBrain, (List<LineRenderer>, float)>();
         PlayerController _player;
         static Material _crackMat, _trailMat;
+        readonly HashSet<WraithOrb> _orbs = new HashSet<WraithOrb>();
 
         void TickStatues(float dt)
         {
@@ -256,9 +257,10 @@ namespace AThousandDawns.Art
 
         void DressOrbs()
         {
+            _orbs.RemoveWhere(o => o == null);
             foreach (var orb in FindObjectsByType<WraithOrb>(FindObjectsSortMode.None))
             {
-                if (orb.GetComponent<TrailRenderer>() != null) continue;
+                if (!_orbs.Add(orb)) continue; // 이미 꼬리를 단 혼불 (GetComponent를 매번 부르지 않게)
                 if (_trailMat == null)
                 {
                     _trailMat = new Material(Shader.Find("Sprites/Default"));
@@ -308,8 +310,7 @@ namespace AThousandDawns.Art
             _dressed.RemoveWhere(f => f == null);
             foreach (var fire in FindObjectsByType<GhostFire>(FindObjectsSortMode.None))
             {
-                if (_dressed.Contains(fire) || fire.name == "마기 장판") continue; // 천마 마기 장판은 InkHeavenlyDemonFx가 검붉게
-                _dressed.Add(fire);
+                if (!_dressed.Add(fire) || fire.name == "마기 장판") continue; // 이름은 처음 볼 때 한 번만 · 천마 마기 장판은 InkHeavenlyDemonFx가 검붉게
                 var source = fire.GetComponent<Renderer>();
                 if (source != null) source.enabled = false; // 불투명한 하늘색 원판은 숨기고 (흐려지는 값은 그 재질 알파를 읽어요)
                 float radius = fire.transform.localScale.x * 0.5f;

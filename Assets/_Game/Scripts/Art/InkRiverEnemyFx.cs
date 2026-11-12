@@ -24,6 +24,7 @@ namespace AThousandDawns.Art
 
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
         readonly HashSet<GameObject> _dressed = new HashSet<GameObject>();
+        readonly HashSet<GameObject> _roots = new HashSet<GameObject>(); // 이름을 이미 확인한 씬 루트
         readonly Dictionary<WaterGhostBrain, Ghost> _ghosts = new Dictionary<WaterGhostBrain, Ghost>();
         readonly Dictionary<EnemyBrain, Haste> _haste = new Dictionary<EnemyBrain, Haste>();
         EnemyDirector _director;
@@ -159,7 +160,8 @@ namespace AThousandDawns.Art
         void DressSpawned()
         {
             _dressed.RemoveWhere(g => g == null);
-            foreach (var root in SceneManager.GetActiveScene().GetRootGameObjects())
+            InkRootWatch.Prune(_roots);
+            foreach (var root in InkRootWatch.New(_roots)) // 처음 보는 루트만 이름을 확인해요
             {
                 if (_dressed.Contains(root)) continue;
                 if (root.name == "쇠닻") { _dressed.Add(root); DressAnchor(root); }

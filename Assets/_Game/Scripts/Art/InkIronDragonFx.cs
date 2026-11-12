@@ -27,6 +27,7 @@ namespace AThousandDawns.Art
 
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
         readonly HashSet<GameObject> _dressed = new HashSet<GameObject>();
+        readonly HashSet<GameObject> _roots = new HashSet<GameObject>(); // 이름을 이미 확인한 씬 루트
         PlayerController _player;
         float _scan;
 
@@ -230,7 +231,8 @@ namespace AThousandDawns.Art
         void DressWater()
         {
             _dressed.RemoveWhere(g => g == null);
-            foreach (var root in SceneManager.GetActiveScene().GetRootGameObjects())
+            InkRootWatch.Prune(_roots);
+            foreach (var root in InkRootWatch.New(_roots)) // 처음 보는 루트만 이름을 확인해요
             {
                 if (root.name != "물길" || _dressed.Contains(root)) continue;
                 _dressed.Add(root);
