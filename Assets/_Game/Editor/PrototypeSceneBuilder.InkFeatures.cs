@@ -15,6 +15,9 @@ namespace AThousandDawns.EditorTools
     //  - 빽빽한 대숲 둘 (지름 0.7, 높이 3): 흙 둔덕 위 대나무 서너 그루 덤불, 죽순과 마른 잎
     //  - 쓰러진 대나무 (길이 3.5 · X, 폭 0.4, 높이 0.5): 둥치 셋이 엇갈려 쓰러졌고, 한쪽 끝은 부러진 밑동, 잎 다발
     //  - 개울가 (폭 2 · X, 길이 12 · Z): 물가 양쪽 조약돌과 풀 포기, 디딤돌 둘만. 물 표면은 아트 2가 그려요
+    // 장강 수채 방 구성 모델 (물 둘레만)
+    //  - 물가 토막 셋 (길이 4 · Z, 물 폭 2.6): 젖은 돌·낮은 갈대에 말뚝 / 통나무 / 뱃전 조각. 여울·물길 길이만큼 이어 붙여요
+    //  - 웅덩이 둘레 (4 × 3): 젖은 돌·갈대 타원, 반쯤 잠긴 말뚝과 통나무
     public static partial class PrototypeSceneBuilder
     {
         const string FeatureFolder = "Assets/_Game/Art/Env/Temple/Features";
@@ -55,6 +58,86 @@ namespace AThousandDawns.EditorTools
                 },
                 SaveFeature(FallenBamboo(bambooMat, bambooEarth), "Feature_FallenBamboo"),
                 SaveFeature(StreamBank(stoneMat), "Feature_StreamBank"));
+
+            // 장강 수채 (지역 2): 물(Water) 둘레만. 물 표면은 아트 2가 그려요
+            var reed = RiverMat("Ink_River_Reed", "#7C8452", 0.45f);
+            var wetWood = RiverMat("Ink_River_DarkWood", "#3A2D22", 0.35f);
+            var rope = RiverMat("Ink_River_Rope", "#A88F62", 0.45f);
+            var wetStone = GetInkMaterial("Ink_River_WetStone", "#3B3E3C", 0.15f);
+            features.SetupRiver(
+                new[]
+                {
+                    SaveFeature(RiverBankSegment(stoneMat, wetStone, reed, wetWood, rope, 0), "Feature_RiverBank_A"),
+                    SaveFeature(RiverBankSegment(stoneMat, wetStone, reed, wetWood, rope, 1), "Feature_RiverBank_B"),
+                    SaveFeature(RiverBankSegment(stoneMat, wetStone, reed, wetWood, rope, 2), "Feature_RiverBank_C"),
+                },
+                SaveFeature(RiverPoolRim(stoneMat, wetStone, reed, wetWood), "Feature_RiverPoolRim"));
+        }
+
+        // 장강 물띠 물가 토막 (길이 4 · Z, 물 폭 2.6 · X): 물가 양쪽(x = ±1.3 언저리)에 젖은 돌·낮은 갈대, 토막마다 하나씩 다른 거리
+        //  0: 기운 말뚝 셋과 밧줄, 1: 떠밀려 온 통나무, 2: 부서진 뱃전 조각. 물띠 길이만큼 이어 붙여요 (늘리지 않아요, InkRoomFeatures.RiverSegment)
+
+        static GameObject RiverBankSegment(Material stone, Material wet, Material reed, Material wood, Material rope, int variant)
+        {
+            var root = new GameObject($"River Bank {(char)('A' + variant)} (장강 물가)");
+            var t = root.transform;
+            int seed = variant * 17 + 3;
+            for (int side = -1; side <= 1; side += 2)
+                for (int k = 0; k < 6; k++, seed++)
+                {
+                    float z = -1.75f + k * 0.7f + ((seed * 13) % 5 - 2) * 0.06f;
+                    var p = new Vector3(side * (1.3f + ((seed * 7) % 5 - 2) * 0.06f), 0f, z);
+                    if (seed % 3 != 1) Rock(t, "Wet Stone", p, 0.18f + (seed * 11 % 4) * 0.06f, seed, seed * 41f, seed % 2 == 0 ? wet : stone, false);
+                    if ((seed + variant) % 4 == 0)
+                    {
+                        // 방 안이라 갈대는 낮게 (카메라를 가리지 않게), 물 바깥쪽으로 비켜서
+                        ReedClump(t, p + new Vector3(side * 0.35f, 0f, 0.1f), seed, reed);
+                        t.GetChild(t.childCount - 1).localScale *= 0.45f;
+                    }
+                }
+            switch (variant)
+            {
+                case 0:   // 물가에 박힌 기운 말뚝 셋, 밧줄 한 바퀴
+                    for (int k = 0; k < 3; k++)
+                    {
+                        float h = 0.55f + k % 2 * 0.25f;
+                        Block(t, "Piling", PrimitiveType.Cylinder, new Vector3(-1.1f - k * 0.18f, h * 0.5f - 0.05f, 0.6f + k * 0.35f), new Vector3(0.16f, h * 0.5f, 0.16f), Quaternion.Euler(k * 5f - 5f, 0f, 9f - k * 4f), wood);
+                    }
+                    Block(t, "Rope", PrimitiveType.Cylinder, new Vector3(-1.28f, 0.42f, 0.95f), new Vector3(0.2f, 0.02f, 0.2f), Quaternion.Euler(8f, 0f, 9f), rope);
+                    break;
+                case 1:   // 물가에 걸린 통나무 (한쪽 끝이 물에 잠겨요)
+                    Block(t, "Driftwood", PrimitiveType.Capsule, new Vector3(1.05f, 0.08f, -0.4f), new Vector3(0.22f, 0.85f, 0.22f), Quaternion.Euler(0f, -28f, 86f), wood);
+                    Block(t, "Branch", PrimitiveType.Capsule, new Vector3(1.35f, 0.15f, -0.9f), new Vector3(0.07f, 0.28f, 0.07f), Quaternion.Euler(30f, 40f, 60f), wood);
+                    break;
+                case 2:   // 부서진 뱃전 조각: 휜 널빤지 둘과 늑골
+                    Block(t, "Plank", PrimitiveType.Cube, new Vector3(-1.2f, 0.07f, -0.8f), new Vector3(0.22f, 0.05f, 1.3f), Quaternion.Euler(0f, 14f, 12f), wood);
+                    Block(t, "Plank", PrimitiveType.Cube, new Vector3(-1.4f, 0.14f, -0.75f), new Vector3(0.2f, 0.05f, 1.1f), Quaternion.Euler(0f, 18f, 30f), wood);
+                    Block(t, "Rib", PrimitiveType.Cube, new Vector3(-1.3f, 0.18f, -0.35f), new Vector3(0.45f, 0.06f, 0.07f), Quaternion.Euler(0f, 14f, 40f), wood);
+                    break;
+            }
+            return root;
+        }
+
+        // 장강 웅덩이 둘레 (4 · X × 3 · Z): 타원 둘레의 젖은 돌과 갈대, 반쯤 잠긴 말뚝 하나. 가운데는 비워요
+        static GameObject RiverPoolRim(Material stone, Material wet, Material reed, Material wood)
+        {
+            var root = new GameObject("River Pool Rim (장강 웅덩이)");
+            var t = root.transform;
+            const int n = 16;
+            for (int k = 0; k < n; k++)
+            {
+                float a = k * Mathf.PI * 2f / n;
+                var p = new Vector3(Mathf.Cos(a) * 2.05f, 0f, Mathf.Sin(a) * 1.55f);
+                if (k % 5 != 2) Rock(t, "Wet Stone", p, 0.2f + (k * 7 % 4) * 0.06f, k, k * 53f, k % 2 == 0 ? wet : stone, false);
+                if (k % 4 == 1)
+                {
+                    ReedClump(t, p * 1.12f, k + 5, reed);
+                    t.GetChild(t.childCount - 1).localScale *= 0.5f;
+                }
+            }
+            Block(t, "Sunk Piling", PrimitiveType.Cylinder, new Vector3(1.2f, 0.2f, -0.6f), new Vector3(0.15f, 0.25f, 0.15f), Quaternion.Euler(12f, 0f, -15f), wood);
+            Block(t, "Driftwood", PrimitiveType.Capsule, new Vector3(-1.6f, 0.07f, 1.0f), new Vector3(0.14f, 0.5f, 0.14f), Quaternion.Euler(0f, 50f, 88f), wood);
+            return root;
         }
 
         static GameObject SaveFeature(GameObject root, string name)
