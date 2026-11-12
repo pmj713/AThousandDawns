@@ -7,6 +7,7 @@ namespace AThousandDawns.Art
 {
     // 수묵 시험판: 적 투사체와 폭발에 수묵 겉모습을 입혀요 (게임 코드는 그대로, 새로 생긴 오브젝트 이름을 보고 렌더러만 끄고 모양을 덧달아요).
     //   "Arrow"     궁수 화살: 먹색 화살대·촉·깃 + 붓 먹선 꼬리. 근처에서 쏜 게 살수면 표창: 빙빙 도는 네 날 표창 + 가는 꼬리
+    //               쏜 게 혈궁수(천마총)면 핏빛 화살대·깃 + 붉은 꼬리
     //   "Telegraph" (부모 없는 것 = EnemyDirector.SpawnBurst, 화약 산적 폭발·녹림왕 내려찍기): 바닥에 먹이 확 번지고,
     //               가운데 주홍 불꽃이 번쩍했다 빠지고, 먹 연기가 피어올라 옅어져요
     // 재질은 씬 빌더(PrototypeSceneBuilder.InkRunProps)가 채워요.
@@ -71,15 +72,17 @@ namespace AThousandDawns.Art
             visual.localScale = new Vector3(1f / s.x, 1f / s.y, 1f / s.z);
 
             if (FiredByAssassin(t.position)) BuildShuriken(visual);
-            else BuildArrow(visual);
+            else BuildArrow(visual, FiredBy(t.position, EnemyKind.BloodArcher)); // 혈궁수면 붉은 화살
         }
 
         // 쏜 자리 가까이 살수가 있으면 표창이에요 (화살과 표창은 같은 길로 나와요)
-        static bool FiredByAssassin(Vector3 origin)
+        static bool FiredByAssassin(Vector3 origin) => FiredBy(origin, EnemyKind.Assassin);
+
+        static bool FiredBy(Vector3 origin, EnemyKind kind)
         {
             foreach (var e in FindObjectsByType<EnemyBrain>(FindObjectsSortMode.None))
             {
-                if (e == null || e.Kind != EnemyKind.Assassin) continue;
+                if (e == null || e.Kind != kind) continue;
                 var d = e.transform.position - origin;
                 d.y = 0f;
                 if (d.sqrMagnitude < 2.5f * 2.5f) return true;
@@ -87,13 +90,27 @@ namespace AThousandDawns.Art
             return false;
         }
 
-        void BuildArrow(Transform visual)
+        // blood: 혈궁수 (천마총) — 핏빛 화살대·깃 + 붉은 꼬리
+        void BuildArrow(Transform visual, bool blood = false)
         {
-            Box(visual, "Shaft", new Vector3(0f, 0f, -0.05f), new Vector3(0.035f, 0.035f, 0.78f), Quaternion.identity, shaftMaterial);
-            Box(visual, "Head", new Vector3(0f, 0f, 0.38f), new Vector3(0.09f, 0.025f, 0.09f), Quaternion.Euler(0f, 45f, 0f), shaftMaterial);
+            var shaft = blood ? BloodMaterial(shaftMaterial, new Color(0.42f, 0.05f, 0.05f)) : shaftMaterial;
+            var feather = blood ? BloodMaterial(featherMaterial, new Color(0.7f, 0.12f, 0.1f)) : featherMaterial;
+            Box(visual, "Shaft", new Vector3(0f, 0f, -0.05f), new Vector3(0.035f, 0.035f, 0.78f), Quaternion.identity, shaft);
+            Box(visual, "Head", new Vector3(0f, 0f, 0.38f), new Vector3(0.09f, 0.025f, 0.09f), Quaternion.Euler(0f, 45f, 0f), shaft);
             for (int i = -1; i <= 1; i += 2)
-                Box(visual, "Fletch", new Vector3(i * 0.04f, 0.01f, -0.38f), new Vector3(0.06f, 0.012f, 0.16f), Quaternion.Euler(0f, i * 18f, 0f), featherMaterial);
-            Trail(visual, new Vector3(0f, 0f, -0.42f), 0.16f, 0.22f, new Color(0.08f, 0.07f, 0.07f, 0.7f));
+                Box(visual, "Fletch", new Vector3(i * 0.04f, 0.01f, -0.38f), new Vector3(0.06f, 0.012f, 0.16f), Quaternion.Euler(0f, i * 18f, 0f), feather);
+            Trail(visual, new Vector3(0f, 0f, -0.42f), blood ? 0.2f : 0.16f, blood ? 0.3f : 0.22f, blood ? new Color(0.62f, 0.06f, 0.05f, 0.8f) : new Color(0.08f, 0.07f, 0.07f, 0.7f));
+        }
+
+        readonly System.Collections.Generic.Dictionary<Material, Material> _blood = new System.Collections.Generic.Dictionary<Material, Material>();
+        Material BloodMaterial(Material source, Color color)
+        {
+            if (source == null) return null;
+            if (_blood.TryGetValue(source, out var m)) return m;
+            m = new Material(source) { name = source.name + " (Blood)" };
+            m.SetColor("_BaseColor", color);
+            _blood[source] = m;
+            return m;
         }
 
         void BuildShuriken(Transform visual)
