@@ -233,5 +233,99 @@ namespace AThousandDawns.Tests
             }
             finally { AThousandDawns.Prototype.PrototypeArena.AutoSpawn = true; }
         }
+
+        [UnityTest]
+        public IEnumerator 죽림은_2층부터_대숲_개울_쓰러진_대나무()
+        {
+            yield return Load(0);
+            var run = Object.FindFirstObjectByType<RoomRun>();
+            run.BeginFork(2);
+            run.ChooseFork(0);
+            var room = run.Map.Rooms.First(r => r.HasFight && r.FixedWaves == null);
+            Vector3 c = RoomCenter(run);
+            int[] counts = { 0, 6, 1, 4 };
+            for (int layout = 0; layout < 4; layout++)
+            {
+                RoomRun.LayoutOverride = layout;
+                run.Enter(room, 0);
+                Assert.AreEqual(counts[layout], run.RoomFeatures.Count, RoomRun.BambooLayoutNames[layout]);
+                foreach (var f in run.RoomFeatures)
+                {
+                    if (f.Kind == RoomRun.FeatureKind.Water) continue;
+                    Vector3 local = f.Center - c;
+                    Assert.IsFalse(Mathf.Abs(local.x) < f.Size.x * 0.5f + 1.5f || Mathf.Abs(local.z) < f.Size.y * 0.5f + 1.5f, $"{f.Kind}: 십자 길은 비워요");
+                    foreach (var b in Bamboo) Assert.IsFalse(Overlaps(f, c, b, 0.5f), $"{f.Kind} · 대나무 {b}");
+                    foreach (var b in Bushes) Assert.IsFalse(Overlaps(f, c, b, 0.5f), $"{f.Kind} · 풀숲 {b}");
+                }
+                yield return null;
+            }
+        }
+
+        static GameObject Wall(Vector3 at, Vector3 size)
+        {
+            var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            wall.transform.position = at + Vector3.up * size.y * 0.5f;
+            wall.transform.localScale = size;
+            Physics.SyncTransforms(); // 만든 프레임에 바로 사선 검사가 되게
+            return wall;
+        }
+
+        static bool ClearLine(Vector3 from, Vector3 to)
+        {
+            Vector3 d = to - from;
+            d.y = 0f;
+            return AThousandDawns.Enemies.ObstacleProbe.Distance(from + Vector3.up * 1f, d.normalized, 0.2f, d.magnitude) >= d.magnitude - 0.3f;
+        }
+
+        // 엄폐물 판단: 궁수는 사선이 막히면 쏠 자리로 옮기고, 엄폐물 뒤의 플레이어에게 근접 적 둘은 양쪽으로 갈라져 돌아와요
+        [UnityTest]
+        public IEnumerator 궁수는_쏠_자리로_옮기고_근접_적은_양쪽으로_돌아와요()
+        {
+            AThousandDawns.Prototype.PrototypeArena.AutoSpawn = false;
+            try
+            {
+                yield return SceneManager.LoadSceneAsync("Prototype_Combat", LoadSceneMode.Single);
+                yield return null;
+                var director = Object.FindFirstObjectByType<AThousandDawns.Enemies.EnemyDirector>();
+                var player = Object.FindFirstObjectByType<PlayerController>();
+                Vector3 home = player.transform.position;
+
+                var wall = Wall(home + new Vector3(0f, 0f, -2.5f), new Vector3(2.5f, 2f, 0.5f)); // 플레이어 뒤쪽 (앞쪽엔 목인장 둘이 있어요)
+                var archer = director.Spawn(AThousandDawns.Enemies.EnemyKind.Archer, home + new Vector3(0f, 0f, -6f));
+                Assert.IsFalse(ClearLine(archer.transform.position, player.transform.position), "처음엔 담에 가려요");
+                var path = new System.Text.StringBuilder();
+                float nextLog = 0f;
+                yield return WaitUntil(() =>
+                {
+                    player.Heal(9999f);
+                    if (Time.time >= nextLog) { nextLog = Time.time + 0.5f; path.Append($"({archer.transform.position.x - home.x:0.0},{archer.transform.position.z - home.z:0.0}) "); }
+                    return archer == null || ClearLine(archer.transform.position, player.transform.position);
+                }, 6f);
+                Assert.IsTrue(ClearLine(archer.transform.position, player.transform.position), "궁수가 쏠 자리로 옮겨요 " + path);
+                archer.Damageable.ApplyHit(99999);
+                Object.Destroy(wall);
+                yield return null;
+
+                var cover = Wall(home + new Vector3(0f, 0f, -1.5f), new Vector3(3f, 2f, 0.5f));
+                var a = director.Spawn(AThousandDawns.Enemies.EnemyKind.Grunt, home + new Vector3(-0.3f, 0f, -6f));
+                var b = director.Spawn(AThousandDawns.Enemies.EnemyKind.Grunt, home + new Vector3(0.3f, 0f, -6f));
+                bool aFlank = false, bFlank = false;
+                float aMinX = 0f, aMaxX = 0f, bMinX = 0f, bMaxX = 0f;
+                yield return WaitUntil(() =>
+                {
+                    player.Heal(9999f);
+                    aFlank |= a.IsFlanking;
+                    bFlank |= b.IsFlanking;
+                    float ax = a.transform.position.x - home.x, bx = b.transform.position.x - home.x;
+                    aMinX = Mathf.Min(aMinX, ax); aMaxX = Mathf.Max(aMaxX, ax);
+                    bMinX = Mathf.Min(bMinX, bx); bMaxX = Mathf.Max(bMaxX, bx);
+                    return aFlank && bFlank && ((aMinX < -1.4f && bMaxX > 1.4f) || (aMaxX > 1.4f && bMinX < -1.4f));
+                }, 6f);
+                Assert.IsTrue(aFlank && bFlank, "엄폐물 뒤의 플레이어를 못 보면 돌아와요");
+                Assert.IsTrue((aMinX < -1.4f && bMaxX > 1.4f) || (aMaxX > 1.4f && bMinX < -1.4f), "둘은 양쪽으로 갈라져요");
+                Object.Destroy(cover);
+            }
+            finally { AThousandDawns.Prototype.PrototypeArena.AutoSpawn = true; }
+        }
     }
 }

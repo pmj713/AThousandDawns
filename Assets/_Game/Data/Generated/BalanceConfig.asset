@@ -5049,3 +5049,7 @@ MonoBehaviour:
     value: 0.6
     unit: s
     note: "\uC801 \uAE38\uCC3E\uAE30: \uD55C \uBC88 \uACE0\uB978 \uC6B0\uD68C \uBC29\uD5A5\uC744 \uC720\uC9C0\uD558\uB294 \uC2DC\uAC04"
+  - key: bamboo.stream_current
+    value: 0.6
+    unit: cell/s
+    note: "\uC8FD\uB9BC \uAC1C\uC6B8 (2\uCE35\uBD80\uD130): \uBB3C\uC0B4 \uCABD\uC73C\uB85C \uBBF8\uB294 \uC18D\uB3C4 (\uB290\uB824\uC9C0\uB294 \uC815\uB3C4\uB294 river.water_slow)"

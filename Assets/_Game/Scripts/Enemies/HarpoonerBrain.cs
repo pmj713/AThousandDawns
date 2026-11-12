@@ -25,7 +25,7 @@ namespace AThousandDawns.Enemies
             _keepMax = Tuning("keep_max", 4.5f);
         }
 
-        protected override bool WantsToAttack(float distance) => distance <= _reach && distance >= _keepMin * 0.7f;
+        protected override bool WantsToAttack(float distance) => distance <= _reach && distance >= _keepMin * 0.7f && HasClearLine(distance, _width * 0.5f, 1f); // 엄폐물 너머로는 안 던져요
 
         protected override void TickMovement(float dt, bool canAttack)
         {
@@ -35,7 +35,8 @@ namespace AThousandDawns.Enemies
             FaceToward(dir);
             if (d < _keepMin) Move(-dir * MoveSpeed, dt);
             else if (d > _keepMax) Move(dir * MoveSpeed, dt);
-            else Move(Strafe(dir) * (MoveSpeed * 0.4f), dt);
+            else if (HasClearLine(d, _width * 0.5f, 1f)) Move(Strafe(dir) * (MoveSpeed * 0.4f), dt);
+            else if ((Move(Reposition(dir) * MoveSpeed, dt) & CollisionFlags.Sides) != 0) FlipReposition(); // 사선이 막혔으면 던질 자리로
         }
 
         protected override List<Vector2> TelegraphShape() => TelegraphShapes.Rect(_width, _reach);

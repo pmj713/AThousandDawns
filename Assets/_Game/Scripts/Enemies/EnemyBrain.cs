@@ -107,6 +107,7 @@ namespace AThousandDawns.Enemies
             _tokens = IsRanged ? director.RangedTokens : director.MeleeTokens;
             _cooldown = GameConfig.Get("enemy.first_attack_delay", 1f);
             StrafeSign = Random.value < 0.5f ? -1f : 1f;
+            _flankSign = (_flankCounter++ & 1) == 0 ? 1f : -1f; // 엄폐물 뒤의 플레이어에게 번갈아 양쪽으로 돌아와요
             _strafeFlipTimer = Random.Range(1.5f, 3f);
 
             Attack.ActiveStarted += () =>
@@ -263,6 +264,10 @@ namespace AThousandDawns.Enemies
 
         protected Vector3 Strafe(Vector3 toPlayerDir) => Vector3.Cross(Vector3.up, toPlayerDir) * StrafeSign;
 
+        // 사선이 막혔을 때 쏠 자리로 옮기는 옆 방향: 옆걸음처럼 때마다 뒤집히지 않고 한쪽으로 꾸준히 (벽에 막히면 그때 뒤집어요)
+        protected Vector3 Reposition(Vector3 toPlayerDir) => Vector3.Cross(Vector3.up, toPlayerDir) * _flankSign;
+        protected void FlipReposition() => _flankSign = -_flankSign;
+
         protected void FaceToward(Vector3 direction)
         {
             direction.y = 0f;
@@ -334,9 +339,11 @@ namespace AThousandDawns.Enemies
 
         // 앞이 막혔으면 돌아가요 (폐사찰 석불 · 무너진 담, 천마총 관 같은 엄폐물 뒤의 플레이어를 향해 벽에 비비지 않게).
         // 가려던 쪽으로 lookAhead칸 안에 장애물이 있으면 ±45° · ±90° 중 트인 쪽으로 틀고, 한 번 고른 쪽은 잠깐 유지해요 (좌우로 떨지 않게).
-        float _avoidSign, _avoidTimer;
+        float _avoidSign, _avoidTimer, _flankSign = 1f;
+        static int _flankCounter;
 
         public bool IsDetouring => _avoidTimer > 0f; // 테스트용
+        public bool IsFlanking { get; private set; } // 엄폐물 너머 플레이어를 못 봐서 정해진 쪽으로 돌아오는 중 (적마다 번갈아 왼쪽 · 오른쪽)
 
         Vector3 Steer(Vector3 velocity, float dt)
         {
@@ -348,8 +355,19 @@ namespace AThousandDawns.Enemies
             if (look < 0.15f) return velocity;
             float radius = Controller != null ? Controller.radius * 0.9f : 0.35f;
             Vector3 origin = transform.position + Vector3.up * 0.5f;
-            if (ObstacleProbe.Distance(origin, dir, radius, look) >= look) return velocity;
-            if (_avoidTimer <= 0f || _avoidSign == 0f) // 새로 막혔으면 더 트인 쪽을 골라요
+            if (ObstacleProbe.Distance(origin, dir, radius, look) >= look)
+            {
+                if (_avoidTimer <= 0f) IsFlanking = false;
+                return velocity;
+            }
+            if (_avoidTimer <= 0f || _avoidSign == 0f) // 새로 막혔으면: 플레이어가 엄폐물 뒤면 정해진 쪽 (둘이면 양쪽으로 갈라져요), 아니면 더 트인 쪽
+            {
+                Vector3 toPlayer = ToPlayer();
+                float far = toPlayer.magnitude;
+                IsFlanking = far > 0.5f && ObstacleProbe.Distance(origin, toPlayer / far, radius, far) < far - 0.3f;
+            }
+            if (IsFlanking && (_avoidTimer <= 0f || _avoidSign == 0f)) _avoidSign = _flankSign;
+            else if (_avoidTimer <= 0f || _avoidSign == 0f)
             {
                 float left = ObstacleProbe.Distance(origin, Quaternion.Euler(0f, -60f, 0f) * dir, radius, look * 2f);
                 float right = ObstacleProbe.Distance(origin, Quaternion.Euler(0f, 60f, 0f) * dir, radius, look * 2f);

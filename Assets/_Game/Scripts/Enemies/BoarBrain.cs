@@ -46,6 +46,7 @@ namespace AThousandDawns.Enemies
             float keep = canAttack ? AttackRange * 0.8f : AttackRange;
             if (d > keep) Move(dir * MoveSpeed, dt);
             else if (!canAttack) Move(Strafe(dir) * (MoveSpeed * 0.3f), dt);
+            else if (!HasClearLine(d, BodyRadius * 0.8f, ProbeHeight) && (Move(Reposition(dir) * (MoveSpeed * 0.6f), dt) & CollisionFlags.Sides) != 0) FlipReposition(); // 엄폐물 너머로는 돌진하지 않고, 트인 자리로 돌아요
         }
 
         protected override List<Vector2> TelegraphShape()

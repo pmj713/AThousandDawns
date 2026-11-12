@@ -52,7 +52,8 @@ namespace AThousandDawns.Enemies
 
             if (d < _keepMin) _retreatLeft = _retreatDistance;
             else if (d > _keepMax) Move(dir * MoveSpeed, dt);
-            else Move(Strafe(dir) * (_strafeSpeed * 0.5f), dt);
+            else if (HasClearLine(d, _arrowRadius, ShotHeight)) Move(Strafe(dir) * (_strafeSpeed * 0.5f), dt);
+            else if ((Move(Reposition(dir) * MoveSpeed, dt) & CollisionFlags.Sides) != 0) FlipReposition(); // 사선이 막혔으면 한쪽으로 꾸준히 옮겨 쏠 자리를 찾아요
         }
 
         protected override void OnAttackStarted() => _aimPoint = Player.transform.position;

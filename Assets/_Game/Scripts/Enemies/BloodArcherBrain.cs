@@ -49,7 +49,8 @@ namespace AThousandDawns.Enemies
             FaceToward(dir);
             if (d < _keepMin) Move(-dir * MoveSpeed, dt);
             else if (d > _keepMax) Move(dir * MoveSpeed, dt);
-            else Move(Strafe(dir) * (MoveSpeed * 0.4f), dt);
+            else if (HasClearLine(d, _arrowRadius, ShotHeight)) Move(Strafe(dir) * (MoveSpeed * 0.4f), dt);
+            else if ((Move(Reposition(dir) * MoveSpeed, dt) & CollisionFlags.Sides) != 0) FlipReposition(); // 사선이 막혔으면 한쪽으로 꾸준히 옮겨 쏠 자리를 찾아요
         }
 
         protected override List<Vector2> TelegraphShape() => TelegraphShapes.Rect(_arrowRadius * 2f, AttackRange);

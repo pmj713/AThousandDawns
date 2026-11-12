@@ -14,7 +14,7 @@ namespace AThousandDawns.Prototype
     // 그림은 아트 쪽이 RoomFeatures를 읽어 바꿔 그려요 (기본판은 단색 상자).
     public sealed partial class RoomRun
     {
-        public enum FeatureKind { Pillar, Statue, Wall, Water, Coffin, MiasmaPillar, BloodPool }
+        public enum FeatureKind { Pillar, Statue, Wall, Water, Coffin, MiasmaPillar, BloodPool, BambooClump, FallenBamboo }
 
         public sealed class RoomFeature
         {
@@ -27,6 +27,7 @@ namespace AThousandDawns.Prototype
 
         public static event Action<RoomRun> LayoutChanged; // 방 구성이 바뀔 때 (방에 들어감 · 치움)
 
+        public static readonly string[] BambooLayoutNames = { "대숲 길", "빽빽한 대숲", "개울", "쓰러진 대나무" };
         public static readonly string[] TempleLayoutNames = { "빈 마당", "기둥 회랑", "불상", "무너진 벽" };
         public static readonly string[] RiverLayoutNames = { "마른 바닥", "여울", "웅덩이", "물길" };
         public static readonly string[] TombLayoutNames = { "빈 묘실", "무너진 관", "마기 기둥", "혈지" };
@@ -44,11 +45,12 @@ namespace AThousandDawns.Prototype
             foreach (var f in _features) if (f.Go != null) Destroy(f.Go);
             _features.Clear();
             RoomLayout = -1;
-            if (room != null && room.HasFight && room.FixedWaves == null && (_region == 1 || _region == 2 || _region == 3))
+            if (room != null && room.HasFight && room.FixedWaves == null && (_region >= 1 || _floor >= 2)) // 죽림은 2층부터 (1층 · 입문 죽림은 그대로)
             {
                 var rng = new System.Random(Seed ^ (room.Cell.x * 92837111) ^ (room.Cell.y * 689287499) ^ (_floor * 283923481) ^ _region);
                 RoomLayout = LayoutOverride >= 0 ? LayoutOverride : rng.Next(4);
-                if (_region == 1) BuildTempleLayout(RoomLayout);
+                if (_region == 0) BuildBambooLayout(RoomLayout);
+                else if (_region == 1) BuildTempleLayout(RoomLayout);
                 else if (_region == 2) BuildRiverLayout(RoomLayout);
                 else BuildTombLayout(RoomLayout);
                 if (_region == 1 && RoomLayout > 0) Notify("temple_layout", "폐사찰: 방마다 돌기둥 · 석불 · 무너진 담이 달라요 · 화살과 돌진을 막는 엄폐물이에요");
@@ -82,13 +84,34 @@ namespace AThousandDawns.Prototype
 
         void AddSolid(FeatureKind kind, Vector2 at, Vector2 size, float height)
         {
-            var go = GameObject.CreatePrimitive(kind == FeatureKind.Pillar ? PrimitiveType.Cylinder : PrimitiveType.Cube);
-            go.name = kind == FeatureKind.Pillar ? "돌기둥" : kind == FeatureKind.Statue ? "석불" : kind == FeatureKind.Coffin ? "무너진 관" : kind == FeatureKind.MiasmaPillar ? "마기 기둥" : "무너진 담";
+            var go = GameObject.CreatePrimitive(kind == FeatureKind.Pillar || kind == FeatureKind.BambooClump ? PrimitiveType.Cylinder : PrimitiveType.Cube);
+            go.name = kind == FeatureKind.BambooClump ? "대숲" : kind == FeatureKind.FallenBamboo ? "쓰러진 대나무" : kind == FeatureKind.Pillar ? "돌기둥" : kind == FeatureKind.Statue ? "석불" : kind == FeatureKind.Coffin ? "무너진 관" : kind == FeatureKind.MiasmaPillar ? "마기 기둥" : "무너진 담";
             Vector3 center = combat.center + new Vector3(at.x, 0f, at.y);
             go.transform.position = center + Vector3.up * height * 0.5f;
-            go.transform.localScale = kind == FeatureKind.Pillar ? new Vector3(size.x, height * 0.5f, size.y) : new Vector3(size.x, height, size.y);
-            go.GetComponent<Renderer>().material.color = kind == FeatureKind.Statue ? new Color(0.42f, 0.38f, 0.33f) : kind == FeatureKind.Coffin ? new Color(0.2f, 0.18f, 0.2f) : kind == FeatureKind.MiasmaPillar ? new Color(0.15f, 0.08f, 0.1f) : new Color(0.5f, 0.48f, 0.45f);
+            go.transform.localScale = kind == FeatureKind.Pillar || kind == FeatureKind.BambooClump ? new Vector3(size.x, height * 0.5f, size.y) : new Vector3(size.x, height, size.y);
+            go.GetComponent<Renderer>().material.color = kind == FeatureKind.Statue ? new Color(0.42f, 0.38f, 0.33f) : kind == FeatureKind.Coffin ? new Color(0.2f, 0.18f, 0.2f) : kind == FeatureKind.MiasmaPillar ? new Color(0.15f, 0.08f, 0.1f) : kind == FeatureKind.BambooClump || kind == FeatureKind.FallenBamboo ? new Color(0.35f, 0.5f, 0.3f) : new Color(0.5f, 0.48f, 0.45f);
             _features.Add(new RoomFeature { Kind = kind, Center = center, Size = size, Go = go });
+        }
+
+        // ── 죽림 (2층부터): 대숲 길 (그대로) · 빽빽한 대숲 (대숲 덤불 여섯) · 개울 (가운데 세로, 약하게 흘러요) · 쓰러진 대나무 (낮은 엄폐물 넷)
+        void BuildBambooLayout(int layout)
+        {
+            switch (layout)
+            {
+                case 1:
+                    foreach (var p in new[] { new Vector2(-8.5f, -2.2f), new Vector2(8.5f, 2.2f), new Vector2(-5.8f, -2f), new Vector2(5.8f, 2f), new Vector2(-2.4f, -4.9f), new Vector2(2.4f, 4.9f) })
+                        AddSolid(FeatureKind.BambooClump, p, new Vector2(0.7f, 0.7f), 3f);
+                    break;
+                case 2:
+                    AddWater(Vector2.zero, new Vector2(2f, combat.size.y), Vector3.back * GameConfig.GetOptional("bamboo.stream_current", 0.6f));
+                    break;
+                case 3:
+                    AddSolid(FeatureKind.FallenBamboo, new Vector2(-6.5f, 1.9f), new Vector2(3.5f, 0.4f), 0.5f);
+                    AddSolid(FeatureKind.FallenBamboo, new Vector2(6.5f, -1.9f), new Vector2(3.5f, 0.4f), 0.5f);
+                    AddSolid(FeatureKind.FallenBamboo, new Vector2(-2.1f, 3.4f), new Vector2(0.4f, 3f), 0.5f);
+                    AddSolid(FeatureKind.FallenBamboo, new Vector2(2.1f, -3.4f), new Vector2(0.4f, 3f), 0.5f);
+                    break;
+            }
         }
 
         // ── 장강 수채
