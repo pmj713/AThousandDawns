@@ -24,8 +24,14 @@ namespace AThousandDawns.Art
                 if (chickens[i] != null) _chickenYaw[i] = chickens[i].localEulerAngles.y;
         }
 
+        Renderer _clothProbe, _chickenProbe;   // 빨래도 닭도 화면에 없으면(판 중, 마을 밖) 아무것도 안 해요
+
         void Update()
         {
+            if (_clothProbe == null && cloths.Length > 0 && cloths[0] != null) _clothProbe = cloths[0].GetComponentInChildren<Renderer>();
+            if (_chickenProbe == null && chickens.Length > 0 && chickens[0] != null) _chickenProbe = chickens[0].GetComponentInChildren<Renderer>();
+            bool seen = (_clothProbe != null && _clothProbe.isVisible) || (_chickenProbe != null && _chickenProbe.isVisible);
+            if ((_clothProbe != null || _chickenProbe != null) && !seen) return;
             float t = Time.time;
             for (int i = 0; i < cloths.Length; i++)
             {

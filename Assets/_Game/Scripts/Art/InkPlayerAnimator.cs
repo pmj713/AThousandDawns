@@ -29,15 +29,13 @@ namespace AThousandDawns.Art
         static readonly int DaggerHoldId = Animator.StringToHash("DaggerHold");
         const float CombatRange = 9f;   // 이 안에 살아 있는 적이 있으면 전투 대기 자세
         float _combatScan;
+        AThousandDawns.Enemies.EnemyDirector _director;
         bool _combat;
         int _vortexLayer = -1;
         float _vortexWeight;
         static readonly int DaggerFlashId = Animator.StringToHash("DaggerFlash");
         string _upperState = "SkillVortex";
         // 비도 순간이동·호신륜이 도는 중인지 (기획·개발이 PlayerController.Dagger.cs에 추가 중이라 이름으로 찾아요 — 들어오기 전에도 컴파일되게)
-        static readonly System.Reflection.PropertyInfo IsDaggerFlashingProp = typeof(AThousandDawns.Player.PlayerController).GetProperty("IsDaggerFlashing");
-        static readonly System.Reflection.PropertyInfo IsHaloingProp = typeof(AThousandDawns.Player.PlayerController).GetProperty("IsHaloing");
-        bool DaggerState(System.Reflection.PropertyInfo prop) => prop != null && (bool)prop.GetValue(_player);
 
         PlayerController _player;
         Animator _animator;
@@ -84,9 +82,11 @@ namespace AThousandDawns.Art
             {
                 _combatScan = 0.25f;
                 _combat = false;
-                foreach (var e in FindObjectsByType<AThousandDawns.Enemies.EnemyBrain>(FindObjectsSortMode.None))
+                if (_director == null) _director = FindFirstObjectByType<AThousandDawns.Enemies.EnemyDirector>();   // 씬을 뒤지지 않고 감독의 적 목록으로
+                if (_director != null)
+                foreach (var e in _director.Enemies)
                 {
-                    if (e.IsDead || !e.IsAwake) continue;
+                    if (e == null || e.IsDead || !e.IsAwake) continue;
                     var d = e.transform.position - transform.position;
                     d.y = 0f;
                     if (d.sqrMagnitude <= CombatRange * CombatRange) { _combat = true; break; }
@@ -131,12 +131,12 @@ namespace AThousandDawns.Art
                 }
             }
             // 비도 순간이동: 순간이동이 이어지는 동안 좌우로 번갈아 베어 넘겨요
-            _animator.SetBool(DaggerFlashId, daggerFlashSkill && (casting || DaggerState(IsDaggerFlashingProp)));
+            _animator.SetBool(DaggerFlashId, daggerFlashSkill && (casting || _player.IsDaggerFlashing));
             // 비도가 도는 동안 윗몸은 손으로 이끄는 자세 (다리는 걷기·대기 그대로): 탁류 소용돌이 · 비도 호신륜
             if (_vortexLayer < 0) _vortexLayer = _animator.GetLayerIndex("Vortex");
             if (_vortexLayer > 0)
             {
-                bool on = (vortexSkill && (casting || _player.IsVortexing)) || (haloSkill && (casting || DaggerState(IsHaloingProp)));
+                bool on = (vortexSkill && (casting || _player.IsVortexing)) || (haloSkill && (casting || _player.IsHaloing));
                 string state = haloSkill ? "SkillHalo" : "SkillVortex";
                 if (on && state != _upperState)
                 {
