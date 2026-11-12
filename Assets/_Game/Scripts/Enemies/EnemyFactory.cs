@@ -169,6 +169,12 @@ namespace AThousandDawns.Enemies
                 BodyPosition = new Vector3(0f, 0.95f, 0f), BodyScale = new Vector3(0.7f, 0.95f, 0.7f),
                 MarkPosition = new Vector3(0.3f, 1.0f, 0.5f), MarkScale = new Vector3(0.08f, 0.06f, 1.2f), // 물결 무늬 장검
             },
+            EnemyKind.IronDragon => new Shape
+            {
+                Name = "수채주 철룡", Radius = 0.9f, Height = 2.8f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 1.4f, 0f), BodyScale = new Vector3(1.7f, 1.4f, 1.5f), // 철갑 거구
+                MarkPosition = new Vector3(0.9f, 1.2f, 0.6f), MarkScale = new Vector3(0.5f, 0.5f, 0.5f), // 유성추
+            },
             _ => new Shape
             {
                 Name = "산적 졸개", Radius = 0.35f, Height = 1.6f, Primitive = PrimitiveType.Capsule,
@@ -204,6 +210,7 @@ namespace AThousandDawns.Enemies
             EnemyKind.WaterGhost => Tinted(kind, v.grunt, new Color(0.3f, 0.6f, 0.6f)),
             EnemyKind.FlagBearer => Tinted(kind, v.horn != null ? v.horn : v.grunt, new Color(0.6f, 0.3f, 0.25f)),
             EnemyKind.Takrang => Tinted(kind, v.qingzhu != null ? v.qingzhu : v.grunt, new Color(0.3f, 0.45f, 0.5f)),
+            EnemyKind.IronDragon => Tinted(kind, v.nokrim != null ? v.nokrim : v.grunt, new Color(0.3f, 0.32f, 0.38f)),
             _ => v.grunt,
         };
 
@@ -285,6 +292,7 @@ namespace AThousandDawns.Enemies
                 EnemyKind.WaterGhost => root.AddComponent<WaterGhostBrain>(),
                 EnemyKind.FlagBearer => root.AddComponent<FlagBearerBrain>(),
                 EnemyKind.Takrang => root.AddComponent<TakrangBrain>(),
+                EnemyKind.IronDragon => root.AddComponent<IronDragonBrain>(),
                 _ => root.AddComponent<GruntBrain>(),
             };
             if (brain is ShieldBrain shieldBrain) shieldBrain.SetShieldVisual(mark.transform);

@@ -751,7 +751,7 @@ namespace AThousandDawns.Prototype
             MovePlayer(boss.entry);
             director.ResetRoom();
             Player.EnterRoom();
-            var bossBrain = arena.SpawnBoss(_region >= 1 ? EnemyKind.BloodBuddha : EnemyKind.Nokrim); // 죽림 녹림왕 · 폐사찰 혈불 (장강 수채는 철룡이 생기기 전까지 혈불)
+            var bossBrain = arena.SpawnBoss(_region >= 2 ? EnemyKind.IronDragon : _region == 1 ? EnemyKind.BloodBuddha : EnemyKind.Nokrim); // 죽림 녹림왕 · 폐사찰 혈불 · 장강 수채 철룡
             if (bossBrain != null) ScaleForRegion(bossBrain);
             OnFightStart();
             if (_bossGauge > 0f) Player.RaiseGaugeTo(_bossGauge); // 기시감: 천마에 대해 물음 (마지막 보스전 = 지금은 녹림왕)
