@@ -2136,6 +2136,46 @@ if "demonmoves" in EXTRAS:
     rig.animation_data.action = None
     reset_pose()
 
+# 보스 최후 (defeat=<녹림|혈불|철룡>, 40프레임): 쓰러질 때 넘어가지 않고 이 자세로 무너진 뒤 Unity가 무기를 떨구고 몸을 먹으로 흩어 지워요
+#   녹림(bandit): 크게 휘청이다 한쪽 무릎을 꿇고, 왼손으로 무릎을 짚고 오른팔은 축 늘어져요 (고개는 앞으로 떨궈요)
+#   혈불(buddha): 뒤로 한 번 흔들리다 그대로 주저앉아 가부좌처럼 낮게 앉고, 두 손을 가슴 앞에 모으며 고개를 숙여요
+#   철룡(dragon): 뒤로 비틀거리다 두 무릎을 꿇고, 두 팔을 옆으로 늘어뜨린 채 하늘을 올려다봐요
+BOSS_DEFEAT = next((e.split("=", 1)[1] for e in EXTRAS if e.startswith("defeat=")), None)
+if BOSS_DEFEAT:
+    def boss_defeat_pose(stage):
+        if stage == "stagger":
+            back = BOSS_DEFEAT != "bandit"
+            feet = {s: FEET[s] + Vector((0, (0.18 if s == "Right" else -0.08) * (1 if back else -1), 0)) for s in ("Left", "Right")}
+            lower_hips(-0.22, feet, dy=0.1 if back else -0.04)
+            bend("Spine", Vector((1, 0, 0)), -14 if back else 12); bend("Neck", Vector((1, 0, 0)), -18 if back else 10)
+            for s, sx in (("Left", 1), ("Right", -1)):
+                sh = pb[f"{s}Arm"].head.copy()
+                arm(s, sh + Vector((sx * 0.5, 0.08, -0.3)), Vector((sx, 0.3, -0.3)))        # 휘청이며 팔이 벌어져요
+            return
+        if BOSS_DEFEAT == "bandit":
+            # 한쪽 무릎: 오른 무릎이 땅에 닿게 오른발은 뒤로, 왼발은 앞에 세워요
+            feet = {"Left": FEET["Left"] + Vector((0, -0.25, 0)), "Right": FEET["Right"] + Vector((0, 0.5, 0.0))}
+            lower_hips(-0.55, feet, dy=0.12)
+            bend("Spine", Vector((1, 0, 0)), 26); bend("Neck", Vector((1, 0, 0)), 34)
+            shL = pb["LeftArm"].head.copy(); shR = pb["RightArm"].head.copy()
+            arm("Left", shL + Vector((0.1, -0.4, -0.45)), Vector((1, 0.3, -0.3)))            # 왼손으로 무릎을 짚고
+            arm("Right", shR + Vector((-0.12, -0.08, -0.62)), Vector((-1, 0.3, -0.2)))       # 칼 쥔 팔은 축 늘어져요
+        elif BOSS_DEFEAT == "buddha":
+            feet = {s: FEET[s] + Vector((-sx * 0.12, -0.15, 0)) for s, sx in (("Left", -1), ("Right", 1))}
+            lower_hips(-0.85, feet, dy=0.05)
+            bend("Spine", Vector((1, 0, 0)), 16); bend("Neck", Vector((1, 0, 0)), 30)
+            prayer_arms(drop=0.12)                                                           # 가슴 앞에 두 손을 모아요
+        else:
+            feet = {s: FEET[s] + Vector((0, 0.45, 0)) for s in ("Left", "Right")}
+            lower_hips(-0.7, feet, dy=0.08)
+            bend("Spine", Vector((1, 0, 0)), -12); bend("Neck", Vector((1, 0, 0)), -32)   # 하늘을 올려다봐요
+            for s, sx in (("Left", 1), ("Right", -1)):
+                sh = pb[f"{s}Arm"].head.copy()
+                arm(s, sh + Vector((sx * 0.28, 0.05, -0.62)), Vector((sx, 0.2, -0.3)))      # 두 팔은 옆으로 늘어뜨려요
+    make_action("Defeat", [(0, "stagger"), (10, "stagger"), (22, "final"), (40, "final")], boss_defeat_pose)
+    rig.animation_data.action = None
+    reset_pose()
+
 
 # 갇힌 무림맹 고수 (captive, 천마총 이벤트): Captive — 무릎 꿇고 고개를 떨군 채 두 손이 등 뒤로 묶여 있어요 (숨 쉬듯 반복)
 #   Freed — 사슬이 풀리면 손을 앞으로 풀고 천천히 일어나 포권(주먹을 손바닥으로 감싸 가슴 앞)으로 인사해요

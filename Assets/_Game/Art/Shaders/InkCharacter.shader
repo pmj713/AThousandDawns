@@ -24,6 +24,7 @@ Shader "AThousandDawns/InkCharacter"
         [Header(Overlay)]
         _AuraColor ("Aura (가장자리 기운, a = 세기)", Color) = (0, 0, 0, 0)
         _CrackColor ("Crack (갈라진 금, a = 양)", Color) = (0, 0, 0, 0)
+        _Dissolve ("Dissolve (먹으로 흩어짐 0~1)", Range(0, 1)) = 0
 
         [Header(Brush Outline)]
         _OutlineWidth ("Outline Width (px)", Range(0, 8)) = 3
@@ -60,6 +61,7 @@ Shader "AThousandDawns/InkCharacter"
             float _OutlineNoiseScale;
             half4 _AuraColor;
             half4 _CrackColor;
+            half _Dissolve;
         CBUFFER_END
 
             // 지역 색 양 (InkColorZones가 전역으로 정해요): 0 = 재질 채도 그대로(수묵), 1 = 원래 색 전부
@@ -122,6 +124,15 @@ Shader "AThousandDawns/InkCharacter"
                 else if (d < d2) d2 = d;
             }
             return sqrt(d2) - sqrt(d1);
+        }
+
+        // 먹으로 흩어짐 (_Dissolve 0~1): 얼룩 노이즈에 발밑부터 차오르는 높이를 더한 값이 문턱 아래면 지워요.
+        //   0이면 하나도 안 지워지고 1이면 다 지워져요. 반환값은 문턱까지 남은 거리 (0 근처가 타들어 가는 가장자리)
+        float DissolveCut(float3 positionOS)
+        {
+            float n = Fbm(positionOS * 3.5 + 11.0);
+            float rise = saturate(positionOS.y / 3.0);   // 발밑이 먼저 (몸이 아래부터 먹물로 풀려요)
+            return n * 0.7 + rise * 0.5 - _Dissolve * 1.25;
         }
         ENDHLSL
 
@@ -229,6 +240,13 @@ Shader "AThousandDawns/InkCharacter"
                     float glow = pow(1.0 - saturate(dot(n, v)), 2.2);
                     color = lerp(color, _AuraColor.rgb, saturate(glow * _AuraColor.a * 1.6));
                 }
+                // 먹으로 흩어짐: 지워지는 자리 둘레는 짙은 먹으로 번져요
+                if (_Dissolve > 0.001)
+                {
+                    float cut = DissolveCut(input.positionOS);
+                    clip(cut);
+                    color = lerp(_InkColor.rgb, color, smoothstep(0.0, 0.08, cut));
+                }
 
                 color = MixFog(color, input.fogFactor);
                 return half4(color, 1.0);
@@ -258,6 +276,7 @@ Shader "AThousandDawns/InkCharacter"
             {
                 float4 positionCS : SV_POSITION;
                 half fogFactor : TEXCOORD0;
+                float3 positionOS : TEXCOORD1;
             };
 
             Varyings Vert(Attributes input)
@@ -274,11 +293,13 @@ Shader "AThousandDawns/InkCharacter"
 
                 output.positionCS = positionCS;
                 output.fogFactor = ComputeFogFactor(positionCS.z);
+                output.positionOS = input.positionOS.xyz;
                 return output;
             }
 
             half4 Frag(Varyings input) : SV_Target
             {
+                if (_Dissolve > 0.001) clip(DissolveCut(input.positionOS));   // 몸과 같이 외곽선도 흩어져요
                 return half4(MixFog(_InkColor.rgb, input.fogFactor), 1.0);
             }
             ENDHLSL
@@ -306,7 +327,13 @@ Shader "AThousandDawns/InkCharacter"
                 float3 normalOS : NORMAL;
             };
 
-            float4 Vert(Attributes input) : SV_POSITION
+            struct ShadowVaryings
+            {
+                float4 positionCS : SV_POSITION;
+                float3 positionOS : TEXCOORD0;
+            };
+
+            ShadowVaryings Vert(Attributes input)
             {
                 float3 positionWS = TransformObjectToWorld(input.positionOS.xyz);
                 float3 normalWS = TransformObjectToWorldNormal(input.normalOS);
@@ -316,10 +343,17 @@ Shader "AThousandDawns/InkCharacter"
                 #else
                 positionCS.z = max(positionCS.z, UNITY_NEAR_CLIP_VALUE);
                 #endif
-                return positionCS;
+                ShadowVaryings output;
+                output.positionCS = positionCS;
+                output.positionOS = input.positionOS.xyz;
+                return output;
             }
 
-            half4 Frag() : SV_Target { return 0; }
+            half4 Frag(ShadowVaryings input) : SV_Target
+            {
+                if (_Dissolve > 0.001) clip(DissolveCut(input.positionOS));   // 그림자도 같이 흩어져요
+                return 0;
+            }
             ENDHLSL
         }
 
@@ -334,12 +368,25 @@ Shader "AThousandDawns/InkCharacter"
             #pragma vertex Vert
             #pragma fragment Frag
 
-            float4 Vert(float4 positionOS : POSITION) : SV_POSITION
+            struct DepthVaryings
             {
-                return TransformObjectToHClip(positionOS.xyz);
+                float4 positionCS : SV_POSITION;
+                float3 positionOS : TEXCOORD0;
+            };
+
+            DepthVaryings Vert(float4 positionOS : POSITION)
+            {
+                DepthVaryings output;
+                output.positionCS = TransformObjectToHClip(positionOS.xyz);
+                output.positionOS = positionOS.xyz;
+                return output;
             }
 
-            half Frag() : SV_Target { return 0; }
+            half Frag(DepthVaryings input) : SV_Target
+            {
+                if (_Dissolve > 0.001) clip(DissolveCut(input.positionOS));   // 깊이에도 흩어진 자리가 남지 않게
+                return 0;
+            }
             ENDHLSL
         }
     }
