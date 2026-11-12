@@ -4025,3 +4025,159 @@ MonoBehaviour:
     value: 0.3
     unit: "\uCD08"
     note: "\uBE44\uB3C4 \uD638\uC2E0\uB95C: \uBCA0\uB294 \uAC04\uACA9"
+  - key: irondragon.hp
+    value: 1900
+    unit: 
+    note: "\uC218\uCC44\uC8FC \uCCA0\uB8E1 \uCCB4\uB825 (\uC7A5\uAC15 \xD73.0 = 5700)"
+  - key: irondragon.atk
+    value: 25
+    unit: 
+    note: "\uC218\uCC44\uC8FC \uCCA0\uB8E1 \uACF5\uACA9 (\xD71.6 = 40)"
+  - key: irondragon.toughness
+    value: 6
+    unit: 
+    note: "\uC218\uCC44\uC8FC \uCCA0\uB8E1 \uAC15\uC778\uD568"
+  - key: irondragon.defense
+    value: 0.15
+    unit: 
+    note: "\uC218\uCC44\uC8FC \uCCA0\uB8E1 \uBC29\uC5B4"
+  - key: irondragon.move_speed
+    value: 2
+    unit: cell/s
+    note: "\uC218\uCC44\uC8FC \uCCA0\uB8E1 \uC774\uB3D9\uC18D\uB3C4 (\uCCA0\uAC11 \uAC70\uAD6C)"
+  - key: irondragon.recovery
+    value: 0.9
+    unit: s
+    note: "\uCCA0\uB8E1 \uD328\uD134 \uBE48\uD2C8"
+  - key: irondragon.swing_windup
+    value: 0.9
+    unit: s
+    note: "\uCCA0\uB8E1 \uC720\uC131\uCD94 \uD718\uB450\uB974\uAE30 \uC608\uACE0"
+  - key: irondragon.swing_radius
+    value: 6
+    unit: cell
+    note: "\uCCA0\uB8E1 \uC720\uC131\uCD94 \uD718\uB450\uB974\uAE30 \uBC18\uACBD (\uC0AC\uC2AC \uAE38\uC774)"
+  - key: irondragon.swing_angle
+    value: 140
+    unit: deg
+    note: "\uCCA0\uB8E1 \uC720\uC131\uCD94 \uD718\uB450\uB974\uAE30 \uAC01\uB3C4"
+  - key: irondragon.swing_ratio
+    value: 1
+    unit: 
+    note: "\uCCA0\uB8E1 \uC720\uC131\uCD94 \uD718\uB450\uB974\uAE30 \uD53C\uD574 \uBC30\uC728"
+  - key: irondragon.swing_knockback
+    value: 2
+    unit: cell
+    note: "\uCCA0\uB8E1 \uC720\uC131\uCD94 \uD718\uB450\uB974\uAE30 \uB109\uBC31"
+  - key: irondragon.slam_windup
+    value: 1
+    unit: s
+    note: "\uCCA0\uB8E1 \uC720\uC131\uCD94 \uB0B4\uB824\uCC0D\uAE30 \uC608\uACE0 (\uD50C\uB808\uC774\uC5B4 \uC790\uB9AC \uC6D0)"
+  - key: irondragon.slam_radius
+    value: 2
+    unit: cell
+    note: "\uCCA0\uB8E1 \uC720\uC131\uCD94 \uB0B4\uB824\uCC0D\uAE30 \uBC18\uACBD"
+  - key: irondragon.slam_ratio
+    value: 1.2
+    unit: 
+    note: "\uCCA0\uB8E1 \uC720\uC131\uCD94 \uB0B4\uB824\uCC0D\uAE30 \uD53C\uD574 \uBC30\uC728"
+  - key: irondragon.hook_far
+    value: 7
+    unit: cell
+    note: "\uCCA0\uB8E1 \uC0AC\uC2AC \uB2F9\uAE30\uAE30: \uD50C\uB808\uC774\uC5B4\uAC00 \uC774\uBCF4\uB2E4 \uBA40\uB9AC"
+  - key: irondragon.hook_delay
+    value: 2
+    unit: s
+    note: "\uCCA0\uB8E1 \uC0AC\uC2AC \uB2F9\uAE30\uAE30: \uBA40\uB9AC \uC788\uB294 \uC2DC\uAC04\uC774 \uC774\uB9CC\uD07C\uC774\uBA74"
+  - key: irondragon.hook_windup
+    value: 0.7
+    unit: s
+    note: "\uCCA0\uB8E1 \uC0AC\uC2AC \uB2F9\uAE30\uAE30 \uC608\uACE0 (\uC9C1\uC120)"
+  - key: irondragon.hook_range
+    value: 10
+    unit: cell
+    note: "\uCCA0\uB8E1 \uC0AC\uC2AC \uB2F9\uAE30\uAE30 \uAE38\uC774"
+  - key: irondragon.hook_width
+    value: 1.2
+    unit: cell
+    note: "\uCCA0\uB8E1 \uC0AC\uC2AC \uB2F9\uAE30\uAE30 \uD3ED"
+  - key: irondragon.hook_ratio
+    value: 0.6
+    unit: 
+    note: "\uCCA0\uB8E1 \uC0AC\uC2AC \uB2F9\uAE30\uAE30 \uD53C\uD574 \uBC30\uC728 (\uB9DE\uC73C\uBA74 \uB04C\uB824\uC640 \uBC14\uB85C \uD718\uB450\uB974\uAE30)"
+  - key: irondragon.hook_stop
+    value: 2.5
+    unit: cell
+    note: "\uCCA0\uB8E1 \uC0AC\uC2AC \uB2F9\uAE30\uAE30: \uB04C\uB824\uC640 \uBA48\uCD94\uB294 \uAC70\uB9AC"
+  - key: irondragon.summon_interval
+    value: 15
+    unit: s
+    note: "\uCCA0\uB8E1 \uC218\uD558 \uBD80\uB974\uAE30 \uAC04\uACA9 (\uAE43\uBC1C\uC218 \uD558\uB098 + \uC218\uC801 \uC878\uAC1C \uB458 \xB7 \uAE43\uBC1C\uC218\uAC00 \uC5C6\uC744 \uB54C)"
+  - key: irondragon.p2_slam_hits
+    value: 3
+    unit: 
+    note: "\uCCA0\uB8E1 2\uD398\uC774\uC988 \uC5F0\uC18D \uB0B4\uB824\uCC0D\uAE30 \uD69F\uC218 (\uD50C\uB808\uC774\uC5B4\uB97C \uB530\uB77C\uAC10)"
+  - key: irondragon.p2_slam_gap
+    value: 0.5
+    unit: s
+    note: "\uCCA0\uB8E1 2\uD398\uC774\uC988 \uC5F0\uC18D \uB0B4\uB824\uCC0D\uAE30 \uAC04\uACA9"
+  - key: irondragon.p2_geyser_interval
+    value: 9
+    unit: s
+    note: "\uCCA0\uB8E1 2\uD398\uC774\uC988 \uBB3C\uAE30\uB465 \uAC04\uACA9"
+  - key: irondragon.p2_geyser_windup
+    value: 0.6
+    unit: s
+    note: "\uCCA0\uB8E1 \uBB3C\uAE30\uB465 \uC608\uACE0 (\uBAB8 \uB458\uB808)"
+  - key: irondragon.p2_geyser_count
+    value: 5
+    unit: 
+    note: "\uCCA0\uB8E1 \uBB3C\uAE30\uB465 \uC218"
+  - key: irondragon.p2_geyser_gap
+    value: 0.4
+    unit: s
+    note: "\uCCA0\uB8E1 \uBB3C\uAE30\uB465 \uAC04\uACA9"
+  - key: irondragon.p2_geyser_fall
+    value: 0.8
+    unit: s
+    note: "\uCCA0\uB8E1 \uBB3C\uAE30\uB465 \uBC14\uB2E5 \uC608\uACE0 \uC2DC\uAC04"
+  - key: irondragon.p2_geyser_radius
+    value: 1.3
+    unit: cell
+    note: "\uCCA0\uB8E1 \uBB3C\uAE30\uB465 \uBC18\uACBD"
+  - key: irondragon.p2_geyser_ratio
+    value: 0.7
+    unit: 
+    note: "\uCCA0\uB8E1 \uBB3C\uAE30\uB465 \uD53C\uD574 \uBC30\uC728"
+  - key: irondragon.p2_water_count
+    value: 3
+    unit: 
+    note: "\uCCA0\uB8E1 2\uD398\uC774\uC988 \uBB3C\uAE38 \uC218 (\uBC30\uAC00 \uBD80\uC11C\uC9C0\uBA70 \uC0DD\uAE40)"
+  - key: irondragon.p2_water_radius
+    value: 2.5
+    unit: cell
+    note: "\uCCA0\uB8E1 \uBB3C\uAE38 \uBC18\uACBD"
+  - key: irondragon.p2_water_slow
+    value: 0.3
+    unit: 
+    note: "\uCCA0\uB8E1 \uBB3C\uAE38 \uC548 \uC774\uB3D9\uC18D\uB3C4 \uAC10\uC18C"
+  - key: event.wreck_tracking
+    value: 2
+    unit: 
+    note: "\uC7A5\uAC15 \uB09C\uD30C\uC120 \uB4A4\uC9C0\uAE30: \uCD94\uC801\uB3C4 +"
+  - key: event.toll_silver
+    value: 100
+    unit: "\uC740\uC790"
+    note: "\uC7A5\uAC15 \uC218\uC801 \uD1B5\uD589\uC138: \uB0B4\uB294 \uC740\uC790"
+  - key: event.toll_reward
+    value: 150
+    unit: "\uC740\uC790"
+    note: "\uC7A5\uAC15 \uC218\uC801 \uD1B5\uD589\uC138 \uAC70\uC808 \uC804\uD22C: \uC774\uAE30\uBA74 \uC740\uC790 +"
+  - key: event.toll_sneak_tracking
+    value: 3
+    unit: 
+    note: "\uC7A5\uAC15 \uC218\uC801 \uD1B5\uD589\uC138 \uBAB0\uB798 \uC9C0\uB098\uAC00\uAE30: \uCD94\uC801\uB3C4 +"
+  - key: event.ferry_silver
+    value: 60
+    unit: "\uC740\uC790"
+    note: "\uC7A5\uAC15 \uBC43\uC0AC\uACF5: \uBC43\uC0AF (\uB2E4\uC74C \uCE35 \uC9C0\uB3C4\uAC00 \uB2E4 \uBCF4\uC784)"
