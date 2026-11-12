@@ -570,6 +570,12 @@ namespace AThousandDawns.Prototype
                 arena.GrantOffer(TombWeights()); // 검이 꽂힌 무덤: 전설이 잘 나와요
                 text += " · 망령이 흩어지고 검이 빛나요, 기물 고르기";
             }
+            if (_heroFight)
+            {
+                _heroFight = false;
+                _heroShield = true;
+                text += " · 무림맹 고수를 구했어요, 천마전에서 보호막을 둘러 줄 거예요";
+            }
             if (_tollFight)
             {
                 _tollFight = false;
@@ -760,8 +766,9 @@ namespace AThousandDawns.Prototype
             MovePlayer(boss.entry);
             director.ResetRoom();
             Player.EnterRoom();
-            var bossBrain = arena.SpawnBoss(_region >= 2 ? EnemyKind.IronDragon : _region == 1 ? EnemyKind.BloodBuddha : EnemyKind.Nokrim); // 죽림 녹림왕 · 폐사찰 혈불 · 장강 수채 철룡
+            var bossBrain = arena.SpawnBoss(_region >= 3 ? EnemyKind.HeavenlyDemon : _region == 2 ? EnemyKind.IronDragon : _region == 1 ? EnemyKind.BloodBuddha : EnemyKind.Nokrim); // 죽림 녹림왕 · 폐사찰 혈불 · 장강 수채 철룡 · 천마총 천마
             if (bossBrain != null) ScaleForRegion(bossBrain);
+            if (bossBrain != null) bossBrain.Woke += _ => ApplyHeroShield(); // 무림맹 고수를 구했으면 천마전 보호막
             OnFightStart();
             if (_bossGauge > 0f) Player.RaiseGaugeTo(_bossGauge); // 기시감: 천마에 대해 물음 (마지막 보스전 = 지금은 녹림왕)
             bool hunted = Tracking >= Mathf.RoundToInt(GameConfig.Get("tracking.assassin2", 10f));
@@ -777,7 +784,11 @@ namespace AThousandDawns.Prototype
                 _phase = Phase.None;
                 _regionAdvancePending = true;
             }
-            else _phase = Phase.Done;
+            else
+            {
+                _phase = Phase.Done;
+                _record.FinalBoss = true; // 마지막 지역 보스 = 천마 격파 (회귀의 기억 +30, 유품 가지가 열려요)
+            }
             _record.FloorsCleared++; // 보스 층 돌파
             int silver = BoostSilver(Mathf.RoundToInt(GameConfig.Get("silver.boss", 50f)));
             Silver += silver;

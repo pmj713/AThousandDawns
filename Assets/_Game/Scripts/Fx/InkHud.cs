@@ -28,7 +28,7 @@ namespace AThousandDawns.Fx
         const float BarW = 400f, BarH = 40f, GaugeW = 330f, GaugeH = 20f, KeywordSize = 38f;
         const float PipSize = 30f, GourdSize = 48f, ChevronW = 26f;
 
-        static Texture2D _stroke, _enso, _gourd, _blot, _chevron, _spin, _bamboo, _quake, _recall, _recallGray, _palm, _takrang, _takrangVortex, _daggerFlash, _daggerBurst, _daggerHalo;
+        static Texture2D _stroke, _enso, _gourd, _blot, _chevron, _spin, _bamboo, _quake, _recall, _recallGray, _palm, _takrang, _takrangVortex, _daggerFlash, _daggerBurst, _daggerHalo, _bloodShadow, _daggerBloodShadow;
         static bool _loaded;
         static GUIStyle _number, _small, _badge, _gaugeLabel, _key;
         static float _lagHp = -1f;   // 깎인 자리 (따라 줄어드는 체력)
@@ -200,6 +200,7 @@ namespace AThousandDawns.Fx
         // 비도 + 탁랑참만 따로 "탁류 소용돌이" 그림
         static Texture2D SkillIcon(PlayerController p) => p.UsesDagger ? DaggerIcon(p.Skill) : p.Skill switch
         {
+            SkillKind.BloodShadow when _bloodShadow != null => _bloodShadow,
             SkillKind.Takrang when _takrang != null => _takrang,
             SkillKind.BambooFlash => _bamboo,
             SkillKind.Quake => _quake,
@@ -214,6 +215,7 @@ namespace AThousandDawns.Fx
             SkillKind.Quake => _daggerBurst,
             SkillKind.Palm => _daggerHalo,
             SkillKind.Takrang => _takrangVortex,
+            SkillKind.BloodShadow => _daggerBloodShadow,
             _ => null,
         }) ?? _recall;
 
@@ -378,6 +380,8 @@ namespace AThousandDawns.Fx
             _daggerFlash = Resources.Load<Texture2D>("HudArt/Skill_DaggerFlash");
             _daggerBurst = Resources.Load<Texture2D>("HudArt/Skill_DaggerBurst");
             _daggerHalo = Resources.Load<Texture2D>("HudArt/Skill_DaggerHalo");
+            _bloodShadow = Resources.Load<Texture2D>("HudArt/Skill_BloodShadow");
+            _daggerBloodShadow = Resources.Load<Texture2D>("HudArt/Skill_DaggerBloodShadow");
             _blot = Resources.Load<Texture2D>("HudArt/Blot"); // 흰 모양 (GUI.color로 물들여요)
             _chevron = Resources.Load<Texture2D>("HudArt/Chevron"); // 흰 모양 붓 >
         }

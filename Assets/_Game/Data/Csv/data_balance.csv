@@ -1173,3 +1173,65 @@ knife.scroll_shadow_max,8,개,비도 + 혈영참 혈영 잔상: 잔상이 생기
 knife.scroll_shadow_radius,1.5,칸,혈영 잔상: 잔상이 베는 반경,비도 비급 (비도 초식)
 knife.scroll_shadow_delay,0.3,초,혈영 잔상: 잔상이 베기까지,비도 비급 (비도 초식)
 knife.scroll_shadow_ratio,30%,,혈영 잔상: 잔상 하나 피해 (초식 피해 대비),비도 비급 (비도 초식)
+heavenlydemon.hp,3150,,천마 체력 (천마총 ×4.5 = 14175),몬스터!D67
+heavenlydemon.atk,25,,천마 공격 (×2.0 = 50),몬스터!F67
+heavenlydemon.toughness,6,,천마 강인함,몬스터!H67
+heavenlydemon.defense,20%,,천마 방어,몬스터!I67
+heavenlydemon.move_speed,3.5,cell/s,천마 이동속도,
+heavenlydemon.recovery,0.8,s,천마 패턴 빈틈,
+heavenlydemon.phase2_hp_ratio,66%,,천마 2페이즈 (천마군림) 체력,4지역 기획 (3페이즈)
+heavenlydemon.phase3_hp_ratio,33%,,천마 3페이즈 (해체대법) 체력,4지역 기획 (3페이즈)
+heavenlydemon.transition_time,2,s,천마 페이즈 전환 (무적),
+heavenlydemon.slash_windup,0.6,s,천마일검 예고,
+heavenlydemon.slash_radius,3,cell,천마일검 반경,
+heavenlydemon.slash_angle,140,deg,천마일검 각도,
+heavenlydemon.p2_slash_angle,220,deg,천마군림 각도 (2페이즈부터),
+heavenlydemon.slash_ratio,1,,천마일검 피해 배율,
+heavenlydemon.cross_windup,0.8,s,천마 십자 검기 예고,
+heavenlydemon.cross_range,10,cell,천마 십자 검기 거리,
+heavenlydemon.cross_speed,10,cell/s,천마 십자 검기 속도,
+heavenlydemon.cross_ratio,0.7,,천마 십자 검기 피해 배율,
+heavenlydemon.miasma_interval,10,s,천마 마기 장판 간격,
+heavenlydemon.miasma_windup,0.8,s,천마 마기 장판 예고,
+heavenlydemon.miasma_radius,1.5,cell,천마 마기 장판 반경 (세 곳),
+heavenlydemon.miasma_life,5,s,천마 마기 장판 시간,
+heavenlydemon.miasma_ratio,0.3,,천마 마기 장판 피해 배율 (0.5초마다),
+heavenlydemon.miasma_slow,20%,,천마 마기 장판 안 이동속도 감소,
+heavenlydemon.grasp_far,6,cell,천마 마기 손아귀: 플레이어가 이보다 멀리,
+heavenlydemon.grasp_delay,2,s,천마 마기 손아귀: 멀리 있는 시간이 이만큼이면,
+heavenlydemon.grasp_windup,0.7,s,천마 마기 손아귀 예고 (직선),
+heavenlydemon.grasp_range,10,cell,천마 마기 손아귀 길이,
+heavenlydemon.grasp_width,1.2,cell,천마 마기 손아귀 폭,
+heavenlydemon.grasp_ratio,0.6,,천마 마기 손아귀 피해 배율 (끌려와 바로 일검),
+heavenlydemon.grasp_stop,2,cell,천마 마기 손아귀: 끌려와 멈추는 거리,
+heavenlydemon.p2_phantom_side,3,cell,천마군림 환영: 플레이어 양옆 거리,
+heavenlydemon.p2_phantom_delay,0.5,s,천마군림 환영이 베기까지,
+heavenlydemon.p2_phantom_ratio,0.6,,천마군림 환영 피해 배율,
+heavenlydemon.p2_pull_interval,12,s,천마 흡인 간격 (2페이즈부터),
+heavenlydemon.p2_pull_windup,1,s,천마 흡인 예고,
+heavenlydemon.p2_pull_time,2,s,천마 흡인: 끌어당기는 시간,
+heavenlydemon.p2_pull_radius,6,cell,천마 흡인 범위,
+heavenlydemon.p2_pull_speed,2.5,cell/s,천마 흡인 속도 (대시면 안 끌림),
+heavenlydemon.p2_pull_burst,2,cell,천마 흡인 끝 폭발 반경,
+heavenlydemon.p2_pull_ratio,1.2,,천마 흡인 폭발 피해 배율,
+heavenlydemon.p3_rain_interval,8,s,천마 검비 간격 (3페이즈),
+heavenlydemon.p3_rain_windup,1,s,천마 검비 예고,
+heavenlydemon.p3_rain_time,1.5,s,천마 검비 시간,
+heavenlydemon.p3_rain_count,12,자루,천마 검비 검 수,
+heavenlydemon.p3_rain_fall,0.6,s,천마 검비 검 하나 예고,
+heavenlydemon.p3_rain_radius,1.2,cell,천마 검비 검 하나 반경,
+heavenlydemon.p3_rain_ratio,0.6,,천마 검비 피해 배율,
+heavenlydemon.p3_safe_start,11,cell,해체대법: 처음 안전 반경 (방 가장자리부터 마기),
+heavenlydemon.p3_safe_min,5,cell,해체대법: 가장 좁은 안전 반경,
+heavenlydemon.p3_safe_step,1,cell,해체대법: 한 번에 줄어드는 반경,
+heavenlydemon.p3_safe_interval,3,s,해체대법: 줄어드는 간격,
+heavenlydemon.p3_safe_ratio,0.2,,해체대법: 마기 속 피해 배율 (0.5초마다),
+heavenlydemon.p3_safe_tick,0.5,s,해체대법: 마기 속 피해 간격,
+event.blood_pool_cut,10%,,천마총 피의 연못: 이번 판 동안 최대 체력 −,4지역 기획 (천마총 이벤트)
+event.blood_pool_grade.common,0%,,피의 연못 보상 일반 확률 (전설이 잘 나옴),4지역 기획 (천마총 이벤트)
+event.blood_pool_grade.uncommon,30%,,피의 연못 보상 고급 확률,4지역 기획 (천마총 이벤트)
+event.blood_pool_grade.rare,40%,,피의 연못 보상 희귀 확률,4지역 기획 (천마총 이벤트)
+event.blood_pool_grade.legendary,30%,,피의 연못 보상 전설 확률,4지역 기획 (천마총 이벤트)
+event.hero_shield,20%,,천마총 갇힌 무림맹 고수: 구하면 천마전 시작 보호막 (최대 체력 비율),4지역 기획 (천마총 이벤트)
+event.altar_tracking,3,,천마총 마교 제단 부수기: 추적도 +,4지역 기획 (천마총 이벤트)
+event.altar_silver,120,은자,천마총 마교 제단 부수기: 은자 +,4지역 기획 (천마총 이벤트)

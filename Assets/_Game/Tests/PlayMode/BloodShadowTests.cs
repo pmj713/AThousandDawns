@@ -159,8 +159,8 @@ namespace AThousandDawns.Tests
             Press(_mouse.rightButton);
             yield return null;
             Release(_mouse.rightButton);
-            yield return WaitUntil(() => player.ShadowEchoesPending > 0, 1f);
-            Assert.AreEqual(3, player.ShadowEchoesPending, "비도마다 잔상");
+            yield return WaitUntil(() => player.ShadowEchoesMade > 0, 2f);
+            Assert.AreEqual(3, player.ShadowEchoesMade, "비도마다 잔상");
             Assert.AreEqual(0, player.DaggerCount, "비도는 손으로 돌아와요");
         }
     }

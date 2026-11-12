@@ -63,6 +63,7 @@ namespace AThousandDawns.Prototype
                 deja = _record.Deja,
                 almsCurse = _almsCurse,
                 ferry = _ferry,
+                heroShield = _heroShield,
                 playSeconds = _record.PlaySeconds,
                 damageDealt = _record.DamageDealt,
                 maxHit = _record.MaxHit,
@@ -81,6 +82,7 @@ namespace AThousandDawns.Prototype
                 moveBonus = Player.RunMoveBonus,
                 gaugeBonus = Player.RunGaugeBonus,
                 takenIncrease = Player.RunTakenIncrease,
+                maxHealthCut = Player.RunMaxHealthCut,
             };
             s.usedEvents.AddRange(_usedEvents);
             if (_forkOptions != null)
@@ -160,6 +162,7 @@ namespace AThousandDawns.Prototype
             Player.RunMoveBonus = s.moveBonus;
             Player.RunGaugeBonus = s.gaugeBonus;
             Player.RunTakenIncrease = s.takenIncrease;
+            if (s.maxHealthCut > 0f) Player.CutMaxHealth(s.maxHealthCut); // 피의 연못
             if (Player.Level != null) Player.Level.Restore(s.level, s.xp, s.pending);
             Player.RestoreRunState(s.health, s.potions, s.gauge, s.revive);
 
@@ -182,6 +185,7 @@ namespace AThousandDawns.Prototype
             _record.Deja = s.deja;
             _almsCurse = s.almsCurse;
             _ferry = s.ferry;
+            _heroShield = s.heroShield;
             _record.PlaySeconds = s.playSeconds;
             _record.DamageDealt = s.damageDealt;
             _record.MaxHit = s.maxHit;

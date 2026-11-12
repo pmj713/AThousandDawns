@@ -389,5 +389,65 @@ namespace AThousandDawns.Tests
             Assert.IsFalse(_run.FerryPending, "한 층만");
             Assert.IsTrue(_run.Map.Rooms.All(r => r.Revealed), "지도가 다 보여요");
         }
+
+        // ── 천마총 전용 이벤트
+
+        [UnityTest]
+        public IEnumerator 피의_연못_최대_체력이_줄고_일반이_없는_기물_고르기()
+        {
+            yield return Load();
+            float max = _player.MaxHealth;
+            _run.OpenEventForTest("blood_pool");
+            Assert.IsTrue(_run.ChooseEvent(Index("손을 넣는다")));
+            Assert.AreEqual(0.1f, _player.RunMaxHealthCut, 0.001f);
+            Assert.Less(_player.MaxHealth, max, "최대 체력 −10%");
+            _run.CloseEvent();
+            yield return WaitUntil(() => _arena.IsChoosing, 2f);
+            Assert.IsTrue(_arena.IsChoosing);
+            Assert.IsFalse(_arena.Offer.Any(d => d.grade == AThousandDawns.Items.ItemGrade.Common), "일반은 안 나와요");
+        }
+
+        [UnityTest]
+        public IEnumerator 갇힌_무림맹_고수_혈인과_천마_근위를_이기면_천마전_보호막()
+        {
+            yield return Load();
+            _run.OpenEventForTest("captive_hero");
+            Assert.IsTrue(_run.ChooseEvent(Index("구한다")));
+            Assert.IsFalse(_run.IsInEvent, "창이 닫히고 전투");
+            Assert.IsTrue(_run.IsFighting);
+            bool shaman = false, guard = false;
+            yield return WaitUntil(() =>
+            {
+                shaman |= _director.Enemies.Any(e => e.Kind == EnemyKind.BloodShaman);
+                guard |= _director.Enemies.Any(e => e.Kind == EnemyKind.DemonGuard);
+                for (int i = _director.Enemies.Count - 1; i >= 0; i--) _director.Enemies[i].Damageable.ApplyHit(99999);
+                return !_run.IsFighting;
+            }, 20f);
+            Assert.IsTrue(shaman && guard, "혈인 · 천마 근위");
+            Assert.IsTrue(_run.HeroShieldPending, "천마전 보호막 약속");
+        }
+
+        [UnityTest]
+        public IEnumerator 마교_제단_기물을_바치면_공력_부수면_추적도와_은자()
+        {
+            yield return Load();
+            _run.OpenEventForTest("demon_altar");
+            Assert.AreEqual("바칠 기물이 없어요", _run.CurrentEvent.Choices[Index("기물을 바친다")].Locked);
+            int tracking = _run.Tracking, silver = _run.Silver;
+            Assert.IsTrue(_run.ChooseEvent(Index("부순다")));
+            Assert.AreEqual(tracking + 3, _run.Tracking);
+            Assert.AreEqual(silver + 120, _run.Silver);
+            _run.CloseEvent();
+
+            var def = AThousandDawns.Core.GameConfig.Items.Items.First(d => d.grade == AThousandDawns.Items.ItemGrade.Uncommon);
+            _player.Items.Add(def);
+            int gongryeok = _player.Gongryeok;
+            _run.OpenEventForTest("demon_altar");
+            Assert.IsTrue(_run.ChooseEvent(Index("기물을 바친다")));
+            Assert.AreEqual("demon_altar_pick", _run.CurrentEvent.Id);
+            Assert.IsTrue(_run.ChooseEvent(0));
+            Assert.AreEqual(0, _player.Items.Items.Count, "기물을 잃어요");
+            Assert.AreEqual(gongryeok + 1, _player.Gongryeok, "공력 +1");
+        }
     }
 }

@@ -20,6 +20,7 @@ namespace AThousandDawns.Player
         readonly List<ShadowEcho> _shadowEchoes = new List<ShadowEcho>();
 
         public int ShadowEchoesPending => _shadowEchoes.Count;
+        public int ShadowEchoesMade { get; private set; } // 지금까지 생긴 잔상 수 (느린 프레임에서도 셀 수 있게)
 
         static float BS(string key, float fallback) => GameConfig.GetOptional(key, fallback);
 
@@ -50,6 +51,7 @@ namespace AThousandDawns.Player
                 if (d.Flying || d.Returning || d.Vortex) continue;
                 Vector3 at = Flatten(d.Go.transform.position);
                 _shadowEchoes.Add(new ShadowEcho { From = at, To = at, Radius = radius, Timer = delay, Ratio = ratio, Circle = true });
+                ShadowEchoesMade++;
                 n++;
             }
             RecallDaggers();
