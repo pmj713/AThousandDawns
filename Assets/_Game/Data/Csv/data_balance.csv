@@ -1142,7 +1142,7 @@ room_cost.bloodshaman,2,,방 예산 점수: 혈인,
 room_cost.demonguard,3,,방 예산 점수: 천마 근위,
 room_cost.bloodbomber,1,,방 예산 점수: 혈폭자,
 bloodshadow.hp,1100,,혈영검마 체력 (임시 · 천마총 ×4.5 = 4950),4지역 기획 (고수 · 시트에 아직 없음)
-bloodshadow.atk,18,,혈영검마 공격 (임시 · ×2.0 = 36),4지역 기획 (고수)
+bloodshadow.atk,13,,혈영검마 공격 (×2.0 = 26. 밸런스 측정: 18이면 피하지 않을 때 압박이 다른 고수의 1.5배),4지역 기획 (고수)
 bloodshadow.toughness,0,,혈영검마 강인함,4지역 기획 (고수)
 bloodshadow.move_speed,4,cell/s,혈영검마 이동속도,
 bloodshadow.recovery,0.6,s,혈영검마 패턴 빈틈,
@@ -1173,7 +1173,7 @@ knife.scroll_shadow_max,8,개,비도 + 혈영참 혈영 잔상: 잔상이 생기
 knife.scroll_shadow_radius,1.5,칸,혈영 잔상: 잔상이 베는 반경,비도 비급 (비도 초식)
 knife.scroll_shadow_delay,0.3,초,혈영 잔상: 잔상이 베기까지,비도 비급 (비도 초식)
 knife.scroll_shadow_ratio,30%,,혈영 잔상: 잔상 하나 피해 (초식 피해 대비),비도 비급 (비도 초식)
-heavenlydemon.hp,3150,,천마 체력 (천마총 ×4.5 = 14175),몬스터!D67
+heavenlydemon.hp,2600,,천마 체력 (천마총 ×4.5 = 11700. 밸런스 측정: 3150이면 처치 92초로 다른 보스의 1.6배),몬스터!D67
 heavenlydemon.atk,25,,천마 공격 (×2.0 = 50),몬스터!F67
 heavenlydemon.toughness,6,,천마 강인함,몬스터!H67
 heavenlydemon.defense,20%,,천마 방어,몬스터!I67

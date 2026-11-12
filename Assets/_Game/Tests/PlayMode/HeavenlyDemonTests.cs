@@ -133,7 +133,7 @@ namespace AThousandDawns.Tests
             cc.enabled = true;
             yield return WaitUntil(() => arena.Boss != null && arena.Boss.IsAwake, 3f);
             Assert.IsInstanceOf<HeavenlyDemonBrain>(arena.Boss, "천마총 보스는 천마");
-            Assert.AreEqual(14175f, arena.Boss.Damageable.MaxHealth, 1f, "3150 × 4.5");
+            Assert.AreEqual(11700f, arena.Boss.Damageable.MaxHealth, 1f, "2600 × 4.5");
             arena.Boss.Damageable.ApplyHit(99999);
             yield return WaitUntil(() => run.IsDone, 4f);
             Assert.IsTrue(run.IsDone, "판 끝");

@@ -120,7 +120,7 @@ namespace AThousandDawns.Tests
             player.transform.position = new Vector3(60f, 0f, 6.6f);
             cc.enabled = true;
             yield return WaitUntil(() => arena.Boss != null && arena.Boss.IsAwake, 3f);
-            Assert.AreEqual(14175f * 1.15f, arena.Boss.Damageable.MaxHealth, 2f, "업보 1단계: 체력 +15% (보스 +25%는 6단계)");
+            Assert.AreEqual(11700f * 1.15f, arena.Boss.Damageable.MaxHealth, 2f, "업보 1단계: 체력 +15% (보스 +25%는 6단계)");
             arena.Boss.Damageable.ApplyHit(999999);
             yield return WaitUntil(() => run.IsDone, 4f);
             run.ShowResult(true);
