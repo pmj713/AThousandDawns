@@ -25,6 +25,11 @@ namespace AThousandDawns.Art
         static readonly int HurtId = Animator.StringToHash("Hurt");
         static readonly int DeadId = Animator.StringToHash("Dead");
         float _lastHealth = -1f;
+        static readonly int CombatId = Animator.StringToHash("Combat");
+        static readonly int DaggerHoldId = Animator.StringToHash("DaggerHold");
+        const float CombatRange = 9f;   // 이 안에 살아 있는 적이 있으면 전투 대기 자세
+        float _combatScan;
+        bool _combat;
         int _vortexLayer = -1;
         float _vortexWeight;
         static readonly int DaggerFlashId = Animator.StringToHash("DaggerFlash");
@@ -73,6 +78,22 @@ namespace AThousandDawns.Art
             }
             _lastHealth = health;
             _animator.SetBool(DeadId, _player.IsDead);
+            // 전투 대기: 0.25초마다 둘레의 살아 있는(깨어난) 적을 살펴 자세를 바꿔요
+            _combatScan -= Time.deltaTime;
+            if (_combatScan <= 0f)
+            {
+                _combatScan = 0.25f;
+                _combat = false;
+                foreach (var e in FindObjectsByType<AThousandDawns.Enemies.EnemyBrain>(FindObjectsSortMode.None))
+                {
+                    if (e.IsDead || !e.IsAwake) continue;
+                    var d = e.transform.position - transform.position;
+                    d.y = 0f;
+                    if (d.sqrMagnitude <= CombatRange * CombatRange) { _combat = true; break; }
+                }
+            }
+            _animator.SetBool(CombatId, _combat);
+            _animator.SetBool(DaggerHoldId, _player.UsesDagger);
             bool dashing = _player.IsDashing;
             if (dashing && !_wasDashing)
             {
