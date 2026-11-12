@@ -5,13 +5,13 @@ using UnityEngine;
 
 namespace AThousandDawns.Art
 {
-    // 보스 처치: 쓰러진 보스(녹림왕 · 혈불 · 철룡)가 발밑부터 먹으로 흩어질 때 (InkCorpse.BossDissolve 자리 · 시간, 메인 아트)
+    // 보스 처치: 쓰러진 보스(녹림왕 · 혈불 · 철룡)와 고수 다섯이 발밑부터 먹으로 흩어질 때 (InkCorpse.BossDissolve 자리 · 시간, 메인 아트)
     //   흩어지는 경계(발밑 → 머리)를 따라 먹물 방울이 튀어 오르고 먹 연기가 위로 흩날려요. 발밑엔 먹 자국이 번졌다 옅어져요.
-    // 보스 키 2.4~3.2칸 기준. 신호가 main에 들어오기 전에도 컴파일되게 이벤트는 이름으로 찾아 붙여요.
+    // 경계 높이는 쓰러진 몸의 렌더러 높이에 맞춰요 (못 찾으면 2.8칸). 신호가 main에 들어오기 전에도 컴파일되게 이벤트는 이름으로 찾아 붙여요.
     // 그림: BloodBuddhaFx (Drop · Splash), HeavenlyDemonFx/Wisp (먹빛으로 물들여요).
     public class InkBossDissolveFx : MonoBehaviour
     {
-        const float BossHeight = 2.8f;
+        const float BossHeight = 2.8f; // 몸을 못 찾을 때 (보스 키 2.4~3.2, 고수 1.9~2.1)
         static InkBossDissolveFx _host;
         static Sprite _drop, _splash, _wisp;
         static bool _hooked;
@@ -55,18 +55,37 @@ namespace AThousandDawns.Art
         void Play(Vector3 at, float time)
         {
             Stain(at, time);
+            float height = BodyHeight(at);
             float t = 0f, dropTimer = 0f, smokeTimer = 0f;
             _live.Add(dt =>
             {
                 t += dt;
                 if (t >= time) return false;
-                float edge = BossHeight * (t / time); // 흩어지는 경계: 발밑에서 머리로
+                float edge = height * (t / time); // 흩어지는 경계: 발밑에서 머리로
                 dropTimer -= dt;
                 smokeTimer -= dt;
                 if (dropTimer <= 0f) { dropTimer = 0.03f; Drop(at, edge); }
                 if (smokeTimer <= 0f) { smokeTimer = 0.07f; Smoke(at, edge); }
                 return true;
             });
+        }
+
+        // 쓰러진 몸의 키: 그 자리에 있는 적 모델의 렌더러 높이 (고수는 보스보다 작아요)
+        static float BodyHeight(Vector3 at)
+        {
+            AThousandDawns.Enemies.EnemyBrain best = null;
+            float bestD = 2.25f; // 1.5칸 안
+            foreach (var e in FindObjectsByType<AThousandDawns.Enemies.EnemyBrain>(FindObjectsSortMode.None))
+            {
+                var d = e.transform.position - at;
+                d.y = 0f;
+                if (d.sqrMagnitude < bestD) { bestD = d.sqrMagnitude; best = e; }
+            }
+            if (best == null) return BossHeight;
+            float top = float.MinValue;
+            foreach (var r in best.GetComponentsInChildren<Renderer>())
+                if (r.enabled && !(r is ParticleSystemRenderer) && !(r is LineRenderer) && !(r is TrailRenderer) && !(r is SpriteRenderer)) top = Mathf.Max(top, r.bounds.max.y);
+            return top > at.y ? Mathf.Clamp(top - at.y, 1.2f, 3.6f) : BossHeight;
         }
 
         // 먹물 방울: 경계에서 바깥·위로 튀었다가 떨어지며 옅어져요
