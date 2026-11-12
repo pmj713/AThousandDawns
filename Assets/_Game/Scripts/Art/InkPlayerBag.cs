@@ -1,4 +1,3 @@
-using System.Reflection;
 using AThousandDawns.Player;
 using UnityEngine;
 
@@ -7,7 +6,7 @@ namespace AThousandDawns.Art
     // 허리춤 주머니: 회귀록 "주머니" 봉우리를 피운 판(PlayerItems.HasBag)이면 플레이어 왼쪽 허리에 삼베 주머니가 달려요.
     // 칸 수(BagCapacity 4·6·8)만큼 조금씩 커지고, 넣은 기물(BagCount)이 많을수록 불룩해져요. 걷고 달리면 허리 움직임에 끌려 흔들려요 (진자).
     // 뼈 축에 기대지 않게 매 프레임 골반 위치·모델 방향으로 자리를 잡아요. 충돌체 없음.
-    // 값은 이름으로 읽어요 (주머니 코드가 들어오기 전에도 컴파일되게)
+    // 값은 PlayerItems.HasBag · BagCapacity · BagCount를 매 프레임 읽어요
     [RequireComponent(typeof(PlayerController))]
     public class InkPlayerBag : MonoBehaviour
     {
@@ -17,10 +16,6 @@ namespace AThousandDawns.Art
         [SerializeField] Material cord;
         [SerializeField] float baseScale = 0.3f;
         [SerializeField] Vector3 hipOffset = new Vector3(-0.17f, -0.03f, 0.05f);   // 모델 기준 (왼쪽 허리, 살짝 앞)
-
-        static readonly PropertyInfo HasBagProp = typeof(PlayerItems).GetProperty("HasBag");
-        static readonly PropertyInfo CapacityProp = typeof(PlayerItems).GetProperty("BagCapacity");
-        static readonly PropertyInfo CountProp = typeof(PlayerItems).GetProperty("BagCount");
 
         PlayerController _player;
         Animator _animator;
@@ -61,7 +56,7 @@ namespace AThousandDawns.Art
         void LateUpdate()
         {
             var items = _player != null ? _player.Items : null;
-            bool has = items != null && HasBagProp != null && (bool)HasBagProp.GetValue(items);
+            bool has = items != null && items.HasBag;
             if (!has || pouchMesh == null)
             {
                 if (_pivot != null) _pivot.gameObject.SetActive(false);
@@ -78,8 +73,8 @@ namespace AThousandDawns.Art
             if (!shown) return;
 
             // 크기: 칸 4 → 1배, 6 → 1.12배, 8 → 1.24배. 불룩함은 넣은 비율만큼 (천천히 따라가요)
-            int capacity = CapacityProp != null ? (int)CapacityProp.GetValue(items) : 4;
-            int count = CountProp != null ? (int)CountProp.GetValue(items) : 0;
+            int capacity = items.BagCapacity;   // −1은 제한 없음(샌드박스): 기본 크기
+            int count = items.BagCount;
             float size = baseScale * (1f + Mathf.Max(0, capacity - 4) * 0.06f);
             float target = capacity > 0 ? Mathf.Clamp01((float)count / capacity) : 0f;
             _fill = Mathf.MoveTowards(_fill, target, Time.deltaTime * 2f);

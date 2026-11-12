@@ -65,16 +65,22 @@ namespace AThousandDawns.Art
             if (Time.unscaledTime < _nextScan) return;
             _nextScan = Time.unscaledTime + ScanInterval;
             SceneManager.GetActiveScene().GetRootGameObjects(_roots);
+            // 처음 보는 루트만 이름을 봐요 (name은 읽을 때마다 문자열을 새로 만들어서, 씬 루트 수백 개를 0.1초마다 읽으면 쓰레기가 쌓여요)
             foreach (var go in _roots)
             {
-                if (go.name != "Jar" && go.name != "HiddenCrack" && go.name != PouchName && go.name != AnchorName) continue;
+                if (!_seen.Add(go)) continue;
+                string n = go.name;
+                if (n != "Jar" && n != "HiddenCrack" && n != PouchName && n != AnchorName) continue;
                 if (go.transform.Find(Marker) != null) continue;
-                if (go.name == "Jar") DressJar(go);
-                else if (go.name == "HiddenCrack") DressCrack(go);
-                else if (go.name == PouchName) DressPouch(go);
+                if (n == "Jar") DressJar(go);
+                else if (n == "HiddenCrack") DressCrack(go);
+                else if (n == PouchName) DressPouch(go);
                 else DressAnchor(go);
             }
+            if (_seen.Count > _roots.Count * 2 + 64) _seen.RemoveWhere(g => g == null);   // 지워진 것은 가끔 비워요
         }
+
+        readonly HashSet<GameObject> _seen = new HashSet<GameObject>();
 
         // 원래 원기둥(지름 0.55, 높이 0.7)과 같은 자리에 옹기. 부모 크기를 되돌려 메시는 실제 크기로
         void DressJar(GameObject jar)

@@ -45,7 +45,6 @@ namespace AThousandDawns.Art
             public bool Alive;
         }
 
-        readonly HashSet<Damageable> _known = new HashSet<Damageable>();
         readonly List<Splat> _pool = new List<Splat>();
         readonly List<Drop> _drops = new List<Drop>();
         MaterialPropertyBlock _block;
@@ -56,15 +55,16 @@ namespace AThousandDawns.Art
 
         void Awake() => _block = new MaterialPropertyBlock();
 
+        // 맞는 모든 것(적·플레이어)의 피해를 전역 이벤트 하나로 받아요 (예전엔 0.5초마다 씬의 Damageable을 모두 찾아 하나씩 구독했어요)
+        void OnEnable() => Damageable.AnyDamaged += OnDamaged;
+        void OnDisable() => Damageable.AnyDamaged -= OnDamaged;
+
         void Update()
         {
             _scanTimer -= Time.deltaTime;
             if (_scanTimer <= 0f)
             {
                 _scanTimer = 0.5f;
-                _known.RemoveWhere(d => d == null);
-                foreach (var d in FindObjectsByType<Damageable>())
-                    if (_known.Add(d)) d.Damaged += OnDamaged;
                 if (_player == null)
                 {
                     var p = FindFirstObjectByType<PlayerController>();
@@ -108,16 +108,11 @@ namespace AThousandDawns.Art
             }
         }
 
-        void OnDestroy()
-        {
-            foreach (var d in _known)
-                if (d != null) d.Damaged -= OnDamaged;
-        }
 
         void OnDamaged(Damageable target, int amount)
         {
             if (target == null || amount <= 0 || splatMaterial == null) return;
-            bool isPlayer = target.GetComponent<PlayerController>() != null;
+            bool isPlayer = _player != null && target.transform == _player;
             var color = isPlayer ? playerPaint : enemyInk;
             Vector3 p = target.transform.position;
             // 맞은 반대쪽: 플레이어에게서 멀어지는 쪽 (플레이어가 맞으면 무작위)

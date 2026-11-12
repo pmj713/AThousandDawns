@@ -56,18 +56,31 @@ namespace AThousandDawns.Art
             _scan -= Time.deltaTime;
             if (_scan > 0f) return;
             _scan = 0.2f;
-            foreach (var brain in FindObjectsByType<EnemyBrain>(FindObjectsSortMode.None))
+            // 적은 모두 EnemyDirector.Spawn을 거쳐 목록에 들어가요. 씬 전체를 뒤지는 건 감독이 없을 때(샌드박스)와 2초에 한 번만
+            if (_director == null) _director = FindFirstObjectByType<EnemyDirector>();
+            if (_director != null)
+                foreach (var brain in _director.Enemies) Consider(brain);
+            _fullScan -= 0.2f;
+            if (_director == null || _fullScan <= 0f)
             {
-                if (brain == null || _done.Contains(brain)) continue;
-                _done.Add(brain);
-                foreach (var e in entries)
-                    if (e.kind == brain.Kind && e.model != null)
-                    {
-                        Dress(brain, e);
-                        break;
-                    }
+                _fullScan = 2f;
+                foreach (var brain in FindObjectsByType<EnemyBrain>(FindObjectsSortMode.None)) Consider(brain);
+                _done.RemoveWhere(b => b == null);
             }
-            _done.RemoveWhere(b => b == null);
+        }
+
+        EnemyDirector _director;
+        float _fullScan;
+
+        void Consider(EnemyBrain brain)
+        {
+            if (brain == null || !_done.Add(brain)) return;
+            foreach (var e in entries)
+                if (e.kind == brain.Kind && e.model != null)
+                {
+                    Dress(brain, e);
+                    break;
+                }
         }
 
         static void Dress(EnemyBrain brain, Entry e)
@@ -128,7 +141,7 @@ namespace AThousandDawns.Art
         static readonly Color StanceGold = new Color(1f, 0.78f, 0.32f, 1f);
         static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
-        System.Reflection.PropertyInfo _phaseProp;   // 천마: 페이즈별 모습 (Phase가 있고 페이즈 텍스처가 있는 적만)
+        Func<int> _phase;   // 천마: 페이즈별 모습 (Phase가 있고 페이즈 텍스처가 있는 적만). 적마다 한 번 묶은 대리자라 매 프레임 박싱이 없어요
         int _shownPhase = 1;
         float _whirlAngle;
         bool _hasStatue, _statue;   // 석상 나한 (Statue·Wake 동작이 있을 때)
@@ -138,7 +151,7 @@ namespace AThousandDawns.Art
         bool _dragging;
         float _anchorAway;          // 손 소품을 던진 동안 감춰요 (쇠닻 거한 닻 · 철룡 유성추)
         string _thrownProp = "_Weapon_anchor";
-        System.Reflection.PropertyInfo _transitionProp;   // 페이즈 전환 중인지 (IsTransitioning이 있고 전환 자세가 있는 적만)
+        Func<bool> _transitioning;   // 페이즈 전환 중인지 (IsTransitioning이 있고 전환 자세가 있는 적만)
         string _transitionState;
         bool _hasIntro, _introDone;   // 보스·고수 등장 연출 (Intro 상태가 있을 때, 깨어나는 순간 한 번)
         bool _hasSpawn;               // 일반 적 등장: 처음 한 번 웅크렸다 일어서요
@@ -153,7 +166,7 @@ namespace AThousandDawns.Art
         //  - 특성 둘 이상 정예: 특성 색을 섞은 은은한 가장자리 기운이 숨 쉬듯 (하나면 머리 위 표식만)
         static readonly int AuraId = Shader.PropertyToID("_AuraColor");
         static readonly int CrackId = Shader.PropertyToID("_CrackColor");
-        static readonly System.Reflection.PropertyInfo SplitChildProp = typeof(EnemyBrain).GetProperty("IsSplitChild");   // 들어오기 전에도 컴파일되게
+
         static readonly Color SplitCrack = new Color(0.62f, 0.32f, 0.85f, 1f);
         Renderer[] _bodyRenderers;
         Color _aura, _crack;
@@ -189,7 +202,7 @@ namespace AThousandDawns.Art
         {
             _age += Time.deltaTime;
             // 분열해 나온 적: 나온 직후(1초 안)에 한 번 알아봐요
-            if (!_splitShown && SplitChildProp != null && _age < 1f && (bool)SplitChildProp.GetValue(_brain))
+            if (!_splitShown && _age < 1f && _brain.IsSplitChild)
             {
                 _splitShown = true;
                 _animator.transform.localScale *= 0.8f;
@@ -207,7 +220,8 @@ namespace AThousandDawns.Art
             if (_auraTraits >= 2 && !_brain.IsDead)
             {
                 var mix = Color.black;
-                foreach (var t in _brain.Traits) mix += TraitGlow(t);
+                var traits = _brain.Traits;
+                for (int i = 0; i < traits.Count; i++) mix += TraitGlow(traits[i]);   // foreach는 목록 인터페이스라 매 프레임 열거자를 만들어요
                 mix /= _brain.Traits.Count;
                 float strength = (_auraTraits >= 3 ? 0.55f : 0.38f) * (0.75f + 0.25f * Mathf.Sin(Time.time * 2.4f));
                 _aura = new Color(mix.r, mix.g, mix.b, strength);
@@ -227,10 +241,10 @@ namespace AThousandDawns.Art
             _waterGhost = brain as WaterGhostBrain;
             foreach (var st in new[] { "Roar", "Ascend", "ShadowRush" })
                 if (animator.HasState(0, Animator.StringToHash(st))) { _transitionState = st; break; }
-            if (_transitionState != null) _transitionProp = brain.GetType().GetProperty("IsTransitioning");
+            if (_transitionState != null) _transitioning = Getter<bool>(brain, "IsTransitioning");
             _hasIntro = (brain.Rank == EnemyRank.Boss || brain.Rank == EnemyRank.Master) && animator.HasState(0, Animator.StringToHash("Intro"));
             _cultist = brain as CultistBrain;
-            if (Resources.Load<Texture2D>($"{brain.Kind}_P2") != null) _phaseProp = brain.GetType().GetProperty("Phase");
+            if (Resources.Load<Texture2D>($"{brain.Kind}_P2") != null) _phase = Getter<int>(brain, "Phase");
             _brain = brain;
             _animator = animator;
             _modelRest = animator.transform.localRotation;
@@ -245,6 +259,13 @@ namespace AThousandDawns.Art
             foreach (var r in animator.GetComponentsInChildren<Renderer>(true))
                 if (!r.name.Contains("Weapon") && !r.name.Contains("_Prop_")) body.Add(r);
             _bodyRenderers = body.ToArray();
+        }
+
+        // 그 적 클래스에만 있는 속성(Phase, IsTransitioning)을 그 적에게 묶은 대리자로 (없으면 null). 읽을 때 박싱·리플렉션이 없어요
+        static Func<T> Getter<T>(EnemyBrain brain, string property)
+        {
+            var getter = brain.GetType().GetProperty(property)?.GetGetMethod();
+            return getter != null && getter.ReturnType == typeof(T) ? (Func<T>)Delegate.CreateDelegate(typeof(Func<T>), brain, getter) : null;
         }
 
         InkEnemyModels.Move PickMove()
@@ -333,7 +354,7 @@ namespace AThousandDawns.Art
             if (_dragging) { _animator.SetFloat(SpeedId, 0f); return; }
             // 페이즈 전환(IsTransitioning, 무적) 동안의 자세: 철룡은 휘청 물러났다가 포효(Roar), 천마는 무릎 꿇었다 일어서기(Ascend),
             //   혈영검마는 낮게 웅크린 채 버텨요(ShadowRush 첫 자세에서 멈춤). 전환 동작이 없는 적은 그대로
-            if (_transitionProp != null && (bool)_transitionProp.GetValue(_brain) != _roaring)
+            if (_transitioning != null && _transitioning() != _roaring)
             {
                 _roaring = !_roaring;
                 if (_roaring)
@@ -347,9 +368,9 @@ namespace AThousandDawns.Art
             if (_roaring) { _animator.SetFloat(SpeedId, 0f); return; }
             // 천마: 페이즈마다 몸 텍스처를 갈아 끼워요 (1 정갈한 검객 → 2 핏빛 마기 무늬 → 3 몸이 갈라져 금이 붉게 달아올라요).
             //   텍스처는 HeavenlyDemon/Resources/HeavenlyDemon_P2·P3 (Enemies/Tools~/phase_textures.py). 브레인이 들어오기 전에도 컴파일되게 Phase는 이름으로 읽어요
-            if (_phaseProp != null)
+            if (_phase != null)
             {
-                int ph = (int)_phaseProp.GetValue(_brain);
+                int ph = _phase();
                 if (ph != _shownPhase)
                 {
                     _shownPhase = ph;

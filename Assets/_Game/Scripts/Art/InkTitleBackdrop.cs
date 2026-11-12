@@ -40,7 +40,16 @@ namespace AThousandDawns.Art
             TitleScreen.BackdropFx += Draw;
         }
 
-        static (Band[] bands, Glow[] glows) Look(string name) => name switch
+        // 그림마다 한 번만 만들어 두어요 (OnGUI는 한 프레임에 여러 번 불려요)
+        static readonly System.Collections.Generic.Dictionary<string, (Band[] bands, Glow[] glows)> s_looks = new System.Collections.Generic.Dictionary<string, (Band[] bands, Glow[] glows)>();
+
+        static (Band[] bands, Glow[] glows) Look(string name)
+        {
+            if (!s_looks.TryGetValue(name, out var look)) s_looks[name] = look = MakeLook(name);
+            return look;
+        }
+
+        static (Band[] bands, Glow[] glows) MakeLook(string name) => name switch
         {
             "Bg_Bamboo" => (new[]
             {
