@@ -202,13 +202,20 @@ namespace AThousandDawns.Prototype
                 var cell = new Vector2Int(x, y);
                 var rect = new Rect(left + x * (CellSize + Gap), boardTop + y * (CellSize + Gap), CellSize, CellSize);
                 DrawCell(items, cell, rect);
+                if (PadActive && cell == PadCell) _padRect = rect;
             }
 
             DrawBag(items, new Rect(left + boardW + 24f * K, boardTop, BagWidth, boardH));
             DrawDetail(items, new Rect(left, boardTop + boardH + 16f * K, totalW, DetailHeight));
             HandleDrop(items);
+            if (PadActive) AThousandDawns.Fx.InkPadUi.Frame(_padRect, 4f * K); // 게임패드 커서 칸: 먹 붓 테두리
             DrawDragGhost();
+            if (PadActive) // 아래 가운데 붉은 낙관 안내
+                AThousandDawns.Fx.InkPadUi.Hints(UiScale.Width * 0.5f, UiScale.Height - 58f, 34f,
+                    ("A", _dragged != null ? "놓기" : "집기"), ("X", "주머니"), ("Y", "꺼내기"), ("LB·RB", "혈자리"), ("B", _dragged != null ? "취소" : "닫기"));
         }
+
+        Rect _padRect; // 게임패드 커서 칸 (집은 기물이 그 위에 매달려요)
 
         void DrawHeader(PlayerItems items, Rect area)
         {
@@ -427,11 +434,24 @@ namespace AThousandDawns.Prototype
         {
             if (_dragged == null) return;
             var m = Event.current.mousePosition;
+            var matrix = GUI.matrix;
+            if (PadActive) // 게임패드로 집은 기물: 커서 칸 위 붓끝에 매달려 흔들려요
+            {
+                var tip = new Vector2(_padRect.center.x, _padRect.y - 46f * K);
+                m = new Vector2(tip.x, tip.y + 34f * K);
+                float swing = Mathf.Sin(Time.unscaledTime * 3.2f) * 9f;
+                GUIUtility.RotateAroundPivot(swing, tip);
+                var old = GUI.color;
+                GUI.color = new Color(0.1f, 0.09f, 0.08f, 0.9f); // 붓끝에서 내려온 먹 실
+                GUI.DrawTexture(new Rect(tip.x - 1.5f, tip.y, 3f, 12f * K), Texture2D.whiteTexture);
+                GUI.color = old;
+            }
             var rect = new Rect(m.x - 48f * K, m.y - 24f * K, 96f * K, 44f * K);
             Fill(rect, new Color(0.15f, 0.12f, 0.08f, 0.92f));
             Outline(rect, Color.white, 1f);
             GUI.Label(rect, $"<b>{_dragged.Def.name}</b>\n{Colored(_dragged.Def.keyword)}", _cellName);
             ItemIcons.Draw(new Rect(rect.x - 44f * K, rect.y, 44f * K, 44f * K), _dragged.Def);
+            GUI.matrix = matrix;
         }
 
         void DrawDetail(PlayerItems items, Rect area)

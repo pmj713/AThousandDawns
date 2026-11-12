@@ -184,6 +184,7 @@ namespace AThousandDawns.Prototype
                 {
                     Circle(p, size + 18f, Selected);
                     Circle(p, size + 10f, Paper);
+                    if (PadActive) { float s = size + 30f; AThousandDawns.Fx.InkPadUi.Frame(new Rect(p.x - s * 0.5f, p.y - s * 0.5f, s, s), 2f); } // 게임패드로 고른 봉우리: 먹 붓 테두리
                 }
                 if (bloomed) Blossom(p, size);
                 else if (openable) BudShape(p, size, blocker == null ? Bud : BudPoor);
@@ -202,6 +203,7 @@ namespace AThousandDawns.Prototype
 
             DrawDetail();
             if (_noticeTimer > 0f && _notice != null) GUI.Label(new Rect(0, UiScale.Height - 80, UiScale.Width, 40), _notice, _title);
+            else if (PadActive) AThousandDawns.Fx.InkPadUi.Hints(UiScale.Width * 0.5f, UiScale.Height - 60f, 34f, ("A", "피우기"), ("Y", "면벽수련"), ("B", "닫기")); // 붉은 낙관 안내
         }
 
         void DrawDetail()
@@ -293,7 +295,7 @@ namespace AThousandDawns.Prototype
                 int p = Meditation.Points(_meta, art);
                 var row = new Rect(60, y, UiScale.Width - 120, 120);
                 Fill(row, new Color(1f, 1f, 1f, 0.55f));
-                if (PadActive && i == PadRow) Fill(new Rect(row.x - 10, row.y, 10, row.height), new Color(0.75f, 0.15f, 0.1f)); // 게임패드로 고른 심법
+                if (PadActive && i == PadRow) AThousandDawns.Fx.InkPadUi.Frame(row, 4f); // 게임패드로 고른 심법: 먹 붓 테두리
                 GUI.Label(new Rect(row.x + 20, row.y + 10, 260, 40), $"<b>{info.Name}</b> {info.Theme}", _title);
                 GUI.Label(new Rect(row.x + 20, row.y + 60, 300, 30), $"포인트당 {info.PerPoint}", _small);
                 if (GUI.Button(new Rect(row.x + 330, row.y + 30, 56, 56), "−", _button) && Meditation.Add(_meta, art, -1)) _meta.Save();
@@ -311,6 +313,7 @@ namespace AThousandDawns.Prototype
                 }
                 y += 132;
             }
+            if (PadActive) AThousandDawns.Fx.InkPadUi.Hints(UiScale.Width * 0.5f, UiScale.Height - 60f, 34f, ("↑↓", "고르기"), ("←→", "− +"), ("X", "되돌리기"), ("Y", "회귀록"), ("B", "닫기")); // 붉은 낙관 안내
         }
 
         static void Fill(Rect r, Color c)
