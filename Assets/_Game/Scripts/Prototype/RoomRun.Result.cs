@@ -106,6 +106,7 @@ namespace AThousandDawns.Prototype
             _deathTimer = -1f; // 기사회생했으면 다시 처음부터
             if (_phase == Phase.Done && !OffersOpen) // 녹림왕 보상 기물을 고른 뒤
             {
+                if (_record.FinalBoss && !_endingDone && !TickEnding()) return true; // 천마 격파: 엔딩 먼저 (RoomRun.Ending)
                 ShowResult(true);
                 return true;
             }

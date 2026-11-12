@@ -141,5 +141,44 @@ namespace AThousandDawns.Tests
             Assert.AreEqual("천마 격파", run.Result.Where);
             Assert.AreEqual(1, MetaSave.Load().finalBossKills, "유품 가지가 열려요");
         }
+
+        // 천마를 쓰러뜨리고 보상을 고르면 결과 화면 전에 엔딩: 첫 격파는 대사 4줄, 다음부터는 1줄
+        [UnityTest]
+        public IEnumerator 천마_격파_엔딩_첫_격파는_네_줄_다음부터는_한_줄()
+        {
+            for (int kills = 0; kills < 2; kills++)
+            {
+                new MetaSave { finalBossKills = kills }.Save();
+                yield return SceneManager.LoadSceneAsync("Prototype_Run", LoadSceneMode.Single);
+                yield return null;
+                var run = Object.FindFirstObjectByType<RoomRun>();
+                var arena = Object.FindFirstObjectByType<PrototypeArena>();
+                var player = Object.FindFirstObjectByType<PlayerController>();
+                run.SetRegionForTest(3);
+                run.ChooseFork(0);
+                run.EnterRest();
+                var cc = player.GetComponent<CharacterController>();
+                cc.enabled = false;
+                player.transform.position = new Vector3(60f, 0f, 6.6f);
+                cc.enabled = true;
+                yield return WaitUntil(() => arena.Boss != null && arena.Boss.IsAwake, 3f);
+                arena.Boss.Damageable.ApplyHit(999999);
+                yield return WaitUntil(() =>
+                {
+                    if (arena.IsChoosing) arena.Choose(0);
+                    return run.IsEnding;
+                }, 6f);
+                Assert.IsTrue(run.IsEnding, "보상을 고르면 엔딩");
+                Assert.IsFalse(run.IsShowingResult, "결과 화면은 엔딩 뒤");
+                Assert.AreEqual(kills == 0, run.EndingFirst);
+                Assert.AreEqual(kills == 0 ? 4 : 1, run.EndingLineCount);
+                StringAssert.Contains(kills == 0 ? "무릎" : "다시 쓰러진다", run.EndingLine);
+                for (int i = 0; i < run.EndingLineCount; i++) run.AdvanceEnding();
+                Assert.IsFalse(run.IsEnding);
+                yield return WaitUntil(() => run.IsShowingResult, 2f);
+                Assert.IsTrue(run.IsShowingResult, "엔딩이 끝나면 결과 화면");
+                Assert.AreEqual("천마 격파", run.Result.Where);
+            }
+        }
     }
 }

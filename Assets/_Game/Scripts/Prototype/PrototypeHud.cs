@@ -50,6 +50,7 @@ namespace AThousandDawns.Prototype
             DrawFork();
             DrawShop();
             DrawEvent();
+            DrawEnding(); // 천마 격파 엔딩 (결과 화면 전)
             DrawResult();
             DrawOffer(); // 기물 카드는 맨 위에
             DrawDiscard(); // 둘 곳이 없을 때 버릴 기물 고르기는 그보다 위에
