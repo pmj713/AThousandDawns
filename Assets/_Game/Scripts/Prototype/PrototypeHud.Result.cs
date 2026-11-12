@@ -141,6 +141,16 @@ namespace AThousandDawns.Prototype
                 if (line.count <= 0f) continue;
                 if (elapsed < shown * ResultLineDelay) break; // 아직 차오르지 않은 줄
                 shown++;
+                if (line.label.StartsWith("업보")) // 업보 보너스: 붉은 붓 획 위에 붉은 글자로 다른 줄과 구분해요
+                {
+                    AThousandDawns.Fx.InkHud.KarmaRow(new Rect(x - 12f, y - 2f, w + 24f, 34f), elapsed - (shown - 1) * ResultLineDelay);
+                    GUI.Label(new Rect(x, y, w * 0.5f, 30f), $"<color=#ff8a7a><b>{line.label}</b></color>", _label);
+                    GUI.Label(new Rect(x + w * 0.45f, y, w * 0.2f, 30f), $"<color=#ff8a7a>{line.count:0}</color>", _label);
+                    GUI.Label(new Rect(x + w * 0.68f, y, w * 0.32f, 30f), $"<color=#ff6b5b><b>기억 +{line.memory:0.#}</b></color>", _label);
+                    memory += line.memory;
+                    y += 32f;
+                    continue;
+                }
                 GUI.Label(new Rect(x, y, w * 0.5f, 30f), line.label, _label);
                 GUI.Label(new Rect(x + w * 0.45f, y, w * 0.2f, 30f), $"{line.count:0}", _label);
                 GUI.Label(new Rect(x + w * 0.68f, y, w * 0.32f, 30f), $"<color=#ffd27a>기억 +{line.memory:0.#}</color>", _label);

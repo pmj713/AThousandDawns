@@ -11,14 +11,15 @@ namespace AThousandDawns.Fx
     //       그림 칸은 InkEventFx.Shake(칸)으로 흔들어 그려요.
     public static class InkEventFx
     {
-        public const string BloodSeep = "blood_seep", AltarMelt = "altar_melt", AltarBreak = "altar_break";
+        public const string BloodSeep = "blood_seep", AltarMelt = "altar_melt", AltarBreak = "altar_break",
+            RelicStamp = "relic_stamp", RelicWipe = "relic_wipe";
 
         static string _kind, _eventId;
         static float _start;
         static Texture2D _icon;
         static int _seed;
         static Matrix4x4 _matrix; // 돌린 뒤 되돌릴 HUD 배율
-        static Texture2D _splash, _drop, _flame, _rock, _stroke, _blot;
+        static Texture2D _splash, _drop, _flame, _rock, _stroke, _blot, _seal;
         static bool _loaded;
 
         public static void Play(string kind, string eventId, Texture2D icon = null)
@@ -57,6 +58,8 @@ namespace AThousandDawns.Fx
                 case BloodSeep: Seep(r, t, rand); break;
                 case AltarMelt: Melt(r, t, rand); break;
                 case AltarBreak: Break(r, t, rand); break;
+                case RelicStamp: Stamp(r, t, true); break;
+                case RelicWipe: Stamp(r, t, false); break;
             }
             GUI.EndGroup();
             GUI.matrix = oldMatrix;
@@ -163,6 +166,50 @@ namespace AThousandDawns.Fx
                 }
         }
 
+        // ── 유품록: 고르면 장부에 기물이 먹으로 그려지고 붉은 낙관이 쾅 찍혀요. 빼면 낙관 위로 먹 획이 그어지며 지워져요
+        static void Stamp(Rect r, float t, bool picked)
+        {
+            var c = new Vector2(r.width * 0.5f, r.height * 0.58f); // 펼친 장부 가운데
+            float size = r.height * 0.3f;
+            float fade = 1f - Smooth((t - (picked ? 1.3f : 0.9f)) / 0.5f);
+            if (fade <= 0f) return;
+            if (_icon != null) // 기물: 먹이 번지듯 나타나요 (뺄 때는 이미 있던 채로)
+            {
+                float k = picked ? Smooth(t / 0.25f) : 1f;
+                Tint(new Color(0.15f, 0.12f, 0.1f), 0.9f * k * fade * (picked ? 1f : 1f - Smooth((t - 0.25f) / 0.5f)));
+                float s = size * Mathf.Lerp(1.15f, 1f, k);
+                GUI.DrawTexture(new Rect(c.x - s * 0.5f, c.y - s * 0.5f, s, s), _icon, ScaleMode.ScaleToFit);
+            }
+            if (_seal != null)
+            {
+                var at = c + new Vector2(size * 0.42f, size * 0.3f); // 낙관은 오른쪽 아래 귀퉁이
+                float hit = picked ? Smooth((t - 0.2f) / 0.12f) : 1f;
+                float s = size * 0.42f * (picked ? Mathf.Lerp(1.8f, 1f, hit) : 1f);
+                float a = (picked ? hit : 1f - Smooth((t - 0.2f) / 0.45f)) * fade;
+                Tint(Color.white, a);
+                GUIUtility.RotateAroundPivot(-8f, at);
+                GUI.DrawTexture(new Rect(at.x - s * 0.5f, at.y - s * 0.5f, s, s), _seal, ScaleMode.ScaleToFit);
+                GUI.matrix = _matrix;
+                if (picked && t > 0.32f && t < 0.6f && _blot != null) // 찍힌 순간 붉은 인주가 튀어요
+                {
+                    float k = (t - 0.32f) / 0.28f;
+                    Tint(new Color(0.8f, 0.1f, 0.08f), 0.5f * (1f - k));
+                    float bs = size * 0.42f * (1f + k * 0.8f);
+                    GUI.DrawTexture(new Rect(at.x - bs * 0.5f, at.y - bs * 0.5f, bs, bs), _blot, ScaleMode.StretchToFill);
+                }
+            }
+            if (!picked && _stroke != null) // 먹 획이 왼쪽 위에서 오른쪽 아래로 그어져요
+            {
+                float k = Smooth(t / 0.25f);
+                var from = c + new Vector2(-size * 0.6f, -size * 0.45f);
+                float len = size * 1.7f;
+                Tint(new Color(0.08f, 0.06f, 0.05f), 0.95f * fade);
+                GUIUtility.RotateAroundPivot(32f, from);
+                GUI.DrawTextureWithTexCoords(new Rect(from.x, from.y - 14f, len * k, 28f), _stroke, new Rect(0f, 0f, k, 1f));
+                GUI.matrix = _matrix;
+            }
+        }
+
         // ── 마교 제단 (부순다): 먹 금이 가고 돌 조각이 튀어 떨어져요
         static void Break(Rect r, float t, System.Random rand)
         {
@@ -236,6 +283,7 @@ namespace AThousandDawns.Fx
             _rock = Resources.Load<Texture2D>("TempleFx/Rock");
             _stroke = Resources.Load<Texture2D>("HudArt/HpStroke");
             _blot = Resources.Load<Texture2D>("HudArt/Blot");
+            _seal = Resources.Load<Texture2D>("TitleArt/Seal");
         }
     }
 }
