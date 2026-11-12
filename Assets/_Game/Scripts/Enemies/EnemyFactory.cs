@@ -212,6 +212,12 @@ namespace AThousandDawns.Enemies
                 BodyPosition = new Vector3(0f, 0.95f, 0f), BodyScale = new Vector3(0.7f, 0.95f, 0.7f),
                 MarkPosition = new Vector3(0.3f, 1.0f, 0.5f), MarkScale = new Vector3(0.05f, 0.05f, 1.3f), // 가는 장검
             },
+            EnemyKind.HeavenlyDemon => new Shape
+            {
+                Name = "천마", Radius = 0.6f, Height = 2.3f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 1.15f, 0f), BodyScale = new Vector3(0.9f, 1.15f, 0.9f),
+                MarkPosition = new Vector3(0.4f, 1.2f, 0.6f), MarkScale = new Vector3(0.08f, 0.08f, 1.6f), // 장검
+            },
             _ => new Shape
             {
                 Name = "산적 졸개", Radius = 0.35f, Height = 1.6f, Primitive = PrimitiveType.Capsule,
@@ -254,6 +260,7 @@ namespace AThousandDawns.Enemies
             EnemyKind.DemonGuard => Tinted(kind, v.shield != null ? v.shield : v.grunt, new Color(0.2f, 0.2f, 0.25f)),
             EnemyKind.BloodBomber => Tinted(kind, v.bomber != null ? v.bomber : v.grunt, new Color(0.7f, 0.2f, 0.18f)),
             EnemyKind.BloodShadow => Tinted(kind, v.qingzhu != null ? v.qingzhu : v.grunt, new Color(0.55f, 0.1f, 0.12f)),
+            EnemyKind.HeavenlyDemon => Tinted(kind, v.nokrim != null ? v.nokrim : v.grunt, new Color(0.15f, 0.08f, 0.1f)),
             _ => v.grunt,
         };
 
@@ -342,6 +349,7 @@ namespace AThousandDawns.Enemies
                 EnemyKind.DemonGuard => root.AddComponent<DemonGuardBrain>(),
                 EnemyKind.BloodBomber => root.AddComponent<BloodBomberBrain>(),
                 EnemyKind.BloodShadow => root.AddComponent<BloodShadowBrain>(),
+                EnemyKind.HeavenlyDemon => root.AddComponent<HeavenlyDemonBrain>(),
                 _ => root.AddComponent<GruntBrain>(),
             };
             if (brain is ShieldBrain shieldBrain) shieldBrain.SetShieldVisual(mark.transform);

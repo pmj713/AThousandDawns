@@ -4,6 +4,13 @@
     public sealed partial class PlayerController
     {
         public float RunMoveBonus { get; set; }      // 산신당 축복: 이동속도 +10% (이번 지역)
+        public float RunMaxHealthCut { get; private set; } // 피의 연못: 이번 판 동안 최대 체력 −%
+
+        public void CutMaxHealth(float ratio)
+        {
+            RunMaxHealthCut = UnityEngine.Mathf.Clamp(RunMaxHealthCut + ratio, 0f, 0.9f);
+            RefreshItems();
+        }
         public float RunGaugeBonus { get; set; }     // 산신당 축복: 기세 충전 +15% (이번 지역)
         public float RunTakenIncrease { get; set; }  // 산신의 노여움: 받는 피해 +15% (이번 층)
 

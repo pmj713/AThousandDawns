@@ -47,6 +47,7 @@ namespace AThousandDawns.Prototype
         public int newItems;
         public int almsCurse;   // 시주함을 턴 뒤 다음 싸우는 방에 붙는 망령 수
         public bool ferry;     // 뱃사공: 다음 층 지도가 다 보여요
+        public bool heroShield; // 무림맹 고수를 구함: 천마전을 보호막 두르고 시작
         public int[] kills = new int[0];
 
         // 플레이어
@@ -55,7 +56,7 @@ namespace AThousandDawns.Prototype
         public float health, gauge;
         public int potions, gongryeok, skill, level, xp, pending;
         public bool revive;
-        public float moveBonus, gaugeBonus, takenIncrease;
+        public float moveBonus, gaugeBonus, takenIncrease, maxHealthCut;
 
         // 경맥도
         public int boardWidth, boardHeight;

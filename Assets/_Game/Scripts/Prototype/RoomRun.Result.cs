@@ -123,6 +123,7 @@ namespace AThousandDawns.Prototype
             meta.runs++;
             meta.bestFloors = Mathf.Max(meta.bestFloors, _record.FloorsCleared);
             meta.bossKills += _record.Kills[(int)EnemyRank.Boss];
+            if (_record.FinalBoss) meta.finalBossKills++; // 천마 격파
             meta.Save();
             RunSave.Delete(); // 판이 끝났으니 이어할 것도 없어요
             _saveDirty = false;
@@ -130,7 +131,7 @@ namespace AThousandDawns.Prototype
             Result = new ResultView
             {
                 Victory = victory,
-                Where = victory ? $"{RegionName} 돌파" : $"{WhereText()} · {DeathCause()}",
+                Where = victory ? (_record.FinalBoss ? "천마 격파" : $"{RegionName} 돌파") : $"{WhereText()} · {DeathCause()}",
                 Lines = _record.Lines(weights),
                 Memory = memory,
                 StoredMemory = meta.memory,

@@ -4709,3 +4709,251 @@ MonoBehaviour:
     value: 0.3
     unit: 
     note: "\uD608\uC601 \uC794\uC0C1: \uC794\uC0C1 \uD558\uB098 \uD53C\uD574 (\uCD08\uC2DD \uD53C\uD574 \uB300\uBE44)"
+  - key: heavenlydemon.hp
+    value: 3150
+    unit: 
+    note: "\uCC9C\uB9C8 \uCCB4\uB825 (\uCC9C\uB9C8\uCD1D \xD74.5 = 14175)"
+  - key: heavenlydemon.atk
+    value: 25
+    unit: 
+    note: "\uCC9C\uB9C8 \uACF5\uACA9 (\xD72.0 = 50)"
+  - key: heavenlydemon.toughness
+    value: 6
+    unit: 
+    note: "\uCC9C\uB9C8 \uAC15\uC778\uD568"
+  - key: heavenlydemon.defense
+    value: 0.2
+    unit: 
+    note: "\uCC9C\uB9C8 \uBC29\uC5B4"
+  - key: heavenlydemon.move_speed
+    value: 3.5
+    unit: cell/s
+    note: "\uCC9C\uB9C8 \uC774\uB3D9\uC18D\uB3C4"
+  - key: heavenlydemon.recovery
+    value: 0.8
+    unit: s
+    note: "\uCC9C\uB9C8 \uD328\uD134 \uBE48\uD2C8"
+  - key: heavenlydemon.phase2_hp_ratio
+    value: 0.66
+    unit: 
+    note: "\uCC9C\uB9C8 2\uD398\uC774\uC988 (\uCC9C\uB9C8\uAD70\uB9BC) \uCCB4\uB825"
+  - key: heavenlydemon.phase3_hp_ratio
+    value: 0.33
+    unit: 
+    note: "\uCC9C\uB9C8 3\uD398\uC774\uC988 (\uD574\uCCB4\uB300\uBC95) \uCCB4\uB825"
+  - key: heavenlydemon.transition_time
+    value: 2
+    unit: s
+    note: "\uCC9C\uB9C8 \uD398\uC774\uC988 \uC804\uD658 (\uBB34\uC801)"
+  - key: heavenlydemon.slash_windup
+    value: 0.6
+    unit: s
+    note: "\uCC9C\uB9C8\uC77C\uAC80 \uC608\uACE0"
+  - key: heavenlydemon.slash_radius
+    value: 3
+    unit: cell
+    note: "\uCC9C\uB9C8\uC77C\uAC80 \uBC18\uACBD"
+  - key: heavenlydemon.slash_angle
+    value: 140
+    unit: deg
+    note: "\uCC9C\uB9C8\uC77C\uAC80 \uAC01\uB3C4"
+  - key: heavenlydemon.p2_slash_angle
+    value: 220
+    unit: deg
+    note: "\uCC9C\uB9C8\uAD70\uB9BC \uAC01\uB3C4 (2\uD398\uC774\uC988\uBD80\uD130)"
+  - key: heavenlydemon.slash_ratio
+    value: 1
+    unit: 
+    note: "\uCC9C\uB9C8\uC77C\uAC80 \uD53C\uD574 \uBC30\uC728"
+  - key: heavenlydemon.cross_windup
+    value: 0.8
+    unit: s
+    note: "\uCC9C\uB9C8 \uC2ED\uC790 \uAC80\uAE30 \uC608\uACE0"
+  - key: heavenlydemon.cross_range
+    value: 10
+    unit: cell
+    note: "\uCC9C\uB9C8 \uC2ED\uC790 \uAC80\uAE30 \uAC70\uB9AC"
+  - key: heavenlydemon.cross_speed
+    value: 10
+    unit: cell/s
+    note: "\uCC9C\uB9C8 \uC2ED\uC790 \uAC80\uAE30 \uC18D\uB3C4"
+  - key: heavenlydemon.cross_ratio
+    value: 0.7
+    unit: 
+    note: "\uCC9C\uB9C8 \uC2ED\uC790 \uAC80\uAE30 \uD53C\uD574 \uBC30\uC728"
+  - key: heavenlydemon.miasma_interval
+    value: 10
+    unit: s
+    note: "\uCC9C\uB9C8 \uB9C8\uAE30 \uC7A5\uD310 \uAC04\uACA9"
+  - key: heavenlydemon.miasma_windup
+    value: 0.8
+    unit: s
+    note: "\uCC9C\uB9C8 \uB9C8\uAE30 \uC7A5\uD310 \uC608\uACE0"
+  - key: heavenlydemon.miasma_radius
+    value: 1.5
+    unit: cell
+    note: "\uCC9C\uB9C8 \uB9C8\uAE30 \uC7A5\uD310 \uBC18\uACBD (\uC138 \uACF3)"
+  - key: heavenlydemon.miasma_life
+    value: 5
+    unit: s
+    note: "\uCC9C\uB9C8 \uB9C8\uAE30 \uC7A5\uD310 \uC2DC\uAC04"
+  - key: heavenlydemon.miasma_ratio
+    value: 0.3
+    unit: 
+    note: "\uCC9C\uB9C8 \uB9C8\uAE30 \uC7A5\uD310 \uD53C\uD574 \uBC30\uC728 (0.5\uCD08\uB9C8\uB2E4)"
+  - key: heavenlydemon.miasma_slow
+    value: 0.2
+    unit: 
+    note: "\uCC9C\uB9C8 \uB9C8\uAE30 \uC7A5\uD310 \uC548 \uC774\uB3D9\uC18D\uB3C4 \uAC10\uC18C"
+  - key: heavenlydemon.grasp_far
+    value: 6
+    unit: cell
+    note: "\uCC9C\uB9C8 \uB9C8\uAE30 \uC190\uC544\uADC0: \uD50C\uB808\uC774\uC5B4\uAC00 \uC774\uBCF4\uB2E4 \uBA40\uB9AC"
+  - key: heavenlydemon.grasp_delay
+    value: 2
+    unit: s
+    note: "\uCC9C\uB9C8 \uB9C8\uAE30 \uC190\uC544\uADC0: \uBA40\uB9AC \uC788\uB294 \uC2DC\uAC04\uC774 \uC774\uB9CC\uD07C\uC774\uBA74"
+  - key: heavenlydemon.grasp_windup
+    value: 0.7
+    unit: s
+    note: "\uCC9C\uB9C8 \uB9C8\uAE30 \uC190\uC544\uADC0 \uC608\uACE0 (\uC9C1\uC120)"
+  - key: heavenlydemon.grasp_range
+    value: 10
+    unit: cell
+    note: "\uCC9C\uB9C8 \uB9C8\uAE30 \uC190\uC544\uADC0 \uAE38\uC774"
+  - key: heavenlydemon.grasp_width
+    value: 1.2
+    unit: cell
+    note: "\uCC9C\uB9C8 \uB9C8\uAE30 \uC190\uC544\uADC0 \uD3ED"
+  - key: heavenlydemon.grasp_ratio
+    value: 0.6
+    unit: 
+    note: "\uCC9C\uB9C8 \uB9C8\uAE30 \uC190\uC544\uADC0 \uD53C\uD574 \uBC30\uC728 (\uB04C\uB824\uC640 \uBC14\uB85C \uC77C\uAC80)"
+  - key: heavenlydemon.grasp_stop
+    value: 2
+    unit: cell
+    note: "\uCC9C\uB9C8 \uB9C8\uAE30 \uC190\uC544\uADC0: \uB04C\uB824\uC640 \uBA48\uCD94\uB294 \uAC70\uB9AC"
+  - key: heavenlydemon.p2_phantom_side
+    value: 3
+    unit: cell
+    note: "\uCC9C\uB9C8\uAD70\uB9BC \uD658\uC601: \uD50C\uB808\uC774\uC5B4 \uC591\uC606 \uAC70\uB9AC"
+  - key: heavenlydemon.p2_phantom_delay
+    value: 0.5
+    unit: s
+    note: "\uCC9C\uB9C8\uAD70\uB9BC \uD658\uC601\uC774 \uBCA0\uAE30\uAE4C\uC9C0"
+  - key: heavenlydemon.p2_phantom_ratio
+    value: 0.6
+    unit: 
+    note: "\uCC9C\uB9C8\uAD70\uB9BC \uD658\uC601 \uD53C\uD574 \uBC30\uC728"
+  - key: heavenlydemon.p2_pull_interval
+    value: 12
+    unit: s
+    note: "\uCC9C\uB9C8 \uD761\uC778 \uAC04\uACA9 (2\uD398\uC774\uC988\uBD80\uD130)"
+  - key: heavenlydemon.p2_pull_windup
+    value: 1
+    unit: s
+    note: "\uCC9C\uB9C8 \uD761\uC778 \uC608\uACE0"
+  - key: heavenlydemon.p2_pull_time
+    value: 2
+    unit: s
+    note: "\uCC9C\uB9C8 \uD761\uC778: \uB04C\uC5B4\uB2F9\uAE30\uB294 \uC2DC\uAC04"
+  - key: heavenlydemon.p2_pull_radius
+    value: 6
+    unit: cell
+    note: "\uCC9C\uB9C8 \uD761\uC778 \uBC94\uC704"
+  - key: heavenlydemon.p2_pull_speed
+    value: 2.5
+    unit: cell/s
+    note: "\uCC9C\uB9C8 \uD761\uC778 \uC18D\uB3C4 (\uB300\uC2DC\uBA74 \uC548 \uB04C\uB9BC)"
+  - key: heavenlydemon.p2_pull_burst
+    value: 2
+    unit: cell
+    note: "\uCC9C\uB9C8 \uD761\uC778 \uB05D \uD3ED\uBC1C \uBC18\uACBD"
+  - key: heavenlydemon.p2_pull_ratio
+    value: 1.2
+    unit: 
+    note: "\uCC9C\uB9C8 \uD761\uC778 \uD3ED\uBC1C \uD53C\uD574 \uBC30\uC728"
+  - key: heavenlydemon.p3_rain_interval
+    value: 8
+    unit: s
+    note: "\uCC9C\uB9C8 \uAC80\uBE44 \uAC04\uACA9 (3\uD398\uC774\uC988)"
+  - key: heavenlydemon.p3_rain_windup
+    value: 1
+    unit: s
+    note: "\uCC9C\uB9C8 \uAC80\uBE44 \uC608\uACE0"
+  - key: heavenlydemon.p3_rain_time
+    value: 1.5
+    unit: s
+    note: "\uCC9C\uB9C8 \uAC80\uBE44 \uC2DC\uAC04"
+  - key: heavenlydemon.p3_rain_count
+    value: 12
+    unit: "\uC790\uB8E8"
+    note: "\uCC9C\uB9C8 \uAC80\uBE44 \uAC80 \uC218"
+  - key: heavenlydemon.p3_rain_fall
+    value: 0.6
+    unit: s
+    note: "\uCC9C\uB9C8 \uAC80\uBE44 \uAC80 \uD558\uB098 \uC608\uACE0"
+  - key: heavenlydemon.p3_rain_radius
+    value: 1.2
+    unit: cell
+    note: "\uCC9C\uB9C8 \uAC80\uBE44 \uAC80 \uD558\uB098 \uBC18\uACBD"
+  - key: heavenlydemon.p3_rain_ratio
+    value: 0.6
+    unit: 
+    note: "\uCC9C\uB9C8 \uAC80\uBE44 \uD53C\uD574 \uBC30\uC728"
+  - key: heavenlydemon.p3_safe_start
+    value: 11
+    unit: cell
+    note: "\uD574\uCCB4\uB300\uBC95: \uCC98\uC74C \uC548\uC804 \uBC18\uACBD (\uBC29 \uAC00\uC7A5\uC790\uB9AC\uBD80\uD130 \uB9C8\uAE30)"
+  - key: heavenlydemon.p3_safe_min
+    value: 5
+    unit: cell
+    note: "\uD574\uCCB4\uB300\uBC95: \uAC00\uC7A5 \uC881\uC740 \uC548\uC804 \uBC18\uACBD"
+  - key: heavenlydemon.p3_safe_step
+    value: 1
+    unit: cell
+    note: "\uD574\uCCB4\uB300\uBC95: \uD55C \uBC88\uC5D0 \uC904\uC5B4\uB4DC\uB294 \uBC18\uACBD"
+  - key: heavenlydemon.p3_safe_interval
+    value: 3
+    unit: s
+    note: "\uD574\uCCB4\uB300\uBC95: \uC904\uC5B4\uB4DC\uB294 \uAC04\uACA9"
+  - key: heavenlydemon.p3_safe_ratio
+    value: 0.2
+    unit: 
+    note: "\uD574\uCCB4\uB300\uBC95: \uB9C8\uAE30 \uC18D \uD53C\uD574 \uBC30\uC728 (0.5\uCD08\uB9C8\uB2E4)"
+  - key: heavenlydemon.p3_safe_tick
+    value: 0.5
+    unit: s
+    note: "\uD574\uCCB4\uB300\uBC95: \uB9C8\uAE30 \uC18D \uD53C\uD574 \uAC04\uACA9"
+  - key: event.blood_pool_cut
+    value: 0.1
+    unit: 
+    note: "\uCC9C\uB9C8\uCD1D \uD53C\uC758 \uC5F0\uBABB: \uC774\uBC88 \uD310 \uB3D9\uC548 \uCD5C\uB300 \uCCB4\uB825 \u2212"
+  - key: event.blood_pool_grade.common
+    value: 0
+    unit: 
+    note: "\uD53C\uC758 \uC5F0\uBABB \uBCF4\uC0C1 \uC77C\uBC18 \uD655\uB960 (\uC804\uC124\uC774 \uC798 \uB098\uC634)"
+  - key: event.blood_pool_grade.uncommon
+    value: 0.3
+    unit: 
+    note: "\uD53C\uC758 \uC5F0\uBABB \uBCF4\uC0C1 \uACE0\uAE09 \uD655\uB960"
+  - key: event.blood_pool_grade.rare
+    value: 0.4
+    unit: 
+    note: "\uD53C\uC758 \uC5F0\uBABB \uBCF4\uC0C1 \uD76C\uADC0 \uD655\uB960"
+  - key: event.blood_pool_grade.legendary
+    value: 0.3
+    unit: 
+    note: "\uD53C\uC758 \uC5F0\uBABB \uBCF4\uC0C1 \uC804\uC124 \uD655\uB960"
+  - key: event.hero_shield
+    value: 0.2
+    unit: 
+    note: "\uCC9C\uB9C8\uCD1D \uAC07\uD78C \uBB34\uB9BC\uB9F9 \uACE0\uC218: \uAD6C\uD558\uBA74 \uCC9C\uB9C8\uC804 \uC2DC\uC791 \uBCF4\uD638\uB9C9 (\uCD5C\uB300 \uCCB4\uB825 \uBE44\uC728)"
+  - key: event.altar_tracking
+    value: 3
+    unit: 
+    note: "\uCC9C\uB9C8\uCD1D \uB9C8\uAD50 \uC81C\uB2E8 \uBD80\uC218\uAE30: \uCD94\uC801\uB3C4 +"
+  - key: event.altar_silver
+    value: 120
+    unit: "\uC740\uC790"
+    note: "\uCC9C\uB9C8\uCD1D \uB9C8\uAD50 \uC81C\uB2E8 \uBD80\uC218\uAE30: \uC740\uC790 +"
