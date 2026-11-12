@@ -59,7 +59,7 @@ namespace AThousandDawns.Enemies
             Sfx.Stop(_horn, 0.3f); // 소환하면 나팔도 끝
             if (!Director.TryUseSummon()) return;
             for (int i = 0; i < _summonCount; i++)
-                Director.Spawn(SummonKind, Director.FindFreeSpot(transform.position, CallRadius + 0.3f));
+                Director.SpawnSummon(SummonKind, Director.FindFreeSpot(transform.position, CallRadius + 0.3f));
         }
 
         protected override void TickActive(float dt) { }

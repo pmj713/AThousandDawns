@@ -42,6 +42,7 @@ namespace AThousandDawns.Enemies
             && kind != EnemyKind.WaterGhost // 숨는 수귀는 정예가 아니에요 (머리 위 표시가 보여서)
             && !(kind == EnemyKind.Shield && trait == EliteTrait.IronShirt)
             && !(kind == EnemyKind.Rattan && trait == EliteTrait.IronShirt)
+            && !(kind == EnemyKind.DemonGuard && trait == EliteTrait.IronShirt)
             && !(kind == EnemyKind.Bomber && trait == EliteTrait.Rejuvenation);
 
         // 만들어진 바로 뒤에 불러요 (EnemyDirector.Spawn 다음)

@@ -9,7 +9,7 @@ namespace AThousandDawns.Prototype
     // 지역 배율 (몬스터 시트 15~17행): 적 체력 · 공격 × 배율 (일반 적 · 살수 · 고수 · 보스 모두).
     // 폐사찰 일반 적은 RoomBudget.Temple (망령·석상 나한·목탁승·파계승·등불 귀신).
     // 장강 수채 (몬스터 시트 17행: 체력 ×3.0 · 공격 ×1.6, 은자 탭 6행: 방당 26)의 일반 적은 RoomBudget.River (수적 졸개·작살수·쇠닻 거한·등패수·수귀·깃발수). 고수는 탁랑객, 보스는 수채주 철룡이에요.
-    // 천마총 (몬스터 시트 18행: 체력 ×4.5 · 공격 ×2.0, 은자 탭 7행: 방당 30): 일반 적·고수·보스가 생기기 전까지 장강 것을 천마총 배율로 써요.
+    // 천마총 (몬스터 시트 18행: 체력 ×4.5 · 공격 ×2.0, 은자 탭 7행: 방당 30): 일반 적은 RoomBudget.Tomb (마교도·혈궁수·혈인·천마 근위·혈폭자). 고수·보스는 생기기 전까지 장강 것을 천마총 배율로 써요.
     // 동시 근접 공격 (몬스터 B85): 2명에 지역마다 +1, 최대 4명.
     public sealed partial class RoomRun
     {
@@ -53,6 +53,7 @@ namespace AThousandDawns.Prototype
         void ApplyRegionRules()
         {
             if (director != null && director.MeleeTokens != null) director.MeleeTokens.Capacity = MeleeTokensForRegion;
+            if (director != null) director.SummonScale = ScaleForRegion; // 적이 부른 부하도 지역 배율
         }
 
         // 그 지역 등급표 (등급확률 시트 11~15행). 짙은 길은 다음 지역 표 (천마총 짙은 길은 전용 표)

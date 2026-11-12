@@ -175,6 +175,37 @@ namespace AThousandDawns.Enemies
                 BodyPosition = new Vector3(0f, 1.4f, 0f), BodyScale = new Vector3(1.7f, 1.4f, 1.5f), // 철갑 거구
                 MarkPosition = new Vector3(0.9f, 1.2f, 0.6f), MarkScale = new Vector3(0.5f, 0.5f, 0.5f), // 유성추
             },
+            // ── 천마총
+            EnemyKind.Cultist => new Shape
+            {
+                Name = "마교도", Radius = 0.35f, Height = 1.7f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.85f, 0f), BodyScale = new Vector3(0.7f, 0.85f, 0.7f),
+                MarkPosition = new Vector3(0.3f, 0.9f, 0.4f), MarkScale = new Vector3(0.1f, 0.06f, 0.8f), // 곡도
+            },
+            EnemyKind.BloodArcher => new Shape
+            {
+                Name = "혈궁수", Radius = 0.35f, Height = 1.7f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.85f, 0f), BodyScale = new Vector3(0.6f, 0.85f, 0.6f),
+                MarkPosition = new Vector3(-0.3f, 1.0f, 0.3f), MarkScale = new Vector3(0.06f, 1.2f, 0.06f), // 붉은 활
+            },
+            EnemyKind.BloodShaman => new Shape
+            {
+                Name = "혈인", Radius = 0.35f, Height = 1.7f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.85f, 0f), BodyScale = new Vector3(0.65f, 0.85f, 0.65f),
+                MarkPosition = new Vector3(0f, 1.4f, 0.35f), MarkScale = new Vector3(0.35f, 0.35f, 0.1f), // 피 부적
+            },
+            EnemyKind.DemonGuard => new Shape
+            {
+                Name = "천마 근위", Radius = 0.45f, Height = 1.9f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.95f, 0f), BodyScale = new Vector3(0.85f, 0.95f, 0.85f),
+                MarkPosition = new Vector3(0f, 0.95f, 0.55f), MarkScale = new Vector3(1.0f, 1.3f, 0.12f), // 철판 방패
+            },
+            EnemyKind.BloodBomber => new Shape
+            {
+                Name = "혈폭자", Radius = 0.45f, Height = 1.6f, Primitive = PrimitiveType.Sphere,
+                BodyPosition = new Vector3(0f, 0.8f, 0f), BodyScale = new Vector3(1.0f, 0.9f, 1.0f), // 부푼 몸
+                MarkPosition = new Vector3(0.35f, 1.1f, 0.3f), MarkScale = new Vector3(0.3f, 0.3f, 0.3f), // 핏덩이
+            },
             _ => new Shape
             {
                 Name = "산적 졸개", Radius = 0.35f, Height = 1.6f, Primitive = PrimitiveType.Capsule,
@@ -211,6 +242,11 @@ namespace AThousandDawns.Enemies
             EnemyKind.FlagBearer => Tinted(kind, v.horn != null ? v.horn : v.grunt, new Color(0.6f, 0.3f, 0.25f)),
             EnemyKind.Takrang => Tinted(kind, v.qingzhu != null ? v.qingzhu : v.grunt, new Color(0.3f, 0.45f, 0.5f)),
             EnemyKind.IronDragon => Tinted(kind, v.nokrim != null ? v.nokrim : v.grunt, new Color(0.3f, 0.32f, 0.38f)),
+            EnemyKind.Cultist => Tinted(kind, v.grunt, new Color(0.25f, 0.2f, 0.22f)), // 천마총: 그림이 생기기 전까지 색만
+            EnemyKind.BloodArcher => Tinted(kind, v.archer != null ? v.archer : v.grunt, new Color(0.55f, 0.15f, 0.15f)),
+            EnemyKind.BloodShaman => Tinted(kind, v.horn != null ? v.horn : v.grunt, new Color(0.5f, 0.1f, 0.12f)),
+            EnemyKind.DemonGuard => Tinted(kind, v.shield != null ? v.shield : v.grunt, new Color(0.2f, 0.2f, 0.25f)),
+            EnemyKind.BloodBomber => Tinted(kind, v.bomber != null ? v.bomber : v.grunt, new Color(0.7f, 0.2f, 0.18f)),
             _ => v.grunt,
         };
 
@@ -293,6 +329,11 @@ namespace AThousandDawns.Enemies
                 EnemyKind.FlagBearer => root.AddComponent<FlagBearerBrain>(),
                 EnemyKind.Takrang => root.AddComponent<TakrangBrain>(),
                 EnemyKind.IronDragon => root.AddComponent<IronDragonBrain>(),
+                EnemyKind.Cultist => root.AddComponent<CultistBrain>(),
+                EnemyKind.BloodArcher => root.AddComponent<BloodArcherBrain>(),
+                EnemyKind.BloodShaman => root.AddComponent<BloodShamanBrain>(),
+                EnemyKind.DemonGuard => root.AddComponent<DemonGuardBrain>(),
+                EnemyKind.BloodBomber => root.AddComponent<BloodBomberBrain>(),
                 _ => root.AddComponent<GruntBrain>(),
             };
             if (brain is ShieldBrain shieldBrain) shieldBrain.SetShieldVisual(mark.transform);

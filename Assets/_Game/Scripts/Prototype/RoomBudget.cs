@@ -36,8 +36,14 @@ namespace AThousandDawns.Prototype
             EnemyKind.Pirate, EnemyKind.Harpooner, EnemyKind.Anchor, EnemyKind.Rattan, EnemyKind.WaterGhost, EnemyKind.FlagBearer,
         };
 
+        // 천마총 일반 적 5종 (몬스터 시트 52~56행)
+        public static readonly EnemyKind[] Tomb =
+        {
+            EnemyKind.Cultist, EnemyKind.BloodArcher, EnemyKind.BloodShaman, EnemyKind.DemonGuard, EnemyKind.BloodBomber,
+        };
+
         // 지역 번호별 일반 적 (목록보다 크면 마지막 지역 것)
-        public static EnemyKind[] ForRegion(int region) => region <= 0 ? Bamboo : region == 1 ? Temple : River;
+        public static EnemyKind[] ForRegion(int region) => region <= 0 ? Bamboo : region == 1 ? Temple : region == 2 ? River : Tomb;
 
         public static int PackSize(EnemyKind kind) => kind == EnemyKind.Hound || kind == EnemyKind.Pirate ? 2 : 1; // 들개 · 수적 졸개는 둘씩
 
@@ -64,13 +70,18 @@ namespace AThousandDawns.Prototype
                 case EnemyKind.Rattan: return Key("rattan", 2f);
                 case EnemyKind.WaterGhost: return Key("waterghost", 1f);
                 case EnemyKind.FlagBearer: return Key("flagbearer", 2f);
+                case EnemyKind.Cultist: return Key("cultist", 1f);
+                case EnemyKind.BloodArcher: return Key("bloodarcher", 2f);
+                case EnemyKind.BloodShaman: return Key("bloodshaman", 2f);
+                case EnemyKind.DemonGuard: return Key("demonguard", 3f);
+                case EnemyKind.BloodBomber: return Key("bloodbomber", 1f);
                 default: return 99;
             }
         }
 
         // 방마다 수를 묶는 적: 멀리서 쏘는 적 (궁수 · 망령), 부르는 적 (나팔수 · 목탁승)
-        static bool IsShooter(EnemyKind kind) => kind == EnemyKind.Archer || kind == EnemyKind.Wraith || kind == EnemyKind.Harpooner;
-        static bool IsCaller(EnemyKind kind) => kind == EnemyKind.Horn || kind == EnemyKind.Moktak || kind == EnemyKind.FlagBearer;
+        static bool IsShooter(EnemyKind kind) => kind == EnemyKind.Archer || kind == EnemyKind.Wraith || kind == EnemyKind.Harpooner || kind == EnemyKind.BloodArcher;
+        static bool IsCaller(EnemyKind kind) => kind == EnemyKind.Horn || kind == EnemyKind.Moktak || kind == EnemyKind.FlagBearer || kind == EnemyKind.BloodShaman;
 
         static int Key(string kind, float fallback) => Math.Max(1, (int)Math.Round(GameConfig.Get("room_cost." + kind, fallback)));
 

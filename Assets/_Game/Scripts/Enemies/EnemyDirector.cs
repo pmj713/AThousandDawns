@@ -77,6 +77,16 @@ namespace AThousandDawns.Enemies
             return enemy;
         }
 
+        // 적이 부른 부하 (나팔수 · 혈불 · 철룡 · 녹림왕 · 혈인 부활): 판이 정한 지역 배율을 똑같이 받아요 (RoomRun이 SummonScale을 정해요)
+        public System.Action<EnemyBrain> SummonScale;
+
+        public EnemyBrain SpawnSummon(EnemyKind kind, Vector3 position)
+        {
+            var enemy = Spawn(kind, position);
+            if (enemy != null) SummonScale?.Invoke(enemy);
+            return enemy;
+        }
+
         // 적끼리, 적과 플레이어는 서로 밀지 않아요 (거리는 각자 Separation으로 유지)
         public void RestoreIgnores(EnemyBrain enemy)
         {
@@ -183,6 +193,7 @@ namespace AThousandDawns.Enemies
             SummonsLeft = Mathf.RoundToInt(GameConfig.Get("horn.summon_max", 2f));
             GhostFire.ClearAll(); // 방을 옮기면 도깨비불 장판도 사라져요
             AnchorBrain.ClearPosts(); // 쇠닻 기둥도
+            BloodShamanBrain.ClearCorpses(); // 혈인이 되살릴 시체도 방마다
         }
 
         public bool IsFree(Vector3 p, float radius)

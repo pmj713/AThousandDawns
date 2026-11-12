@@ -252,7 +252,7 @@ namespace AThousandDawns.Enemies
                 case Pattern.Arms: Swing(); break;
                 case Pattern.Grab: Grab(); break;
                 case Pattern.Summon:
-                    Director.Spawn(EnemyKind.Moktak, Director.FindFreeSpot(transform.position + Facing * 2f, 1f));
+                    Director.SpawnSummon(EnemyKind.Moktak, Director.FindFreeSpot(transform.position + Facing * 2f, 1f));
                     break;
             }
         }

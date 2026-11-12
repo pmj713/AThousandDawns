@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace AThousandDawns.Enemies
 {
-    public enum EnemyKind { Grunt, Boar, Archer, Hound, Shield, Horn, Bomber, Snake, Nokrim, Assassin, Qingzhu, IronFist, Wraith, Arhat, Moktak, Monk, Lantern, Hyegwang, BloodBuddha, Pirate, Harpooner, Anchor, Rattan, WaterGhost, FlagBearer, Takrang, IronDragon } // 망령부터 폐사찰 (혜광 고수 · 혈불 보스) · 수적 졸개부터 장강 수채 (탁랑객 고수 · 철룡 보스)
+    public enum EnemyKind { Grunt, Boar, Archer, Hound, Shield, Horn, Bomber, Snake, Nokrim, Assassin, Qingzhu, IronFist, Wraith, Arhat, Moktak, Monk, Lantern, Hyegwang, BloodBuddha, Pirate, Harpooner, Anchor, Rattan, WaterGhost, FlagBearer, Takrang, IronDragon, Cultist, BloodArcher, BloodShaman, DemonGuard, BloodBomber } // 망령부터 폐사찰 (혜광 고수 · 혈불 보스) · 수적 졸개부터 장강 수채 (탁랑객 고수 · 철룡 보스) · 마교도부터 천마총
 
     // 적 등급 (수련치 탭: 일반 1 · 정예 5 · 살수 5 · 고수 15 · 보스 30)
     public enum EnemyRank { Normal, Elite, Assassin, Master, Boss }
@@ -351,6 +351,11 @@ namespace AThousandDawns.Enemies
         // 지역 배율 (폐사찰 ×1.3): 나온 직후 한 번
         public void ScaleAttack(float multiplier) => AttackPower *= multiplier;
 
+        // 혈인 부활: 쓰러진 적의 공격력을 그대로 되살려요 · 되살아난 적은 다시 되살리지 않아요
+        public float AttackStat => AttackPower;
+        public bool Revived { get; set; }
+        public static event System.Action<EnemyBrain> AnyDied; // 쓰러진 순간 (혈인이 시체를 기억해요)
+
         Vector3 Separation()
         {
             Vector3 push = Vector3.zero;
@@ -435,6 +440,7 @@ namespace AThousandDawns.Enemies
             if (_visual != null) _visual.localScale = new Vector3(1.1f, 0.3f, 1.1f);
             OnEliteDied();
             OnDied();
+            AnyDied?.Invoke(this);
             Destroy(gameObject, DeathDelay);
         }
 

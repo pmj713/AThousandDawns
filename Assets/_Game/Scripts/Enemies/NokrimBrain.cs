@@ -282,7 +282,7 @@ namespace AThousandDawns.Enemies
                 case Pattern.Summon:
                     Sfx.Play(SfxId.BossSummon);
                     for (int i = 0; i < _summonCount; i++)
-                        _minions.Add(Director.Spawn(EnemyKind.Grunt, Director.FindFreeSpot(transform.position, 2f)));
+                        _minions.Add(Director.SpawnSummon(EnemyKind.Grunt, Director.FindFreeSpot(transform.position, 2f)));
                     _summonsThisPhase++;
                     _summonCooldown = _summonInterval;
                     break;

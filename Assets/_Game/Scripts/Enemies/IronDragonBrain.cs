@@ -229,8 +229,8 @@ namespace AThousandDawns.Enemies
                     break;
                 case Pattern.Hook: Hook(); break;
                 case Pattern.Summon:
-                    Director.Spawn(EnemyKind.FlagBearer, Director.FindFreeSpot(transform.position + Facing * 2f, 1f));
-                    for (int i = 0; i < 2; i++) Director.Spawn(EnemyKind.Pirate, Director.FindFreeSpot(transform.position + Facing * 2.5f, 1.5f));
+                    Director.SpawnSummon(EnemyKind.FlagBearer, Director.FindFreeSpot(transform.position + Facing * 2f, 1f));
+                    for (int i = 0; i < 2; i++) Director.SpawnSummon(EnemyKind.Pirate, Director.FindFreeSpot(transform.position + Facing * 2.5f, 1.5f));
                     break;
                 case Pattern.Geyser: Geyser(); break;
             }
