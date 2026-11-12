@@ -93,6 +93,7 @@ namespace AThousandDawns.EditorTools
             controller.AddParameter("SkillFlash", AnimatorControllerParameterType.Trigger);
             controller.AddParameter("SkillPalm", AnimatorControllerParameterType.Trigger);
             controller.AddParameter("SkillWave", AnimatorControllerParameterType.Trigger);
+            controller.AddParameter("SkillDash", AnimatorControllerParameterType.Trigger);
             controller.AddParameter("DaggerFlash", AnimatorControllerParameterType.Bool);
             var sm = controller.layers[0].stateMachine;
 
@@ -165,6 +166,15 @@ namespace AThousandDawns.EditorTools
                 dfOut.hasExitTime = false; dfOut.duration = 0.1f;
                 dfOut.AddCondition(AnimatorConditionMode.IfNot, 0f, "DaggerFlash");
             }
+            // 혈영참(비급): 낮게 감았다가 앞으로 4칸 쏜살같이 지나가며 베어요. 회선참과 같은 시전 0.35초 (5프레임째가 지나가며 베기)
+            AnimatorState dashCut = null;
+            if (all.ContainsKey("SkillDash"))
+            {
+                dashCut = State("SkillDash", 0.35f);
+                var toDc = sm.AddAnyStateTransition(dashCut);
+                toDc.hasExitTime = false; toDc.duration = 0.03f; toDc.canTransitionToSelf = true;
+                toDc.AddCondition(AnimatorConditionMode.If, 0f, "SkillDash");
+            }
             // 평타는 원래 속도로 재생해요. 끝나면 대기로 넘어가고, 다음 타가 오면 이어 베요
             var attacks = new[] { State("Attack1", 0f), State("Attack2", 0f), State("Attack3", 0f) };
             sm.defaultState = idle;
@@ -188,7 +198,7 @@ namespace AThousandDawns.EditorTools
             }
             // 대시·공격이 끝나면: 걷기 스크립트는 공격·대시 중엔 Speed를 0으로 주다가 끝나면 움직임을 풀어요.
             // 그래서 Speed가 오르면 바로 달리기로, 아니면 동작이 끝까지 돈 뒤 대기로
-            foreach (var st in attacks.Append(dash).Append(skill).Append(quake).Append(flash).Append(palm).Append(wave).Where(s => s != null))
+            foreach (var st in attacks.Append(dash).Append(skill).Append(quake).Append(flash).Append(palm).Append(wave).Append(dashCut).Where(s => s != null))
             {
                 var r = st.AddTransition(run);
                 r.hasExitTime = false; r.duration = 0.1f;

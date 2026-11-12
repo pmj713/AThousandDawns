@@ -137,7 +137,8 @@ namespace AThousandDawns.Art
         WaterGhostBrain _waterGhost; // 수귀: 끌고 가는 동안 Drag
         bool _dragging;
         float _anchorAway;          // 쇠닻 거한: 던진 닻이 꽂혀 있는 동안 손 닻을 감춰요
-        IronDragonBrain _dragon;    // 수채주 철룡: 2페이즈 전환에 포효
+        System.Reflection.PropertyInfo _transitionProp;   // 페이즈 전환 중인지 (IsTransitioning이 있고 전환 자세가 있는 적만)
+        string _transitionState;
         bool _roaring;
         CultistBrain _cultist;      // 마교도: 광폭
         bool _frenzied;
@@ -154,7 +155,9 @@ namespace AThousandDawns.Art
             _buddha = brain as BloodBuddhaBrain;
             _rattan = brain as RattanBrain;
             _waterGhost = brain as WaterGhostBrain;
-            _dragon = brain as IronDragonBrain;
+            foreach (var st in new[] { "Roar", "Ascend", "ShadowRush" })
+                if (animator.HasState(0, Animator.StringToHash(st))) { _transitionState = st; break; }
+            if (_transitionState != null) _transitionProp = brain.GetType().GetProperty("IsTransitioning");
             _cultist = brain as CultistBrain;
             if (Resources.Load<Texture2D>($"{brain.Kind}_P2") != null) _phaseProp = brain.GetType().GetProperty("Phase");
             _brain = brain;
@@ -250,11 +253,18 @@ namespace AThousandDawns.Art
                 if (_dragging) Play("Drag", 0.1f); else _animator.CrossFadeInFixedTime(IdleState, 0.2f, 0);
             }
             if (_dragging) { _animator.SetFloat(SpeedId, 0f); return; }
-            // 수채주 철룡: 2페이즈 전환(배가 부서지는 2초) 동안 휘청 물러났다가 포효해요
-            if (_dragon != null && _dragon.IsTransitioning != _roaring)
+            // 페이즈 전환(IsTransitioning, 무적) 동안의 자세: 철룡은 휘청 물러났다가 포효(Roar), 천마는 무릎 꿇었다 일어서기(Ascend),
+            //   혈영검마는 낮게 웅크린 채 버텨요(ShadowRush 첫 자세에서 멈춤). 전환 동작이 없는 적은 그대로
+            if (_transitionProp != null && (bool)_transitionProp.GetValue(_brain) != _roaring)
             {
-                _roaring = _dragon.IsTransitioning;
-                if (_roaring) { _animator.SetFloat(AttackSpeedId, 1f); Play("Roar", 0.1f); }
+                _roaring = !_roaring;
+                if (_roaring)
+                {
+                    bool hold = _transitionState == "ShadowRush";
+                    _animator.SetFloat(AttackSpeedId, hold ? 0f : 1f);
+                    Play(_transitionState, 0.1f);
+                }
+                else _animator.SetFloat(AttackSpeedId, 1f);
             }
             if (_roaring) { _animator.SetFloat(SpeedId, 0f); return; }
             // 천마: 페이즈마다 몸 텍스처를 갈아 끼워요 (1 정갈한 검객 → 2 핏빛 마기 무늬 → 3 몸이 갈라져 금이 붉게 달아올라요).
