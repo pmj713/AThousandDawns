@@ -8,16 +8,16 @@ namespace AThousandDawns.Art
 {
     // 장강 수채 싸우는 방의 물 (RoomRun.RoomFeatures 중 Kind == Water) — 그림만, 느려짐·밀림은 게임 코드 그대로.
     //   흐르는 물 (여울 · 물길): 청회색 상자는 숨기고 옅은 쪽빛 먹 물판을 깔아요. 그 위로 먹 물결 획이 물살 방향으로
-    //       흘러가며 나타났다 사라져요 (물살이 셀수록 빨리). 가장자리엔 갈대 몇 포기.
+    //       흘러가며 나타났다 사라져요 (물살이 셀수록 빨리). 물가 돌·갈대는 메인 아트 모델.
     //   고인 물 (웅덩이): 둥근 먹 웅덩이 위로 잔잔한 물결 고리가 가끔 번져요.
     //   발밑 (RoomRun.PlayerInWater): 물에 들어가 있는 동안 발밑에 물결 고리가 번지고, 움직이면 물보라가 튀어요.
     //   죽림 개울 (RoomRun.Region == 0): 쪽빛 대신 맑은 연둣빛 물판 · 연둣빛 물결 획, 갈대 대신 댓잎이 빙글 돌며 떠내려가요.
-    // 그림: Art/Env/RiverFx/Resources/RiverWater (WaterSheet · RippleStroke · Pond · Reeds · StreamSheet · StreamStroke), TitleArt/BambooLeaf, RiverFx (Ripple · Splash).
+    // 그림: Art/Env/RiverFx/Resources/RiverWater (WaterSheet · RippleStroke · Pond · StreamSheet · StreamStroke), TitleArt/BambooLeaf, RiverFx (Ripple · Splash).
     // 방이 바뀔 때 (RoomRun.LayoutChanged) 다시 깔아요.
     public class InkRiverWater : MonoBehaviour
     {
         static InkRiverWater _host;
-        static Sprite _sheet, _stroke, _pond, _reeds, _ring, _splash, _streamSheet, _streamStroke, _leaf;
+        static Sprite _sheet, _stroke, _pond, _ring, _splash, _streamSheet, _streamStroke, _leaf;
         static bool _loaded;
 
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
@@ -76,7 +76,7 @@ namespace AThousandDawns.Art
             int count = Mathf.Clamp(Mathf.RoundToInt(f.Size.x * f.Size.y / 2.2f), 6, 40);
             for (int i = 0; i < count; i++) Stroke(f.Center, half, dir, speed, UnityEngine.Random.value, bamboo && _streamStroke != null ? _streamStroke : _stroke);
             if (bamboo) { for (int i = 0; i < 4; i++) Leaf(f.Center, half, dir, speed, i / 4f); }
-            if (!bamboo) Reeds(f, 3); // 죽림은 둘레가 대숲이라 갈대 없이
+            // 물가 돌·갈대·말뚝은 메인 아트 물가 모델 (InkRoomFeatures)이 둘러요
         }
 
         void Stroke(Vector3 center, Vector2 half, Vector3 dir, float speed, float startPhase, Sprite sprite)
@@ -150,25 +150,7 @@ namespace AThousandDawns.Art
                 Ring(at, UnityEngine.Random.Range(0.8f, 1.4f), 1.6f, 0.45f);
                 return true;
             });
-            Reeds(f, 2);
-        }
-
-        void Reeds(RoomRun.RoomFeature f, int count)
-        {
-            if (_reeds == null) return;
-            Vector2 half = f.Size * 0.5f;
-            for (int i = 0; i < count; i++)
-            {
-                // 가장자리 바깥쪽 위·아래 둘레 (긴 쪽을 따라)
-                bool alongX = f.Size.x >= f.Size.y;
-                float t = UnityEngine.Random.Range(-0.9f, 0.9f);
-                float side = UnityEngine.Random.value < 0.5f ? -1f : 1f;
-                Vector3 at = alongX
-                    ? f.Center + new Vector3(t * half.x, 0f, side * (half.y + 0.15f))
-                    : f.Center + new Vector3(side * (half.x + 0.15f), 0f, t * half.y);
-                var sr = Upright(_reeds, at, UnityEngine.Random.Range(0.7f, 1f), 5, bottom: true);
-                
-            }
+            // 웅덩이 둘레도 메인 아트 물가 모델이에요
         }
 
         // ── 발밑: 물결 고리 · 물보라
@@ -293,7 +275,6 @@ namespace AThousandDawns.Art
             _sheet = Resources.Load<Sprite>("RiverWater/WaterSheet");
             _stroke = Resources.Load<Sprite>("RiverWater/RippleStroke");
             _pond = Resources.Load<Sprite>("RiverWater/Pond");
-            _reeds = Resources.Load<Sprite>("RiverWater/Reeds");
             _streamSheet = Resources.Load<Sprite>("RiverWater/StreamSheet");
             _streamStroke = Resources.Load<Sprite>("RiverWater/StreamStroke");
             var leaf = Resources.Load<Texture2D>("TitleArt/BambooLeaf"); // 제목 화면의 날리는 댓잎
