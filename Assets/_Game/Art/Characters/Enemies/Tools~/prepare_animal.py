@@ -4,7 +4,8 @@
 #   length: 몸길이(m, 머리~꼬리 끝). yaw: 가져온 모델을 Z축으로 돌릴 각도(도) — 머리가 -Y(앞)를 보도록
 #   - 뼈: quad는 엉덩이·등·가슴·목·머리·꼬리 2마디 + 다리 4개(허벅지·정강이·발), snake는 머리부터 꼬리까지 12마디 사슬
 #   - 무게: 다리는 배 아래 다리 기둥의 정점만, 나머지는 몸통 뼈 마디까지 거리로 나눠요
-#   - 동작(Generic으로 가져와요): Idle(숨쉬기), Run(뛰기 반복), Ready(공격 준비, 예고 동안 멈춤), Attack(덤비기)
+#   - 동작(Generic으로 가져와요): Idle(숨쉬기), Run(뛰기 반복), Ready(공격 준비, 예고 동안 멈춤), Attack(덤비기),
+#     Spawn(방에 나타날 때 한 번: 짐승은 뛰어들어 머리를 털고, 뱀은 똬리에서 머리를 쳐들고, 등불은 불씨에서 피어나요)
 import bpy, bmesh, sys, os, math
 from mathutils import Vector, Quaternion, Matrix
 
@@ -292,6 +293,36 @@ if KIND == "quad":
         else:
             pass
     make_action("Attack", [(0, 0), (4, 1), (9, 2), (18, 3)], attack_pose)
+
+    def spawn_pose(stage):
+        # 등장 (26프레임): 뒤에서 웅크렸다가 → 땅을 박차고 앞으로 뛰어들어 → 앞다리로 버티며 내려앉고 → 머리를 털고 → 대기
+        if stage == "crouch":
+            lift(-0.05 * LENGTH, 0.14 * LENGTH)                      # +Y가 뒤쪽이에요
+            turn("Hips", X, 4)
+            turn("Neck", X, 22); turn("Head", X, 10)
+            legs({"FL": 22, "FR": 20, "BL": -26, "BR": -24})
+            turn("Tail1", X, 30)
+        elif stage == "leap":
+            lift(0.14 * LENGTH, 0.06 * LENGTH)
+            turn("Hips", X, -8)
+            turn("Neck", X, -6); turn("Head", X, -8)
+            legs({"FL": 50, "FR": 46, "BL": -48, "BR": -52})          # 쭉 뻗은 채 날아요
+            turn("Tail1", X, -10)
+        elif stage == "land":
+            lift(-0.04 * LENGTH, -0.01 * LENGTH)
+            turn("Hips", X, 6)
+            turn("Neck", X, 14); turn("Head", X, 8)
+            legs({"FL": 26, "FR": 24, "BL": -8, "BR": -10})          # 앞다리로 버텨요
+            turn("Tail1", X, 18)
+        elif stage in ("shakeL", "shakeR"):
+            sx = 1 if stage == "shakeL" else -1
+            lift(-0.01 * LENGTH)
+            turn("Neck", Z, 16 * sx); turn("Head", Z, 18 * sx); turn("Head", Vector((0, 1, 0)), 14 * sx)
+            turn("Spine", Z, -4 * sx)
+            turn("Tail1", Z, -20 * sx)
+        else:
+            idle_pose(0.0)
+    make_action("Spawn", [(0, "crouch"), (4, "crouch"), (9, "leap"), (13, "land"), (17, "shakeL"), (21, "shakeR"), (26, "idle")], spawn_pose)
 elif KIND == "snake":
     SEGS = [f"Seg{i}" for i in range(12)]          # 꼬리 → 머리 (부모 → 자식)
 
@@ -374,6 +405,21 @@ elif KIND == "snake":
             wave(0.0, 4, 8)
     make_action("Attack", [(0, 0), (3, 1), (8, 2), (16, 3)], attack_pose)
 
+    def spawn_pose(stage):
+        # 등장 (26프레임): 땅에 머리를 묻듯 낮게 똬리 → 머리를 높이 쳐들고 → 몸을 S자로 감아 위협 → 대기
+        if stage == "coil":
+            slither(0.3, 0.06 * LENGTH, 0.35 * LENGTH, 0.0)
+            turn("Seg10", X, 18); turn("Seg11", X, 22)               # X축 +는 머리를 숙여요
+        elif stage == "rise":
+            slither(0.45, 0.05 * LENGTH, 0.4 * LENGTH, 0.0)
+            turn("Seg8", X, -18); turn("Seg9", X, -28); turn("Seg10", X, -30); turn("Seg11", X, 20)   # 높이 쳐들고 고개는 앞으로
+        elif stage == "threat":
+            ready_pose(None)
+            turn("Seg11", X, -10)
+        else:
+            idle_pose(0.0)
+    make_action("Spawn", [(0, "coil"), (5, "coil"), (12, "rise"), (18, "threat"), (26, "idle")], spawn_pose)
+
 else:
     # 등불 귀신: 바닥에서 떠서 둥실거리며 흔들려요. 귀화(Attack, 예고 1초 동안 그대로 재생)는 부풀며 떨다가 터지기 직전 크게 부풀어요
     def hover(t, lean=0.0, sway=6.0):
@@ -392,6 +438,16 @@ else:
         s = 1.0 + 0.35 * k * k                                               # 점점 부풀어요
         pb["Body"].scale = (s, s, s)
     make_action("Attack", [(f, f / 30) for f in range(0, 31, 3)], ignite)
+
+    def kindle(k):
+        # 등장 (24프레임): 바닥의 작은 불씨가 떠오르며 커져 → 한 번 크게 부풀고 → 제 크기로 흔들려요
+        if k is None:
+            hover(0.0); return
+        lift(0.05 + 0.4 * min(1.0, k / 0.6))
+        s = 0.15 + 0.85 * k / 0.6 if k <= 0.6 else 1.0 + 0.3 * math.sin(math.pi * (k - 0.6) / 0.4)
+        turn("Body", Vector((0, 1, 0)), 12 * math.sin(k * 9))
+        pb["Body"].scale = (s, s, s)                                    # 돌린 뒤에 키워요 (돌리면 크기가 풀려요)
+    make_action("Spawn", [(0, 0.0), (4, 0.15), (8, 0.35), (12, 0.6), (16, 0.75), (20, 0.9), (24, None)], kindle)
 
 # 내보내기 (Generic, 플레이어·사람형 적과 같은 축 설정)
 bpy.ops.object.select_all(action='DESELECT')

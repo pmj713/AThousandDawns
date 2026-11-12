@@ -1334,6 +1334,29 @@ if "float" in EXTRAS:
             arm("Right", sh + Vector((0.08, -1, 0.05)).normalized() * REACH * 1.0, Vector((-0.5, 0, -1)))   # 손바닥을 앞으로
             aim("RightHand", None, delta=Quaternion(Vector((1, 0, 0)), math.radians(-60)) @ (pb["RightHand"].matrix.to_quaternion() @ B["RightHand"].matrix_local.to_quaternion().inverted()))
     make_action("Attack", [(0, "load"), (4, "push"), (14, "push"), (24, "rest")], cast_pose)
+
+    # 등장 (원귀, 28프레임): 바닥에 가슴께까지 잠긴 채 고개를 떨구고 → 스르르 떠올라 → 떠오른 끝에 고개를 젖히고 팔을 벌려
+    #   한 번 부르르 떨고 → 고개를 떨군 대기
+    def float_spawn(stage):
+        if stage == "idle":
+            float_idle(0.0); return
+        depth = {"sunk": -1.15, "half": -0.55, "up": 0.3, "shiver": 0.26}[stage]
+        feet = {s: FEET[s] + Vector((0, 0.06, depth - 0.03)) for s in FEET}
+        lower_hips(depth, feet)
+        if stage in ("sunk", "half"):
+            bend("Spine", Vector((1, 0, 0)), 18 if stage == "sunk" else 10)
+            bend("Neck", Vector((1, 0, 0)), 35 if stage == "sunk" else 22)       # 고개를 깊이 떨궈요
+            for s, sx in (("Left", 0.05), ("Right", -0.05)):
+                sh = pb[f"{s}Arm"].head.copy()
+                arm(s, sh + Vector((sx, -0.18, -0.45)), Vector((sx * 10, 0.5, -0.4)))
+        else:
+            bend("Spine", Vector((1, 0, 0)), -10)
+            bend("Neck", Vector((1, 0, 0)), -24 if stage == "up" else -16)      # 고개를 젖혀요
+            for s, sx in (("Left", 1), ("Right", -1)):
+                sh = pb[f"{s}Arm"].head.copy()
+                spread = 0.42 if stage == "up" else 0.36                        # 떨 때 팔이 살짝 오므라들어요
+                arm(s, sh + Vector((sx * spread, -0.18, -0.3)), Vector((sx, 0.4, -0.5)))
+    make_action("Spawn", [(0, "sunk"), (4, "sunk"), (12, "half"), (18, "up"), (21, "shiver"), (23, "up"), (28, "idle")], float_spawn)
     rig.animation_data.action = None
     reset_pose()
 
