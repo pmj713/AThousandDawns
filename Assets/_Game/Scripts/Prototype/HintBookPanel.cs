@@ -158,35 +158,46 @@ namespace AThousandDawns.Prototype
             sb.AppendLine($"가장 깊이 간 곳 {region} · 가장 많이 돌파한 층 {m.bestFloors}");
             sb.AppendLine($"천마 격파 {m.finalBossKills}회 · 지역 보스 처치 {m.bossKills}");
             sb.AppendLine(m.bestKarma >= 0 ? $"업보 최고 {m.bestKarma}단계로 천마 격파 (열린 단계 {m.karmaMax})" : "아직 업보를 지고 천마를 격파하지 못했어요");
-            sb.AppendLine($"모은 회귀의 기억 {m.totalMemory}");
-            sb.AppendLine();
-            AppendTop(sb, "쓰러뜨린 것", m.deathCauses, 5, "회");
-            AppendTop(sb, "끝까지 지닌 기물", m.itemCounts, 5, "판");
-            AppendTop(sb, "쓰던 초식", m.skillCounts, 3, "판");
-            GUI.Label(left, sb.ToString(), _body);
+            sb.Append($"모은 회귀의 기억 {m.totalMemory}");
+            GUI.Label(new Rect(left.x, left.y, left.width, 160f), sb.ToString(), _body);
+
+            // 순위: 이름 · 먹 붓 막대 (1위 대비) · 횟수 (아트 InkPadUi.Bar)
+            float y = left.y + 172f;
+            DrawTop(left, ref y, "쓰러뜨린 것", m.deathCauses, 5, "회", new Color(0.55f, 0.1f, 0.08f));
+            DrawTop(left, ref y, "끝까지 지닌 기물", m.itemCounts, 5, "판", new Color(0.12f, 0.1f, 0.09f));
+            DrawTop(left, ref y, "쓰던 초식", m.skillCounts, 3, "판", new Color(0.2f, 0.28f, 0.45f));
 
             GUI.Label(new Rect(right.x, right.y, right.width, 36f), "최근 판", _title);
             var list = new Rect(right.x, right.y + 46f, right.width, right.height - 46f);
-            const float rowH = 64f;
+            const float rowH = 64f, mark = 44f;
             _recordScroll = GUI.BeginScrollView(list, _recordScroll, new Rect(0, 0, list.width - 20f, m.recentRuns.Count * rowH));
             for (int i = 0; i < m.recentRuns.Count; i++)
             {
                 var r = m.recentRuns[i];
                 string karma = r.karma > 0 ? $" · 업보 {r.karma}" : "";
                 string head = r.victory ? $"<color=#e8c06a>제{r.run}회 · {r.where}</color>" : $"제{r.run}회 · {r.where}";
-                GUI.Label(new Rect(0, i * rowH, list.width - 24f, rowH - 4f), $"{head}\n<color=#bdbdbd>{r.floors}층 돌파 · {RunRecord.Clock(r.seconds)}{karma} · 기억 +{r.memory}</color>", _body);
+                AThousandDawns.Fx.InkPadUi.Result(new Rect(0, i * rowH + (rowH - mark) * 0.5f - 2f, mark, mark), r.victory); // 승리 금빛 낙관 · 패배 먹 점
+                GUI.Label(new Rect(mark + 12f, i * rowH, list.width - 36f - mark, rowH - 4f), $"{head}\n<color=#bdbdbd>{r.floors}층 돌파 · {RunRecord.Clock(r.seconds)}{karma} · 기억 +{r.memory}</color>", _body);
             }
             GUI.EndScrollView();
         }
 
-        static void AppendTop(System.Text.StringBuilder sb, string title, List<NameCount> list, int top, string unit)
+        void DrawTop(Rect area, ref float y, string title, List<NameCount> list, int top, string unit, Color ink)
         {
-            if (list == null || list.Count == 0) return;
+            if (list == null || list.Count == 0 || y > area.yMax - 40f) return;
             var sorted = new List<NameCount>(list);
             sorted.Sort((a, b) => b.count.CompareTo(a.count));
-            sb.AppendLine(title);
-            for (int i = 0; i < sorted.Count && i < top; i++) sb.AppendLine($"   {i + 1}. {sorted[i].name} · {sorted[i].count}{unit}");
-            sb.AppendLine();
+            GUI.Label(new Rect(area.x, y, area.width, 30f), $"<b>{title}</b>", _body);
+            y += 32f;
+            float most = Mathf.Max(1, sorted[0].count), nameW = area.width * 0.42f, countW = 70f;
+            for (int i = 0; i < sorted.Count && i < top && y < area.yMax - 28f; i++)
+            {
+                GUI.Label(new Rect(area.x + 8f, y, nameW, 28f), $"{i + 1}. {sorted[i].name}", _body);
+                AThousandDawns.Fx.InkPadUi.Bar(new Rect(area.x + nameW + 8f, y + 4f, area.width - nameW - countW - 16f, 20f), sorted[i].count / most, ink);
+                GUI.Label(new Rect(area.xMax - countW, y, countW, 28f), $"{sorted[i].count}{unit}", _body);
+                y += 30f;
+            }
+            y += 10f;
         }
 
         // 요결 항목 그림 (아트: Resources/HintArt/<항목 id>, 16:9). 없으면 글만

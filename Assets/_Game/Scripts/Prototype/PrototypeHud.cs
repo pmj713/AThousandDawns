@@ -55,6 +55,7 @@ namespace AThousandDawns.Prototype
             DrawOffer(); // 기물 카드는 맨 위에
             DrawDiscard(); // 둘 곳이 없을 때 버릴 기물 고르기는 그보다 위에
             DrawPause(); // 일시정지는 맨 위
+            DrawPadHints(); // 게임패드 커서가 있는 화면이면 A · B 안내 (PrototypeHud.Pad)
         }
 
         void DrawHud()

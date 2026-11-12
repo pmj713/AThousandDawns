@@ -25,12 +25,19 @@ namespace AThousandDawns.Fx
             float pulse = 0.75f + 0.25f * Mathf.Sin(Time.unscaledTime * 4f);
             var o = new Rect(r.x - pad, r.y - pad, r.width + pad * 2f, r.height + pad * 2f);
             const float t = 9f;
+            Tint(Paper, 0.55f); // 어두운 창 위에서도 보이게 한지빛 테를 먼저 굵게
+            Edges(o, t + 6f);
             Tint(Ink, 0.9f * pulse);
+            Edges(o, t);
+            GUI.color = old;
+        }
+
+        static void Edges(Rect o, float t)
+        {
             Stroke(new Vector2(o.center.x, o.y), o.width + 8f, t, 0f);        // 위
             Stroke(new Vector2(o.center.x, o.yMax), o.width + 8f, t, 180f);   // 아래 (붓이 반대로)
             Stroke(new Vector2(o.x, o.center.y), o.height + 8f, t, -90f);     // 왼쪽
             Stroke(new Vector2(o.xMax, o.center.y), o.height + 8f, t, 90f);   // 오른쪽
-            GUI.color = old;
         }
 
         public static float Button(Vector2 at, string button, string text, float size = 30f)
