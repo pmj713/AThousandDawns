@@ -22,6 +22,9 @@ namespace AThousandDawns.Art
         static readonly int SkillPalmId = Animator.StringToHash("SkillPalm");
         static readonly int SkillWaveId = Animator.StringToHash("SkillWave");
         static readonly int SkillDashId = Animator.StringToHash("SkillDash");
+        static readonly int HurtId = Animator.StringToHash("Hurt");
+        static readonly int DeadId = Animator.StringToHash("Dead");
+        float _lastHealth = -1f;
         int _vortexLayer = -1;
         float _vortexWeight;
         static readonly int DaggerFlashId = Animator.StringToHash("DaggerFlash");
@@ -61,6 +64,15 @@ namespace AThousandDawns.Art
                 _combo.SwingStarted += OnSwingStarted;
             }
 
+            // 피격·쓰러짐: 체력이 줄며 경직에 걸리면 뒤로 젖혀지는 움찔, 체력이 다하면 무릎 꿇고 무너져요
+            float health = _player.Health;
+            if (_lastHealth >= 0f && health < _lastHealth && !_player.IsDead && _player.IsStunned)
+            {
+                _animator.ResetTrigger(AttackId);
+                _animator.SetTrigger(HurtId);
+            }
+            _lastHealth = health;
+            _animator.SetBool(DeadId, _player.IsDead);
             bool dashing = _player.IsDashing;
             if (dashing && !_wasDashing)
             {
