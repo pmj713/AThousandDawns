@@ -221,6 +221,78 @@ namespace AThousandDawns.Tests
             for (int r = 0; r < 4; r++) yield return Room(r, 0, 0, true, 120f, true);
         }
 
+        // 할당 측정: 수묵 판 천마총 싸움 (적 12명 추가)에서 프레임당 할당 바이트를, 화면 UI · 아트 · 이펙트를 하나씩 끄며 비교해요.
+        // (에디터 위라 절대값보다 끈 것과 켠 것의 차이를 봐요)
+        [UnityTest]
+        [Timeout(1800000)]
+        public IEnumerator 할당_측정()
+        {
+            new MetaSave { runs = 1, tutorialFloorDone = true }.Save();
+            RoomRun.SkipVillage = true;
+            RoomRun.LayoutOverride = 2;
+            yield return SceneManager.LoadSceneAsync(TitleScreen.RunScene, LoadSceneMode.Single);
+            yield return null;
+            var run = Object.FindFirstObjectByType<RoomRun>();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            run.SetRegionForTest(3);
+            run.BeginFork(2);
+            run.ChooseFork(0);
+            run.Enter(run.Map.Rooms.First(r => r.HasFight && r.FixedWaves == null), 0);
+            yield return new WaitForSeconds(1f);
+            Vector3 home = player.transform.position;
+            var kinds = new[] { EnemyKind.Cultist, EnemyKind.BloodArcher, EnemyKind.DemonGuard, EnemyKind.BloodBomber };
+            for (int i = 0; i < 12; i++) director.Spawn(kinds[i % 4], home + new Vector3(Mathf.Cos(i * 0.52f), 0f, Mathf.Sin(i * 0.52f)) * 6f);
+            yield return null;
+
+            var all = Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
+            bool IsUi(MonoBehaviour b) => b is PrototypeHud || b is MeridianScreen || b is RegressionBookScreen;
+            bool IsArt(MonoBehaviour b) { string ns = b.GetType().Namespace ?? ""; return ns.StartsWith("AThousandDawns.Art") || ns.StartsWith("AThousandDawns.Fx"); }
+            File.AppendAllText(ReportPath, $"\n할당 측정 (컴포넌트 {all.Length}개 · 아트·이펙트 {all.Count(IsArt)}개)\n", Encoding.UTF8);
+
+            IEnumerator Sample(string label)
+            {
+                for (int i = 0; i < 30; i++) { player.Heal(9999f); yield return null; } // 바뀐 상태가 자리 잡게
+                var rec = Unity.Profiling.ProfilerRecorder.StartNew(Unity.Profiling.ProfilerCategory.Memory, "GC Allocated In Frame", 1);
+                var count = Unity.Profiling.ProfilerRecorder.StartNew(Unity.Profiling.ProfilerCategory.Memory, "GC Allocation In Frame Count", 1);
+                long bytes = 0, allocs = 0;
+                int frames = 0;
+                for (; frames < 300; frames++)
+                {
+                    player.Heal(9999f);
+                    yield return null;
+                    bytes += rec.LastValue;
+                    allocs += count.LastValue;
+                }
+                rec.Dispose();
+                count.Dispose();
+                Write($"할당\t{label}\t프레임당 {bytes / (float)frames / 1024f:0.0} KB · {allocs / (float)frames:0}번");
+            }
+
+            void Toggle(System.Func<MonoBehaviour, bool> which, bool on) { foreach (var b in all) if (b != null && which(b)) b.enabled = on; }
+
+            yield return Sample("모두 켬");
+            Toggle(IsUi, false);
+            yield return Sample("화면 UI 끔 (HUD · 경맥도 · 회귀록)");
+            Toggle(IsUi, true);
+            Toggle(IsArt, false);
+            yield return Sample("아트 · 이펙트 끔");
+            Toggle(IsUi, false);
+            yield return Sample("둘 다 끔 (게임 코드만)");
+            Toggle(IsUi, true);
+            Toggle(IsArt, true);
+
+            // 아트 · 이펙트를 종류별로 하나씩 꺼서 (그 종류만 끈 할당 − 모두 켬)이 큰 순서를 봐요
+            var types = all.Where(IsArt).Select(b => b.GetType()).Distinct().ToList();
+            foreach (var type in types)
+            {
+                Toggle(b => b.GetType() == type, false);
+                yield return Sample($"끔: {type.Name} ({all.Count(b => b != null && b.GetType() == type)}개)");
+                Toggle(b => b.GetType() == type, true);
+            }
+            RoomRun.LayoutOverride = -1;
+        }
+
         // 보스 하나만 다시 잴 때 (예: --filter "AThousandDawns.Tests.BalanceProbe.보스_하나")
         public static EnemyKind OneKind = EnemyKind.BloodBuddha;
         public static int OneRegion = 1, OneKarma;

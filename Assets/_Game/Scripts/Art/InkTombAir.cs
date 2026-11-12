@@ -102,7 +102,7 @@ namespace AThousandDawns.Art
                 var b = _bits[i];
                 var sway = new Vector3(Mathf.Sin(time * 0.9f + _seed[i]) * 0.3f, 0f, Mathf.Cos(time * 0.7f + _seed[i]) * 0.2f);
                 b.position += (_bitVel[i] + sway) * dt;
-                if (b.name == "Ember") // 불씨는 깜빡여요
+                if (i >= ashCount) // 불씨는 깜빡여요 (뒤쪽 emberCount개 · 이름을 읽으면 매 프레임 문자열이 생겨서 순서로 가려요)
                     _bitSr[i].color = new Color(EmberColor.r, EmberColor.g * (0.7f + 0.3f * Mathf.Sin(time * 9f + _seed[i])), EmberColor.b, 0.6f + 0.4f * Mathf.Sin(time * 6f + _seed[i]));
                 var d = b.position - c;
                 if (b.position.y > area.y || Mathf.Abs(d.x) > area.x * 0.6f || Mathf.Abs(d.z) > area.z * 0.6f) Place(b, Random.Range(0f, 0.3f)); // 바닥에서 다시 피어요

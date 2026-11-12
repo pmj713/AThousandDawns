@@ -31,21 +31,26 @@ namespace AThousandDawns.Art
 
         void Update()
         {
+            // 처음 보는 루트만 이름을 봐요 (go.name을 읽을 때마다 문자열이 생겨, 매 프레임 모든 루트를 읽으면 쓰레기가 많이 나와요)
             SceneManager.GetActiveScene().GetRootGameObjects(_roots);
             foreach (var go in _roots)
             {
+                if (!_seenBursts.Add(go)) continue;
                 if (go.name == "Arrow")
                 {
                     if (go.transform.Find(Marker) == null) DressArrow(go);
                 }
-                else if (go.name == "Telegraph" && !_seenBursts.Contains(go))
-                {
-                    _seenBursts.RemoveWhere(x => x == null);
-                    _seenBursts.Add(go);
-                    if (IsBurst(go)) SpawnBurst(go);
-                }
+                else if (go.name == "Telegraph" && IsBurst(go)) SpawnBurst(go);
+            }
+            if ((_pruneTimer -= Time.unscaledDeltaTime) <= 0f) // 사라진 루트는 가끔 비워요
+            {
+                _pruneTimer = 2f;
+                _seenBursts.RemoveWhere(IsGone);
             }
         }
+
+        float _pruneTimer;
+        static readonly System.Predicate<GameObject> IsGone = x => x == null;
 
         // ── 화살·표창
 

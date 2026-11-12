@@ -340,6 +340,7 @@ namespace AThousandDawns.Enemies
         // 앞이 막혔으면 돌아가요 (폐사찰 석불 · 무너진 담, 천마총 관 같은 엄폐물 뒤의 플레이어를 향해 벽에 비비지 않게).
         // 가려던 쪽으로 lookAhead칸 안에 장애물이 있으면 ±45° · ±90° 중 트인 쪽으로 틀고, 한 번 고른 쪽은 잠깐 유지해요 (좌우로 떨지 않게).
         float _avoidSign, _avoidTimer, _flankSign = 1f;
+        static readonly float[] DetourAngles = { 45f, 90f, 135f }; // 매 프레임 새로 만들지 않게
         static int _flankCounter;
 
         public bool IsDetouring => _avoidTimer > 0f; // 테스트용
@@ -374,7 +375,7 @@ namespace AThousandDawns.Enemies
                 _avoidSign = right >= left ? 1f : -1f;
             }
             _avoidTimer = GameConfig.GetOptional("enemy.avoid_hold", 0.6f);
-            foreach (float angle in new[] { 45f, 90f, 135f })
+            foreach (float angle in DetourAngles)
             {
                 Vector3 turned = Quaternion.Euler(0f, angle * _avoidSign, 0f) * dir;
                 if (ObstacleProbe.Distance(origin, turned, radius, look) >= look) return turned * speed;
