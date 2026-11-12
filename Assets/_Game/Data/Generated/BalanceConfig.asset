@@ -4189,3 +4189,55 @@ MonoBehaviour:
     value: 1
     unit: 
     note: "\uCC9C\uB9C8\uCD1D \uC815\uC608: \uD2B9\uC131\uC774 \uD558\uB098 \uB354 \uBD99\uC744 \uD655\uB960 (\uB298 2\uAC1C)"
+  - key: region.3.health
+    value: 4.5
+    unit: "\uBC30"
+    note: "\uCC9C\uB9C8\uCD1D \uC801 \uCCB4\uB825 \uBC30\uC728 (\uC77C\uBC18 \uC801\xB7\uC0B4\uC218\xB7\uACE0\uC218\xB7\uBCF4\uC2A4)"
+  - key: region.3.attack
+    value: 2
+    unit: "\uBC30"
+    note: "\uCC9C\uB9C8\uCD1D \uC801 \uACF5\uACA9 \uBC30\uC728"
+  - key: region.3.silver_room
+    value: 30
+    unit: "\uC740\uC790"
+    note: "\uCC9C\uB9C8\uCD1D \uC804\uD22C \uBC29 \uD074\uB9AC\uC5B4 \uC740\uC790"
+  - key: item_grade.r3.common
+    value: 0.4
+    unit: 
+    note: "\uAE30\uBB3C \uB4F1\uAE09 \uD655\uB960 \uC77C\uBC18 (\uCC9C\uB9C8\uCD1D = \uC7A5\uAC15 \uC9D9\uC740 \uAE38)"
+  - key: item_grade.r3.uncommon
+    value: 0.31
+    unit: 
+    note: "\uAE30\uBB3C \uB4F1\uAE09 \uD655\uB960 \uACE0\uAE09 (\uCC9C\uB9C8\uCD1D)"
+  - key: item_grade.r3.rare
+    value: 0.21
+    unit: 
+    note: "\uAE30\uBB3C \uB4F1\uAE09 \uD655\uB960 \uD76C\uADC0 (\uCC9C\uB9C8\uCD1D)"
+  - key: item_grade.r3.legendary
+    value: 0.08
+    unit: 
+    note: "\uAE30\uBB3C \uB4F1\uAE09 \uD655\uB960 \uC804\uC124 (\uCC9C\uB9C8\uCD1D)"
+  - key: item_grade.r3_dense.common
+    value: 0.34
+    unit: 
+    note: "\uAE30\uBB3C \uB4F1\uAE09 \uD655\uB960 \uC77C\uBC18 (\uCC9C\uB9C8\uCD1D \uC9D9\uC740 \uAE38 \uC804\uC6A9)"
+  - key: item_grade.r3_dense.uncommon
+    value: 0.32
+    unit: 
+    note: "\uAE30\uBB3C \uB4F1\uAE09 \uD655\uB960 \uACE0\uAE09 (\uCC9C\uB9C8\uCD1D \uC9D9\uC740 \uAE38)"
+  - key: item_grade.r3_dense.rare
+    value: 0.24
+    unit: 
+    note: "\uAE30\uBB3C \uB4F1\uAE09 \uD655\uB960 \uD76C\uADC0 (\uCC9C\uB9C8\uCD1D \uC9D9\uC740 \uAE38)"
+  - key: item_grade.r3_dense.legendary
+    value: 0.1
+    unit: 
+    note: "\uAE30\uBB3C \uB4F1\uAE09 \uD655\uB960 \uC804\uC124 (\uCC9C\uB9C8\uCD1D \uC9D9\uC740 \uAE38)"
+  - key: meridian.width_after_boss3
+    value: 6
+    unit: 
+    note: "\uC7A5\uAC15 \uC218\uCC44 \uBCF4\uC2A4 \uACA9\uD30C \uB4A4 \uACBD\uB9E5\uB3C4 \uAC00\uB85C"
+  - key: meridian.height_after_boss3
+    value: 6
+    unit: 
+    note: "\uC7A5\uAC15 \uC218\uCC44 \uBCF4\uC2A4 \uACA9\uD30C \uB4A4 \uACBD\uB9E5\uB3C4 \uC138\uB85C"

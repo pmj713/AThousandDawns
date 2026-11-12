@@ -791,8 +791,12 @@ namespace AThousandDawns.Prototype
                 items.ExpandBoard(
                     Mathf.RoundToInt(GameConfig.GetOptional("meridian.width_after_boss2", 6f)),
                     Mathf.RoundToInt(GameConfig.GetOptional("meridian.height_after_boss2", 5f)));
+            else if (items != null && _region == 2) // 장강 보스: 6×5 → 6×6
+                items.ExpandBoard(
+                    Mathf.RoundToInt(GameConfig.GetOptional("meridian.width_after_boss3", 6f)),
+                    Mathf.RoundToInt(GameConfig.GetOptional("meridian.height_after_boss3", 6f)));
             string next = LastRegion ? "판 끝" : $"기물을 고르면 {RegionNames[_region + 1]}로";
-            ShowBanner($"{RegionName} 보스 격파! 은자 +{silver}{(_region == 0 ? " · 경맥도가 넓어졌어요 (6×4)" : _region == 1 ? " · 경맥도가 넓어졌어요 (6×5)" : "")} · {next}", 6f);
+            ShowBanner($"{RegionName} 보스 격파! 은자 +{silver}{(_region == 0 ? " · 경맥도가 넓어졌어요 (6×4)" : _region == 1 ? " · 경맥도가 넓어졌어요 (6×5)" : _region == 2 ? " · 경맥도가 넓어졌어요 (6×6)" : "")} · {next}", 6f);
         }
 
         // ── 도움

@@ -61,7 +61,7 @@ namespace AThousandDawns.Prototype
             var left = new List<string>();
             foreach (var id in EventIds) if (!_usedEvents.Contains(id)) left.Add(id);
             if (_region == 1) foreach (var id in TempleEventIds) if (!_usedEvents.Contains(id)) left.Add(id);
-            if (_region >= 2) foreach (var id in RiverEventIds) if (!_usedEvents.Contains(id)) left.Add(id);
+            if (_region == 2) foreach (var id in RiverEventIds) if (!_usedEvents.Contains(id)) left.Add(id);
             return left;
         }
 

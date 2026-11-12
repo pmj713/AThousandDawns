@@ -4,15 +4,16 @@ using UnityEngine;
 
 namespace AThousandDawns.Prototype
 {
-    // 지역 (판구조 시트): 죽림 → 폐사찰 → 장강 수채 (→ 천마총은 아직). 지역마다 일반 층 3개 · 고수 · 객잔 · 정비실 · 보스.
+    // 지역 (판구조 시트): 죽림 → 폐사찰 → 장강 수채 → 천마총 (마지막). 지역마다 일반 층 3개 · 고수 · 객잔 · 정비실 · 보스.
     // 보스를 쓰러뜨리면 보상 기물을 고른 뒤 다음 지역 1층 갈림길로 이어져요. 마지막 지역 보스면 판 끝 (승리).
     // 지역 배율 (몬스터 시트 15~17행): 적 체력 · 공격 × 배율 (일반 적 · 살수 · 고수 · 보스 모두).
     // 폐사찰 일반 적은 RoomBudget.Temple (망령·석상 나한·목탁승·파계승·등불 귀신).
     // 장강 수채 (몬스터 시트 17행: 체력 ×3.0 · 공격 ×1.6, 은자 탭 6행: 방당 26)의 일반 적은 RoomBudget.River (수적 졸개·작살수·쇠닻 거한·등패수·수귀·깃발수). 고수는 탁랑객, 보스는 수채주 철룡이에요.
+    // 천마총 (몬스터 시트 18행: 체력 ×4.5 · 공격 ×2.0, 은자 탭 7행: 방당 30): 일반 적·고수·보스가 생기기 전까지 장강 것을 천마총 배율로 써요.
     // 동시 근접 공격 (몬스터 B85): 2명에 지역마다 +1, 최대 4명.
     public sealed partial class RoomRun
     {
-        public static readonly string[] RegionNames = { "죽림", "폐사찰", "장강 수채" };
+        public static readonly string[] RegionNames = { "죽림", "폐사찰", "장강 수채", "천마총" };
 
         int _region;
         bool _regionAdvancePending; // 보스 보상을 고른 뒤 다음 지역으로
@@ -24,7 +25,7 @@ namespace AThousandDawns.Prototype
         static float RegionKey(string key, int region, float fallback) =>
             region == 0 ? fallback : GameConfig.GetOptional($"region.{region}.{key}", fallback);
 
-        static readonly float[] HealthByRegion = { 1f, 1.8f, 3f }, AttackByRegion = { 1f, 1.3f, 1.6f }, SilverByRegion = { 18f, 22f, 26f };
+        static readonly float[] HealthByRegion = { 1f, 1.8f, 3f, 4.5f }, AttackByRegion = { 1f, 1.3f, 1.6f, 2f }, SilverByRegion = { 18f, 22f, 26f, 30f };
         static float ByRegion(float[] table, int region) => table[Mathf.Clamp(region, 0, table.Length - 1)];
 
         float RegionHealth => RegionKey("health", _region, ByRegion(HealthByRegion, _region));
@@ -54,7 +55,7 @@ namespace AThousandDawns.Prototype
             if (director != null && director.MeleeTokens != null) director.MeleeTokens.Capacity = MeleeTokensForRegion;
         }
 
-        // 그 지역 등급표 (등급확률 시트 11~13행). 짙은 길은 다음 지역 표
+        // 그 지역 등급표 (등급확률 시트 11~15행). 짙은 길은 다음 지역 표 (천마총 짙은 길은 전용 표)
         float[] RegionGradeWeights() => GradeRow(_region);
         float[] DenseGradeWeights() => GradeRow(_region + 1);
 
@@ -69,6 +70,16 @@ namespace AThousandDawns.Prototype
             {
                 GameConfig.Get("item_grade_dense.common", 0.52f), GameConfig.Get("item_grade_dense.uncommon", 0.3f),
                 GameConfig.Get("item_grade_dense.rare", 0.14f), GameConfig.Get("item_grade_dense.legendary", 0.04f),
+            };
+            if (region == 3) return new[] // 천마총 (장강 짙은 길)
+            {
+                GameConfig.GetOptional("item_grade.r3.common", 0.4f), GameConfig.GetOptional("item_grade.r3.uncommon", 0.31f),
+                GameConfig.GetOptional("item_grade.r3.rare", 0.21f), GameConfig.GetOptional("item_grade.r3.legendary", 0.08f),
+            };
+            if (region >= 4) return new[] // 천마총 짙은 길 전용
+            {
+                GameConfig.GetOptional("item_grade.r3_dense.common", 0.34f), GameConfig.GetOptional("item_grade.r3_dense.uncommon", 0.32f),
+                GameConfig.GetOptional("item_grade.r3_dense.rare", 0.24f), GameConfig.GetOptional("item_grade.r3_dense.legendary", 0.1f),
             };
             return new[] // 장강 수채 (폐사찰 짙은 길)
             {
@@ -91,7 +102,7 @@ namespace AThousandDawns.Prototype
             if (!_regionAdvancePending || OffersOpen || (Player.Items != null && Player.Items.Pending != null)) return;
             _regionAdvancePending = false;
             _region++;
-            Player.UltimateStage = Mathf.Max(0, _region - 1); // 절초 경지: 폐사찰 보스를 넘으면 중단전 (무기 시트 52행)
+            Player.UltimateStage = Mathf.Max(0, _region - 1); // 절초 경지: 폐사찰 보스를 넘으면 중단전, 장강 보스를 넘으면 상단전 (무기 시트 52행)
             _masterDone = false;
             _masterChoiceShown = false;
             BeginFork(1);
