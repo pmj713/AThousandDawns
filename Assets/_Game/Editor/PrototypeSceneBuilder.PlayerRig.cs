@@ -45,7 +45,7 @@ namespace AThousandDawns.EditorTools
             foreach (var clip in clips)
             {
                 clip.name = clip.takeName.Split('|').Last();
-                clip.loopTime = clip.name == "Idle" || clip.name == "Run" || clip.name == "SkillVortex" || clip.name == "SkillHalo" || clip.name == "DaggerFlash";   // 비도 초식(소용돌이·호신륜·순간이동)은 도는 동안 반복
+                clip.loopTime = clip.name == "Idle" || clip.name == "Run" || clip.name == "SkillVortex" || clip.name == "SkillHalo" || clip.name == "DaggerFlash" || clip.name.StartsWith("CombatIdle");   // 비도 초식(소용돌이·호신륜·순간이동)은 도는 동안 반복
                 // 몸통 위치·방향은 동작에 구워 넣어 캐릭터가 제자리에서 움직여요 (이동은 걷기 스크립트가 해요)
                 clip.lockRootRotation = clip.lockRootHeightY = clip.lockRootPositionXZ = true;
                 clip.keepOriginalOrientation = clip.keepOriginalPositionY = clip.keepOriginalPositionXZ = true;
@@ -96,6 +96,8 @@ namespace AThousandDawns.EditorTools
             controller.AddParameter("SkillDash", AnimatorControllerParameterType.Trigger);
             controller.AddParameter("Hurt", AnimatorControllerParameterType.Trigger);
             controller.AddParameter("Dead", AnimatorControllerParameterType.Bool);
+            controller.AddParameter("Combat", AnimatorControllerParameterType.Bool);
+            controller.AddParameter("DaggerHold", AnimatorControllerParameterType.Bool);
             controller.AddParameter("DaggerFlash", AnimatorControllerParameterType.Bool);
             var sm = controller.layers[0].stateMachine;
 
@@ -207,6 +209,25 @@ namespace AThousandDawns.EditorTools
             toIdle.hasExitTime = false; toIdle.duration = 0.12f;
             toIdle.AddCondition(AnimatorConditionMode.Less, 0.1f, "Speed");
 
+            // 전투 대기: 적이 가까이 있으면(Combat) 서 있을 때 칼을 겨눈 자세, 비도를 들었으면(DaggerHold) 비도를 겨눈 자세로 바뀌어요
+            foreach (var (clipName, dagger) in new[] { ("CombatIdle", false), ("CombatIdleDagger", true) })
+            {
+                if (!all.ContainsKey(clipName)) continue;
+                var guard = State(clipName, 0f);
+                var into = idle.AddTransition(guard);
+                into.hasExitTime = false; into.duration = 0.25f;
+                into.AddCondition(AnimatorConditionMode.If, 0f, "Combat");
+                into.AddCondition(dagger ? AnimatorConditionMode.If : AnimatorConditionMode.IfNot, 0f, "DaggerHold");
+                var calm = guard.AddTransition(idle);
+                calm.hasExitTime = false; calm.duration = 0.35f;
+                calm.AddCondition(AnimatorConditionMode.IfNot, 0f, "Combat");
+                var swap = guard.AddTransition(idle);
+                swap.hasExitTime = false; swap.duration = 0.2f;
+                swap.AddCondition(dagger ? AnimatorConditionMode.IfNot : AnimatorConditionMode.If, 0f, "DaggerHold");
+                var go = guard.AddTransition(run);
+                go.hasExitTime = false; go.duration = 0.1f;
+                go.AddCondition(AnimatorConditionMode.Greater, 0.1f, "Speed");
+            }
             var toDash = sm.AddAnyStateTransition(dash);
             toDash.hasExitTime = false; toDash.duration = 0.03f; toDash.canTransitionToSelf = true;
             toDash.AddCondition(AnimatorConditionMode.If, 0f, "Dash");

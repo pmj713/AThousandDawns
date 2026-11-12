@@ -712,6 +712,52 @@ for f, stage in ((0, None), (6, "buckle"), (14, "kneel"), (26, "slump"), (40, "s
         die_pose(stage)
     key_all(f)
 actions.append((act, 0, 40))
+
+# 전투 대기(CombatIdle · 40프레임 반복): 적이 가까이 있을 때. 무게를 낮추고 왼발을 반 걸음 내밀어,
+#   칼끝을 앞 위로 겨눈 채 왼손은 검결로 가슴 앞에. 숨에 맞춰 칼끝이 살짝 오르내려요
+def combat_idle_pose(t):
+    ready_pose()
+    b = math.sin(t * 2 * math.pi)
+    set_rot("Spine", (X, 6 + 1.5 * b), (Z, -12)); set_rot("Chest", (Z, -6))
+    set_hips_height(-0.07 - 0.01 * b)
+    bpy.context.view_layer.update()
+    _limb("LeftUpperLeg", "LeftLowerLeg", "LeftFoot", Q_FOOT["Left"] + Vector((0.02, -0.22, 0)), Vector((0, -1, 0)))
+    _limb("RightUpperLeg", "RightLowerLeg", "RightFoot", Q_FOOT["Right"] + Vector((-0.02, 0.12, 0)), Vector((0, -1, 0)))
+    r = pose["RightUpperArm"].head.copy()
+    _limb("RightUpperArm", "RightLowerArm", "RightHand", r + Vector((0.08, -0.38, -0.22 + 0.01 * b)), Vector((-1, 0.4, -0.6)))
+    aim_sword(Vector((0.15, -0.85, 0.5 + 0.03 * b)))                        # 칼끝을 앞 위로 겨눠요
+    l = pose["LeftUpperArm"].head.copy()
+    _limb("LeftUpperArm", "LeftLowerArm", "LeftHand", l + Vector((-0.14, -0.3, -0.12)), Vector((1, 0.4, -0.6)))   # 검결: 가슴 앞
+
+
+act = new_action("CombatIdle")
+for f in range(0, 41, 8):
+    combat_idle_pose(f / 40); key_all(f)
+actions.append((act, 0, 40))
+
+
+# 비도 전투 대기(CombatIdleDagger): 무게를 낮추고 몸을 반쯤 튼 채, 손가락을 반쯤 펴 비도를 끼운 듯
+#   왼손은 앞으로 내밀어 비도를 겨눠요 (칼은 오른손에 쥔 채 허리 뒤로 늘어뜨려요)
+def dagger_idle_pose(t):
+    ready_pose()
+    b = math.sin(t * 2 * math.pi)
+    set_rot("Spine", (X, 5 + 1.5 * b), (Z, -18)); set_rot("Chest", (Z, -8))
+    set_hips_height(-0.08 - 0.01 * b)
+    bpy.context.view_layer.update()
+    _limb("LeftUpperLeg", "LeftLowerLeg", "LeftFoot", Q_FOOT["Left"] + Vector((0.02, -0.24, 0)), Vector((0, -1, 0)))
+    _limb("RightUpperLeg", "RightLowerLeg", "RightFoot", Q_FOOT["Right"] + Vector((-0.02, 0.14, 0)), Vector((0, -1, 0)))
+    hands(30, 55, GRIP_THUMB)                                                # 손가락을 반쯤 펴 비도를 끼운 듯
+    r = pose["RightUpperArm"].head.copy()
+    _limb("RightUpperArm", "RightLowerArm", "RightHand", r + Vector((-0.12, 0.12, -0.38 + 0.01 * b)), Vector((-1, 0.3, -0.4)))   # 칼은 허리 뒤로 늘어뜨려요
+    aim_sword(Vector((-0.1, 0.45, -0.88)))
+    l = pose["LeftUpperArm"].head.copy()
+    _limb("LeftUpperArm", "LeftLowerArm", "LeftHand", l + Vector((-0.05, -0.5, -0.08)), Vector((1, 0.3, -0.6)))   # 앞으로 겨눠요
+
+
+act = new_action("CombatIdleDagger")
+for f in range(0, 41, 8):
+    dagger_idle_pose(f / 40); key_all(f)
+actions.append((act, 0, 40))
 # 반복 동작은 처음·끝이 같은 키라 이어 붙어요. 보간은 부드럽게(베지어 기본)
 rig.animation_data.action = None
 rest_pose()
