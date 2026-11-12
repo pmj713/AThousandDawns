@@ -140,6 +140,7 @@ namespace AThousandDawns.Art
         string _thrownProp = "_Weapon_anchor";
         System.Reflection.PropertyInfo _transitionProp;   // 페이즈 전환 중인지 (IsTransitioning이 있고 전환 자세가 있는 적만)
         string _transitionState;
+        bool _hasIntro, _introDone;   // 보스·고수 등장 연출 (Intro 상태가 있을 때, 깨어나는 순간 한 번)
         bool _roaring;
         CultistBrain _cultist;      // 마교도: 광폭
         bool _frenzied;
@@ -159,6 +160,7 @@ namespace AThousandDawns.Art
             foreach (var st in new[] { "Roar", "Ascend", "ShadowRush" })
                 if (animator.HasState(0, Animator.StringToHash(st))) { _transitionState = st; break; }
             if (_transitionState != null) _transitionProp = brain.GetType().GetProperty("IsTransitioning");
+            _hasIntro = (brain.Rank == EnemyRank.Boss || brain.Rank == EnemyRank.Master) && animator.HasState(0, Animator.StringToHash("Intro"));
             _cultist = brain as CultistBrain;
             if (Resources.Load<Texture2D>($"{brain.Kind}_P2") != null) _phaseProp = brain.GetType().GetProperty("Phase");
             _brain = brain;
@@ -294,6 +296,13 @@ namespace AThousandDawns.Art
                 _animator.SetFloat(AttackSpeedId, 1f);
                 Play("Frenzy", 0.1f);
                 Tint(new Color(1f, 0.55f, 0.52f, 1f));
+            }
+            // 보스·고수 등장: 깨어나는 순간(방에 들어오면) 위세 있는 동작을 한 번 보여요. 곧바로 공격하면 공격 동작이 이어받아요
+            if (_hasIntro && !_introDone && _brain.IsAwake && !_brain.IsDead)
+            {
+                _introDone = true;
+                _animator.SetFloat(AttackSpeedId, 1f);
+                Play("Intro", 0.1f);
             }
             var phase = _brain.AttackPhase;
             // 금강불괴: 파계승은 버티는 자세(IsStanced), 혜광은 금강불괴 예고 동안 몸이 금빛
