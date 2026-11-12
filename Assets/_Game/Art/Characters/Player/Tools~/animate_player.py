@@ -666,6 +666,52 @@ for f, stage in ((0, None), (2, "cut2"), (5, "cut1"), (9, "cut1"), (12, None)):
         flash_pose(stage)
     key_all(f)
 actions.append((act, 0, 12))
+
+# 피격(Hurt, 맞아서 경직되는 동안 · 10프레임): 맞은 순간 윗몸이 뒤로 젖혀지고 고개가 꺾이며 두 팔이 벌어졌다가 → 준비 자세로 돌아와요
+def hurt_pose(k):
+    ready_pose()
+    set_rot("Spine", (X, -16 * k)); set_rot("Chest", (X, -10 * k)); set_rot("Neck", (X, -14 * k))
+    set_rot("RightUpperArm", (Y, -DOWN_R + 10 + 25 * k), (X, -20 + 30 * k))
+    set_rot("LeftUpperArm", (Y, DOWN_L - 25 * k), (X, 20 * k))
+    for side in ("Left", "Right"):
+        set_rot(f"{side}UpperLeg", (X, -8 - 10 * k)); set_rot(f"{side}LowerLeg", (X, 14 + 20 * k))
+    set_hips_height(-0.012 - 0.05 * k)
+
+
+act = new_action("Hurt")
+for f, k in ((0, 0.0), (2, 1.0), (5, 0.8), (10, 0.0)):
+    hurt_pose(k); key_all(f)
+actions.append((act, 0, 10))
+
+
+# 쓰러짐(Die · 40프레임, 끝 자세로 멈춰요): 무릎이 꺾여 털썩 꿇어앉고 → 앞으로 무너지며 왼손으로 땅을 짚고 고개를 떨궈요. 칼은 늘어뜨린 채
+def die_pose(stage):
+    rest_pose(); base_arms()
+    hands(40, GRIP, GRIP_THUMB)
+    drop = {"buckle": 0.35, "kneel": 0.62, "slump": 0.7}[stage]
+    set_hips_height(-drop)
+    bpy.context.view_layer.update()
+    for s in ("Left", "Right"):   # 무릎을 땅에 대고 발은 뒤로
+        back = 0.25 if stage == "buckle" else 0.45
+        _limb(f"{s}UpperLeg", f"{s}LowerLeg", f"{s}Foot", Q_FOOT[s] + Vector((0, back, 0.0)), Vector((0, -1, 0)))
+    lean = {"buckle": 10, "kneel": 4, "slump": 38}[stage]
+    set_rot("Spine", (X, lean)); set_rot("Chest", (X, lean * 0.4)); set_rot("Neck", (X, 25 if stage == "slump" else 8))
+    bpy.context.view_layer.update()
+    if stage == "slump":
+        s = pose["LeftUpperArm"].head.copy()
+        _limb("LeftUpperArm", "LeftLowerArm", "LeftHand", Vector((s.x + 0.05, s.y - 0.35, 0.05)), Vector((1, 0.4, -0.3)))   # 왼손으로 땅을 짚어요
+    set_rot("RightUpperArm", (Y, -(DOWN_R - 5)), (X, 10)); set_rot("RightLowerArm", (X, -10))
+    aim_sword(Vector((0.1, -0.2, -1)))                                    # 칼끝이 땅을 향해 늘어져요
+
+
+act = new_action("Die")
+for f, stage in ((0, None), (6, "buckle"), (14, "kneel"), (26, "slump"), (40, "slump")):
+    if stage is None:
+        hurt_pose(1.0)
+    else:
+        die_pose(stage)
+    key_all(f)
+actions.append((act, 0, 40))
 # 반복 동작은 처음·끝이 같은 키라 이어 붙어요. 보간은 부드럽게(베지어 기본)
 rig.animation_data.action = None
 rest_pose()

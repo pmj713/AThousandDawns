@@ -94,6 +94,8 @@ namespace AThousandDawns.EditorTools
             controller.AddParameter("SkillPalm", AnimatorControllerParameterType.Trigger);
             controller.AddParameter("SkillWave", AnimatorControllerParameterType.Trigger);
             controller.AddParameter("SkillDash", AnimatorControllerParameterType.Trigger);
+            controller.AddParameter("Hurt", AnimatorControllerParameterType.Trigger);
+            controller.AddParameter("Dead", AnimatorControllerParameterType.Bool);
             controller.AddParameter("DaggerFlash", AnimatorControllerParameterType.Bool);
             var sm = controller.layers[0].stateMachine;
 
@@ -175,6 +177,25 @@ namespace AThousandDawns.EditorTools
                 toDc.hasExitTime = false; toDc.duration = 0.03f; toDc.canTransitionToSelf = true;
                 toDc.AddCondition(AnimatorConditionMode.If, 0f, "SkillDash");
             }
+            // 피격: 맞아 경직되는 동안 윗몸이 뒤로 젖혀졌다 돌아와요 (0.3초) · 쓰러짐: 무릎 꿇었다 앞으로 무너져 손을 짚은 채 멈춰요
+            AnimatorState hurt = null;
+            if (all.ContainsKey("Hurt"))
+            {
+                hurt = State("Hurt", 0.3f);
+                var toHurt = sm.AddAnyStateTransition(hurt);
+                toHurt.hasExitTime = false; toHurt.duration = 0.03f; toHurt.canTransitionToSelf = true;
+                toHurt.AddCondition(AnimatorConditionMode.If, 0f, "Hurt");
+            }
+            if (all.ContainsKey("Die"))
+            {
+                var die = State("Die", 1.3f);
+                var toDie = sm.AddAnyStateTransition(die);
+                toDie.hasExitTime = false; toDie.duration = 0.05f; toDie.canTransitionToSelf = false;
+                toDie.AddCondition(AnimatorConditionMode.If, 0f, "Dead");
+                var back = die.AddTransition(idle);   // 되살아나면 (다시 시작) 대기로
+                back.hasExitTime = false; back.duration = 0.1f;
+                back.AddCondition(AnimatorConditionMode.IfNot, 0f, "Dead");
+            }
             // 평타는 원래 속도로 재생해요. 끝나면 대기로 넘어가고, 다음 타가 오면 이어 베요
             var attacks = new[] { State("Attack1", 0f), State("Attack2", 0f), State("Attack3", 0f) };
             sm.defaultState = idle;
@@ -198,7 +219,7 @@ namespace AThousandDawns.EditorTools
             }
             // 대시·공격이 끝나면: 걷기 스크립트는 공격·대시 중엔 Speed를 0으로 주다가 끝나면 움직임을 풀어요.
             // 그래서 Speed가 오르면 바로 달리기로, 아니면 동작이 끝까지 돈 뒤 대기로
-            foreach (var st in attacks.Append(dash).Append(skill).Append(quake).Append(flash).Append(palm).Append(wave).Append(dashCut).Where(s => s != null))
+            foreach (var st in attacks.Append(dash).Append(skill).Append(quake).Append(flash).Append(palm).Append(wave).Append(dashCut).Append(hurt).Where(s => s != null))
             {
                 var r = st.AddTransition(run);
                 r.hasExitTime = false; r.duration = 0.1f;
