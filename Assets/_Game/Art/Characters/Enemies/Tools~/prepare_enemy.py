@@ -2095,6 +2095,36 @@ if "demonmoves" in EXTRAS:
     rig.animation_data.action = None
     reset_pose()
 
+
+# 갇힌 무림맹 고수 (captive, 천마총 이벤트): Captive — 무릎 꿇고 고개를 떨군 채 두 손이 등 뒤로 묶여 있어요 (숨 쉬듯 반복)
+#   Freed — 사슬이 풀리면 손을 앞으로 풀고 천천히 일어나 포권(주먹을 손바닥으로 감싸 가슴 앞)으로 인사해요
+if "captive" in EXTRAS:
+    def captive_pose(val):
+        stage, t = val
+        feet_back = {s: FEET[s] + Vector((0, 0.42, 0.0)) for s in ("Left", "Right")}   # 무릎 꿇으면 발은 뒤로
+        if stage == "kneel":
+            lower_hips(-0.62 + 0.01 * math.sin(t * 2 * math.pi), feet_back, dy=0.12)
+            bend("Spine", Vector((1, 0, 0)), 18 + 2 * math.sin(t * 2 * math.pi)); bend("Neck", Vector((1, 0, 0)), 30)
+            back = (pb["LeftArm"].head + pb["RightArm"].head) / 2 + Vector((0, 0.3, -0.45))
+            for s, sx in (("Left", 1), ("Right", -1)):
+                arm(s, back + Vector((sx * 0.06, 0, 0)), Vector((sx, -0.3, -0.5)))       # 두 손목이 등 뒤에서 모여요
+        elif stage == "rise":
+            lower_hips(-0.3, {s: FEET[s] + Vector((0, 0.15, 0)) for s in ("Left", "Right")}, dy=0.05)
+            bend("Spine", Vector((1, 0, 0)), 14); bend("Neck", Vector((1, 0, 0)), 10)
+            for s, sx in (("Left", 1), ("Right", -1)):
+                sh = pb[f"{s}Arm"].head.copy()
+                arm(s, sh + Vector((sx * 0.15, -0.2, -0.5)), Vector((sx, 0.3, -0.3)))
+        else:   # salute: 포권 — 오른 주먹을 왼 손바닥으로 감싸 가슴 앞, 고개를 살짝 숙여요
+            lower_hips(0.0, FEET)
+            bend("Spine", Vector((1, 0, 0)), 8); bend("Neck", Vector((1, 0, 0)), 12)
+            chest = (pb["LeftArm"].head + pb["RightArm"].head) / 2 + Vector((0, -0.32, -0.12))
+            arm("Right", chest + Vector((-0.02, 0, 0)), Vector((-1, 0.4, -1)))
+            arm("Left", chest + Vector((0.05, -0.04, 0.02)), Vector((1, 0.4, -1)))
+    make_action("Captive", [(f, ("kneel", f / 40)) for f in range(0, 41, 8)], captive_pose)
+    make_action("Freed", [(0, ("kneel", 0)), (12, ("rise", 0)), (24, ("salute", 0)), (44, ("salute", 0))], captive_pose)
+    rig.animation_data.action = None
+    reset_pose()
+
 # 옮겨 굽는 데 쓴 플레이어 뼈대·메시·동작은 지워요 (내보낼 때 같이 나가지 않게)
 for o in player_objs:
     bpy.data.objects.remove(o, do_unlink=True)

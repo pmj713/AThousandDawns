@@ -70,10 +70,10 @@ namespace AThousandDawns.EditorTools
         }
 
         // 모델 고유 동작 중 반복하는 것
-        static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "ShoulderRun", "Idle", "Run", "Chant", "Rain", "Drag", "Whirl" };
+        static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "ShoulderRun", "Idle", "Run", "Chant", "Rain", "Drag", "Whirl", "Captive" };
 
         // 고유 동작만 쓰는 적 (Generic으로 가져와요)
-        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha", "Pirate", "Harpooner", "Anchor", "Rattan", "WaterGhost", "FlagBearer", "Takrang", "IronDragon", "Cultist", "BloodArcher", "BloodShaman", "DemonGuard", "BloodBomber", "BloodShadow", "HeavenlyDemon" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
+        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha", "Pirate", "Harpooner", "Anchor", "Rattan", "WaterGhost", "FlagBearer", "Takrang", "IronDragon", "Cultist", "BloodArcher", "BloodShaman", "DemonGuard", "BloodBomber", "BloodShadow", "HeavenlyDemon", "CaptiveHero" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
 
         static readonly Dictionary<string, MoveSpec[]> InkEnemyMoves = new Dictionary<string, MoveSpec[]>
         {

@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -22,6 +23,56 @@ namespace AThousandDawns.EditorTools
             var hot = GetInkMaterial("Ink_Tomb_HotIron", "#C2410C", 0.9f);   // 녹아 달아오른 쇠
             SaveTombEvent(BloodPoolEvent(marble, blood, bone, stoneMat), "TombEvent_BloodPool");
             SaveTombEvent(DemonAltarEvent(marble, red, blood, bone, iron, hot, stoneMat, roofX), "TombEvent_DemonAltar");
+            BuildCaptiveHeroEvent(stoneMat, iron);
+        }
+
+        // 갇힌 무림맹 고수: 무릎 꿇고 손이 등 뒤로 묶인 고수(Captive 반복) + 뒤의 돌기둥 둘에서 손목으로 이어진 쇠사슬("Chains" 자식).
+        //   구출하면 코드가 애니메이터 트리거 "Free"를 켜고 "Chains"를 끄면 돼요 → 손을 풀고 일어나 포권(Freed, 끝 자세에서 멈춤)
+        static void BuildCaptiveHeroEvent(Material stone, Material iron)
+        {
+            var (modelPrefab, _, _) = SetupEnemy("CaptiveHero", 1f);
+            if (modelPrefab == null) return;   // 모델이 아직 없으면 건너뛰어요
+            string modelPath = $"{CharactersFolder}/CaptiveHero/CaptiveHero_Rigged.fbx";
+            var clips = AssetDatabase.LoadAllAssetsAtPath(modelPath).OfType<AnimationClip>().Where(c => !c.name.StartsWith("__preview__")).ToDictionary(c => c.name);
+            if (!clips.TryGetValue("Captive", out var captive) || !clips.TryGetValue("Freed", out var freed)) return;
+            string controllerPath = $"{TombEventFolder}/CaptiveHero_Event.controller";
+            AssetDatabase.DeleteAsset(controllerPath);
+            var controller = UnityEditor.Animations.AnimatorController.CreateAnimatorControllerAtPath(controllerPath);
+            controller.AddParameter("Free", AnimatorControllerParameterType.Trigger);
+            var sm = controller.layers[0].stateMachine;
+            var held = sm.AddState("Captive"); held.motion = captive;
+            var free = sm.AddState("Freed"); free.motion = freed;
+            sm.defaultState = held;
+            var go = held.AddTransition(free);
+            go.hasExitTime = false; go.duration = 0.15f;
+            go.AddCondition(UnityEditor.Animations.AnimatorConditionMode.If, 0f, "Free");
+
+            var root = new GameObject("TombEvent_CaptiveHero (갇힌 무림맹 고수)");
+            var hero = (GameObject)PrefabUtility.InstantiatePrefab(modelPrefab);
+            PrefabUtility.UnpackPrefabInstance(hero, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+            hero.name = "Hero";
+            hero.transform.SetParent(root.transform, false);
+            hero.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);   // 방 입구(남쪽)를 봐요
+            var animator = hero.GetComponent<Animator>();
+            animator.runtimeAnimatorController = controller;
+            var chains = new GameObject("Chains").transform;
+            chains.SetParent(root.transform, false);
+            Vector3 wrists = new Vector3(0f, 0.65f, 0.3f);   // 무릎 꿇은 고수의 등 뒤 손목
+            for (int s = -1; s <= 1; s += 2)
+            {
+                var post = new Vector3(s * 0.75f, 0f, 0.75f);
+                Block(chains, "Post", PrimitiveType.Cube, post + Vector3.up * 0.7f, new Vector3(0.3f, 1.4f, 0.3f), Quaternion.identity, stone);
+                var from = post + Vector3.up * 1.05f;
+                var link = new GameObject("Chain");
+                link.transform.SetParent(chains, false);
+                link.transform.localPosition = (from + wrists) * 0.5f;
+                link.transform.localRotation = Quaternion.LookRotation(Vector3.Cross(wrists - from, Vector3.up)) ;
+                link.transform.localScale = new Vector3((wrists - from).magnitude / 1.4f, 0.4f, 1f);
+                link.AddComponent<MeshFilter>().sharedMesh = GetHangingChainMesh();
+                link.AddComponent<MeshRenderer>().sharedMaterial = iron;
+            }
+            Block(chains, "Shackle", PrimitiveType.Cylinder, wrists, new Vector3(0.18f, 0.05f, 0.18f), Quaternion.Euler(90f, 0f, 0f), iron);
+            SaveTombEvent(root, "TombEvent_CaptiveHero");
         }
 
         static void SaveTombEvent(GameObject root, string name)
