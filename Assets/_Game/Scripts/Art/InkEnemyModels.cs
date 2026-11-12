@@ -511,8 +511,13 @@ namespace AThousandDawns.Art
             // 무거운 갑옷·술사는 앞으로 고꾸라져요, 혈폭자는 부풀어 터지고, 수귀는 물 밑으로 꺼져요
             bool forward = _brain.Kind == EnemyKind.DemonGuard || _brain.Kind == EnemyKind.BloodShaman || _brain.Kind == EnemyKind.Arhat;
             var style = _brain.Kind == EnemyKind.BloodBomber ? InkCorpse.Style.Swell : _brain.Kind == EnemyKind.WaterGhost ? InkCorpse.Style.Sink : InkCorpse.Style.Fall;
-            // 천마: 넘어지지 않고 검을 떨군 채 무릎 꿇고 고개를 숙여 엔딩 내내 남아요
-            if (_animator.HasState(0, Animator.StringToHash("Defeat"))) { style = InkCorpse.Style.Kneel; _animator.SetFloat(AttackSpeedId, 1f); Play("Defeat", 0.15f); }
+            // 마지막 동작(Defeat)이 있는 보스: 넘어지지 않고 그 자세로 무너지며 무기를 떨궈요. 천마는 엔딩 내내 남고, 다른 보스는 잠시 뒤 먹으로 흩어져요
+            if (_animator.HasState(0, Animator.StringToHash("Defeat")))
+            {
+                style = _brain.Kind == EnemyKind.HeavenlyDemon ? InkCorpse.Style.Kneel : InkCorpse.Style.Dissolve;
+                _animator.SetFloat(AttackSpeedId, 1f);
+                Play("Defeat", 0.15f);
+            }
             corpse.AddComponent<InkCorpse>().Init(_animator, beast ? Vector3.forward : Vector3.right,
                 _brain.Kind == EnemyKind.Snake ? 160f : beast ? 88f : forward ? 80f : -85f, style);
             enabled = false;
@@ -529,7 +534,15 @@ namespace AThousandDawns.Art
     //   Sink(수귀): 선 채로 물 밑으로 꺼지듯 빠르게 가라앉아요
     public class InkCorpse : MonoBehaviour
     {
-        public enum Style { Fall, Swell, Sink, Kneel }
+        public enum Style { Fall, Swell, Sink, Kneel, Dissolve }
+        //   Dissolve(보스): Kneel처럼 마지막 자세로 무너져 무기를 떨군 뒤, 잠시 있다가 발밑부터 먹으로 흩어져 사라져요 (InkCharacter _Dissolve)
+        const float DissolveHold = 1.8f, DissolveTime = 1.6f;
+        static readonly int DissolveId = Shader.PropertyToID("_Dissolve");
+        MaterialPropertyBlock _dissolveBlock;
+        Renderer[] _dissolveRenderers;
+        bool _dissolveStarted;
+        // 보스가 먹으로 흩어지기 시작할 때 (자리, 흩어지는 시간). 아트 2 먹 흩날림 이펙트용
+        public static event System.Action<Vector3, float> BossDissolve;
         const float FallTime = 0.4f, LieTime = 1.2f, SinkTime = 1.4f, SinkDepth = 0.8f;
         const float SwellScale = 1.4f, GhostSinkTime = 0.7f, GhostSinkDepth = 2.4f;
         float _swellTime = 1.2f;   // 혈폭자 터지기까지 (bloodbomber.blast_fuse)
@@ -553,9 +566,9 @@ namespace AThousandDawns.Art
             if (_animator != null)
             {
                 _animator.SetFloat(Animator.StringToHash("Speed"), 0f);
-                _animator.speed = style == Style.Fall ? 0.3f : style == Style.Kneel ? 1f : 0f;   // 넘어가는 동안 굳어 가요 (무릎 꿇기는 동작을 끝까지)
+                _animator.speed = style == Style.Fall ? 0.3f : style == Style.Kneel || style == Style.Dissolve ? 1f : 0f;   // 넘어가는 동안 굳어 가요 (마지막 동작은 끝까지)
             }
-            if (style == Style.Kneel && _animator != null) DropWeapon();
+            if ((style == Style.Kneel || style == Style.Dissolve) && _animator != null) DropWeapon();
         }
 
         // 손의 무기를 그 자세 그대로 떼어 내 바닥으로 떨어뜨려요 (스킨 메시를 지금 모양으로 구워서)
@@ -588,6 +601,35 @@ namespace AThousandDawns.Art
         void Update()
         {
             _t += Time.deltaTime;
+            if (_style == Style.Dissolve)
+            {
+                if (_dropped != null)   // 무기가 기울며 툭 떨어져 바닥에 누워요
+                {
+                    float k = Mathf.Clamp01(_t / 0.35f);
+                    _dropped.position = _dropFrom + Vector3.down * _dropDown * k * k;
+                    _dropped.rotation = Quaternion.Slerp(_dropRot, Quaternion.Euler(0f, _dropRot.eulerAngles.y, 0f) * Quaternion.Euler(0f, 0f, 90f), k);
+                }
+                float d = Mathf.Clamp01((_t - DissolveHold) / DissolveTime);
+                if (d <= 0f) return;
+                if (!_dissolveStarted)
+                {
+                    _dissolveStarted = true;
+                    if (_animator != null) _animator.speed = 0f;   // 흩어지는 동안 자세는 굳어요
+                    _dissolveRenderers = GetComponentsInChildren<Renderer>(true);
+                    _dissolveBlock = new MaterialPropertyBlock();
+                    BossDissolve?.Invoke(transform.position, DissolveTime);
+                }
+                float amount = d * d * (3f - 2f * d);
+                foreach (var r in _dissolveRenderers)
+                {
+                    if (r == null) continue;
+                    r.GetPropertyBlock(_dissolveBlock);
+                    _dissolveBlock.SetFloat(DissolveId, amount);
+                    r.SetPropertyBlock(_dissolveBlock);
+                }
+                if (d >= 1f) Destroy(gameObject);
+                return;
+            }
             if (_style == Style.Kneel)
             {
                 if (_dropped != null)   // 칼이 기울며 툭 떨어져 바닥에 누워요

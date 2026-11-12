@@ -88,6 +88,7 @@ namespace AThousandDawns.EditorTools
             // 녹림왕 (고유 동작): 대도 휘두르기(오른쪽 뒤로 감았다 허리째 가로 베기) · 돌진(낮게 숙인 준비 → 대도를 끌며 달리기) → 끝에서 내려찍기 · 회전베기
             ["Nokrim"] = new[]
             {
+                new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },   // 최후: 마지막 자세로 무너진 뒤 먹으로 흩어져요 (InkCorpse.Style.Dissolve)
                 new MoveSpec { attack = "대도 휘두르기", state = "Sweep", clips = new[] { "Sweep" } },
                 new MoveSpec { state = "ChargeReady", clips = new[] { "ChargeReady" }, mode = MoveMode.Run },
                 new MoveSpec { attack = "돌진", state = "Charge", clips = new[] { "ChargeRun" }, mode = MoveMode.Run, speed = 1.4f, after = "Slam", ready = "ChargeReady" },
@@ -149,6 +150,7 @@ namespace AThousandDawns.EditorTools
             // 수채주 철룡 (장강 보스, 유성추): 휘두르기 · 내려찍기 · 사슬 당기기 · 수하 부르기(호령) · 물기둥(땅 구르기). 2페이즈 전환엔 Roar (InkEnemyAnimator가 IsTransitioning을 보고)
             ["IronDragon"] = new[]
             {
+                new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },   // 최후: 마지막 자세로 무너진 뒤 먹으로 흩어져요 (InkCorpse.Style.Dissolve)
                 new MoveSpec { attack = "유성추 휘두르기", state = "MeteorSwing", clips = new[] { "MeteorSwing" } },
                 new MoveSpec { attack = "유성추 내려찍기", state = "MeteorSlam", clips = new[] { "MeteorSlam" } },
                 new MoveSpec { attack = "사슬 당기기", state = "ChainThrow", clips = new[] { "ChainThrow" } },
@@ -197,6 +199,7 @@ namespace AThousandDawns.EditorTools
             // 혈불 (폐사찰 보스): 손바닥 내려찍기 · 염불(합장 반복) · 피의 비(두 팔을 하늘로 반복) · 팔 휘두르기(2페이즈, 좌우 세 번). 목탁승 부르기는 기본 Attack(손짓)
             ["BloodBuddha"] = new[]
             {
+                new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },   // 최후: 마지막 자세로 무너진 뒤 먹으로 흩어져요 (InkCorpse.Style.Dissolve)
                 new MoveSpec { attack = "손바닥 내려찍기", state = "Palm", clips = new[] { "Palm" } },
                 new MoveSpec { state = "Palm3", clips = new[] { "Palm3" } },   // 2페이즈 손바닥 연타: 오른손·왼손·오른손 0.4초 간격 (InkEnemyAnimator가 Palm 대신 골라요)
                 new MoveSpec { attack = "염불", state = "Chant", clips = new[] { "Chant" }, mode = MoveMode.Loop },
