@@ -4957,3 +4957,11 @@ MonoBehaviour:
     value: 120
     unit: "\uC740\uC790"
     note: "\uCC9C\uB9C8\uCD1D \uB9C8\uAD50 \uC81C\uB2E8 \uBD80\uC218\uAE30: \uC740\uC790 +"
+  - key: relic.base_capacity
+    value: 1
+    unit: "\uCE78"
+    note: "\uC720\uD488\uB85D \uAE30\uBCF8 \uAE30\uC5B5 \uC6A9\uB7C9 (\uCCAB \uCC9C\uB9C8 \uACA9\uD30C \uD6C4. \uD68C\uADC0\uB85D \uC720\uD488 \uAC00\uC9C0 \uBD09\uC6B0\uB9AC\uB9C8\uB2E4 +1)"
+  - key: relic.cost_legendary
+    value: 2
+    unit: "\uCE78"
+    note: "\uC804\uC124 \uC720\uD488\uC774 \uCC28\uC9C0\uD558\uB294 \uAE30\uC5B5 (\uB098\uBA38\uC9C0 \uB4F1\uAE09\uC740 1)"

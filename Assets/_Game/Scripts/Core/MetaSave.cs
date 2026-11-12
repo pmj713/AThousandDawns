@@ -23,6 +23,8 @@ namespace AThousandDawns.Core
         public bool tutorialFloorDone;  // 입문 죽림 (첫 판 1층 고정 구성)을 한 번이라도 통과했는가
         public List<string> seenHints = new List<string>(); // 이미 본 첫 안내
         public List<string> seenItems = new List<string>(); // 한 번이라도 얻어 본 기물 (기물 도감)
+        public List<string> relics = new List<string>();     // 유품록: 천마를 격파한 판에 지녔던 기물
+        public List<string> relicPicks = new List<string>(); // 사당에서 고른, 다음 판에 지니고 시작할 유품
 
         // 테스트에서 실제 저장 파일을 건드리지 않게 바꿔요
         public static string PathOverride;
@@ -39,6 +41,8 @@ namespace AThousandDawns.Core
                     if (meta.bloomed == null) meta.bloomed = new List<string>();
                     if (meta.seenHints == null) meta.seenHints = new List<string>();
                     if (meta.seenItems == null) meta.seenItems = new List<string>();
+                    if (meta.relics == null) meta.relics = new List<string>();
+                    if (meta.relicPicks == null) meta.relicPicks = new List<string>();
                     return meta;
                 }
             }

@@ -131,8 +131,12 @@ namespace AThousandDawns.Prototype
                 if (resume && RestoreRun()) return; // 시작 화면 "이어하기": 저장한 판부터
                 RunSave.Delete(); // 새 판 (남아 있던 저장은 버려요)
                 if (StartsInVillage()) EnterVillage(); // 첫 사망 뒤부터 마을에서
-                else if (StartsTutorial()) BeginTutorialFloor(); // 처음엔 입문 죽림
-                else BeginFork(1);
+                else
+                {
+                    GrantRelics(); // 유품록에서 고른 유품
+                    if (StartsTutorial()) BeginTutorialFloor(); // 처음엔 입문 죽림
+                    else BeginFork(1);
+                }
             }
         }
 
@@ -328,6 +332,7 @@ namespace AThousandDawns.Prototype
             PlaceCrack(room);
             PlaceJars(room);
             PlacePouch(room);
+            PlaceEventProp(room); // 천마총 이벤트 방 소품
 
             if (room.HasFight && !room.Cleared)
             {
@@ -574,6 +579,7 @@ namespace AThousandDawns.Prototype
             {
                 _heroFight = false;
                 _heroShield = true;
+                FreeCaptiveHero(); // 고수가 사슬을 풀고 일어나 포권
                 text += " · 무림맹 고수를 구했어요, 천마전에서 보호막을 둘러 줄 거예요";
             }
             if (_tollFight)

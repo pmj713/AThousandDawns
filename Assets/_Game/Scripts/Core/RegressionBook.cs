@@ -44,10 +44,10 @@ namespace AThousandDawns.Core
             new BookNode { Id = "insight5", Name = "심득 +5 (5차)", Branch = "줄기", Prereq = "insight4", DefaultCost = 540, Ready = true, Effect = "면벽수련 심득 +5" },
 
             // 유품 (겨울 가지, 첫 천마 격파 후 개화)
-            new BookNode { Id = "relic1", Name = "기억 용량 +1 (1차)", Branch = "유품", Prereq = Root, DefaultCost = 110, Condition = "첫 천마 격파 후", Effect = "전생의 유품 기억 용량 +1" },
-            new BookNode { Id = "relic2", Name = "기억 용량 +1 (2차)", Branch = "유품", Prereq = "relic1", DefaultCost = 160, Condition = "첫 천마 격파 후", Effect = "전생의 유품 기억 용량 +1" },
-            new BookNode { Id = "relic3", Name = "기억 용량 +1 (3차)", Branch = "유품", Prereq = "relic2", DefaultCost = 220, Condition = "첫 천마 격파 후", Effect = "전생의 유품 기억 용량 +1" },
-            new BookNode { Id = "relic4", Name = "기억 용량 +1 (4차)", Branch = "유품", Prereq = "relic3", DefaultCost = 270, Condition = "첫 천마 격파 후", Effect = "전생의 유품 기억 용량 +1" },
+            new BookNode { Id = "relic1", Name = "기억 용량 +1 (1차)", Branch = "유품", Prereq = Root, DefaultCost = 110, Condition = "첫 천마 격파 후", Ready = true, Effect = "전생의 유품 기억 용량 +1" },
+            new BookNode { Id = "relic2", Name = "기억 용량 +1 (2차)", Branch = "유품", Prereq = "relic1", DefaultCost = 160, Condition = "첫 천마 격파 후", Ready = true, Effect = "전생의 유품 기억 용량 +1" },
+            new BookNode { Id = "relic3", Name = "기억 용량 +1 (3차)", Branch = "유품", Prereq = "relic2", DefaultCost = 220, Condition = "첫 천마 격파 후", Ready = true, Effect = "전생의 유품 기억 용량 +1" },
+            new BookNode { Id = "relic4", Name = "기억 용량 +1 (4차)", Branch = "유품", Prereq = "relic3", DefaultCost = 270, Condition = "첫 천마 격파 후", Ready = true, Effect = "전생의 유품 기억 용량 +1" },
         };
 
         static Dictionary<string, BookNode> _byId;
@@ -128,6 +128,19 @@ namespace AThousandDawns.Core
         public static bool ForgeUnlocked(MetaSave meta) => Bloomed(meta, "forge");
 
         public static bool DaggerUnlocked(MetaSave meta) => Bloomed(meta, "flying_dagger");
+
+        // 유품록 기억 용량: 첫 천마 격파 후 기본 1, 유품 가지 봉우리마다 +1 (최대 5)
+        public static int RelicCapacity(MetaSave meta)
+        {
+            if (meta.finalBossKills <= 0) return 0;
+            int cap = UnityEngine.Mathf.RoundToInt(GameConfig.GetOptional("relic.base_capacity", 1f));
+            foreach (var id in new[] { "relic1", "relic2", "relic3", "relic4" }) if (Bloomed(meta, id)) cap++;
+            return cap;
+        }
+
+        // 유품 하나가 차지하는 기억 (전설은 2)
+        public static int RelicCost(AThousandDawns.Items.ItemGrade grade) =>
+            grade == AThousandDawns.Items.ItemGrade.Legendary ? UnityEngine.Mathf.RoundToInt(GameConfig.GetOptional("relic.cost_legendary", 2f)) : 1;
 
         // 풀린 기물 꾸러미 수 (0~2)
         public static int ItemPacks(MetaSave meta) => Bloomed(meta, "item_pack2") ? 2 : Bloomed(meta, "item_pack1") ? 1 : 0;

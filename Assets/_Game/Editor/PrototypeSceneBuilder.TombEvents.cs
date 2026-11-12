@@ -78,8 +78,21 @@ namespace AThousandDawns.EditorTools
         static void SaveTombEvent(GameObject root, string name)
         {
             StripColliders(root.transform);
-            PrefabUtility.SaveAsPrefabAsset(root, $"{TombEventFolder}/{name}.prefab");
+            var prefab = PrefabUtility.SaveAsPrefabAsset(root, $"{TombEventFolder}/{name}.prefab");
             Object.DestroyImmediate(root);
+            // RoomRun이 이벤트 방에 들어갈 때 세워요 (RoomRun.EventProps)
+            string field = name switch
+            {
+                "TombEvent_BloodPool" => "bloodPoolProp",
+                "TombEvent_DemonAltar" => "demonAltarProp",
+                "TombEvent_CaptiveHero" => "captiveHeroProp",
+                _ => null,
+            };
+            var run = Object.FindFirstObjectByType<AThousandDawns.Prototype.RoomRun>(FindObjectsInactive.Include);
+            if (run == null || field == null) return;
+            var so = new SerializedObject(run);
+            so.FindProperty(field).objectReferenceValue = prefab;
+            so.ApplyModifiedPropertiesWithoutUndo();
         }
 
         // 피의 연못 (지름 약 4.4): 꺼진 바닥 둘레의 깨진 판석, 검붉은 수면, 떠 있는 해골·뼈, 가장자리로 흘러넘친 핏자국
