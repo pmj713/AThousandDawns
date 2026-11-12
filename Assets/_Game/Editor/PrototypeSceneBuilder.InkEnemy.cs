@@ -69,6 +69,14 @@ namespace AThousandDawns.EditorTools
             public float seconds, speed;
         }
 
+        // 보스·고수 등장 연출에 쓸 고유 동작: 녹림왕 대도 내려꽂기 · 청죽객 섬광 베기 · 마웅 땅 내려치기 · 혜광 금강불괴 · 혈불 두 팔 하늘로
+        //   · 탁랑객 물결 베기 · 철룡 포효 · 혈영검마 그림자 돌진 · 천마 마기 터뜨리기
+        static readonly Dictionary<string, string> IntroClips = new Dictionary<string, string>
+        {
+            ["Nokrim"] = "Slam", ["Qingzhu"] = "Flash", ["IronFist"] = "Quake", ["Hyegwang"] = "Vajra", ["BloodBuddha"] = "Rain",
+            ["Takrang"] = "WaveCut", ["IronDragon"] = "Roar", ["BloodShadow"] = "ShadowRush", ["HeavenlyDemon"] = "Burst",
+        };
+
         // 모델 고유 동작 중 반복하는 것
         static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "ShoulderRun", "Idle", "Run", "Chant", "Rain", "Drag", "Whirl", "Captive" };
 
@@ -357,6 +365,9 @@ namespace AThousandDawns.EditorTools
                     AddMove(spec.state, chain, spec.mode, spec.seconds, spec.speed);
                     if (spec.attack != null) moves.Add(new Move { attack = spec.attack, state = spec.state, mode = spec.mode, after = spec.after, ready = spec.ready });
                 }
+            // 등장 연출 (보스·고수가 깨어나는 순간 한 번, InkEnemyAnimator): 저마다 위세 있는 동작을 1.4초에 그대로 재생해요
+            if (IntroClips.TryGetValue(name, out var introName) && clips.TryGetValue(introName, out var introClip))
+                AddMove("Intro", new[] { introClip }, MoveMode.Play, 1.4f, 0f);
 
             // 재질: 수묵 캐릭터 셰이더 + VARCO 색 텍스처. 채도는 지역 색 양(_InkColorAmount)을 따라요
             var body = GetInkMaterial($"Ink_{name}_Body", "#FFFFFF", 0.45f);
