@@ -506,12 +506,18 @@ namespace AThousandDawns.EditorTools
             var riverAir = new GameObject("River Atmosphere (물안개·갈대 솜)");
             riverAir.SetActive(false);
             riverAir.AddComponent<AThousandDawns.Art.InkRiverAir>();
+            // 천마총 (지역 3, 아트2): 금 간 검은 대리석 바닥 · 붉은 안개와 재·불씨
+            const string TombFloor = "Assets/_Game/Art/Env/Tomb/Floor_Tomb.png";
+            ImportAsTiledTexture(TombFloor);
+            var tombAir = new GameObject("Tomb Atmosphere (붉은 안개·재·불씨)");
+            tombAir.SetActive(false);
+            tombAir.AddComponent<AThousandDawns.Art.InkTombAir>();
 
             var look = new GameObject("Ink Region Look").AddComponent<AThousandDawns.Art.InkRegionLook>();
             look.Setup(floorMat,
-                new Texture[] { null, AssetDatabase.LoadAssetAtPath<Texture2D>($"{TempleArtFolder}/Floor_Temple.png"), AssetDatabase.LoadAssetAtPath<Texture2D>(RiverFloor) },
-                new[] { bambooGroup, templeGroup, templeGroup },
-                new[] { new GameObject("죽림 분위기 (없음)"), air, riverAir },
+                new Texture[] { null, AssetDatabase.LoadAssetAtPath<Texture2D>($"{TempleArtFolder}/Floor_Temple.png"), AssetDatabase.LoadAssetAtPath<Texture2D>(RiverFloor), AssetDatabase.LoadAssetAtPath<Texture2D>(TombFloor) },
+                new[] { bambooGroup, templeGroup, templeGroup, templeGroup },
+                new[] { new GameObject("죽림 분위기 (없음)"), air, riverAir, tombAir },
                 dressing);
         }
 
