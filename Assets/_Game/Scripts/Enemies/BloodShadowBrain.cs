@@ -35,6 +35,12 @@ namespace AThousandDawns.Enemies
         bool _lineHit;
         readonly List<Echo> _echoes = new List<Echo>();
 
+        // 이펙트 신호 (아트: Scripts/Art/InkBloodShadowFx). 판정과 상관없이 그림만 그려요.
+        public enum FxKind { EchoStart, EchoCut, Blink, Drain }
+        public struct FxCue { public FxKind Kind; public Vector3 From, To, Dir; public float Time; public bool Line; }
+        public static event System.Action<BloodShadowBrain, FxCue> Cue;
+        void Fx(FxCue cue) => Cue?.Invoke(this, cue);
+
         public override EnemyKind Kind => EnemyKind.BloodShadow;
         protected override string Key => "bloodshadow";
         protected override bool UsesToken => false;
@@ -160,6 +166,7 @@ namespace AThousandDawns.Enemies
                     break;
                 case Pattern.Blink: // 잔상을 남기고 플레이어 뒤로
                     AddEchoes(Pattern.Slash, transform.position, AimDirection);
+                    Vector3 blinkFrom = transform.position;
                     Vector3 behind = Player.transform.position - Player.Facing * _blinkBehind;
                     Teleport(Director.FindFreeSpot(behind, BodyRadius + 0.1f)); // 벽 속이면 가까운 빈자리
                     Vector3 to = ToPlayer();
@@ -168,6 +175,7 @@ namespace AThousandDawns.Enemies
                     FaceToward(AimDirection);
                     Director.SpawnBurst(transform.position, 0.8f);
                     Cut(Pattern.Slash, transform.position, AimDirection, _slashRatio);
+                    Fx(new FxCue { Kind = FxKind.Blink, From = blinkFrom, To = transform.position, Dir = AimDirection });
                     break;
             }
         }
@@ -209,6 +217,7 @@ namespace AThousandDawns.Enemies
         {
             if (!Player.TryReceiveHit(AttackPower * ratio, transform.position, HitKnockback, Body)) return false;
             Body.Heal(AttackPower * ratio * _lifesteal);
+            Fx(new FxCue { Kind = FxKind.Drain, From = Player.transform.position, To = transform.position });
             return true;
         }
 
@@ -224,6 +233,7 @@ namespace AThousandDawns.Enemies
                 marker.SetPose(from, dir);
                 marker.SetProgress(0f);
                 _echoes.Add(new Echo { Kind = kind, From = from, Dir = dir, Timer = _echoDelay * (i + 1), Marker = marker });
+                Fx(new FxCue { Kind = FxKind.EchoStart, From = from, Dir = dir, Time = _echoDelay * (i + 1), Line = kind == Pattern.Line });
             }
         }
 
@@ -242,6 +252,7 @@ namespace AThousandDawns.Enemies
                 if (e.Marker != null) Destroy(e.Marker.gameObject);
                 _echoes.RemoveAt(i);
                 Director.SpawnBurst(e.From + e.Dir * 1.2f, 0.8f);
+                Fx(new FxCue { Kind = FxKind.EchoCut, From = e.From, Dir = e.Dir, Line = e.Kind == Pattern.Line });
                 Cut(e.Kind, e.From, e.Dir, _echoRatio);
             }
         }
