@@ -463,16 +463,23 @@ namespace AThousandDawns.Prototype
 
             const float w = 760f, rowH = 52f;
             int rows = ev.Result != null ? 1 : ev.Choices.Count;
-            // 이벤트 그림 (smith_pick처럼 하위 화면은 앞부분 id로). 선택지가 많으면 띠를 낮춰요
-            string artId = ev.Id == null ? null : ev.Id.Split('_')[0];
-            var art = AThousandDawns.Items.ItemIcons.EventArt(artId);
+            // 이벤트 그림: 전체 id (blood_pool) → 없으면 뒤 _부분을 떼어 가며 (smith_pick → smith). 선택지가 많으면 띠를 낮춰요
+            string artId = ev.Id;
+            Texture2D art = null;
+            while (!string.IsNullOrEmpty(artId) && (art = AThousandDawns.Items.ItemIcons.EventArt(artId)) == null)
+            {
+                int cut = artId.LastIndexOf('_');
+                artId = cut > 0 ? artId.Substring(0, cut) : null;
+            }
             float artH = art == null ? 0f : rows > 5 ? 180f : 280f;
             float h = 150f + (artH > 0f ? artH + 10f : 0f) + rows * (rowH + 6f);
             float x = (UiScale.Width - w) * 0.5f, y = (UiScale.Height - h) * 0.5f;
             GUI.Label(new Rect(0, y - 56f, UiScale.Width, 40f), ev.Title, _big);
             if (art != null)
             {
-                GUI.DrawTexture(new Rect(x, y, w, artH), art, ScaleMode.ScaleAndCrop);
+                var artRect = AThousandDawns.Fx.InkEventFx.Shake(new Rect(x, y, w, artH), ev.Id);
+                GUI.DrawTexture(artRect, art, ScaleMode.ScaleAndCrop);
+                AThousandDawns.Fx.InkEventFx.Draw(artRect, ev.Id); // 고른 결과 연출 (피의 연못 · 마교 제단)
                 y += artH + 10f;
             }
             GUI.Label(new Rect(x, y, w, 60f), $"<i>{ev.Text}</i>", _wrapLabel);

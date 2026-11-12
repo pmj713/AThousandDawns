@@ -19,6 +19,7 @@ namespace AThousandDawns.Prototype
         bool _heroShield;  // 구했음: 천마전을 보호막 두르고 시작
 
         public bool HeroShieldPending => _heroShield;
+        public static event System.Action<PlayerController> HeroShieldCue; // 그림 신호: 보호막을 받는 순간 (아트 InkHeavenlyDemonFx가 내력이 흘러드는 연출)
 
         bool BuildTombEvent(EventView v, string id)
         {
@@ -35,6 +36,7 @@ namespace AThousandDawns.Prototype
                         Act = () =>
                         {
                             Player.CutMaxHealth(cut);
+                            AThousandDawns.Fx.InkEventFx.Play(AThousandDawns.Fx.InkEventFx.BloodSeep, "blood_pool");
                             arena.GrantOffer(BloodPoolWeights());
                             return $"피가 손을 타고 스며들어요. 최대 체력 −{cut:0%}";
                         },
@@ -75,6 +77,7 @@ namespace AThousandDawns.Prototype
                         {
                             AddTracking(noise);
                             Silver += loot;
+                            AThousandDawns.Fx.InkEventFx.Play(AThousandDawns.Fx.InkEventFx.AltarBreak, "demon_altar");
                             return $"제단이 무너지며 공물이 쏟아져요. 은자 +{loot} · 소란에 추적도 {Tracking}";
                         },
                     });
@@ -107,6 +110,7 @@ namespace AThousandDawns.Prototype
                     {
                         Player.Items.Remove(item);
                         Player.Gongryeok += 1;
+                        AThousandDawns.Fx.InkEventFx.Play(AThousandDawns.Fx.InkEventFx.AltarMelt, "demon_altar", ItemIcons.Get(item.Def));
                         return $"{item.Def.name}이(가) 핏빛 불길에 녹아요. 공력 +1";
                     },
                 });
@@ -137,6 +141,7 @@ namespace AThousandDawns.Prototype
             _heroShield = false;
             int amount = Mathf.Max(1, Mathf.RoundToInt(Player.MaxHealth * GameConfig.GetOptional("event.hero_shield", 0.2f)));
             Player.Shields.Add(amount, 0f, amount);
+            HeroShieldCue?.Invoke(Player);
             ShowBanner("무림맹 고수가 내력을 나눠 줘요 · 보호막");
         }
     }

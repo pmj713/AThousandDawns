@@ -19,6 +19,8 @@ namespace AThousandDawns.Fx
         static readonly Color Ink = new Color(0.1f, 0.09f, 0.08f);
         static readonly Color Paper = new Color(0.94f, 0.91f, 0.84f);
         static readonly Color Plum = new Color(0.78f, 0.27f, 0.24f); // 매화 홍 #C8463C (HUD 체력과 같은 색)
+        static readonly Color BloodCrust = new Color(0.34f, 0.05f, 0.05f); // 굳은 피 (피의 연못으로 깎인 최대 체력)
+        static readonly Color BloodEdge = new Color(0.85f, 0.12f, 0.1f);
         static readonly Color Indigo = new Color(0.22f, 0.32f, 0.52f); // 쪽빛 (기세 차는 중)
         static readonly Color Gold = new Color(0.93f, 0.74f, 0.3f);    // 금빛 (절초 준비)
 
@@ -231,15 +233,25 @@ namespace AThousandDawns.Fx
             else if (_lagHold > 0f) _lagHold -= dt;
             else _lagHp = Mathf.MoveTowards(_lagHp, hp, dt * 0.6f);
 
+            // 피의 연못: 이번 판 동안 깎인 최대 체력은 획 끝을 검붉게 굳혀 두고, 나머지 길이로만 체력을 그려요
+            float cut = Mathf.Clamp(p.RunMaxHealthCut, 0f, 0.9f), span = 1f - cut;
+
             // 바탕 획 (먹), 깎인 자리 (한지색), 남은 체력 (매화 홍)
-            StrokePart(r, 1f, Ink, 0.85f);
-            StrokePart(r, _lagHp, Paper, 0.9f);
+            StrokePart(r, span, Ink, 0.85f);
+            StrokePart(r, _lagHp * span, Paper, 0.9f);
             float low = hp < 0.3f ? 0.75f + 0.25f * Mathf.Sin(Time.unscaledTime * 8f) : 1f; // 위태로우면 맥박처럼
-            StrokePart(Shrink(r, 0.0f, 0.12f), hp, Plum, low);
+            StrokePart(Shrink(r, 0.0f, 0.12f), hp * span, Plum, low);
+            if (cut > 0f) // 굳은 피: 먹 위에 검붉은 획, 경계엔 핏빛 금
+            {
+                StrokeRange(r, span, 1f, Ink, 0.9f);
+                StrokeRange(Shrink(r, 0f, 0.18f), span, 1f, BloodCrust, 0.95f);
+                Tint(BloodEdge, 0.9f);
+                GUI.DrawTexture(new Rect(r.x + r.width * span - 1.5f, r.y + r.height * 0.2f, 3f, r.height * 0.6f), Texture2D.whiteTexture);
+            }
 
             int shield = p.Shields != null ? p.Shields.Total : 0;
             if (shield > 0) // 보호막: 위에 가는 흰 획
-                StrokePart(new Rect(r.x, r.y - 8f, r.width, 14f), Mathf.Clamp01(shield / max), Color.white, 0.95f);
+                StrokePart(new Rect(r.x, r.y - 8f, r.width, 14f), Mathf.Clamp01(shield / max) * span, Color.white, 0.95f);
 
             Tint(Paper, 1f);
             Shadowed(new Rect(r.x + 18f, r.y, r.width - 36f, r.height), $"{p.Health:0} / {p.MaxHealth:0}", _small, TextAnchor.MiddleLeft);
@@ -252,6 +264,16 @@ namespace AThousandDawns.Fx
             Tint(color, alpha);
             var part = new Rect(r.x, r.y, r.width * ratio, r.height);
             if (_stroke != null) GUI.DrawTextureWithTexCoords(part, _stroke, new Rect(0f, 0f, ratio, 1f));
+            else GUI.DrawTexture(Shrink(part, 0f, 0.2f), Texture2D.whiteTexture);
+        }
+
+        // 붓 획의 from~to 부분만
+        static void StrokeRange(Rect r, float from, float to, Color color, float alpha)
+        {
+            if (to <= from) return;
+            Tint(color, alpha);
+            var part = new Rect(r.x + r.width * from, r.y, r.width * (to - from), r.height);
+            if (_stroke != null) GUI.DrawTextureWithTexCoords(part, _stroke, new Rect(from, 0f, to - from, 1f));
             else GUI.DrawTexture(Shrink(part, 0f, 0.2f), Texture2D.whiteTexture);
         }
 

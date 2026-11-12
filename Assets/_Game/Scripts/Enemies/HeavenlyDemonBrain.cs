@@ -72,6 +72,20 @@ namespace AThousandDawns.Enemies
         public bool GraspedPlayer => _grasped;
         public float SafeRadius => _safeRadius; // 3페이즈: 마기가 차오르지 않은 안전 반경 (0이면 아직)
         public bool IsPulling => _pattern == Pattern.Pull && Attack.Current == EnemyAttackTimeline.Phase.Active;
+        public Vector3 ZoneCenter => _zoneCenter; // 해체대법 안전 반경의 가운데
+
+        // 그림 신호 (아트 InkHeavenlyDemonFx가 받아 그려요. 판정·수치와는 상관없어요)
+        public enum FxKind { Slash, Cross, Grasp, Grasped, Mark, MarkFall, PullBurst, Transition }
+        public struct FxCue
+        {
+            public FxKind Kind;
+            public Vector3 At, Dir;
+            public float Radius, Angle, Time;
+            public bool Sector;
+            public Transform Target;
+        }
+        public static event System.Action<HeavenlyDemonBrain, FxCue> Cue;
+        void Fx(FxCue c) => Cue?.Invoke(this, c);
 
         public void SetZone(Vector3 center, Vector2 size)
         {
@@ -233,6 +247,7 @@ namespace AThousandDawns.Enemies
                 case Pattern.Slash:
                     if (HitShapes.InSector(transform.position, AimDirection, _slashRadius, SlashAngle, Player.transform.position, PlayerRadius))
                         Player.TryReceiveHit(AttackPower * _slashRatio, transform.position, HitKnockback, Body);
+                    Fx(new FxCue { Kind = FxKind.Slash, At = transform.position, Dir = AimDirection, Radius = _slashRadius, Angle = SlashAngle });
                     if (Phase >= 2) Phantoms();
                     break;
                 case Pattern.Cross:
@@ -241,6 +256,7 @@ namespace AThousandDawns.Enemies
                         Vector3 dir = Quaternion.Euler(0f, 90f * i, 0f) * AimDirection;
                         var wave = Director.SpawnArrow(transform.position + Vector3.up, dir, _crossSpeed, _crossRange, 0.45f, AttackPower * _crossRatio, Body);
                         if (wave != null) wave.gameObject.name = "천마 검기";
+                        if (wave != null) Fx(new FxCue { Kind = FxKind.Cross, At = wave.transform.position, Dir = dir, Target = wave.transform });
                     }
                     break;
                 case Pattern.Miasma:
@@ -250,7 +266,10 @@ namespace AThousandDawns.Enemies
                         GhostFire.Create(at, _miasmaRadius, _miasmaLife, AttackPower * _miasmaRatio, _miasmaSlow, 0.6f, Player, Body).name = "마기 장판";
                     }
                     break;
-                case Pattern.Grasp: Grasp(); break;
+                case Pattern.Grasp:
+                    Fx(new FxCue { Kind = FxKind.Grasp, At = transform.position, Dir = AimDirection, Radius = _graspRange });
+                    Grasp();
+                    break;
             }
         }
 
@@ -273,6 +292,7 @@ namespace AThousandDawns.Enemies
             if (!Player.TryReceiveHit(AttackPower * _graspRatio, transform.position, 0f, Body)) return;
             Player.PullToward(transform.position, _graspStop);
             _grasped = true;
+            Fx(new FxCue { Kind = FxKind.Grasped, At = transform.position, Dir = AimDirection, Target = Player.transform });
         }
 
         // 2페이즈: 플레이어 양옆 환영이 같이 벱니다
@@ -297,6 +317,7 @@ namespace AThousandDawns.Enemies
                 Player.Drag(to.normalized * Mathf.Min(_pullSpeed * dt, to.magnitude));
             if (_activeTimer < _pullTime - 0.05f) return;
             Director.SpawnBurst(transform.position, _pullBurst);
+            Fx(new FxCue { Kind = FxKind.PullBurst, At = transform.position, Radius = _pullBurst });
             if (ToPlayer().magnitude <= _pullBurst + PlayerRadius) Player.TryReceiveHit(AttackPower * _pullRatio, transform.position, -1f, Body);
             _activeTimer = float.NegativeInfinity; // 한 번만
         }
@@ -318,6 +339,7 @@ namespace AThousandDawns.Enemies
             marker.SetPose(at, dir);
             marker.SetProgress(0f);
             _marks.Add(new Mark { At = at, Dir = dir, Timer = fall, Total = fall, Radius = radius, Ratio = ratio, Sector = sector, Angle = angle, Marker = marker });
+            Fx(new FxCue { Kind = FxKind.Mark, At = at, Dir = dir, Radius = radius, Angle = angle, Time = fall, Sector = sector });
         }
 
         void TickMarks(float dt)
@@ -335,6 +357,7 @@ namespace AThousandDawns.Enemies
                 if (m.Marker != null) Destroy(m.Marker.gameObject);
                 _marks.RemoveAt(i);
                 Director.SpawnBurst(m.Sector ? m.At + m.Dir * 1.2f : m.At, m.Sector ? 0.8f : m.Radius);
+                Fx(new FxCue { Kind = FxKind.MarkFall, At = m.At, Dir = m.Dir, Radius = m.Radius, Angle = m.Angle, Sector = m.Sector });
                 bool hit = m.Sector
                     ? HitShapes.InSector(m.At, m.Dir, m.Radius, m.Angle, Player.transform.position, PlayerRadius)
                     : new Vector2(Player.transform.position.x - m.At.x, Player.transform.position.z - m.At.z).magnitude <= m.Radius + PlayerRadius;
@@ -399,6 +422,7 @@ namespace AThousandDawns.Enemies
             _transitionTimer = _transitionTime;
             Body.Targetable = false;
             Director.SpawnBurst(transform.position, 3f);
+            Fx(new FxCue { Kind = FxKind.Transition, At = transform.position, Radius = 3f, Time = _transitionTime });
         }
 
         void EnterPhase(int phase)
