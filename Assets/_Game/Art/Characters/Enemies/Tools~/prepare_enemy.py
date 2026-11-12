@@ -342,6 +342,30 @@ for w in WEAPONS:
                 o = d.orthogonal().normalized()
                 box(bm, ball + d * 0.25, d, o, 0.13, 0.05, 0.05)
         make(f"{NAME}_Weapon_meteor", "RightHand", build)
+    elif w == "towershield":
+        # 큰 방패 (천마 근위): 왼팔 바깥 앞에 세운 길쭉한 철판 방패 (0.8 × 1.35, 앞으로 살짝 굽음), 가운데 마두 돋을새김
+        f = B["LeftForeArm"]
+        c = f.head_local.lerp(f.tail_local, 0.55)
+        out = Vector((0.75, -0.65, 0)).normalized()
+
+        def build(bm, c=c, out=out):
+            up = Vector((0, 0, 1)); v = out.cross(up).normalized()
+            cols, rows = 6, 6
+            grid = []
+            for i in range(rows + 1):
+                row = []
+                for j in range(cols + 1):
+                    x = (j / cols - 0.5) * 0.8; z = (i / rows - 0.5) * 1.35 - 0.15
+                    bulge = 0.08 * (1 - (2 * x / 0.8) ** 2)
+                    row.append(bm.verts.new(c + out * (0.1 + bulge) + v * x + up * z))
+                grid.append(row)
+            back = [[bm.verts.new(p.co - out * 0.04) for p in row] for row in grid]
+            for i in range(rows):
+                for j in range(cols):
+                    bm.faces.new((grid[i][j], grid[i][j + 1], grid[i + 1][j + 1], grid[i + 1][j]))
+                    bm.faces.new((back[i][j], back[i + 1][j], back[i + 1][j + 1], back[i][j + 1]))
+            box(bm, c + out * 0.2 - up * 0.1, out, v, 0.08, 0.3, 0.3)         # 가운데 돋을새김
+        make(f"{NAME}_Weapon_towershield", "LeftForeArm", build)
     elif w == "bomb":
         g = grip_of("Right") + FWD * 0.04
 
@@ -1927,6 +1951,79 @@ if "dragonmoves" in EXTRAS:
     make_action("Command", [(0, "idle"), (6, "command"), (18, "command"), (24, "idle")], dragon_pose)
     make_action("Stomp", [(0, "stomp_up"), (4, "stomp_down"), (14, "stomp_down"), (24, "idle")], dragon_pose)
     make_action("Roar", [(0, "idle"), (6, "stagger"), (16, "stagger"), (24, "roar"), (52, "roar"), (60, "idle")], dragon_pose)
+    rig.animation_data.action = None
+    reset_pose()
+
+
+# 천마총 (tombmoves): rivermoves의 베기 자세(slash_pose)를 같이 써요
+#   마교도(dao) Attack: 곡도를 치켜들었다가 내려베기 · Frenzy: 광폭 — 몸을 낮추고 칼을 뒤로 끌며 으르렁 (반복)
+#   천마 근위(dao+towershield) Attack: 방패를 앞에 세운 채 되받아 베기 · Guard: 방패를 내밀고 웅크린 자세 (반복)
+#   혈인(shaman) Raise: 두 팔을 하늘로 들어 쓰러진 자를 일으켜요 (그대로 재생) · Attack: 두 손바닥을 앞으로 뻗어 피를 뿜어요
+#   혈폭자(bomber) Attack: 핏덩이를 머리 위로 들었다가 앞으로 내던져요
+if "tombmoves" in EXTRAS:
+    def guard_left():
+        sl = pb["LeftArm"].head.copy()
+        arm("Left", sl + Vector((0.1, -0.42, -0.1)), Vector((1, 0.3, -0.5)))   # 방패를 앞에
+
+    if "dao" in WEAPONS and "rattan" not in WEAPONS:
+        left = guard_left if "towershield" in WEAPONS else free_left_back
+        make_action("Attack", [(0, ("load", left)), (4, ("cut1", left)), (14, ("cut1", left)), (24, ("idle", None))], slash_pose)
+
+        def low_pose(t):
+            a = t * 2 * math.pi
+            lower_hips(-0.25 - 0.03 * math.sin(a * 2), FEET, dy=0.05)
+            bend("Spine", Vector((1, 0, 0)), 18 + 4 * math.sin(a * 2))
+            sh = pb["RightArm"].head.copy()
+            if "towershield" in WEAPONS:
+                guard_left()
+                arm("Right", sh + Vector((-0.1, -0.2, -0.45)), Vector((-1, 0.3, -0.3)))
+                point_blade(Vector((0, -1, 0.3)), wrist_bend=80)              # 방패 옆으로 칼끝을 겨눠요
+            else:
+                arm("Right", sh + Vector((-0.25, 0.25, -0.45)), Vector((-1, 0.3, -0.3)))
+                point_blade(Vector((-0.3, 1, -0.5)), wrist_bend=80)           # 칼을 뒤로 끌어요
+                sl = pb["LeftArm"].head.copy()
+                arm("Left", sl + Vector((0.15, -0.4, -0.25 + 0.05 * math.sin(a))), Vector((1, 0.3, -0.5)))   # 손톱을 세운 듯 앞으로
+        make_action("Guard" if "towershield" in WEAPONS else "Frenzy", [(f, f / 16) for f in range(0, 17, 4)], low_pose)
+
+    if "shaman" in EXTRAS:
+        def shaman_pose(stage):
+            if stage == "idle":
+                idle_end_pose(); return
+            for s, sx in (("Left", 1), ("Right", -1)):
+                sh = pb[f"{s}Arm"].head.copy()
+                if stage == "raise":
+                    lower_hips(-0.04, FEET)
+                    bend("Spine", Vector((1, 0, 0)), -12); bend("Neck", Vector((1, 0, 0)), -20)
+                    arm(s, sh + Vector((sx * 0.3, -0.15, 0.75)), Vector((sx, 0.3, 0)))
+                elif stage == "gather":
+                    lower_hips(-0.12, FEET)
+                    bend("Spine", Vector((1, 0, 0)), 10)
+                    arm(s, sh + Vector((-sx * 0.12, -0.3, -0.25)), Vector((sx, 0.4, -0.6)))
+                else:   # cast: 두 손바닥을 앞으로
+                    lower_hips(-0.14, {"Left": FEET["Left"] + Vector((0, -0.3, 0)), "Right": FEET["Right"]}, dy=-0.12)
+                    bend("Spine", Vector((1, 0, 0)), 14)
+                    arm(s, sh + Vector((-sx * 0.1, -0.7, 0.0)), Vector((sx, 0.3, -0.6)))
+        make_action("Raise", [(0, "idle"), (8, "raise"), (36, "raise"), (44, "idle")], shaman_pose)
+        make_action("Attack", [(0, "gather"), (4, "cast"), (12, "cast"), (22, "idle")], shaman_pose)
+
+    if "bomber" in EXTRAS:
+        def bomber_pose(stage):
+            if stage == "idle":
+                idle_end_pose(); return
+            sh = pb["RightArm"].head.copy()
+            sl = pb["LeftArm"].head.copy()
+            if stage == "lift":
+                lower_hips(-0.08, FEET, dy=0.06)
+                bend("Spine", Vector((1, 0, 0)), -14)
+                arm("Right", sh + Vector((-0.05, 0.2, 0.75)), Vector((-1, 0.3, 0)))   # 머리 위 뒤로 치켜들어요
+                arm("Left", sl + Vector((0.3, -0.3, 0.1)), Vector((1, 0.3, -0.5)))
+            else:
+                feet = {"Left": FEET["Left"] + Vector((0, -0.35, 0)), "Right": FEET["Right"]}
+                lower_hips(-0.2, feet, dy=-0.15)
+                bend("Spine", Vector((1, 0, 0)), 24)
+                arm("Right", sh + Vector((0.1, -0.75, -0.2)), Vector((-1, 0, -0.5)))   # 앞으로 내던져요
+                arm("Left", sl + Vector((0.3, 0.2, -0.45)), Vector((1, 0.3, -0.3)))
+        make_action("Attack", [(0, "lift"), (4, "throw"), (12, "throw"), (22, "idle")], bomber_pose)
     rig.animation_data.action = None
     reset_pose()
 

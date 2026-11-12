@@ -77,6 +77,8 @@ namespace AThousandDawns.EditorTools
 
             // 6) 3지역 장강 수채: 갈대숲·망루·배·수채 짐더미·잔교 공터·본채 선착장 (PrototypeSceneBuilder.InkRiver.cs)
             var river = DressRiverInk(stoneMat, woodMat, roofX, ref seed);
+            // 7) 4지역 천마총: 붉은 등불 기둥·해골·마두 석상·깨진 관·피 비문·마교 수련장·천마의 옥좌 (PrototypeSceneBuilder.InkTomb.cs)
+            var tomb = DressTombInk(stoneMat, roofX, ref seed);
 
             var dressing = new GameObject("Ink Region Dressing").AddComponent<AThousandDawns.Art.InkRegionDressing>();
             dressing.SetRegions(new[]
@@ -84,6 +86,7 @@ namespace AThousandDawns.EditorTools
                 new AThousandDawns.Art.InkRegionDressing.Set { name = "죽림", objects = bamboo.ToArray() },
                 new AThousandDawns.Art.InkRegionDressing.Set { name = "폐사찰", objects = temple.ToArray() },
                 new AThousandDawns.Art.InkRegionDressing.Set { name = "장강 수채", objects = river.ToArray() },
+                new AThousandDawns.Art.InkRegionDressing.Set { name = "천마총", objects = tomb.ToArray() },
             });
             foreach (var go in temple) go.SetActive(false);   // 처음(죽림)엔 꺼 둬요
 
