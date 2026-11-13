@@ -54,6 +54,10 @@ namespace AThousandDawns.Prototype
         float SizeBudget => RoomSize == RoomSizeKind.Large ? GameConfig.GetOptional("room.size_budget.l", 1.8f)
             : RoomSize == RoomSizeKind.Medium ? GameConfig.GetOptional("room.size_budget.m", 1.4f) : 1f;
 
+        // 방 크기만큼 방 은자 (적이 많고 오래 걸리는 만큼)
+        float SizeSilver => RoomSize == RoomSizeKind.Large ? GameConfig.GetOptional("room.size_silver.l", 1.6f)
+            : RoomSize == RoomSizeKind.Medium ? GameConfig.GetOptional("room.size_silver.m", 1.3f) : 1f;
+
         int SizeExtraWaves => RoomSize == RoomSizeKind.Large ? Mathf.RoundToInt(GameConfig.GetOptional("room.size_l.extra_waves", 1f)) : 0;
 
         // 작은 방(20×12) 기준 자리를 지금 방 크기로 늘려요 (방 구성 · 풀숲 등)

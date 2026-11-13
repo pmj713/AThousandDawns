@@ -128,11 +128,12 @@ namespace AThousandDawns.Tests
 
         // 방 하나 전체: 그 지역 2층 싸우는 방을 방 구성마다 (실제 웨이브 · 정예 · 엄폐물 · 물 · 혈지 그대로).
         // 화력은 가장 가까운 적에게 (부르는 적 · 갈라진 적도), 플레이어는 방 가운데 가만히. 방을 비울 때까지 시간과 받은 피해.
-        IEnumerator Room(int region, int layout, int karma, bool dense, float limit = 120f, bool moving = false)
+        IEnumerator Room(int region, int layout, int karma, bool dense, float limit = 120f, bool moving = false, int seed = -1, int size = 0)
         {
             new MetaSave { runs = 1, finalBossKills = karma > 0 ? karma : 0, karma = karma, karmaMax = karma, tutorialFloorDone = true }.Save();
             RoomRun.SkipVillage = true;
-            RoomRun.SeedOverride = 1000 + region * 10 + layout;
+            RoomRun.SeedOverride = seed > 0 ? seed : 1000 + region * 10 + layout;
+            RoomRun.RoomSizeOverride = size; // 0 작은 방 · 1 중간 · 2 큰 방
             RoomRun.LayoutOverride = layout;
             PrototypeArena.AutoSpawn = true;
             yield return SceneManager.LoadSceneAsync("Prototype_Run", LoadSceneMode.Single);
@@ -192,9 +193,10 @@ namespace AThousandDawns.Tests
             Time.timeScale = 1f;
             RoomRun.LayoutOverride = -1;
             RoomRun.SeedOverride = 0;
+            RoomRun.RoomSizeOverride = -1;
             string[] names = region == 0 ? RoomRun.BambooLayoutNames : region == 1 ? RoomRun.TempleLayoutNames : region == 2 ? RoomRun.RiverLayoutNames : RoomRun.TombLayoutNames;
             float bars = taken / MaxHealth[region];
-            Write($"방{(moving ? "(움직임)" : "")}\tr{region}\tk{karma}\t{(dense ? "짙은 길" : "옅은 길")} · {names[Mathf.Clamp(layout, 0, 3)]}\t적 {spawned} · 웨이브 {run.WaveCount}\t처치 {(run.IsFighting ? $"못함({t:0}초)" : t.ToString("0.0") + "초")}\t받은 피해 {taken:0} ({bars:0.00}칸)\t초당 {taken / Mathf.Max(1f, t):0.0}\t맞은 수 {hits}");
+            Write($"방{(moving ? "(움직임)" : "")}\tr{region}\tk{karma}\t{(dense ? "짙은 길" : "옅은 길")} · {names[Mathf.Clamp(layout, 0, 3)]} · {RoomRun.RoomSizeNames[Mathf.Clamp(size, 0, 2)]} · 시드 {(seed > 0 ? seed : 1000 + region * 10 + layout)}\t적 {spawned} · 웨이브 {run.WaveCount}\t처치 {(run.IsFighting ? $"못함({t:0}초)" : t.ToString("0.0") + "초")}\t받은 피해 {taken:0} ({bars:0.00}칸)\t초당 {taken / Mathf.Max(1f, t):0.0}\t맞은 수 {hits}");
         }
 
         [UnityTest]
@@ -219,6 +221,34 @@ namespace AThousandDawns.Tests
                 for (int layout = 0; layout < 4; layout++)
                     yield return Room(r, layout, 0, false, 120f, true);
             for (int r = 0; r < 4; r++) yield return Room(r, 0, 0, true, 120f, true);
+        }
+
+        // 방 크기 비교: 지역마다 작은 · 중간 · 큰 방을 같은 시드 셋으로 (움직이는 플레이어, 방 구성 없음)
+        [UnityTest]
+        [Timeout(3600000)]
+        public IEnumerator 방_크기_비교()
+        {
+            File.AppendAllText(ReportPath, "\n방 크기 비교 (움직이는 플레이어 · 방 구성 없음)\n", Encoding.UTF8);
+            int[] seeds = { 501, 502, 503 };
+            for (int r = 0; r < 4; r++)
+                for (int size = 0; size < 3; size++)
+                    foreach (int seed in seeds)
+                        yield return Room(r, 0, 0, false, 150f, true, seed, size);
+        }
+
+        // 천마총 방 구성 비교: 같은 시드 (같은 적 구성)로 방 구성만 바꿔요. 가만히 · 움직이는 플레이어 둘 다
+        [UnityTest]
+        [Timeout(3600000)]
+        public IEnumerator 천마총_구성_비교()
+        {
+            File.AppendAllText(ReportPath, "\n천마총 방 구성 비교 (같은 시드 = 같은 적 구성)\n", Encoding.UTF8);
+            int[] seeds = { 601, 602, 603 };
+            foreach (int seed in seeds)
+                for (int layout = 0; layout < 4; layout++)
+                {
+                    yield return Room(3, layout, 0, false, 120f, false, seed, 0);
+                    yield return Room(3, layout, 0, false, 120f, true, seed, 0);
+                }
         }
 
         // 할당 측정: 수묵 판 천마총 싸움 (적 12명 추가)에서 프레임당 할당 바이트를, 화면 UI · 아트 · 이펙트를 하나씩 끄며 비교해요.

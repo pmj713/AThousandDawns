@@ -569,7 +569,8 @@ namespace AThousandDawns.Prototype
             AddTracking(Mathf.RoundToInt(GameConfig.Get("tracking.per_room", 1f)));
             Player.OnRoomCleared(); // 호신 부적
             float mult = _path.Dense ? DenseMultiplier : 1f;
-            int silver = BoostSilver(Mathf.RoundToInt(RoomSilver * mult) + _elitesThisRoom * Mathf.RoundToInt(GameConfig.Get("silver.elite", 15f)));
+            int silver = BoostSilver(Mathf.RoundToInt(RoomSilver * mult * SizeSilver) + // 큰 방일수록 은자도 많이 (RoomRun.RoomSize)
+                 _elitesThisRoom * Mathf.RoundToInt(GameConfig.Get("silver.elite", 15f)));
             Silver += silver;
             string text = $"방을 비웠어요 · 은자 +{silver}";
             if (_roomHeal > 0f && !Player.IsDead) // 면벽수련 강 10: 방을 비우면 체력 회복

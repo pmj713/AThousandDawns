@@ -5077,3 +5077,11 @@ MonoBehaviour:
     value: 1
     unit: 
     note: "\uBC29 \uD06C\uAE30: \uD070 \uBC29 \uC6E8\uC774\uBE0C +"
+  - key: room.size_silver.m
+    value: 1.3
+    unit: 
+    note: "\uBC29 \uD06C\uAE30: \uC911\uAC04 \uBC29 \uBC29 \uC740\uC790 \uBC30\uC728 (\uC801\uC774 \uB9CE\uACE0 \uC624\uB798 \uAC78\uB9AC\uB294 \uB9CC\uD07C)"
+  - key: room.size_silver.l
+    value: 1.6
+    unit: 
+    note: "\uBC29 \uD06C\uAE30: \uD070 \uBC29 \uBC29 \uC740\uC790 \uBC30\uC728"
