@@ -195,6 +195,46 @@ namespace AThousandDawns.Art
             main.startSpeed = new ParticleSystem.MinMaxCurve(0f, 0.15f);
         }
 
+        // 한 번 터지는 입자: 자리에서 사방(위쪽 반구)으로 count개가 튀어 나가 옅어지고, 다 끝나면 스스로 지워져요
+        public static ParticleSystem Burst(Vector3 at, int count, Color from, Color to, float speed, float size, float life, float gravity = 0f, bool upward = true)
+        {
+            var go = new GameObject("Ink Burst");
+            go.transform.position = at;
+            go.transform.rotation = Quaternion.Euler(-90f, 0f, 0f);
+            var ps = go.AddComponent<ParticleSystem>();
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var main = ps.main;
+            main.duration = 0.1f;
+            main.loop = false;
+            main.playOnAwake = false;
+            main.maxParticles = Mathf.Max(count, 1);
+            main.startLifetime = new ParticleSystem.MinMaxCurve(life * 0.6f, life);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(speed * 0.5f, speed);
+            main.startSize = new ParticleSystem.MinMaxCurve(size * 0.6f, size);
+            main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
+            main.gravityModifier = gravity;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.stopAction = ParticleSystemStopAction.Destroy;
+            var emission = ps.emission;
+            emission.rateOverTime = 0f;
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, (short)count) });
+            var shape = ps.shape;
+            shape.shapeType = upward ? ParticleSystemShapeType.Hemisphere : ParticleSystemShapeType.Sphere;
+            shape.radius = 0.15f;
+            var col = ps.colorOverLifetime;
+            col.enabled = true;
+            col.color = Grad((from, 0f), (new Color(to.r, to.g, to.b, to.a * 0.8f), 0.5f), (new Color(to.r, to.g, to.b, 0f), 1f));
+            var sizeOver = ps.sizeOverLifetime;
+            sizeOver.enabled = true;
+            sizeOver.size = new ParticleSystem.MinMaxCurve(1f, new AnimationCurve(new Keyframe(0f, 0.6f), new Keyframe(0.3f, 1f), new Keyframe(1f, 1.3f)));
+            var r = go.GetComponent<ParticleSystemRenderer>();
+            r.sharedMaterial = Soft;
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            r.sortingOrder = 7;
+            ps.Play();
+            return ps;
+        }
+
         public static void SetRate(ParticleSystem ps, float perSecond)
         {
             if (ps == null) return;

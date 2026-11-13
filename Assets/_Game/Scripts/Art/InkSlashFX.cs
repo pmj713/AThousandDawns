@@ -49,6 +49,8 @@ namespace AThousandDawns.Art
             _stroke.enabled = false;
         }
 
+        public static int SuppressFrame = -1; // 이 프레임에 뜬 범위 원은 먹 궤적 없이 (폭발 연출이 대신 그려요)
+
         void LateUpdate()
         {
             // SwingFlash.Show가 렌더러를 켜면 새 휘두름
@@ -58,6 +60,7 @@ namespace AThousandDawns.Art
                 // 초식(비급)을 쓰는 동안 뜨는 범위 표시는 먹 궤적 없이 숨기기만 해요 (플레이 테스트: 초식마다 검은 선이 보임)
                 if (_player == null) _player = GetComponentInParent<AThousandDawns.Player.PlayerController>() ?? FindAnyObjectByType<AThousandDawns.Player.PlayerController>();
                 if (_player != null && _player.IsCastingSkill) { _stroke.enabled = false; _time = -1f; return; }
+                if (SuppressFrame == Time.frameCount) { _stroke.enabled = false; _time = -1f; return; } // 금강 충격파·잔상 반격은 아트 2 InkBurstFx가 따로 그려요
                 Begin();
             }
             if (_time < 0f) return;

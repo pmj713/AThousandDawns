@@ -208,15 +208,8 @@ namespace AThousandDawns.Art
                         if (k >= 1f) { Destroy(glob.transform.parent.gameObject); glob = null; }
                     }
                     if (go != null) return true;
-                    // 터졌어요
+                    // 터졌어요: 터지는 핏물은 InkBurstFx(BurstKind.BloodGlob / BloodDeath)가 그려요
                     if (glob != null) Destroy(glob.transform.parent.gameObject);
-                    Spread(_splash, last, 2.6f, 1.2f);
-                    for (int i = 0; i < 6; i++)
-                    {
-                        var v = UnityEngine.Random.onUnitSphere * UnityEngine.Random.Range(2f, 3.5f);
-                        v.y = Mathf.Abs(v.y) + 1.5f;
-                        Droplet(last + Vector3.up * 0.3f, v);
-                    }
                     return false;
                 });
             }
