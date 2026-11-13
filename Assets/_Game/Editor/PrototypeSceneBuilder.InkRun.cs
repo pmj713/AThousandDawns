@@ -34,6 +34,7 @@ namespace AThousandDawns.EditorTools
             Build(); // 원래 시험판 씬 둘 (Prototype_Run · Prototype_Combat)
             var scene = EditorSceneManager.OpenScene(RunScenePath, OpenSceneMode.Single);
             DressRunInk();
+            AddDecorColliders(scene);  // 길을 막는 장식에 충돌체 (PrototypeSceneBuilder.InkColliders.cs)
             OptimizeInkScene(scene);   // 그림자·정적 배칭 (PrototypeSceneBuilder.InkPerf.cs)
             CheckScriptFiles(scene);
             EditorSceneManager.SaveScene(scene, InkRunScenePath);
