@@ -110,6 +110,8 @@ namespace AThousandDawns.Art
         static readonly int SpeedId = Animator.StringToHash("Speed");
         static readonly int AttackSpeedId = Animator.StringToHash("AttackSpeed");
         static readonly int IdleState = Animator.StringToHash("Idle");
+        static readonly int RunState = Animator.StringToHash("Run");
+        float _oneShotUntil;           // 등장(Intro·Spawn)을 그대로 재생하는 중 (그 사이 움직이기 시작하면 달리기로 넘겨요)
 
         [SerializeField] float raiseBlend = 0.2f;   // 치켜드는 데 걸리는 시간
         EnemyBrain _brain;
@@ -400,6 +402,7 @@ namespace AThousandDawns.Art
                 _hasSpawn = false;
                 _animator.SetFloat(AttackSpeedId, 1f);
                 Play("Spawn", 0f);
+                _oneShotUntil = Time.time + 0.7f;
             }
             // 보스·고수 등장: 깨어나는 순간(방에 들어오면) 위세 있는 동작을 한 번 보여요. 곧바로 공격하면 공격 동작이 이어받아요
             if (_hasIntro && !_introDone && _brain.IsAwake && !_brain.IsDead)
@@ -407,6 +410,7 @@ namespace AThousandDawns.Art
                 _introDone = true;
                 _animator.SetFloat(AttackSpeedId, 1f);
                 Play("Intro", 0.1f);
+                _oneShotUntil = Time.time + 1.4f;
             }
             var phase = _brain.AttackPhase;
             // 금강불괴: 파계승은 버티는 자세(IsStanced), 혜광은 금강불괴 예고 동안 몸이 금빛
@@ -445,7 +449,6 @@ namespace AThousandDawns.Art
                     case EnemyAttackTimeline.Phase.Active:
                         if (_move.attack == "닻 던지기") { _thrownProp = "_Weapon_anchor"; _anchorAway = 3.2f; SetPropVisible(_thrownProp, false); }   // 닻을 던졌어요 (꽂힌 동안)
                         if (_move.attack == "사슬 당기기") { _thrownProp = "_Weapon_meteor"; _anchorAway = 0.9f; SetPropVisible(_thrownProp, false); }   // 유성추가 사슬째 날아갔어요 (이펙트가 그려요)
-                        if (_move.attack == "작살 찌르기") { _thrownProp = "_Weapon_harpoon"; _anchorAway = 0.5f; SetPropVisible(_thrownProp, false); }   // 작살이 밧줄째 뻗어 나갔어요 (InkRiverEnemyFx가 손에서부터 그려요, 0.42~0.5초)
                         _animator.SetFloat(AttackSpeedId, 1f);                              // 한 번 내려찍어요 (돌진·회전은 이어서)
                         if (!string.IsNullOrEmpty(_move.ready)) Play(_move.state, 0.1f);    // 준비 자세에서 박차고 나가요
                         _swung = _move.mode == InkEnemyModels.MoveMode.Swing;
@@ -502,7 +505,10 @@ namespace AThousandDawns.Art
                 return;
             }
             bool busy = phase != EnemyAttackTimeline.Phase.Ready || _brain.IsStunned || _brain.IsDead;
-            _animator.SetFloat(SpeedId, busy || Time.deltaTime <= 0f ? 0f : d.magnitude / Time.deltaTime);
+            float speed = busy || Time.deltaTime <= 0f ? 0f : d.magnitude / Time.deltaTime;
+            // 등장 동작은 대기로만 돌아가는 한 번짜리라, 그 사이 걸어 나오면 등장 자세로 미끄러졌어요 → 움직이기 시작하면 달리기로
+            if (_oneShotUntil > Time.time && speed > 0.5f) { _oneShotUntil = 0f; _animator.CrossFadeInFixedTime(RunState, 0.15f, 0); }
+            _animator.SetFloat(SpeedId, speed);
         }
 
         int _lastHit;   // 마지막으로 받은 피해 (크게 맞아 쓰러지면 날아가듯 넘어가요)
