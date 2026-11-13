@@ -17,6 +17,7 @@ namespace AThousandDawns.EditorTools
             var dark = GetInkMaterial("Ink_Crack_Dark", "#141210", 0f);      // 금 속 먹빛
             props.SetupModels(GetPouchMesh(), silk, GetPouchCordMesh(), cord, GetCrackStonesMesh(), stoneMat, GetCrackDarkMesh(), dark);
             props.SetupAnchor(GetPlantedAnchorMesh(), GetInkMaterial("Ink_Anchor_Iron", "#2E3236", 0.1f));   // 쇠닻 거한이 던져 꽂은 닻
+            props.SetupRewards(BuildRewardModels(stoneMat));   // 보상 방 가운데 보상: 종류마다 다른 소품 (PrototypeSceneBuilder.InkRewards.cs)
         }
 
         // 비단 주머니 (높이 약 0.72, 밑이 바닥 y=0): 돌림 단면 + 세로 주름
