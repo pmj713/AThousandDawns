@@ -184,14 +184,17 @@ namespace AThousandDawns.Tests
         }
 
         [UnityTest]
-        public IEnumerator 방면은_추적도_0_은자_50()
+        public IEnumerator 방면은_추적도_0_은자와_금창약()
         {
             yield return BeatMaster();
             _run.SetTracking(7);
-            int silver = _run.Silver;
+            var player = Object.FindFirstObjectByType<AThousandDawns.Player.PlayerController>();
+            int silver = _run.Silver, potions = player.Potions;
+            int spare = Mathf.RoundToInt(GameConfig.Get("master.spare_silver", 150f));
             Assert.IsTrue(_run.ChooseEvent(2));
             Assert.AreEqual(0, _run.Tracking);
-            Assert.AreEqual(silver + 50, _run.Silver);
+            bool gotPotion = player.Potions == potions + 1;
+            Assert.AreEqual(silver + spare + (gotPotion ? 0 : Mathf.RoundToInt(GameConfig.GetOptional("fork.potion_silver", 40f))), _run.Silver, "은자 (금창약이 가득하면 그만큼 은자)");
             _run.CloseEvent();
         }
 

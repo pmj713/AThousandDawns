@@ -7,9 +7,9 @@ namespace AThousandDawns.Enemies
     // 바닥 예고 (색감 시트: #FF9A2E + 흰 테두리). 예고 시간 동안 안쪽이 앞으로 차올라요.
     public sealed class Telegraph : MonoBehaviour
     {
-        const float BaseHeight = 0.03f;
-        const float FillHeight = 0.04f;
-        const float OutlineHeight = 0.05f;
+        const float BaseHeight = 0.06f; // 물 판 (윗면 0.03) · 불길 바닥보다 위 (겹쳐 가려지지 않게)
+        const float FillHeight = 0.07f;
+        const float OutlineHeight = 0.08f;
         const float OutlineWidth = 0.06f;
 
         Mesh _mesh;

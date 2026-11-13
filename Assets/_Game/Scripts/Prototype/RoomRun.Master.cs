@@ -105,12 +105,14 @@ namespace AThousandDawns.Prototype
             });
             v.Choices.Add(new EventChoice
             {
-                Label = $"방면 · 살려 보낸다 (추적도 0, 은자 +{spare})",
+                Label = $"방면 · 살려 보낸다 (추적도 0, 은자 +{spare}, 금창약 +1)",
                 Act = () =>
                 {
                     Tracking = 0;
                     Silver += spare;
-                    return $"{_master.DisplayName}이(가) 은혜를 갚겠다며 마교의 추적을 따돌려 줘요. 추적도 0 · 은자 +{spare}";
+                    bool potion = Player.AddPotion(); // 고수가 품에서 금창약을 꺼내 줘요 (가득하면 그만큼 은자)
+                    if (!potion) Silver += PotionSilver;
+                    return $"{_master.DisplayName}이(가) 은혜를 갚겠다며 마교의 추적을 따돌려 주고 금창약을 건네요. 추적도 0 · 은자 +{spare}{(potion ? " · 금창약 +1" : $" · 은자 +{PotionSilver} (금창약이 가득해요)")}";
                 },
             });
             if (picks > 1) v.Title += $" · {picks}가지 중 하나 더";

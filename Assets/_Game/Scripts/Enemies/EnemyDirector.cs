@@ -210,5 +210,16 @@ namespace AThousandDawns.Enemies
         }
 
         internal void Unregister(EnemyBrain enemy) => _enemies.Remove(enemy);
+
+        // 남은 적을 조용히 치워요 (처치로 세지 않음): 지역 보스를 쓰러뜨렸는데 소환된 졸개가 남아 다음 지역까지 "전투 중"이 되지 않게
+        public void DespawnAll()
+        {
+            for (int i = _enemies.Count - 1; i >= 0; i--)
+            {
+                var e = _enemies[i];
+                _enemies.RemoveAt(i);
+                if (e != null) Destroy(e.gameObject);
+            }
+        }
     }
 }

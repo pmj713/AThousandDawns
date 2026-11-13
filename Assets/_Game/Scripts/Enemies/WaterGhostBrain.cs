@@ -36,11 +36,8 @@ namespace AThousandDawns.Enemies
             ShowRipple();
         }
 
-        void ShowRipple()
-        {
-            Telegraph.Show(TelegraphShapes.Circle(0.5f), true);
-            Telegraph.SetProgress(0.35f);
-        }
+        // 숨어 다가올 땐 바닥 표시를 띄우지 않아요 (주황 예고 원이 물 위를 따라다녀 어색했어요. 물결 그림은 아트가 그려요)
+        void ShowRipple() => Telegraph.Hide();
 
         protected override void TickAlways(float dt)
         {
@@ -80,7 +77,6 @@ namespace AThousandDawns.Enemies
             if (IsHidden)
             {
                 if (d > _ambush * 0.6f) Move(dir * MoveSpeed, dt);
-                Telegraph.SetPose(transform.position, Facing);
                 return;
             }
             Move(-dir * (MoveSpeed * 0.4f), dt); // 드러난 동안은 슬금슬금 물러나요

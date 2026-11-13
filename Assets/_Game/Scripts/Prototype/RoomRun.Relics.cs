@@ -77,7 +77,7 @@ namespace AThousandDawns.Prototype
                 int cost = RegressionBook.RelicCost(def.grade);
                 v.Choices.Add(new EventChoice
                 {
-                    Label = $"{(picked ? "■" : "□")} {def.name} · {ItemDefinition.GradeLabel(def.grade)} · 기억 {cost}",
+                    Label = $"{(picked ? "■" : "□")} <b>{def.name}</b> · {AThousandDawns.Player.PlayerKeywords.Label(def.keyword)} · {ItemDefinition.GradeLabel(def.grade)} · 기 {def.minQi}–{def.maxQi} · 기억 {cost}\n<size=14>{def.effectText}</size>", // 무슨 기물인지 효과까지 (1레벨 기준)
                     Locked = !picked && used + cost > cap ? "기억 용량이 모자라요" : null,
                     Act = () => { ToggleRelic(def.id); OpenRelicBook(); return null; },
                 });

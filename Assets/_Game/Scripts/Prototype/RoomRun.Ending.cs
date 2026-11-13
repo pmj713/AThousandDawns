@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 namespace AThousandDawns.Prototype
 {
     // 천마 격파 엔딩: 천마가 쓰러지고 보상 기물을 고른 뒤, 결과 화면 전에 새벽이 밝아 와요.
-    // 첫 격파는 대사 4줄, 두 번째부터는 1줄. 줄마다 F · Enter · Esc로 넘기고, 가만히 두면 줄마다 ending.line_time초 뒤 넘어가요.
+    // 첫 격파는 대사 3줄, 두 번째부터는 1줄. 줄마다 F · Enter · Esc로 넘기고, 가만히 두면 줄마다 ending.line_time초 뒤 넘어가요.
     // 그림은 아트 쪽이 IsEnding · EndingTime · EndingLine을 읽어 그려요 (PrototypeHud.DrawEnding은 기본판).
     public sealed partial class RoomRun
     {
@@ -15,7 +15,6 @@ namespace AThousandDawns.Prototype
             "천마가 무릎을 꿇는다. 검은 마기가 흩어지고, 무덤 위로 첫 빛이 스민다.",
             "천마: …천 번을 죽고도 돌아왔구나. 그 고집이… 결국 새벽을 데려왔어.",
             "기시감 노인: 이번 새벽은, 다시 저물지 않을지도 모르지.",
-            "일조천회 — 천 번의 새벽 끝에, 한 번의 아침.",
         };
 
         static readonly string[] AgainEndingLines =

@@ -453,7 +453,7 @@ event.offering_taken,15%,,산신의 노여움: 이번 층 받는 피해 +,기획
 event.scripture_xp,15,,벽에 새긴 검결 훑어보기: 수련치 +,기획 대화 (이벤트)
 event.scripture_tracking,2,,벽에 새긴 검결 깊이 참오: 추적도 +,기획 대화 (이벤트)
 room.master_floor,2,,고수가 지키는 관문 층,기획 대화 (고수: 각 지역 2층 관문)
-master.spare_silver,50,은자,고수 방면: 은자 + (임시),
+master.spare_silver,150,은자,"고수 방면: 은자 + (금창약 1개도, 가득하면 그만큼 은자)",
 qingzhu.hp,1100,,청죽객 체력 (죽림),몬스터!E60
 qingzhu.atk,18,,청죽객 공격 (죽림),몬스터!G60
 qingzhu.toughness,0,,청죽객 강인함,몬스터!H60

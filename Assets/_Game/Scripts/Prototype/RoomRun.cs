@@ -184,7 +184,8 @@ namespace AThousandDawns.Prototype
                 case Phase.Master: TickMaster(); break;
                 case Phase.Floor:
                     TickHunt(Time.deltaTime);
-                    TickWater(Time.deltaTime); // 장강 물: 느려지고 물살에 밀려요
+                    TickWater(Time.deltaTime); // 장강 물: 느려지고 물살에 밀려요
+                    TickJars(); // 항아리는 싸우는 중에도 부딪히면 깨져요
                     if (_fighting) TickFight();
                     else TickFloorExits();
                     break;
@@ -777,6 +778,7 @@ namespace AThousandDawns.Prototype
 
         void FinishRun()
         {
+            director.DespawnAll(); // 보스가 불러낸 졸개 등 남은 적 (장강 수채주의 수적이 남아 천마총에서도 전투 중이었어요)
             if (!LastRegion) // 지역 보스: 보상을 고른 뒤 다음 지역으로 (RoomRun.Region.cs)
             {
                 _phase = Phase.None;

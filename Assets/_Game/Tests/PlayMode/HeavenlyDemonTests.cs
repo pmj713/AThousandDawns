@@ -171,7 +171,7 @@ namespace AThousandDawns.Tests
                 Assert.IsTrue(run.IsEnding, "보상을 고르면 엔딩");
                 Assert.IsFalse(run.IsShowingResult, "결과 화면은 엔딩 뒤");
                 Assert.AreEqual(kills == 0, run.EndingFirst);
-                Assert.AreEqual(kills == 0 ? 4 : 1, run.EndingLineCount);
+                Assert.AreEqual(kills == 0 ? 3 : 1, run.EndingLineCount);
                 StringAssert.Contains(kills == 0 ? "무릎" : "다시 쓰러진다", run.EndingLine);
                 for (int i = 0; i < run.EndingLineCount; i++) run.AdvanceEnding();
                 Assert.IsFalse(run.IsEnding);
