@@ -175,6 +175,7 @@ namespace AThousandDawns.Art
         float _age;
         bool _splitShown;
         int _auraTraits;
+        bool _frozenShown, _statusShown;   // 빙결로 동작을 멈췄는지 · 상태 이상 기운을 보이는 중인지
         MaterialPropertyBlock _overlayBlock;
         bool _overlayUsed;
 
@@ -212,6 +213,26 @@ namespace AThousandDawns.Art
                 _crack = SplitCrack;
                 ApplyOverlay();
             }
+            // 상태 이상 (몸 가장자리 기운이 정예 기운보다 먼저): 빙결은 얼음빛 테두리 + 동작이 그 자리에서 멈춰요,
+            //   화상은 중첩이 쌓일수록 가장자리가 그을린 듯 어두워져요. 몸 둘레 불꽃·서리 입자는 아트 2가 그려요
+            var status = _brain.Statuses;
+            bool frozen = status != null && status.IsFrozen && !_brain.IsDead;
+            if (frozen != _frozenShown)
+            {
+                _frozenShown = frozen;
+                _animator.speed = frozen ? 0f : 1f;
+            }
+            float burn = status != null && !_brain.IsDead && status.BurnStacks > 0 ? Mathf.Clamp01(status.BurnStacks / (float)Mathf.Max(1, status.BurnMax)) : 0f;
+            if (frozen || burn > 0f)
+            {
+                _aura = frozen ? new Color(0.6f, 0.85f, 1f, 0.8f + 0.1f * Mathf.Sin(Time.time * 5f))
+                               : new Color(0.08f, 0.06f, 0.05f, 0.25f + 0.45f * burn);
+                _statusShown = true;
+                ApplyOverlay();
+                return;
+            }
+            if (_statusShown) { _statusShown = false; _aura = Color.clear; _auraTraits = -1; ApplyOverlay(); }   // 풀리면 정예 기운을 다시 따져요
+
             // 특성이 둘 이상인 정예: 특성 색 기운 (특성이 늘면 다시 섞어요)
             int count = _brain.IsElite ? _brain.Traits.Count : 0;
             if (count != _auraTraits)
