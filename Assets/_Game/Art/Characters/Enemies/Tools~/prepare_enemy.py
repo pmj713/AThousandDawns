@@ -1767,10 +1767,13 @@ if "rivermoves" in EXTRAS:
                 arm("Right", sh + Vector((-0.05, 0.22, -0.42)), Vector((-1, 0.3, -0.5)))   # 허리춤 뒤
                 point_blade(Vector((0, -1, 0.08)), wrist_bend=90)
             elif stage == "thrust":
-                feet = {"Left": FEET["Left"] + Vector((0, -0.45, 0)), "Right": FEET["Right"]}
-                lower_hips(-0.18, feet, dy=-0.25)
-                bend("Spine", Vector((1, 0, 0)), 12)
-                fit_right(sh, [Vector((0.12, -0.78, -0.18)), Vector((0.05, -0.72, -0.26)), Vector((0.16, -0.66, -0.08))], ALL_POLES, Vector((0, -1, -0.05)), wrist_bend=90)   # 앞으로 쭉 (작살촉이 앞을 보게 팔꿈치 방향을 골라요)
+                # 팔을 멀리 뻗어 찔러요 (작살이 늘어나는 게 아니라): 앞발을 크게 내딛고 허리를 낮춰 몸을 앞으로 밀고, 오른팔을 어깨높이에서 끝까지 펴요
+                feet = {"Left": FEET["Left"] + Vector((0, -0.7, 0)), "Right": FEET["Right"] + Vector((0, 0.15, 0))}
+                lower_hips(-0.3, feet, dy=-0.42)
+                bend("Spine", Vector((1, 0, 0)), 24); bend("Spine", UP, 12)                       # 오른 어깨를 앞으로 밀어 넣어요
+                sh = pb["RightArm"].head.copy()                                                  # 숙이고 돌린 뒤의 어깨에서
+                arm("Right", sh + Vector((0.1, -REACH * 1.02, 0.0)), Vector((-1, 0.3, -0.5)))
+                point_blade(Vector((0, -1, -0.05)), wrist_bend=180)                                # 작살촉이 곧장 앞을 봐요
             else:   # yank: 잡아채 뒤로 당겨요
                 lower_hips(-0.14, FEET, dy=0.12)
                 bend("Spine", Vector((1, 0, 0)), -8)
