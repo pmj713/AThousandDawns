@@ -79,6 +79,8 @@ namespace AThousandDawns.EditorTools
             var river = DressRiverInk(stoneMat, woodMat, roofX, ref seed);
             // 7) 4지역 천마총: 붉은 등불 기둥·해골·마두 석상·깨진 관·피 비문·마교 수련장·천마의 옥좌 (PrototypeSceneBuilder.InkTomb.cs)
             var tomb = DressTombInk(stoneMat, roofX, ref seed);
+            // 8) 중간·큰 층 방 가장자리 장식 (지역마다): 넓어진 바닥이 비어 보이지 않게 (PrototypeSceneBuilder.InkRoomEdges.cs)
+            DressRoomEdges(bamboo, temple, river, tomb, stoneMat, woodMat, roofX, ref seed);
 
             var dressing = new GameObject("Ink Region Dressing").AddComponent<AThousandDawns.Art.InkRegionDressing>();
             dressing.SetRegions(new[]
