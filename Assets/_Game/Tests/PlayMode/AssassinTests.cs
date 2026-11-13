@@ -36,6 +36,12 @@ namespace AThousandDawns.Tests
             base.TearDown();
         }
 
+        static void CloseMeridian()
+        {
+            var meridian = Object.FindFirstObjectByType<MeridianScreen>();
+            if (meridian != null && meridian.IsOpen) meridian.Close();
+        }
+
         static IEnumerator WaitUntil(Func<bool> condition, float timeout)
         {
             // 게임 시간과 실제 시간이 둘 다 지나야 포기해요 (느린 프레임은 deltaTime이 잘려 게임 시간이 늦게 흘러요). 실제 시간 5배가 상한.
@@ -125,7 +131,7 @@ namespace AThousandDawns.Tests
                     return !run.IsFighting;
                 }, 20f);
                 Assert.IsFalse(run.IsFighting);
-                if (arena.IsChoosing) arena.Choose(0);
+                for (int k = 0; k < 10 && (arena.IsChoosing || arena.PendingOffers > 0); k++) { if (arena.IsChoosing) arena.Choose(0); yield return null; } // 큰 방은 보상이 여럿일 수 있어요 (고르는 동안 시간이 멈춰요)
             }
             Assert.AreEqual(7, run.Tracking, "전투 방 2개 → +2");
             Assert.AreEqual(map.Start, run.Hunters[0].Room, "방 2개를 지나면 시작 방에 나타나요");
@@ -133,7 +139,8 @@ namespace AThousandDawns.Tests
             run.Enter(map.Start, 0);
             Assert.IsTrue(run.IsDuel, "비운 방(시작 방)에서 따라잡히면 결투");
             Assert.IsTrue(run.IsFighting, "문이 잠겨요");
-            yield return WaitUntil(() => director.Enemies.Any(e => e.Kind == EnemyKind.Assassin), 3f);
+            yield return WaitUntil(() => { CloseMeridian(); return director.Enemies.Any(e => e.Kind == EnemyKind.Assassin); }, 3f); // 큰 방에서 레벨이 오르면 경맥도가 저절로 열려 시간이 멈춰요
+            Assert.IsTrue(director.Enemies.Any(e => e.Kind == EnemyKind.Assassin), $"살수가 나와요 (시간 {Time.timeScale} · 기물 고르기 {arena.IsChoosing}/{arena.PendingOffers} · 버릴 기물 {(Object.FindFirstObjectByType<PlayerController>().Items.Pending != null)} · 난입 대기 {run.AssassinIncoming} · 방 {run.RoomSize} · 적 {director.Enemies.Count})");
             var assassin = director.Enemies.First(e => e.Kind == EnemyKind.Assassin);
             float firstHealth = assassin.Damageable.MaxHealth;
             assassin.Damageable.ApplyHit(99999);
@@ -158,10 +165,11 @@ namespace AThousandDawns.Tests
                     for (int i = director.Enemies.Count - 1; i >= 0; i--) director.Enemies[i].Damageable.ApplyHit(99999);
                     return !run.IsFighting;
                 }, 20f);
-                if (arena.IsChoosing) arena.Choose(0);
+                for (int k = 0; k < 10 && (arena.IsChoosing || arena.PendingOffers > 0); k++) { if (arena.IsChoosing) arena.Choose(0); yield return null; } // 큰 방은 보상이 여럿일 수 있어요 (고르는 동안 시간이 멈춰요)
             }
             run.Enter(map.Start, 0);
-            yield return WaitUntil(() => director.Enemies.Any(e => e.Kind == EnemyKind.Assassin), 3f);
+            yield return WaitUntil(() => { CloseMeridian(); return director.Enemies.Any(e => e.Kind == EnemyKind.Assassin); }, 3f); // 큰 방에서 레벨이 오르면 경맥도가 저절로 열려 시간이 멈춰요
+            Assert.IsTrue(director.Enemies.Any(e => e.Kind == EnemyKind.Assassin), $"둘째 살수 (살수 방 {(run.Hunters[0].Room == map.Start ? "시작 방" : run.Hunters[0].Room == null ? "없음" : "다른 방")} · 결투 {run.IsDuel} · 싸움 {run.IsFighting} · 난입 대기 {run.AssassinIncoming} · 시간 {Time.timeScale} · 고르기 {arena.IsChoosing}/{arena.PendingOffers} · 추적도 {run.Tracking} · 살수 수 {run.Hunters.Count})");
             var second = director.Enemies.First(e => e.Kind == EnemyKind.Assassin);
             Assert.AreEqual(firstHealth * 1.3f, second.Damageable.MaxHealth, 1f, "동료를 잃은 살수는 체력 +30%");
         }
@@ -183,7 +191,7 @@ namespace AThousandDawns.Tests
             run.Enter(gate, 0);
             Assert.IsTrue(run.IsDuel, "관문 방에 들어가면 결투");
             Assert.IsFalse(run.AtGate, "결투 중엔 못 나가요");
-            yield return WaitUntil(() => director.Enemies.Any(e => e.Kind == EnemyKind.Assassin), 3f);
+            yield return WaitUntil(() => { CloseMeridian(); return director.Enemies.Any(e => e.Kind == EnemyKind.Assassin); }, 3f); // 큰 방에서 레벨이 오르면 경맥도가 저절로 열려 시간이 멈춰요
             director.Enemies.First(e => e.Kind == EnemyKind.Assassin).Damageable.ApplyHit(99999);
             yield return WaitUntil(() => !run.IsFighting, 2f);
             Assert.AreEqual(8, run.Tracking);
