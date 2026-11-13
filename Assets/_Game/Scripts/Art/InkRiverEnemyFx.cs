@@ -68,37 +68,40 @@ namespace AThousandDawns.Art
                 if (!_live[i](dt)) _live.RemoveAt(i);
         }
 
-        // ── 작살수: 작살이 밧줄을 끌며 뻗었다 돌아와요
+        // ── 작살수
 
+        // 작살 찌르기: 손에 든 작살이 팔 동작으로 그대로 나가요 (메인 아트). 날아가는 작살은 없어요.
+        //   찌르는 순간 앞쪽에 짧은 먹 속도선, 플레이어가 걸렸으면(pulled) 오른손 뼈에서 플레이어까지 밧줄을 이어 끌려와요.
         void Harpoon(HarpoonerBrain h, Vector3 at, Vector3 dir, float reach, bool pulled)
         {
             dir.y = 0f;
             dir = dir.sqrMagnitude > 1e-4f ? dir.normalized : Vector3.forward;
-            Transform bone = h != null ? FindDeep(h.transform, "RightHand") : null; // 작살꾼 오른손 뼈 (모델 Visual 안). 찌르는 동안 손의 작살은 메인 아트가 숨겨요
-            var head = Upright(_harpoon, at + Vector3.up * 1f, 1.1f, 7);
-            var rope = Line(_ropeMat, new Color(0.35f, 0.27f, 0.18f), 0.07f, 6);
+            Transform bone = h != null ? FindDeep(h.transform, "RightHand") : null; // 작살꾼 오른손 뼈 (모델 Visual 안)
+            Vector3 Hand() => bone != null ? bone.position : (h != null ? h.transform.position : at) + Vector3.up * 1f;
+            var streak = Line(_ropeMat, new Color(0.08f, 0.07f, 0.06f), 0.12f, 6); // 먹 속도선
+            var rope = pulled ? Line(_ropeMat, new Color(0.35f, 0.27f, 0.18f), 0.07f, 6) : null;
             Transform target = pulled && _player != null ? _player.transform : null;
             float t = 0f;
             _live.Add(dt =>
             {
                 t += dt;
-                Vector3 hand = bone != null ? bone.position : (h != null ? h.transform.position : at) + Vector3.up * 1f; // 손에서 뻗어 나가요
-                Vector3 tip;
-                if (t < 0.1f) tip = hand + dir * (reach * (t / 0.1f));                                        // 뻗어요
-                else if (target != null) tip = target.position + Vector3.up * 0.9f;                         // 걸렸으면 플레이어에 붙어 끌려와요
-                else tip = hand + dir * (reach * Mathf.Clamp01(1f - (t - 0.15f) / 0.25f));                 // 놓쳤으면 감겨 돌아와요
-                if (head != null)
+                Vector3 hand = Hand();
+                if (streak != null)
                 {
-                    head.transform.parent.position = tip;
-                    var screen = Camera.main != null ? Camera.main.WorldToScreenPoint(tip) - Camera.main.WorldToScreenPoint(hand) : Vector3.right;
-                    head.transform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(screen.y, screen.x) * Mathf.Rad2Deg); // 화면에서 날아가는 쪽으로
+                    float k = Mathf.Clamp01(t / 0.18f);
+                    streak.SetPosition(0, hand + dir * (0.3f + 1.2f * k));
+                    streak.SetPosition(1, hand + dir * (0.6f + 1.6f * k));
+                    streak.startColor = streak.endColor = new Color(0.08f, 0.07f, 0.06f, 0.8f * (1f - k));
+                    if (k >= 1f) { Destroy(streak.gameObject); streak = null; }
                 }
-                if (rope != null) { rope.SetPosition(0, hand); rope.SetPosition(1, tip); }
-                bool done = target != null ? t > 0.5f : t > 0.42f;
-                if (!done) return true;
-                if (head != null) Destroy(head.transform.parent.gameObject);
-                if (rope != null) Destroy(rope.gameObject);
-                return false;
+                if (rope != null)
+                {
+                    Vector3 tip = target != null ? target.position + Vector3.up * 0.9f : hand + dir * reach;
+                    rope.SetPosition(0, hand);
+                    rope.SetPosition(1, tip);
+                    if (t > 0.5f) { Destroy(rope.gameObject); rope = null; }
+                }
+                return streak != null || rope != null;
             });
         }
 
