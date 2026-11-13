@@ -99,10 +99,50 @@ namespace AThousandDawns.Fx
             GUI.color = old;
         }
 
+        // 한지 화면 (면벽수련 등 밝은 화면용): 한지 결 그림을 깔고 가장자리에 옅은 먹 번짐
+        public static void PaperBackdrop(float width, float height)
+        {
+            Load();
+            var old = GUI.color;
+            var screen = new Rect(0f, 0f, width, height);
+            GUI.color = Paper;
+            GUI.DrawTexture(screen, Texture2D.whiteTexture);
+            if (_paper != null) { GUI.color = new Color(1f, 1f, 1f, 0.9f); GUI.DrawTexture(screen, _paper, ScaleMode.ScaleAndCrop); }
+            if (_blot != null) // 귀퉁이 먹 번짐
+            {
+                GUI.color = new Color(PanelInk.r, PanelInk.g, PanelInk.b, 0.08f);
+                float s = height * 0.9f;
+                GUI.DrawTexture(new Rect(-s * 0.45f, -s * 0.4f, s, s), _blot, ScaleMode.StretchToFill);
+                GUI.DrawTexture(new Rect(width - s * 0.55f, height - s * 0.55f, s, s), _blot, ScaleMode.StretchToFill);
+            }
+            GUI.color = old;
+        }
+
+        // 한지 판 + 먹 붓 테두리 (밝은 화면의 줄·칸). fill로 판 색을 물들여요 (기본 옅은 한지)
+        public static void PaperPanel(Rect rect, Color fill)
+        {
+            Load();
+            var old = GUI.color;
+            GUI.color = fill;
+            if (_swatch != null) GUI.DrawTexture(Grow(rect, 0.02f), _swatch, ScaleMode.StretchToFill);
+            else GUI.DrawTexture(rect, Texture2D.whiteTexture);
+            if (_frame != null)
+            {
+                GUI.color = new Color(PanelInk.r, PanelInk.g, PanelInk.b, 0.75f);
+                GUI.DrawTexture(Grow(rect, 0.02f), _frame, ScaleMode.StretchToFill);
+            }
+            GUI.color = old;
+        }
+
+        public static void PaperPanel(Rect rect) => PaperPanel(rect, new Color(1f, 0.98f, 0.93f, 0.85f));
+
+        static Texture2D _paper;
+
         static void Load()
         {
             if (_loaded) return;
             _loaded = true;
+            _paper = Resources.Load<Texture2D>("FxArt/ScrollPaper");
             _bg = Resources.Load<Texture2D>("HudArt/MeridianBg");
             _swatch = Resources.Load<Texture2D>("HudArt/InkSwatch");
             _frame = Resources.Load<Texture2D>("HudArt/CellFrame");

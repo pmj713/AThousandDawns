@@ -23,6 +23,7 @@ namespace AThousandDawns.Art
 
         MeshRenderer _flash;
         MeshFilter _flashFilter;
+        AThousandDawns.Player.PlayerController _player; // 초식 중인지 보려고 (처음 한 번만 찾아요)
         MeshRenderer _stroke;
         Mesh _strokeMesh;
         MaterialPropertyBlock _block;
@@ -54,6 +55,9 @@ namespace AThousandDawns.Art
             if (_flash.enabled)
             {
                 _flash.enabled = false;
+                // 초식(비급)을 쓰는 동안 뜨는 범위 표시는 먹 궤적 없이 숨기기만 해요 (플레이 테스트: 초식마다 검은 선이 보임)
+                if (_player == null) _player = GetComponentInParent<AThousandDawns.Player.PlayerController>() ?? FindAnyObjectByType<AThousandDawns.Player.PlayerController>();
+                if (_player != null && _player.IsCastingSkill) { _stroke.enabled = false; _time = -1f; return; }
                 Begin();
             }
             if (_time < 0f) return;

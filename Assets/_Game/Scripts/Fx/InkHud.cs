@@ -8,6 +8,7 @@ namespace AThousandDawns.Fx
     // 수묵 HUD (아트 목록 UI): 왼쪽 위 한 덩어리 (높이 Height). 시험판 글자 목록은 그 아래로.
     //   초식: 원상(먹 동그라미) 안에 초식 그림. 쿨타임 동안 먹물이 덮였다가 위에서부터 걷혀요. 남은 초 · 키캡.
     //         비도 0개면 그림이 회색(회수 불가), 금창약을 마시는 동안은 쿨타임 표시를 숨기고 머리 위 원형 게이지를 띄워요 (기획 시트).
+    //   초식 쿨타임: 원상 안 먹물 외에, 캐릭터 발밑에도 작은 붓 막대가 차올라요 (쿨타임 중에만).
     //   수련치: 초식 원상 둘레의 금빛 점 고리가 위에서부터 시계 방향으로 차올라요. 레벨업이면 번쩍이며 퍼져요. 원상 왼쪽 아래 레벨 낙관 (개혈 대기면 금빛 맥박).
     //   체력: 붓 획 하나 — 먹색 바탕 획 위에 매화 홍 획이 줄어들고, 깎인 자리는 한지색으로 잠깐 남았다 따라 줄어요. 보호막은 위에 흰 획.
     //   대시: 붓 ">" 하나가 한 번 — 최대 충전만큼 늘어요(>>>). 찬 것은 짙게, 채워지는 것은 왼쪽부터 먹이 차올라요.
@@ -114,6 +115,7 @@ namespace AThousandDawns.Fx
             DrawPotions(player, new Vector2(Mathf.Max(after + 26f, x + 170f), row - 8f));
             DrawKeywords(player, new Vector2(Margin, skillRect.yMax + 14f));
             DrawDrinkGauge(player);
+            DrawSkillBar(player);
             GUI.color = old;
         }
 
@@ -221,6 +223,22 @@ namespace AThousandDawns.Fx
                 }
                 x += KeywordSize + 14f;
             }
+        }
+
+        // 초식 쿨타임 (플레이 테스트): 캐릭터 발밑 작은 붓 막대가 쿨타임 동안 왼쪽부터 차오르고, 다 차면 사라져요
+        static void DrawSkillBar(PlayerController p)
+        {
+            bool noDaggers = p.UsesDagger && !p.CanRecall;
+            if (p.SkillCooldownLeft <= 0f || p.IsCastingSkill || noDaggers) return;
+            var cam = Camera.main;
+            if (cam == null) return;
+            Vector3 sp = cam.WorldToScreenPoint(p.transform.position);
+            if (sp.z <= 0f) return;
+            Vector2 c = UiScale.FromScreen(sp);
+            float ratio = 1f - Mathf.Clamp01(p.SkillCooldownLeft / Mathf.Max(0.01f, p.SkillCooldown));
+            var bar = new Rect(c.x - 34f, c.y + 16f, 68f, 12f);
+            StrokePart(bar, 1f, Ink, 0.55f); // 빈 막대 (먹)
+            StrokePart(Shrink(bar, 0f, 0.15f), ratio, Gold, 0.95f); // 차오르는 금빛
         }
 
         // 금창약 마시기: 머리 위 원형 게이지 (기획 조작 탭). 먹점이 둘레를 따라 매화 홍으로 차올라요
