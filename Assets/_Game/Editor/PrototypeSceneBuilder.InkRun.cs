@@ -60,6 +60,29 @@ namespace AThousandDawns.EditorTools
                 }
         }
 
+        // 층 싸우는 방 (작은 Room_Floor · 중간 Room_Floor_Medium · 큰 Room_Floor_Large): 있는 방만, 방의 Floor 상자에서
+        // 가운데와 크기를 읽어요 (Floor는 방 크기보다 1칸 커요). Floor를 못 찾으면 작은 방은 CombatCenter · CombatSize로
+        static readonly string[] InkFloorRoomNames = { "Room_Floor", "Room_Floor_Medium", "Room_Floor_Large" };
+
+        static List<(Transform room, Vector3 center, Vector2 size)> InkFloorRooms()
+        {
+            var rooms = new List<(Transform, Vector3, Vector2)>();
+            var roots = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();
+            foreach (var name in InkFloorRoomNames)
+            {
+                var go = roots.FirstOrDefault(g => g.name == name);
+                if (go == null) continue;
+                var floor = go.transform.Find("Floor");
+                if (floor != null)
+                {
+                    var s = floor.lossyScale;
+                    rooms.Add((go.transform, new Vector3(floor.position.x, 0f, floor.position.z), new Vector2(s.x - 1f, s.z - 1f)));
+                }
+                else if (name == "Room_Floor") rooms.Add((go.transform, CombatCenter, CombatSize));
+            }
+            return rooms;
+        }
+
         static void DressRunInk()
         {
             ImportInkArt();
@@ -115,13 +138,16 @@ namespace AThousandDawns.EditorTools
                 clump.localScale = new Vector3(1f / vs.x, 1f / vs.y, 1f / vs.z);
             }
 
-            // 3) 층 방 둘레: 벽 너머 대나무 숲과 북쪽 먼 풍경 (보기용, 충돌 없음)
-            float hx = CombatSize.x * 0.5f, hz = CombatSize.y * 0.5f;
-            var deco = new GameObject("Ink Deco (Room_Floor)").transform;
-            deco.position = CombatCenter;
-            BuildEnv3DForest(deco, hx, hz, 1.75f, bambooMat);
-            StripColliders(deco);
-            Billboard(deco, "Backdrop_Ink", $"{Env2DArtFolder}/Source/Backdrop_Ink.png", CombatCenter + new Vector3(0f, 0f, hz + 6f), 22f);
+            // 3) 층 방(작은·중간·큰) 둘레: 벽 너머 대나무 숲과 북쪽 먼 풍경 (보기용, 충돌 없음). 지역 꾸밈이 이 숲·배경을 찾아 바꿔요
+            foreach (var (room, center, size) in InkFloorRooms())
+            {
+                float hx = size.x * 0.5f, hz = size.y * 0.5f;
+                var deco = new GameObject($"Ink Deco ({room.name})").transform;
+                deco.position = center;
+                BuildEnv3DForest(deco, hx, hz, 1.75f, bambooMat);
+                StripColliders(deco);
+                Billboard(deco, "Backdrop_Ink", $"{Env2DArtFolder}/Source/Backdrop_Ink.png", center + new Vector3(0f, 0f, hz + 6f), 22f + (size.x - CombatSize.x) * 0.6f);
+            }
 
             // 3-1) 돌벽·통로 벽·문 막이 위에 기와지붕 (담의 자식이라 문 막이가 켜지고 꺼지면 같이). 플레이어 코는 빼요
             var (roofX, roofZ) = GetInkRoofMaterials();
