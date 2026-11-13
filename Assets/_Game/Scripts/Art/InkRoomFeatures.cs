@@ -16,6 +16,7 @@ namespace AThousandDawns.Art
         [SerializeField] GameObject bloodPoolRim;                    // 천마총 혈지 가장자리 돌·뼈 (3.5 × 2.5, 핏물 표면은 아트 2)
         [SerializeField] GameObject[] bambooClumps = new GameObject[0]; // 죽림 대숲 덤불 (지름 0.7, 높이 3) 변형들
         [SerializeField] GameObject fallenBamboo;                    // 죽림 쓰러진 대나무 (3.5 × 0.4, 높이 0.5), 길이가 X
+        public GameObject FallenBambooModel => fallenBamboo;         // 아트 2 InkQingzhuFx: 청죽객이 쓰러뜨리는 대나무에도 같은 모델을 써요
         [SerializeField] GameObject streamBank;                      // 죽림 개울가 조약돌·풀 (폭 2 · X, 길이 12 · Z)
 
         [SerializeField] GameObject[] riverBanks = new GameObject[0];   // 장강 물띠 물가 토막 (길이 4 · Z, 물 폭 2.6 · X) 변형들

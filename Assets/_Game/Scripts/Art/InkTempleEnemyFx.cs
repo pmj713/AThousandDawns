@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using AThousandDawns.Enemies;
 using AThousandDawns.Player;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace AThousandDawns.Art
 {
@@ -36,7 +37,11 @@ namespace AThousandDawns.Art
             ArhatBrain.ChargeQuake -= OnQuake;
             ArhatBrain.ChargeQuake += OnQuake;
             if (FindAnyObjectByType<EnemyDirector>() != null) Host();
+            SceneManager.sceneLoaded -= OnSceneLoaded; // 시작 화면부터 켜도 싸우는 씬이 열리면 깨어나요
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
+
+        static void OnSceneLoaded(Scene scene, LoadSceneMode mode) { if (FindAnyObjectByType<EnemyDirector>() != null) Host(); }
 
         static InkTempleEnemyFx Host()
         {

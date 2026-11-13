@@ -42,7 +42,11 @@ namespace AThousandDawns.Art
             RattanBrain.FullBlock -= OnBlock;
             RattanBrain.FullBlock += OnBlock;
             if (FindAnyObjectByType<EnemyDirector>() != null) Host();
+            SceneManager.sceneLoaded -= OnSceneLoaded; // 시작 화면부터 켜도 싸우는 씬이 열리면 깨어나요
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
+
+        static void OnSceneLoaded(Scene scene, LoadSceneMode mode) { if (FindAnyObjectByType<EnemyDirector>() != null) Host(); }
 
         static InkRiverEnemyFx Host()
         {

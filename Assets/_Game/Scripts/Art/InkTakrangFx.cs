@@ -34,7 +34,11 @@ namespace AThousandDawns.Art
             PlayerController.SkillCue -= OnSkill;
             PlayerController.SkillCue += OnSkill;
             if (FindAnyObjectByType<PlayerController>() != null) Host();
+            SceneManager.sceneLoaded -= OnSceneLoaded; // 시작 화면부터 켜도 플레이어가 있는 씬이 열리면 깨어나요
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
+
+        static void OnSceneLoaded(Scene scene, LoadSceneMode mode) { if (FindAnyObjectByType<PlayerController>() != null) Host(); }
 
         static InkTakrangFx Host()
         {

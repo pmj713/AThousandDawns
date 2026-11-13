@@ -39,7 +39,11 @@ namespace AThousandDawns.Art
         static void Spawn()
         {
             if (FindAnyObjectByType<RoomRun>() != null) Host(); // 판 구조 씬에만
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded; // 시작 화면부터 켜도 판 씬이 열리면 깨어나요
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
         }
+
+        static void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode) { if (FindAnyObjectByType<RoomRun>() != null) Host(); }
 
         void Update()
         {

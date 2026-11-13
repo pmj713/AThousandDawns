@@ -31,6 +31,13 @@ namespace AThousandDawns.Art
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Init()
         {
+            OnSceneLoaded(default, LoadSceneMode.Single);
+            SceneManager.sceneLoaded -= OnSceneLoaded; // 시작 화면부터 켜도 싸우는 씬이 열리면 깨어나요
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
             if (FindAnyObjectByType<EnemyDirector>() == null) return;
             Load();
             if (_host == null) _host = new GameObject("Ink Tomb Enemy Fx").AddComponent<InkTombEnemyFx>();
