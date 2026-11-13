@@ -81,12 +81,21 @@ namespace AThousandDawns.Prototype
                     {
                         if (!Player.Items.Remove(item)) return "상인이 고개를 갸웃해요. 그 기물이 없어요.";
                         Silver += price;
+                        v.Text = "상인이 흡족하게 웃으며 기물을 등짐 깊숙이 넣는다. \"좋은 거래였소. 또 봅시다.\""; // 고른 뒤엔 상인 대사도 바뀌어요
                         return $"상인이 {item.Def.name}을(를) 챙기고 은자 {price}를 세어 줬어요.";
                     },
                 });
             }
             else v.Choices.Add(new EventChoice { Label = "팔 기물이 없다", Locked = "가진 기물이 없어요", Act = () => null });
-            v.Choices.Add(Pass("거절한다"));
+            v.Choices.Add(new EventChoice
+            {
+                Label = "거절한다",
+                Act = () =>
+                {
+                    v.Text = "상인이 아쉬운 듯 혀를 차더니 등짐을 고쳐 멘다. \"마음이 바뀌면 다음 길목에서 찾으시오.\"";
+                    return "상인이 길을 떠났어요.";
+                },
+            });
         }
     }
 }

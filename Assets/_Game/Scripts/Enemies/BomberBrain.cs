@@ -104,7 +104,7 @@ namespace AThousandDawns.Enemies
             if (_exploded) return;
             _exploded = true;
             Telegraph.Hide();
-            Director.SpawnBurst(transform.position, AttackRange);
+            Director.SpawnBurst(transform.position, AttackRange, AThousandDawns.Combat.BurstKind.Gunpowder);
             if (Player != null && !Player.IsDead && ToPlayer().magnitude <= AttackRange + PlayerRadius && TryHitPlayer()) OnBlastHitPlayer();
             Director.Blast(transform.position, AttackRange, AttackPower, Body);
             Die(); // 이미 쓰러져 있으면 아무 일도 없어요

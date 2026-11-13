@@ -195,7 +195,7 @@ namespace AThousandDawns.Enemies
                     _flowHitDone = false;
                     break;
                 case Pattern.Whirl:
-                    Director.SpawnBurst(transform.position, 1f);
+                    Director.SpawnBurst(transform.position, 1f, AThousandDawns.Combat.BurstKind.Water);
                     break;
             }
         }
@@ -241,7 +241,7 @@ namespace AThousandDawns.Enemies
                 Player.Drag(to.normalized * Mathf.Min(_whirlPull * dt, to.magnitude));
             if (_activeTimer < _whirlTime - 0.05f) return;
             if (_pattern != Pattern.Whirl) return;
-            Director.SpawnBurst(transform.position, _whirlBurst);
+            Director.SpawnBurst(transform.position, _whirlBurst, AThousandDawns.Combat.BurstKind.Water);
             if (ToPlayer().magnitude <= _whirlBurst + PlayerRadius) Player.TryReceiveHit(AttackPower * _whirlRatio, transform.position, -1f, Body);
             _activeTimer = float.NegativeInfinity; // 한 번만 터져요
         }

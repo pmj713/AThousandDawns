@@ -123,7 +123,11 @@ namespace AThousandDawns.Tests
             var anchor = Spawn(EnemyKind.Anchor, 6f);
             float start = Vector3.Distance(_player.transform.position, anchor.transform.position);
             yield return WaitUntil(() => AnchorBrain.PostCount > 0, 6f);
-            Assert.Greater(AnchorBrain.PostCount, 0, "닻이 꽂혀요");
+            Vector3 thrownAt = anchor.transform.position;
+            yield return null;
+            yield return null;
+            Assert.Less(Vector3.Distance(thrownAt, anchor.transform.position), 0.05f, "닻이 날아가 꽂히기 전엔 제자리 (던지고 나서 끌려가요)");
+            Assert.Greater(AnchorBrain.PostCount, 0, "닻을 던져요");
             yield return WaitUntil(() => Vector3.Distance(_player.transform.position, anchor.transform.position) < start - 3f, 2f);
             Assert.Less(Vector3.Distance(_player.transform.position, anchor.transform.position), start - 3f, "꽂힌 자리로 날아와요");
         }

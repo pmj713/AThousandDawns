@@ -114,5 +114,27 @@ namespace AThousandDawns.Tests
             Assert.IsNotNull(Object.FindFirstObjectByType<TitleScreen>(), "시작 화면");
             Assert.AreEqual(1f, Time.timeScale);
         }
+
+        [UnityTest]
+        public IEnumerator 게임_포기는_한_번_더_눌러야_그_자리에서_게임_오버()
+        {
+            yield return Load();
+            var player = Object.FindFirstObjectByType<AThousandDawns.Player.PlayerController>();
+            _run.OpenPause();
+            Assert.IsTrue(_run.CanGiveUp);
+            _run.ChoosePause(RoomRun.PauseItem.GiveUp);
+            Assert.IsTrue(_run.ConfirmGiveUp, "한 번 더 누르면");
+            Assert.IsFalse(player.IsDead);
+            _run.ChoosePause(RoomRun.PauseItem.Resume);
+            Assert.IsFalse(_run.ConfirmGiveUp, "다른 항목을 고르면 확인은 처음부터");
+
+            _run.OpenPause();
+            _run.ChoosePause(RoomRun.PauseItem.GiveUp);
+            _run.ChoosePause(RoomRun.PauseItem.GiveUp);
+            Assert.IsFalse(_run.IsPaused, "메뉴가 닫히고");
+            Assert.IsTrue(player.IsDead, "그 자리에서 쓰러져요");
+            for (int i = 0; i < 600 && !_run.IsShowingResult; i++) yield return null;
+            Assert.IsTrue(_run.IsShowingResult, "평소처럼 결과 화면");
+        }
     }
 }

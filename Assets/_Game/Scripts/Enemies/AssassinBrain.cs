@@ -195,12 +195,29 @@ namespace AThousandDawns.Enemies
                         Vector3 back = p - transform.position;
                         back.y = 0f;
                         back = back.sqrMagnitude > 1e-4f ? back.normalized : Vector3.forward;
-                        _ambushPoint = Director.FindFreeSpot(p + back * 1.2f, 0.01f);
+                        _ambushPoint = AmbushSpot(p, back);
                         AimDirection = (p - _ambushPoint).sqrMagnitude > 1e-4f ? Flat(p - _ambushPoint).normalized : -back;
                         Telegraph.Show(TelegraphShape(), false);
                     }
                     break;
             }
+        }
+
+        // 플레이어 뒤 1.2칸. 벽에 붙어 있어 뒤가 벽 너머면 비스듬한 뒤 → 옆 → 앞 순서로 (플레이어에서 그 자리까지 벽이 없어야 해요)
+        static readonly float[] AmbushAngles = { 0f, 45f, -45f, 90f, -90f, 135f, -135f, 180f };
+
+        Vector3 AmbushSpot(Vector3 player, Vector3 back)
+        {
+            const float reach = 1.2f;
+            Vector3 eye = new Vector3(player.x, 0.8f, player.z);
+            foreach (float a in AmbushAngles)
+            {
+                Vector3 dir = Quaternion.Euler(0f, a, 0f) * back;
+                if (ObstacleProbe.Distance(eye, dir, 0.3f, reach + 0.3f) < reach + 0.3f) continue; // 벽 / 기둥이 막아요
+                Vector3 spot = new Vector3(player.x, 0f, player.z) + dir * reach;
+                if (Director.IsFree(spot, 0.45f)) return spot;
+            }
+            return new Vector3(transform.position.x, 0f, transform.position.z); // 둘러싸여 있으면 제자리에서
         }
 
         static Vector3 Flat(Vector3 v)

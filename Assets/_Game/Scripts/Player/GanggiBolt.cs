@@ -90,6 +90,7 @@ namespace AThousandDawns.Player
         void Explode(Damageable center)
         {
             Sfx.Play(SfxId.BoltExplode);
+            PlayerController.CueBurst(center.transform.position, _explodeRadius, AThousandDawns.Combat.BurstKind.Gangi);
             Vector3 p = center.transform.position;
             foreach (var d in Damageable.All())
             {

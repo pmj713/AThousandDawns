@@ -316,7 +316,7 @@ namespace AThousandDawns.Enemies
             if (to.magnitude <= _pullRadius && to.magnitude > BodyRadius + PlayerRadius + 0.2f)
                 Player.Drag(to.normalized * Mathf.Min(_pullSpeed * dt, to.magnitude));
             if (_activeTimer < _pullTime - 0.05f) return;
-            Director.SpawnBurst(transform.position, _pullBurst);
+            Director.SpawnBurst(transform.position, _pullBurst, AThousandDawns.Combat.BurstKind.Miasma);
             Fx(new FxCue { Kind = FxKind.PullBurst, At = transform.position, Radius = _pullBurst });
             if (ToPlayer().magnitude <= _pullBurst + PlayerRadius) Player.TryReceiveHit(AttackPower * _pullRatio, transform.position, -1f, Body);
             _activeTimer = float.NegativeInfinity; // 한 번만
@@ -356,7 +356,7 @@ namespace AThousandDawns.Enemies
                 }
                 if (m.Marker != null) Destroy(m.Marker.gameObject);
                 _marks.RemoveAt(i);
-                Director.SpawnBurst(m.Sector ? m.At + m.Dir * 1.2f : m.At, m.Sector ? 0.8f : m.Radius);
+                Director.SpawnBurst(m.Sector ? m.At + m.Dir * 1.2f : m.At, m.Sector ? 0.8f : m.Radius, AThousandDawns.Combat.BurstKind.Slam);
                 Fx(new FxCue { Kind = FxKind.MarkFall, At = m.At, Dir = m.Dir, Radius = m.Radius, Angle = m.Angle, Sector = m.Sector });
                 bool hit = m.Sector
                     ? HitShapes.InSector(m.At, m.Dir, m.Radius, m.Angle, Player.transform.position, PlayerRadius)
@@ -421,7 +421,7 @@ namespace AThousandDawns.Enemies
             _grasped = false;
             _transitionTimer = _transitionTime;
             Body.Targetable = false;
-            Director.SpawnBurst(transform.position, 3f);
+            Director.SpawnBurst(transform.position, 3f, AThousandDawns.Combat.BurstKind.Miasma);
             Fx(new FxCue { Kind = FxKind.Transition, At = transform.position, Radius = 3f, Time = _transitionTime });
         }
 

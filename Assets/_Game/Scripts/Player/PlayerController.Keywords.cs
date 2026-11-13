@@ -197,11 +197,16 @@ namespace AThousandDawns.Player
             _hitShieldCooldown = _geumgangHitShieldCooldown;
         }
 
+        // 플레이어 쪽 폭발 신호 (아트가 종류마다 다른 폭발을 그려요): 금강 충격파 · 잔상 반격 · 강기 구슬 터짐 · 뇌정 방전
+        public static event System.Action<Vector3, float, BurstKind> BurstCue;
+        public static void CueBurst(Vector3 at, float radius, BurstKind kind) => BurstCue?.Invoke(at, radius, kind);
+
         // 6단계: 보호막이 깨질 때 충격파 (반경 2칸, 깨진 보호막 최대치의 200%, 파생 피해)
         void OnShieldBroken(int shieldMax)
         {
             if (K(Keyword.Geumgang) < 6) return;
             if (swingFlash != null) swingFlash.Show(transform.position, _facing, _geumgangShockRadius, 360f, 0.15f);
+            CueBurst(transform.position, _geumgangShockRadius, BurstKind.Vajra);
             float raw = shieldMax * _geumgangShockRatio;
             foreach (var d in Damageable.All())
             {
@@ -227,6 +232,7 @@ namespace AThousandDawns.Player
             _perfectBonusTimer = _perfectWindow;
             Sfx.Play(SfxId.PerfectDodge);
             if (swingFlash != null) swingFlash.Show(transform.position, _facing, 0.9f, 360f, 0.12f); // 잔상이 번쩍
+            CueBurst(transform.position, 0.9f, BurstKind.Echo);
 
             if (count < 6 || attacker == null || attacker.IsDead || !attacker.Targetable) return;
             attacker.ApplyHit(DamageFormula.Proc(BaseDamage * _counterRatio, 1f, attacker.Defense), false, PopupStyle.Burst);

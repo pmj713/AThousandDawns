@@ -41,6 +41,7 @@ namespace AThousandDawns.Prototype
         {
             var want = Pick();
             if (want != Playing) Switch(want);
+            if (_current != null && !_current.isPlaying) _current.Play(); // 오디오 장치가 바뀌어 다시 열리면 멈춰요 (GameSettings)
 
             // 일시정지(timeScale 0)에도 페이드가 멈추지 않게 unscaled
             float step = Time.unscaledDeltaTime / Mathf.Max(0.01f, fadeSeconds);

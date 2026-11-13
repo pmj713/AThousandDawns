@@ -6,16 +6,19 @@ using UnityEngine.SceneManagement;
 namespace AThousandDawns.Prototype
 {
     // 일시정지 (Esc): 다른 창(진열대·이벤트·기물 고르기·경맥도·회귀록·결과)이 없을 때만 열려요. 시간이 멈춰요.
-    //   계속하기 · 설정 (시작 화면과 같은 설정창) · 무공 요결 (본 안내 모음, HintBook) · 시작 화면으로 (한 번 더 눌러 확인. 이어하기는 마지막 저장부터, RoomRun.Save)
+    //   계속하기 · 설정 (시작 화면과 같은 설정창) · 무공 요결 (본 안내 모음, HintBook) · 게임 포기 (한 번 더 눌러 확인. 그 자리에서 쓰러져 게임 오버) · 시작 화면으로 (한 번 더 눌러 확인. 이어하기는 마지막 저장부터, RoomRun.Save)
     public sealed partial class RoomRun
     {
-        public enum PauseItem { Resume, Settings, Book, Title }
+        public enum PauseItem { Resume, Settings, Book, GiveUp, Title }
+        public const int PauseCount = 5;
 
         public bool IsPaused { get; private set; }
         public bool PauseSettingsOpen { get; private set; }
         public bool PauseBookOpen { get; private set; }
         public HintBookPanel PauseBook { get; } = new HintBookPanel();
         public bool ConfirmTitle { get; private set; }
+        public bool ConfirmGiveUp { get; private set; }
+        public bool CanGiveUp => _phase != Phase.Village && Player != null && !Player.IsDead; // 마을에서는 포기할 판이 없어요
         public int PauseSelected { get; private set; }
         public SettingsPanel PauseSettings { get; } = new SettingsPanel();
 
@@ -58,8 +61,8 @@ namespace AThousandDawns.Prototype
             bool up = (k != null && (k.upArrowKey.wasPressedThisFrame || k.wKey.wasPressedThisFrame)) || (pad != null && pad.dpad.up.wasPressedThisFrame);
             bool down = (k != null && (k.downArrowKey.wasPressedThisFrame || k.sKey.wasPressedThisFrame)) || (pad != null && pad.dpad.down.wasPressedThisFrame);
             bool ok = (k != null && (k.enterKey.wasPressedThisFrame || k.spaceKey.wasPressedThisFrame)) || (pad != null && pad.buttonSouth.wasPressedThisFrame);
-            if (up) { PauseSelected = (PauseSelected + 3) % 4; ConfirmTitle = false; Sfx.Play(SfxId.UiMove); }
-            if (down) { PauseSelected = (PauseSelected + 1) % 4; ConfirmTitle = false; Sfx.Play(SfxId.UiMove); }
+            if (up) { PauseSelected = (PauseSelected + PauseCount - 1) % PauseCount; ConfirmTitle = ConfirmGiveUp = false; Sfx.Play(SfxId.UiMove); }
+            if (down) { PauseSelected = (PauseSelected + 1) % PauseCount; ConfirmTitle = ConfirmGiveUp = false; Sfx.Play(SfxId.UiMove); }
             if (ok) ChoosePause((PauseItem)PauseSelected);
             else if (esc || (pad != null && pad.buttonEast.wasPressedThisFrame)) ClosePause();
             return true;
@@ -70,7 +73,7 @@ namespace AThousandDawns.Prototype
             if (IsPaused) return;
             IsPaused = true;
             PauseSelected = 0;
-            ConfirmTitle = false;
+            ConfirmTitle = ConfirmGiveUp = false;
             PauseSettingsOpen = false;
             PauseBookOpen = false;
             _pauseTimeScale = Time.timeScale;
@@ -93,6 +96,8 @@ namespace AThousandDawns.Prototype
         public void ChoosePause(PauseItem item)
         {
             PauseSelected = (int)item;
+            if (item != PauseItem.GiveUp) ConfirmGiveUp = false; // 다른 항목을 누르면 확인은 처음부터
+            if (item != PauseItem.Title) ConfirmTitle = false;
             Sfx.Play(SfxId.UiConfirm);
             switch (item)
             {
@@ -105,6 +110,16 @@ namespace AThousandDawns.Prototype
                 case PauseItem.Book:
                     PauseBook.Refresh();
                     PauseBookOpen = true;
+                    break;
+                case PauseItem.GiveUp:
+                    if (!CanGiveUp) break;
+                    if (!ConfirmGiveUp)
+                    {
+                        ConfirmGiveUp = true; // 한 번 더 누르면 포기해요
+                        break;
+                    }
+                    ClosePause();
+                    Player.GiveUp(); // 그 자리에서 쓰러져 평소처럼 결과 화면 (판 기록 · 회귀록 그대로)
                     break;
                 case PauseItem.Title:
                     if (!ConfirmTitle && _phase != Phase.Village)

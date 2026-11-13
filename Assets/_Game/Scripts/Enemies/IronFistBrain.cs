@@ -248,7 +248,7 @@ namespace AThousandDawns.Enemies
         void Quake()
         {
             _quakesDone++;
-            Director.SpawnBurst(transform.position, _quakeRadius);
+            Director.SpawnBurst(transform.position, _quakeRadius, AThousandDawns.Combat.BurstKind.Quake);
             if (ToPlayer().magnitude <= _quakeRadius + PlayerRadius) HitPlayer(_quakeRatio, _quakeKnockback);
         }
 
@@ -308,7 +308,7 @@ namespace AThousandDawns.Enemies
                 }
                 if (marker != null) Destroy(marker.gameObject);
                 _rocks.RemoveAt(i);
-                Director.SpawnBurst(at, _rockRadius);
+                Director.SpawnBurst(at, _rockRadius, AThousandDawns.Combat.BurstKind.Quake);
                 Vector3 d = Player.transform.position - at;
                 d.y = 0f;
                 if (d.magnitude <= _rockRadius + PlayerRadius) Player.TryReceiveHit(AttackPower * _rockRatio, at, -1f, Body);

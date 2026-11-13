@@ -102,6 +102,7 @@ namespace AThousandDawns.Prototype
 
         void Update()
         {
+            if (_music != null && !_music.isPlaying) _music.Play(); // 오디오 장치가 바뀌어 다시 열리면 멈춰요 (GameSettings)
             var k = Keyboard.current;
             var pad = Gamepad.current;
             bool up = (k != null && (k.upArrowKey.wasPressedThisFrame || k.wKey.wasPressedThisFrame)) || (pad != null && pad.dpad.up.wasPressedThisFrame);

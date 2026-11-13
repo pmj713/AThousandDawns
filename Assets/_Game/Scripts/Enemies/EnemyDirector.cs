@@ -162,9 +162,14 @@ namespace AThousandDawns.Enemies
         }
 
         // 폭발 순간 바닥에 잠깐 보이는 원
-        public void SpawnBurst(Vector3 center, float radius)
+        // 터지는 자리 (아트가 종류마다 다른 폭발을 그려요: Burst 신호). Default가 아니면 예고 오브젝트 이름이 "Burst"라 공용 먹 폭발과 겹치지 않아요
+        public static event System.Action<Vector3, float, AThousandDawns.Combat.BurstKind> Burst;
+
+        public void SpawnBurst(Vector3 center, float radius, AThousandDawns.Combat.BurstKind kind = AThousandDawns.Combat.BurstKind.Default)
         {
             var burst = Telegraph.Create(null, visuals.telegraphFill, visuals.telegraphFill, visuals.telegraphOutline);
+            if (kind != AThousandDawns.Combat.BurstKind.Default) burst.gameObject.name = "Burst";
+            Burst?.Invoke(center, radius, kind);
             burst.Show(TelegraphShapes.Circle(radius), true);
             burst.SetPose(center, Vector3.forward);
             burst.SetProgress(1f);
