@@ -128,6 +128,29 @@ for w in WEAPONS:
                 box(bm, head + e * 0.15 * k - a * 0.02, e, t, 0.07, 0.05, 0.02)
             box(bm, g - a * 0.47, a, e, 0.08, 0.05, 0.05)                   # 물미
         make(f"{NAME}_Weapon_khakkhara", "RightHand", build)
+    elif w == "axe":
+        # 장작 패는 도끼 (마을 주민): 주먹을 가로지르는 나무 자루, 앞 끝에 쐐기 모양 쇠날
+        g = grip_of("Right")
+        axis = Vector((0, -1, -0.15)).normalized()
+        edge = Vector((0, 0, -1)); edge = (edge - axis * edge.dot(axis)).normalized()
+
+        def build(bm, g=g, a=axis, e=edge):
+            box(bm, g + a * 0.22, a, e, 0.75, 0.035, 0.035)                 # 자루
+            box(bm, g + a * 0.55 + e * 0.06, a, e, 0.12, 0.16, 0.03)        # 날 (칼날 쪽으로 넓게)
+        make(f"{NAME}_Weapon_axe", "RightHand", build)
+    elif w == "broom":
+        # 싸리비 (마을 주민): 긴 대 끝에 묶은 싸리 다발
+        g = grip_of("Right")
+        axis = Vector((0, -1, -0.15)).normalized()
+        side = Vector((0, 0, -1)); side = (side - axis * side.dot(axis)).normalized()
+
+        def build(bm, g=g, a=axis, e=side):
+            box(bm, g + a * 0.35, a, e, 1.25, 0.03, 0.03)                   # 대 (주먹 뒤로 0.27, 앞으로 0.98)
+            t = a.cross(e).normalized()
+            for k in range(5):                                              # 부채꼴로 벌어진 싸리 다발
+                d = (a + e * (k - 2) * 0.12).normalized()
+                box(bm, g + a * 0.98 + d * 0.22, d, t, 0.45, 0.05, 0.02)
+        make(f"{NAME}_Weapon_broom", "RightHand", build)
     elif w == "moktak":
         # 목탁 (목탁승): 왼손에 둥근 나무 목탁(가운데 틈), 오른손에 짧은 채
         gl = grip_of("Left")
@@ -1000,7 +1023,7 @@ def hold_moktak():
     arm("Left", chest + Vector((0.1, -0.3, -0.18)), Vector((1, 0.3, -0.6)))
 
 
-HAS_BLADE = bool({"dao", "bigdao", "jian", "hooksword"} & EXTRAS)
+HAS_BLADE = bool({"dao", "bigdao", "jian", "hooksword", "axe", "broom"} & EXTRAS)   # 도끼·싸리비(마을 주민)도 칼처럼 손에서 뻗어요
 SPREAD = float(next((w.split("=")[1] for w in WEAPONS if w.startswith("armspread=")), "1"))
 player_objs, player_acts = [], []
 if "playeranim" in EXTRAS or "sweep" in EXTRAS:
@@ -2250,6 +2273,56 @@ if "playeranim" in EXTRAS:
             else:
                 arm(s, sh + Vector((0.25, -0.1, -0.45)), Vector((1, 0.3, -0.3)))
     make_action("Spawn", [(0, "crouch"), (6, "crouch"), (12, "rise"), (18, "idle")], spawn_pose)
+    rig.animation_data.action = None
+    reset_pose()
+
+# 마을 주민 생활 동작 (villager=<well|chop|sweep|sit>, 반복 "Life" 하나): 무기 대신 생활 소품을 들고 같은 일을 되풀이해요
+#   well: 우물 두레박 줄을 두 손 번갈아 당겨요 (소품 없음) · chop: 도끼를 머리 위로 치켜들었다 모탕에 내려찍어요 (axe)
+#   sweep: 허리를 숙여 싸리비로 좌우로 쓸어요 (broom) · sit: 걸터앉아 두 손을 무릎에 얹고 숨 쉬며 고개를 천천히 돌려요
+VILLAGER = next((e.split("=", 1)[1] for e in EXTRAS if e.startswith("villager=")), None)
+if VILLAGER and "playeranim" in EXTRAS:
+    def villager_pose(v):
+        stage, k = v
+        if VILLAGER == "well":
+            lower_hips(-0.08, FEET, dy=0.04)
+            bend("Spine", Vector((1, 0, 0)), -6 + 4 * k)                                   # 당길 때 몸을 살짝 젖혀요
+            for s, sx, up in (("Left", 0.08, k), ("Right", -0.08, 1 - k)):
+                sh = pb[f"{s}Arm"].head.copy()
+                arm(s, sh + Vector((-sx * 0.6, -0.36, -0.12 + 0.38 * up)), Vector((sx * 6, 0.3, -0.5)))   # 번갈아 위·아래로
+        elif VILLAGER == "chop":
+            up = stage == "up"
+            lower_hips(-0.12 if up else -0.22, FEET, dy=0.02 if up else 0.06)
+            bend("Spine", Vector((1, 0, 0)), -10 if up else 26)
+            shR = pb["RightArm"].head.copy(); shL = pb["LeftArm"].head.copy()
+            wrist = shR + (Vector((0.12, 0.08, 0.5)) if up else Vector((0.15, -0.5, -0.45)))
+            arm("Right", wrist, Vector((-1, 0.3, -0.5)))
+            arm("Left", wrist + Vector((-0.06, 0.06, -0.08)), Vector((1, 0.3, -0.5)))       # 왼손은 자루 아래쪽
+            if HAS_BLADE:
+                point_blade(Vector((0.1, 0.25, 1)) if up else Vector((0.05, -1, -0.5)), wrist_bend=40)
+        elif VILLAGER == "sweep":
+            sway = math.sin(k * 2 * math.pi)
+            lower_hips(-0.14, FEET, dy=0.05)
+            bend("Spine", Vector((1, 0, 0)), 24); bend("Spine", Vector((0, 0, 1)), 14 * sway)  # 숙여 허리째 좌우로
+            shR = pb["RightArm"].head.copy(); shL = pb["LeftArm"].head.copy()
+            wrist = shR + Vector((0.12 + 0.1 * sway, -0.38, -0.32))
+            arm("Right", wrist, Vector((-1, 0.3, -0.5)))
+            arm("Left", wrist + Vector((-0.02, 0.05, 0.22)), Vector((1, 0.3, -0.5)))         # 왼손은 대 위쪽
+            if HAS_BLADE:
+                point_blade(Vector((0.35 * sway, -0.55, -1)), wrist_bend=30)                # 비 끝이 바닥을 좌우로 쓸어요
+        else:  # sit
+            feet = {s: FEET[s] + Vector((0, -0.38, 0)) for s in FEET}                       # 발을 앞으로 내밀고
+            lower_hips(-0.5, feet, dy=0.18)                                                 # 뒤로 걸터앉아요
+            bend("Spine", Vector((1, 0, 0)), 6 + 2 * math.sin(k * 2 * math.pi))
+            bend("Neck", Vector((0, 0, 1)), 18 * math.sin(k * 2 * math.pi))                # 고개를 천천히 돌려요
+            for s, sx in (("Left", 1), ("Right", -1)):
+                sh = pb[f"{s}Arm"].head.copy()
+                arm(s, sh + Vector((sx * 0.1, -0.42, -0.42)), Vector((sx, 0.3, -0.3)))      # 두 손을 무릎에
+    if VILLAGER == "chop":
+        keys = [(0, ("up", 0)), (10, ("up", 0)), (16, ("down", 0)), (28, ("down", 0)), (40, ("up", 0))]
+    else:
+        n = {"well": 40, "sweep": 48, "sit": 120}[VILLAGER]
+        keys = [(f, ("loop", f / n)) for f in range(0, n + 1, n // 8)]
+    make_action("Life", keys, villager_pose)
     rig.animation_data.action = None
     reset_pose()
 

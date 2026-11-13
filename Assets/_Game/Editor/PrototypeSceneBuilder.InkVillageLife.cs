@@ -34,6 +34,7 @@ namespace AThousandDawns.EditorTools
             BuildJarTerrace(root, new Vector3(9.8f, 0f, -1.2f), stone, glaze, dark);
             var chickens = BuildCoop(root, new Vector3(9.6f, 0f, -4.6f), wood, straw, dark, feather, comb, beak);
             root.gameObject.AddComponent<AThousandDawns.Art.InkVillageLife>().Setup(cloths, chickens);
+            BuildVillagers(root, wood);   // 우물·장작더미·사당·객잔 앞의 마을 주민 (PrototypeSceneBuilder.InkVillagers.cs)
         }
 
         static void BuildWell(Transform root, Vector3 at, Material stone, Material wood, Material dark, Material water, Material rope)
