@@ -10,6 +10,7 @@ namespace AThousandDawns.Art
     {
         [SerializeField] GameObject[] flames;
         [SerializeField] float spreadTime = 3f;
+        public GameObject[] Flames => flames; // 아트 2 InkFireFx가 카드 대신 입체 불길 입자를 붙여요
 
         BurningGrove _grove;
         float _searchTimer, _burnTime;

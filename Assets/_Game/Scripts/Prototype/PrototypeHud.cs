@@ -659,10 +659,11 @@ namespace AThousandDawns.Prototype
             if (s == null) return;
             float step = below ? 8f : -8f;
             float row = below ? y : y - 8f;
-            if (s.BurnStacks > 0) { DrawDots(centerX, row, s.BurnStacks, s.BurnStacks, BurnDot); row += step; }
+            bool onModel = !below; // 적: 화상·빙결은 모델에 직접 보여요 (아트 InkStatusFx 불꽃·그을음·서리 + InkEnemyAnimator 몸빛). 허수아비는 점 그대로
+            if (s.BurnStacks > 0 && !onModel) { DrawDots(centerX, row, s.BurnStacks, s.BurnStacks, BurnDot); row += step; }
             if (s.SlowStacks > 0) { DrawDots(centerX, row, s.SlowStacks, s.SlowMax, SlowDot); row += step; }
             if (s.ShockStacks > 0) { DrawDots(centerX, row, s.ShockStacks, s.ShockMax, ShockDot); row += step; }
-            if (s.IsFrozen) GUI.Label(new Rect(centerX - 40f, below ? row : row - 14f, 80f, 20f), "빙결", _statusLabel);
+            if (s.IsFrozen && !onModel) GUI.Label(new Rect(centerX - 40f, below ? row : row - 14f, 80f, 20f), "빙결", _statusLabel);
         }
 
         static void DrawDots(float centerX, float y, int filled, int slots, Color color)
