@@ -11,7 +11,7 @@ namespace AThousandDawns.Art
     //   신호: EnemyDirector.Burst · PlayerController.BurstCue (자리, 반경, BurstKind). Default는 예전 공용 먹 폭발(InkProjectiles) 그대로.
     //   Gunpowder 화약: 주황 불덩이가 확 부풀고 검은 연기 · 불티 · 그을린 자국
     //   BloodGlob 핏덩이: 핏물이 바닥에 철퍽 번지고 핏방울이 튀어요 / BloodDeath 혈폭자 죽음: 더 크게 + 붉은 피 안개
-    //   Slam 내려찍기 · Quake 진각: 땅이 갈라진 고리 + 흙먼지 + 돌 부스러기 (진각은 더 넓고 누런 흙빛)
+    //   Slam 내려찍기 · Quake 진각: 땅이 갈라진 고리 + 흙먼지 + 돌 부스러기 (진각은 더 넓고 누런 흙빛, 진각은 둘레에서 바윗돌이 솟았다 가라앉아요)
     //   Spin 회전베기: 먹 소용돌이 원이 빠르게 돌며 퍼지고 흙먼지가 둥글게
     //   Vajra 금강: 금빛 고리 두 겹이 퍼지고 금빛 반짝이 / Gangi 강기: 쪽빛 기운 고리와 푸른 빛 입자
     //   Lightning 뇌정: 노란 번개 가지가 사방으로 번쩍 / Miasma 마기: 검붉은 마기 고리 + 검은 연기
@@ -84,6 +84,7 @@ namespace AThousandDawns.Art
                     Ring(_quake, at, r * w, 0.5f, new Color(0.25f, 0.2f, 0.15f, 1f), 0.3f, 0f);
                     InkParticles.Burst(at + Vector3.up * 0.15f, kind == BurstKind.Shatter ? 22 : 16, dust, new Color(dust.r, dust.g, dust.b, 0.4f), r * 1.6f, r * 0.6f, 0.9f, 0.05f, upward: true);
                     Chips(at, kind == BurstKind.Shatter ? 14 : 8, r, kind == BurstKind.Shatter ? 0.3f : 0.18f);
+                    if (kind == BurstKind.Quake) Spikes(at, r); // 진각 (철권 붕산권 · 나한): 둘레에서 바윗돌이 솟았다 가라앉아요
                     break;
                 case BurstKind.Spin:
                     Ring(_mandala, at, r * 2.2f, 0.4f, new Color(0.1f, 0.08f, 0.07f, 0.85f), 0.5f, -900f);
@@ -185,6 +186,45 @@ namespace AThousandDawns.Art
                 float a = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
                 var v = new Vector3(Mathf.Cos(a) * r * UnityEngine.Random.Range(1f, 2.2f), UnityEngine.Random.Range(3f, 5.5f), Mathf.Sin(a) * r * UnityEngine.Random.Range(1f, 2.2f));
                 Fly(_rock, at + Vector3.up * 0.2f, v, size * UnityEngine.Random.Range(0.7f, 1.3f), new Color(0.55f, 0.5f, 0.44f, 1f), 1.2f);
+            }
+        }
+
+        // 진각: 고리 둘레에서 바윗돌이 땅을 뚫고 솟았다가 가라앉아요 (금빛 혜광 금강불괴와 확실히 달라 보이게)
+        void Spikes(Vector3 at, float r)
+        {
+            if (_rock == null) return;
+            int n = Mathf.Clamp(Mathf.RoundToInt(r * 4f), 6, 12);
+            for (int i = 0; i < n; i++)
+            {
+                if (_live.Count > MaxLive) return;
+                float a = (i + UnityEngine.Random.Range(-0.2f, 0.2f)) / n * Mathf.PI * 2f;
+                var foot = at + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * r * UnityEngine.Random.Range(0.6f, 0.95f);
+                var pivot = new GameObject("Rock Spike").transform;
+                pivot.SetParent(transform, false);
+                pivot.gameObject.AddComponent<InkFaceCamera>();
+                var go = new GameObject("Sprite");
+                go.transform.SetParent(pivot, false);
+                float w = UnityEngine.Random.Range(0.45f, 0.8f), s = w / Mathf.Max(0.01f, _rock.bounds.size.x);
+                go.transform.localScale = new Vector3(s, s * 1.5f, s); // 길쭉한 바윗돌
+                float h = _rock.bounds.size.y * s * 1.5f;
+                go.transform.localPosition = Vector3.up * h * 0.5f;
+                var sr = go.AddComponent<SpriteRenderer>();
+                sr.sprite = _rock;
+                sr.color = new Color(0.5f, 0.46f, 0.4f, 1f);
+                sr.sortingOrder = 6;
+                float t = -i * 0.015f;
+                pivot.position = foot + Vector3.down * h;
+                _live.Add(dt =>
+                {
+                    if (pivot == null) return false;
+                    t += dt;
+                    if (t < 0f) return true;
+                    float up = t < 0.12f ? t / 0.12f : t < 0.55f ? 1f : 1f - (t - 0.55f) / 0.3f;
+                    pivot.position = foot + Vector3.down * h * (1f - Mathf.Clamp01(up));
+                    if (t < 0.85f) return true;
+                    Destroy(pivot.gameObject);
+                    return false;
+                });
             }
         }
 

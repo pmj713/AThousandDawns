@@ -107,7 +107,7 @@ namespace AThousandDawns.Fx
             var screen = new Rect(0f, 0f, width, height);
             GUI.color = Paper;
             GUI.DrawTexture(screen, Texture2D.whiteTexture);
-            if (_paper != null) { GUI.color = new Color(1f, 1f, 1f, 0.9f); GUI.DrawTexture(screen, _paper, ScaleMode.ScaleAndCrop); }
+            if (_paper != null) { GUI.color = new Color(1f, 1f, 1f, 0.45f); GUI.DrawTexture(screen, _paper, ScaleMode.ScaleAndCrop); } // 결은 옅게 (글자가 묻히지 않게)
             if (_blot != null) // 귀퉁이 먹 번짐
             {
                 GUI.color = new Color(PanelInk.r, PanelInk.g, PanelInk.b, 0.08f);
@@ -134,7 +134,7 @@ namespace AThousandDawns.Fx
             GUI.color = old;
         }
 
-        public static void PaperPanel(Rect rect) => PaperPanel(rect, new Color(1f, 0.98f, 0.93f, 0.85f));
+        public static void PaperPanel(Rect rect) => PaperPanel(rect, new Color(1f, 0.99f, 0.96f, 0.97f)); // 밝고 거의 불투명하게 (짙은 먹 글자와 대비)
 
         static Texture2D _paper;
 
