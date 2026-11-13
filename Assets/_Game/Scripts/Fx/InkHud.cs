@@ -8,6 +8,7 @@ namespace AThousandDawns.Fx
     // 수묵 HUD (아트 목록 UI): 왼쪽 위 한 덩어리 (높이 Height). 시험판 글자 목록은 그 아래로.
     //   초식: 원상(먹 동그라미) 안에 초식 그림. 쿨타임 동안 먹물이 덮였다가 위에서부터 걷혀요. 남은 초 · 키캡.
     //         비도 0개면 그림이 회색(회수 불가), 금창약을 마시는 동안은 쿨타임 표시를 숨기고 머리 위 원형 게이지를 띄워요 (기획 시트).
+    //   수련치: 초식 원상 둘레의 금빛 점 고리가 위에서부터 시계 방향으로 차올라요. 레벨업이면 번쩍이며 퍼져요. 원상 왼쪽 아래 레벨 낙관 (개혈 대기면 금빛 맥박).
     //   체력: 붓 획 하나 — 먹색 바탕 획 위에 매화 홍 획이 줄어들고, 깎인 자리는 한지색으로 잠깐 남았다 따라 줄어요. 보호막은 위에 흰 획.
     //   대시: 붓 ">" 하나가 한 번 — 최대 충전만큼 늘어요(>>>). 찬 것은 짙게, 채워지는 것은 왼쪽부터 먹이 차올라요.
     //   금창약: 호리병 — 남은 만큼 짙게, 마시는 중엔 아래 붉은 줄이 차요.
@@ -36,6 +37,63 @@ namespace AThousandDawns.Fx
         static float _lagHp = -1f;   // 깎인 자리 (따라 줄어드는 체력)
         static float _lagHold;       // 깎인 뒤 잠깐 멈춤
         static float _lastHp = 1f;
+        static int _lastLevel = -1;   // 레벨이 오르는 순간을 알아채려고
+        static float _levelFlash;     // 레벨업 번쩍임 (1 → 0)
+        static float _xpShown = -1f;  // 수련치 고리가 따라 차오르는 값 (0~1)
+
+        // ── 수련치 ── 초식 원상 둘레에 금빛 점 고리가 위(12시)에서부터 시계 방향으로 차올라요 (이번 레벨 수련치 / 다음까지).
+        //   레벨이 오르면 고리가 금빛으로 번쩍이며 퍼졌다가 비어요. 원상 왼쪽 아래엔 레벨 낙관, 개혈 대기(Pending)가 있으면 금빛으로 맥박.
+        const int XpDots = 40;
+
+        static void DrawXp(PlayerController p, Rect r)
+        {
+            var level = p.Level;
+            if (level == null) return;
+            float dt = Time.unscaledDeltaTime;
+            float ratio = Mathf.Clamp01(level.Xp / (float)Mathf.Max(1, level.NeedForNext));
+            if (_lastLevel >= 0 && level.Level > _lastLevel) { _levelFlash = 1f; _xpShown = 0f; } // 레벨업
+            _lastLevel = level.Level;
+            if (_xpShown < 0f || ratio < _xpShown) _xpShown = ratio;
+            _xpShown = Mathf.MoveTowards(_xpShown, ratio, dt * 0.8f); // 얻은 만큼 스르륵 차올라요
+            _levelFlash = Mathf.Max(0f, _levelFlash - dt / 0.8f);
+
+            var c = r.center;
+            float radius = r.width * 0.5f + 7f + (_levelFlash > 0f ? 14f * (1f - _levelFlash) : 0f); // 레벨업이면 고리가 퍼져요
+            var m = GUI.matrix;
+            for (int i = 0; i < XpDots; i++)
+            {
+                float k = (i + 0.5f) / XpDots;
+                bool lit = k <= _xpShown;
+                float angle = k * 360f; // 12시에서 시계 방향
+                if (_levelFlash > 0f) { Tint(Gold, _levelFlash); }
+                else if (lit) Tint(Gold, 0.95f);
+                else Tint(Ink, 0.2f);
+                GUIUtility.RotateAroundPivot(angle, c);
+                float len = lit || _levelFlash > 0f ? 7f : 5f;
+                GUI.DrawTexture(new Rect(c.x - 1.5f, c.y - radius - len * 0.5f, 3f, len), Texture2D.whiteTexture);
+                GUI.matrix = m;
+            }
+        }
+
+        static void DrawLevel(PlayerController p, Rect r)
+        {
+            var level = p.Level;
+            if (level == null) return;
+            var seal = new Rect(r.x - 6f, r.yMax - 34f, 34f, 34f);
+            bool pending = level.Pending > 0; // 아직 열지 않은 혈자리: 경맥도에서 개혈해요
+            float pulse = pending ? 0.75f + 0.25f * Mathf.Sin(Time.unscaledTime * 5f) : 1f;
+            Tint(pending ? Gold : new Color(0.62f, 0.13f, 0.1f), pulse); // 붉은 낙관 (개혈 대기면 금빛)
+            if (_blot != null) GUI.DrawTexture(seal, _blot, ScaleMode.StretchToFill);
+            else GUI.DrawTexture(seal, Texture2D.whiteTexture);
+            Tint(pending ? Ink : Paper, 1f);
+            Shadowed(seal, level.Level.ToString(), _small);
+            if (_levelFlash > 0f) // 레벨업: 낙관 둘레가 번쩍
+            {
+                Tint(Gold, _levelFlash * 0.8f);
+                float g = 12f * (1f - _levelFlash);
+                if (_blot != null) GUI.DrawTexture(new Rect(seal.x - g, seal.y - g, seal.width + g * 2f, seal.height + g * 2f), _blot, ScaleMode.StretchToFill);
+            }
+        }
 
         public static void Draw(PlayerController player)
         {
@@ -44,7 +102,9 @@ namespace AThousandDawns.Fx
             Styles();
             var old = GUI.color;
             var skillRect = new Rect(Margin, Margin, SkillSize, SkillSize); // 왼쪽 위 (사용자 지정)
+            DrawXp(player, skillRect);
             DrawSkill(player, skillRect);
+            DrawLevel(player, skillRect);
             float x = skillRect.xMax + 14f;
             var barRect = new Rect(x, skillRect.y, BarW, BarH);
             DrawHealth(player, barRect);
