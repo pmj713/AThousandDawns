@@ -63,12 +63,14 @@ namespace AThousandDawns.Tests
             int Index(string text) => run.CurrentEvent.Choices.FindIndex(c => c.Label.Contains(text));
             Assert.IsTrue(run.ChooseEvent(Index("업보")));
             Assert.AreEqual("karma", run.CurrentEvent.Id);
-            Assert.AreEqual(4, run.CurrentEvent.Choices.Count, "0·1·2단계 + 닫기 (3단계는 아직 안 열림)");
+            Assert.AreEqual(4, run.CurrentEvent.Choices.Count, "0·1·2단계 + 뒤로 가기 (3단계는 아직 안 열림)");
             Assert.IsTrue(run.ChooseEvent(Index("2단계")));
             Assert.AreEqual(2, run.Karma);
             Assert.AreEqual(2, MetaSave.Load().karma);
             StringAssert.StartsWith("■", run.CurrentEvent.Choices[Index("2단계")].Label);
-            Assert.IsTrue(run.ChooseEvent(Index("닫는다")));
+            Assert.IsTrue(run.ChooseEvent(Index("뒤로 가기")));
+            Assert.AreEqual("relic_book_menu", run.CurrentEvent.Id, "뒤로 가기는 사당 메뉴로");
+            run.CloseEvent(); // 장부 오른쪽 위 닫기
             Assert.IsFalse(run.IsInEvent);
         }
 

@@ -95,7 +95,7 @@ namespace AThousandDawns.Tests
             Assert.IsTrue(run.ChooseEvent(Index(common.name)));
             StringAssert.StartsWith("■", run.CurrentEvent.Choices[Index(common.name)].Label, "골랐어요");
             CollectionAssert.Contains(MetaSave.Load().relicPicks, common.id);
-            Assert.IsTrue(run.ChooseEvent(Index("닫는다")));
+            Assert.IsTrue(run.ChooseEvent(Index("뒤로 가기"))); // 업보가 없으면 사당 메뉴가 없어서 닫혀요
             Assert.IsFalse(run.IsInEvent);
 
             var old = run;

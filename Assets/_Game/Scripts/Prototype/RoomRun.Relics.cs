@@ -84,7 +84,7 @@ namespace AThousandDawns.Prototype
             }
             if (pages > 1)
                 v.Choices.Add(new EventChoice { Label = $"다음 쪽 ({_relicPage + 1}/{pages})", Act = () => { _relicPage = (_relicPage + 1) % pages; OpenRelicBook(); return null; } });
-            v.Choices.Add(new EventChoice { Label = "닫는다", Act = () => null });
+            v.Choices.Add(BackToShrine()); // 닫기는 장부 오른쪽 위 (아트 UI: CloseEvent)
             OpenEventView(v, null);
         }
 

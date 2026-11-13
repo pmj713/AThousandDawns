@@ -68,6 +68,9 @@ namespace AThousandDawns.Prototype
             _karmaMax = meta.karmaMax;
         }
 
+        // 유품록 · 업보 장부 맨 아래: 사당 메뉴로 돌아가요 (업보가 아직 없으면 사당 메뉴가 없어서 닫혀요)
+        EventChoice BackToShrine() => new EventChoice { Label = "뒤로 가기", Act = () => { if (KarmaMax > 0) { OpenShrineMenu(); } return null; } };
+
         // ── 사당 메뉴 (업보가 열린 뒤): 유품록 · 업보
         void OpenShrineMenu()
         {
@@ -98,7 +101,7 @@ namespace AThousandDawns.Prototype
                     Act = () => { SetKarma(s); OpenKarmaView(); return null; },
                 });
             }
-            v.Choices.Add(new EventChoice { Label = "닫는다", Act = () => null });
+            v.Choices.Add(BackToShrine()); // 닫기는 장부 오른쪽 위 (아트 UI: CloseEvent)
             OpenEventView(v, null);
         }
 
