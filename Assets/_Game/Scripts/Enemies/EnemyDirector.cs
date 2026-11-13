@@ -46,7 +46,7 @@ namespace AThousandDawns.Enemies
         public EnemyVisuals Visuals => visuals;
         public AttackTokenPool MeleeTokens { get; private set; }
         public AttackTokenPool RangedTokens { get; private set; }
-        public IReadOnlyList<EnemyBrain> Enemies => _enemies;
+        public List<EnemyBrain> Enemies => _enemies; // List 그대로 (IReadOnlyList로 foreach하면 매번 할당해요). 밖에서 바꾸지 마세요
         public int SummonsLeft { get; private set; } // 나팔수 호출: 방마다 최대 2번
 
         void Awake()

@@ -48,6 +48,47 @@ namespace AThousandDawns.Combat
             ReadBaseColor();
         }
 
+        // 켜진 대상 목록 (맞힐 때마다 FindObjectsByType로 씬을 뒤지며 배열을 만들지 않게)
+        static readonly System.Collections.Generic.List<Damageable> Live = new System.Collections.Generic.List<Damageable>();
+        static readonly System.Collections.Generic.Stack<System.Collections.Generic.List<Damageable>> Spare = new System.Collections.Generic.Stack<System.Collections.Generic.List<Damageable>>();
+
+        void OnEnable() => Live.Add(this);
+        void OnDisable() => Live.Remove(this);
+
+        // foreach (var d in Damageable.All()): 지금 켜진 대상 전부. 도는 도중 맞은 적이 죽거나 새 적이 나와도 되게 복사본을 돌고,
+        // 복사본 목록은 다 돈 뒤 돌려받아 다시 써요 (할당 없음). 여러 번 돌 목록은 CopyAll로 받아요.
+        public static Snapshot All()
+        {
+            var list = Spare.Count > 0 ? Spare.Pop() : new System.Collections.Generic.List<Damageable>(Live.Count + 8);
+            list.AddRange(Live);
+            return new Snapshot(list);
+        }
+
+        public static void CopyAll(System.Collections.Generic.List<Damageable> into)
+        {
+            into.Clear();
+            into.AddRange(Live);
+        }
+
+        public struct Snapshot : IDisposable
+        {
+            System.Collections.Generic.List<Damageable> _list;
+            int _i;
+
+            internal Snapshot(System.Collections.Generic.List<Damageable> list) { _list = list; _i = -1; }
+            public Snapshot GetEnumerator() => this;
+            public Damageable Current => _list[_i];
+            public bool MoveNext() => ++_i < _list.Count;
+
+            public void Dispose()
+            {
+                if (_list == null) return;
+                _list.Clear();
+                Spare.Push(_list);
+                _list = null;
+            }
+        }
+
         // 코드로 만드는 적이 쓰는 설정. 체력을 가득 채워요.
         public void Configure(float newMaxHealth, float newToughness, float newDefense, float newBodyRadius, Renderer newFlashRenderer)
         {

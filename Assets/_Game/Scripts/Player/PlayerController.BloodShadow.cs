@@ -91,7 +91,7 @@ namespace AThousandDawns.Player
             var hit = PlayerHit(_skillDamage * ratio);
             hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
             int hits = 0;
-            foreach (var e in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+            foreach (var e in Damageable.All())
             {
                 if (e == null || e.IsDead || !e.Targetable) continue;
                 if ((Flatten(e.transform.position) - Flatten(at)).magnitude > radius + e.BodyRadius) continue;

@@ -33,7 +33,7 @@ namespace AThousandDawns.Prototype
         public static readonly string[] TombLayoutNames = { "빈 묘실", "무너진 관", "마기 기둥", "혈지" };
 
         readonly List<RoomFeature> _features = new List<RoomFeature>();
-        public IReadOnlyList<RoomFeature> RoomFeatures => _features;
+        public List<RoomFeature> RoomFeatures => _features; // List 그대로 (foreach 할당 없게). 밖에서 바꾸지 마세요
         public int RoomLayout { get; private set; } = -1;
         public static int LayoutOverride = -1; // 테스트용
 

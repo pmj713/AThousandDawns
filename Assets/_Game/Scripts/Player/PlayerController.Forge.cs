@@ -48,7 +48,7 @@ namespace AThousandDawns.Player
             {
                 int stacks = Mathf.RoundToInt(frost >= 2 ? F("forge.bingbaek_slow_strong", 3f) : F("forge.bingbaek_slow", 2f));
                 float radius = F("forge.bingbaek_radius", 2f);
-                foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+                foreach (var d in Damageable.All())
                 {
                     if (d == target || d.IsDead || !d.Targetable) continue;
                     if ((d.transform.position - target.transform.position).sqrMagnitude > radius * radius) continue;

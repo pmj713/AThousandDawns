@@ -228,7 +228,7 @@ namespace AThousandDawns.Combat
                 if (to.magnitude <= step + 0.3f || s.Age >= Linger + 2f) return true;
                 s.Body.position += to.normalized * step;
                 s.Body.rotation = Quaternion.FromToRotation(Vector3.up, to.normalized);
-                foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+                foreach (var d in Damageable.All())
                 {
                     if (d.IsDead || !d.Targetable || s.Returned.Contains(d) || d.transform == Owner) continue;
                     if (DistanceXZ(d.transform.position, s.Body.position) > BackflowRadius + d.BodyRadius) continue;
@@ -259,7 +259,7 @@ namespace AThousandDawns.Combat
                 s.Body.rotation = Quaternion.FromToRotation(Vector3.up, -outward); // 칼끝이 바깥, 손잡이가 안쪽
                 _swords[i] = s;
                 Vector3 tip = center + outward * OrbitRadius;
-                foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+                foreach (var d in Damageable.All())
                 {
                     if (d.IsDead || !d.Targetable || (Owner != null && d.transform == Owner)) continue;
                     if (_orbitCooldown.TryGetValue(d, out float cd) && cd > 0f) continue;
@@ -306,7 +306,7 @@ namespace AThousandDawns.Combat
 
         void HitAround(Vector3 point, float radius, float ratio, Damageable skip)
         {
-            foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+            foreach (var d in Damageable.All())
             {
                 if (d == skip || d.IsDead || !d.Targetable || (Owner != null && d.transform == Owner)) continue;
                 if (DistanceXZ(point, d.transform.position) > radius + d.BodyRadius) continue;
@@ -342,7 +342,7 @@ namespace AThousandDawns.Combat
         Damageable PickTarget()
         {
             _candidates.Clear();
-            foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+            foreach (var d in Damageable.All())
                 if (!d.IsDead && d.Targetable && InArea(_center, _area, d)) _candidates.Add(d);
 
             if (Form == UltimateForm.OneSword) // 일검: 체력이 가장 많은 적
@@ -401,7 +401,7 @@ namespace AThousandDawns.Combat
         void Finale()
         {
             Damageable best = null;
-            foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+            foreach (var d in Damageable.All())
                 if (!d.IsDead && d.Targetable && InArea(_center, _area, d) && (Owner == null || d.transform != Owner) && (best == null || d.Health > best.Health)) best = d;
             if (best == null) return;
             Strike(best, FinaleRatio);

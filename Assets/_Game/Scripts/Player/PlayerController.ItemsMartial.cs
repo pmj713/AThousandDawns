@@ -163,7 +163,7 @@ namespace AThousandDawns.Player
         int HitPath(Vector3 from, Vector3 to, float halfWidth, HitDamageInput template, HitTag tag)
         {
             int hits = 0;
-            foreach (var target in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+            foreach (var target in Damageable.All())
             {
                 if (target.IsDead || !target.Targetable || _hitThisSwing.Contains(target)) continue;
                 if (DistanceToSegment(target.transform.position, from, to) > halfWidth + target.BodyRadius) continue;
@@ -214,7 +214,7 @@ namespace AThousandDawns.Player
             if (!Has("cloud_silk")) return;
             float raw = BaseDamage * (1f + V("cloud_silk", 1));
             float reach = BodyRadius + _dashPathWidth * 0.5f;
-            foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+            foreach (var d in Damageable.All())
             {
                 if (d.IsDead || !d.Targetable || _dashTouched.Contains(d)) continue;
                 Vector3 offset = d.transform.position - transform.position;

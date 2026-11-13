@@ -30,12 +30,16 @@ namespace AThousandDawns.Core
             go.AddComponent<Letterbox>();
         }
 
+        static Camera[] _cams = new Camera[8];
+
         void LateUpdate()
         {
             var vp = Viewport;
             var normalized = new Rect(vp.x / Screen.width, vp.y / Screen.height, vp.width / Screen.width, vp.height / Screen.height);
-            foreach (var cam in Camera.allCameras)
-                if (cam.targetTexture == null && cam.rect != normalized) cam.rect = normalized;
+            if (_cams.Length < Camera.allCamerasCount) _cams = new Camera[Camera.allCamerasCount + 4];
+            int n = Camera.GetAllCameras(_cams); // Camera.allCameras는 매 프레임 배열을 새로 만들어요
+            for (int i = 0; i < n; i++)
+                if (_cams[i].targetTexture == null && _cams[i].rect != normalized) _cams[i].rect = normalized;
         }
 
         // 검은 띠는 다른 IMGUI보다 위에 (카메라가 그리지 않는 곳의 남은 화면도 가려요)

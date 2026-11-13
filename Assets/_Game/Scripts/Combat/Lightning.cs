@@ -83,7 +83,7 @@ namespace AThousandDawns.Combat
             var mods = ElementalMods.Current;
             if (mods.SplashRatio <= 0f || mods.SplashRadius <= 0f) return;
             Vector3 p = center.transform.position;
-            foreach (var d in Object.FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+            foreach (var d in Damageable.All())
             {
                 if (d == center || d.IsDead || !d.Targetable) continue;
                 Vector3 offset = d.transform.position - p;
@@ -99,7 +99,7 @@ namespace AThousandDawns.Combat
             bool bestShocked = false;
             float bestDistance = float.MaxValue;
             Vector3 p = from.transform.position;
-            foreach (var d in Object.FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+            foreach (var d in Damageable.All())
             {
                 if (d == from || d.IsDead || !d.Targetable || hit.Contains(d)) continue;
                 Vector3 offset = d.transform.position - p;

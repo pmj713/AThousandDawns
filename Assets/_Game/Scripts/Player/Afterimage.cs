@@ -59,7 +59,7 @@ namespace AThousandDawns.Player
 
         void Explode(Vector3 center)
         {
-            foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+            foreach (var d in Damageable.All())
             {
                 if (d.IsDead || !d.Targetable) continue;
                 Vector3 offset = d.transform.position - center;

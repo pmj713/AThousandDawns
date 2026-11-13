@@ -29,11 +29,13 @@ namespace AThousandDawns.Tests
             InputSystem.AddDevice<Keyboard>();
             InputSystem.AddDevice<Mouse>();
             RoomRun.SeedOverride = 12345;
+            RoomRun.RoomSizeOverride = 0; // 은자 · 적 수 검사는 작은 방 기준 (방 크기는 RoomLayoutTests에서)
         }
 
         public override void TearDown()
         {
             RoomRun.SeedOverride = 0;
+            RoomRun.RoomSizeOverride = -1;
             Time.timeScale = 1f;
             if (MetaSave.PathOverride != null && System.IO.File.Exists(MetaSave.PathOverride)) System.IO.File.Delete(MetaSave.PathOverride);
             MetaSave.PathOverride = null;

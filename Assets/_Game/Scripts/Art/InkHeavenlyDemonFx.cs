@@ -398,6 +398,11 @@ namespace AThousandDawns.Art
             _pullSpawn -= dt;
             if (_pullSpawn > 0f) return;
             _pullSpawn = 0.05f;
+            SpawnPullStreak(); // 람다가 잡는 변수는 따로 (여기 두면 끌어당기지 않는 프레임에도 매번 할당돼요)
+        }
+
+        void SpawnPullStreak()
+        {
             Vector3 c = _boss.transform.position;
             float ang = UnityEngine.Random.Range(0f, 360f);
             bool red = UnityEngine.Random.value < 0.35f;

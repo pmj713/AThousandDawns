@@ -287,7 +287,7 @@ namespace AThousandDawns.Player
         {
             if (radius <= 0f) return 0;
             int count = 0;
-            foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+            foreach (var d in Damageable.All())
             {
                 if (d.IsDead || !d.Targetable) continue;
                 Vector3 offset = d.transform.position - center;

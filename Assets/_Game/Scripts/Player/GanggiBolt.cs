@@ -91,7 +91,7 @@ namespace AThousandDawns.Player
         {
             Sfx.Play(SfxId.BoltExplode);
             Vector3 p = center.transform.position;
-            foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+            foreach (var d in Damageable.All())
             {
                 if (d == center || d.IsDead || !d.Targetable) continue;
                 Vector3 offset = d.transform.position - p;

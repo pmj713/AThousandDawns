@@ -39,6 +39,7 @@ namespace AThousandDawns.Player
         }
 
         readonly List<Dagger> _daggers = new List<Dagger>();
+        readonly List<Damageable> _targets = new List<Damageable>(); // 여러 번 도는 대상 목록 (다시 써요)
         Material _daggerMat;
 
         public WeaponKind Weapon { get; private set; }
@@ -309,7 +310,8 @@ namespace AThousandDawns.Player
             float reach = D("knife.scroll_quake_radius", 5f), pop = D("knife.scroll_quake_pop", 1.5f);
             var hit = PlayerHit(_skillDamage * D("knife.scroll_quake_ratio", 0.35f));
             hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
-            var targets = FindObjectsByType<Damageable>(FindObjectsSortMode.None);
+            Damageable.CopyAll(_targets);
+            var targets = _targets;
             Vector3 me = Flatten(transform.position);
             int hits = 0;
             foreach (var d in _daggers)
@@ -385,7 +387,7 @@ namespace AThousandDawns.Player
                 var hit = PlayerHit(_skillDamage * D("knife.scroll_palm_shield", 0.04f) * Mathf.Min(count, Mathf.RoundToInt(D("knife.vortex_max", 12f))));
                 hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
                 int hits = 0;
-                foreach (var e in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+                foreach (var e in Damageable.All())
                 {
                     if (e == null || e.IsDead || !e.Targetable) continue;
                     float dist = (Flatten(e.transform.position) - Flatten(transform.position)).magnitude;
@@ -449,7 +451,8 @@ namespace AThousandDawns.Player
             float pullRadius = D("knife.vortex_pull_radius", 3f), pull = D("knife.vortex_pull", 3f);
             float cutRadius = D("knife.vortex_radius", 1.8f);
             Vector3 c = Flatten(_vortexCenter);
-            var targets = FindObjectsByType<Damageable>(FindObjectsSortMode.None);
+            Damageable.CopyAll(_targets);
+            var targets = _targets;
             foreach (var e in targets)
             {
                 if (e == null || e.IsDead || !e.Targetable) continue;
@@ -498,7 +501,7 @@ namespace AThousandDawns.Player
                 // 돌아오는 길의 적
                 Vector3 from = d.Go.transform.position;
                 Breakable.BreakOnSegment(from, me, pathRadius);
-                foreach (var e in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+                foreach (var e in Damageable.All())
                 {
                     if (e == d.Stuck || e.IsDead || !e.Targetable) continue;
                     if (DistanceToSegment(e.transform.position, from, me) <= pathRadius + e.BodyRadius) Add(e);
@@ -550,7 +553,7 @@ namespace AThousandDawns.Player
                 Breakable.BreakNear(at, radius);
                 Damageable best = null;
                 float bestDist = float.MaxValue;
-                foreach (var e in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+                foreach (var e in Damageable.All())
                 {
                     if (e.IsDead || !e.Targetable) continue;
                     float dist = Vector3.Distance(Flatten(e.transform.position), Flatten(at)) - e.BodyRadius;

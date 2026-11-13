@@ -203,7 +203,7 @@ namespace AThousandDawns.Player
             if (K(Keyword.Geumgang) < 6) return;
             if (swingFlash != null) swingFlash.Show(transform.position, _facing, _geumgangShockRadius, 360f, 0.15f);
             float raw = shieldMax * _geumgangShockRatio;
-            foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+            foreach (var d in Damageable.All())
             {
                 if (d.IsDead || !d.Targetable) continue;
                 Vector3 offset = d.transform.position - transform.position;

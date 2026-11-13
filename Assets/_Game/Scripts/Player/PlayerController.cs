@@ -603,7 +603,7 @@ namespace AThousandDawns.Player
             int chains = (thunder >= 4 ? _thunderImprintChains : 0) + BellChains;
             if (chains <= 0 || totalDamage <= 0) return;
             var starts = new List<Damageable>();
-            foreach (var d in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+            foreach (var d in Damageable.All())
                 if (!d.IsDead && d.Targetable && SwordRain.InArea(transform.position, _ultimateArea, d)) starts.Add(d); // 절초 범위(방 하나) 안에서
             if (starts.Count == 0) return;
             starts.Sort((a, b) => (a.transform.position - transform.position).sqrMagnitude.CompareTo((b.transform.position - transform.position).sqrMagnitude));

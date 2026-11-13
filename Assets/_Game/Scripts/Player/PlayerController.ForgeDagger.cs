@@ -20,6 +20,7 @@ namespace AThousandDawns.Player
         readonly Dictionary<Damageable, float> _daggerBurnTimers = new Dictionary<Damageable, float>();
         readonly HashSet<StatusEffects> _daggerStatus = new HashSet<StatusEffects>();
         readonly Dictionary<Damageable, int> _stuckCounts = new Dictionary<Damageable, int>();
+        System.Predicate<StatusEffects> _dropDaggerStatus;
 
         // 관통 (강기): 몇 명을 더 뚫고 지나가는지
         int DaggerPierce => DaggerForge(Keyword.Ganggi) switch { 0 => 0, 1 => 1, _ => 2 };
@@ -41,7 +42,7 @@ namespace AThousandDawns.Player
             // 꽂힌 비도가 빠진 적은 원래대로
             foreach (var s in _daggerStatus)
                 if (s != null && !_stuckCounts.ContainsKey(s.Body)) { s.ExtraBurnMax = 0; s.ExtraShockMax = 0; s.HoldSlow = false; }
-            _daggerStatus.RemoveWhere(s => s == null || !_stuckCounts.ContainsKey(s.Body));
+            _daggerStatus.RemoveWhere(_dropDaggerStatus ??= s => s == null || !_stuckCounts.ContainsKey(s.Body)); // 람다를 한 번만 만들어요 (매 프레임)
             if (_stuckCounts.Count == 0)
             {
                 _daggerBurnTimers.Clear();
@@ -103,7 +104,7 @@ namespace AThousandDawns.Player
             // 앞쪽 (대시 방향 90° 안) 가장 가까운 적
             Damageable target = null;
             float best = float.MaxValue;
-            foreach (var e in FindObjectsByType<Damageable>(FindObjectsSortMode.None))
+            foreach (var e in Damageable.All())
             {
                 if (e.IsDead || !e.Targetable) continue;
                 Vector3 to = Flatten(e.transform.position - me);
