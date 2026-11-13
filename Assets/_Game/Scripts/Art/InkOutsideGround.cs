@@ -8,19 +8,20 @@ namespace AThousandDawns.Art
     // 지역 번호는 RoomRun.Region, InkRegionDressing의 미리보기 지역이 있으면 그걸 따라요 (InkRegionLook과 같은 규칙).
     // 씬 빌더(PrototypeSceneBuilder.InkOutside.cs)가 붙여요. 재질은 복사본을 써서 에셋은 바뀌지 않아요.
     // 게임 중엔 벽 너머 먼 배경 그림 판(Backdrop_*)을 숨겨요.
+    // 벽 너머 풍경(대나무·무너진 절·물가·무덤)도 지역에 맞는 묶음 하나만 켜요.
     public class InkOutsideGround : MonoBehaviour
     {
         static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
 
         [SerializeField] Texture[] regionTextures;
-        [SerializeField] GameObject bamboo; // 벽 너머 대나무 (죽림에서만)
+        [SerializeField] GameObject[] regionScenery; // 벽 너머 풍경: 죽림 대나무 · 폐사찰 · 장강 수채 · 천마총 (지역마다 하나만 켜요)
 
         RoomRun _run;
         InkRegionDressing _dressing;
         Material _material;
         int _shown = -1;
 
-        public void Setup(Texture[] textures, GameObject bambooRoot) { regionTextures = textures; bamboo = bambooRoot; }
+        public void Setup(Texture[] textures, GameObject[] scenery) { regionTextures = textures; regionScenery = scenery; }
 
         void Start()
         {
@@ -43,7 +44,9 @@ namespace AThousandDawns.Art
             if (region == _shown) return;
             _shown = region;
             if (regionTextures[region] != null) _material.SetTexture(BaseMapId, regionTextures[region]);
-            if (bamboo != null) bamboo.SetActive(region == 0);
+            if (regionScenery != null)
+                for (int i = 0; i < regionScenery.Length; i++)
+                    if (regionScenery[i] != null) regionScenery[i].SetActive(i == Mathf.Min(region, regionScenery.Length - 1));
         }
     }
 }

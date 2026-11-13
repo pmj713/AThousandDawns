@@ -15,10 +15,10 @@ namespace AThousandDawns.EditorTools
     {
         static readonly string[] StaticDecoRoots =
         {
-            "Ink Outside Bamboo", "Ink Deco (", "Edge Decor ",   // Ink Deco (Rooms) · (Room_Floor) · (Room_Floor_Medium) · (Room_Floor_Large) · (Village)
+            "Ink Outside Bamboo", "Ink Outside Scenery", "Ink Deco (", "Edge Decor ",   // Ink Deco (Rooms) · (Room_Floor) · (Room_Floor_Medium) · (Room_Floor_Large) · (Village)
             "Demon Cult Training Hall", "River Boss Dock", "Heavenly Demon Throne", "River Pier Arena", "Master Cloister", "Blood Pools",
         };
-        static readonly string[] OutsideRoots = { "Ink Outside Bamboo" };
+        static readonly string[] OutsideRoots = { "Ink Outside Bamboo", "Ink Outside Scenery" };
 
         static void OptimizeInkScene(UnityEngine.SceneManagement.Scene scene)
         {
