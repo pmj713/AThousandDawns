@@ -76,9 +76,12 @@ namespace AThousandDawns.EditorTools
 
             // 3) 층 방 바닥 가장자리 피 웅덩이
             var pools = new GameObject("Blood Pools (피 웅덩이)").transform;
-            float hx = CombatSize.x * 0.5f, hz = CombatSize.y * 0.5f;
-            Vector3[] spots = { new Vector3(-hx + 1.4f, 0f, hz - 1.2f), new Vector3(hx - 1.6f, 0f, -hz + 1.3f), new Vector3(hx - 1.2f, 0f, hz - 2.2f), new Vector3(-hx + 2.2f, 0f, -hz + 1.1f) };
-            for (int k = 0; k < spots.Length; k++) BloodPool(pools, CombatCenter + spots[k], 0.9f + k % 2 * 0.4f, seed++, blood, stoneMat);
+            foreach (var (_, center, size) in InkFloorRooms())   // 층 방(작은·중간·큰)마다 네 귀퉁이 가까이
+            {
+                float hx = size.x * 0.5f, hz = size.y * 0.5f;
+                Vector3[] spots = { new Vector3(-hx + 1.4f, 0f, hz - 1.2f), new Vector3(hx - 1.6f, 0f, -hz + 1.3f), new Vector3(hx - 1.2f, 0f, hz - 2.2f), new Vector3(-hx + 2.2f, 0f, -hz + 1.1f) };
+                for (int k = 0; k < spots.Length; k++) BloodPool(pools, center + spots[k], 0.9f + k % 2 * 0.4f, seed++, blood, stoneMat);
+            }
             StripColliders(pools);
             tomb.Add(pools.gameObject);
 

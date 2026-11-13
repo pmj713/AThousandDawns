@@ -483,13 +483,15 @@ namespace AThousandDawns.EditorTools
                 mistMat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
                 mistMat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
                 mistMat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                // 층 방 둘레 벽 너머(북·동·서)에 낮게 깐 안개 판
-                foreach (var (pos, size) in new[]
-                         {
-                             (CombatCenter + new Vector3(0f, 0.25f, CombatSize.y * 0.5f + 3f), new Vector2(CombatSize.x + 10f, 6f)),
-                             (CombatCenter + new Vector3(-CombatSize.x * 0.5f - 3f, 0.25f, 0f), new Vector2(6f, CombatSize.y + 6f)),
-                             (CombatCenter + new Vector3(CombatSize.x * 0.5f + 3f, 0.25f, 0f), new Vector2(6f, CombatSize.y + 6f)),
-                         })
+                // 층 방(작은·중간·큰) 둘레 벽 너머(북·동·서)에 낮게 깐 안개 판
+                var mists = new List<(Vector3, Vector2)>();
+                foreach (var (_, c, s) in InkFloorRooms())
+                {
+                    mists.Add((c + new Vector3(0f, 0.25f, s.y * 0.5f + 3f), new Vector2(s.x + 10f, 6f)));
+                    mists.Add((c + new Vector3(-s.x * 0.5f - 3f, 0.25f, 0f), new Vector2(6f, s.y + 6f)));
+                    mists.Add((c + new Vector3(s.x * 0.5f + 3f, 0.25f, 0f), new Vector2(6f, s.y + 6f)));
+                }
+                foreach (var (pos, size) in mists)
                 {
                     var q = GameObject.CreatePrimitive(PrimitiveType.Quad);
                     q.name = "Ground Mist";

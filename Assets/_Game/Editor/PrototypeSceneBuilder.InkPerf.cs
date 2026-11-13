@@ -15,7 +15,7 @@ namespace AThousandDawns.EditorTools
     {
         static readonly string[] StaticDecoRoots =
         {
-            "Ink Outside Bamboo", "Ink Deco (Rooms)", "Ink Deco (Room_Floor)", "Ink Deco (Village)",
+            "Ink Outside Bamboo", "Ink Deco (",   // Ink Deco (Rooms) · (Room_Floor) · (Room_Floor_Medium) · (Room_Floor_Large) · (Village)
             "Demon Cult Training Hall", "River Boss Dock", "Heavenly Demon Throne", "River Pier Arena", "Master Cloister", "Blood Pools",
         };
         static readonly string[] OutsideRoots = { "Ink Outside Bamboo" };
