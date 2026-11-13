@@ -45,6 +45,32 @@ namespace AThousandDawns.Art
 
         public void SetupAnchor(Mesh anchor, Material iron) { anchorMesh = anchor; anchorMaterial = iron; }
 
+        // 보상 방 보상 소품 (RoomRun.RewardKind 순서, 비어 있는 자리 = 비단 주머니). PrototypeSceneBuilder.InkRewards가 채워요
+        [SerializeField] GameObject[] rewardModels = new GameObject[0];
+        public void SetupRewards(GameObject[] models) => rewardModels = models ?? new GameObject[0];
+
+        // 놓인 보상 구에 단 소품들: 그 방 보상 종류(RoomRun.CurrentPath.Reward, 입문 층은 기물)에 맞는 것만 켜요
+        Transform _pouchVisual;
+        GameObject _pouchSilk;
+        GameObject[] _rewardViews;
+        int _shownReward = -1;
+        AThousandDawns.Prototype.RoomRun _run;
+
+        void ShowReward()
+        {
+            if (_pouchVisual == null || !_pouchVisual.gameObject.activeInHierarchy) return;
+            if (_run == null) _run = FindAnyObjectByType<AThousandDawns.Prototype.RoomRun>();
+            if (_run == null) return;
+            int kind = _run.InTutorialFloor ? (int)AThousandDawns.Prototype.RoomRun.RewardKind.Item : (int)_run.CurrentPath.Reward;
+            if (kind == _shownReward) return;
+            _shownReward = kind;
+            bool own = _rewardViews != null && kind < _rewardViews.Length && _rewardViews[kind] != null;
+            if (_pouchSilk != null) _pouchSilk.SetActive(!own);
+            if (_rewardViews != null)
+                for (int i = 0; i < _rewardViews.Length; i++)
+                    if (_rewardViews[i] != null) _rewardViews[i].SetActive(i == kind);
+        }
+
         public void SetupModels(Mesh pouch, Material silk, Mesh cord, Material cordMat, Mesh stones, Material stoneMat, Mesh dark, Material darkMat)
         {
             pouchMesh = pouch; pouchMaterial = silk; pouchCordMesh = cord; pouchCordMaterial = cordMat;
@@ -62,6 +88,7 @@ namespace AThousandDawns.Art
 
         void Update()
         {
+            ShowReward();
             if (Time.unscaledTime < _nextScan) return;
             _nextScan = Time.unscaledTime + ScanInterval;
             SceneManager.GetActiveScene().GetRootGameObjects(_roots);
@@ -153,14 +180,28 @@ namespace AThousandDawns.Art
             visual.localPosition = new Vector3(0f, -0.5f, 0f);   // 공 밑면 (지름 1 기준)
             visual.localRotation = Quaternion.Euler(0f, 20f, 0f); // 매듭(-z)이 카메라(남쪽) 쪽으로, 살짝 비껴
             Unscale(visual, t, 1f);
-            visual.gameObject.AddComponent<MeshFilter>().sharedMesh = pouchMesh;
-            visual.gameObject.AddComponent<MeshRenderer>().sharedMaterial = pouchMaterial;
+            var silk = Child(visual, "Silk Pouch");   // 기물 (그리고 소품이 없는 보상)
+            silk.gameObject.AddComponent<MeshFilter>().sharedMesh = pouchMesh;
+            silk.gameObject.AddComponent<MeshRenderer>().sharedMaterial = pouchMaterial;
             if (pouchCordMesh != null && pouchCordMaterial != null)
             {
-                var cord = Child(visual, "Cord");
+                var cord = Child(silk, "Cord");
                 cord.gameObject.AddComponent<MeshFilter>().sharedMesh = pouchCordMesh;
                 cord.gameObject.AddComponent<MeshRenderer>().sharedMaterial = pouchCordMaterial;
             }
+            // 보상 종류마다 다른 소품 (같은 자리에 모두 달고 ShowReward가 하나만 켜요)
+            _rewardViews = new GameObject[rewardModels.Length];
+            for (int i = 0; i < rewardModels.Length; i++)
+            {
+                if (rewardModels[i] == null) continue;
+                var view = Instantiate(rewardModels[i], visual, false);
+                view.SetActive(false);
+                _rewardViews[i] = view;
+            }
+            _pouchVisual = visual;
+            _pouchSilk = silk.gameObject;
+            _shownReward = -1;
+            ShowReward();
         }
 
         // 벽에 세로로 난 금: 방 쪽으로 금 그림 한 장, 발밑에 떨어진 돌 부스러기
