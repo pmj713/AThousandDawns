@@ -380,14 +380,14 @@ for w in WEAPONS:
                 for j in range(cols + 1):
                     x = (j / cols - 0.5) * 0.8; z = (i / rows - 0.5) * 1.35 - 0.15
                     bulge = 0.08 * (1 - (2 * x / 0.8) ** 2)
-                    row.append(bm.verts.new(c + out * (0.1 + bulge) + v * x + up * z))
+                    row.append(bm.verts.new(c + out * (0.22 + bulge) + v * x + up * z))   # 갑옷 팔에 묻히지 않게 22cm 띄워요
                 grid.append(row)
             back = [[bm.verts.new(p.co - out * 0.04) for p in row] for row in grid]
             for i in range(rows):
                 for j in range(cols):
                     bm.faces.new((grid[i][j], grid[i][j + 1], grid[i + 1][j + 1], grid[i + 1][j]))
                     bm.faces.new((back[i][j], back[i + 1][j], back[i + 1][j + 1], back[i][j + 1]))
-            box(bm, c + out * 0.2 - up * 0.1, out, v, 0.08, 0.3, 0.3)         # 가운데 돋을새김
+            box(bm, c + out * 0.32 - up * 0.1, out, v, 0.08, 0.3, 0.3)        # 가운데 돋을새김
         make(f"{NAME}_Weapon_towershield", "LeftForeArm", build)
     elif w == "bomb":
         g = grip_of("Right") + FWD * 0.04
@@ -2058,7 +2058,7 @@ if "dragonmoves" in EXTRAS:
 if "tombmoves" in EXTRAS:
     def guard_left():
         sl = pb["LeftArm"].head.copy()
-        arm("Left", sl + Vector((0.1, -0.42, -0.1)), Vector((1, 0.3, -0.5)))   # 방패를 앞에
+        arm("Left", sl + Vector((0.14, -0.55, -0.1)), Vector((1, 0.3, -0.5)))   # 방패를 몸 앞으로 내밀어요
 
     if "dao" in WEAPONS and "rattan" not in WEAPONS:
         left = guard_left if "towershield" in WEAPONS else free_left_back
@@ -2079,6 +2079,22 @@ if "tombmoves" in EXTRAS:
                 sl = pb["LeftArm"].head.copy()
                 arm("Left", sl + Vector((0.15, -0.4, -0.25 + 0.05 * math.sin(a))), Vector((1, 0.3, -0.5)))   # 손톱을 세운 듯 앞으로
         make_action("Guard" if "towershield" in WEAPONS else "Frenzy", [(f, f / 16) for f in range(0, 17, 4)], low_pose)
+
+        if "towershield" in WEAPONS:
+            # 대기: 플레이어 대기를 옮긴 것은 방패가 몸에 박혀 보였어요. 방패를 몸 앞에 세워 버티고 칼은 오른 허리 낮게, 숨 쉬며 조금 흔들려요
+            def tower_idle(t):
+                breath = math.sin(2 * math.pi * t)
+                feet = {"Left": FEET["Left"] + Vector((0, -0.12, 0)), "Right": FEET["Right"] + Vector((0, 0.08, 0))}
+                lower_hips(-0.1 - 0.012 * breath, feet, dy=0.02)
+                bend("Spine", Vector((1, 0, 0)), 5 + 1.5 * breath)
+                guard_left()
+                sh = pb["RightArm"].head.copy()
+                arm("Right", sh + Vector((-0.12, -0.15, -0.5)), Vector((-1, 0.3, -0.3)))
+                point_blade(Vector((-0.1, -0.6, -1)), wrist_bend=60)
+            old_idle = bpy.data.actions.get("Idle")
+            if old_idle is not None:
+                bpy.data.actions.remove(old_idle)
+            make_action("Idle", [(f, f / 60) for f in range(0, 61, 6)], tower_idle)
 
     if "shaman" in EXTRAS:
         def shaman_pose(stage):

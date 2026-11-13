@@ -66,7 +66,7 @@ namespace AThousandDawns.EditorTools
         }
 
         // 흔들리는 빨래·닭, 벽 너머 숲, 그리고 상호작용 자리가 있는 마을 건물·나무(객잔 마루에서 시작해요, 매화나무·사당 앞에 서야 해요)
-        static readonly string[] NoColliderParts = { "Cloth", "Chicken", "Forest (3D stalks)", "Inn", "Shrine", "Plum", "Gate", "Weapon Rack", "Cave" };
+        static readonly string[] NoColliderParts = { "Cloth", "Chicken", "Forest (3D stalks)", "Inn", "Shrine", "Plum", "Gate", "Weapon Rack", "Cave", "Border " };
 
         static bool SkipCollider(Transform t)
         {

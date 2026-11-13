@@ -371,6 +371,10 @@ elif KIND == "snake":
             joints.append(path(s))
         joints[0].z += head_raise
         joints = joints[::-1]                                                 # 꼬리 끝 … 머리 끝
+        # 몸 전체가 물결마다 옆으로 오가며 떨지 않게, 관절들의 좌우 평균을 가운데(x=0)로 맞춰요 (몸은 S자로 휘어도 제자리에서 나아가요)
+        mean_x = sum(j.x for j in joints) / len(joints)
+        for j in joints:
+            j.x -= mean_x
         root = pb["Root"]
         m = root.matrix.copy(); m.translation += joints[0] - REST[0]
         root.matrix = m
