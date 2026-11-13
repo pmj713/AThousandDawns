@@ -44,7 +44,7 @@ namespace AThousandDawns.Enemies
 
         protected override void OnChargeEnded()
         {
-            Director.SpawnBurst(transform.position, _quakeRadius);
+            Director.SpawnBurst(transform.position, _quakeRadius, AThousandDawns.Combat.BurstKind.Quake);
             ChargeQuake?.Invoke(this, transform.position, _quakeRadius); // 이펙트 신호 (아트: InkTempleEnemyFx)
             if (ToPlayer().magnitude <= _quakeRadius + PlayerRadius)
                 Player.TryReceiveHit(AttackPower * _quakeRatio, transform.position, -1f, Body);

@@ -123,11 +123,8 @@ namespace AThousandDawns.Tests
             run.ChooseFork(pick);
             var reward = run.Map.Rooms.First(r => r.Kind == FloorRoomKind.Reward);
             run.Enter(reward, 0);
-            yield return WaitUntil(() =>
-            {
-                for (int i = director.Enemies.Count - 1; i >= 0; i--) director.Enemies[i].Damageable.ApplyHit(99999);
-                return !run.IsFighting;
-            }, 20f);
+            Assert.IsFalse(run.IsFighting, "보상 방은 싸움 없이");
+            run.OpenPouch(); // 가운데 보상 앞에서 상호작용
             yield return WaitUntil(() => run.IsInEvent, 2f);
             Assert.AreEqual("forge", run.CurrentEvent.Id);
             int index = run.CurrentEvent.Choices.FindIndex(c => c.Label.Contains("#경공"));

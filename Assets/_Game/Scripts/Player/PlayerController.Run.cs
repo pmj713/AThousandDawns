@@ -147,6 +147,9 @@
             if (visual != null) visual.localScale = new UnityEngine.Vector3(1.2f, 0.25f, 1.2f);
         }
 
+        // 일시정지 메뉴 게임 포기: 그 자리에서 쓰러져요 (기사회생 · 부활 기물도 막지 않아요)
+        public void GiveUp() => KillForTest();
+
         // 버려진 약방 독약: 체력을 직접 깎아요 (쓰러지지는 않아요)
         public void TakeEventDamage(float amount)
         {

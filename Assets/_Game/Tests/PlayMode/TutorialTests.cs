@@ -90,6 +90,10 @@ namespace AThousandDawns.Tests
             int before = _player.Items.Items.Count;
             _run.Enter(rooms[4], 1);
             yield return null;
+            Assert.IsFalse(_run.IsFighting, "보상 방은 싸움 없이");
+            Assert.AreEqual(before, _player.Items.Items.Count, "들어가기만 해서는 아직");
+            StringAssert.Contains("기물 주머니", KeyHint.Plain(_run.Hint));
+            _run.OpenPouch(); // 가운데 주머니 앞에서 상호작용
             Assert.AreEqual(before + 1, _player.Items.Items.Count, "첫 기물");
             var first = _player.Items.Items.Last().Def;
             Assert.AreEqual(ItemGrade.Common, first.grade);

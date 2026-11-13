@@ -164,7 +164,7 @@ namespace AThousandDawns.Prototype
             if (run != null && run.NearCrack)
                 KeyHint.Draw(prompt, $"벽에 금이 가 있어요 · {interact} 벽을 부수기", _big, _big.fontSize);
             if (run != null && run.NearPouch)
-                KeyHint.Draw(prompt, $"{interact} 기물 주머니 열기", _big, _big.fontSize);
+                KeyHint.Draw(prompt, $"{interact} {run.PouchPrompt}", _big, _big.fontSize);
 
             if (player != null && player.IsDead && run == null) // 판 구조 씬은 결과 화면이 대신 떠요
                 GUI.Label(new Rect(0, UiScale.Height * 0.4f, UiScale.Width, 60), "쓰러졌어요 · F5 키로 다시 시작", _big);
@@ -338,7 +338,7 @@ namespace AThousandDawns.Prototype
             GUI.color = old;
         }
 
-        // 일시정지 (Esc): 계속하기 · 설정 · 시작 화면으로
+        // 일시정지 (Esc): 계속하기 · 설정 · 무공 요결 · 게임 포기 · 시작 화면으로
         void DrawPause()
         {
             if (run == null || !run.IsPaused) return;
@@ -364,6 +364,7 @@ namespace AThousandDawns.Prototype
                 "계속하기",
                 "설정",
                 "무공 요결",
+                !run.CanGiveUp ? "게임 포기 (마을에서는 못 해요)" : run.ConfirmGiveUp ? "한 번 더 누르면 포기 (그 자리에서 쓰러져요)" : "게임 포기",
                 run.ConfirmTitle ? "한 번 더 누르면 시작 화면으로 (이어하기는 마지막 저장부터)" : "시작 화면으로",
             };
             for (int i = 0; i < labels.Length; i++)
@@ -699,7 +700,7 @@ namespace AThousandDawns.Prototype
             _dummy = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleCenter };
             _dummy.normal.textColor = Color.black;
             _big = new GUIStyle(GUI.skin.label) { fontSize = 32, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
-            _big.normal.textColor = Color.white;
+            _big.normal.textColor = _big.hover.textColor = _big.active.textColor = Color.white; // 마우스를 올려도 색이 그대로
             _bossLabel = new GUIStyle(GUI.skin.label) { fontSize = 18, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             _bossLabel.normal.textColor = Color.white;
             _popupSmall = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleCenter };

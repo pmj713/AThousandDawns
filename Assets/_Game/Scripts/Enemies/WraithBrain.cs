@@ -87,7 +87,7 @@ namespace AThousandDawns.Enemies
         void Update()
         {
             _life -= Time.deltaTime;
-            if (_life <= 0f || _target == null || _target.IsDead)
+            if (_life <= 0f || _target == null || _target.IsDead || _owner == null || _owner.IsDead) // 망령을 쓰러뜨리면 쫓아오던 혼불도 꺼져요
             {
                 Destroy(gameObject);
                 return;

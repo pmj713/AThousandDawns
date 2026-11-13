@@ -355,7 +355,7 @@ namespace AThousandDawns.Enemies
         void Slam()
         {
             Telegraph.Hide();
-            Director.SpawnBurst(transform.position, _slamRadius);
+            Director.SpawnBurst(transform.position, _slamRadius, AThousandDawns.Combat.BurstKind.Slam);
             if (ToPlayer().magnitude <= _slamRadius + PlayerRadius) HitPlayer(_slamRatio);
             Attack.EndActive(SlamRecovery);
         }
@@ -363,7 +363,7 @@ namespace AThousandDawns.Enemies
         void Spin()
         {
             _spinsDone++;
-            Director.SpawnBurst(transform.position, _spinRadius);
+            Director.SpawnBurst(transform.position, _spinRadius, AThousandDawns.Combat.BurstKind.Spin);
             if (ToPlayer().magnitude <= _spinRadius + PlayerRadius) HitPlayer(_spinRatio);
         }
 

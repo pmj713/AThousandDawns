@@ -173,7 +173,7 @@ namespace AThousandDawns.Enemies
                     to.y = 0f;
                     if (to.sqrMagnitude > 1e-4f) AimDirection = to.normalized;
                     FaceToward(AimDirection);
-                    Director.SpawnBurst(transform.position, 0.8f);
+                    Director.SpawnBurst(transform.position, 0.8f, AThousandDawns.Combat.BurstKind.Echo);
                     Cut(Pattern.Slash, transform.position, AimDirection, _slashRatio);
                     Fx(new FxCue { Kind = FxKind.Blink, From = blinkFrom, To = transform.position, Dir = AimDirection });
                     break;
@@ -251,7 +251,7 @@ namespace AThousandDawns.Enemies
                 }
                 if (e.Marker != null) Destroy(e.Marker.gameObject);
                 _echoes.RemoveAt(i);
-                Director.SpawnBurst(e.From + e.Dir * 1.2f, 0.8f);
+                Director.SpawnBurst(e.From + e.Dir * 1.2f, 0.8f, AThousandDawns.Combat.BurstKind.Echo);
                 Fx(new FxCue { Kind = FxKind.EchoCut, From = e.From, Dir = e.Dir, Line = e.Kind == Pattern.Line });
                 Cut(e.Kind, e.From, e.Dir, _echoRatio);
             }

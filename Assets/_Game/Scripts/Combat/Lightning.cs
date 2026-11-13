@@ -44,7 +44,7 @@ namespace AThousandDawns.Combat
                 Vector3 at = current.transform.position + Vector3.up * 1f;
                 current.ApplyHit(DamageFormula.Proc(raw, 1f, current.Defense), false, discharge > 0f ? PopupStyle.Burst : PopupStyle.Normal);
                 if (!current.IsDead) status.AddShock(mods.Reshock); // 매 발톱 주화입마: 방전 뒤 감전을 남김
-                if (discharge > 0f) Splash(current, discharge);
+                if (discharge > 0f) { AThousandDawns.Player.PlayerController.CueBurst(current.transform.position, 1f, BurstKind.Lightning); Splash(current, discharge); } // 방전 신호 (아트)
                 Bolt(previous, at, 0.12f);
 
                 previous = at;
@@ -60,7 +60,7 @@ namespace AThousandDawns.Combat
             float discharge = Discharge(StatusEffects.For(target), dischargePerStack, false);
             float raw = triggerDamage * ratio + discharge;
             target.ApplyHit(DamageFormula.Proc(raw, 1f, target.Defense), false, discharge > 0f ? PopupStyle.Burst : PopupStyle.Normal);
-            if (discharge > 0f) Splash(target, discharge);
+            if (discharge > 0f) { AThousandDawns.Player.PlayerController.CueBurst(target.transform.position, 1f, BurstKind.Lightning); Splash(target, discharge); } // 방전 신호 (아트)
             Vector3 at = target.transform.position + Vector3.up;
             Bolt(at + Vector3.up * 6f, at, 0.2f);
         }

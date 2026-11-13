@@ -97,7 +97,17 @@ namespace AThousandDawns.Core
         {
             AudioListener.volume = Current.MasterScale; // 전체 음량 (저장할 때마다 다시)
             Changed += () => AudioListener.volume = Current.MasterScale;
+            AudioSettings.OnAudioConfigurationChanged += OnAudioDeviceChanged;
             if (!Application.isEditor) Current.ApplyDisplay();
+        }
+
+        // 헤드셋을 꽂거나 빼고, 모니터가 잠들어 오디오 장치가 바뀌면 Unity는 소리를 다시 내지 않아요 (게임 중 갑자기 소리 전체가 끊김).
+        // 장치가 바뀌면 오디오를 새 장치로 다시 열어요. 다시 열면 재생 중이던 소리는 멈춰서, 음악은 RunMusic/시작 화면이 다시 틀어요.
+        static void OnAudioDeviceChanged(bool deviceWasChanged)
+        {
+            if (!deviceWasChanged) return;
+            AudioSettings.Reset(AudioSettings.GetConfiguration());
+            AudioListener.volume = Current.MasterScale;
         }
     }
 }

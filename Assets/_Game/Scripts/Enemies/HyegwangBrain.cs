@@ -204,7 +204,7 @@ namespace AThousandDawns.Enemies
                     break;
                 case Pattern.Vajra:
                     Body.SetTint(null);
-                    Director.SpawnBurst(transform.position, VajraRadius);
+                    Director.SpawnBurst(transform.position, VajraRadius, AThousandDawns.Combat.BurstKind.Vajra);
                     Fx(new FxCue { Kind = FxKind.VajraBurst, At = transform.position, Radius = VajraRadius, Grow = _vajraGrowMax > 0f ? _vajraBonus / _vajraGrowMax : 0f });
                     if (ToPlayer().magnitude <= VajraRadius + PlayerRadius) HitPlayer(_vajraRatio, _vajraKnockback);
                     _vajraBonus = 0f;

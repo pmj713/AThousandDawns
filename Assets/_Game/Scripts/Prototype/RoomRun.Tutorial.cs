@@ -43,7 +43,6 @@ namespace AThousandDawns.Prototype
             rooms[1].FixedWaves = Waves(new[] { EnemyKind.Grunt, EnemyKind.Grunt });
             rooms[2].FixedWaves = Waves(new[] { EnemyKind.Shield });
             rooms[3].FixedWaves = Waves(new[] { EnemyKind.Grunt, EnemyKind.Grunt, EnemyKind.Grunt }, new[] { EnemyKind.Grunt, EnemyKind.Grunt, EnemyKind.Grunt });
-            rooms[4].FixedWaves = new List<List<EnemyKind>>(); // 보상 방은 싸움 없이
             arena.Blocked = false;
             Player.enabled = true;
             Time.timeScale = 1f;
@@ -84,6 +83,7 @@ namespace AThousandDawns.Prototype
                     Player.RaiseGaugeTo(0.8f); // 이 방에서 절초까지 써 보게 기세를 채워 둬요
                     SetHint($"{KeyName(Bind.Skill)} 초식 · 주변을 한 바퀴 베요", () => Player.IsCastingSkill || !_fighting);
                     break;
+                case 4: SetHint($"방 가운데 기물 주머니 앞에서 {KeyName(Bind.Interact)} · 보상 방은 싸움 없이 보상을 받아요", () => !room.Pouch); break;
                 case 5: SetHint($"관문 · 가운데에서 {KeyName(Bind.Interact)}를 누르면 다음 층", () => _phase != Phase.Floor); break;
             }
         }

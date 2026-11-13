@@ -168,6 +168,7 @@ namespace AThousandDawns.Prototype
             if (!Sized.TryGetValue(key, out var s) || s == null)
             {
                 s = new GUIStyle(style) { fontSize = fontSize, richText = true, clipping = TextClipping.Overflow };
+                s.hover.textColor = s.active.textColor = s.focused.textColor = s.normal.textColor; // 안내 글은 마우스를 올려도 색이 바뀌지 않게
                 Sized[key] = s;
             }
             return s;

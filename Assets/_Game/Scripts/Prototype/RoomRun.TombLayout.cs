@@ -107,7 +107,7 @@ namespace AThousandDawns.Prototype
             foreach (var f in _features)
             {
                 if (f.Kind != FeatureKind.MiasmaPillar) continue;
-                BloodBurst.Create(director, f.Center, radius, fuse, damage, null, 0f);
+                BloodBurst.Create(director, f.Center, radius, fuse, damage, null, 0f, AThousandDawns.Combat.BurstKind.Miasma); // 마기 기둥
                 MiasmaPulse?.Invoke(f.Center, radius, fuse);
                 MiasmaPulses++;
             }

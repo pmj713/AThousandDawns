@@ -222,7 +222,7 @@ namespace AThousandDawns.Enemies
             switch (_pattern)
             {
                 case Pattern.Swing:
-                    Director.SpawnBurst(transform.position + AimDirection * (_swingRadius * 0.5f), _swingRadius * 0.4f);
+                    Director.SpawnBurst(transform.position + AimDirection * (_swingRadius * 0.5f), _swingRadius * 0.4f, AThousandDawns.Combat.BurstKind.Water);
                     Fx(new FxCue { Kind = FxKind.Swing, At = transform.position, Dir = AimDirection, Radius = _swingRadius, Angle = _swingAngle });
                     if (HitShapes.InSector(transform.position, AimDirection, _swingRadius, _swingAngle, Player.transform.position, PlayerRadius))
                         Player.TryReceiveHit(AttackPower * _swingRatio, transform.position, _swingKnockback, Body);
@@ -301,7 +301,7 @@ namespace AThousandDawns.Enemies
                 }
                 if (m.Marker != null) Destroy(m.Marker.gameObject);
                 _marks.RemoveAt(i);
-                Director.SpawnBurst(m.At, m.Radius);
+                Director.SpawnBurst(m.At, m.Radius, AThousandDawns.Combat.BurstKind.Water);
                 Vector3 d = Player.transform.position - m.At;
                 d.y = 0f;
                 if (d.magnitude <= m.Radius + PlayerRadius) Player.TryReceiveHit(AttackPower * m.Ratio, m.At, -1f, Body);
@@ -380,7 +380,7 @@ namespace AThousandDawns.Enemies
             _hooked = false;
             _transitionTimer = _transitionTime;
             Body.Targetable = false;
-            Director.SpawnBurst(transform.position, 3f); // 배가 부서져요
+            Director.SpawnBurst(transform.position, 3f, AThousandDawns.Combat.BurstKind.Shatter); // 배가 부서져요
             Fx(new FxCue { Kind = FxKind.Transition, At = transform.position, Radius = 3f, Time = _transitionTime });
         }
 

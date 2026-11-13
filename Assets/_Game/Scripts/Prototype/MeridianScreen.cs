@@ -16,7 +16,7 @@ namespace AThousandDawns.Prototype
     public sealed class MeridianScreen : MonoBehaviour
     {
         const float K = 1.4f; // 경맥도 화면 크기 배율 (기준 1920×1080에서). 글자 크기도 같이 키웠어요 (EnsureStyles).
-        const float CellSize = 96f * K, Gap = 6f * K, BagWidth = 300f * K, DetailHeight = 128f * K, HeaderHeight = 64f * K;
+        const float CellSize = 96f * K, Gap = 6f * K, BagWidth = 300f * K, KeywordWidth = 230f * K, DetailHeight = 128f * K, HeaderHeight = 64f * K;
 
         static readonly Color LackingColor = new Color(0.6f, 0.6f, 0.6f);
         static readonly Color CirculatingColor = new Color(0.45f, 0.85f, 0.45f);
@@ -39,6 +39,7 @@ namespace AThousandDawns.Prototype
         Vector2Int? _moveFrom; // 이혈: 옮기려고 고른 단전
         Vector2Int? _confirmCell; // 설정 "확인 창": 단전을 열거나 옮길 칸 (한 번 더 누르면 확정)
         RoomRun _run;
+        bool _runLooked;
         bool InTutorial => (_run != null || (_run = FindFirstObjectByType<RoomRun>()) != null) && _run.InTutorialFloor;
         PartKind _placingPart; // 놓으려고 고른 부품 (부품 줄에서 고르고 빈 칸을 눌러요)
         bool _autoArmed, _wasInCombat;
@@ -81,10 +82,13 @@ namespace AThousandDawns.Prototype
             if (AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Meridian)) TryOpen();
         }
 
-        // 레벨이 오르면 (전투 중이면 전투가 끝난 뒤, 기물 고르기도 끝난 뒤) 경맥도가 저절로 열려 혈자리를 골라요.
-        // 닫아도 개혈 대기는 남고, 다음 레벨업이나 다음 전투가 끝날 때 다시 열려요 (E로 언제든 열 수 있음).
+        // 레벨이 올라도 경맥도는 저절로 열리지 않아요: 화면 아래에 "경맥도를 열어 혈자리를 고르세요"가 깜빡여요 (DrawLevelPrompt).
+        // AutoOpenOnLevelUp을 켜면 예전처럼 (전투 · 기물 고르기가 끝난 뒤) 저절로 열려요.
+        public static bool AutoOpenOnLevelUp = false;
+
         void UpdateAutoOpen()
         {
+            if (!AutoOpenOnLevelUp) return;
             var player = Player;
             if (IsOpen || player == null || player.Level == null) return;
             int pending = player.Level.Pending;
@@ -155,7 +159,25 @@ namespace AThousandDawns.Prototype
             EnsureStyles();
             bool open = IsOpen && Player != null && Player.Items != null;
             if (open) DrawScreen(Player.Items);
+            else DrawLevelPrompt();
             DrawNotice(open);
+        }
+
+        // 열 혈자리가 남아 있으면 화면 가운데 아래에 깜빡이는 안내 (일시정지 · 다른 창 · 결과 화면에서는 숨겨요)
+        void DrawLevelPrompt()
+        {
+            var player = Player;
+            if (player == null || player.IsDead || player.Level == null || player.Level.Pending <= 0) return;
+            if (_run == null && !_runLooked) { _runLooked = true; _run = FindFirstObjectByType<RoomRun>(); } // 한 번만 찾아요
+            if (_run != null && (_run.IsPaused || _run.IsShowingResult || _run.IsShopping || _run.IsInEvent)) return;
+            if (_arena != null && _arena.IsChoosing) return;
+            float pulse = 0.55f + 0.45f * Mathf.Sin(Time.unscaledTime * 5f); // 깜빡깜빡
+            string text = $"경맥도를 열어 혈자리를 고르세요 · {KeyHint.Key(AThousandDawns.Core.Bind.Meridian)}";
+            var rect = new Rect(0f, UiScale.Height * 0.76f, UiScale.Width, 48f * K);
+            var old = GUI.color;
+            GUI.color = new Color(1f, 0.85f, 0.4f, pulse);
+            KeyHint.Draw(rect, text, _noticeStyle, Mathf.RoundToInt(30f * K));
+            GUI.color = old;
         }
 
         // 안내 문구는 경맥도보다 나중에 (맨 앞에) 그려요. 열려 있으면 판 바로 위, 아니면 화면 위쪽.
@@ -185,15 +207,17 @@ namespace AThousandDawns.Prototype
             bool hasParts = items.Parts.Count > 0;
             if (!hasParts) _placingPart = PartKind.None;
             float header = HeaderHeight + (picking ? AcupointRowHeight : 0f) + (hasParts ? AcupointRowHeight : 0f);
-            float totalW = boardW + 24f * K + BagWidth;
+            float totalW = KeywordWidth + 24f * K + boardW + 24f * K + BagWidth; // 왼쪽 키워드 단계 · 가운데 판 · 오른쪽 주머니
             float totalH = header + boardH + 16f * K + DetailHeight;
             float left = (UiScale.Width - totalW) * 0.5f;
             float top = Mathf.Max(8f, (UiScale.Height - totalH) * 0.5f);
             _panelTop = top;
+            float full = left; // 머리 / 혈자리 줄 / 설명은 셋을 다 덮는 폭
+            left += KeywordWidth + 24f * K; // 판은 키워드 목록 오른쪽부터
 
-            DrawHeader(items, new Rect(left, top, totalW, HeaderHeight));
-            if (picking) DrawAcupointRow(new Rect(left, top + HeaderHeight, totalW, AcupointRowHeight - 6f * K));
-            if (hasParts) DrawPartRow(items, new Rect(left, top + HeaderHeight + (picking ? AcupointRowHeight : 0f), totalW, AcupointRowHeight - 6f * K));
+            DrawHeader(items, new Rect(full, top, totalW, HeaderHeight));
+            if (picking) DrawAcupointRow(new Rect(full, top + HeaderHeight, totalW, AcupointRowHeight - 6f * K));
+            if (hasParts) DrawPartRow(items, new Rect(full, top + HeaderHeight + (picking ? AcupointRowHeight : 0f), totalW, AcupointRowHeight - 6f * K));
 
             float boardTop = top + header;
             for (int y = 0; y < board.Height; y++)
@@ -205,10 +229,12 @@ namespace AThousandDawns.Prototype
                 if (PadActive && cell == PadCell) _padRect = rect;
             }
 
+            DrawKeywords(new Rect(full, boardTop, KeywordWidth, boardH));
             DrawBag(items, new Rect(left + boardW + 24f * K, boardTop, BagWidth, boardH));
-            DrawDetail(items, new Rect(left, boardTop + boardH + 16f * K, totalW, DetailHeight));
+            DrawDetail(items, new Rect(full, boardTop + boardH + 16f * K, totalW, DetailHeight));
             HandleDrop(items);
             if (PadActive) AThousandDawns.Fx.InkPadUi.Frame(_padRect, 4f * K); // 게임패드 커서 칸: 먹 붓 테두리
+            DrawTooltips(); // 기물 / 키워드에 마우스를 올리면 그 옆에 설명 (맨 위에)
             DrawDragGhost();
             if (PadActive) // 아래 가운데 붉은 낙관 안내
                 AThousandDawns.Fx.InkPadUi.Hints(UiScale.Width * 0.5f, UiScale.Height - 58f, 34f,
@@ -352,15 +378,100 @@ namespace AThousandDawns.Prototype
             }
         }
 
+        // 왼쪽 키워드 단계: 가진 키워드를 단계(개수)가 높은 순으로 위에서 아래로. 마우스를 올리면 단계 효과 (DrawTooltips)
+        Keyword? _hoveredKeyword;
+        Rect _hoveredKeywordRect;
+        readonly System.Collections.Generic.List<Keyword> _keywordOrder = new System.Collections.Generic.List<Keyword>();
+
+        void DrawKeywords(Rect area)
+        {
+            _hoveredKeyword = null;
+            AThousandDawns.Fx.InkMeridianArt.Panel(area); // 먹 패널
+            GUI.Label(new Rect(area.x + 8f * K, area.y + 4f * K, area.width - 16f * K, 22f * K), "<b>키워드 단계</b>", _small);
+            var keywords = Player.Keywords;
+            if (keywords == null) return;
+            _keywordOrder.Clear();
+            for (int i = 0; i < PlayerKeywords.KeywordCount; i++)
+                if (keywords.Count((Keyword)i) > 0) _keywordOrder.Add((Keyword)i);
+            _keywordOrder.Sort((a, b) => keywords.Count(b).CompareTo(keywords.Count(a)));
+            if (_keywordOrder.Count == 0)
+            {
+                GUI.Label(new Rect(area.x + 8f * K, area.y + 32f * K, area.width - 16f * K, 60f * K), "<color=#9a9a9a>기물을 놓으면 키워드가 쌓여요 (2 · 4 · 6개에서 단계 효과)</color>", _small);
+                return;
+            }
+            float rowH = 40f * K, y = area.y + 32f * K;
+            var mouse = Event.current.mousePosition;
+            foreach (var k in _keywordOrder)
+            {
+                if (y + rowH > area.yMax) break;
+                int count = keywords.Count(k), stage = Mathf.Min(6, count / 2 * 2);
+                var row = new Rect(area.x + 6f * K, y, area.width - 12f * K, rowH - 4f * K);
+                bool hover = row.Contains(mouse);
+                if (hover) { _hoveredKeyword = k; _hoveredKeywordRect = row; }
+                if (hover) Fill(row, new Color(1f, 1f, 1f, 0.08f));
+                ItemIcons.Draw(new Rect(row.x + 2f * K, row.y + 4f * K, row.height - 8f * K, row.height - 8f * K), ItemIcons.Get(k));
+                string stageText = stage >= 2 ? $"<color=#ffd27a><b>{stage}단계</b></color>" : "<color=#9a9a9a>단계 없음</color>";
+                GUI.Label(new Rect(row.x + row.height, row.y + 6f * K, row.width - row.height, row.height), $"{Colored(k)} {count}   {stageText}", _small);
+                y += rowH;
+            }
+        }
+
+        // 마우스를 올린 기물(판 위) · 키워드의 설명을 그 옆에 띄워요. 끌고 있을 땐 아래 설명 칸만
+        void DrawTooltips()
+        {
+            var mouse = Event.current.mousePosition;
+            if (_dragged != null) // 끌고 있으면: 이 칸에 놓았을 때의 상태와 효과를 커서 옆에 바로
+            {
+                if (!_hoveredCell.HasValue || Player.Items == null) return;
+                var board = Player.Items.Board;
+                int qi = board.QiAt(_hoveredCell.Value), bonus = board.MaxQiBonusAt(_hoveredCell.Value);
+                var dd = _dragged.Def;
+                DrawTooltipBox(PadActive ? new Vector2(_padRect.xMax + 12f * K, _padRect.y) : new Vector2(mouse.x + 60f * K, mouse.y + 30f * K),
+                    $"<b>{dd.name}</b>  이 칸 기 {qi} → {PreviewLabel(dd, qi, bonus, Preview(dd, qi, bonus))}\n{ScaledEffect(dd, qi, bonus)}");
+                return;
+            }
+            if (_hoveredKeyword is Keyword k && Player.Keywords != null)
+            {
+                int count = Player.Keywords.Count(k);
+                var text = new System.Text.StringBuilder();
+                text.Append($"<b>{Colored(k)}</b>  {count}개");
+                foreach (int stage in StageSteps)
+                {
+                    string effect = PlayerKeywords.StageText(k, stage);
+                    if (effect == null) continue;
+                    text.Append(count >= stage ? $"\n<color=#ffd27a>{stage}단계 ✔</color>  {effect}" : $"\n<color=#8a8a8a>{stage}단계  {effect}</color>");
+                }
+                DrawTooltipBox(new Vector2(_hoveredKeywordRect.xMax + 12f * K, _hoveredKeywordRect.y), text.ToString());
+                return;
+            }
+            if (_hovered == null || !_hovered.OnBoard || !_hoveredCell.HasValue) return;
+            var def = _hovered.Def;
+            string body = $"<b>{def.name}</b>  {Colored(def.keyword)} · {ItemDefinition.GradeLabel(def.grade)} · 기 {def.minQi}–{def.maxQi}\n" +
+                          $"<color=#ffd27a>지금 기 {_hovered.Qi} · {StateLabel(_hovered)}</color>\n{ScaledEffect(def, _hovered.Qi, _hovered.MaxQiBonus)}";
+            DrawTooltipBox(new Vector2(mouse.x + 24f * K, mouse.y + 16f * K), body);
+        }
+
+        static readonly int[] StageSteps = { 2, 4, 6 };
+
+        void DrawTooltipBox(Vector2 at, string text)
+        {
+            float w = 460f * K;
+            float h = _detail.CalcHeight(new GUIContent(text), w - 20f * K) + 16f * K;
+            float x = Mathf.Min(at.x, UiScale.Width - w - 8f), y = Mathf.Min(at.y, UiScale.Height - h - 8f); // 화면 밖으로 나가지 않게
+            var box = new Rect(x, y, w, h);
+            Fill(box, new Color(0.08f, 0.06f, 0.04f, 0.95f));
+            Outline(box, new Color(1f, 0.85f, 0.4f, 0.8f), 1f);
+            GUI.Label(new Rect(box.x + 10f * K, box.y + 8f * K, w - 20f * K, h - 16f * K), text, _detail);
+        }
+
         void DrawItemInCell(OwnedItem item, Rect rect)
         {
             var def = item.Def;
             var state = PlayerItems.StateOf(item);
-            // 아이콘은 칸 가운데에 흐리게 깔고 글자를 위에 (기 부족이면 더 흐리게)
-            float iconSize = Mathf.Min(rect.width, rect.height) - 16f * K;
-            ItemIcons.Draw(new Rect(rect.center.x - iconSize * 0.5f, rect.center.y - iconSize * 0.5f, iconSize, iconSize), def, state == QiState.Lacking ? 0.3f : 0.6f);
-            GUI.Label(new Rect(rect.x + 2f * K, rect.y + 22f * K, rect.width - 4f * K, 38f * K), $"<b>{def.name}</b>", _cellName);
-            GUI.Label(new Rect(rect.x + 2f * K, rect.y + 54f * K, rect.width - 4f * K, 18f * K), $"{Colored(def.keyword)} {StateLabel(item)}", _cellName);
+            // 칸에는 아이콘만 (기 부족이면 흐리게). 이름 · 키워드 · 효과는 마우스를 올리면 옆에 떠요 (DrawTooltips)
+            float iconSize = Mathf.Min(rect.width, rect.height) - 24f * K;
+            if (!ItemIcons.Draw(new Rect(rect.center.x - iconSize * 0.5f, rect.center.y - iconSize * 0.5f - 4f * K, iconSize, iconSize), def, state == QiState.Lacking ? 0.35f : 1f))
+                GUI.Label(new Rect(rect.x + 2f * K, rect.y + 22f * K, rect.width - 4f * K, 38f * K), $"<b>{def.name}</b>", _cellName); // 아이콘이 없는 기물만 이름
             DrawQiBar(new Rect(rect.x + 8f * K, rect.yMax - 14f * K, rect.width - 16f * K, 6f * K), def.minQi, item.MaxQi, item.Qi);
             Outline(rect, StateColor(state), 2f);
         }
@@ -481,6 +592,7 @@ namespace AThousandDawns.Prototype
             var def = shown.Def;
             string aux = string.IsNullOrEmpty(def.aux) ? "" : $" · 보조 #{def.aux}";
             string where = shown.OnBoard ? $"지금 기 {shown.Qi} · {StateLabel(shown)}" : "보관함 (효과 없음)";
+            string effect = shown.OnBoard ? ScaledEffect(shown.Def, shown.Qi, shown.MaxQiBonus) : def.effectText;
             if (_dragged != null && _hoveredCell.HasValue)
             {
                 int qi = items.Board.QiAt(_hoveredCell.Value);
@@ -488,9 +600,10 @@ namespace AThousandDawns.Prototype
                 var preview = Preview(_dragged.Def, qi, bonus);
                 where = $"이 칸에 놓으면 기 {qi}{(bonus > 0 ? $" (한혈: 최대 기 +{bonus})" : "")} → {PreviewLabel(_dragged.Def, qi, bonus, preview)}";
                 def = _dragged.Def;
+                effect = ScaledEffect(def, qi, bonus); // 끌고 있는 칸의 기로 바로 다시 계산
             }
             string text = $"<b>{def.name}</b>  {Colored(def.keyword)} · {ItemDefinition.GradeLabel(def.grade)}{aux} · 기 {def.minQi}–{def.maxQi}   <color=#ffd27a>{where}</color>\n" +
-                          $"{def.effectText}\n" + (shown.Purified && def == shown.Def ? "<color=#9ad0ff>정화됨 · 주화입마 부작용 없음 (참회실)</color>" : $"<color=#ff8a7a>주화입마 부작용: {def.sideText}</color>");
+                          $"{effect}\n" + (shown.Purified && def == shown.Def ? "<color=#9ad0ff>정화됨 · 주화입마 부작용 없음 (참회실)</color>" : $"<color=#ff8a7a>주화입마 부작용: {def.sideText}</color>");
             GUI.Label(new Rect(area.x + 10f * K, area.y + 8f * K, area.width - 20f * K, area.height - 16f * K), text, _detail);
         }
 
@@ -639,6 +752,50 @@ namespace AThousandDawns.Prototype
         {
             int level = qi < def.minQi ? 0 : Mathf.Min(qi, def.maxQi + maxBonus) - def.minQi + 1;
             return state == QiState.Lacking ? "기 부족" : state == QiState.Circulating ? $"운기 {level}레벨" : $"주화입마 {level}레벨";
+        }
+
+        // 효과 글은 1레벨 수치로 적혀 있어요. 레벨이 오르는 수치(v1~v4 scales)는 × 레벨 (주화입마면 × 배율)로 바꿔 금색으로 보여 줘요.
+        // 기 부족이면 효과가 없어서 흐리게. 칸을 옮기며 끌면 그 칸의 기로 바로 다시 계산돼요.
+        string ScaledEffect(ItemDefinition def, int qi, int maxBonus)
+        {
+            string text = def.effectText ?? "";
+            var state = Preview(def, qi, maxBonus);
+            if (state == QiState.Lacking) return $"<color=#8a8a8a>{text} (기 부족: 효과 없음)</color>";
+            int level = Mathf.Min(qi, def.maxQi + maxBonus) - def.minQi + 1;
+            float mult = level * (state == QiState.Deviated && Player != null && Player.Items != null ? Player.Items.DeviationMultiplier : 1f);
+            if (Mathf.Approximately(mult, 1f)) return text;
+            int from = 0;
+            for (int i = 1; i <= 4; i++)
+            {
+                float v = i == 1 ? def.v1 : i == 2 ? def.v2 : i == 3 ? def.v3 : def.v4;
+                bool scales = i == 1 ? def.v1Scales : i == 2 ? def.v2Scales : i == 3 ? def.v3Scales : def.v4Scales;
+                if (!scales || Mathf.Approximately(v, 0f)) continue;
+                bool percent = Mathf.Abs(v) < 1f;
+                string plain = Mathf.Abs(v).ToString("0.##"), percentText = (Mathf.Abs(v) * 100f).ToString("0.#") + "%";
+                string token = percent ? percentText : plain;
+                int at = FindNumber(text, token, from);
+                if (at < 0 && percent) { token = plain; at = FindNumber(text, token, from); } // "0.5초"처럼 비율이 아닌 작은 수
+                if (at < 0) continue;
+                float scaled = Mathf.Abs(v) * mult;
+                string value = token.EndsWith("%") ? (scaled * 100f).ToString("0.#") + "%" : scaled.ToString("0.##");
+                string rep = $"<color=#ffd27a><b>{value}</b></color>";
+                text = text.Substring(0, at) + rep + text.Substring(at + token.Length);
+                from = at + rep.Length;
+            }
+            return text;
+        }
+
+        // 숫자 하나로 떨어져 있는 자리 (앞뒤가 숫자 · 소수점이 아닌 곳)
+        static int FindNumber(string text, string token, int from)
+        {
+            for (int at = text.IndexOf(token, from, System.StringComparison.Ordinal); at >= 0; at = text.IndexOf(token, at + 1, System.StringComparison.Ordinal))
+            {
+                bool before = at > 0 && (char.IsDigit(text[at - 1]) || text[at - 1] == '.');
+                int end = at + token.Length;
+                bool after = end < text.Length && (char.IsDigit(text[end]) || text[end] == '.' || (!token.EndsWith("%") && text[end] == '%'));
+                if (!before && !after) return at;
+            }
+            return -1;
         }
 
         static string AcupointName(Acupoint point) => point == Acupoint.Gihyeol ? "기혈" : point == Acupoint.Tonghyeol ? "통혈" : "한혈";

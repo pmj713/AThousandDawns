@@ -20,6 +20,7 @@ namespace AThousandDawns.Enemies
 
         readonly List<EliteTrait> _traits = new List<EliteTrait>(); // 장강 수채부터 둘까지 (몬스터 B142)
         float _sinceHit, _eliteScale = 1f;
+        Transform _marks; // 머리 위 특성 표식 묶음 (화면 기준으로 옆으로 나란히, 적이 돌아도 돌지 않아요)
         string _baseName;
 
         public bool IsElite { get; private set; }
@@ -77,17 +78,23 @@ namespace AThousandDawns.Enemies
             DisplayName = $"{string.Join("·", labels)} · {_baseName}";
             if (trait == EliteTrait.IronShirt) Body.AddToughness(GameConfig.Get("elite.iron_toughness", 2f));
             if (trait == EliteTrait.Blaze) Status.BurnTakenMultiplier = GameConfig.Get("elite.blaze_burn_taken", 0.5f);
-            BuildTraitMark(trait, _eliteScale, _traits.Count - 1);
+            BuildTraitMark(trait);
+            LayoutTraitMarks();
         }
 
-        void BuildTraitMark(EliteTrait trait, float scale, int index)
+        void BuildTraitMark(EliteTrait trait)
         {
+            if (_marks == null)
+            {
+                _marks = new GameObject("Elite Marks").transform;
+                _marks.SetParent(transform, false);
+                _marks.localPosition = Vector3.up * (Height * _eliteScale + 0.35f);
+            }
             var shape = trait == EliteTrait.IronShirt ? PrimitiveType.Cube : trait == EliteTrait.Rejuvenation ? PrimitiveType.Sphere : trait == EliteTrait.Split ? PrimitiveType.Capsule : PrimitiveType.Cylinder;
             var mark = GameObject.CreatePrimitive(shape);
             mark.name = $"Elite_{trait}";
             EnemyFactory.StripCollider(mark);
-            mark.transform.SetParent(transform, false);
-            mark.transform.localPosition = Vector3.up * (Height * scale + 0.35f + index * 0.4f); // 둘째 특성은 그 위에
+            mark.transform.SetParent(_marks, false);
             mark.transform.localScale = trait == EliteTrait.Blaze ? new Vector3(0.22f, 0.2f, 0.22f) : trait == EliteTrait.Split ? new Vector3(0.2f, 0.16f, 0.2f) : Vector3.one * 0.28f;
             var color = trait == EliteTrait.IronShirt ? new Color(0.72f, 0.75f, 0.8f)   // 쇠빛
                 : trait == EliteTrait.Rejuvenation ? new Color(0.45f, 0.85f, 0.45f)    // 초록 숨결
@@ -101,9 +108,18 @@ namespace AThousandDawns.Enemies
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
 
+        // 특성 표식을 머리 위 같은 높이에 옆으로 나란히 (가운데 정렬, 0.45칸 간격)
+        void LayoutTraitMarks()
+        {
+            if (_marks == null) return;
+            int n = _marks.childCount;
+            for (int i = 0; i < n; i++) _marks.GetChild(i).localPosition = Vector3.right * ((i - (n - 1) * 0.5f) * 0.45f);
+        }
+
         // 회춘: 3초 동안 안 맞고, 화상이 없으면 회복
         void TickElite(float dt)
         {
+            if (_marks != null) _marks.rotation = Quaternion.identity; // 적이 돌아도 표식 줄은 화면 가로로
             if (!HasTrait(EliteTrait.Rejuvenation)) return;
             _sinceHit += dt;
             if (_sinceHit < GameConfig.Get("elite.rejuv_delay", 3f) || Status.BurnStacks > 0) return;

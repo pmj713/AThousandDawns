@@ -6,7 +6,7 @@ using UnityEngine;
 namespace AThousandDawns.Enemies
 {
     // 쇠닻 거한 (장강 수채, 몬스터 시트 48행): 쇠닻을 사슬째 던져 꽂고, 꽂힌 자리로 자기 몸을 끌어당겨 날아와요 (강인함 3).
-    //   닻 던지기: 3~8칸이면 예고 1초 (직선) → 닻이 벽 앞까지 날아가 꽂히고, 거한이 초당 14칸으로 끌려가요. 지나가는 길 (폭 1.6칸)에 있으면 맞아요 ×1.0.
+    //   닻 던지기: 3~8칸이면 예고 1초 (직선) → 닻이 먼저 날아가 벽 앞 / 사거리 끝에 꽂힌 뒤에야 거한이 초당 14칸으로 끌려가요. 지나가는 길 (폭 1.6칸)에 있으면 맞아요 ×1.0.
     //   꽂힌 닻은 3초 동안 길을 막는 기둥으로 남아요 (플레이어·적 모두 못 지나감). 방을 옮기면 사라져요.
     //   쇠닻 휘두르기: 2.5칸 안이면 예고 0.8초 뒤 앞쪽 반원 (반경 2.2칸) ×0.8 + 넉백 1.5칸.
     public sealed class AnchorBrain : EnemyBrain
@@ -17,8 +17,10 @@ namespace AThousandDawns.Enemies
         enum Pattern { None, Throw, Swing }
 
         float _throwMin, _throwMax, _speed, _width, _postTime, _swingRange, _swingRadius, _swingAngle, _swingRatio, _swingKnockback;
-        float _planned, _traveled;
-        bool _hitPlayer;
+        float _planned, _traveled, _flySpeed;
+        bool _hitPlayer, _anchorFlying; // 닻이 날아가는 중 (꽂히기 전엔 몸이 움직이지 않아요)
+        GameObject _post;
+        Vector3 _postTarget;
         Pattern _pattern;
 
         static readonly List<GameObject> Posts = new List<GameObject>();
@@ -36,6 +38,7 @@ namespace AThousandDawns.Enemies
             _throwMin = Tuning("throw_min", 3f);
             _throwMax = Tuning("throw_max", 8f);
             _speed = Tuning("pull_speed", 14f);
+            _flySpeed = GameConfig.GetOptional("anchor.throw_speed", 22f);
             _width = Tuning("pull_width", 1.6f);
             _postTime = Tuning("post_time", 3f);
             _swingRange = Tuning("swing_range", 2.5f);
@@ -108,13 +111,31 @@ namespace AThousandDawns.Enemies
             _planned = PlannedLength();
             _traveled = 0f;
             _hitPlayer = false;
-            PlacePost(transform.position + AimDirection * (_planned + BodyRadius + 0.3f));
+            // 닻을 먼저 던져요: 몸 앞에서 출발해 벽 앞 / 사거리 끝에 꽂힌 뒤에야 끌려가요
+            _postTarget = transform.position + AimDirection * (_planned + BodyRadius + 0.3f);
+            _post = PlacePost(transform.position + AimDirection * (BodyRadius + 0.4f), _postTime + _planned / Mathf.Max(1f, _flySpeed));
+            var col = _post.GetComponent<Collider>();
+            if (col != null) col.enabled = false; // 날아가는 동안은 길을 막지 않아요
+            _anchorFlying = true;
         }
 
         // 꽂힌 자리로 끌려가요 (벽에 막히면 거기서 멈춤)
         protected override void TickActive(float dt)
         {
             if (_pattern != Pattern.Throw) return;
+            if (_anchorFlying)
+            {
+                if (_post == null) { _anchorFlying = false; Attack.EndActive(); return; }
+                Vector3 p = _post.transform.position;
+                Vector3 target = new Vector3(_postTarget.x, p.y, _postTarget.z);
+                p = Vector3.MoveTowards(p, target, _flySpeed * dt);
+                _post.transform.position = p;
+                if ((p - target).sqrMagnitude > 1e-4f) return; // 아직 날아가는 중: 거한은 제자리
+                _anchorFlying = false;
+                var col = _post.GetComponent<Collider>();
+                if (col != null) col.enabled = true; // 꽂혔어요: 이제 길을 막아요
+                return;
+            }
             float total = _speed * dt;
             while (total > 0f)
             {
@@ -136,7 +157,7 @@ namespace AThousandDawns.Enemies
         }
 
         // 길을 막는 쇠닻 기둥
-        void PlacePost(Vector3 at)
+        GameObject PlacePost(Vector3 at, float life)
         {
             var post = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             post.name = "쇠닻";
@@ -144,8 +165,9 @@ namespace AThousandDawns.Enemies
             post.transform.localScale = new Vector3(0.7f, 0.6f, 0.7f);
             var renderer = post.GetComponent<Renderer>();
             renderer.material.color = new Color(0.25f, 0.27f, 0.3f);
-            Destroy(post, _postTime);
+            Destroy(post, life);
             Posts.Add(post);
+            return post;
         }
 
         public static void ClearPosts()

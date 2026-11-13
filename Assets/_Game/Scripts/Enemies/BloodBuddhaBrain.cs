@@ -391,7 +391,7 @@ namespace AThousandDawns.Enemies
             _pattern = Pattern.None;
             _transitionTimer = _transitionTime;
             Body.Targetable = false;
-            Director.SpawnBurst(transform.position, 3f); // 불상이 갈라져요
+            Director.SpawnBurst(transform.position, 3f, AThousandDawns.Combat.BurstKind.Shatter); // 불상이 갈라져요
             Fx(new FxCue { Kind = FxKind.Transition, At = transform.position, Radius = 3f, Time = _transitionTime });
         }
 

@@ -18,7 +18,7 @@ namespace AThousandDawns.Prototype
         public bool Pouch;     // 기물 보상 방: 열지 않은 기물 주머니가 있어요
         public List<List<AThousandDawns.Enemies.EnemyKind>> FixedWaves; // 입문 죽림: 손으로 짠 적 구성 (없으면 무작위)
 
-        public bool HasFight => Kind == FloorRoomKind.Combat || Kind == FloorRoomKind.Reward; // 보상 방은 앞에 전투가 한 번 붙어요
+        public bool HasFight => Kind == FloorRoomKind.Combat; // 보상 방은 싸움 없이 가운데 보상만 (RoomRun.Pouch)
     }
 
     // 층 하나의 방 배치 (아이작 방식): 격자 위에서 시작 방부터 옆 칸으로 뻗어 나가요.

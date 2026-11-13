@@ -4,8 +4,9 @@ using UnityEngine.InputSystem;
 
 namespace AThousandDawns.Prototype
 {
-    // 기물 주머니: 기물 보상 방을 비우면 방 가운데에 반짝이는 주머니가 놓여요. 앞에서 상호작용(F) → 기물 고르기 창.
-    // 열지 않고 나가도 그 방에 남아 있어요 (다시 오면 그대로). 짙은 길이면 열 때 다음 지역 등급표.
+    // 보상 방: 싸움 없이 작은 방 가운데에 보상이 반짝이며 놓여 있어요. 앞에서 상호작용(F)으로 받아요.
+    //   기물 = 기물 주머니 (기물 고르기 창, 짙은 길이면 다음 지역 등급표) · 은자 · 수련 · 잡화 · 비급 · 대장간 · 부품 · 운기조식은 갈림길 보상 그대로.
+    // 받지 않고 나가도 그 방에 남아 있어요 (다시 오면 그대로). 받으면 방을 비운 것으로 쳐요.
     public sealed partial class RoomRun
     {
         GameObject _pouch;
@@ -16,9 +17,10 @@ namespace AThousandDawns.Prototype
         public bool NearPouch => _pouch != null && _pouch.activeSelf && _phase == Phase.Floor && !_fighting && _room != null && _room.Pouch && !OffersOpen
             && Flat(Player.transform.position - _pouch.transform.position).magnitude < GameConfig.GetOptional("room.pouch_radius", 1.6f);
 
-        // 방에 들어올 때 · 보상 방을 비웠을 때 (null이면 치움)
+        // 방에 들어올 때 (null이면 치움)
         void PlacePouch(FloorRoom room)
         {
+            if (room != null && room.Kind == FloorRoomKind.Reward && !room.Cleared) room.Pouch = true; // 보상 방엔 받지 않은 보상이 늘 가운데에
             bool show = room != null && room.Pouch;
             if (!show)
             {
@@ -75,7 +77,45 @@ namespace AThousandDawns.Prototype
             _room.Pouch = false;
             if (_pouch != null) PouchOpened?.Invoke(_pouch.transform.position); // 이펙트 신호 (아트: InkPouchFx)
             PlacePouch(null);
-            arena.GrantOffer(_path.Dense ? DenseGradeWeights() : RegionGradeWeights()); // 그 지역 표 (짙으면 다음 지역 표)
+            _room.Cleared = true;
+            Sfx.Play(SfxId.Coin);
+            ShowBanner(GrantRoomReward());
+            MarkSave();
         }
+
+        // 보상 방 보상 (주머니를 열 때). 배너 글을 돌려줘요
+        string GrantRoomReward()
+        {
+            if (GrantTutorialReward()) return "첫 기물을 얻었어요";
+            switch (_path.Reward)
+            {
+                case RewardKind.Item:
+                    arena.GrantOffer(_path.Dense ? DenseGradeWeights() : RegionGradeWeights()); // 그 지역 표 (짙으면 다음 지역 표)
+                    return "기물 주머니 · 기물을 골라요";
+                case RewardKind.Forge:
+                    OpenForge(_path.Dense ? 2 : 1);
+                    return "대장간";
+                case RewardKind.Part:
+                    OpenPartChoice(_path.Dense ? 2 : 1);
+                    return "부품 고르기";
+            }
+            if (GrantForkReward(_path) is string extra) return "보상" + extra; // 은자 · 수련 · 잡화 · 비급
+            float heal = Player.MaxHealth * GameConfig.Get("room.heal_ratio", 0.3f) * (_path.Dense ? DenseMultiplier : 1f);
+            Player.Heal(heal);
+            return $"운기조식 · 체력 +{heal:0}";
+        }
+
+        // 상호작용 안내 (보상 종류마다)
+        public string PouchPrompt => InTutorialFloor ? "기물 주머니 열기" : _path.Reward switch
+        {
+            RewardKind.Item => "기물 주머니 열기",
+            RewardKind.Forge => "대장간 화로 쓰기",
+            RewardKind.Part => "부품 상자 열기",
+            RewardKind.Silver => "전리품 더미 줍기",
+            RewardKind.Training => "고수의 수련 흔적 살피기",
+            RewardKind.Supply => "봇짐 풀기",
+            RewardKind.Scroll => "낡은 서고 살피기",
+            _ => "운기조식하기",
+        };
     }
 }

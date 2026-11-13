@@ -898,6 +898,7 @@ anchor.swing_radius,2.2,cell,쇠닻 휘두르기 반경,장강 적 고유 기믹
 anchor.swing_angle,180,deg,쇠닻 휘두르기 각도,장강 적 고유 기믹
 anchor.swing_ratio,0.8,,쇠닻 휘두르기 피해 배율,장강 적 고유 기믹
 anchor.swing_knockback,1.5,cell,쇠닻 휘두르기 넉백,장강 적 고유 기믹
+anchor.throw_speed,22,cell/s,닻 던지기: 닻이 날아가는 속도 (꽂힌 뒤에야 거한이 끌려가요),장강 적 고유 기믹
 rattan.hp,60,,등패수 체력 (×3.0 = 180),몬스터!F49
 rattan.atk,10,,등패수 공격 (×1.6 = 16),몬스터!G49
 rattan.toughness,2,,등패수 강인함,몬스터!H49

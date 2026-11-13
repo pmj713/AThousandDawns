@@ -14,7 +14,7 @@ namespace AThousandDawns.Prototype
     // 갈림길: 길 2~3갈래. 길마다 보상 종류(기물·운기조식)와 기운(옅음·짙음).
     //   짙은 길: 적 체력 +30%, 방마다 정예 1명 추가 (특성 무작위), 보상은 한 단계 위 (기물은 다음 지역 등급표, 은자·회복 ×1.5).
     // 층: 격자에 방이 무작위로 놓여요 (FloorMap). 들어간 방의 옆방만 지도에 드러나요.
-    //   전투 방은 들어가면 문이 잠기고 예산으로 뽑은 웨이브가 나와요. 비우면 은자. 보상 방은 전투 뒤 고른 보상.
+    //   전투 방은 들어가면 문이 잠기고 예산으로 뽑은 웨이브가 나와요. 비우면 은자. 보상 방은 싸움 없이 가운데 보상을 상호작용으로 (RoomRun.Pouch).
     //   관문 방 가운데에서 F를 누르면 다음 층 (남은 방은 그냥 두고 가도 돼요).
     // 객잔: 지역마다 한 번, 일반 층을 다 지난 뒤 (은자 시트 가정). 점소이 앞에서 F를 누르면 진열대 (InnShop).
     // 정비실: 목인장 두 개. 나갈 때 기세와 회선참 쿨타임을 들어올 때로 되돌려요.
@@ -184,7 +184,6 @@ namespace AThousandDawns.Prototype
                 case Phase.Master: TickMaster(); break;
                 case Phase.Floor:
                     TickHunt(Time.deltaTime);
-                    TickJars(); // 항아리는 싸우는 중에도 부딪히면 깨져요
                     TickWater(Time.deltaTime); // 장강 물: 느려지고 물살에 밀려요
                     if (_fighting) TickFight();
                     else TickFloorExits();
@@ -572,7 +571,7 @@ namespace AThousandDawns.Prototype
             int silver = BoostSilver(Mathf.RoundToInt(RoomSilver * mult * SizeSilver) + // 큰 방일수록 은자도 많이 (RoomRun.RoomSize)
                  _elitesThisRoom * Mathf.RoundToInt(GameConfig.Get("silver.elite", 15f)));
             Silver += silver;
-            string text = $"방을 비웠어요 · 은자 +{silver}";
+            string text = ""; // "방을 비웠어요 · 은자" 글은 띄우지 않아요 (은자는 HUD 숫자로). 이벤트 싸움 결과만 배너로
             if (_roomHeal > 0f && !Player.IsDead) // 면벽수련 강 10: 방을 비우면 체력 회복
             {
                 float heal = Player.MaxHealth * _roomHeal;
@@ -618,34 +617,7 @@ namespace AThousandDawns.Prototype
                 Silver += pay;
                 text += $" · 표국을 지켜 냈어요, 은자 +{pay}";
             }
-            if (_room.Kind == FloorRoomKind.Reward)
-            {
-                if (GrantTutorialReward()) text += " · 첫 기물";
-                else if (_path.Reward == RewardKind.Item)
-                {
-                    _room.Pouch = true; // 반짝이는 주머니: 앞에서 F로 열면 기물 고르기 (RoomRun.Pouch.cs)
-                    PlacePouch(_room);
-                    text += " · 기물 주머니가 나타났어요";
-                }
-                else if (_path.Reward == RewardKind.Forge)
-                {
-                    OpenForge(_path.Dense ? 2 : 1);
-                    text += " · 대장간";
-                }
-                else if (_path.Reward == RewardKind.Part)
-                {
-                    OpenPartChoice(_path.Dense ? 2 : 1);
-                    text += " · 부품 고르기";
-                }
-                else if (GrantForkReward(_path) is string extra) text += extra; // 은자 · 수련 · 잡화 · 비급
-                else
-                {
-                    float heal = Player.MaxHealth * GameConfig.Get("room.heal_ratio", 0.3f) * mult;
-                    Player.Heal(heal);
-                    text += $" · 운기조식 체력 +{heal:0}";
-                }
-            }
-            ShowBanner(text);
+            if (text.Length > 0) ShowBanner(text.Substring(3)); // 앞의 " · " 떼고
         }
 
         // ── 객잔

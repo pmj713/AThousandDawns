@@ -124,20 +124,14 @@ namespace AThousandDawns.Tests
             int silver = (path.Dense ? 27 : 18) + (_run.RoomHasElite ? 15 : 0);
             Assert.AreEqual(silver, _run.Silver, "죽림 전투 방 은자 18 (짙은 길 ×1.5, 정예 +15)");
             Assert.AreEqual(path.Dense, _run.RoomHasElite, "짙은 길이면 방마다 정예 1명");
-            if (first.Kind == FloorRoomKind.Reward)
-            {
-                _run.OpenPouch(); // 기물 주머니
-                yield return WaitUntil(() => _arena.IsChoosing, 2f);
-                _arena.Choose(0);
-            }
 
             // 보상 방
             var reward = map.Rooms.First(r => r.Kind == FloorRoomKind.Reward);
             if (!reward.Cleared)
             {
                 _run.Enter(reward, 0);
-                yield return ClearFight();
-                Assert.IsTrue(reward.Pouch, "기물 길 보상 방: 비우면 반짝이는 주머니");
+                Assert.IsFalse(_run.IsFighting, "보상 방은 싸움 없이");
+                Assert.IsTrue(reward.Pouch, "기물 길 보상 방: 가운데 반짝이는 주머니");
                 Assert.IsFalse(_arena.IsChoosing, "바로 고르기 창이 뜨지 않아요");
                 _run.OpenPouch();
                 Assert.IsFalse(reward.Pouch);
