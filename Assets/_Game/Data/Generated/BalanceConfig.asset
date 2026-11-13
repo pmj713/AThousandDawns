@@ -1830,9 +1830,9 @@ MonoBehaviour:
     unit: 
     note: "\uACE0\uC218\uAC00 \uC9C0\uD0A4\uB294 \uAD00\uBB38 \uCE35"
   - key: master.spare_silver
-    value: 50
+    value: 150
     unit: "\uC740\uC790"
-    note: "\uACE0\uC218 \uBC29\uBA74: \uC740\uC790 + (\uC784\uC2DC)"
+    note: "\uACE0\uC218 \uBC29\uBA74: \uC740\uC790 + (\uAE08\uCC3D\uC57D 1\uAC1C\uB3C4, \uAC00\uB4DD\uD558\uBA74 \uADF8\uB9CC\uD07C \uC740\uC790)"
   - key: qingzhu.hp
     value: 1100
     unit: 
@@ -3609,6 +3609,10 @@ MonoBehaviour:
     value: 1.5
     unit: cell
     note: "\uC1E0\uB2FB \uD718\uB450\uB974\uAE30 \uB109\uBC31"
+  - key: anchor.throw_speed
+    value: 22
+    unit: cell/s
+    note: "\uB2FB \uB358\uC9C0\uAE30: \uB2FB\uC774 \uB0A0\uC544\uAC00\uB294 \uC18D\uB3C4 (\uAF42\uD78C \uB4A4\uC5D0\uC57C \uAC70\uD55C\uC774 \uB04C\uB824\uAC00\uC694)"
   - key: rattan.hp
     value: 60
     unit: 
