@@ -26,8 +26,8 @@ namespace AThousandDawns.Fx
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Init()
         {
+            // 유품 낙관은 이제 장부 줄 위에서 찍혀요 (InkLedgerUi). 예전 그림 위 낙관은 쓰지 않아요
             AThousandDawns.Prototype.RoomRun.RelicToggled -= OnRelic;
-            AThousandDawns.Prototype.RoomRun.RelicToggled += OnRelic;
         }
 
         static void OnRelic(string itemId, bool picked) =>

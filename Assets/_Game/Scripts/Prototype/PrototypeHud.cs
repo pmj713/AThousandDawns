@@ -463,6 +463,7 @@ namespace AThousandDawns.Prototype
             if (run == null || !run.IsInEvent) return;
             EnsureStyles();
             var ev = run.CurrentEvent;
+            if (AThousandDawns.Fx.InkLedgerUi.Draw(run, ev)) return; // 사당 장부 (유품록 · 업보): 한지 바탕 수묵 장부 화면 (아트 InkLedgerUi)
             var old = GUI.color;
             GUI.color = new Color(0f, 0f, 0f, 0.7f);
             GUI.DrawTexture(new Rect(0, 0, UiScale.Width, UiScale.Height), Texture2D.whiteTexture);

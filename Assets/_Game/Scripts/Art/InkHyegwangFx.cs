@@ -7,10 +7,10 @@ namespace AThousandDawns.Art
 {
     // 파계승 혜광 이펙트 (HyegwangBrain.Cue 신호를 듣고 그림만 그려요 — 판정·수치는 게임 코드 그대로).
     //   금강불괴: 발밑에 금빛 고리가 충격파 반경만큼 깔려 숨 쉬고 반짝이가 피어올라요.
-    //     2페이즈에서 맞을 때마다(VajraGrow) 고리가 커진 반경으로 번쩍 넓어지고, 금빛이 짙은 호박색으로 변하며 바닥 금빛 균열이 짙어져요.
-    //     터질 때(VajraBurst) 금빛 균열 충격파와 금빛 터짐이 그 반경 크기로 퍼져요.
+    //     2페이즈에서 맞을 때마다(VajraGrow) 고리가 커진 반경으로 번쩍 넓어지고, 금빛이 짙은 호박색으로 변하며 바닥 금빛 연꽃이 짙어져요.
+    //     터질 때(VajraBurst) 금빛 연꽃 만다라가 퍼지고 금빛 터짐이 그 반경 크기로 퍼져요.
     //   축지: 다가간 길에 굵은 먹 붓 잔상과 먹 번짐이 남았다 바래요.
-    // 그림은 다른 이펙트 것을 같이 써요: PouchFx(Ring · Glint · Burst), SkillFx(QuakeRing), BloodBuddhaFx(Splash), HudArt/HpStroke.
+    // 그림은 다른 이펙트 것을 같이 써요: PouchFx(Ring · Glint · Burst), HyegwangFx(GoldLotus), BloodBuddhaFx(Splash), HudArt/HpStroke.
     public class InkHyegwangFx : MonoBehaviour
     {
         static InkHyegwangFx _host;
@@ -252,7 +252,7 @@ namespace AThousandDawns.Art
             _ring = Resources.Load<Sprite>("PouchFx/Ring");
             _glint = Resources.Load<Sprite>("PouchFx/Glint");
             _burst = Resources.Load<Sprite>("PouchFx/Burst");
-            _crack = Resources.Load<Sprite>("SkillFx/QuakeRing");
+            _crack = Resources.Load<Sprite>("HyegwangFx/GoldLotus") ?? Resources.Load<Sprite>("SkillFx/QuakeRing"); // 금빛 연꽃 만다라 (철권 붕산권의 흙 갈라짐과 확실히 다르게)
             _splash = Resources.Load<Sprite>("BloodBuddhaFx/Splash");
             _lineMat = new Material(Shader.Find("Sprites/Default"));
             var brush = Resources.Load<Texture2D>("HudArt/HpStroke");

@@ -489,10 +489,10 @@ namespace AThousandDawns.Prototype
             if (_title != null) return;
             _title = new GUIStyle(GUI.skin.label) { fontSize = 32, alignment = TextAnchor.MiddleLeft, richText = true };
             _title.normal.textColor = Ink;
-            _label = new GUIStyle(GUI.skin.label) { fontSize = 20, richText = true, wordWrap = true };
+            _label = new GUIStyle(GUI.skin.label) { fontSize = 22, richText = true, wordWrap = true }; // 한지 위에서도 읽히게 (4차 플레이 테스트)
             _label.normal.textColor = Ink;
-            _small = new GUIStyle(GUI.skin.label) { fontSize = 16, richText = true, wordWrap = true };
-            _small.normal.textColor = new Color(0.3f, 0.26f, 0.24f);
+            _small = new GUIStyle(GUI.skin.label) { fontSize = 19, richText = true, wordWrap = true };
+            _small.normal.textColor = new Color(0.14f, 0.11f, 0.1f); // 짙은 먹 (옅은 갈색은 한지 결에 묻혀요)
             _node = new GUIStyle(GUI.skin.label) { fontSize = 17, alignment = TextAnchor.UpperCenter, richText = true };
             _node.normal.textColor = Ink;
             _button = new GUIStyle(GUI.skin.button) { fontSize = 22 };
