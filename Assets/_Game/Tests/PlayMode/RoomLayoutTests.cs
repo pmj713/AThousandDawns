@@ -22,11 +22,13 @@ namespace AThousandDawns.Tests
             InputSystem.AddDevice<Keyboard>();
             InputSystem.AddDevice<Mouse>();
             MetaSave.PathOverride = System.IO.Path.Combine(Application.temporaryCachePath, $"meta_test_{Guid.NewGuid():N}.json");
+            RoomRun.RoomSizeOverride = 0; // 방 구성 자리 검사는 작은 방 기준 (방 크기 시험만 따로 바꿔요)
         }
 
         public override void TearDown()
         {
             RoomRun.LayoutOverride = -1;
+            RoomRun.RoomSizeOverride = -1;
             if (System.IO.File.Exists(MetaSave.PathOverride)) System.IO.File.Delete(MetaSave.PathOverride);
             MetaSave.PathOverride = null;
             Time.timeScale = 1f;
@@ -85,11 +87,7 @@ namespace AThousandDawns.Tests
         }
 
         // 방 가운데 = 관문 자리 (시작 방에 들어가면 플레이어가 서는 곳)
-        static Vector3 RoomCenter(RoomRun run)
-        {
-            var prop = typeof(RoomRun).GetField("combat", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(run);
-            return (Vector3)prop.GetType().GetField("center").GetValue(prop);
-        }
+        static Vector3 RoomCenter(RoomRun run) => run.RoomCenter;
 
         [UnityTest]
         public IEnumerator 죽림은_방_구성이_그대로()
@@ -326,6 +324,78 @@ namespace AThousandDawns.Tests
                 Object.Destroy(cover);
             }
             finally { AThousandDawns.Prototype.PrototypeArena.AutoSpawn = true; }
+        }
+
+        // 방 크기: 작은 방 (20×12) · 중간 방 · 큰 방. 큰 방일수록 적 예산이 크고, 큰 방은 웨이브 하나 더
+        [UnityTest]
+        public IEnumerator 방_크기_세_가지와_큰_방일수록_많은_적()
+        {
+            yield return Load(1);
+            var run = Object.FindFirstObjectByType<RoomRun>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var room = run.Map.Rooms.First(r => r.HasFight && r.FixedWaves == null);
+            Vector2[] extents = { new Vector2(20f, 12f), new Vector2(26f, 16f), new Vector2(32f, 20f) };
+            var centers = new System.Collections.Generic.List<Vector3>();
+            for (int size = 0; size < 3; size++)
+            {
+                RoomRun.RoomSizeOverride = size;
+                run.Enter(room, 0);
+                Assert.AreEqual((RoomRun.RoomSizeKind)size, run.RoomSize, RoomRun.RoomSizeNames[size]);
+                Assert.AreEqual(extents[size], run.RoomExtent, "방 크기");
+                Vector3 local = player.transform.position - run.RoomCenter;
+                Assert.Less(Mathf.Abs(local.x), extents[size].x * 0.5f, "플레이어가 그 방 안에");
+                Assert.Less(Mathf.Abs(local.z), extents[size].y * 0.5f);
+                centers.Add(run.RoomCenter);
+                if (size == 2) Assert.GreaterOrEqual(run.WaveCount, 3, "큰 방은 웨이브 하나 더");
+                yield return null;
+            }
+            Assert.AreEqual(3, centers.Distinct().Count(), "세 방은 다른 자리");
+
+            // 예산: 같은 층에서 여러 번 짜 보면 큰 방 > 중간 방 > 작은 방
+            float Total(float scale) { float sum = 0f; for (int i = 0; i < 30; i++) sum += run.PlanRoom(2, 0, scale).Sum(w => w.Sum(RoomBudget.Cost)); return sum; }
+            float s = Total(1f), m = Total(1.4f), l = Total(1.8f);
+            Assert.Greater(m, s * 1.2f, "중간 방은 적이 더 많아요");
+            Assert.Greater(l, m * 1.15f, "큰 방은 더 많아요");
+
+            // 자연 분포: 층 셋을 지나면 크기가 둘 이상 나와요
+            RoomRun.RoomSizeOverride = -1;
+            var seen = new System.Collections.Generic.HashSet<RoomRun.RoomSizeKind>();
+            for (int floor = 1; floor <= 3; floor++)
+            {
+                run.BeginFork(floor);
+                run.ChooseFork(0);
+                foreach (var r in run.Map.Rooms.Where(r => r.HasFight && r.FixedWaves == null))
+                {
+                    run.Enter(r, 0);
+                    seen.Add(run.RoomSize);
+                }
+            }
+            Assert.GreaterOrEqual(seen.Count, 2, "방 크기가 섞여 나와요");
+        }
+
+        // 큰 방에서도 방 구성은 늘어난 자리에서 십자 길 · 대나무 기둥 · 풀숲을 비켜요
+        [UnityTest]
+        public IEnumerator 큰_방의_방_구성도_길과_기둥을_비켜요()
+        {
+            yield return Load(1);
+            var run = Object.FindFirstObjectByType<RoomRun>();
+            var room = run.Map.Rooms.First(r => r.HasFight && r.FixedWaves == null);
+            RoomRun.RoomSizeOverride = 2;
+            for (int layout = 1; layout < 4; layout++)
+            {
+                RoomRun.LayoutOverride = layout;
+                run.Enter(room, 0);
+                Vector3 c = run.RoomCenter;
+                Vector2 k = new Vector2(run.RoomExtent.x / 20f, run.RoomExtent.y / 12f);
+                foreach (var f in run.RoomFeatures)
+                {
+                    Vector3 local = f.Center - c;
+                    Assert.IsFalse(Mathf.Abs(local.x) < f.Size.x * 0.5f + 1.5f || Mathf.Abs(local.z) < f.Size.y * 0.5f + 1.5f, $"{f.Kind}: 십자 길");
+                    foreach (var b in Bamboo) Assert.IsFalse(Overlaps(f, c, Vector2.Scale(b, k), 0.5f), $"{f.Kind} · 대나무");
+                    foreach (var b in Bushes) Assert.IsFalse(Overlaps(f, c, Vector2.Scale(b, k), 0.5f), $"{f.Kind} · 풀숲");
+                }
+                yield return null;
+            }
         }
     }
 }

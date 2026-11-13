@@ -1259,3 +1259,9 @@ tomb.miasma_damage,12,,천마총 마기 기둥: 분출 피해 (지역 공격 배
 enemy.avoid_look,1.2,cell,적 길찾기: 가려는 쪽으로 이만큼 안에 장애물이 있으면 돌아가요,적 길찾기 기획
 enemy.avoid_hold,0.6,s,적 길찾기: 한 번 고른 우회 방향을 유지하는 시간,적 길찾기 기획
 bamboo.stream_current,0.6,cell/s,죽림 개울 (2층부터): 물살 쪽으로 미는 속도 (느려지는 정도는 river.water_slow),죽림 방 구성 기획
+room.size_weight.s,45%,,방 크기: 작은 방 (20×12) 확률,방 크기 기획
+room.size_weight.m,35%,,방 크기: 중간 방 (26×16) 확률,방 크기 기획
+room.size_weight.l,20%,,방 크기: 큰 방 (32×20) 확률,방 크기 기획
+room.size_budget.m,1.4,,방 크기: 중간 방 적 예산 배율,방 크기 기획
+room.size_budget.l,1.8,,방 크기: 큰 방 적 예산 배율,방 크기 기획
+room.size_l.extra_waves,1,,방 크기: 큰 방 웨이브 +,방 크기 기획

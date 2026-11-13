@@ -5053,3 +5053,27 @@ MonoBehaviour:
     value: 0.6
     unit: cell/s
     note: "\uC8FD\uB9BC \uAC1C\uC6B8 (2\uCE35\uBD80\uD130): \uBB3C\uC0B4 \uCABD\uC73C\uB85C \uBBF8\uB294 \uC18D\uB3C4 (\uB290\uB824\uC9C0\uB294 \uC815\uB3C4\uB294 river.water_slow)"
+  - key: room.size_weight.s
+    value: 0.45
+    unit: 
+    note: "\uBC29 \uD06C\uAE30: \uC791\uC740 \uBC29 (20\xD712) \uD655\uB960"
+  - key: room.size_weight.m
+    value: 0.35
+    unit: 
+    note: "\uBC29 \uD06C\uAE30: \uC911\uAC04 \uBC29 (26\xD716) \uD655\uB960"
+  - key: room.size_weight.l
+    value: 0.2
+    unit: 
+    note: "\uBC29 \uD06C\uAE30: \uD070 \uBC29 (32\xD720) \uD655\uB960"
+  - key: room.size_budget.m
+    value: 1.4
+    unit: 
+    note: "\uBC29 \uD06C\uAE30: \uC911\uAC04 \uBC29 \uC801 \uC608\uC0B0 \uBC30\uC728"
+  - key: room.size_budget.l
+    value: 1.8
+    unit: 
+    note: "\uBC29 \uD06C\uAE30: \uD070 \uBC29 \uC801 \uC608\uC0B0 \uBC30\uC728"
+  - key: room.size_l.extra_waves
+    value: 1
+    unit: 
+    note: "\uBC29 \uD06C\uAE30: \uD070 \uBC29 \uC6E8\uC774\uBE0C +"

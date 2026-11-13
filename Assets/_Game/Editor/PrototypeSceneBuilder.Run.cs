@@ -28,6 +28,57 @@ namespace AThousandDawns.EditorTools
         static readonly Vector2 MasterSize = new Vector2(20f, 14f);   // 고수 결투장 (청죽객·철권 마웅/혜광) 안쪽 크기
         static readonly Vector2 BossSize = new Vector2(24f, 18f);     // 보스 방 (녹림왕/혈불) 안쪽 크기
         static readonly Vector2 CombatSize = new Vector2(20f, 12f);
+        static readonly Vector3 CombatMediumCenter = new Vector3(0f, 0f, -80f);
+        static readonly Vector2 CombatMediumSize = new Vector2(26f, 16f);
+        static readonly Vector3 CombatLargeCenter = new Vector3(0f, 0f, -160f);
+        static readonly Vector2 CombatLargeSize = new Vector2(32f, 20f);
+
+        // 층 방 하나: 문 넷 · 대나무 기둥 6 · 풀숲 4 · 관문 원판. 자리는 작은 방(20×12) 기준을 방 크기만큼 늘려요 (RoomRun.ScaleToRoom과 같은 식)
+        static (GameObject[] locks, GameObject[] plugs, GameObject portal) BuildCombatRoom(string name, string bushesName, Vector3 center, Vector2 size,
+            Material floorMat, Material wallMat, Material gateMat, Material bambooMat, Material bushMat, Material portalMat)
+        {
+            var room = new GameObject(name).transform;
+            BuildFourDoorRoom(room, center, size, floorMat, wallMat, gateMat, out var locks, out var plugs);
+            Vector3 S(float x, float z) => center + new Vector3(x * size.x / 20f, 0f, z * size.y / 12f);
+            Vector3[] pillars = { S(-5.5f, 3f), S(5.5f, -3f), S(-7f, -3.5f), S(7f, 3.5f), S(3.5f, 3f), S(-3.5f, -3f) };
+            for (int i = 0; i < pillars.Length; i++)
+            {
+                var b = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                b.name = $"Bamboo_{i + 1}";
+                b.transform.SetParent(room, false);
+                b.transform.localPosition = pillars[i] + Vector3.up * 1.5f;
+                b.transform.localScale = new Vector3(0.6f, 1.5f, 0.6f);
+                b.GetComponent<Renderer>().sharedMaterial = bambooMat;
+            }
+            BuildBushes(bushMat, new[] { S(-7.5f, 4.3f), S(7.5f, -4.3f), S(-3f, 4.3f), S(3f, -4.3f) }, bushesName);
+
+            // 관문: 방 가운데 먹색 원판 (관문 방에서만 켜져요). 충돌체 없음
+            var portal = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            portal.name = "Gate (관문)";
+            Object.DestroyImmediate(portal.GetComponent<Collider>());
+            portal.transform.SetParent(room, false);
+            portal.transform.localPosition = center + new Vector3(0f, 0.03f, 0f);
+            portal.transform.localScale = new Vector3(2.4f, 0.03f, 2.4f);
+            portal.GetComponent<Renderer>().sharedMaterial = portalMat;
+            portal.SetActive(false);
+            return (locks, plugs, portal);
+        }
+
+        static void SetCombatSite(SerializedProperty site, Vector3 center, Vector2 size, (GameObject[] locks, GameObject[] plugs, GameObject portal) room)
+        {
+            site.FindPropertyRelative("center").vector3Value = center;
+            site.FindPropertyRelative("size").vector2Value = size;
+            site.FindPropertyRelative("gateMarker").objectReferenceValue = room.portal;
+            var lockArr = site.FindPropertyRelative("locks");
+            var plugArr = site.FindPropertyRelative("plugs");
+            lockArr.arraySize = 4;
+            plugArr.arraySize = 4;
+            for (int d = 0; d < 4; d++)
+            {
+                lockArr.GetArrayElementAtIndex(d).objectReferenceValue = room.locks[d];
+                plugArr.GetArrayElementAtIndex(d).objectReferenceValue = room.plugs[d];
+            }
+        }
 
         static void BuildRun(BalanceConfig balance, AThousandDawns.Items.ItemDatabase itemDb)
         {
@@ -39,37 +90,15 @@ namespace AThousandDawns.EditorTools
             var gateMat = GetMaterial("BossGate", GateColor, false);
             var dummyMat = GetMaterial("Dummy", DummyColor, false);
 
-            // 층 방: 문 넷, 대나무 기둥 6개, 청죽사 풀숲 4곳. 가운데 십자 길(문 ↔ 문)과 관문 자리는 비워 둬요.
-            var combatRoom = new GameObject("Room_Floor").transform;
-            BuildFourDoorRoom(combatRoom, CombatCenter, CombatSize, floorMat, wallMat, gateMat, out var locks, out var plugs);
-            Vector3[] pillars =
-            {
-                new Vector3(-5.5f, 0f, 3f), new Vector3(5.5f, 0f, -3f), new Vector3(-7f, 0f, -3.5f),
-                new Vector3(7f, 0f, 3.5f), new Vector3(3.5f, 0f, 3f), new Vector3(-3.5f, 0f, -3f),
-            };
-            for (int i = 0; i < pillars.Length; i++)
-            {
-                var b = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                b.name = $"Bamboo_{i + 1}";
-                b.transform.SetParent(combatRoom, false);
-                b.transform.localPosition = CombatCenter + pillars[i] + Vector3.up * 1.5f;
-                b.transform.localScale = new Vector3(0.6f, 1.5f, 0.6f);
-                b.GetComponent<Renderer>().sharedMaterial = bambooMat;
-            }
-            BuildBushes(GetMaterial("Bush", BushColor, false), new[]
-            {
-                new Vector3(-7.5f, 0f, 4.3f), new Vector3(7.5f, 0f, -4.3f), new Vector3(-3f, 0f, 4.3f), new Vector3(3f, 0f, -4.3f),
-            });
-
-            // 관문: 방 가운데 먹색 원판 (관문 방에서만 켜져요). 충돌체 없음
-            var portal = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            portal.name = "Gate (관문)";
-            Object.DestroyImmediate(portal.GetComponent<Collider>());
-            portal.transform.SetParent(combatRoom, false);
-            portal.transform.localPosition = CombatCenter + new Vector3(0f, 0.03f, 0f);
-            portal.transform.localScale = new Vector3(2.4f, 0.03f, 2.4f);
-            portal.GetComponent<Renderer>().sharedMaterial = GetMaterial("Gate_Portal", PortalColor, false);
-            portal.SetActive(false);
+            // 층 방 세 크기 (작은 방 = 원래 방 · 중간 방 · 큰 방, RoomRun.RoomSize). 문 넷, 대나무 기둥 6개, 청죽사 풀숲 4곳은 방 크기에 맞춰 늘어난 자리에.
+            var bushMat = GetMaterial("Bush", BushColor, false);
+            var portalMat = GetMaterial("Gate_Portal", PortalColor, false);
+            var small = BuildCombatRoom("Room_Floor", "Bushes", CombatCenter, CombatSize, floorMat, wallMat, gateMat, bambooMat, bushMat, portalMat);
+            var medium = BuildCombatRoom("Room_Floor_Medium", "Bushes_Medium", CombatMediumCenter, CombatMediumSize, floorMat, wallMat, gateMat, bambooMat, bushMat, portalMat);
+            var large = BuildCombatRoom("Room_Floor_Large", "Bushes_Large", CombatLargeCenter, CombatLargeSize, floorMat, wallMat, gateMat, bambooMat, bushMat, portalMat);
+            var locks = small.locks;
+            var plugs = small.plugs;
+            var portal = small.portal;
 
             // 객잔: 12×10, 왼쪽 위에 계산대와 점소이. 가운데 길(입구 → 북쪽 문)은 비워 둬요
             BuildShell("Room_Inn", InnCenter, new Vector2(12f, 10f), floorMat, wallMat);
@@ -156,19 +185,9 @@ namespace AThousandDawns.EditorTools
             var runSo = new SerializedObject(run);
             runSo.FindProperty("director").objectReferenceValue = director;
             runSo.FindProperty("arena").objectReferenceValue = arena;
-            var combat = runSo.FindProperty("combat");
-            combat.FindPropertyRelative("center").vector3Value = CombatCenter;
-            combat.FindPropertyRelative("size").vector2Value = CombatSize;
-            combat.FindPropertyRelative("gateMarker").objectReferenceValue = portal;
-            var lockArr = combat.FindPropertyRelative("locks");
-            var plugArr = combat.FindPropertyRelative("plugs");
-            lockArr.arraySize = 4;
-            plugArr.arraySize = 4;
-            for (int d = 0; d < 4; d++)
-            {
-                lockArr.GetArrayElementAtIndex(d).objectReferenceValue = locks[d];
-                plugArr.GetArrayElementAtIndex(d).objectReferenceValue = plugs[d];
-            }
+            SetCombatSite(runSo.FindProperty("combat"), CombatCenter, CombatSize, small);
+            SetCombatSite(runSo.FindProperty("combatMedium"), CombatMediumCenter, CombatMediumSize, medium); // 방 크기 (RoomRun.RoomSize)
+            SetCombatSite(runSo.FindProperty("combatLarge"), CombatLargeCenter, CombatLargeSize, large);
             SetSite(runSo.FindProperty("master"), MasterCenter, MasterSize, new Vector3(0f, 0f, -MasterSize.y * 0.5f + 1.5f), new Vector3(0f, 0f, 99f));
             SetSite(runSo.FindProperty("ironMaster"), IronMasterCenter, MasterSize, new Vector3(0f, 0f, -MasterSize.y * 0.5f + 1.5f), new Vector3(0f, 0f, 99f));
             SetSite(runSo.FindProperty("inn"), InnCenter, new Vector2(12f, 10f), new Vector3(0f, 0f, -3.5f), new Vector3(0f, 0f, 6.6f));

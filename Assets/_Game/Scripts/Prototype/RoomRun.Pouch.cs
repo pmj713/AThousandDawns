@@ -26,7 +26,7 @@ namespace AThousandDawns.Prototype
                 return;
             }
             if (_pouch == null) CreatePouch();
-            _pouch.transform.position = combat.center + Vector3.up * 0.5f;
+            _pouch.transform.position = Combat.center + Vector3.up * 0.5f;
             _pouch.SetActive(true);
         }
 
@@ -55,7 +55,7 @@ namespace AThousandDawns.Prototype
             float t = Time.unscaledTime;
             float pulse = 1f + Mathf.Sin(t * 4f) * 0.08f;
             _pouch.transform.localScale = new Vector3(0.7f, 0.6f, 0.7f) * pulse;
-            _pouch.transform.position = combat.center + Vector3.up * (0.5f + Mathf.Sin(t * 2f) * 0.08f);
+            _pouch.transform.position = Combat.center + Vector3.up * (0.5f + Mathf.Sin(t * 2f) * 0.08f);
             if (_pouchLight != null) _pouchLight.intensity = 1.5f + Mathf.Sin(t * 6f) * 0.8f;
         }
 

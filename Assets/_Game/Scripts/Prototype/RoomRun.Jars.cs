@@ -21,15 +21,15 @@ namespace AThousandDawns.Prototype
             if (room == null || !room.HasFight) return;
             if (room.Jars < 0) room.Jars = Mathf.Max(0, Mathf.RoundToInt(GameConfig.GetOptional("jar.per_room", 3f)));
             var rng = new System.Random(Seed ^ (room.Cell.x * 73856093) ^ (room.Cell.y * 19349663) ^ (_floor * 83492791));
-            float halfX = combat.size.x * 0.5f - 1.2f, halfZ = combat.size.y * 0.5f - 1.2f;
+            float halfX = Combat.size.x * 0.5f - 1.2f, halfZ = Combat.size.y * 0.5f - 1.2f;
             for (int i = 0; i < room.Jars; i++)
             {
                 // 모서리 쪽 벽가에 (문 앞은 피해서)
-                Vector3 p = combat.center;
+                Vector3 p = Combat.center;
                 for (int tries = 0; tries < 8 && (tries == 0 || InSolid(p, 0.5f)); tries++) // 폐사찰 석불 · 담 안은 피해요 (RoomRun.Layout)
                 {
                     float sx = rng.Next(2) == 0 ? -1f : 1f, sz = rng.Next(2) == 0 ? -1f : 1f;
-                    p = combat.center + new Vector3(sx * halfX * (0.55f + 0.4f * (float)rng.NextDouble()), 0f, sz * halfZ * (0.6f + 0.35f * (float)rng.NextDouble()));
+                    p = Combat.center + new Vector3(sx * halfX * (0.55f + 0.4f * (float)rng.NextDouble()), 0f, sz * halfZ * (0.6f + 0.35f * (float)rng.NextDouble()));
                 }
                 var jar = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 jar.name = "Jar";

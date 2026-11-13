@@ -31,7 +31,7 @@ namespace AThousandDawns.Prototype
             if (room.EventId == "captive_hero" && room.Cleared) return;
             var prefab = PropFor(room.EventId);
             if (prefab == null) return;
-            _eventProp = Instantiate(prefab, combat.center, Quaternion.identity);
+            _eventProp = Instantiate(prefab, Combat.center, Quaternion.identity);
         }
 
         // 구출 전투에서 이겼을 때

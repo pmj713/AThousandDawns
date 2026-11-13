@@ -72,8 +72,8 @@ namespace AThousandDawns.Prototype
                 r.material.color = new Color(0.12f, 0.1f, 0.09f);
             }
             var dir = FloorMap.Directions[_crackDirection];
-            float reach = (dir.x != 0 ? combat.size.x : combat.size.y) * 0.5f;
-            _crack.transform.position = combat.center + new Vector3(dir.x, 0f, dir.y) * reach + Vector3.up * 1.1f;
+            float reach = (dir.x != 0 ? Combat.size.x : Combat.size.y) * 0.5f;
+            _crack.transform.position = Combat.center + new Vector3(dir.x, 0f, dir.y) * reach + Vector3.up * 1.1f;
             _crack.transform.rotation = Quaternion.LookRotation(new Vector3(dir.x, 0f, dir.y));
             _crack.transform.localScale = new Vector3(0.25f, 2f, 0.6f); // 벽에 세로로 난 금
             _crack.SetActive(true);
@@ -82,8 +82,8 @@ namespace AThousandDawns.Prototype
         Vector3 CrackPoint(int direction)
         {
             var dir = FloorMap.Directions[direction];
-            float inset = (dir.x != 0 ? combat.size.x : combat.size.y) * 0.5f - 1f;
-            return combat.center + new Vector3(dir.x, 0f, dir.y) * inset;
+            float inset = (dir.x != 0 ? Combat.size.x : Combat.size.y) * 0.5f - 1f;
+            return Combat.center + new Vector3(dir.x, 0f, dir.y) * inset;
         }
 
         // 금 간 벽 앞에서 F: 벽이 무너지고 기연 방이 열려요
@@ -101,7 +101,7 @@ namespace AThousandDawns.Prototype
             hidden.Found = true;
             hidden.Revealed = true;
             _record.HiddenRooms++;
-            if (combat.plugs[_crackDirection] != null) combat.plugs[_crackDirection].SetActive(false);
+            if (Combat.plugs[_crackDirection] != null) Combat.plugs[_crackDirection].SetActive(false);
             PlaceCrack(null);
             ShowBanner("벽이 무너지고 숨은 동굴이 드러났어요 · 기연 방");
             Notify("hidden", "기연 방: 벽의 금을 부수면 열리는 숨은 방 · 영약이나 수련 기록을 얻어요");

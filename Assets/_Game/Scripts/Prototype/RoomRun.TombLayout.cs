@@ -50,7 +50,8 @@ namespace AThousandDawns.Prototype
             var col = go.GetComponent<Collider>();
             col.enabled = false;
             Destroy(col);
-            Vector3 center = combat.center + new Vector3(at.x, 0f, at.y);
+            at = ScaleToRoom(at); // 작은 방 기준 자리를 지금 방 크기로
+            Vector3 center = Combat.center + new Vector3(at.x, 0f, at.y);
             go.transform.position = center + Vector3.up * 0.02f;
             go.transform.localScale = new Vector3(size.x, 0.02f, size.y);
             var r = go.GetComponent<Renderer>();

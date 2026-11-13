@@ -188,9 +188,9 @@ namespace AThousandDawns.EditorTools
         }
 
         // 청죽사가 숨는 풀숲 8곳 (대나무·목인장·플레이어 시작 자리·테스트 경로와 떨어진 곳). 충돌체 없음.
-        static void BuildBushes(Material mat, Vector3[] spots = null)
+        static void BuildBushes(Material mat, Vector3[] spots = null, string parentName = "Bushes")
         {
-            var parent = new GameObject("Bushes").transform;
+            var parent = new GameObject(parentName).transform;
             spots ??= new[]
             {
                 new Vector3(-6.5f, 0f, -2.5f), new Vector3(6.5f, 0f, 2f), new Vector3(-3f, 0f, 4.8f), new Vector3(3.5f, 0f, -4.5f),

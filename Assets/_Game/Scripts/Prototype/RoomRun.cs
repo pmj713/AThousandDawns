@@ -107,7 +107,7 @@ namespace AThousandDawns.Prototype
         public Vector3 InnCounter => inn.center + new Vector3(-3.5f, 0f, 2f); // 점소이 앞 (계산대 왼쪽 위, 문 가는 길은 비워 둠)
         public bool AtCounter => _phase == Phase.Inn && !IsShopping && Flat(Player.transform.position - InnCounter).magnitude <= GameConfig.Get("interact.range", 1.2f) + 0.8f;
         public string Banner => _bannerTimer > 0f ? _banner : null;
-        public bool AtGate => _phase == Phase.Floor && _room != null && _room.Kind == FloorRoomKind.Gate && !_fighting && Flat(Player.transform.position - combat.center).magnitude < 1.6f;
+        public bool AtGate => _phase == Phase.Floor && _room != null && _room.Kind == FloorRoomKind.Gate && !_fighting && Flat(Player.transform.position - Combat.center).magnitude < 1.6f;
 
         PlayerController Player => director != null ? director.Player : null;
         bool OffersOpen => arena.IsChoosing || arena.PendingOffers > 0;
@@ -326,15 +326,16 @@ namespace AThousandDawns.Prototype
         public void Enter(FloorRoom room, int movedDirection)
         {
             ClearPending();
+            PickSite(room); // 방 크기 (작은 · 중간 · 큰 방, RoomRun.RoomSize)
             _room = room;
             _map.Visit(room);
             _phase = Phase.Floor;
-            MovePlayer(movedDirection < 0 ? combat.center : EntryFrom(movedDirection));
+            MovePlayer(movedDirection < 0 ? Combat.center : EntryFrom(movedDirection));
             director.ResetRoom();
             for (int d = 0; d < 4; d++)
             {
                 bool open = FloorMap.IsOpen(_map.Neighbor(room, d)); // 찾지 못한 기연 방 쪽은 벽
-                if (combat.plugs[d] != null) combat.plugs[d].SetActive(!open);
+                if (Combat.plugs[d] != null) Combat.plugs[d].SetActive(!open);
             }
             SetGateMarker(room.Kind == FloorRoomKind.Gate);
             PlaceCrack(room);
@@ -349,7 +350,7 @@ namespace AThousandDawns.Prototype
                 _fighting = true;
                 Player.EnterRoom(); // #금강 2단계: 싸우는 방에 들어갈 때마다 보호막
                 OnFightStart();
-                _waves = room.FixedWaves ?? PlanRoom(_floor); // 입문 죽림은 손으로 짠 구성
+                _waves = room.FixedWaves ?? PlanRoom(_floor, 0, SizeBudget, SizeExtraWaves); // 입문 죽림은 손으로 짠 구성
                 AddAlmsCurse(); // 시주함을 털었으면 망령이 따라와요
                 _wave = -1;
                 _elitesThisRoom = 0;
@@ -374,15 +375,15 @@ namespace AThousandDawns.Prototype
         Vector3 EntryFrom(int movedDirection)
         {
             var dir = FloorMap.Directions[FloorMap.Opposite(movedDirection)];
-            float inset = dir.x != 0 ? combat.size.x * 0.5f - 1.5f : combat.size.y * 0.5f - 1.5f;
-            return combat.center + new Vector3(dir.x, 0f, dir.y) * inset;
+            float inset = dir.x != 0 ? Combat.size.x * 0.5f - 1.5f : Combat.size.y * 0.5f - 1.5f;
+            return Combat.center + new Vector3(dir.x, 0f, dir.y) * inset;
         }
 
         Vector3 ExitPoint(int direction)
         {
             var dir = FloorMap.Directions[direction];
-            float reach = dir.x != 0 ? combat.size.x * 0.5f + 1.6f : combat.size.y * 0.5f + 1.6f;
-            return combat.center + new Vector3(dir.x, 0f, dir.y) * reach;
+            float reach = dir.x != 0 ? Combat.size.x * 0.5f + 1.6f : Combat.size.y * 0.5f + 1.6f;
+            return Combat.center + new Vector3(dir.x, 0f, dir.y) * reach;
         }
 
         void TickFloorExits()
@@ -400,7 +401,7 @@ namespace AThousandDawns.Prototype
             for (int d = 0; d < 4; d++)
             {
                 var next = _map.Neighbor(_room, d);
-                if (!FloorMap.IsOpen(next) || Flat(p - ExitPoint(d)).magnitude > combat.exitRadius) continue;
+                if (!FloorMap.IsOpen(next) || Flat(p - ExitPoint(d)).magnitude > Combat.exitRadius) continue;
                 Enter(next, d);
                 return;
             }
@@ -425,15 +426,17 @@ namespace AThousandDawns.Prototype
             else EnterInn();
         }
 
-        public List<List<EnemyKind>> PlanRoom(int floor, int fixedWaves = 0)
+        public List<List<EnemyKind>> PlanRoom(int floor, int fixedWaves = 0, float budgetScale = 1f, int extraWaves = 0)
         {
             string f = Mathf.Clamp(floor, 1, 3).ToString();
             int min = Mathf.RoundToInt(GameConfig.Get($"room.budget_min.f{f}", 6f));
             int max = Mathf.RoundToInt(GameConfig.Get($"room.budget_max.f{f}", 8f));
             int budget = _rng.Next(min, Mathf.Max(min, max) + 1);
+            budget = Mathf.RoundToInt(budget * budgetScale); // 큰 방일수록 적이 많아요
             int wavesMin = Mathf.RoundToInt(GameConfig.Get("room.waves_min", 2f));
             int wavesMax = Mathf.RoundToInt(GameConfig.Get("room.waves_max", 3f));
             int waves = fixedWaves > 0 ? fixedWaves : _rng.Next(wavesMin, Mathf.Max(wavesMin, wavesMax) + 1);
+            if (fixedWaves <= 0) waves += extraWaves;
             var limits = new RoomBudget.Limits
             {
                 Archers = Mathf.RoundToInt(GameConfig.Get("archer.max_per_room", 2f)),
@@ -837,12 +840,12 @@ namespace AThousandDawns.Prototype
         void SetLocks(bool locked)
         {
             for (int d = 0; d < 4; d++)
-                if (combat.locks[d] != null) combat.locks[d].SetActive(locked && _map != null && _room != null && _map.Neighbor(_room, d) != null);
+                if (Combat.locks[d] != null) Combat.locks[d].SetActive(locked && _map != null && _room != null && _map.Neighbor(_room, d) != null);
         }
 
         void SetGateMarker(bool on)
         {
-            if (combat.gateMarker != null) combat.gateMarker.SetActive(on);
+            if (Combat.gateMarker != null) Combat.gateMarker.SetActive(on);
         }
 
         // 설정에서 바꾼 키 이름 ("F", "Space", "좌클릭")
@@ -857,17 +860,17 @@ namespace AThousandDawns.Prototype
         Vector3 PickSpot()
         {
             Vector3 player = Player.transform.position;
-            float halfX = combat.size.x * 0.5f - 1.5f, halfZ = combat.size.y * 0.5f - 1.5f;
+            float halfX = Combat.size.x * 0.5f - 1.5f, halfZ = Combat.size.y * 0.5f - 1.5f;
             for (int i = 0; i < 40; i++)
             {
-                var p = combat.center + new Vector3(((float)_rng.NextDouble() * 2f - 1f) * halfX, 0f, ((float)_rng.NextDouble() * 2f - 1f) * halfZ);
+                var p = Combat.center + new Vector3(((float)_rng.NextDouble() * 2f - 1f) * halfX, 0f, ((float)_rng.NextDouble() * 2f - 1f) * halfZ);
                 if (Flat(p - player).magnitude < _minSpawnDistance) continue;
                 bool nearOther = false;
                 foreach (var q in _pending) if ((q.position - p).sqrMagnitude < 1.2f * 1.2f) nearOther = true;
                 if (nearOther || !director.IsFree(p, 0.45f)) continue;
                 return p;
             }
-            return director.FindFreeSpot(combat.center, 3f);
+            return director.FindFreeSpot(Combat.center, 3f);
         }
 
         void MovePlayer(Vector3 to)

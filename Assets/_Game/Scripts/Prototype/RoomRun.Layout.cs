@@ -86,7 +86,8 @@ namespace AThousandDawns.Prototype
         {
             var go = GameObject.CreatePrimitive(kind == FeatureKind.Pillar || kind == FeatureKind.BambooClump ? PrimitiveType.Cylinder : PrimitiveType.Cube);
             go.name = kind == FeatureKind.BambooClump ? "대숲" : kind == FeatureKind.FallenBamboo ? "쓰러진 대나무" : kind == FeatureKind.Pillar ? "돌기둥" : kind == FeatureKind.Statue ? "석불" : kind == FeatureKind.Coffin ? "무너진 관" : kind == FeatureKind.MiasmaPillar ? "마기 기둥" : "무너진 담";
-            Vector3 center = combat.center + new Vector3(at.x, 0f, at.y);
+            at = ScaleToRoom(at); // 작은 방 기준 자리를 지금 방 크기로
+            Vector3 center = Combat.center + new Vector3(at.x, 0f, at.y);
             go.transform.position = center + Vector3.up * height * 0.5f;
             go.transform.localScale = kind == FeatureKind.Pillar || kind == FeatureKind.BambooClump ? new Vector3(size.x, height * 0.5f, size.y) : new Vector3(size.x, height, size.y);
             go.GetComponent<Renderer>().material.color = kind == FeatureKind.Statue ? new Color(0.42f, 0.38f, 0.33f) : kind == FeatureKind.Coffin ? new Color(0.2f, 0.18f, 0.2f) : kind == FeatureKind.MiasmaPillar ? new Color(0.15f, 0.08f, 0.1f) : kind == FeatureKind.BambooClump || kind == FeatureKind.FallenBamboo ? new Color(0.35f, 0.5f, 0.3f) : new Color(0.5f, 0.48f, 0.45f);
@@ -103,7 +104,7 @@ namespace AThousandDawns.Prototype
                         AddSolid(FeatureKind.BambooClump, p, new Vector2(0.7f, 0.7f), 3f);
                     break;
                 case 2:
-                    AddWater(Vector2.zero, new Vector2(2f, combat.size.y), Vector3.back * GameConfig.GetOptional("bamboo.stream_current", 0.6f));
+                    AddWater(Vector2.zero, new Vector2(2f, Combat.size.y), Vector3.back * GameConfig.GetOptional("bamboo.stream_current", 0.6f));
                     break;
                 case 3:
                     AddSolid(FeatureKind.FallenBamboo, new Vector2(-6.5f, 1.9f), new Vector2(3.5f, 0.4f), 0.5f);
@@ -121,14 +122,14 @@ namespace AThousandDawns.Prototype
             switch (layout)
             {
                 case 1: // 여울: 가운데 가로 띠, 동쪽으로 흘러요
-                    AddWater(new Vector2(0f, 0f), new Vector2(combat.size.x, 2.6f), Vector3.right * flow);
+                    AddWater(new Vector2(0f, 0f), new Vector2(Combat.size.x, 2.6f), Vector3.right * flow);
                     break;
                 case 2: // 웅덩이: 고인 물 둘
                     AddWater(new Vector2(-6.5f, 3f), new Vector2(4f, 3f), Vector3.zero);
                     AddWater(new Vector2(6.5f, -3f), new Vector2(4f, 3f), Vector3.zero);
                     break;
                 case 3: // 물길: 가운데 세로 띠, 남쪽으로 흘러요
-                    AddWater(new Vector2(0f, 0f), new Vector2(2.6f, combat.size.y), Vector3.back * flow);
+                    AddWater(new Vector2(0f, 0f), new Vector2(2.6f, Combat.size.y), Vector3.back * flow);
                     break;
             }
         }
@@ -140,7 +141,8 @@ namespace AThousandDawns.Prototype
             var col = go.GetComponent<Collider>();
             col.enabled = false;
             Destroy(col);
-            Vector3 center = combat.center + new Vector3(at.x, 0f, at.y);
+            at = ScaleToRoom(at); // 작은 방 기준 자리를 지금 방 크기로
+            Vector3 center = Combat.center + new Vector3(at.x, 0f, at.y);
             go.transform.position = center + Vector3.up * 0.02f;
             go.transform.localScale = new Vector3(size.x, 0.02f, size.y);
             var r = go.GetComponent<Renderer>();
