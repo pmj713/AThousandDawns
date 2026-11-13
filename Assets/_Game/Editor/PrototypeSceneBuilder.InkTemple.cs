@@ -83,6 +83,8 @@ namespace AThousandDawns.EditorTools
             DressRoomEdges(bamboo, temple, river, tomb, stoneMat, woodMat, roofX, ref seed);
             // 9) 매복 풀숲 (청죽사가 숨는 풀숲, 모든 층 방): 죽림 덤불 대신 지역마다 소나무 묘목·갈대·가시 덤불
             DressBushRegions(bamboo, temple, river, tomb, woodMat, ref seed);
+            // 10) 층 방 테두리 (작은·중간·큰 방 모두): 죽림 대울타리 · 폐사찰 무너진 기와 담 · 장강 말뚝 목책 · 천마총 가시 박힌 검은 돌벽 (PrototypeSceneBuilder.InkBorders.cs)
+            DressRoomBorders(bamboo, temple, river, tomb, stoneMat, ref seed);
 
             var dressing = new GameObject("Ink Region Dressing").AddComponent<AThousandDawns.Art.InkRegionDressing>();
             dressing.SetRegions(new[]
@@ -132,7 +134,7 @@ namespace AThousandDawns.EditorTools
         //  - 무너진 자리 양옆 기와는 받칠 데가 없어 무너진 쪽으로 처지고 기울며, 끝은 군데군데 비어요.
         //  - 멀쩡한 구간에도 기와가 떨어져 나간 자리가 있어 아래 흙(보토)이 드러나요. 떨어지다 담 벽에 걸린 기와도 몇 장.
         //  - 무너진 자리 아래엔 흙더미가 쌓이고 그 둘레로 돌과 기와 조각이 부채꼴로 흩어져요 (대부분 바깥쪽).
-        static Transform RuinWall(Transform wall, Material mat, Material roofX, Material roofZ, int seed)
+        static Transform RuinWall(Transform wall, Material mat, Material roofX, Material roofZ, int seed, Vector3? inside = null)
         {
             var rng = new System.Random(seed * 7919 + 17);
             float R(float a, float b) => a + (float)rng.NextDouble() * (b - a);
@@ -151,7 +153,7 @@ namespace AThousandDawns.EditorTools
             var g = new GameObject($"Wall Ruin ({wall.name})").transform;
             g.SetParent(wall.parent, false);
             g.position = new Vector3(wall.position.x, wall.position.y - H * 0.5f, wall.position.z);
-            float outward = Vector3.Dot(IronMasterCenter - wall.position, across) >= 0f ? -1f : 1f;
+            float outward = Vector3.Dot((inside ?? IronMasterCenter) - wall.position, across) >= 0f ? -1f : 1f;
 
             // 무너진 자리 (가운데 c, 반폭 w, 깊이 d): 변마다 하나, 긴 변은 둘까지. 서로 떨어지게
             var breaches = new List<(float c, float w, float d)>();
