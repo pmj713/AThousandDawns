@@ -148,5 +148,54 @@ namespace AThousandDawns.EditorTools
             Block(t, "Skull", PrimitiveType.Sphere, new Vector3(-0.45f, 0.08f, 0.3f), new Vector3(0.17f, 0.15f, 0.19f), Quaternion.Euler(-15f, seed * 40f, 10f), bone);
             Block(t, "Bone", PrimitiveType.Capsule, new Vector3(-0.2f, 0.04f, 0.45f), new Vector3(0.04f, 0.2f, 0.04f), Quaternion.Euler(0f, seed * 53f, 88f), bone);
         }
+
+        // 매복 풀숲 (AmbushBush, 흔들리는 Visual 밑에 단 죽림 덤불 "Bush"): 같은 자리에 지역 변형 셋을 달아 지역 꾸밈 목록에 넣어요.
+        //   폐사찰: 작은 소나무와 마른 풀 · 장강: 갈대 무더기 · 천마총: 가시 돋친 검은 마른 덤불. 흔들림은 Visual을 따라가요
+        static void DressBushRegions(List<GameObject> bamboo, List<GameObject> temple, List<GameObject> river, List<GameObject> tomb, Material wood, ref int seed)
+        {
+            var reed = RiverMat("Ink_River_Reed", "#7C8452", 0.45f);
+            var thorn = GetInkMaterial("Ink_Tomb_Thorn", "#2A1E1C", 0.3f);
+            var blood = GetInkMaterial("Ink_Tomb_Blood", "#4E0B0A", 0.7f);
+            foreach (var ambush in Object.FindObjectsByType<AThousandDawns.Enemies.AmbushBush>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (ambush.transform.childCount == 0) continue;
+                var visual = ambush.transform.GetChild(0);
+                var clump = visual.Find("Bush");
+                if (clump == null) continue;
+                Transform Variant(string name)
+                {
+                    var v = new GameObject(name).transform;
+                    v.SetParent(visual, false);
+                    v.localPosition = clump.localPosition;
+                    v.localRotation = clump.localRotation;
+                    v.localScale = clump.localScale;   // Visual의 납작한 크기를 되돌린 덤불과 같은 크기
+                    return v;
+                }
+                var pine = Variant("Bush (폐사찰 소나무)");
+                PineTree(pine, Vector3.zero, 1.5f, seed, wood);
+                FoliageCards(pine, "Grass", "Bush_B", new Vector3(0.35f, 0.18f, 0.1f), 0.4f, 2, seed * 31f);
+                var reeds = Variant("Bush (장강 갈대)");
+                for (int k = 0; k < 3; k++)
+                {
+                    ReedClump(reeds, new Vector3((k - 1) * 0.35f, 0f, (k % 2) * 0.25f), seed + k, reed);
+                    reeds.GetChild(reeds.childCount - 1).localScale *= 0.7f;
+                }
+                var thorns = Variant("Bush (천마총 가시 덤불)");
+                for (int k = 0; k < 9; k++)   // 밑동에서 사방으로 뻗은 검은 가시 가지
+                {
+                    float a = k * 40f + seed * 13f;
+                    var rot = Quaternion.Euler(0f, a, 35f + (k % 3) * 12f);
+                    Block(thorns, "Branch", PrimitiveType.Capsule, rot * new Vector3(0f, 0.45f, 0f), new Vector3(0.05f, 0.5f, 0.05f), rot, thorn);
+                    Block(thorns, "Thorn", PrimitiveType.Cube, rot * new Vector3(0.05f, 0.7f, 0f), new Vector3(0.12f, 0.02f, 0.02f), rot * Quaternion.Euler(0f, 0f, 40f), thorn);
+                }
+                Block(thorns, "Stain", PrimitiveType.Cylinder, new Vector3(0f, 0.01f, 0f), new Vector3(0.9f, 0.01f, 0.9f), Quaternion.identity, blood);
+                seed++;
+                foreach (var v in new[] { pine, reeds, thorns }) { StripColliders(v); v.gameObject.SetActive(false); }
+                bamboo.Add(clump.gameObject);
+                temple.Add(pine.gameObject);
+                river.Add(reeds.gameObject);
+                tomb.Add(thorns.gameObject);
+            }
+        }
     }
 }

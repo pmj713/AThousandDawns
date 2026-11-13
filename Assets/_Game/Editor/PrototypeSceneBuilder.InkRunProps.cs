@@ -104,13 +104,65 @@ namespace AThousandDawns.EditorTools
             return mat;
         }
 
-        // 관문 원판(지름 2.4): 둘레를 두른 연석 여덟, 가운데 먹 소용돌이 (원판은 숨겨요)
+        // 관문 원판(지름 2.4): 둘레를 두른 연석 여덟, 가운데 먹 소용돌이 (원판은 숨겨요). 층 방(작은·중간·큰)마다 하나씩이라 모두 입혀요
         static void DressGateInk(Material stoneMat, Sprite vortex)
         {
-            Transform gate = null;
             foreach (var t in Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (t.name == "Gate (관문)") { gate = t; break; }
-            if (gate == null) return;
+                if (t.name == "Gate (관문)") DressOneGate(t, stoneMat, vortex);
+            DressLocksInk();
+        }
+
+        // 결계 (싸우는 동안 문을 막는 "Door_* (결계)" 상자, 빨간 BossGate): 원래 상자는 충돌용으로 두고 그림만 끈 뒤,
+        //   검은 나무 창살문(기둥 둘·가로대 둘·세로 창살)에 붉은 부적을 엇갈려 붙여요. 모든 방(층 방 셋·결투장·보스 방)의 결계에 입혀요
+        static void DressLocksInk()
+        {
+            var wood = GetInkMaterial("Ink_Barrier_Wood", "#2A231E", 0.2f);
+            var talisman = GetInkMaterial("Ink_Barrier_Talisman", "#B8261C", 0.9f);
+            var glyph = GetInkMaterial("Ink_Barrier_Glyph", "#F2E2B8", 0.3f);
+            foreach (var t in Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (!t.name.EndsWith("(결계)") || t.Find("Ink Visual") != null) continue;
+                var r = t.GetComponent<Renderer>();
+                if (r != null) r.enabled = false;
+                var s = t.lossyScale;
+                bool alongX = s.x >= s.z;                                  // 문 너비가 놓인 축
+                float width = alongX ? s.x : s.z, height = s.y;
+                var visual = new GameObject("Ink Visual").transform;
+                visual.SetParent(t, false);
+                visual.localScale = new Vector3(1f / s.x, 1f / s.y, 1f / s.z);
+                visual.position = new Vector3(t.position.x, t.position.y - height * 0.5f, t.position.z);
+                // 크기를 되돌린 층 아래에서 돌려요 (크기가 다른 부모 밑에서 바로 돌리면 비뚤어져요)
+                var gate = new GameObject("Barrier").transform;
+                gate.SetParent(visual, false);
+                gate.localRotation = Quaternion.Euler(0f, alongX ? 0f : 90f, 0f);
+                float hw = width * 0.5f;
+                for (int side = -1; side <= 1; side += 2)
+                    Block(gate, "Post", PrimitiveType.Cube, new Vector3(side * (hw - 0.08f), height * 0.55f, 0f), new Vector3(0.16f, height * 1.1f, 0.16f), Quaternion.identity, wood);
+                foreach (float y in new[] { 0.3f, height - 0.15f })
+                    Block(gate, "Rail", PrimitiveType.Cube, new Vector3(0f, y, 0f), new Vector3(width - 0.1f, 0.1f, 0.1f), Quaternion.identity, wood);
+                int bars = Mathf.Max(3, Mathf.RoundToInt(width / 0.32f));
+                for (int k = 1; k < bars; k++)
+                {
+                    float x = -hw + width * k / bars;
+                    Block(gate, "Bar", PrimitiveType.Cube, new Vector3(x, height * 0.5f, 0f), new Vector3(0.06f, height - 0.1f, 0.06f), Quaternion.identity, wood);
+                }
+                for (int k = 0; k < 3; k++)   // 붉은 부적: 창살에 엇갈려 (안쪽·바깥쪽 양면)
+                {
+                    float x = (k - 1) * width * 0.28f;
+                    float y = height * (0.45f + (k % 2) * 0.22f);
+                    foreach (float z in new[] { -0.06f, 0.06f })
+                    {
+                        var rot = Quaternion.Euler(0f, 0f, (k - 1) * 6f);
+                        Block(gate, "Talisman", PrimitiveType.Cube, new Vector3(x, y, z), new Vector3(0.18f, 0.42f, 0.01f), rot, talisman);
+                        Block(gate, "Glyph", PrimitiveType.Cube, new Vector3(x, y, z * 1.12f), new Vector3(0.03f, 0.3f, 0.005f), rot, glyph);
+                    }
+                }
+                StripColliders(visual);
+            }
+        }
+
+        static void DressOneGate(Transform gate, Material stoneMat, Sprite vortex)
+        {
             var r = gate.GetComponent<Renderer>();
             if (r != null) r.enabled = false;
 

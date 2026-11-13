@@ -78,6 +78,13 @@ namespace AThousandDawns.EditorTools
         static void SaveTombEvent(GameObject root, string name)
         {
             StripColliders(root.transform);
+            // 길을 막는 조각엔 충돌체를 다시 달아요 (플레이어가 제단·관을 통과했어요). 바닥에 깔린 혈지는 낮아서 그대로 지나가요
+            AddBlockingColliders(root.transform);
+            foreach (var a in root.GetComponentsInChildren<Animator>(true))   // 사람 모델(갇힌 고수)은 몸통 캡슐
+            {
+                var body = a.gameObject.AddComponent<CapsuleCollider>();
+                body.center = new Vector3(0f, 0.6f, 0f); body.height = 1.2f; body.radius = 0.35f;
+            }
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, $"{TombEventFolder}/{name}.prefab");
             Object.DestroyImmediate(root);
             // RoomRun이 이벤트 방에 들어갈 때 세워요 (RoomRun.EventProps)

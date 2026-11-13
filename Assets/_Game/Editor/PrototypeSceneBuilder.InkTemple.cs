@@ -81,6 +81,8 @@ namespace AThousandDawns.EditorTools
             var tomb = DressTombInk(stoneMat, roofX, ref seed);
             // 8) 중간·큰 층 방 가장자리 장식 (지역마다): 넓어진 바닥이 비어 보이지 않게 (PrototypeSceneBuilder.InkRoomEdges.cs)
             DressRoomEdges(bamboo, temple, river, tomb, stoneMat, woodMat, roofX, ref seed);
+            // 9) 매복 풀숲 (청죽사가 숨는 풀숲, 모든 층 방): 죽림 덤불 대신 지역마다 소나무 묘목·갈대·가시 덤불
+            DressBushRegions(bamboo, temple, river, tomb, woodMat, ref seed);
 
             var dressing = new GameObject("Ink Region Dressing").AddComponent<AThousandDawns.Art.InkRegionDressing>();
             dressing.SetRegions(new[]
