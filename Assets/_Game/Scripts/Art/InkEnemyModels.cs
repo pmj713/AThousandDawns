@@ -445,6 +445,7 @@ namespace AThousandDawns.Art
                     case EnemyAttackTimeline.Phase.Active:
                         if (_move.attack == "닻 던지기") { _thrownProp = "_Weapon_anchor"; _anchorAway = 3.2f; SetPropVisible(_thrownProp, false); }   // 닻을 던졌어요 (꽂힌 동안)
                         if (_move.attack == "사슬 당기기") { _thrownProp = "_Weapon_meteor"; _anchorAway = 0.9f; SetPropVisible(_thrownProp, false); }   // 유성추가 사슬째 날아갔어요 (이펙트가 그려요)
+                        if (_move.attack == "작살 찌르기") { _thrownProp = "_Weapon_harpoon"; _anchorAway = 0.5f; SetPropVisible(_thrownProp, false); }   // 작살이 밧줄째 뻗어 나갔어요 (InkRiverEnemyFx가 손에서부터 그려요, 0.42~0.5초)
                         _animator.SetFloat(AttackSpeedId, 1f);                              // 한 번 내려찍어요 (돌진·회전은 이어서)
                         if (!string.IsNullOrEmpty(_move.ready)) Play(_move.state, 0.1f);    // 준비 자세에서 박차고 나가요
                         _swung = _move.mode == InkEnemyModels.MoveMode.Swing;

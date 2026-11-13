@@ -287,7 +287,7 @@ for w in WEAPONS:
                 box(bm, fl - dn * 0.06 + e * s * 0.05, (e * s - dn).normalized(), t, 0.2, 0.15, 0.03)
         make(f"{NAME}_Weapon_anchor", "RightHand", build)
     elif w == "rattan":
-        # 등패 (등패수): 왼팔 바깥에 둥글고 볼록한 등나무 방패, 가운데 쇠 배꼽 (등나무 빛 _Rattan_)
+        # 등패 (등패수): 왼팔 바깥에 둥글고 볼록한 등나무 방패, 가운데 쇠 배꼽 (등나무 빛 _Rattan_). 소매·몸에 묻히지 않게 팔에서 17cm 띄워요
         f = B["LeftForeArm"]
         c = f.head_local.lerp(f.tail_local, 0.55)
         out = Vector((1, -0.6, 0)).normalized()
@@ -299,16 +299,16 @@ for w in WEAPONS:
             for i, rr in enumerate((0.0, 0.12, 0.24, 0.35, r)):
                 dome = 0.16 * (1 - (rr / r) ** 2)                             # 가운데가 볼록
                 if rr == 0:
-                    rings.append([bm.verts.new(c + out * (0.06 + dome + 0.02))])
+                    rings.append([bm.verts.new(c + out * (0.17 + dome + 0.02))])
                 else:
-                    rings.append([bm.verts.new(c + out * (0.06 + dome) + (u * math.cos(k * math.pi / 8) + v * math.sin(k * math.pi / 8)) * rr) for k in range(16)])
+                    rings.append([bm.verts.new(c + out * (0.17 + dome) + (u * math.cos(k * math.pi / 8) + v * math.sin(k * math.pi / 8)) * rr) for k in range(16)])
             for k in range(16):
                 bm.faces.new((rings[0][0], rings[1][k], rings[1][(k + 1) % 16]))
             for r0, r1 in zip(rings[1:-1], rings[2:]):
                 for k in range(16):
                     j = (k + 1) % 16
                     bm.faces.new((r0[k], r1[k], r1[j], r0[j]))
-            back = [bm.verts.new(c + out * 0.05 + (u * math.cos(k * math.pi / 8) + v * math.sin(k * math.pi / 8)) * r) for k in range(16)]
+            back = [bm.verts.new(c + out * 0.16 + (u * math.cos(k * math.pi / 8) + v * math.sin(k * math.pi / 8)) * r) for k in range(16)]
             for k in range(16):
                 j = (k + 1) % 16
                 bm.faces.new((rings[-1][k], back[k], back[j], rings[-1][j]))
@@ -1691,7 +1691,7 @@ if "rivermoves" in EXTRAS:
 
     def shield_guard():
         sl = pb["LeftArm"].head.copy()
-        arm("Left", sl + Vector((0.05, -0.36, -0.18)), Vector((1, 0.3, -0.5)))
+        arm("Left", sl + Vector((0.12, -0.5, -0.14)), Vector((1, 0.3, -0.5)))   # 방패를 몸 앞으로 내밀어요
 
     SLASH = {   # twist, wrist, reach, lift, dy, blade
         "load": (-35, Vector((-0.45, 0.15, 0.9)), 0.9, -0.06, 0.05, Vector((-0.2, 0.3, 1))),
@@ -1738,6 +1738,23 @@ if "rivermoves" in EXTRAS:
             arm("Right", sh + Vector((-0.2, 0.1, -0.55)), Vector((-1, 0.3, -0.3)))
             point_blade(Vector((-0.2, -1, -0.5)), wrist_bend=60)
         make_action("ShieldRoll", [(0, "wind"), (4, "throw"), (14, "throw"), (24, "idle")], roll_pose)
+
+        # 대기: 플레이어 대기를 옮긴 것은 왼팔이 방패를 허리 앞에 쟁반처럼 눕혀 몸을 가로질렀어요.
+        #   방패를 몸 앞에 세워 버티고(막는 자세와 같은 왼팔), 칼은 오른 허리춤에 낮게, 숨 쉬며 조금 흔들려요
+        def rattan_idle(t):
+            breath = math.sin(2 * math.pi * t)
+            feet = {"Left": FEET["Left"] + Vector((0, -0.12, 0)), "Right": FEET["Right"] + Vector((0, 0.08, 0))}
+            lower_hips(-0.1 - 0.012 * breath, feet, dy=0.02)
+            bend("Spine", Vector((1, 0, 0)), 5 + 1.5 * breath)
+            sl = pb["LeftArm"].head.copy()
+            arm("Left", sl + Vector((0.12, -0.5, -0.14 + 0.01 * breath)), Vector((1, 0.3, -0.5)))
+            sh = pb["RightArm"].head.copy()
+            arm("Right", sh + Vector((-0.12, -0.15, -0.5)), Vector((-1, 0.3, -0.3)))
+            point_blade(Vector((-0.1, -0.6, -1)), wrist_bend=60)                    # 칼끝은 앞 아래로
+        old_idle = bpy.data.actions.get("Idle")
+        if old_idle is not None:
+            bpy.data.actions.remove(old_idle)
+        make_action("Idle", [(f, f / 60) for f in range(0, 61, 6)], rattan_idle)
 
     if "harpoon" in WEAPONS:
         def harpoon_pose(stage):
@@ -1923,76 +1940,102 @@ if "takrangmoves" in EXTRAS:
 #   Stomp(물기둥): 오른 무릎을 높이 들었다가 땅을 굴러요
 #   Roar(2페이즈 전환 · 배가 부서져요): 휘청 뒤로 물러났다가 가슴을 펴고 두 팔을 벌려 포효해요
 if "dragonmoves" in EXTRAS:
+    # 철구 사슬은 손에 붙은 곧은 막대라, 손 자리를 동작마다 정해 두고 손목을 끝까지 돌려 사슬 방향을 맞춰요
+    # (Generic이라 손목·아래팔 한계가 없어요). 예전처럼 후보 중에서 고르면 손이 얼굴 앞에 와서 사슬이 얼굴을 지나갔어요
+    GRIP_POLE = Vector((-1, 0.3, -0.5))
+
+    def hold(off, want):
+        arm("Right", pb["RightArm"].head.copy() + off, GRIP_POLE)
+        point_blade(want, wrist_bend=180)
+
+    def dragon_idle(t):
+        # 대기: 다리를 벌리고 무릎을 조금 굽혀 버티고, 오른손은 옆구리에서 사슬을 쥐고(철구는 발 옆 땅에), 숨 쉬며 철구가 살짝 흔들려요
+        breath = math.sin(2 * math.pi * t)
+        feet = {"Left": FEET["Left"] + Vector((0.08, -0.05, 0)), "Right": FEET["Right"] + Vector((-0.08, 0.05, 0))}
+        lower_hips(-0.12 - 0.015 * breath, feet, dy=0.02)
+        bend("Spine", Vector((1, 0, 0)), 6 + 1.5 * breath)
+        bend("Neck", Vector((1, 0, 0)), -4)
+        sl = pb["LeftArm"].head.copy()
+        arm("Left", sl + Vector((0.18, -0.12, -0.55)), Vector((1, 0.3, -0.3)))            # 왼팔은 허리 앞에 느슨히
+        hold(Vector((-0.2, -0.08, -0.5)), Vector((-0.12 + 0.06 * math.sin(2 * math.pi * t + 1.0), -0.15, -1)))   # 사슬이 발 옆으로 늘어져요
+
     def dragon_pose(stage):
         if stage == "idle":
-            idle_end_pose(); return
-        sh = pb["RightArm"].head.copy()
+            dragon_idle(0.0); return
         sl = pb["LeftArm"].head.copy()
+        left_guard = lambda: arm("Left", sl + Vector((0.25, -0.3, -0.3)), Vector((1, 0.3, -0.5)))
         if stage == "swing_load":
             lower_hips(-0.18, FEET, dy=0.08)
             bend("Spine", UP, -40); bend("Spine1", UP, -20)
-            fit_right(sh, [Vector((-0.2, 0.15, 0.8)), Vector((-0.3, 0.25, 0.7))], ALL_POLES, Vector((-0.4, 0.6, 0.7)), wrist_bend=80)   # 철구가 머리 뒤 위로
-            arm("Left", sl + Vector((0.3, -0.25, -0.2)), Vector((1, 0.3, -0.5)))
+            hold(Vector((-0.12, 0.2, 0.55)), Vector((-0.35, 0.6, 0.7)))                     # 철구를 머리 뒤 위로 치켜 감아요
+            left_guard()
         elif stage in ("swing_hit", "swing_follow"):
-            k = 1.0 if stage == "swing_follow" else 0.0
+            follow = stage == "swing_follow"
             feet = {"Left": FEET["Left"] + Vector((0, -0.4, 0)), "Right": FEET["Right"]}
             lower_hips(-0.26, feet, dy=-0.15)
-            bend("Spine", UP, 10 + 45 * k); bend("Spine1", UP, 5 + 20 * k)
-            wrist = Vector((0.1 + 0.6 * k, -0.95 + 0.35 * k, -0.05))
-            fit_right(sh, [wrist.normalized() * REACH * 0.95], ALL_POLES, Vector((0.2 + 0.8 * k, -1 + 0.6 * k, -0.15)), wrist_bend=80)   # 사슬이 수평으로 뻗어요
-            arm("Left", sl + Vector((0.35, 0.2, -0.35)), Vector((1, 0.3, -0.3)))
+            bend("Spine", UP, 10 + (45 if follow else 0)); bend("Spine1", UP, 5 + (20 if follow else 0))
+            if follow:
+                hold(Vector((0.45, -0.45, -0.12)), Vector((0.85, -0.5, -0.05)))            # 앞을 가로질러 왼쪽까지 휩쓸어요
+            else:
+                hold(Vector((-0.2, -0.55, -0.08)), Vector((-0.35, -1, -0.02)))             # 어깨높이로 앞을 향해 사슬이 뻗어요
+            left_guard()
         elif stage == "slam_up":
             lower_hips(-0.06, FEET, dy=0.06)
             bend("Spine", Vector((1, 0, 0)), -14)
-            fit_right(sh, [Vector((0.05, -0.1, 0.9)), Vector((0.0, 0.05, 0.85))], ALL_POLES, Vector((0, 0.2, 1)), wrist_bend=90)   # 하늘로
+            hold(Vector((0.02, 0.0, 0.62)), Vector((0, 0.15, 1)))                          # 하늘로 높이
             arm("Left", sl + Vector((0.25, -0.3, 0.1)), Vector((1, 0.3, -0.5)))
         elif stage == "slam_down":
             feet = {"Left": FEET["Left"] + Vector((0, -0.45, 0)), "Right": FEET["Right"]}
             lower_hips(-0.32, feet, dy=-0.2)
             bend("Spine", Vector((1, 0, 0)), 28)
-            fit_right(sh, [Vector((0.05, -0.8, -0.35)), Vector((0.1, -0.75, -0.45))], ALL_POLES, Vector((0, -0.7, -0.7)), wrist_bend=90)
-            arm("Left", sl + Vector((0.3, 0.1, -0.5)), Vector((1, 0.3, -0.3)))
+            hold(Vector((0.05, -0.55, -0.4)), Vector((0, -0.6, -1)))                       # 앞 땅으로 내려찍어요
+            left_guard()
         elif stage == "chain_load":
             lower_hips(-0.14, FEET, dy=0.1)
             bend("Spine", UP, -30)
-            fit_right(sh, [Vector((-0.25, 0.4, 0.05)), Vector((-0.2, 0.35, 0.2))], ALL_POLES, Vector((-0.3, 1, 0.1)), wrist_bend=80)   # 뒤로 당겨 겨눠요
-            arm("Left", sl + Vector((0.1, -0.5, 0.0)), Vector((1, 0.3, -0.5)))                                                        # 왼손은 앞을 가리켜요
+            hold(Vector((-0.22, 0.35, 0.0)), Vector((-0.2, 1, 0.05)))                      # 뒤로 당겨 겨눠요
+            arm("Left", sl + Vector((0.1, -0.5, 0.0)), Vector((1, 0.3, -0.5)))             # 왼손은 앞을 가리켜요
         elif stage == "chain_throw":
             feet = {"Left": FEET["Left"] + Vector((0, -0.4, 0)), "Right": FEET["Right"]}
             lower_hips(-0.22, feet, dy=-0.18)
             bend("Spine", UP, 20); bend("Spine", Vector((1, 0, 0)), 12)
-            fit_right(sh, [Vector((0.1, -0.85, 0.05))], ALL_POLES, Vector((0, -1, 0.05)), wrist_bend=90)
-            arm("Left", sl + Vector((0.3, 0.15, -0.35)), Vector((1, 0.3, -0.3)))
+            hold(Vector((0.05, -0.6, 0.0)), Vector((0, -1, 0.05)))                         # 앞으로 던지듯 뻗어요
+            left_guard()
         elif stage == "chain_pull":
             lower_hips(-0.24, FEET, dy=0.15)
             bend("Spine", Vector((1, 0, 0)), -12); bend("Spine", UP, -15)
-            fit_right(sh, [Vector((-0.05, 0.3, -0.25))], ALL_POLES, Vector((0, -1, 0)), wrist_bend=90)
+            hold(Vector((-0.05, 0.15, -0.3)), Vector((0, -1, -0.1)))
             g, d = blade_now()
-            arm("Left", g + d * 0.25, Vector((1, 0.3, -0.5)))                                                                       # 두 손으로 잡아채요
+            arm("Left", g + d * 0.25, Vector((1, 0.3, -0.5)))                               # 두 손으로 잡아채요
         elif stage == "command":
             lower_hips(-0.05, FEET)
             bend("Spine", Vector((1, 0, 0)), -8); bend("Neck", Vector((1, 0, 0)), -15)
-            arm("Left", sl + Vector((0.15, -0.45, 0.6)), Vector((1, 0.3, 0)))                                                       # 왼팔을 치켜 호령
-            fit_right(sh, [Vector((-0.15, 0.05, -0.55))], ALL_POLES, Vector((0, 0.2, -1)), wrist_bend=90)
+            arm("Left", sl + Vector((0.15, -0.45, 0.6)), Vector((1, 0.3, 0)))               # 왼팔을 치켜 호령
+            hold(Vector((-0.18, 0.0, -0.52)), Vector((-0.1, 0, -1)))                        # 사슬은 늘어뜨린 채
         elif stage in ("stomp_up", "stomp_down"):
             up = stage == "stomp_up"
             feet = {"Left": FEET["Left"], "Right": FEET["Right"] + (Vector((0, -0.15, 0.55)) if up else Vector((0, -0.2, 0)))}
             lower_hips(-0.05 if up else -0.34, feet, dy=-0.05)
             bend("Spine", Vector((1, 0, 0)), -6 if up else 18)
-            for s, sx in (("Left", 1),):
-                arm(s, sl + Vector((sx * 0.4, 0.0, 0.1 if up else -0.3)), Vector((sx, 0.3, -0.3)))
-            fit_right(sh, [Vector((-0.4, 0.0, 0.1 if up else -0.3))], ALL_POLES, Vector((-0.3, 0.3, -1)), wrist_bend=90)
+            arm("Left", sl + Vector((0.4, 0.0, 0.1 if up else -0.3)), Vector((1, 0.3, -0.3)))
+            hold(Vector((-0.4, 0.0, 0.1 if up else -0.3)), Vector((-0.3, 0.2, -1)))
         elif stage == "stagger":
             feet = {"Left": FEET["Left"] + Vector((0, 0.35, 0)), "Right": FEET["Right"] + Vector((0, 0.1, 0))}
             lower_hips(-0.2, feet, dy=0.25)
             bend("Spine", Vector((1, 0, 0)), -18); bend("Spine", UP, 15)
             arm("Left", sl + Vector((0.45, -0.1, 0.05)), Vector((1, 0.3, -0.3)))
-            fit_right(sh, [Vector((-0.45, 0.0, -0.2))], ALL_POLES, Vector((-0.5, 0.3, -1)), wrist_bend=90)
+            hold(Vector((-0.45, 0.0, -0.2)), Vector((-0.5, 0.3, -1)))
         else:   # roar
             lower_hips(-0.18, FEET, dy=-0.05)
             bend("Spine", Vector((1, 0, 0)), -10); bend("Neck", Vector((1, 0, 0)), -25)
             arm("Left", sl + Vector((0.55, -0.15, 0.35)), Vector((1, 0.3, 0)))
-            fit_right(sh, [Vector((-0.55, -0.15, 0.35))], ALL_POLES, Vector((-0.6, 0.2, -1)), wrist_bend=90)
+            hold(Vector((-0.55, -0.15, 0.35)), Vector((-0.6, 0.2, -1)))
+
+    # 대기는 플레이어 대기를 옮긴 것 대신 철룡 고유 대기로 바꿔요 (굳은 채 팔이 벌어지고 사슬이 손끝에 걸려 있었어요)
+    old_idle = bpy.data.actions.get("Idle")
+    if old_idle is not None:
+        bpy.data.actions.remove(old_idle)
+    make_action("Idle", [(f, f / 60) for f in range(0, 61, 6)], dragon_idle)
 
     make_action("MeteorSwing", [(0, "swing_load"), (4, "swing_hit"), (8, "swing_follow"), (16, "swing_follow"), (28, "idle")], dragon_pose)
     make_action("MeteorSlam", [(0, "slam_up"), (4, "slam_down"), (14, "slam_down"), (26, "idle")], dragon_pose)
