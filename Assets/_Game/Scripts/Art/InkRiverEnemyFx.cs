@@ -74,6 +74,7 @@ namespace AThousandDawns.Art
         {
             dir.y = 0f;
             dir = dir.sqrMagnitude > 1e-4f ? dir.normalized : Vector3.forward;
+            Transform bone = h != null ? FindDeep(h.transform, "RightHand") : null; // 작살꾼 오른손 뼈 (모델 Visual 안). 찌르는 동안 손의 작살은 메인 아트가 숨겨요
             var head = Upright(_harpoon, at + Vector3.up * 1f, 1.1f, 7);
             var rope = Line(_ropeMat, new Color(0.35f, 0.27f, 0.18f), 0.07f, 6);
             Transform target = pulled && _player != null ? _player.transform : null;
@@ -81,7 +82,7 @@ namespace AThousandDawns.Art
             _live.Add(dt =>
             {
                 t += dt;
-                Vector3 hand = (h != null ? h.transform.position : at) + Vector3.up * 1f;
+                Vector3 hand = bone != null ? bone.position : (h != null ? h.transform.position : at) + Vector3.up * 1f; // 손에서 뻗어 나가요
                 Vector3 tip;
                 if (t < 0.1f) tip = hand + dir * (reach * (t / 0.1f));                                        // 뻗어요
                 else if (target != null) tip = target.position + Vector3.up * 0.9f;                         // 걸렸으면 플레이어에 붙어 끌려와요
@@ -99,6 +100,13 @@ namespace AThousandDawns.Art
                 if (rope != null) Destroy(rope.gameObject);
                 return false;
             });
+        }
+
+        static Transform FindDeep(Transform root, string name)
+        {
+            if (root.name == name || root.name.EndsWith(":" + name)) return root;
+            foreach (Transform child in root) { var t = FindDeep(child, name); if (t != null) return t; }
+            return null;
         }
 
         // ── 등패수: 정면에서 다 막으면 불똥이 튀어요
@@ -212,13 +220,13 @@ namespace AThousandDawns.Art
         {
             var source = disc.GetComponent<Renderer>();
             if (source != null) source.enabled = false;
-            var shield = Upright(_rattan, disc.transform.position, 1f, 6);
+            var shield = Flat(_rattan, disc.transform.position, 1f, 0f, disc.transform.position.y); // 바닥과 나란히 눕혀 앞면이 위로
             if (shield == null) return;
             _live.Add(dt =>
             {
-                if (disc == null) { if (shield != null) Destroy(shield.transform.parent.gameObject); return false; }
-                shield.transform.parent.position = disc.transform.position;
-                shield.transform.Rotate(0f, 0f, -720f * dt, Space.Self); // 굴러가요
+                if (disc == null) { if (shield != null) Destroy(shield.gameObject); return false; }
+                shield.transform.position = disc.transform.position;
+                shield.transform.Rotate(0f, 0f, -720f * dt, Space.Self); // 수평으로 팽이처럼 돌며 날아가요
                 return true;
             });
         }
