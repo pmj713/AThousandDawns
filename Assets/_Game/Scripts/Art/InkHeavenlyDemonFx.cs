@@ -156,36 +156,17 @@ namespace AThousandDawns.Art
             if (wave == null || _waves.Contains(wave)) return;
             _waves.Add(wave);
             foreach (var r in wave.GetComponentsInChildren<Renderer>()) r.enabled = false;
-            var sr = Flat(_crescent, wave.position, 1.8f, CrescentYaw(dir), 1f, 7);
-            if (sr == null) return;
-            if (!_ownCrescent) sr.color = Dark;
-            var rim = Flat(_crescent, wave.position, 2.1f, CrescentYaw(dir), 0.98f, 6); // 붉은 테
-            if (rim != null) rim.color = new Color(Blood.r, Blood.g, Blood.b, 0.8f);
-            var trail = Line(wave.position, wave.position, Dark, 0.5f, 5);
-            Vector3 start = wave.position;
+            var qi = new InkSwordQi(transform, wave.position, dir, 2f, new Color(Blood.r, Blood.g, Blood.b, 0.9f), 1f); // 붓질 초승달 검기 (핏빛 테)
+            if (!qi.Valid) return;
             Vector3 last = wave.position;
             float fade = 0f;
             _live.Add(dt =>
             {
-                if (wave != null) last = wave.position;
+                if (wave != null) { if ((wave.position - last).sqrMagnitude > 1e-5f) dir = wave.position - last; last = wave.position; }
                 else fade += dt / 0.2f;
-                Vector3 p = new Vector3(last.x, 1f, last.z);
-                if (sr != null) sr.transform.position = p;
-                if (rim != null) rim.transform.position = p - Vector3.up * 0.02f;
-                if (trail != null)
-                {
-                    Vector3 tail = Vector3.MoveTowards(new Vector3(start.x, 1f, start.z), p, Mathf.Max(0f, (p - start).magnitude - 3f));
-                    trail.SetPosition(0, tail);
-                    trail.SetPosition(1, p);
-                }
-                float a = 1f - Mathf.Clamp01(fade);
-                if (sr != null) sr.color = new Color(sr.color.r, sr.color.g, sr.color.b, a);
-                if (rim != null) rim.color = new Color(Blood.r, Blood.g, Blood.b, 0.8f * a);
-                if (trail != null) trail.startColor = trail.endColor = new Color(Dark.r, Dark.g, Dark.b, 0.7f * a);
+                qi.Pose(last, dir, 1f, 1f - Mathf.Clamp01(fade), 1f);
                 if (fade < 1f) return true;
-                if (sr != null) Destroy(sr.gameObject);
-                if (rim != null) Destroy(rim.gameObject);
-                if (trail != null) Destroy(trail.gameObject);
+                qi.Destroy();
                 return false;
             });
         }

@@ -70,23 +70,17 @@ namespace AThousandDawns.Art
             Vector3 dir = c.Dir; dir.y = 0f;
             dir = dir.sqrMagnitude > 1e-4f ? dir.normalized : Vector3.forward;
             float length = Mathf.Max(1f, c.Radius), width = Mathf.Max(0.8f, c.Angle);
-            var crest = Upright(_wave, c.From + Vector3.up * 0.6f, width * 1.6f, 7, bottom: true);
+            var qi = new InkSwordQi(transform, c.From, dir, width * 1.6f, new Color(0.3f, 0.55f, 0.75f, 0.85f)); // 붓질 초승달 검기 (쪽빛 테)
             float t = 0f, travel = 0.3f, nextSpray = 0f;
-            Vector3 unit = crest != null ? crest.transform.localScale : Vector3.one;
             _live.Add(dt =>
             {
                 t += dt;
                 float k = Mathf.Clamp01(t / travel);
                 Vector3 at = c.From + dir * (length * k);
-                if (crest != null)
-                {
-                    crest.transform.parent.position = at + Vector3.up * 0.05f;
-                    crest.transform.localScale = unit * Mathf.Lerp(0.7f, 1.15f, k);
-                    crest.color = new Color(1f, 1f, 1f, k < 0.8f ? 1f : (1f - k) / 0.2f);
-                }
+                qi.Pose(at, dir, Mathf.Lerp(0.7f, 1.15f, k), k < 0.8f ? 1f : (1f - k) / 0.2f);
                 if (k < 1f && t >= nextSpray) { nextSpray = t + 0.05f; SprayAt(at, 0.9f); } // 지나간 길에 물보라
                 if (k < 1f) return true;
-                if (crest != null) Destroy(crest.transform.parent.gameObject);
+                qi.Destroy();
                 return false;
             });
         }
@@ -156,13 +150,17 @@ namespace AThousandDawns.Art
                 if (root.name != "물결 검기" || _dressed.Contains(root)) continue;
                 _dressed.Add(root);
                 foreach (var r in root.GetComponentsInChildren<Renderer>()) r.enabled = false;
-                var crest = Upright(_wave, root.transform.position, 1.4f, 7);
-                if (crest == null) continue;
                 var go = root;
+                Vector3 last = go.transform.position, dir = go.transform.forward;
+                var qi = new InkSwordQi(transform, last, dir, 1.6f, new Color(0.22f, 0.36f, 0.62f, 0.85f)); // 붓질 초승달 물결 검기 (쪽빛 테)
+                if (!qi.Valid) continue;
                 _live.Add(dt =>
                 {
-                    if (go == null || !go.activeInHierarchy) { if (crest != null) Destroy(crest.transform.parent.gameObject); return false; }
-                    crest.transform.parent.position = go.transform.position;
+                    if (go == null || !go.activeInHierarchy) { qi.Destroy(); return false; }
+                    var p = go.transform.position;
+                    if ((p - last).sqrMagnitude > 1e-5f) dir = p - last; // 날아가는 쪽
+                    last = p;
+                    qi.Pose(p, dir, 1f, 1f);
                     return true;
                 });
             }
