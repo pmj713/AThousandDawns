@@ -152,7 +152,8 @@ namespace AThousandDawns.Art
                 var old = OldMark(enemy, traits[i]);
                 if (old != null) HideOld(old); // 원래 도형은 숨겨요
                 d.Olds.Add(old);
-                var sprite = IsSplit(traits[i]) ? SplitMark : traits[i] == EliteTrait.IronShirt ? ironMark : traits[i] == EliteTrait.Rejuvenation ? rejuvMark : blazeMark;
+                var sprite = IsSplit(traits[i]) ? SplitMark : traits[i] == EliteTrait.IronShirt ? ironMark : traits[i] == EliteTrait.Rejuvenation ? rejuvMark
+                    : NamedMark(traits[i]) ?? blazeMark; // 새 특성은 Resources/EliteFx/{특성 이름} (경공·화염구·순간이동 …)
                 if (sprite == null) continue;
                 var mark = new GameObject("Mark");
                 mark.transform.SetParent(pivot, false);
@@ -225,10 +226,27 @@ namespace AThousandDawns.Art
         }
         static bool IsSplit(EliteTrait t) => t == EliteTrait.Split;
 
-        static Color Tint(EliteTrait t) => IsSplit(t) ? new Color(0.4f, 0.18f, 0.52f)
-            : t == EliteTrait.IronShirt ? new Color(0.25f, 0.28f, 0.34f)
-            : t == EliteTrait.Rejuvenation ? new Color(0.22f, 0.42f, 0.26f)
-            : new Color(0.62f, 0.16f, 0.08f);
+        // 이름으로 찾는 표식 (차원 감염 정예: Gyeonggong 청록 바람 · Fireball 주홍 불덩이 · Blink 보랏빛 균열). 특성마다 한 번만 찾아요
+        static readonly Dictionary<EliteTrait, Sprite> Named = new Dictionary<EliteTrait, Sprite>();
+        static Sprite NamedMark(EliteTrait t)
+        {
+            if (!Named.TryGetValue(t, out var s)) Named[t] = s = Resources.Load<Sprite>("EliteFx/" + t);
+            return s;
+        }
+
+        static Color Tint(EliteTrait t)
+        {
+            if (IsSplit(t)) return new Color(0.62f, 0.28f, 0.9f);
+            if (t == EliteTrait.IronShirt) return new Color(0.55f, 0.65f, 0.85f);
+            if (t == EliteTrait.Rejuvenation) return new Color(0.3f, 0.85f, 0.4f);
+            switch (t.ToString())
+            {
+                case "Gyeonggong": return new Color(0.2f, 0.9f, 0.85f);  // 청록 바람
+                case "Fireball": return new Color(1f, 0.42f, 0.1f);      // 주홍 불덩이
+                case "Blink": return new Color(0.7f, 0.3f, 1f);          // 보랏빛 균열
+            }
+            return new Color(1f, 0.3f, 0.1f); // 열화
+        }
     }
 
     // 카메라를 마주 보고, 원하면 천천히 위아래로 떠요
