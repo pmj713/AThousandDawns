@@ -186,7 +186,7 @@ namespace AThousandDawns.Art
                         float a = i * Mathf.PI * 2f / n;
                         ring.SetPosition(i, new Vector3(Mathf.Cos(a) * rr, Mathf.Sin(a) * rr, -0.04f)); // 회전한 고리라 z가 위
                     }
-                    var c = Color.Lerp(new Color(0.08f, 0.06f, 0.06f), Tint(traits[t]), 0.5f);
+                    var c = Color.Lerp(Color.white, Tint(traits[t]), 0.5f);
                     ring.startColor = ring.endColor = new Color(c.r, c.g, c.b, 0.85f);
                     ring.gameObject.AddComponent<InkSpin>().Speed(t == 0 ? 40f : -30f);
                 }
@@ -194,7 +194,7 @@ namespace AThousandDawns.Art
             // 몸 둘레 먹 연기 (붉은 기운이 섞인 먹)
             if (mistMaterial != null)
             {
-                var smoke = Color.Lerp(new Color(0.1f, 0.08f, 0.08f), tint, 0.35f);
+                var smoke = Color.Lerp(Color.white, tint, 0.35f);
                 for (int i = 0; i < 4; i++)
                 {
                     var wisp = GameObject.CreatePrimitive(PrimitiveType.Quad);

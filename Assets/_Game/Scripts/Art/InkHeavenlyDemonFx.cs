@@ -29,7 +29,7 @@ namespace AThousandDawns.Art
         static Sprite _miasmaA, _miasmaB;
         static bool _loaded;
 
-        static readonly Color Dark = new Color(0.16f, 0.05f, 0.07f);      // 마기 (검붉은 먹)
+        static readonly Color Dark = new Color(0.6f, 0.04f, 0.14f);      // 마기 (검붉은 먹)
         static readonly Color Blood = new Color(0.62f, 0.06f, 0.07f);
         static readonly Color Qi = new Color(1f, 0.88f, 0.55f);           // 내력 (금빛)
 

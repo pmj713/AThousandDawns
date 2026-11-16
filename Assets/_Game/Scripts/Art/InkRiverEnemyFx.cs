@@ -82,7 +82,7 @@ namespace AThousandDawns.Art
             dir = dir.sqrMagnitude > 1e-4f ? dir.normalized : Vector3.forward;
             Transform bone = h != null ? FindDeep(h.transform, "RightHand") : null; // 작살꾼 오른손 뼈 (모델 Visual 안)
             Vector3 Hand() => bone != null ? bone.position : (h != null ? h.transform.position : at) + Vector3.up * 1f;
-            var streak = Line(_ropeMat, new Color(0.08f, 0.07f, 0.06f), 0.12f, 6); // 먹 속도선
+            var streak = Line(_ropeMat, new Color(1f, 0.3f, 0.15f), 0.12f, 6); // 먹 속도선
             var rope = pulled ? Line(_ropeMat, new Color(0.35f, 0.27f, 0.18f), 0.07f, 6) : null;
             Transform target = pulled && _player != null ? _player.transform : null;
             float t = 0f;
@@ -95,7 +95,7 @@ namespace AThousandDawns.Art
                     float k = Mathf.Clamp01(t / 0.18f);
                     streak.SetPosition(0, hand + dir * (0.3f + 1.2f * k));
                     streak.SetPosition(1, hand + dir * (0.6f + 1.6f * k));
-                    streak.startColor = streak.endColor = new Color(0.08f, 0.07f, 0.06f, 0.8f * (1f - k));
+                    streak.startColor = streak.endColor = new Color(1f, 0.3f, 0.15f, 0.8f * (1f - k));
                     if (k >= 1f) { Destroy(streak.gameObject); streak = null; }
                 }
                 if (rope != null)

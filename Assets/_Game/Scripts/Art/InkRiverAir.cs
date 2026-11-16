@@ -11,7 +11,7 @@ namespace AThousandDawns.Art
         [SerializeField] int fluffCount = 36;
         [SerializeField] Vector3 area = new Vector3(26f, 5f, 18f);
 
-        static readonly Color MistColor = new Color(0.82f, 0.86f, 0.88f, 0.32f);   // 물빛 도는 한지색
+        static readonly Color MistColor = new Color(0.5f, 0.82f, 0.95f, 0.3f);   // 맑은 물빛 안개
         static readonly Color FluffColor = new Color(0.97f, 0.95f, 0.88f, 0.9f);   // 갈대 솜
 
         Transform[] _mist, _fluff;

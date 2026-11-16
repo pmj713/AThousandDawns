@@ -83,7 +83,7 @@ namespace AThousandDawns.Art
                 if (disc == null && fade < 0f) { fade = 0f; smoke.Stop(true, ParticleSystemStopBehavior.StopEmitting); }
                 float a = Mathf.Clamp01(t / 0.3f);
                 if (fade >= 0f) { fade += dt; a *= 1f - Mathf.Clamp01(fade / 0.6f); }
-                if (stain != null) stain.color = new Color(0.12f, 0.11f, 0.12f, 0.75f * a);
+                if (stain != null) stain.color = new Color(0.42f, 0.45f, 0.55f, 0.75f * a);
                 if (fade < 2.6f) return true; // 남은 연기가 흩어질 때까지
                 Destroy(holder.gameObject);
                 return false;
@@ -98,7 +98,7 @@ namespace AThousandDawns.Art
             line.enabled = false;
             Vector3 a = line.GetPosition(0), b = line.GetPosition(line.positionCount - 1);
             if (_lineMat == null) _lineMat = new Material(Shader.Find("Sprites/Default"));
-            var ink = Zigzag(a, b, 0.2f, new Color(0.1f, 0.08f, 0.06f, 0.8f), 7, 0.28f);
+            var ink = Zigzag(a, b, 0.2f, new Color(0.4f, 0.35f, 1f, 0.8f), 7, 0.28f);
             var glow = Zigzag(a, b, 0.12f, new Color(1f, 0.85f, 0.3f, 1f), 8, 0.2f, ink);
             var core = Zigzag(a, b, 0.05f, new Color(1f, 1f, 0.92f, 1f), 9, 0.2f, ink);
             float t = 0f, fade = -1f;
@@ -201,7 +201,7 @@ namespace AThousandDawns.Art
                 if (fade >= 0f) fade += dt;
                 float a = Mathf.Clamp01(t / 0.15f) * (fade < 0f ? 1f : 1f - Mathf.Clamp01(fade / 0.3f));
                 float flicker = 0.85f + 0.15f * Mathf.Sin(t * 14f); // 일렁이는 그림자
-                block.SetColor("_Color", new Color(0.12f, 0.1f, 0.14f, 0.5f * a * flicker));
+                block.SetColor("_Color", new Color(0.3f, 0.6f, 1f, 0.5f * a * flicker));
                 foreach (var m in meshes) if (m.renderer != null) m.renderer.SetPropertyBlock(block);
                 if (fade < 0.3f) return true;
                 foreach (var m in meshes) if (m.mesh != null) Destroy(m.mesh);

@@ -142,7 +142,7 @@ namespace AThousandDawns.Art
             Box(visual, "Head", new Vector3(0f, 0f, 0.38f), new Vector3(0.09f, 0.025f, 0.09f), Quaternion.Euler(0f, 45f, 0f), shaft);
             for (int i = -1; i <= 1; i += 2)
                 Box(visual, "Fletch", new Vector3(i * 0.04f, 0.01f, -0.38f), new Vector3(0.06f, 0.012f, 0.16f), Quaternion.Euler(0f, i * 18f, 0f), feather);
-            Trail(visual, new Vector3(0f, 0f, -0.42f), blood ? 0.2f : 0.16f, blood ? 0.3f : 0.22f, blood ? new Color(0.62f, 0.06f, 0.05f, 0.8f) : new Color(0.08f, 0.07f, 0.07f, 0.7f));
+            Trail(visual, new Vector3(0f, 0f, -0.42f), blood ? 0.2f : 0.16f, blood ? 0.3f : 0.22f, blood ? new Color(0.62f, 0.06f, 0.05f, 0.8f) : new Color(1f, 0.78f, 0.35f, 0.75f));
         }
 
         readonly System.Collections.Generic.Dictionary<Material, Material> _blood = new System.Collections.Generic.Dictionary<Material, Material>();
@@ -166,7 +166,7 @@ namespace AThousandDawns.Art
             star.transform.localScale = Vector3.one * 0.32f;
             star.AddComponent<MeshFilter>().sharedMesh = StarMesh();
             star.AddComponent<MeshRenderer>().sharedMaterial = shaftMaterial;
-            Trail(visual, Vector3.zero, 0.1f, 0.15f, new Color(0.1f, 0.08f, 0.1f, 0.55f));
+            Trail(visual, Vector3.zero, 0.1f, 0.15f, new Color(0.55f, 0.75f, 1f, 0.6f));
         }
 
         void Trail(Transform parent, Vector3 local, float width, float time, Color color)
@@ -260,9 +260,9 @@ namespace AThousandDawns.Art
     public class InkBurst : MonoBehaviour
     {
         static readonly int ColorId = Shader.PropertyToID("_BaseColor");
-        static readonly Color Ink = new Color(0.07f, 0.06f, 0.06f, 0.92f);
+        static readonly Color Ink = new Color(1f, 0.38f, 0.1f, 0.92f);
         static readonly Color Flame = new Color(0.92f, 0.36f, 0.12f, 0.95f);
-        static readonly Color Smoke = new Color(0.18f, 0.16f, 0.16f, 0.6f);
+        static readonly Color Smoke = new Color(0.5f, 0.44f, 0.4f, 0.6f);
 
         Renderer _splash, _flash;
         readonly List<(Renderer r, Vector3 drift, float size)> _smoke = new List<(Renderer, Vector3, float)>();

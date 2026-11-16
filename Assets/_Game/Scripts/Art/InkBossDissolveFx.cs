@@ -97,7 +97,7 @@ namespace AThousandDawns.Art
             var start = at + new Vector3(Mathf.Cos(a) * r, edge, Mathf.Sin(a) * r);
             var sr = Upright(_drop, start, UnityEngine.Random.Range(0.08f, 0.16f));
             if (sr == null) return;
-            sr.color = new Color(0.08f, 0.07f, 0.07f, 0.95f);
+            sr.color = new Color(0.4f, 0.12f, 0.6f, 0.95f);
             var pivot = sr.transform.parent;
             var v = new Vector3(Mathf.Cos(a) * UnityEngine.Random.Range(0.6f, 1.4f), UnityEngine.Random.Range(1.5f, 3f), Mathf.Sin(a) * UnityEngine.Random.Range(0.6f, 1.4f));
             float t = 0f;
@@ -107,7 +107,7 @@ namespace AThousandDawns.Art
                 t += dt;
                 v += Vector3.down * 6f * dt;
                 pivot.position += v * dt;
-                sr.color = new Color(0.08f, 0.07f, 0.07f, 0.95f * (1f - t / 0.9f));
+                sr.color = new Color(0.4f, 0.12f, 0.6f, 0.95f * (1f - t / 0.9f));
                 if (t < 0.9f && pivot.position.y > 0f) return true;
                 Destroy(pivot.gameObject);
                 return false;
@@ -132,7 +132,7 @@ namespace AThousandDawns.Art
                 float k = t / life;
                 pivot.position = start + new Vector3(drift * k, 1.4f * k, 0f);
                 sr.transform.localScale = new Vector3(unit.x * (1f + 0.5f * k), unit.y * (0.8f + 0.7f * k), unit.z);
-                sr.color = new Color(0.14f, 0.13f, 0.14f, 0.7f * Mathf.Sin(Mathf.Clamp01(k) * Mathf.PI));
+                sr.color = new Color(0.65f, 0.45f, 0.95f, 0.7f * Mathf.Sin(Mathf.Clamp01(k) * Mathf.PI));
                 if (k < 1f) return true;
                 Destroy(pivot.gameObject);
                 return false;
@@ -158,7 +158,7 @@ namespace AThousandDawns.Art
                 t += dt;
                 go.transform.localScale = unit * Mathf.Lerp(0.3f, 1f, Mathf.Sqrt(Mathf.Clamp01(t / (time * 0.6f))));
                 float fade = 1f - Mathf.Clamp01((t - time) / 1.5f);
-                sr.color = new Color(0.1f, 0.09f, 0.09f, 0.8f * fade);
+                sr.color = new Color(0.5f, 0.18f, 0.65f, 0.8f * fade);
                 if (t < total) return true;
                 Destroy(go);
                 return false;

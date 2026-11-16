@@ -199,7 +199,7 @@ namespace AThousandDawns.Art
                         Vector3 axis = g.Hand + g.Dir * along + Vector3.down * (along * 0.12f); // 앞으로 갈수록 살짝 낮게
                         lr.SetPosition(i, axis + (g.Side * Mathf.Cos(a) + Vector3.up * Mathf.Sin(a)) * r);
                     }
-                    var col = k % 2 == 1 ? new Color(0.75f, 0.05f, 0.05f) : new Color(0.06f, 0.04f, 0.04f);
+                    var col = k % 2 == 1 ? new Color(0.75f, 0.05f, 0.05f) : new Color(0.95f, 0.7f, 0.2f);
                     lr.startColor = new Color(col.r, col.g, col.b, 0.35f * alpha); // 앞쪽은 옅게 퍼져요
                     lr.endColor = new Color(col.r, col.g, col.b, alpha);
                 }

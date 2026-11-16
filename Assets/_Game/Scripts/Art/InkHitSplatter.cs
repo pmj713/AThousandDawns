@@ -19,7 +19,7 @@ namespace AThousandDawns.Art
         static readonly int SeedId = Shader.PropertyToID("_Seed");
 
         [SerializeField] Material splatMaterial;
-        [SerializeField] Color enemyInk = new Color(0.06f, 0.06f, 0.07f, 1f);
+        [SerializeField] Color enemyPaint = new Color(1f, 0.45f, 0.12f, 1f); // 채색: 주황 불꽃빛 (씬에 남은 옛 먹색 enemyInk 값은 쓰지 않아요)
         [SerializeField] Color playerPaint = new Color(0.62f, 0.08f, 0.06f, 1f);
         [SerializeField] float life = 2.2f;
         [SerializeField] float deathLife = 6f;          // 쓰러진 자리 얼룩은 오래 남아요
@@ -113,7 +113,7 @@ namespace AThousandDawns.Art
         {
             if (target == null || amount <= 0 || splatMaterial == null) return;
             bool isPlayer = _player != null && target.transform == _player;
-            var color = isPlayer ? playerPaint : enemyInk;
+            var color = isPlayer ? playerPaint : enemyPaint;
             Vector3 p = target.transform.position;
             // 맞은 반대쪽: 플레이어에게서 멀어지는 쪽 (플레이어가 맞으면 무작위)
             Vector3 away = !isPlayer && _player != null ? p - _player.position : Random.insideUnitSphere;

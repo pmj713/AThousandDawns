@@ -232,7 +232,7 @@ namespace AThousandDawns.Art
                 p += dir * UnityEngine.Random.Range(0.08f, 0.16f) + side * UnityEngine.Random.Range(-0.07f, 0.07f);
             }
             lr.widthCurve = new AnimationCurve(new Keyframe(0f, 0.045f), new Keyframe(1f, 0.008f));
-            lr.startColor = lr.endColor = new Color(0.06f, 0.05f, 0.05f, 0.95f);
+            lr.startColor = lr.endColor = new Color(1f, 0.75f, 0.25f, 0.95f);
             lr.sortingOrder = 7;
             return lr;
         }
