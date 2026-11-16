@@ -80,6 +80,7 @@ namespace AThousandDawns.Art
             var shooter = ShooterKind(arrow);
             if (shooter == EnemyKind.GoblinArcher) BuildGoblinArrow(visual); // 차원 겹침: 붉은·금빛 유리 화살
             else if (shooter == EnemyKind.Imp) BuildImpBolt(visual); // 임프 화염탄: 작은 불덩이 + 불꼬리
+            else if (shooter != null && BuildVolley(visual, shooter.Value)) { } // 보스 부채꼴 견제 (BossVolley): 보스마다 다른 투사체
             else if (FiredByAssassin(t.position)) BuildShuriken(visual);
             else BuildArrow(visual, FiredBy(t.position, EnemyKind.BloodArcher)); // 혈궁수면 붉은 화살
         }
@@ -117,6 +118,60 @@ namespace AThousandDawns.Art
 
         static Sprite _fireball;
         static bool _fireballLoaded;
+
+        // 보스 부채꼴 견제 3발 (EnemyBrain.BossVolley, "Arrow"의 Owner가 그 보스): 녹림왕 대도 검풍 = 금빛 검기 초승달 · 혈불 혈장 = 핏빛 손바닥
+        //   철룡 작살 = 작살 · 천마 마기탄 = 진홍 마기 덩어리 + 보랏빛 불티 · 오우거 돌팔매 = 구르는 바위. 꼬리 색도 보스마다.
+        bool BuildVolley(Transform visual, EnemyKind kind)
+        {
+            switch (kind)
+            {
+                case EnemyKind.Nokrim: Flat(visual, "SkillFx/SwordQi", 1f, 0f, new Color(1f, 0.85f, 0.35f)); Trail(visual, Vector3.zero, 0.3f, 0.2f, new Color(1f, 0.75f, 0.25f, 0.8f)); return true;
+                case EnemyKind.BloodBuddha: Face(visual, "BloodBuddhaFx/Palm", 0.75f, false); Trail(visual, Vector3.zero, 0.3f, 0.25f, new Color(0.95f, 0.15f, 0.1f, 0.85f)); return true;
+                case EnemyKind.IronDragon: Flat(visual, "RiverFx/Harpoon", 1.1f, 90f, Color.white); Trail(visual, new Vector3(0f, 0f, -0.5f), 0.12f, 0.2f, new Color(0.45f, 0.75f, 1f, 0.7f)); return true;
+                case EnemyKind.HeavenlyDemon:
+                    Face(visual, "HeavenlyDemonFx/Wisp", 0.7f, false);
+                    InkParticles.Embers(visual, Vector3.zero, 0.2f, 1.5f);
+                    Trail(visual, Vector3.zero, 0.3f, 0.3f, new Color(0.75f, 0.1f, 0.35f, 0.85f)); return true;
+                case EnemyKind.Ogre: Face(visual, "TempleFx/Rock", 0.6f, true); Trail(visual, Vector3.zero, 0.2f, 0.18f, new Color(0.8f, 0.65f, 0.45f, 0.6f)); return true;
+            }
+            return false;
+        }
+
+        static readonly System.Collections.Generic.Dictionary<string, Sprite> _volley = new System.Collections.Generic.Dictionary<string, Sprite>();
+        static Sprite VolleySprite(string path)
+        {
+            if (!_volley.TryGetValue(path, out var s)) _volley[path] = s = Resources.Load<Sprite>(path);
+            return s;
+        }
+
+        // 바닥과 나란히 누운 그림 (그림 위쪽이 날아가는 쪽, roll = 그림을 먼저 돌리는 각 · 작살은 오른쪽을 보고 있어서 90)
+        static void Flat(Transform visual, string path, float width, float roll, Color color)
+        {
+            var sprite = VolleySprite(path);
+            if (sprite == null) return;
+            var go = new GameObject("Volley");
+            go.transform.SetParent(visual, false);
+            go.transform.localRotation = Quaternion.Euler(90f, 0f, 0f) * Quaternion.Euler(0f, 0f, roll);
+            go.transform.localScale = Vector3.one * (width / Mathf.Max(0.01f, Mathf.Max(sprite.bounds.size.x, sprite.bounds.size.y)));
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = sprite;
+            sr.color = color;
+        }
+
+        // 카메라를 보는 그림 (roll이면 굴러가요)
+        static void Face(Transform visual, string path, float width, bool roll)
+        {
+            var sprite = VolleySprite(path);
+            if (sprite == null) return;
+            var pivot = new GameObject("Volley").transform;
+            pivot.SetParent(visual, false);
+            pivot.gameObject.AddComponent<InkFaceCamera>();
+            var go = new GameObject("Sprite");
+            go.transform.SetParent(pivot, false);
+            go.transform.localScale = Vector3.one * (width / Mathf.Max(0.01f, Mathf.Max(sprite.bounds.size.x, sprite.bounds.size.y)));
+            go.AddComponent<SpriteRenderer>().sprite = sprite;
+            if (roll) go.AddComponent<InkRoll>();
+        }
 
         void BuildGoblinArrow(Transform visual)
         {
@@ -356,6 +411,12 @@ namespace AThousandDawns.Art
             }
             if (t > 1.6f) Destroy(gameObject);
         }
+    }
+
+    // 그림을 화면 안에서 빙글빙글 (구르는 바위)
+    public class InkRoll : MonoBehaviour
+    {
+        void Update() => transform.Rotate(0f, 0f, -540f * Time.deltaTime, Space.Self);
     }
 
     // 임프 화염탄이 사라질 때 (맞거나 사거리 끝) 그 자리에 작은 불꽃이 튀어요. 씬이 닫히며 지워질 때는 그리지 않아요.
