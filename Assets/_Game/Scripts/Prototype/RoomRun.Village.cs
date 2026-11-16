@@ -6,12 +6,12 @@ using UnityEngine.SceneManagement;
 namespace AThousandDawns.Prototype
 {
     // 마을 (기획 대화 마을 배치 최종안). 첫 판은 마을 없이 바로 죽림, 첫 사망 뒤부터 회귀하면 여기서 시작해요.
-    //         [뒷산 동굴] 면벽수련
+    //         [뒷산 동굴] 영혼수련
     //               │
     //  [객잔 마루] ★시작 ─ [매화나무] 회귀록
     //               │
     //  [사당] 유품록 ─ [마을 어귀] 무기 거치대 → 출발
-    // 어귀를 나서면 씬을 다시 불러 판을 시작해요 (회귀록·면벽수련을 새로 적용).
+    // 어귀를 나서면 씬을 다시 불러 판을 시작해요 (회귀록·영혼수련을 새로 적용).
     public sealed partial class RoomRun
     {
         public enum VillageSpot { None, Tree, Cave, Shrine, Rack }
@@ -84,7 +84,7 @@ namespace AThousandDawns.Prototype
         public string SpotPrompt(VillageSpot spot) => spot switch
         {
             VillageSpot.Tree => $"{KeyName(Bind.Interact)} 매화나무 · 회귀록",
-            VillageSpot.Cave => RegressionBook.Bloomed(VillageMeta, "meditation") ? $"{KeyName(Bind.Interact)} 뒷산 동굴 · 면벽수련" : "뒷산 동굴 · 회귀록에서 면벽수련을 피우면 열려요",
+            VillageSpot.Cave => RegressionBook.Bloomed(VillageMeta, "meditation") ? $"{KeyName(Bind.Interact)} 뒷산 동굴 · 영혼수련" : "뒷산 동굴 · 회귀록에서 영혼수련을 피우면 열려요",
             VillageSpot.Shrine => VillageMeta.finalBossKills > 0 ? $"{KeyName(Bind.Interact)} 사당 · 유품록" : "사당 · 첫 천마 격파 후 열려요 (유품록)",
             VillageSpot.Rack => RegressionBook.DaggerUnlocked(VillageMeta) ? $"{KeyName(Bind.Interact)} 무기 거치대 · 지금 {(Player.UsesDagger ? "비도" : "검")} (바꾸기)" : $"{KeyName(Bind.Interact)} 무기 거치대",
             _ => null,
@@ -99,8 +99,8 @@ namespace AThousandDawns.Prototype
                     Notify("book", "회귀록: 봉우리를 골라 개화하면 새 시스템이 열려요");
                     break;
                 case VillageSpot.Cave:
-                    if (RegressionBook.Bloomed(VillageMeta, "meditation")) { OpenVillageBook(true); Notify("meditation", "면벽수련: 심득을 심법에 나눠 넣어요 · 언제든 다시 나눌 수 있어요"); }
-                    else ShowBanner("동굴 입구가 막혀 있어요 · 회귀록에서 면벽수련을 피우면 열려요");
+                    if (RegressionBook.Bloomed(VillageMeta, "meditation")) { OpenVillageBook(true); Notify("meditation", "영혼수련: 심득을 심법에 나눠 넣어요 · 언제든 다시 나눌 수 있어요"); }
+                    else ShowBanner("동굴 입구가 막혀 있어요 · 회귀록에서 영혼수련을 피우면 열려요");
                     break;
                 case VillageSpot.Shrine:
                     if (VillageMeta.finalBossKills > 0) { if (KarmaMax > 0) OpenShrineMenu(); else OpenRelicBook(); Notify("relic", "유품록: 천마를 쓰러뜨린 판에 지녔던 기물을 골라 두면 다음 판을 지니고 시작해요"); }
@@ -143,7 +143,7 @@ namespace AThousandDawns.Prototype
             arena.Blocked = false;
         }
 
-        // 마을 어귀: 출발 (씬을 다시 불러 회귀록·면벽수련을 적용하고 바로 죽림으로)
+        // 마을 어귀: 출발 (씬을 다시 불러 회귀록·영혼수련을 적용하고 바로 죽림으로)
         // 마을 출발: 족자가 내려와 덮고 죽림이 번진 뒤 말려 올라가요 (회귀 연출은 거치지 않아요)
         public void Depart()
         {

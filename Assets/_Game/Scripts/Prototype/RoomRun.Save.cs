@@ -124,7 +124,17 @@ namespace AThousandDawns.Prototype
             return s;
         }
 
-        // Start에서 (회귀록·면벽수련을 적용한 뒤): 저장한 판을 되살려요. 못 읽으면 false
+        // Start에서 (회귀록·영혼수련을 적용한 뒤): 저장한 판을 되살려요. 못 읽으면 false
+        // 장비 칸이 열렸다는 배너 (보스 격파)
+        string UnlockBannerText()
+        {
+            var slots = AThousandDawns.Items.EquipSlots.UnlockAfterBoss(_region);
+            if (slots.Length == 0) return "";
+            var names = new List<string>();
+            foreach (int s in slots) names.Add(AThousandDawns.Items.EquipSlots.Label(AThousandDawns.Items.EquipSlots.Kinds[s]));
+            return $" · 장비 칸이 열렸어요 ({string.Join(" · ", names)})";
+        }
+
         bool RestoreRun()
         {
             var s = RunSave.Load();
@@ -136,6 +146,7 @@ namespace AThousandDawns.Prototype
             if (items != null)
             {
                 if (s.boardWidth > items.Board.Width || s.boardHeight > items.Board.Height) items.ExpandBoard(s.boardWidth, s.boardHeight);
+                if (s.region > 0) items.UnlockSlotsThrough(s.region - 1); // 장비 칸: 지나온 지역 보스만큼 열려 있어요
                 foreach (var d in new List<Vector2Int>(items.Board.Danjeons)) items.RemoveDanjeon(d);
                 foreach (var d in s.danjeons) items.AddDanjeon(new Vector2Int(d.x, d.y));
                 foreach (var a in s.acupoints) items.OpenAcupoint(new Vector2Int(a.x, a.y), (Acupoint)a.kind);

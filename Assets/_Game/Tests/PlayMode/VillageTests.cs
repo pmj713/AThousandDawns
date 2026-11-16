@@ -13,7 +13,7 @@ using Object = UnityEngine.Object;
 
 namespace AThousandDawns.Tests
 {
-    // 마을: 첫 판은 바로 죽림, 회차가 있으면 마을의 객잔 마루에서 시작. 매화나무 = 회귀록, 동굴 = 면벽수련, 어귀 = 출발.
+    // 마을: 첫 판은 바로 죽림, 회차가 있으면 마을의 객잔 마루에서 시작. 매화나무 = 회귀록, 동굴 = 영혼수련, 어귀 = 출발.
     public class VillageTests : InputTestFixture
     {
         string _savePath;
@@ -83,7 +83,7 @@ namespace AThousandDawns.Tests
             yield return null;
             Assert.IsTrue(player.enabled, "닫으면 다시 움직여요");
 
-            // 동굴: 면벽수련을 피우기 전엔 안 열려요
+            // 동굴: 영혼수련을 피우기 전엔 안 열려요
             run.UseSpot(RoomRun.VillageSpot.Cave);
             Assert.IsFalse(run.Book.IsOpen);
 
@@ -98,7 +98,7 @@ namespace AThousandDawns.Tests
         }
 
         [UnityTest]
-        public IEnumerator 면벽수련을_피웠으면_동굴에서_열림()
+        public IEnumerator 영혼수련을_피웠으면_동굴에서_열림()
         {
             var meta = new MetaSave { runs = 2, memory = 500 };
             Assert.IsTrue(RegressionBook.Bloom(meta, "meditation"));
@@ -108,7 +108,7 @@ namespace AThousandDawns.Tests
             Assert.IsTrue(run.InVillage);
             run.UseSpot(RoomRun.VillageSpot.Cave);
             Assert.IsTrue(run.Book.IsOpen);
-            Assert.IsTrue(run.Book.IsMeditationShown, "동굴은 면벽수련 화면으로");
+            Assert.IsTrue(run.Book.IsMeditationShown, "동굴은 영혼수련 화면으로");
         }
     }
 }

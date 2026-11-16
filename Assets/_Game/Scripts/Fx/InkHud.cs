@@ -167,7 +167,7 @@ namespace AThousandDawns.Fx
         }
 
         // ── 기세 ── 체력 획 아래 가는 쪽빛 획. 차면 금빛으로 일렁이고 끝에 절초 이름 · 키캡.
-        //   기세 200%(면벽수련 기 20)면 가운데 먹 눈금으로 두 칸을 나눠요.
+        //   기세 200%(영혼수련 기 20)면 가운데 먹 눈금으로 두 칸을 나눠요.
         static void DrawGauge(PlayerController p, Rect r)
         {
             float cap = Mathf.Max(1f, p.GaugeCap);

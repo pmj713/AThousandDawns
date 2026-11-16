@@ -61,7 +61,7 @@ namespace AThousandDawns.Prototype
             OpenMasterChoice(_masterPicks, new System.Collections.Generic.HashSet<int>());
         }
 
-        // picks: 고를 수 있는 수 (면벽수련 오 20이면 2가지). taken: 이미 고른 것
+        // picks: 고를 수 있는 수 (영혼수련 오 20이면 2가지). taken: 이미 고른 것
         void OpenMasterChoice(int picks, System.Collections.Generic.HashSet<int> taken)
         {
             int spare = Price("master.spare_silver", 50f);

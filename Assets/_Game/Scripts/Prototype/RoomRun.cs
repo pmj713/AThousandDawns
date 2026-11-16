@@ -184,7 +184,7 @@ namespace AThousandDawns.Prototype
                 case Phase.Master: TickMaster(); break;
                 case Phase.Floor:
                     TickHunt(Time.deltaTime);
-                    TickWater(Time.deltaTime); // 장강 물: 느려지고 물살에 밀려요
+                    TickWater(Time.deltaTime); // 장강 물: 느려지고 물살에 밀려요
                     TickJars(); // 항아리는 싸우는 중에도 부딪히면 깨져요
                     if (_fighting) TickFight();
                     else TickFloorExits();
@@ -222,7 +222,7 @@ namespace AThousandDawns.Prototype
             float dense = GameConfig.Get("room.fork_dense_chance", 0.4f);
             // 한 갈림길에 같은 보상 종류는 한 번만 (기물 옅은 길 + 기물 짙은 길 같이 안 나옴)
             var kinds = new List<RewardKind>((RewardKind[])Enum.GetValues(typeof(RewardKind)));
-            if (_unlockedParts.Count == 0) kinds.Remove(RewardKind.Part); // 부품 길은 회귀록에서 부품을 연 뒤부터
+            if (_unlockedParts.Count == 0 || AThousandDawns.Player.PlayerItems.EquipMode) kinds.Remove(RewardKind.Part); // 부품 길은 회귀록에서 부품을 연 뒤부터 (장비 칸엔 부품이 없어요)
             if (!_forgeUnlocked) kinds.Remove(RewardKind.Forge); // 대장간 길은 회귀록에서 대장간을 연 뒤부터
             kinds.Remove(RewardKind.Scroll); // 비급은 고수 보상으로만 (초식이 셋뿐이라)
             for (int i = kinds.Count - 1; i > 0; i--)
@@ -230,7 +230,7 @@ namespace AThousandDawns.Prototype
                 int j = _rng.Next(i + 1);
                 (kinds[i], kinds[j]) = (kinds[j], kinds[i]);
             }
-            int count = Mathf.Min(kinds.Count, _rng.Next(min, Mathf.Max(min, max) + 1) + _forkBonus); // 면벽수련 오 10: 갈림길 +1
+            int count = Mathf.Min(kinds.Count, _rng.Next(min, Mathf.Max(min, max) + 1) + _forkBonus); // 영혼수련 오 10: 갈림길 +1
             // 기물 길은 갈림길마다 꼭 하나 (빌드를 만드는 핵심 보상)
             int item = kinds.IndexOf(RewardKind.Item);
             if (item >= count)
@@ -284,7 +284,7 @@ namespace AThousandDawns.Prototype
             ShowBanner($"{RegionName} {_floor}층 · {PathLabel(_path)}");
             BeginHunt();
             Enter(_map.Start, -1);
-            if (_startPartPick) // 면벽수련 맥 10: 시작 시 부품 고르기
+            if (_startPartPick) // 영혼수련 맥 10: 시작 시 부품 고르기
             {
                 _startPartPick = false;
                 OpenPartChoice(1);
@@ -573,7 +573,7 @@ namespace AThousandDawns.Prototype
                  _elitesThisRoom * Mathf.RoundToInt(GameConfig.Get("silver.elite", 15f)));
             Silver += silver;
             string text = ""; // "방을 비웠어요 · 은자" 글은 띄우지 않아요 (은자는 HUD 숫자로). 이벤트 싸움 결과만 배너로
-            if (_roomHeal > 0f && !Player.IsDead) // 면벽수련 강 10: 방을 비우면 체력 회복
+            if (_roomHeal > 0f && !Player.IsDead) // 영혼수련 강 10: 방을 비우면 체력 회복
             {
                 float heal = Player.MaxHealth * _roomHeal;
                 Player.Heal(heal);
@@ -629,9 +629,9 @@ namespace AThousandDawns.Prototype
             EnterInnSite(db == null ? null : InnShop.Stock(db.Available, Player.Items, ApplyLuck(RegionGradeWeights(), _luck), _rng, _innStockBonus, _unlockedParts, _innPriceScale, Player.Skill));
             int before = Tracking;
             Tracking = Mathf.FloorToInt(Tracking * GameConfig.Get("tracking.inn_ratio", 0.5f)); // 객잔에 들르면 추적도 절반
-            int interest = InnInterest(); // 면벽수련 은 20
+            int interest = InnInterest(); // 영혼수련 은 20
             Silver += interest;
-            Notify("inn", "객잔: 점소이(F)에게 기물·금창약을 사요 · 들르면 추적도 절반 · 북쪽 문은 정비실");
+            Notify("inn", "객잔: 차원 틈을 넘나드는 점소이(F)는 어느 지역에서든 장사 중이에요 · 기물·금창약을 사요 · 들르면 추적도 절반 · 북쪽 문은 정비실");
             ShowBanner($"객잔 · 점소이 앞에서 {KeyName(Bind.Interact)}로 진열대 (북쪽 문: 정비실) · 추적도 {before} → {Tracking}{(interest > 0 ? $" · 은자 이자 +{interest}" : "")}");
         }
 
@@ -794,6 +794,8 @@ namespace AThousandDawns.Prototype
             Silver += silver;
             arena.GrantOffer(SpecialGradeWeights()); // 보스·살수 특별 보상 표
             var items = Player.Items;
+            bool equip = items != null && items.Board.EquipMode;
+            if (equip) items.UnlockSlotsThrough(_region); // 장비 칸: 귀걸이 둘 → 허리 → 무기 장신구
             if (items != null && _region == 0) // 죽림 보스: 경맥도 5×4 → 6×4
                 items.ExpandBoard(
                     Mathf.RoundToInt(GameConfig.Get("meridian.width_after_boss1", 6f)),
@@ -807,7 +809,7 @@ namespace AThousandDawns.Prototype
                     Mathf.RoundToInt(GameConfig.GetOptional("meridian.width_after_boss3", 6f)),
                     Mathf.RoundToInt(GameConfig.GetOptional("meridian.height_after_boss3", 6f)));
             string next = LastRegion ? "판 끝" : $"기물을 고르면 {RegionNames[_region + 1]}로";
-            ShowBanner($"{RegionName} 보스 격파! 은자 +{silver}{(_region == 0 ? " · 경맥도가 넓어졌어요 (6×4)" : _region == 1 ? " · 경맥도가 넓어졌어요 (6×5)" : _region == 2 ? " · 경맥도가 넓어졌어요 (6×6)" : "")} · {next}", 6f);
+            ShowBanner($"{RegionName} 보스 격파! 은자 +{silver}{(equip ? UnlockBannerText() : _region == 0 ? " · 경맥도가 넓어졌어요 (6×4)" : _region == 1 ? " · 경맥도가 넓어졌어요 (6×5)" : _region == 2 ? " · 경맥도가 넓어졌어요 (6×6)" : "")} · {next}", 6f);
         }
 
         // ── 도움

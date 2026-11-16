@@ -47,7 +47,7 @@ namespace AThousandDawns.Enemies
             && !(kind == EnemyKind.Rattan && trait == EliteTrait.IronShirt)
             && !(kind == EnemyKind.DemonGuard && trait == EliteTrait.IronShirt)
             && !(kind == EnemyKind.Bomber && trait == EliteTrait.Rejuvenation)
-            && !(trait == EliteTrait.Split && (kind == EnemyKind.Bomber || kind == EnemyKind.BloodBomber || kind == EnemyKind.Snake)); // 터지는 적 · 숨는 적은 분열 없음
+            && !(trait == EliteTrait.Split && (kind == EnemyKind.Bomber || kind == EnemyKind.BloodBomber || kind == EnemyKind.Snake || kind == EnemyKind.Slime)); // 터지는 적 · 숨는 적 · 원래 갈라지는 슬라임은 분열 없음
 
         // 만들어진 바로 뒤에 불러요 (EnemyDirector.Spawn 다음)
         public void MakeElite(EliteTrait trait)
@@ -127,10 +127,11 @@ namespace AThousandDawns.Enemies
         }
 
         // 분열: 같은 적 둘 (정예 아님, 지역 배율은 SummonScale로) · 체력은 elite.split_health
-        void Split()
+        void Split() => Split(Mathf.RoundToInt(GameConfig.GetOptional("elite.split_count", 2f)), GameConfig.GetOptional("elite.split_health", 0.35f));
+
+        // 슬라임도 써요 (쓰러지면 작은 둘로)
+        protected void Split(int count, float health)
         {
-            int count = Mathf.RoundToInt(GameConfig.GetOptional("elite.split_count", 2f));
-            float health = GameConfig.GetOptional("elite.split_health", 0.35f);
             Vector3 side = Vector3.Cross(Vector3.up, transform.forward).normalized;
             EnemyBrain first = null, second = null;
             for (int i = 0; i < count; i++)

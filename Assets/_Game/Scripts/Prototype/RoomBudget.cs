@@ -42,10 +42,30 @@ namespace AThousandDawns.Prototype
             EnemyKind.Cultist, EnemyKind.BloodArcher, EnemyKind.BloodShaman, EnemyKind.DemonGuard, EnemyKind.BloodBomber,
         };
 
-        // 지역 번호별 일반 적 (목록보다 크면 마지막 지역 것)
-        public static EnemyKind[] ForRegion(int region) => region <= 0 ? Bamboo : region == 1 ? Temple : region == 2 ? River : Tomb;
+        // 차원 겹침: 어느 지역에서든 섞여 나오는 판타지 적 (슬라임 · 고블린 넷)
+        public static readonly EnemyKind[] Fantasy =
+        {
+            EnemyKind.Slime, EnemyKind.Goblin, EnemyKind.GoblinArcher, EnemyKind.GoblinRogue, EnemyKind.GoblinShaman,
+        };
 
-        public static int PackSize(EnemyKind kind) => kind == EnemyKind.Hound || kind == EnemyKind.Pirate ? 2 : 1; // 들개 · 수적 졸개는 둘씩
+        public static bool IsFantasy(EnemyKind kind) => Array.IndexOf(Fantasy, kind) >= 0;
+
+        // 지역 번호별 일반 적 (목록보다 크면 마지막 지역 것)
+        public static EnemyKind[] ForRegion(int region) => WithFantasy(region <= 0 ? Bamboo : region == 1 ? Temple : region == 2 ? River : Tomb);
+
+        public static int FantasyOverride = -1; // 테스트용 (0 무협 적만 · 1 섞기)
+
+        // 무협 적 + 판타지 적 (시트 fantasy.enabled = 0이면 무협 적만)
+        static EnemyKind[] WithFantasy(EnemyKind[] wuxia)
+        {
+            if (FantasyOverride == 0 || (FantasyOverride < 0 && GameConfig.GetOptional("fantasy.enabled", 1f) < 0.5f)) return wuxia;
+            var all = new EnemyKind[wuxia.Length + Fantasy.Length];
+            wuxia.CopyTo(all, 0);
+            Fantasy.CopyTo(all, wuxia.Length);
+            return all;
+        }
+
+        public static int PackSize(EnemyKind kind) => kind == EnemyKind.Hound || kind == EnemyKind.Pirate || kind == EnemyKind.Goblin ? 2 : 1; // 들개 · 수적 졸개 · 고블린은 둘씩
 
         public static int Cost(EnemyKind kind)
         {
@@ -75,13 +95,18 @@ namespace AThousandDawns.Prototype
                 case EnemyKind.BloodShaman: return Key("bloodshaman", 2f);
                 case EnemyKind.DemonGuard: return Key("demonguard", 3f);
                 case EnemyKind.BloodBomber: return Key("bloodbomber", 1f);
+                case EnemyKind.Slime: return Key("slime", 2f);
+                case EnemyKind.Goblin: return Key("goblin", 2f);
+                case EnemyKind.GoblinArcher: return Key("goblinarcher", 2f);
+                case EnemyKind.GoblinRogue: return Key("goblinrogue", 2f);
+                case EnemyKind.GoblinShaman: return Key("goblinshaman", 2f);
                 default: return 99;
             }
         }
 
         // 방마다 수를 묶는 적: 멀리서 쏘는 적 (궁수 · 망령), 부르는 적 (나팔수 · 목탁승)
-        static bool IsShooter(EnemyKind kind) => kind == EnemyKind.Archer || kind == EnemyKind.Wraith || kind == EnemyKind.Harpooner || kind == EnemyKind.BloodArcher;
-        static bool IsCaller(EnemyKind kind) => kind == EnemyKind.Horn || kind == EnemyKind.Moktak || kind == EnemyKind.FlagBearer || kind == EnemyKind.BloodShaman;
+        static bool IsShooter(EnemyKind kind) => kind == EnemyKind.Archer || kind == EnemyKind.Wraith || kind == EnemyKind.Harpooner || kind == EnemyKind.BloodArcher || kind == EnemyKind.GoblinArcher;
+        static bool IsCaller(EnemyKind kind) => kind == EnemyKind.Horn || kind == EnemyKind.Moktak || kind == EnemyKind.FlagBearer || kind == EnemyKind.BloodShaman || kind == EnemyKind.GoblinShaman;
 
         static int Key(string kind, float fallback) => Math.Max(1, (int)Math.Round(GameConfig.Get("room_cost." + kind, fallback)));
 

@@ -5,7 +5,7 @@ using AThousandDawns.Player;
 
 namespace AThousandDawns.Items
 {
-    // data_items CSV → 기물 정의. 머리줄: id, keyword, name, grade, aux, min_qi, max_qi, v1~v4, scales, side, side_value, effect, side_text
+    // data_items CSV → 기물 정의. 머리줄: id, keyword, name, grade, aux, min_qi, max_qi, v1~v4, scales, side, side_value, effect, side_text, slot, realm
     public static class ItemTable
     {
         public static List<ItemDefinition> Read(string csv, List<string> errors)
@@ -28,6 +28,7 @@ namespace AThousandDawns.Items
             int idCol = Col("id"), keywordCol = Col("keyword"), nameCol = Col("name"), gradeCol = Col("grade"), auxCol = Col("aux");
             int minCol = Col("min_qi"), maxCol = Col("max_qi"), scalesCol = Col("scales"), sideCol = Col("side"), sideValueCol = Col("side_value");
             int effectCol = Col("effect"), sideTextCol = Col("side_text");
+            int slotCol = Col("slot"), realmCol = Col("realm"); // 장비 부위 (머리 · 상의 …) · 세계 (이계면 판타지 기물)
             int[] vCols = { Col("v1"), Col("v2"), Col("v3"), Col("v4") };
             if (idCol < 0 || keywordCol < 0 || minCol < 0 || maxCol < 0)
             {
@@ -79,6 +80,8 @@ namespace AThousandDawns.Items
                     sideValue = sideValue,
                     effectText = Cell(effectCol),
                     sideText = Cell(sideTextCol),
+                    slot = EquipSlots.Parse(Cell(slotCol)),
+                    otherworld = Cell(realmCol) == "이계",
                 });
             }
             return items;

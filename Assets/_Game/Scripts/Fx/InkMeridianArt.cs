@@ -99,7 +99,7 @@ namespace AThousandDawns.Fx
             GUI.color = old;
         }
 
-        // 한지 화면 (면벽수련 등 밝은 화면용): 한지 결 그림을 깔고 가장자리에 옅은 먹 번짐
+        // 한지 화면 (영혼수련 등 밝은 화면용): 한지 결 그림을 깔고 가장자리에 옅은 먹 번짐
         public static void PaperBackdrop(float width, float height)
         {
             Load();

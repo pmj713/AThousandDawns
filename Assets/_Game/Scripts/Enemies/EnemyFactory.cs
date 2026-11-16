@@ -175,6 +175,37 @@ namespace AThousandDawns.Enemies
                 BodyPosition = new Vector3(0f, 1.4f, 0f), BodyScale = new Vector3(1.7f, 1.4f, 1.5f), // 철갑 거구
                 MarkPosition = new Vector3(0.9f, 1.2f, 0.6f), MarkScale = new Vector3(0.5f, 0.5f, 0.5f), // 유성추
             },
+            // ── 차원 겹침: 판타지 적
+            EnemyKind.Slime => new Shape
+            {
+                Name = "슬라임", Radius = 0.45f, Height = 0.9f, Primitive = PrimitiveType.Sphere,
+                BodyPosition = new Vector3(0f, 0.45f, 0f), BodyScale = new Vector3(0.95f, 0.75f, 0.95f),
+                MarkPosition = new Vector3(0f, 0.55f, 0.35f), MarkScale = new Vector3(0.3f, 0.12f, 0.1f), // 눈
+            },
+            EnemyKind.Goblin => new Shape
+            {
+                Name = "고블린", Radius = 0.3f, Height = 1.2f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.6f, 0f), BodyScale = new Vector3(0.6f, 0.6f, 0.6f),
+                MarkPosition = new Vector3(0.3f, 0.7f, 0.35f), MarkScale = new Vector3(0.15f, 0.15f, 0.6f), // 몽둥이
+            },
+            EnemyKind.GoblinArcher => new Shape
+            {
+                Name = "고블린 궁수", Radius = 0.3f, Height = 1.2f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.6f, 0f), BodyScale = new Vector3(0.55f, 0.6f, 0.55f),
+                MarkPosition = new Vector3(-0.3f, 0.75f, 0.25f), MarkScale = new Vector3(0.05f, 0.9f, 0.05f), // 활
+            },
+            EnemyKind.GoblinRogue => new Shape
+            {
+                Name = "고블린 단검꾼", Radius = 0.28f, Height = 1.1f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.55f, 0f), BodyScale = new Vector3(0.5f, 0.55f, 0.5f),
+                MarkPosition = new Vector3(0.25f, 0.6f, 0.35f), MarkScale = new Vector3(0.05f, 0.05f, 0.35f), // 단검
+            },
+            EnemyKind.GoblinShaman => new Shape
+            {
+                Name = "고블린 주술사", Radius = 0.3f, Height = 1.2f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.6f, 0f), BodyScale = new Vector3(0.55f, 0.6f, 0.55f),
+                MarkPosition = new Vector3(0.3f, 1.0f, 0.2f), MarkScale = new Vector3(0.06f, 1.1f, 0.06f), // 해골 지팡이
+            },
             // ── 천마총
             EnemyKind.Cultist => new Shape
             {
@@ -261,6 +292,11 @@ namespace AThousandDawns.Enemies
             EnemyKind.BloodBomber => Tinted(kind, v.bomber != null ? v.bomber : v.grunt, new Color(0.7f, 0.2f, 0.18f)),
             EnemyKind.BloodShadow => Tinted(kind, v.qingzhu != null ? v.qingzhu : v.grunt, new Color(0.55f, 0.1f, 0.12f)),
             EnemyKind.HeavenlyDemon => Tinted(kind, v.nokrim != null ? v.nokrim : v.grunt, new Color(0.15f, 0.08f, 0.1f)),
+            EnemyKind.Slime => Tinted(kind, v.grunt, new Color(0.45f, 0.8f, 0.4f)), // 판타지: 그림이 생기기 전까지 색만 (또렷한 원색)
+            EnemyKind.Goblin => Tinted(kind, v.grunt, new Color(0.4f, 0.6f, 0.25f)),
+            EnemyKind.GoblinArcher => Tinted(kind, v.archer != null ? v.archer : v.grunt, new Color(0.45f, 0.6f, 0.3f)),
+            EnemyKind.GoblinRogue => Tinted(kind, v.hound != null ? v.hound : v.grunt, new Color(0.35f, 0.5f, 0.3f)),
+            EnemyKind.GoblinShaman => Tinted(kind, v.horn != null ? v.horn : v.grunt, new Color(0.5f, 0.35f, 0.6f)),
             _ => v.grunt,
         };
 
@@ -350,6 +386,11 @@ namespace AThousandDawns.Enemies
                 EnemyKind.BloodBomber => root.AddComponent<BloodBomberBrain>(),
                 EnemyKind.BloodShadow => root.AddComponent<BloodShadowBrain>(),
                 EnemyKind.HeavenlyDemon => root.AddComponent<HeavenlyDemonBrain>(),
+                EnemyKind.Slime => root.AddComponent<SlimeBrain>(),
+                EnemyKind.Goblin => root.AddComponent<GoblinBrain>(),
+                EnemyKind.GoblinArcher => root.AddComponent<GoblinArcherBrain>(),
+                EnemyKind.GoblinRogue => root.AddComponent<GoblinRogueBrain>(),
+                EnemyKind.GoblinShaman => root.AddComponent<GoblinShamanBrain>(),
                 _ => root.AddComponent<GruntBrain>(),
             };
             if (brain is ShieldBrain shieldBrain) shieldBrain.SetShieldVisual(mark.transform);

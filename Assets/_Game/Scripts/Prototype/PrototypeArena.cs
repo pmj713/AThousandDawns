@@ -71,7 +71,7 @@ namespace AThousandDawns.Prototype
         public int PendingOffers => _pendingOffers;
         public MeridianScreen Meridian => _meridian;
         public bool Blocked { get; set; }
-        public int Luck { get; set; } // 면벽수련 오: 기물 등급 행운 // 갈림길 화면처럼 다른 창이 떠 있으면 시험 키를 받지 않아요
+        public int Luck { get; set; } // 영혼수련 오: 기물 등급 행운 // 갈림길 화면처럼 다른 창이 떠 있으면 시험 키를 받지 않아요
         MeridianScreen _meridian;
 
         void Start()

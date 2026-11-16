@@ -6,7 +6,7 @@ namespace AThousandDawns.Enemies
     // 궁수: 5~7칸을 유지하고, 가까이 오면 2칸 물러나요. 활을 당기는 예고 동안은 제자리에 서서 조준하고, 쏘는 순간 0.2초 멈춰요.
     // 예고 절반 규칙은 "겨누는 지점"에 적용해요: 앞 절반은 플레이어를 따라가고, 뒤 절반은 그 지점에 고정.
     // 화살은 고정된 지점을 지나가니까, 가만히 있으면 맞고 예고를 보고 비키면 피해요.
-    public sealed class ArcherBrain : EnemyBrain
+    public class ArcherBrain : EnemyBrain // 고블린 궁수가 이어받아요
     {
         public override string AttackName => "화살";
 

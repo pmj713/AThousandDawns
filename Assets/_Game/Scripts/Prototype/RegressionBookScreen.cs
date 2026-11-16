@@ -9,7 +9,7 @@ namespace AThousandDawns.Prototype
 {
     // 회귀록 화면 (시험판 IMGUI): 매화나무 가지에 봉우리가 달려 있어요.
     // 봉우리를 누르면 오른쪽에 설명·비용·조건 → "개화"를 누르면 기억을 쓰고 꽃이 피어 바로 적용 (다음 판부터).
-    // 결과 화면에서 B로 열고 B·Esc로 닫아요. M으로 면벽수련 (심득을 심법 6종에 나눠 넣기, 언제든 다시 나눔).
+    // 결과 화면에서 B로 열고 B·Esc로 닫아요. M으로 영혼수련 (심득을 심법 6종에 나눠 넣기, 언제든 다시 나눔).
     public sealed class RegressionBookScreen : MonoBehaviour
     {
         static readonly Color Paper = new Color(0.97f, 0.9f, 0.9f);            // 연분홍 한지
@@ -29,7 +29,7 @@ namespace AThousandDawns.Prototype
         // 기준 1920×1080 화면 좌표 (오른쪽 520은 설명 칸).
         // 매화나무 수형 (손그림 BookArt/Tree와 같은 1920×1080 자리): 살짝 휘며 시계 방향으로 기운 줄기에서 큰 가지가 양쪽으로 휘어 나가고,
         // 가지에서 다시 곁가지가 나요. 해금 순서대로 가지를 따라 봉우리가 달려요 (좌표는 그림 속 가지 선에 맞췄어요).
-        //   위: 경맥·무기 · 왼쪽: 주머니 · 가운데 큰 가지: 면벽수련 → 심득, 거기서 위로 견문, 아래로 생존 · 아래: 유품
+        //   위: 경맥·무기 · 왼쪽: 주머니 · 가운데 큰 가지: 영혼수련 → 심득, 거기서 위로 견문, 아래로 생존 · 아래: 유품
         // "@"로 시작하는 자리는 봉우리가 아니라 가지가 줄기에 붙는 곳이에요 (그림이 없을 때 코드로 그리는 용도).
         static readonly Dictionary<string, Vector2> Layout = new Dictionary<string, Vector2>
         {
@@ -61,7 +61,7 @@ namespace AThousandDawns.Prototype
         static Texture2D _circle;
 
         MetaSave _meta;
-        bool _meditation; // 면벽수련 화면
+        bool _meditation; // 영혼수련 화면
         string _selected, _notice;
         float _noticeTimer;
         [System.NonSerialized] GUIStyle _title, _label, _small, _node, _button;
@@ -104,8 +104,8 @@ namespace AThousandDawns.Prototype
             if (keyboard.mKey.wasPressedThisFrame && MeditationOpen) _meditation = !_meditation;
         }
 
-        // ── 게임패드: 회귀록은 십자키로 봉우리 순서대로 (→↓ 다음 · ←↑ 이전) · A 피우기 · Y 면벽수련 · B 닫기
-        //    면벽수련은 위아래 심법 · 좌우 − / + · X 모두 되돌리기
+        // ── 게임패드: 회귀록은 십자키로 봉우리 순서대로 (→↓ 다음 · ←↑ 이전) · A 피우기 · Y 영혼수련 · B 닫기
+        //    영혼수련은 위아래 심법 · 좌우 − / + · X 모두 되돌리기
         public int PadRow { get; private set; }
         public bool PadActive => IsOpen && AThousandDawns.Core.Pad.Active;
         public string SelectedNode => _selected; // 테스트용
@@ -153,7 +153,7 @@ namespace AThousandDawns.Prototype
             GUI.depth = -10;
             Fill(new Rect(0, 0, UiScale.Width, UiScale.Height), Paper); // 한지 (불투명: 뒤의 결과 화면이 비치지 않게)
 
-            if (MeditationOpen && GUI.Button(new Rect(UiScale.Width - 360, 50, 300, 50), _meditation ? "회귀록 (M)" : "면벽수련 (M)", _button)) _meditation = !_meditation;
+            if (MeditationOpen && GUI.Button(new Rect(UiScale.Width - 360, 50, 300, 50), _meditation ? "회귀록 (M)" : "영혼수련 (M)", _button)) _meditation = !_meditation;
             if (_meditation)
             {
                 DrawMeditation();
@@ -203,7 +203,7 @@ namespace AThousandDawns.Prototype
 
             DrawDetail();
             if (_noticeTimer > 0f && _notice != null) GUI.Label(new Rect(0, UiScale.Height - 80, UiScale.Width, 40), _notice, _title);
-            else if (PadActive) AThousandDawns.Fx.InkPadUi.Hints(UiScale.Width * 0.5f, UiScale.Height - 60f, 34f, ("A", "피우기"), ("Y", "면벽수련"), ("B", "닫기")); // 붉은 낙관 안내
+            else if (PadActive) AThousandDawns.Fx.InkPadUi.Hints(UiScale.Width * 0.5f, UiScale.Height - 60f, 34f, ("A", "피우기"), ("Y", "영혼수련"), ("B", "닫기")); // 붉은 낙관 안내
         }
 
         void DrawDetail()
@@ -276,14 +276,14 @@ namespace AThousandDawns.Prototype
         public bool IsMeditationShown => IsOpen && _meditation;
         public void ShowMeditation(bool on) => _meditation = on && MeditationOpen;
 
-        // 면벽수련: 심법마다 − / + 와 단계 (5·10·20). 바꾸면 바로 저장, 다음 판부터 적용.
+        // 영혼수련: 심법마다 − / + 와 단계 (5·10·20). 바꾸면 바로 저장, 다음 판부터 적용.
         void DrawMeditation()
         {
             int total = Meditation.TotalPoints(_meta), spent = Meditation.Spent(_meta);
             AThousandDawns.Fx.InkMeridianArt.PaperBackdrop(UiScale.Width, UiScale.Height); // 한지 결 + 귀퉁이 먹 번짐
             if (MeditationOpen && GUI.Button(new Rect(UiScale.Width - 360, 50, 300, 50), "회귀록 (M)", _button)) _meditation = false; // 한지 위에 다시 (덮였으니)
-            GUI.Label(new Rect(60, 40, 900, 50), "면벽수련", _title);
-            GUI.Label(new Rect(60, 100, 1100, 30), $"심득 <b>{total - spent}</b> 남음 / {total}  ·  회귀록 면벽수련·심득 봉우리로 늘어요 · 언제든 다시 나눌 수 있어요", _label);
+            GUI.Label(new Rect(60, 40, 900, 50), "영혼수련", _title);
+            GUI.Label(new Rect(60, 100, 1100, 30), $"심득 <b>{total - spent}</b> 남음 / {total}  ·  회귀록 영혼수련·심득 봉우리로 늘어요 · 언제든 다시 나눌 수 있어요", _label);
             if (GUI.Button(new Rect(60, 140, 200, 40), "모두 되돌리기", _button))
             {
                 Meditation.Reset(_meta);

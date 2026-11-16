@@ -31,6 +31,38 @@ namespace AThousandDawns.Player
         public int HanokMaxQi { get; set; } = 2;    // 한옥: 붙어 있는 기물의 최대 기 +
         public IReadOnlyList<Vector2Int> Danjeons => _danjeons;
 
+        // ── 장비 칸 방식 (경맥도 대신): 칸 10개가 한 줄 (x = 칸 번호). 단전 · 거리 없이 칸의 기 = 칸 기본 기 + (공력 − 시작 공력) + 기혈.
+        // 잠긴 칸은 지역 보스를 쓰러뜨릴 때 열려요 (EquipSlots.UnlockAfterBoss).
+        public bool EquipMode { get; private set; }
+        public int PowerBase { get; set; }          // 시작 공력 (이만큼일 때 칸 기본 기 그대로)
+        readonly bool[] _unlocked = new bool[AThousandDawns.Items.EquipSlots.Count];
+        readonly int[] _slotQi = new int[AThousandDawns.Items.EquipSlots.Count];
+
+        public void SetEquipMode(int powerBase)
+        {
+            EquipMode = true;
+            Width = AThousandDawns.Items.EquipSlots.Count;
+            Height = 1;
+            PowerBase = powerBase;
+            _danjeons.Clear();
+            _parts.Clear();
+            for (int i = 0; i < _slotQi.Length; i++)
+            {
+                _slotQi[i] = AThousandDawns.Items.EquipSlots.BaseQi(i);
+                _unlocked[i] = AThousandDawns.Items.EquipSlots.OpenAtStart(i);
+            }
+            _dirty = true;
+        }
+
+        public bool IsUnlocked(Vector2Int cell) => !EquipMode || (Contains(cell) && _unlocked[cell.x]);
+
+        public void Unlock(int slot)
+        {
+            if (slot >= 0 && slot < _unlocked.Length) _unlocked[slot] = true;
+        }
+
+        public int SlotBaseQi(int slot) => slot >= 0 && slot < _slotQi.Length ? _slotQi[slot] : 0;
+
         public MeridianBoard(int width, int height, int maxDanjeons, int power)
         {
             Width = Mathf.Max(1, width);
@@ -46,6 +78,7 @@ namespace AThousandDawns.Player
         // 단전을 열어요. 판 밖이거나 이미 단전이거나 최대 개수면 false.
         public bool AddDanjeon(Vector2Int cell)
         {
+            if (EquipMode) return false; // 장비 칸엔 단전이 없어요
             if (!Contains(cell) || IsDanjeon(cell) || PartAt(cell) != PartKind.None || _danjeons.Count >= MaxDanjeons) return false;
             _danjeons.Add(cell);
             _dirty = true;
@@ -77,6 +110,7 @@ namespace AThousandDawns.Player
         // 부품을 놓아요. 판 밖·단전 칸·이미 부품이 있는 칸이면 false. (기물이 있는지는 PlayerItems가 봐요)
         public bool SetPart(Vector2Int cell, PartKind kind)
         {
+            if (EquipMode) return false; // 장비 칸엔 부품을 못 놓아요
             if (kind == PartKind.None || !Contains(cell) || IsDanjeon(cell) || _parts.ContainsKey(cell)) return false;
             _parts[cell] = kind;
             _dirty = true;
@@ -101,6 +135,7 @@ namespace AThousandDawns.Player
         public int QiAt(Vector2Int cell)
         {
             if (!Contains(cell)) return 0;
+            if (EquipMode) return Mathf.Max(0, _slotQi[cell.x] + Power - PowerBase + (AcupointAt(cell) == Acupoint.Gihyeol ? GihyeolQi : 0));
             Refresh();
             int qi = AcupointAt(cell) == Acupoint.Gihyeol ? GihyeolQi : 0;
             int index = cell.y * Width + cell.x;
@@ -112,6 +147,7 @@ namespace AThousandDawns.Player
         // 경맥도 확장 (예: 녹림왕 처치 후 5×4 → 6×4). 줄이지는 않아요.
         public void Expand(int width, int height)
         {
+            if (EquipMode) return; // 장비 칸은 보스 처치로 칸을 열어요 (Unlock)
             Width = Mathf.Max(Width, width);
             Height = Mathf.Max(Height, height);
             _dirty = true;

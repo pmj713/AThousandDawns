@@ -47,16 +47,17 @@ namespace AThousandDawns.Player
         float ItemAttackSpeedBonus =>
             V("breeze_tassel", 1)
             + Mathf.Min(V("broken_blade", 2), _bladeStacks * V("broken_blade", 1))
-            + (_windKnotTimer > 0f ? V("wind_knot", 3) : 0f);
+            + (_windKnotTimer > 0f ? V("wind_knot", 3) : 0f)
+            + V("elven_leggings", 1) + V("spellblade_tassel", 1); // 이계: 엘프 가죽 바지 · 마검 술
 
         // 짚신 · 흑풍 망토 (대시 후)
-        float ItemMoveSpeedBonus => V("straw_sandals", 1) + (_cloakTimer > 0f ? V("black_wind_cloak", 1) : 0f);
+        float ItemMoveSpeedBonus => V("straw_sandals", 1) + (_cloakTimer > 0f ? V("black_wind_cloak", 1) : 0f) + V("goblin_boots", 1); // + 이계 고블린 가죽장화
 
         // 거북 등껍질 (0개면 2배)
         float ItemToughness => V("turtle_shell", 1) * (Pure ? V("turtle_shell", 2) : 1f) + PackToughness; // + 철포삼 조끼
 
         // 죽갑 조각
-        float EffectiveDefense => Defense + V("bamboo_armor", 1);
+        float EffectiveDefense => Defense + V("bamboo_armor", 1) + V("dwarf_belt", 1); // + 이계 드워프 강철 허리띠
 
         // 쇠사슬 (피격 후 잠시) · 금빛 가사 (체력 절반 이하, 0개면 2배)
         float ItemDamageReduction
@@ -64,6 +65,7 @@ namespace AThousandDawns.Player
             get
             {
                 float reduction = _chainTimer > 0f ? V("iron_chain", 1) : 0f;
+                reduction += V("slime_bracelet", 1) + V("mithril_chainmail", 1); // 이계: 슬라임 팔찌 · 미스릴 사슬 갑옷
                 if (Has("golden_kasaya") && Health <= MaxHealth * V("golden_kasaya", 3))
                     reduction += V("golden_kasaya", 1) * (Pure ? V("golden_kasaya", 2) : 1f);
                 return reduction;

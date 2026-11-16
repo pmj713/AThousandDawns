@@ -22,7 +22,7 @@ namespace AThousandDawns.Prototype
         void DrawResult()
         {
             if (run == null || !run.IsShowingResult) return;
-            if (run.Book != null && run.Book.IsOpen) return; // 회귀록·면벽수련이 덮고 있어요
+            if (run.Book != null && run.Book.IsOpen) return; // 회귀록·영혼수련이 덮고 있어요
             EnsureStyles();
             var r = run.Result;
             var old = GUI.color;

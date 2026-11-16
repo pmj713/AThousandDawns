@@ -28,13 +28,13 @@ namespace AThousandDawns.Prototype
         static readonly Color Faint = new Color32(0x8A, 0x82, 0x78, 0xFF);
         static readonly Color Seal = new Color32(0xC8, 0x46, 0x3C, 0xFF);   // 매화 홍 (낙관)
 
-        // 프롤로그 (기획 대화 스토리 배경 초안). 그림은 장마다 TitleArt/Prologue_1~4.
+        // 프롤로그 (차원 겹침 설정). 그림은 장마다 TitleArt/Prologue_1~4.
         public static readonly string[] Prologue =
         {
-            "백 년 전, 마교 교주 천마가 천마총 깊은 곳에 봉인되었다.",
-            "마교는 그를 되살릴 의식을 준비한다.\n의식에는 흩어진 천마의 내단 조각이 모두 필요하다.",
-            "마교가 마을을 덮친 밤, 내 단전은 부서졌다.\n그리고 그 빈자리에, 마지막 조각이 깃들었다.",
-            "마교는 마지막 조각을 품은 나를 쫓는다.\n그들보다 먼저 천마총에 닿아, 이 모든 것을 끝내야 한다.",
+            "마교의 의식이 하늘을 찢었다.\n두 세계가 겹치고, 낯선 땅의 괴물과 사람들이 무림에 쏟아졌다.",
+            "천마는 그 혼란을 틈타 무림을 통일하겠다며 마교를 일으켰다.",
+            "평범하게 살던 나는 그날 밤 죽었다.\n그리고 차원의 틈이 나를 다시 그날 아침으로 돌려보냈다.",
+            "몇 번을 죽어도 돌아온다면, 이번에는 천마를 막겠다.",
         };
 
         public View Current { get; private set; } = View.Menu;
