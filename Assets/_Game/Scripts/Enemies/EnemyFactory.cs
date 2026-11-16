@@ -220,7 +220,7 @@ namespace AThousandDawns.Enemies
             },
             EnemyKind.Imp => new Shape
             {
-                Name = "임프", Radius = 0.3f, Height = 1.0f, Primitive = PrimitiveType.Sphere,
+                Name = "임프", Radius = 0.3f, Height = 1.2f, Primitive = PrimitiveType.Sphere, // 고블린 궁수와 같은 몸 (화염탄은 높이 1에서 나가요)
                 BodyPosition = new Vector3(0f, 1.3f, 0f), BodyScale = new Vector3(0.6f, 0.6f, 0.6f), // 떠 있어요
                 MarkPosition = new Vector3(0f, 1.3f, 0.35f), MarkScale = new Vector3(0.25f, 0.25f, 0.25f), // 불덩이
             },
