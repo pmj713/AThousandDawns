@@ -9,6 +9,12 @@ namespace AThousandDawns.Art
     public class InkRegionLook : MonoBehaviour
     {
         static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
+        static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+        // 채색 전환: 바닥 결 텍스처는 회색이라 지역 바닥 색을 따로 입혀요 — 죽림 이끼 낀 흙 · 폐사찰 누런 돌마당 · 장강 젖은 푸른 모래 · 천마총 붉은 흙
+        static readonly Color[] FloorColors =
+        {
+            new Color(0.66f, 0.74f, 0.5f), new Color(0.86f, 0.76f, 0.58f), new Color(0.6f, 0.72f, 0.76f), new Color(0.66f, 0.42f, 0.38f),
+        };
 
         [SerializeField] Material floorMaterial;
         [SerializeField] Texture[] floorTextures = new Texture[0];      // 지역별 바닥 무늬 (비면 원래 것)
@@ -18,6 +24,7 @@ namespace AThousandDawns.Art
 
         RoomRun _run;
         Texture _original;
+        Color _originalColor;
         int _shown = -1;
 
         public void Setup(Material floor, Texture[] floors, GameObject[] backs, GameObject[] airs, InkRegionDressing dress)
@@ -31,7 +38,7 @@ namespace AThousandDawns.Art
 
         void Start()
         {
-            if (floorMaterial != null) _original = floorMaterial.GetTexture(BaseMapId);
+            if (floorMaterial != null) { _original = floorMaterial.GetTexture(BaseMapId); _originalColor = floorMaterial.GetColor(BaseColorId); }
             Show(0);
         }
 
@@ -49,6 +56,7 @@ namespace AThousandDawns.Art
             {
                 var tex = floorTextures[Mathf.Clamp(region, 0, floorTextures.Length - 1)];
                 floorMaterial.SetTexture(BaseMapId, tex != null ? tex : _original);
+                floorMaterial.SetColor(BaseColorId, FloorColors[Mathf.Clamp(region, 0, FloorColors.Length - 1)]);
             }
             Toggle(backdrops, region);
             Toggle(atmosphere, region);
@@ -64,7 +72,7 @@ namespace AThousandDawns.Art
 
         void OnDestroy()
         {
-            if (floorMaterial != null && _original != null) floorMaterial.SetTexture(BaseMapId, _original);
+            if (floorMaterial != null && _original != null) { floorMaterial.SetTexture(BaseMapId, _original); floorMaterial.SetColor(BaseColorId, _originalColor); }
         }
     }
 }

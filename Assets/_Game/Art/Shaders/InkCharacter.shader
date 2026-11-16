@@ -1,6 +1,6 @@
-// 3D 캐릭터용 수묵 셰이더 (URP).
-// 명암을 먹 농담 몇 단계로 끊고, 단계 경계를 노이즈로 번지게 해요. 실루엣 안쪽은 먹을 더 얹고,
-// 뒷면을 부풀린 붓선 외곽선(굵기를 노이즈로 흔듦)을 따로 그려요. 색은 채도로 조절 (0이면 흑백).
+// 3D 캐릭터·소품용 채색 툰 셰이더 (URP). 이름은 예전 수묵 셰이더 그대로예요 (재질·스크립트가 이 이름과 속성을 써요).
+// 텍스처·재질 원래 색에 빛 받는 면·그늘 두 단계, 그늘은 푸르스름하게. 뒷면을 부풀린 고른 가는 윤곽선을 따로 그려요.
+// 수묵 시절 속성(채도·종이·번짐·먹 단계·종이 결)은 남아 있지만 이제 쓰지 않아요. 덧입힘(_AuraColor·_CrackColor·_Dissolve)은 그대로
 Shader "AThousandDawns/InkCharacter"
 {
     Properties
@@ -187,40 +187,17 @@ Shader "AThousandDawns/InkCharacter"
                 float3 v = normalize(GetWorldSpaceViewDir(input.positionWS));
                 Light light = GetMainLight(TransformWorldToShadowCoord(input.positionWS));
 
-                // 빛: 반 람베르트, 그림자는 먹을 조금 더 얹는 정도로만
-                float lit = dot(n, light.direction) * 0.5 + 0.5;
-                lit *= lerp(1.0 - _ShadowInk, 1.0, light.shadowAttenuation);
-
-                // 번짐: 단계 경계를 노이즈로 흔들어요
-                float wash = Fbm(input.positionWS * _WashNoiseScale);
-                float t = saturate(lit + (wash - 0.5) * _WashNoiseStrength);
-
-                // 먹 농담 단계 (경계는 부드럽게)
-                float steps = max(_Bands - 1.0, 1.0);
-                float x = t * steps;
-                float fl = floor(x);
-                float tone = saturate((fl + smoothstep(0.5 - _BandSoftness, 0.5 + _BandSoftness, x - fl)) / steps);
-
-                // 실루엣 안쪽 가장자리에 먹
-                float rim = pow(1.0 - saturate(dot(n, v)), _RimPower) * _RimInk;
-                tone *= 1.0 - rim;
-
-                // 바탕색: 채도를 낮추고 종이색 쪽으로 조금 밝혀요
+                // 채색 툰 (수묵 걷어 냄): 텍스처·재질 원래 색 그대로, 빛 받는 면과 그늘 두 단계 (경계는 부드럽게).
+                //   그늘은 색을 살린 채 푸르스름하게 어둡고, 하늘빛 환경광을 조금 더해 새까맣게 떨어지지 않아요. 가장자리에 옅은 역광
                 half3 baseRgb = _BaseColor.rgb * SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv).rgb;
-                half3 gray = Luminance(baseRgb).xxx;
-                half3 tint = lerp(gray, baseRgb, max(lerp(_Saturation, 1.0, _InkColorAmount), _InkCharColorFloor));
-                half3 paperLit = lerp(tint, _PaperColor.rgb, lerp(0.35, 0.12, _InkColorAmount));
-                half3 color = lerp(_InkColor.rgb, paperLit, tone);
-
-                // 종이 결
-                float grain = Hash13(float3(floor(input.positionCS.xy * 0.5), 7.0));
-                color *= 1.0 - (grain - 0.5) * _PaperGrain;
-
-                // 수묵 강도 줄이기: 먹 단계·가장자리 먹 대신 원래 색에 부드러운 명암 (캐릭터가 배경에서 또렷하게)
-                half3 plain = lerp(tint, baseRgb, _InkCharSoften) * lerp(0.55, 1.05, lit);
-                color = lerp(color, plain, _InkCharSoften);
-                // 어두운 곳 밝히기 (밝은 곳은 거의 그대로)
-                color = 1.0 - (1.0 - color) * (1.0 - _InkCharLift * 0.5);
+                float ndl = dot(n, light.direction);
+                float lightAmt = smoothstep(-0.1, 0.2, ndl) * lerp(0.35, 1.0, light.shadowAttenuation);
+                half3 lightCol = lerp(half3(1, 1, 1), light.color, 0.5);
+                half3 color = baseRgb * lerp(half3(0.58, 0.6, 0.75), lightCol * 1.08, lightAmt);
+                color += baseRgb * SampleSH(n) * 0.25;
+                color += pow(1.0 - saturate(dot(n, v)), 4.0) * 0.18 * lightAmt;
+                // 어두운 곳 밝히기 (InkLookSettings 밝기, 밝은 곳은 거의 그대로)
+                color = 1.0 - (1.0 - color) * (1.0 - _InkCharLift * 0.3);
 
                 // 갈라진 금 (분열해 나온 적): 몸 군데군데 보로노이 경계를 따라 짙은 금, 둘레는 금 색으로 번져요 (물체 공간이라 몸에 붙어 다녀요)
                 if (_CrackColor.a > 0.001)
@@ -288,7 +265,7 @@ Shader "AThousandDawns/InkCharacter"
 
                 float3 normalCS = mul((float3x3)UNITY_MATRIX_VP, normalWS);
                 float2 dir = normalize(normalCS.xy + 1e-5);
-                float brush = lerp(1.0, ValueNoise(positionWS * _OutlineNoiseScale) * 1.8, _OutlineJitter);
+                float brush = 0.6;   // 채색 전환: 붓 떨림 없는 고른 가는 윤곽 (_OutlineJitter는 이제 안 써요)
                 positionCS.xy += dir * (_OutlineWidth * (1.0 - _InkCharOutlineThin) * brush * 2.0 / _ScreenParams.xy) * positionCS.w;
 
                 output.positionCS = positionCS;
