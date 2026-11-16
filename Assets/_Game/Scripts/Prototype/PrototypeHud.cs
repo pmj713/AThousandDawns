@@ -186,6 +186,7 @@ namespace AThousandDawns.Prototype
                 string state = masterInfo.IsTransitioning ? " · 전환 중 (무적)" : master.Statuses != null && master.Statuses.IsFrozen ? " · 빙결"
                     : master is IronFistBrain fist && fist.IsWallStunned ? " · 기절!" : "";
                 GUI.Label(new Rect(area.x, area.y, area.width, 24f), $"고수 {master.DisplayName} · {masterInfo.Phase}페이즈{state}   {master.Damageable.Health:0}/{master.Damageable.MaxHealth:0}", _bossLabel);
+                AThousandDawns.Fx.InkHud.FactionCrest(area, master); // 판타지 고수: 이름 왼쪽 스테인드글라스 문장
                 DrawBar(new Rect(area.x, area.y + 26f, area.width, 12f), master.Damageable.Health / Mathf.Max(1f, master.Damageable.MaxHealth), HealthColor);
             }
             var boss = arena != null ? arena.Boss : null;
@@ -200,6 +201,7 @@ namespace AThousandDawns.Prototype
                 if (bossStatus != null && bossStatus.IsFrozen) state += " · 빙결";
                 else if (bossStatus != null && bossStatus.FreezeImmunityLeft > 0f) state += $" · 서리 {bossStatus.FreezeImmunityLeft:0}초";
                 GUI.Label(new Rect(area.x, area.y, area.width, 24f), $"{boss.DisplayName} · {(bossInfo != null ? bossInfo.Phase : 1)}페이즈{state}   {boss.Damageable.Health:0}/{boss.Damageable.MaxHealth:0}", _bossLabel);
+                AThousandDawns.Fx.InkHud.FactionCrest(area, boss); // 판타지 보스: 이름 왼쪽 스테인드글라스 문장
                 DrawBar(new Rect(area.x, area.y + 26f, area.width, 12f), boss.Damageable.Health / Mathf.Max(1f, boss.Damageable.MaxHealth), HealthColor);
             }
 
