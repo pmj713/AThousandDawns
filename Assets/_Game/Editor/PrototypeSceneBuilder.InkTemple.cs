@@ -85,6 +85,8 @@ namespace AThousandDawns.EditorTools
             DressBushRegions(bamboo, temple, river, tomb, woodMat, ref seed);
             // 10) 층 방 테두리 (작은·중간·큰 방 모두): 죽림 대울타리 · 폐사찰 무너진 기와 담 · 장강 말뚝 목책 · 천마총 가시 박힌 검은 돌벽 (PrototypeSceneBuilder.InkBorders.cs)
             DressRoomBorders(bamboo, temple, river, tomb, stoneMat, ref seed);
+            // 11) 결계 문 (방 사이 막힌 문, 모든 방): 죽림 대나무 사립문 · 폐사찰 단청 살문 · 장강 나무 수문 · 천마총 쇠창살과 붉은 휘장 (PrototypeSceneBuilder.InkLockRegions.cs)
+            DressLockRegions(bamboo, temple, river, tomb);
 
             var dressing = new GameObject("Ink Region Dressing").AddComponent<AThousandDawns.Art.InkRegionDressing>();
             dressing.SetRegions(new[]

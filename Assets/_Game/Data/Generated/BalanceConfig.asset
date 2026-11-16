@@ -6385,3 +6385,263 @@ MonoBehaviour:
     value: 0.25
     unit: 
     note: "\uBD09\uC778\uB41C \uB9C8\uAC80 \uBCF4\uC0C1 \uB4F1\uAE09: \uC804\uC124"
+  - key: darkelf.hp
+    value: 850
+    unit: 
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uCCB4\uB825 (\uD310\uD0C0\uC9C0 \uACE0\uC218 \xB7 \uC9C0\uC5ED \uBC30\uC728\uC744 \uBC1B\uC544\uC694)"
+  - key: darkelf.atk
+    value: 13
+    unit: 
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uACF5\uACA9"
+  - key: darkelf.toughness
+    value: 0
+    unit: 
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uAC15\uC778\uD568"
+  - key: darkelf.move_speed
+    value: 4.5
+    unit: cell/s
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uC774\uB3D9\uC18D\uB3C4"
+  - key: darkelf.recovery
+    value: 0.6
+    unit: s
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uD328\uD134 \uBE48\uD2C8"
+  - key: darkelf.slash_windup
+    value: 0.45
+    unit: s
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uD608\uC601 \uBCA0\uAE30 \uC608\uACE0"
+  - key: darkelf.slash_radius
+    value: 2.6
+    unit: cell
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uD608\uC601 \uBCA0\uAE30 \uBC18\uACBD"
+  - key: darkelf.slash_angle
+    value: 120
+    unit: deg
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uD608\uC601 \uBCA0\uAE30 \uAC01\uB3C4"
+  - key: darkelf.slash_ratio
+    value: 1
+    unit: 
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uD608\uC601 \uBCA0\uAE30 \uD53C\uD574 \uBC30\uC728"
+  - key: darkelf.line_windup
+    value: 0.6
+    unit: s
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uD608\uC120 \uC608\uACE0"
+  - key: darkelf.line_min
+    value: 3
+    unit: cell
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uD608\uC120\uC744 \uC4F0\uB294 \uCD5C\uC18C \uAC70\uB9AC"
+  - key: darkelf.line_max
+    value: 6
+    unit: cell
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uD608\uC120\uC744 \uC4F0\uB294 \uCD5C\uB300 \uAC70\uB9AC"
+  - key: darkelf.line_length
+    value: 4
+    unit: cell
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uD608\uC120 \uB3CC\uC9C4 \uAC70\uB9AC"
+  - key: darkelf.line_width
+    value: 1.2
+    unit: cell
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uD608\uC120 \uD3ED"
+  - key: darkelf.line_ratio
+    value: 1
+    unit: 
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uD608\uC120 \uD53C\uD574 \uBC30\uC728"
+  - key: darkelf.line_time
+    value: 0.2
+    unit: s
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uD608\uC120 \uB3CC\uC9C4 \uC2DC\uAC04"
+  - key: darkelf.blink_delay
+    value: 1.2
+    unit: s
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uD608\uC601\uBCF4: \uD50C\uB808\uC774\uC5B4\uAC00 5\uCE78 \uBC16\uC5D0 \uC774\uB9CC\uD07C \uC788\uC73C\uBA74"
+  - key: darkelf.blink_windup
+    value: 0.4
+    unit: s
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uD608\uC601\uBCF4 \uC608\uACE0"
+  - key: darkelf.blink_behind
+    value: 1.5
+    unit: cell
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uD608\uC601\uBCF4: \uD50C\uB808\uC774\uC5B4 \uB4A4 \uAC70\uB9AC"
+  - key: darkelf.echo_delay
+    value: 0.5
+    unit: s
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uC794\uC0C1\uC774 \uB2E4\uC2DC \uBCA0\uAE30\uAE4C\uC9C0 (2\uD398\uC774\uC988\uB294 0.5 \xB7 1.0\uCD08 \uB450 \uBC88)"
+  - key: darkelf.echo_ratio
+    value: 0.6
+    unit: 
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uC794\uC0C1 \uD53C\uD574 \uBC30\uC728"
+  - key: darkelf.lifesteal
+    value: 0
+    unit: 
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uD761\uD608 (\uC5C6\uC74C \xB7 \uD608\uC601\uAC80\uB9C8\uC640 \uB2E4\uB978 \uC810)"
+  - key: darkelf.p2_windup_ratio
+    value: 0.8
+    unit: 
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC 2\uD398\uC774\uC988 \uC608\uACE0 \uC2DC\uAC04 \uBC30\uC728"
+  - key: deathknight.hp
+    value: 1900
+    unit: 
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (hp)"
+  - key: deathknight.atk
+    value: 25
+    unit: 
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (atk)"
+  - key: deathknight.toughness
+    value: 5
+    unit: 
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (toughness)"
+  - key: deathknight.move_speed
+    value: 3.3
+    unit: cell/s
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (move_speed)"
+  - key: deathknight.close_distance
+    value: 2.5
+    unit: cell
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (close_distance)"
+  - key: deathknight.far_distance
+    value: 5
+    unit: cell
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (far_distance)"
+  - key: deathknight.decision_pause
+    value: 0.4
+    unit: s
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (decision_pause)"
+  - key: deathknight.transition_time
+    value: 1.5
+    unit: s
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (transition_time)"
+  - key: deathknight.phase2_hp_ratio
+    value: 0.5
+    unit: 
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (phase2_hp_ratio)"
+  - key: deathknight.max_repeat
+    value: 2
+    unit: 
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (max_repeat)"
+  - key: deathknight.jab_windup
+    value: 0.5
+    unit: s
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (jab_windup)"
+  - key: deathknight.jab_recovery
+    value: 0.7
+    unit: s
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (jab_recovery)"
+  - key: deathknight.jab_ratio
+    value: 0.7
+    unit: 
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (jab_ratio)"
+  - key: deathknight.jab_radius
+    value: 1.5
+    unit: cell
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (jab_radius)"
+  - key: deathknight.jab_angle
+    value: 70
+    unit: deg
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (jab_angle)"
+  - key: deathknight.jab_gap
+    value: 0.35
+    unit: s
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (jab_gap)"
+  - key: deathknight.jab_lunge
+    value: 0.5
+    unit: cell
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (jab_lunge)"
+  - key: deathknight.quake_windup
+    value: 0.8
+    unit: s
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (quake_windup)"
+  - key: deathknight.quake_recovery
+    value: 1
+    unit: s
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (quake_recovery)"
+  - key: deathknight.quake_ratio
+    value: 1.2
+    unit: 
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (quake_ratio)"
+  - key: deathknight.quake_radius
+    value: 3.2
+    unit: cell
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (quake_radius)"
+  - key: deathknight.quake_knockback
+    value: 2
+    unit: cell
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (quake_knockback)"
+  - key: deathknight.quake_interval
+    value: 7
+    unit: s
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (quake_interval)"
+  - key: deathknight.p2_quake_gap
+    value: 0.6
+    unit: s
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (p2_quake_gap)"
+  - key: deathknight.charge_windup
+    value: 0.8
+    unit: s
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (charge_windup)"
+  - key: deathknight.charge_ratio
+    value: 1
+    unit: 
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (charge_ratio)"
+  - key: deathknight.charge_speed
+    value: 14
+    unit: cell/s
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (charge_speed)"
+  - key: deathknight.charge_width
+    value: 1.6
+    unit: cell
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (charge_width)"
+  - key: deathknight.charge_knockback
+    value: 1.5
+    unit: cell
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (charge_knockback)"
+  - key: deathknight.charge_max
+    value: 16
+    unit: cell
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (charge_max)"
+  - key: deathknight.wall_stun
+    value: 2.5
+    unit: s
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (wall_stun)"
+  - key: deathknight.p2_wall_stun
+    value: 1.5
+    unit: s
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (p2_wall_stun)"
+  - key: deathknight.rock_ratio
+    value: 0.8
+    unit: 
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (rock_ratio)"
+  - key: deathknight.rock_radius
+    value: 1.3
+    unit: cell
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (rock_radius)"
+  - key: deathknight.rock_fall
+    value: 0.8
+    unit: s
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (rock_fall)"
+  - key: deathknight.wave_interval
+    value: 5
+    unit: s
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 \uC800\uC8FC \uAC80\uAE30 \uAC04\uACA9 (\uC911\uAC04 \uAC70\uB9AC)"
+  - key: deathknight.wave_count
+    value: 3
+    unit: 
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 \uC800\uC8FC \uAC80\uAE30 \uC218 (\uBD80\uCC44\uAF34)"
+  - key: deathknight.wave_spread
+    value: 20
+    unit: deg
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 \uC800\uC8FC \uAC80\uAE30 \uBD80\uCC44\uAF34 \uAC04\uACA9"
+  - key: deathknight.wave_speed
+    value: 9
+    unit: cell/s
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 \uC800\uC8FC \uAC80\uAE30 \uC18D\uB3C4"
+  - key: deathknight.wave_range
+    value: 12
+    unit: cell
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 \uC800\uC8FC \uAC80\uAE30 \uC0AC\uAC70\uB9AC"
+  - key: deathknight.wave_ratio
+    value: 0.6
+    unit: 
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 \uC800\uC8FC \uAC80\uAE30 \uD53C\uD574 \uBC30\uC728"
+  - key: deathknight.summon_count
+    value: 3
+    unit: 
+    note: "\uB370\uC2A4\uB098\uC774\uD2B8 \uC8FD\uC740 \uC790\uC758 \uBD80\uB984: 2\uD398\uC774\uC988\uC5D0 \uC77C\uC73C\uD0A4\uB294 \uC2A4\uCF08\uB808\uD1A4"

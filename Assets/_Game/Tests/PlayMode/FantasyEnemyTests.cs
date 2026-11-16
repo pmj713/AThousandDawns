@@ -157,19 +157,83 @@ namespace AThousandDawns.Tests
         }
 
         [UnityTest]
-        public IEnumerator 고블린_족장과_오우거가_오류_없이_싸움([Values(EnemyKind.GoblinChief, EnemyKind.Ogre)] EnemyKind kind)
+        public IEnumerator 고블린_족장과_오우거가_오류_없이_싸움([Values(EnemyKind.GoblinChief, EnemyKind.Ogre, EnemyKind.DarkElf, EnemyKind.DeathKnight)] EnemyKind kind)
         {
             yield return Load();
             var director = Object.FindFirstObjectByType<EnemyDirector>();
             var player = Object.FindFirstObjectByType<PlayerController>();
             var boss = director.Spawn(kind, player.transform.position + new Vector3(0f, 0f, 3f));
             ((IMasterBrain)boss).SetZone(player.transform.position, new Vector2(30f, 20f));
-            Assert.AreEqual(kind == EnemyKind.Ogre ? EnemyRank.Boss : EnemyRank.Master, boss.Rank);
+            Assert.AreEqual(kind == EnemyKind.Ogre || kind == EnemyKind.DeathKnight ? EnemyRank.Boss : EnemyRank.Master, boss.Rank);
             Assert.AreEqual(EnemyFaction.Fantasy, boss.Faction);
             Time.timeScale = 2f;
             float end = Time.time + 16f;
             while (Time.time < end && player.Health >= player.MaxHealth) yield return null;
             Assert.Less(player.Health, player.MaxHealth, $"{boss.DisplayName}: 공격이 들어와야 해요");
+        }
+
+        // 데스나이트: 중간 거리에서 저주 검기 셋, 2페이즈에 들어서면 스켈레톤을 일으켜요
+        [UnityTest]
+        public IEnumerator 데스나이트는_저주_검기를_날리고_2페이즈에_스켈레톤을_일으켜요()
+        {
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var boss = director.Spawn(EnemyKind.DeathKnight, player.transform.position + new Vector3(0f, 0f, 4.5f));
+            ((IMasterBrain)boss).SetZone(player.transform.position, new Vector2(30f, 20f));
+            Assert.AreEqual("데스나이트", boss.DisplayName);
+            int waves = 0, raised = 0;
+            System.Action<DeathKnightBrain, Vector3> onWave = (b, d) => waves++;
+            System.Action<DeathKnightBrain> onRaise = b => raised++;
+            DeathKnightBrain.CurseWave += onWave;
+            DeathKnightBrain.Raise += onRaise;
+            Time.timeScale = 2f;
+            float end = Time.time + 20f;
+            var cc = player.GetComponent<CharacterController>();
+            while (Time.time < end && waves == 0)
+            {
+                player.Heal(9999f);
+                Vector3 away = player.transform.position - boss.transform.position;
+                away.y = 0f;
+                if (away.magnitude < 4f && away.sqrMagnitude > 1e-4f) cc.Move(away.normalized * 6f * Time.deltaTime); // 중간 거리 (4~5칸)
+                yield return null;
+            }
+            Assert.Greater(waves, 0, "중간 거리에서 저주 검기");
+            boss.Damageable.ApplyHit(Mathf.CeilToInt(boss.Damageable.MaxHealth * 0.55f));
+            yield return new WaitUntil(() => raised > 0 || Time.time > end + 10f);
+            yield return null;
+            DeathKnightBrain.CurseWave -= onWave;
+            DeathKnightBrain.Raise -= onRaise;
+            Time.timeScale = 1f;
+            Assert.AreEqual(1, raised, "2페이즈에 죽은 자의 부름");
+            Assert.GreaterOrEqual(director.Enemies.Count(e => e.Kind == EnemyKind.Skeleton), 3, "스켈레톤 셋");
+        }
+
+        // 다크 엘프 검사: 혈영검마 규칙에 이름이 바뀌고 흡혈이 없어요
+        [UnityTest]
+        public IEnumerator 다크_엘프_검사는_흡혈_없이_그림자_검술을_써요()
+        {
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var elf = director.Spawn(EnemyKind.DarkElf, player.transform.position + new Vector3(0f, 0f, 2f));
+            ((IMasterBrain)elf).SetZone(player.transform.position, new Vector2(30f, 20f));
+            Assert.AreEqual(EnemyRank.Master, elf.Rank);
+            Assert.AreEqual("독 단검", elf.VolleyName);
+            elf.Damageable.ApplyHit(Mathf.CeilToInt(elf.Damageable.MaxHealth * 0.3f));
+            float hurt = elf.Damageable.Health;
+            var names = new System.Collections.Generic.HashSet<string>();
+            Time.timeScale = 2f;
+            float end = Time.time + 12f;
+            while (Time.time < end && player.Health >= player.MaxHealth)
+            {
+                if (elf.AttackName != null) names.Add(elf.AttackName);
+                yield return null;
+            }
+            Time.timeScale = 1f;
+            Assert.Less(player.Health, player.MaxHealth, "공격이 들어와요");
+            Assert.IsTrue(names.Overlaps(new[] { "월광 베기", "그림자 질주", "그림자 걸음" }), string.Join(",", names));
+            Assert.LessOrEqual(elf.Damageable.Health, hurt + 0.01f, "흡혈이 없어요");
         }
 
         [UnityTest]

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace AThousandDawns.Enemies
 {
-    public enum EnemyKind { Grunt, Boar, Archer, Hound, Shield, Horn, Bomber, Snake, Nokrim, Assassin, Qingzhu, IronFist, Wraith, Arhat, Moktak, Monk, Lantern, Hyegwang, BloodBuddha, Pirate, Harpooner, Anchor, Rattan, WaterGhost, FlagBearer, Takrang, IronDragon, Cultist, BloodArcher, BloodShaman, DemonGuard, BloodBomber, BloodShadow, HeavenlyDemon, Slime, Goblin, GoblinArcher, GoblinRogue, GoblinShaman, Orc, Skeleton, Imp, GoblinChief, Ogre } // 망령부터 폐사찰 (혜광 고수 · 혈불 보스) · 수적 졸개부터 장강 수채 (탁랑객 고수 · 철룡 보스) · 마교도부터 천마총 (혈영검마 고수 · 천마 최종 보스) · 슬라임부터 차원 겹침으로 넘어온 판타지 적
+    public enum EnemyKind { Grunt, Boar, Archer, Hound, Shield, Horn, Bomber, Snake, Nokrim, Assassin, Qingzhu, IronFist, Wraith, Arhat, Moktak, Monk, Lantern, Hyegwang, BloodBuddha, Pirate, Harpooner, Anchor, Rattan, WaterGhost, FlagBearer, Takrang, IronDragon, Cultist, BloodArcher, BloodShaman, DemonGuard, BloodBomber, BloodShadow, HeavenlyDemon, Slime, Goblin, GoblinArcher, GoblinRogue, GoblinShaman, Orc, Skeleton, Imp, GoblinChief, Ogre, DarkElf, DeathKnight } // 망령부터 폐사찰 (혜광 고수 · 혈불 보스) · 수적 졸개부터 장강 수채 (탁랑객 고수 · 철룡 보스) · 마교도부터 천마총 (혈영검마 고수 · 천마 최종 보스) · 슬라임부터 차원 겹침으로 넘어온 판타지 적
 
     // 적 등급 (수련치 탭: 일반 1 · 정예 5 · 살수 5 · 고수 15 · 보스 30)
     public enum EnemyRank { Normal, Elite, Assassin, Master, Boss }

@@ -30,6 +30,8 @@ namespace AThousandDawns.Enemies
             EnemyKind.Takrang => "물보라 갈고리",
             EnemyKind.BloodShadow => "혈영 비검",
             EnemyKind.GoblinChief => "투척 도끼",
+            EnemyKind.DarkElf => "독 단검",
+            EnemyKind.DeathKnight => "저주 검기 난사",
             _ => "견제",
         };
 
@@ -46,6 +48,8 @@ namespace AThousandDawns.Enemies
             EnemyKind.Takrang => "탁랑 뛰어들기",
             EnemyKind.BloodShadow => "혈영 강하",
             EnemyKind.GoblinChief => "족장 덮치기",
+            EnemyKind.DarkElf => "그림자 도약",
+            EnemyKind.DeathKnight => "망령마 도약",
             _ => "도약",
         };
 
