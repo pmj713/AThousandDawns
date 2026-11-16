@@ -65,6 +65,9 @@ namespace AThousandDawns.EditorTools
             ("Orc", EnemyKind.Orc, 3f),
             ("Skeleton", EnemyKind.Skeleton, 3f),
             ("Imp", EnemyKind.Imp, 3.5f),
+            ("Harpy", EnemyKind.Harpy, 4f),
+            ("Werewolf", EnemyKind.Werewolf, 5f),
+            ("Gargoyle", EnemyKind.Gargoyle, 3f),
             ("GoblinChief", EnemyKind.GoblinChief, 3.5f),   // 판타지 고수
             ("Ogre", EnemyKind.Ogre, 2f),                  // 판타지 보스
             ("DarkElf", EnemyKind.DarkElf, 4f),            // 판타지 고수
@@ -92,7 +95,7 @@ namespace AThousandDawns.EditorTools
 
         // 차원 겹침 판타지 적: 무협 수묵과 일부러 다르게 — 채색 동판화·스테인드글라스처럼 원색이 살고 윤곽이 굵고 곧아요.
         // 같은 수묵 셰이더에 값만 달리: 채도 끝까지 · 번짐·종이결 거의 없이 · 붓 떨림 없는 굵은 윤곽 · 명암 단계 넷
-        static readonly HashSet<string> FantasyEnemies = new HashSet<string> { "Slime", "Goblin", "GoblinArcher", "GoblinRogue", "GoblinShaman", "Orc", "Skeleton", "Imp", "GoblinChief", "Ogre", "DarkElf", "DeathKnight" };
+        static readonly HashSet<string> FantasyEnemies = new HashSet<string> { "Slime", "Goblin", "GoblinArcher", "GoblinRogue", "GoblinShaman", "Orc", "Skeleton", "Imp", "GoblinChief", "Ogre", "DarkElf", "DeathKnight", "Harpy", "Werewolf", "Gargoyle" };
 
         static Material FantasyLook(Material m)
         {
@@ -148,7 +151,7 @@ namespace AThousandDawns.EditorTools
         static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "ShoulderRun", "Idle", "Run", "Chant", "Rain", "Drag", "Whirl", "Captive" };
 
         // 고유 동작만 쓰는 적 (Generic으로 가져와요)
-        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha", "Pirate", "Harpooner", "Anchor", "Rattan", "WaterGhost", "FlagBearer", "Takrang", "IronDragon", "Cultist", "BloodArcher", "BloodShaman", "DemonGuard", "BloodBomber", "BloodShadow", "HeavenlyDemon", "CaptiveHero", "Slime", "Goblin", "GoblinArcher", "GoblinRogue", "GoblinShaman", "Orc", "Skeleton", "Imp", "GoblinChief", "Ogre", "DarkElf", "DeathKnight" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
+        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha", "Pirate", "Harpooner", "Anchor", "Rattan", "WaterGhost", "FlagBearer", "Takrang", "IronDragon", "Cultist", "BloodArcher", "BloodShaman", "DemonGuard", "BloodBomber", "BloodShadow", "HeavenlyDemon", "CaptiveHero", "Slime", "Goblin", "GoblinArcher", "GoblinRogue", "GoblinShaman", "Orc", "Skeleton", "Imp", "GoblinChief", "Ogre", "DarkElf", "DeathKnight", "Harpy", "Werewolf", "Gargoyle" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
 
         static readonly Dictionary<string, MoveSpec[]> InkEnemyMoves = new Dictionary<string, MoveSpec[]>
         {
@@ -273,6 +276,18 @@ namespace AThousandDawns.EditorTools
             // 혈영검마 (천마총 고수, 장검): 혈영 베기(가로베기) · 혈선(바닥까지 낮췄다 튀어나가 찌르기) · 혈영보(뒤로 순간이동해 세 번 베어 파고들기).
             //   2페이즈 전환 동안엔 ShadowRush 첫 자세(낮게 웅크림)로 버텨요 (InkEnemyAnimator)
             // 다크 엘프 검사 (판타지 고수, 혈영검마와 같은 패턴): 월광 베기 · 그림자 질주 · 그림자 걸음, 쌍검
+            // 늑대인간 (들개 계열 발톱 베기): 웅크린 발톱 자세로 예고 → 엇갈려 할퀴기. 광폭화 포효는 Roar (InkEnemyAnimator가 WerewolfBrain.Enraged를 보고)
+            ["Werewolf"] = new[]
+            {
+                new MoveSpec { state = "Ready", clips = new[] { "Ready" }, mode = MoveMode.Run },
+                new MoveSpec { state = "Roar", clips = new[] { "Roar" }, mode = MoveMode.Play, seconds = 1f },
+            },
+            // 가고일 (돌발톱 할퀴기 = 기본 Attack): 석화(Stone, 굳어 있는 동안) · 풀림(Unstone, 날개를 펴요)
+            ["Gargoyle"] = new[]
+            {
+                new MoveSpec { state = "Stone", clips = new[] { "Stone" }, mode = MoveMode.Run },
+                new MoveSpec { state = "Unstone", clips = new[] { "Unstone" }, mode = MoveMode.Play, seconds = 0.7f },
+            },
             ["DarkElf"] = new[]
             {
                 new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },
@@ -548,7 +563,7 @@ namespace AThousandDawns.EditorTools
             if (animator == null) animator = go.AddComponent<Animator>();
             animator.runtimeAnimatorController = controller;
             animator.applyRootMotion = false;
-            if (name == "Imp") go.AddComponent<AThousandDawns.Art.InkImpWings>();   // 날갯짓 (LeftWing·RightWing 뼈를 덧돌려요)
+            if (name == "Imp" || name == "Harpy") go.AddComponent<AThousandDawns.Art.InkImpWings>();   // 날갯짓 (LeftWing·RightWing 뼈를 덧돌려요)
             if (name == "HeavenlyDemon") go.AddComponent<AThousandDawns.Art.InkDemonPhaseFx>();   // 마검사 천마: 2페이즈 룬·손 마력, 3페이즈 검 불길
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, $"{folder}/{name}_Ink.prefab");
             Object.DestroyImmediate(go);
