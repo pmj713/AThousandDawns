@@ -23,7 +23,7 @@ namespace AThousandDawns.EditorTools
             var z = GetInkTriplanar("Ink3D_RoofZ", "Tex_RoofTile_Z", 1.2f, 1.5f);
             foreach (var m in new[] { x, z })
             {
-                m.SetColor("_BaseColor", new Color(0.44f, 0.52f, 0.6f, 1f));   // 채색 전환: 푸른 잿빛 기와
+                m.SetColor("_BaseColor", new Color(0.53f, 0.53f, 0.55f, 1f));   // 푸른 잿빛 기와 그림 그대로
                 m.SetFloat("_Saturation", 0f);
                 m.SetFloat("_PaperLift", 0f);
                 m.SetFloat("_RimInk", 0.4f);

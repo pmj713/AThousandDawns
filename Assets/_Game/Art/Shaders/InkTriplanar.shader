@@ -164,10 +164,10 @@ Shader "AThousandDawns/InkTriplanar"
                 float3 v = normalize(GetWorldSpaceViewDir(input.positionWS));
                 Light light = GetMainLight(TransformWorldToShadowCoord(input.positionWS));
 
-                // 채색 툰 (수묵 걷어 냄): 회색 결 텍스처에 재질 색(_BaseColor)을 입혀요 (텍스처 밝기 0.5 근처가 재질 색 그대로).
+                // 채색 툰: 채색 텍스처에 재질 색(_BaseColor)을 곱해요 (텍스처 × 1.9 × 색: 색 0.53이면 텍스처 그대로, 그 위로 칠하면 물들어요).
                 //   빛 받는 면·그늘 두 단계, 그늘은 푸르스름하게, 하늘빛 환경광을 조금. 버텍스 색 빨강(대나무 마디)은 짙게, 초록 틈은 밝게
                 half3 tex = SampleTriplanar(input.positionWS, n);
-                half3 albedo = saturate(tex * 1.9) * _BaseColor.rgb;
+                half3 albedo = tex * 1.9 * _BaseColor.rgb;
                 float ndl = dot(n, light.direction);
                 float lightAmt = smoothstep(-0.1, 0.25, ndl) * lerp(0.4, 1.0, light.shadowAttenuation);
                 half3 lightCol = lerp(half3(1, 1, 1), light.color, 0.5);
