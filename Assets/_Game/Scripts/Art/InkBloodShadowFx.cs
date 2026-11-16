@@ -11,11 +11,14 @@ namespace AThousandDawns.Art
     //   혈영보 (Blink): 사라진 자리 · 나타난 자리에 피 안개가 번져요.
     //   흡혈 (Drain): 맞힌 플레이어에게서 핏방울이 혈영검마 쪽으로 빨려 들어가요.
     //   혈영참 (PlayerController.SkillCue ShadowCut): 돌진·잔상 베기에 붉은 먹 잔상 선, 비도 잔상(Radius>0)은 원형 붉은 베기 고리.
+    //   다크 엘프 검사 (DarkElfBrain, 같은 신호): 보라·은빛 분신 · 달빛 은색 베기 · 보라 연기 (DarkElfFx).
     // 그림: TombFx(BloodShade), BloodBuddhaFx(Slash · Splash · Drop · Mandala), HudArt/HpStroke(붓 획).
     public class InkBloodShadowFx : MonoBehaviour
     {
         static InkBloodShadowFx _host;
         static Sprite _shade, _slash, _splash, _drop, _ring;
+        static Sprite _elfShade, _elfSlash, _elfMist; // 다크 엘프 검사 (DarkElfFx): 보라·은빛 분신 · 달빛 베기 · 보라 연기
+        static bool _elf; // 지금 그리는 신호가 다크 엘프 것인지
         static Material _lineMat;
         static bool _loaded;
 
@@ -40,6 +43,8 @@ namespace AThousandDawns.Art
         static void OnBoss(BloodShadowBrain b, BloodShadowBrain.FxCue c)
         {
             var h = Host();
+            _elf = b != null && b.Kind == EnemyKind.DarkElf;
+            if (_elf) Swap(); // 다크 엘프: 같은 연출을 보라·은빛 그림으로
             switch (c.Kind)
             {
                 case BloodShadowBrain.FxKind.EchoStart: h.Shade(c.From, c.Dir, c.Time); break;
@@ -47,6 +52,7 @@ namespace AThousandDawns.Art
                 case BloodShadowBrain.FxKind.Blink: h.Mist(c.From, 1.8f); h.Mist(c.To, 1.8f); break;
                 case BloodShadowBrain.FxKind.Drain: h.Drain(c.From, b != null ? b.transform : null, c.To); break;
             }
+            if (_elf) { Swap(); _elf = false; }
         }
 
         static void OnSkill(PlayerController p, PlayerController.SkillFxCue c)
@@ -176,8 +182,8 @@ namespace AThousandDawns.Art
         {
             Vector3 a = from + Vector3.up * 0.9f, b = to + Vector3.up * 0.9f;
             if ((b - a).sqrMagnitude < 0.04f || _lineMat == null) return;
-            var ink = Line(a, b, new Color(0.6f, 0.05f, 0.3f), 0.7f);
-            var red = Line(a, b, new Color(0.8f, 0.1f, 0.08f), 0.3f);
+            var ink = Line(a, b, _elf ? new Color(0.55f, 0.3f, 0.9f) : new Color(0.6f, 0.05f, 0.3f), 0.7f);
+            var red = Line(a, b, _elf ? new Color(0.9f, 0.92f, 1f) : new Color(0.8f, 0.1f, 0.08f), 0.3f);
             float t = 0f;
             _live.Add(dt =>
             {
@@ -264,6 +270,14 @@ namespace AThousandDawns.Art
             return sr;
         }
 
+        // 혈영 그림 ↔ 다크 엘프 그림 맞바꾸기 (다크 엘프 신호를 그리는 동안만)
+        static void Swap()
+        {
+            if (_elfShade != null) (_shade, _elfShade) = (_elfShade, _shade);
+            if (_elfSlash != null) (_slash, _elfSlash) = (_elfSlash, _slash);
+            if (_elfMist != null) (_splash, _elfMist) = (_elfMist, _splash);
+        }
+
         static void Load()
         {
             if (_loaded) return;
@@ -273,6 +287,9 @@ namespace AThousandDawns.Art
             _splash = Resources.Load<Sprite>("BloodBuddhaFx/Splash");
             _drop = Resources.Load<Sprite>("BloodBuddhaFx/Drop");
             _ring = Resources.Load<Sprite>("BloodBuddhaFx/Mandala");
+            _elfShade = Resources.Load<Sprite>("DarkElfFx/Shade");
+            _elfSlash = Resources.Load<Sprite>("DarkElfFx/Slash");
+            _elfMist = Resources.Load<Sprite>("DarkElfFx/Mist");
             _lineMat = new Material(Shader.Find("Sprites/Default"));
             var brush = Resources.Load<Texture2D>("HudArt/HpStroke");
             if (brush != null) _lineMat.mainTexture = brush;
