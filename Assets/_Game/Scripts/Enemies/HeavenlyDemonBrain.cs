@@ -4,26 +4,36 @@ using UnityEngine;
 
 namespace AThousandDawns.Enemies
 {
-    // 천마 (천마총 최종 보스, 몬스터 시트 67행): 체력 3150 · 공격 25 · 강인함 6 · 방어 20% (천마총 배율 전 → 14175 · 50). 3페이즈.
+    // 마검사 천마 (천마총 최종 보스, 몬스터 시트 67행): 체력 3150 · 공격 25 · 강인함 6 · 방어 20% (천마총 배율 전 → 14175 · 50). 3페이즈.
     // 보스 공통: 경직·넉백 없음, 빙결 1초 + 패턴 취소, 페이즈 전환 2초 (무적), 같은 패턴은 연속 2번까지.
     // 1페이즈 · 천마검
     //   천마일검: 3칸 안이면 예고 0.6 · 앞 부채꼴 반경 3칸 140° ×1.0
     //   십자 검기: 멀면 예고 0.8 · 플레이어 쪽을 향한 십자로 검기 네 갈래 (10칸, 초속 10칸) ×0.7
     //   마기 장판: 10초마다 예고 0.8 · 플레이어 둘레 세 곳에 마기 장판 (반경 1.5칸, 5초, 안에 있으면 0.5초마다 ×0.3 · 이동 −20%)
     //   마기 손아귀: 6칸 밖에 2초 넘게 있으면 예고 0.7 · 직선 10칸으로 붙잡아 끌어와 (×0.6) 곧바로 천마일검 (원거리 대응)
-    // 2페이즈 · 천마군림 (체력 66%): 일검이 "천마군림"이 돼요 (220°). 벨 때마다 플레이어 양옆 3칸에 환영이 나타나 0.5초 뒤 같이 벱니다 (×0.6).
-    //   흡인: 12초마다 예고 1.0 · 2초 동안 둘레 6칸을 끌어당기다가 반경 2칸 폭발 ×1.2 (대시면 안 끌려요)
-    // 3페이즈 · 해체대법 (체력 33%): 방 가장자리부터 마기가 차올라요. 안전 반경이 11칸에서 3초마다 1칸씩 줄어 5칸까지 (밖에 있으면 0.5초마다 ×0.2).
-    //   검비: 8초마다 예고 1.0 · 1.5초 동안 플레이어 둘레에 검 12자루가 떨어져요 (예고 0.6초, 반경 1.2칸, ×0.6). 플레이어 절초 만검귀종의 거울판.
+    // 2페이즈 · 마도 (체력 66%): 마검사 천마가 이계의 마법을 꺼내요. 무공(일검 · 십자 검기 · 마기 장판 · 손아귀)에 마법이 섞여요.
+    //   화염구 비: 9초마다 예고 0.8 · 1.2초 동안 플레이어 둘레에 화염구 6개 (예고 0.9초, 반경 1.4칸, ×0.7)
+    //   순간이동 검격: 7초마다 예고 0.5 · 플레이어 등 뒤로 순간이동해 0.45초 뒤 부채꼴로 벱니다 (×0.9)
+    //   마법진: 11초마다 예고 0.8 · 플레이어 발밑 큰 마법진 (반경 2.5칸, 1.6초 뒤 ×1.0) + 둘레 4칸에 작은 마법진 넷 (반경 1.5칸, 2.0초 뒤 ×0.6)
+    //   마력 흡인: 12초마다 예고 1.0 · 2초 동안 둘레 6칸을 끌어당기다가 반경 2칸 폭발 ×1.2 (대시면 안 끌려요)
+    // 3페이즈 · 마검 해체대법 (체력 33%): 무공과 마법이 하나로. 방 가장자리부터 마기가 차올라요. 안전 반경이 11칸에서 3초마다 1칸씩 줄어 5칸까지 (밖에 있으면 0.5초마다 ×0.2).
+    //   일검이 "마검 천마군림"이 돼요 (220°). 벨 때마다 플레이어 양옆 3칸에 환영이 나타나 0.5초 뒤 같이 벱니다 (×0.6).
+    //   마검비: 8초마다 예고 1.0 · 1.5초 동안 플레이어 둘레에 불길 두른 검 12자루가 떨어져 터져요 (예고 0.6초, 반경 1.2칸, ×0.6)
+    //   마검 천멸: 10초마다 예고 1.0 · 둘레 2.5칸 폭발 (×1.0) + 8방향 검기 (×0.7), 검기 줄 위 3칸 · 6칸에 불길이 0.7 · 1.0초 뒤 터져요 (반경 1.1칸, ×0.6)
+    //   화염구 비 · 순간이동 검격 · 마력 흡인은 계속 써요 (마법진 · 마기 장판은 해체대법 마기가 대신해요)
     public sealed class HeavenlyDemonBrain : EnemyBrain, IMasterBrain
     {
-        enum Pattern { None, Slash, Cross, Miasma, Grasp, Pull, Rain }
+        enum Pattern { None, Slash, Cross, Miasma, Grasp, Pull, Rain, Meteor, Blink, Rune, Cleave }
+
+        // 바닥 예고가 무엇인지 (그림이 달라요. 판정은 원 · 부채꼴 둘뿐)
+        public enum MarkStyle { Sword, Phantom, Fireball, Rune, FireSword }
 
         struct Mark
         {
             public Vector3 At, Dir;
             public float Timer, Total, Radius, Ratio, Angle;
             public bool Sector;
+            public MarkStyle Style;
             public Telegraph Marker;
         }
 
@@ -39,6 +49,11 @@ namespace AThousandDawns.Enemies
         float _pullWindup, _pullTime, _pullInterval, _pullTimer, _pullRadius, _pullSpeed, _pullBurst, _pullRatio;
         float _rainWindup, _rainInterval, _rainTimer, _rainFall, _rainRadius, _rainRatio, _rainTime;
         int _rainCount, _rainDone;
+        float _meteorWindup, _meteorInterval, _meteorTimer, _meteorTime, _meteorFall, _meteorRadius, _meteorRatio, _meteorSpread;
+        int _meteorCount;
+        float _blinkWindup, _blinkInterval, _blinkTimer, _blinkBehind, _blinkDelay, _blinkRatio;
+        float _runeWindup, _runeInterval, _runeTimer, _runeRadius, _runeDelay, _runeRatio, _runeRing, _runeSmallRadius, _runeSmallDelay, _runeSmallRatio;
+        float _cleaveWindup, _cleaveInterval, _cleaveTimer, _cleaveRadius, _cleaveRatio, _cleaveWaveRatio, _cleaveFireRadius, _cleaveFireRatio;
         float _safeStart, _safeMin, _safeStep, _safeShrink, _safeRatio, _safeTick, _safeRadius, _safeTimer, _safeHurt;
         float _decisionTimer, _transitionTimer, _activeTimer;
         Vector3 _zoneCenter;
@@ -58,13 +73,15 @@ namespace AThousandDawns.Enemies
         {
             Pattern.Pull => _pullTime,
             Pattern.Rain => _rainTime + 0.05f,
+            Pattern.Meteor => _meteorTime + 0.05f,
             _ => 0.1f,
         };
 
         public override string AttackName => _pattern switch
         {
-            Pattern.Slash => Phase >= 2 ? "천마군림" : "천마일검", Pattern.Cross => "십자 검기", Pattern.Miasma => "마기 장판",
-            Pattern.Grasp => "마기 손아귀", Pattern.Pull => "흡인", Pattern.Rain => "검비", _ => null,
+            Pattern.Slash => Phase >= 3 ? "마검 천마군림" : "천마일검", Pattern.Cross => "십자 검기", Pattern.Miasma => "마기 장판",
+            Pattern.Grasp => "마기 손아귀", Pattern.Pull => "마력 흡인", Pattern.Rain => "마검비",
+            Pattern.Meteor => "화염구 비", Pattern.Blink => "순간이동 검격", Pattern.Rune => "마법진", Pattern.Cleave => "마검 천멸", _ => null,
         };
 
         public int Phase { get; private set; } = 1;
@@ -75,13 +92,17 @@ namespace AThousandDawns.Enemies
         public Vector3 ZoneCenter => _zoneCenter; // 해체대법 안전 반경의 가운데
 
         // 그림 신호 (아트 InkHeavenlyDemonFx가 받아 그려요. 판정·수치와는 상관없어요)
-        public enum FxKind { Slash, Cross, Grasp, Grasped, Mark, MarkFall, PullBurst, Transition }
+        //   Mark · MarkFall: Style로 검비 · 환영 · 화염구 · 마법진 · 마검비를 나눠요
+        //   Blink: At 떠난 자리 → To 나타난 자리 · Cleave: 마검 천멸 폭발 (At, Radius) · Transition: Phase = 들어갈 페이즈
+        public enum FxKind { Slash, Cross, Grasp, Grasped, Mark, MarkFall, PullBurst, Transition, Blink, Cleave }
         public struct FxCue
         {
             public FxKind Kind;
-            public Vector3 At, Dir;
+            public Vector3 At, Dir, To;
             public float Radius, Angle, Time;
             public bool Sector;
+            public MarkStyle Style;
+            public int Phase;
             public Transform Target;
         }
         public static event System.Action<HeavenlyDemonBrain, FxCue> Cue;
@@ -149,6 +170,35 @@ namespace AThousandDawns.Enemies
             _safeShrink = Tuning("p3_safe_interval", 3f);
             _safeRatio = Tuning("p3_safe_ratio", 0.2f);
             _safeTick = Tuning("p3_safe_tick", 0.5f);
+            _meteorInterval = Tuning("p2_meteor_interval", 9f);
+            _meteorWindup = Tuning("p2_meteor_windup", 0.8f);
+            _meteorTime = Tuning("p2_meteor_time", 1.2f);
+            _meteorCount = Mathf.Max(1, Mathf.RoundToInt(Tuning("p2_meteor_count", 6f)));
+            _meteorFall = Tuning("p2_meteor_fall", 0.9f);
+            _meteorRadius = Tuning("p2_meteor_radius", 1.4f);
+            _meteorRatio = Tuning("p2_meteor_ratio", 0.7f);
+            _meteorSpread = Tuning("p2_meteor_spread", 2.5f);
+            _blinkInterval = Tuning("p2_blink_interval", 7f);
+            _blinkWindup = Tuning("p2_blink_windup", 0.5f);
+            _blinkBehind = Tuning("p2_blink_behind", 1.8f);
+            _blinkDelay = Tuning("p2_blink_delay", 0.45f);
+            _blinkRatio = Tuning("p2_blink_ratio", 0.9f);
+            _runeInterval = Tuning("p2_rune_interval", 11f);
+            _runeWindup = Tuning("p2_rune_windup", 0.8f);
+            _runeRadius = Tuning("p2_rune_radius", 2.5f);
+            _runeDelay = Tuning("p2_rune_delay", 1.6f);
+            _runeRatio = Tuning("p2_rune_ratio", 1f);
+            _runeRing = Tuning("p2_rune_ring", 4f);
+            _runeSmallRadius = Tuning("p2_rune_small_radius", 1.5f);
+            _runeSmallDelay = Tuning("p2_rune_small_delay", 2f);
+            _runeSmallRatio = Tuning("p2_rune_small_ratio", 0.6f);
+            _cleaveInterval = Tuning("p3_cleave_interval", 10f);
+            _cleaveWindup = Tuning("p3_cleave_windup", 1f);
+            _cleaveRadius = Tuning("p3_cleave_radius", 2.5f);
+            _cleaveRatio = Tuning("p3_cleave_ratio", 1f);
+            _cleaveWaveRatio = Tuning("p3_cleave_wave_ratio", 0.7f);
+            _cleaveFireRadius = Tuning("p3_cleave_fire_radius", 1.1f);
+            _cleaveFireRatio = Tuning("p3_cleave_fire_ratio", 0.6f);
             _miasmaTimer = _miasmaInterval * 0.5f;
         }
 
@@ -159,6 +209,10 @@ namespace AThousandDawns.Enemies
             if (_miasmaTimer > 0f) _miasmaTimer -= dt;
             if (_pullTimer > 0f) _pullTimer -= dt;
             if (_rainTimer > 0f) _rainTimer -= dt;
+            if (_meteorTimer > 0f) _meteorTimer -= dt;
+            if (_blinkTimer > 0f) _blinkTimer -= dt;
+            if (_runeTimer > 0f) _runeTimer -= dt;
+            if (_cleaveTimer > 0f) _cleaveTimer -= dt;
             _farTimer = ToPlayer().magnitude > _graspFar ? _farTimer + dt : 0f; // 멀리서만 싸우면 마기 손아귀
             if (_transitionTimer > 0f)
             {
@@ -178,8 +232,12 @@ namespace AThousandDawns.Enemies
             if (_grasped) next = Pattern.Slash; // 끌려온 플레이어에게 바로
             else if (_farTimer >= _graspDelay) next = Pattern.Grasp;
             else if (Phase >= 3 && _rainTimer <= 0f) next = Pattern.Rain;
+            else if (Phase >= 3 && _cleaveTimer <= 0f) next = Pattern.Cleave;
             else if (Phase >= 2 && _pullTimer <= 0f && distance <= _pullRadius) next = Pattern.Pull;
-            else if (_miasmaTimer <= 0f) next = Pattern.Miasma;
+            else if (Phase >= 2 && _meteorTimer <= 0f) next = Pattern.Meteor;
+            else if (Phase == 2 && _runeTimer <= 0f) next = Pattern.Rune;
+            else if (Phase >= 2 && _blinkTimer <= 0f) next = Pattern.Blink;
+            else if (Phase <= 2 && _miasmaTimer <= 0f) next = Pattern.Miasma;
             else if (distance <= _closeDistance) next = Pattern.Slash;
             else next = Pattern.Cross;
             if (next == _lastPattern && _repeat >= _maxRepeat && !_grasped && (next == Pattern.Slash || next == Pattern.Cross))
@@ -212,6 +270,23 @@ namespace AThousandDawns.Enemies
                     WindupTime = _rainWindup;
                     _rainTimer = _rainInterval;
                     break;
+                case Pattern.Meteor:
+                    WindupTime = _meteorWindup;
+                    _meteorTimer = _meteorInterval;
+                    break;
+                case Pattern.Blink:
+                    WindupTime = _blinkWindup;
+                    RecoveryTime = _blinkDelay + 0.3f; // 나타나 베기까지 기다려요
+                    _blinkTimer = _blinkInterval;
+                    break;
+                case Pattern.Rune:
+                    WindupTime = _runeWindup;
+                    _runeTimer = _runeInterval;
+                    break;
+                case Pattern.Cleave:
+                    WindupTime = _cleaveWindup;
+                    _cleaveTimer = _cleaveInterval;
+                    break;
             }
             return true;
         }
@@ -224,17 +299,18 @@ namespace AThousandDawns.Enemies
             if (to.magnitude > _closeDistance * 0.8f) Move(to.normalized * MoveSpeed, dt);
         }
 
-        float SlashAngle => Phase >= 2 ? _slashAngle2 : _slashAngle;
+        float SlashAngle => Phase >= 3 ? _slashAngle2 : _slashAngle;
 
         protected override List<Vector2> TelegraphShape() => _pattern switch
         {
             Pattern.Slash => TelegraphShapes.Lunge(_slashRadius, SlashAngle, 0f),
             Pattern.Grasp => TelegraphShapes.Rect(_graspWidth, _graspRange),
             Pattern.Pull => TelegraphShapes.Circle(_pullRadius),
+            Pattern.Cleave => TelegraphShapes.Circle(_cleaveRadius),
             _ => TelegraphShapes.Circle(BodyRadius + 0.4f), // 몸 둘레에 마기가 모여요
         };
 
-        protected override bool RadialTelegraph => _pattern == Pattern.Pull;
+        protected override bool RadialTelegraph => _pattern == Pattern.Pull || _pattern == Pattern.Cleave;
 
         // ── 판정
 
@@ -248,15 +324,34 @@ namespace AThousandDawns.Enemies
                     if (HitShapes.InSector(transform.position, AimDirection, _slashRadius, SlashAngle, Player.transform.position, PlayerRadius))
                         Player.TryReceiveHit(AttackPower * _slashRatio, transform.position, HitKnockback, Body);
                     Fx(new FxCue { Kind = FxKind.Slash, At = transform.position, Dir = AimDirection, Radius = _slashRadius, Angle = SlashAngle });
-                    if (Phase >= 2) Phantoms();
+                    if (Phase >= 3) Phantoms();
                     break;
                 case Pattern.Cross:
-                    for (int i = 0; i < 4; i++)
+                    for (int i = 0; i < 4; i++) SwordWave(Quaternion.Euler(0f, 90f * i, 0f) * AimDirection, _crossRatio);
+                    break;
+                case Pattern.Blink:
+                    BlinkBehind();
+                    break;
+                case Pattern.Rune:
                     {
-                        Vector3 dir = Quaternion.Euler(0f, 90f * i, 0f) * AimDirection;
-                        var wave = Director.SpawnArrow(transform.position + Vector3.up, dir, _crossSpeed, _crossRange, 0.45f, AttackPower * _crossRatio, Body);
-                        if (wave != null) wave.gameObject.name = "천마 검기";
-                        if (wave != null) Fx(new FxCue { Kind = FxKind.Cross, At = wave.transform.position, Dir = dir, Target = wave.transform });
+                        Vector3 p = Player.transform.position;
+                        AddMark(p, Vector3.forward, _runeDelay, _runeRadius, _runeRatio, false, 0f, MarkStyle.Rune);
+                        float turn = Random.Range(0f, 90f);
+                        for (int i = 0; i < 4; i++)
+                            AddMark(p + Quaternion.Euler(0f, turn + 90f * i, 0f) * Vector3.forward * _runeRing, Vector3.forward,
+                                _runeSmallDelay, _runeSmallRadius, _runeSmallRatio, false, 0f, MarkStyle.Rune);
+                    }
+                    break;
+                case Pattern.Cleave:
+                    Director.SpawnBurst(transform.position, _cleaveRadius, BurstKind.Fireball);
+                    Fx(new FxCue { Kind = FxKind.Cleave, At = transform.position, Radius = _cleaveRadius });
+                    if (ToPlayer().magnitude <= _cleaveRadius + PlayerRadius) Player.TryReceiveHit(AttackPower * _cleaveRatio, transform.position, -1f, Body);
+                    for (int i = 0; i < 8; i++)
+                    {
+                        Vector3 dir = Quaternion.Euler(0f, 45f * i, 0f) * AimDirection;
+                        SwordWave(dir, _cleaveWaveRatio);
+                        AddMark(transform.position + dir * 3f, dir, 0.7f, _cleaveFireRadius, _cleaveFireRatio, false, 0f, MarkStyle.FireSword);
+                        AddMark(transform.position + dir * 6f, dir, 1f, _cleaveFireRadius, _cleaveFireRatio, false, 0f, MarkStyle.FireSword);
                     }
                     break;
                 case Pattern.Miasma:
@@ -279,6 +374,45 @@ namespace AThousandDawns.Enemies
             if (_pattern == Pattern.Pull) TickPull(dt);
             else if (_pattern == Pattern.Rain)
                 while (_rainDone < _rainCount && _activeTimer >= _rainDone * (_rainTime / _rainCount)) RainSword();
+            else if (_pattern == Pattern.Meteor)
+                while (_rainDone < _meteorCount && _activeTimer >= _rainDone * (_meteorTime / _meteorCount)) Meteor();
+        }
+
+        void SwordWave(Vector3 dir, float ratio)
+        {
+            var wave = Director.SpawnArrow(transform.position + Vector3.up, dir, _crossSpeed, _crossRange, 0.45f, AttackPower * ratio, Body);
+            if (wave == null) return;
+            wave.gameObject.name = "천마 검기";
+            Fx(new FxCue { Kind = FxKind.Cross, At = wave.transform.position, Dir = dir, Target = wave.transform });
+        }
+
+        // 화염구 비: 첫 발은 플레이어 발밑, 다음부터 둘레에 흩어져요
+        void Meteor()
+        {
+            Vector2 r = _rainDone == 0 ? Vector2.zero : Random.insideUnitCircle * _meteorSpread;
+            _rainDone++;
+            AddMark(Player.transform.position + new Vector3(r.x, 0f, r.y), Vector3.forward, _meteorFall, _meteorRadius, _meteorRatio, false, 0f, MarkStyle.Fireball);
+        }
+
+        // 순간이동 검격: 플레이어 등 뒤로 넘어가 부채꼴 예고 뒤 벱니다
+        void BlinkBehind()
+        {
+            Vector3 p = Player.transform.position;
+            Vector3 back = -Player.Facing;
+            back.y = 0f;
+            if (back.sqrMagnitude < 1e-4f) back = p - transform.position;
+            back.y = 0f;
+            back = back.sqrMagnitude > 1e-4f ? back.normalized : Vector3.back;
+            Vector3 from = transform.position;
+            Vector3 to = Director.FindFreeSpot(p + back * _blinkBehind, 0.3f);
+            to.y = from.y;
+            Teleport(to);
+            Vector3 dir = p - to;
+            dir.y = 0f;
+            dir = dir.sqrMagnitude > 1e-4f ? dir.normalized : -back;
+            FaceToward(dir);
+            Fx(new FxCue { Kind = FxKind.Blink, At = from, To = to, Dir = dir });
+            AddMark(to, dir, _blinkDelay, _slashRadius, _blinkRatio, true, _slashAngle, MarkStyle.Sword);
         }
 
         // 마기 손아귀: 앞 직선 위에 있으면 붙잡혀 천마 앞으로 끌려와요
@@ -304,7 +438,7 @@ namespace AThousandDawns.Enemies
             {
                 Vector3 dir = p - at;
                 dir.y = 0f;
-                AddMark(at, dir.normalized, _phantomDelay, _slashRadius, _phantomRatio, true, _slashAngle);
+                AddMark(at, dir.normalized, _phantomDelay, _slashRadius, _phantomRatio, true, _slashAngle, MarkStyle.Phantom);
             }
         }
 
@@ -326,20 +460,27 @@ namespace AThousandDawns.Enemies
         {
             _rainDone++;
             Vector2 r = Random.insideUnitCircle * 3f;
-            AddMark(Player.transform.position + new Vector3(r.x, 0f, r.y), Vector3.forward, _rainFall, _rainRadius, _rainRatio, false, 0f);
+            AddMark(Player.transform.position + new Vector3(r.x, 0f, r.y), Vector3.forward, _rainFall, _rainRadius, _rainRatio, false, 0f, MarkStyle.FireSword);
         }
 
-        // ── 바닥 예고 (환영 베기 · 검비)
+        // ── 바닥 예고 (환영 베기 · 마검비 · 화염구 · 마법진 · 순간이동 검격)
 
-        void AddMark(Vector3 at, Vector3 dir, float fall, float radius, float ratio, bool sector, float angle)
+        static BurstKind BurstOf(MarkStyle s) => s switch
+        {
+            MarkStyle.Fireball or MarkStyle.FireSword => BurstKind.Fireball,
+            MarkStyle.Rune => BurstKind.Rune,
+            _ => BurstKind.Slam,
+        };
+
+        void AddMark(Vector3 at, Vector3 dir, float fall, float radius, float ratio, bool sector, float angle, MarkStyle style)
         {
             at.y = 0f;
             var marker = Telegraph.Create(null, Director.Visuals.telegraphBase, Director.Visuals.telegraphFill, Director.Visuals.telegraphOutline);
             marker.Show(sector ? TelegraphShapes.Lunge(radius, angle, 0f) : TelegraphShapes.Circle(radius), !sector);
             marker.SetPose(at, dir);
             marker.SetProgress(0f);
-            _marks.Add(new Mark { At = at, Dir = dir, Timer = fall, Total = fall, Radius = radius, Ratio = ratio, Sector = sector, Angle = angle, Marker = marker });
-            Fx(new FxCue { Kind = FxKind.Mark, At = at, Dir = dir, Radius = radius, Angle = angle, Time = fall, Sector = sector });
+            _marks.Add(new Mark { At = at, Dir = dir, Timer = fall, Total = fall, Radius = radius, Ratio = ratio, Sector = sector, Angle = angle, Style = style, Marker = marker });
+            Fx(new FxCue { Kind = FxKind.Mark, At = at, Dir = dir, Radius = radius, Angle = angle, Time = fall, Sector = sector, Style = style });
         }
 
         void TickMarks(float dt)
@@ -356,8 +497,8 @@ namespace AThousandDawns.Enemies
                 }
                 if (m.Marker != null) Destroy(m.Marker.gameObject);
                 _marks.RemoveAt(i);
-                Director.SpawnBurst(m.Sector ? m.At + m.Dir * 1.2f : m.At, m.Sector ? 0.8f : m.Radius, AThousandDawns.Combat.BurstKind.Slam);
-                Fx(new FxCue { Kind = FxKind.MarkFall, At = m.At, Dir = m.Dir, Radius = m.Radius, Angle = m.Angle, Sector = m.Sector });
+                Director.SpawnBurst(m.Sector ? m.At + m.Dir * 1.2f : m.At, m.Sector ? 0.8f : m.Radius, BurstOf(m.Style));
+                Fx(new FxCue { Kind = FxKind.MarkFall, At = m.At, Dir = m.Dir, Radius = m.Radius, Angle = m.Angle, Sector = m.Sector, Style = m.Style });
                 bool hit = m.Sector
                     ? HitShapes.InSector(m.At, m.Dir, m.Radius, m.Angle, Player.transform.position, PlayerRadius)
                     : new Vector2(Player.transform.position.x - m.At.x, Player.transform.position.z - m.At.z).magnitude <= m.Radius + PlayerRadius;
@@ -422,7 +563,7 @@ namespace AThousandDawns.Enemies
             _transitionTimer = _transitionTime;
             Body.Targetable = false;
             Director.SpawnBurst(transform.position, 3f, AThousandDawns.Combat.BurstKind.Miasma);
-            Fx(new FxCue { Kind = FxKind.Transition, At = transform.position, Radius = 3f, Time = _transitionTime });
+            Fx(new FxCue { Kind = FxKind.Transition, At = transform.position, Radius = 3f, Time = _transitionTime, Phase = Phase + 1 });
         }
 
         void EnterPhase(int phase)
@@ -431,10 +572,17 @@ namespace AThousandDawns.Enemies
             Body.Targetable = true;
             _decisionTimer = _decisionPause;
             _repeat = 0;
-            if (phase == 2) _pullTimer = _pullInterval * 0.4f;
+            if (phase == 2)
+            {
+                _pullTimer = _pullInterval * 0.4f;
+                _meteorTimer = _meteorInterval * 0.3f;
+                _blinkTimer = _blinkInterval * 0.5f;
+                _runeTimer = _runeInterval * 0.7f;
+            }
             if (phase == 3)
             {
                 _rainTimer = _rainInterval * 0.4f;
+                _cleaveTimer = _cleaveInterval * 0.6f;
                 _safeRadius = _safeStart;
                 _safeTimer = _safeShrink;
                 _safeMarker = Telegraph.Create(null, Director.Visuals.telegraphBase, Director.Visuals.telegraphFill, Director.Visuals.telegraphOutline);

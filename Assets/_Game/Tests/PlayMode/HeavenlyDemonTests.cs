@@ -67,13 +67,13 @@ namespace AThousandDawns.Tests
             boss.Damageable.ApplyHit(Mathf.CeilToInt(boss.Damageable.MaxHealth * 0.36f));
             Assert.IsTrue(boss.IsTransitioning, "66%에서 전환 (무적)");
             yield return WaitUntil(() => boss.Phase == 2 && !boss.IsTransitioning, 4f);
-            Assert.AreEqual(2, boss.Phase, "천마군림");
+            Assert.AreEqual(2, boss.Phase, "마도");
             Assert.AreEqual(0f, boss.SafeRadius, "마기는 3페이즈부터");
 
             boss.Damageable.ApplyHit(Mathf.CeilToInt(boss.Damageable.MaxHealth * 0.34f));
             Assert.IsTrue(boss.IsTransitioning, "33%에서 전환");
             yield return WaitUntil(() => boss.Phase == 3 && !boss.IsTransitioning, 4f);
-            Assert.AreEqual(3, boss.Phase, "해체대법");
+            Assert.AreEqual(3, boss.Phase, "마검 해체대법");
             Assert.AreEqual(11f, boss.SafeRadius, 0.01f, "안전 반경 11칸에서 시작");
             yield return WaitUntil(() => boss.SafeRadius < 11f, 4f);
             Assert.Less(boss.SafeRadius, 11f, "3초마다 좁아져요");
@@ -87,6 +87,61 @@ namespace AThousandDawns.Tests
             float hp = player.Health;
             yield return WaitUntil(() => player.Health < hp, 2f);
             Assert.Less(player.Health, hp, "마기 속에 있으면 아파요");
+        }
+
+        // 마검사 천마: 2페이즈는 마법 (화염구 비 · 순간이동 검격 · 마법진), 3페이즈는 마검 융합 (마검 천멸 · 마검비)
+        [UnityTest]
+        public IEnumerator 이페이즈는_마법_삼페이즈는_마검_융합()
+        {
+            HeavenlyDemonBrain boss = null;
+            PlayerController player = null;
+            yield return Spawn((b, p) => { boss = b; player = p; }, 5f);
+            EnemyBrain.BossKitOverride = 0;
+            var seen = new System.Collections.Generic.HashSet<string>();
+            int blinks = 0, runes = 0, fires = 0;
+            System.Action<HeavenlyDemonBrain, HeavenlyDemonBrain.FxCue> cue = (b, c) =>
+            {
+                if (c.Kind == HeavenlyDemonBrain.FxKind.Blink) blinks++;
+                if (c.Kind == HeavenlyDemonBrain.FxKind.MarkFall && c.Style == HeavenlyDemonBrain.MarkStyle.Rune) runes++;
+                if (c.Kind == HeavenlyDemonBrain.FxKind.MarkFall && c.Style == HeavenlyDemonBrain.MarkStyle.FireSword) fires++;
+            };
+            HeavenlyDemonBrain.Cue += cue;
+            try
+            {
+                boss.Damageable.ApplyHit(Mathf.CeilToInt(boss.Damageable.MaxHealth * 0.36f));
+                yield return WaitUntil(() => boss.Phase == 2 && !boss.IsTransitioning, 4f);
+                Time.timeScale = 3f;
+                yield return WaitUntil(() =>
+                {
+                    player.Heal(9999f);
+                    if (boss.AttackName != null) seen.Add(boss.AttackName);
+                    return seen.Contains("화염구 비") && seen.Contains("마법진") && blinks > 0 && runes > 0;
+                }, 25f);
+                Assert.Contains("화염구 비", new System.Collections.Generic.List<string>(seen));
+                Assert.Contains("마법진", new System.Collections.Generic.List<string>(seen));
+                Assert.Greater(blinks, 0, "순간이동 검격");
+                Assert.Greater(runes, 0, "마법진이 터져요");
+                Assert.IsFalse(seen.Contains("마검 천멸"), "융합은 3페이즈부터");
+
+                Time.timeScale = 1f;
+                boss.Damageable.ApplyHit(Mathf.CeilToInt(boss.Damageable.MaxHealth * 0.34f));
+                yield return WaitUntil(() => boss.Phase == 3 && !boss.IsTransitioning, 4f);
+                Time.timeScale = 3f;
+                yield return WaitUntil(() =>
+                {
+                    player.Heal(9999f);
+                    if (boss.AttackName != null) seen.Add(boss.AttackName);
+                    return seen.Contains("마검 천멸") && seen.Contains("마검비") && fires > 0;
+                }, 25f);
+                Assert.IsTrue(seen.Contains("마검 천멸"), "마검 천멸");
+                Assert.IsTrue(seen.Contains("마검비"), "마검비");
+                Assert.Greater(fires, 0, "불길 두른 검이 터져요");
+            }
+            finally
+            {
+                HeavenlyDemonBrain.Cue -= cue;
+                EnemyBrain.BossKitOverride = -1;
+            }
         }
 
         [UnityTest]
