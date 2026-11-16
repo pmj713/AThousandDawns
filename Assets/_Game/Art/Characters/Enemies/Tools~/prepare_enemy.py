@@ -101,6 +101,44 @@ def blade(bm, g, axis, edge, L, wide):
     bm.faces.new(list(reversed(rings[0])))
 
 
+# 날개 (wings, 임프): 등 뒤로 뻗은 날개 정점을 새 뼈 LeftWing · RightWing(가슴 뼈 자식)에 옮겨 달아요.
+#   날갯짓은 게임에서 이 두 뼈를 돌려요 (InkImpWings). 동작 클립은 이 뼈를 건드리지 않아요 (기본 자세 그대로).
+#   날개 정점 = 등판보다 뒤(+Y)에 있고, 엉덩이보다 위, 몸 가운데선에서 조금 떨어진 것 (꼬리는 엉덩이 아래라 빠져요)
+if "wings" in WEAPONS:
+    hips_z = B["Hips"].head_local.z
+    chest = B["Spine1"] if "Spine1" in B else B["Spine"]
+    back = [body.matrix_world @ v.co for v in body.data.vertices]
+    core = [p for p in back if abs(p.x) < 0.08 and hips_z + 0.05 < p.z < chest.head_local.z + 0.25]
+    back_y = sorted(p.y for p in core)[int(len(core) * 0.9)] if core else chest.head_local.y + 0.1   # 등판 (뒤쪽 10% 지점)
+    bpy.context.view_layer.objects.active = rig
+    bpy.ops.object.mode_set(mode='EDIT')
+    root = Vector((0, back_y, chest.head_local.z + 0.05))
+    for s, sx in (("Left", 1), ("Right", -1)):
+        eb = rig.data.edit_bones.new(f"{s}Wing")
+        eb.head = root + Vector((sx * 0.05, 0, 0))
+        eb.tail = root + Vector((sx * 0.45, 0.08, 0.18))
+        eb.parent = rig.data.edit_bones[chest.name]
+    bpy.ops.object.mode_set(mode='OBJECT')
+    groups = {s: body.vertex_groups.get(f"{s}Wing") or body.vertex_groups.new(name=f"{s}Wing") for s in ("Left", "Right")}
+    moved = 0
+    arm_groups = {body.vertex_groups[f"{s}{b}"].index: s for s in ("Left", "Right") for b in ("Arm", "ForeArm", "Hand") if f"{s}{b}" in body.vertex_groups}
+    arm_y = {s: B[f"{s}ForeArm"].head_local.y for s in ("Left", "Right")}
+    for v in body.data.vertices:
+        p = body.matrix_world @ v.co
+        wing = p.y > back_y + 0.02 and p.z > hips_z + 0.05 and abs(p.x) > 0.05
+        if not wing and v.groups:
+            # 날개막 아래 끝이 팔에 붙어 있어요: 팔 쪽 무게가 큰데 팔뼈보다 확실히 뒤에 있으면 날개막
+            top = max(v.groups, key=lambda g: g.weight)
+            side = arm_groups.get(top.group)
+            wing = side is not None and p.y > arm_y[side] + 0.05 and p.z > hips_z - 0.25
+        if wing:
+            for g in v.groups:
+                body.vertex_groups[g.group].add([v.index], 0.0, 'REPLACE')
+            groups["Left" if p.x > 0 else "Right"].add([v.index], 1.0, 'REPLACE')
+            moved += 1
+    B = rig.data.bones
+    print("ENEMY wings: verts", moved, "back_y %.3f" % back_y)
+
 for w in WEAPONS:
     if w in ("dao", "dagger", "bigdao"):
         g = grip_of("Right")
@@ -147,7 +185,8 @@ for w in WEAPONS:
         def build(bm, g=g, a=axis, e=side):
             t = a.cross(e).normalized()
             rings = []
-            for u, r in ((-0.08, 0.02), (0.08, 0.024), (0.26, 0.045), (0.4, 0.062), (0.45, 0.045), (0.48, 0.0)):
+            sc = max(1.0, HEIGHT / 1.8)                                      # 큰 덩치(오크)는 몽둥이도 크게
+            for u, r in ((-0.08 * sc, 0.02 * sc), (0.08 * sc, 0.024 * sc), (0.26 * sc, 0.045 * sc), (0.4 * sc, 0.062 * sc), (0.45 * sc, 0.045 * sc), (0.48 * sc, 0.0)):
                 c = g + a * u
                 rings.append([bm.verts.new(c)] if r == 0 else
                              [bm.verts.new(c + (e * math.cos(k * math.pi / 3) + t * math.sin(k * math.pi / 3)) * r) for k in range(6)])
@@ -159,9 +198,9 @@ for w in WEAPONS:
                     else:
                         bm.faces.new((r0[i], r0[j], r1[j], r1[i]))
             bm.faces.new(list(reversed(rings[0])))
-            for k in range(4):                                              # 쇠못
-                d = (e * math.cos(k * math.pi / 2 + 0.4) + t * math.sin(k * math.pi / 2 + 0.4)).normalized()
-                box(bm, g + a * (0.33 + 0.04 * (k % 2)) + d * 0.062, d, a, 0.05, 0.012, 0.012)
+            for n in range(4):                                              # 쇠못
+                d = (e * math.cos(n * math.pi / 2 + 0.4) + t * math.sin(n * math.pi / 2 + 0.4)).normalized()
+                box(bm, g + a * (0.33 + 0.04 * (n % 2)) * sc + d * 0.062 * sc, d, a, 0.05 * sc, 0.012 * sc, 0.012 * sc)
         make(f"{NAME}_Weapon_club", "RightHand", build)
     elif w == "skullstaff":
         # 고블린 주술사 지팡이: 비틀린 나무 지팡이 위에 작은 해골, 아래로 늘어진 깃털·뼈 장식 둘
@@ -258,11 +297,13 @@ for w in WEAPONS:
     elif w == "shield":
         f = B["LeftForeArm"]
         c = f.head_local.lerp(f.tail_local, 0.55)
-        out = Vector((1, -0.6, 0)).normalized()   # 바깥·앞쪽을 향해요
+        # 팔뚝에 끈으로 묶은 방패: 판이 아래팔 방향을 품고(팔을 늘어뜨리면 판도 서요), 바깥·앞쪽을 향해요
+        fa = (B["LeftHand"].head_local - f.head_local).normalized()   # 팔꿈치 → 손목 (FBX 뼈 꼬리는 믿지 않아요)
+        out = Vector((1, -0.6, 0)).normalized(); out = (out - fa * out.dot(fa)).normalized()
 
-        def build(bm, c=c, out=out):
+        def build(bm, c=c, out=out, fa=fa):
             r, th = 0.32, 0.04
-            u = Vector((0, 0, 1)); v = out.cross(u).normalized()
+            u = fa; v = out.cross(u).normalized()
             ang = [k * math.pi / 8 for k in range(16)]
             front = [bm.verts.new(c + out * (0.06 + th) + (u * math.cos(a) + v * math.sin(a)) * r) for a in ang]
             back = [bm.verts.new(c + out * 0.06 + (u * math.cos(a) + v * math.sin(a)) * r) for a in ang]
@@ -2221,6 +2262,24 @@ if "tombmoves" in EXTRAS:
 #   천마 — Slash1: 곧게 선 채 단정한 일검 (1페이즈) · DemonSweep: 칼을 머리 위로 치켜들었다가 허리째 크게 휘둘러요 (2페이즈)
 #          Burst: 칼끝을 땅으로 내리고 두 팔을 펼쳐 가슴을 젖혀 마기를 터뜨려요 (3페이즈, 그대로 재생)
 #          Ascend: 페이즈가 바뀔 때 무릎을 꿇었다가 천천히 일어서며 두 팔을 펼쳐요
+# 스켈레톤 (reassemble): 뼈가 무너졌다가 1.5초(45프레임) 끝에 다시 맞춰져 일어나요.
+#   0.3초 만에 무릎부터 꺾여 바닥에 주저앉듯 쌓이고(엉덩이가 거의 땅, 등·목이 앞으로 꺾여 팔은 바닥에 늘어짐) → 덜그럭 떨다가 → 마지막 0.5초에 일어서요
+if "reassemble" in EXTRAS and "playeranim" in EXTRAS:
+    hip_h = B["Hips"].head_local.z
+
+    def bones_pose(stage):
+        if stage == "idle":
+            idle_end_pose(); return
+        drop, lean, neck = {"sag": (0.45, 25, 20), "pile": (0.82, 70, 45), "rattle": (0.8, 64, 38)}[stage]
+        feet = {"Left": FEET["Left"] + Vector((0.12, -0.1, 0)), "Right": FEET["Right"] + Vector((-0.08, 0.12, 0))}
+        lower_hips(-hip_h * drop, feet, dy=-0.1 * drop)
+        bend("Spine", Vector((1, 0, 0)), lean * 0.6); bend("Spine1", Vector((1, 0, 0)), lean * 0.4)
+        bend("Neck", Vector((1, 0, 0)), neck); bend("Neck", Vector((0, 1, 0)), 25 if stage == "rattle" else -15)
+        for s, sx in (("Left", 1), ("Right", -1)):
+            sh = pb[f"{s}Arm"].head.copy()
+            arm(s, Vector((sh.x + sx * 0.35, sh.y - 0.25, 0.05)), Vector((sx, 0.3, -0.5)))   # 팔은 바닥에 툭
+    make_action("Reassemble", [(0, "idle"), (4, "sag"), (9, "pile"), (24, "pile"), (27, "rattle"), (30, "pile"), (36, "sag"), (45, "idle")], bones_pose)
+
 if "demonmoves" in EXTRAS:
     DM = {   # twist, wrist, reach, lift, dy, blade, step(왼발 앞으로), left(왼팔: back 뒤로 · sign 검결 · wide 펼침)
         "r_ready": (-30, Vector((-0.4, 0.3, -0.3)), 0.85, -0.38, 0.1, Vector((-0.3, 1, 0.2)), 0.25, "back"),

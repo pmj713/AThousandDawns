@@ -293,6 +293,11 @@ namespace AThousandDawns.Art
             if (brain.Rank == EnemyRank.Boss || brain.Rank == EnemyRank.Master) flinchAngle = 5f;   // 고수·보스는 덩치가 커서 살짝만 움찔해요
             _hasStatue = brain.Kind == EnemyKind.Arhat && animator.HasState(0, Animator.StringToHash("Statue")) && animator.HasState(0, Animator.StringToHash("Wake"));
             _hasSpawn = !_hasIntro && !_hasStatue && animator.HasState(0, Animator.StringToHash("Spawn"));
+            if (brain is SkeletonBrain && animator.HasState(0, Animator.StringToHash("Reassemble")))
+            {
+                _skeleton = true;
+                SkeletonBrain.Reassembling += OnReassembling;
+            }
             _lastPos = transform.position;
             var body = new System.Collections.Generic.List<Renderer>();
             foreach (var r in animator.GetComponentsInChildren<Renderer>(true))
@@ -346,6 +351,7 @@ namespace AThousandDawns.Art
         {
             if (_brain == null || _animator == null || _animator.runtimeAnimatorController == null) return;
             TickOverlay();
+            if (Time.time < _reassembleUntil) return;   // 스켈레톤: 뼈가 무너졌다 맞춰지는 1.5초 동안은 그 동작만
             // 방패병: 대시 공격으로 방패가 부서지면 방패 소품을 감춰요
             if (_shieldBrain != null && !_shieldHidden && _shieldBrain.ShieldBroken)
             {
@@ -630,9 +636,21 @@ namespace AThousandDawns.Art
             }
         }
 
+        // 스켈레톤 뼈 무너짐 → 1.5초 끝에 다시 맞춰져 일어나요 (Reassemble 클립이 그 길이에 맞춰져 있어요)
+        bool _skeleton;
+        float _reassembleUntil;
+
+        void OnReassembling(SkeletonBrain skeleton)
+        {
+            if (skeleton != _brain) return;
+            Play("Reassemble", 0.05f);
+            _reassembleUntil = Time.time + 1.5f;
+        }
+
         void OnDestroy()
         {
             if (_body != null) _body.Damaged -= OnDamaged;
+            if (_skeleton) SkeletonBrain.Reassembling -= OnReassembling;
         }
     }
 

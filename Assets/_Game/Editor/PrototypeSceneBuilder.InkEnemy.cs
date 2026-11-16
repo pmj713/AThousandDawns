@@ -62,6 +62,9 @@ namespace AThousandDawns.EditorTools
             ("GoblinArcher", EnemyKind.GoblinArcher, 3f),
             ("GoblinRogue", EnemyKind.GoblinRogue, 5f),
             ("GoblinShaman", EnemyKind.GoblinShaman, 3f),
+            ("Orc", EnemyKind.Orc, 3f),
+            ("Skeleton", EnemyKind.Skeleton, 3f),
+            ("Imp", EnemyKind.Imp, 3.5f),
         };
 
         // 패턴 동작: attack(브레인 AttackName, null이면 다른 동작이 이어 부르는 상태) → state.
@@ -85,7 +88,7 @@ namespace AThousandDawns.EditorTools
 
         // 차원 겹침 판타지 적: 무협 수묵과 일부러 다르게 — 채색 동판화·스테인드글라스처럼 원색이 살고 윤곽이 굵고 곧아요.
         // 같은 수묵 셰이더에 값만 달리: 채도 끝까지 · 번짐·종이결 거의 없이 · 붓 떨림 없는 굵은 윤곽 · 명암 단계 넷
-        static readonly HashSet<string> FantasyEnemies = new HashSet<string> { "Slime", "Goblin", "GoblinArcher", "GoblinRogue", "GoblinShaman" };
+        static readonly HashSet<string> FantasyEnemies = new HashSet<string> { "Slime", "Goblin", "GoblinArcher", "GoblinRogue", "GoblinShaman", "Orc", "Skeleton", "Imp" };
 
         static Material FantasyLook(Material m)
         {
@@ -106,7 +109,7 @@ namespace AThousandDawns.EditorTools
         static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "ShoulderRun", "Idle", "Run", "Chant", "Rain", "Drag", "Whirl", "Captive" };
 
         // 고유 동작만 쓰는 적 (Generic으로 가져와요)
-        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha", "Pirate", "Harpooner", "Anchor", "Rattan", "WaterGhost", "FlagBearer", "Takrang", "IronDragon", "Cultist", "BloodArcher", "BloodShaman", "DemonGuard", "BloodBomber", "BloodShadow", "HeavenlyDemon", "CaptiveHero", "Slime", "Goblin", "GoblinArcher", "GoblinRogue", "GoblinShaman" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
+        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha", "Pirate", "Harpooner", "Anchor", "Rattan", "WaterGhost", "FlagBearer", "Takrang", "IronDragon", "Cultist", "BloodArcher", "BloodShaman", "DemonGuard", "BloodBomber", "BloodShadow", "HeavenlyDemon", "CaptiveHero", "Slime", "Goblin", "GoblinArcher", "GoblinRogue", "GoblinShaman", "Orc", "Skeleton", "Imp" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
 
         static readonly Dictionary<string, MoveSpec[]> InkEnemyMoves = new Dictionary<string, MoveSpec[]>
         {
@@ -197,6 +200,15 @@ namespace AThousandDawns.EditorTools
             ["BloodShaman"] = new[] { new MoveSpec { attack = "혈인술", state = "Raise", clips = new[] { "Raise" }, mode = MoveMode.Play, seconds = 1.4f } },
             // 고블린 주술사: 1.2초 예고 동안 해골 지팡이를 하늘로 치켜들고 주문 (둘레 광폭화 + 저주 장판, 그대로 재생)
             ["GoblinShaman"] = new[] { new MoveSpec { attack = "주술", state = "Cast", clips = new[] { "Raise" }, mode = MoveMode.Play, seconds = 1.4f } },
+            // 오크: 몸을 숙여 버티다가(돌진 준비, 예고 동안) 몽둥이를 치켜든 채 일직선으로 달려 들이받고, 끝에서 내리찍으며 멈춰요
+            ["Orc"] = new[]
+            {
+                new MoveSpec { state = "ChargeReady", clips = new[] { "ChargeReady" }, mode = MoveMode.Run },
+                new MoveSpec { attack = "돌진", state = "Charge", clips = new[] { "ChargeRun" }, mode = MoveMode.Run, speed = 1.4f, after = "Slam", ready = "ChargeReady" },
+                new MoveSpec { state = "Slam", clips = new[] { "Slam" }, mode = MoveMode.Run },
+            },
+            // 스켈레톤: 베기는 기본 Attack. 뼈가 무너졌다가 1.5초 끝에 다시 맞춰져 일어나요 (InkEnemyAnimator가 SkeletonBrain.Reassembling을 보고)
+            ["Skeleton"] = new[] { new MoveSpec { state = "Reassemble", clips = new[] { "Reassemble" }, mode = MoveMode.Play, seconds = 1.5f } },
             // 천마 근위: 평소 공격은 기본 Attack(방패 세운 채 베기) · 반격: 0.3초 안에 빠르게 되받아 베기
             ["DemonGuard"] = new[] { new MoveSpec { attack = "반격", state = "Counter", clips = new[] { "Attack" }, mode = MoveMode.Play, seconds = 0.5f } },
             // 혈폭자: 핏덩이를 머리 위로 들었다가 내던져요
@@ -446,6 +458,7 @@ namespace AThousandDawns.EditorTools
             if (animator == null) animator = go.AddComponent<Animator>();
             animator.runtimeAnimatorController = controller;
             animator.applyRootMotion = false;
+            if (name == "Imp") go.AddComponent<AThousandDawns.Art.InkImpWings>();   // 날갯짓 (LeftWing·RightWing 뼈를 덧돌려요)
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, $"{folder}/{name}_Ink.prefab");
             Object.DestroyImmediate(go);
             AssetDatabase.SaveAssets();
