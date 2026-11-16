@@ -205,11 +205,12 @@ namespace AThousandDawns.EditorTools
         const string PlayerHairModel = PlayerPartsFolder + "/Player_Hair.fbx";
         const string PlayerSkinColor = "#D8B89A";
         const string PlayerHairColor = "#1E1C1C";
-        const string PlayerSwordColor = "#2E343B";
-        // 옷 (컨셉 B안): 먹색 도포·바지, 흰 속소매·깃, 붉은 허리띠·머리끈. Blender clothes.py가 이름 앞에 Cloth_Dark/Light/Red를 붙여요
-        const string ClothDarkColor = "#26262A";
-        const string ClothLightColor = "#D9D5CB";
-        const string ClothRedColor = "#A3241E";
+        const string PlayerSwordColor = "#9AA8BC";   // 채색: 푸른 강철빛 (먹색이면 위에서 칼이 안 보였어요)
+        // 옷 (컨셉 B안): 짙은 도포·바지, 흰 속소매·깃, 붉은 허리띠·머리끈. Blender clothes.py가 이름 앞에 Cloth_Dark/Light/Red를 붙여요
+        //   채색: 도포는 먹색 대신 짙은 쪽빛 (흙바닥·검붉은 적들 사이에서 검은 덩어리로 묻히지 않게), 속소매는 더 희게, 허리띠는 더 선명한 주홍
+        const string ClothDarkColor = "#2B3F7A";
+        const string ClothLightColor = "#F2EEE4";
+        const string ClothRedColor = "#D8301F";
 
         // 플레이어 모델을 발밑 기준으로 parent 아래에 세워요. 파츠 기준점이 모두 발밑이라 그대로 맞물려요.
         // 뼈대·동작이 든 Player_Rigged.fbx가 있으면 그걸(애니메이터 연결), 없으면 맨몸 파츠 + 머리카락을 따로 세워요
@@ -222,7 +223,10 @@ namespace AThousandDawns.EditorTools
                 ? GetInkMaterial("Ink_PlayerSword", PlayerSwordColor, 0.1f)
                 : GetMaterial("PlayerSword", PlayerSwordColor, false);
             bool ink = skin != null && skin.shader != null && skin.shader.name == InkShaderName;
-            Material Cloth(string name, string hex, float sat) => ink ? GetInkMaterial($"Ink_Player{name}", hex, sat) : GetMaterial($"Player{name}", hex, false);
+            // 옷·칼 색은 씬을 만들 때마다 다시 넣어요 (GetInkMaterial은 처음 만들 때만 색을 넣어서, 바꾼 색이 예전 재질에 안 들어갔어요)
+            Material Recolor(Material m, string hex) { if (ColorUtility.TryParseHtmlString(hex, out var col)) { m.SetColor("_BaseColor", col); EditorUtility.SetDirty(m); } return m; }
+            Material Cloth(string name, string hex, float sat) => Recolor(ink ? GetInkMaterial($"Ink_Player{name}", hex, sat) : GetMaterial($"Player{name}", hex, false), hex);
+            Recolor(sword, PlayerSwordColor);
             var clothDark = Cloth("ClothDark", ClothDarkColor, 0.1f);
             var clothLight = Cloth("ClothLight", ClothLightColor, 0.1f);
             var clothRed = Cloth("ClothRed", ClothRedColor, 0.85f);
