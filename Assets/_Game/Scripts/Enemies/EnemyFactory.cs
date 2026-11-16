@@ -236,6 +236,18 @@ namespace AThousandDawns.Enemies
                 BodyPosition = new Vector3(0f, 1.6f, 0f), BodyScale = new Vector3(1.8f, 1.6f, 1.8f),
                 MarkPosition = new Vector3(1.0f, 1.6f, 0.8f), MarkScale = new Vector3(0.4f, 0.4f, 2.2f), // 통나무 몽둥이
             },
+            EnemyKind.DarkElf => new Shape
+            {
+                Name = "다크 엘프 검사", Radius = 0.35f, Height = 1.75f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.88f, 0f), BodyScale = new Vector3(0.6f, 0.88f, 0.6f),
+                MarkPosition = new Vector3(0.35f, 0.9f, 0.45f), MarkScale = new Vector3(0.05f, 0.05f, 0.9f), // 휜 쌍검
+            },
+            EnemyKind.DeathKnight => new Shape
+            {
+                Name = "데스나이트", Radius = 0.7f, Height = 2.4f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 1.2f, 0f), BodyScale = new Vector3(1.3f, 1.2f, 1.3f),
+                MarkPosition = new Vector3(0.7f, 1.3f, 0.7f), MarkScale = new Vector3(0.12f, 0.12f, 2.0f), // 룬 양손검
+            },
             // ── 천마총
             EnemyKind.Cultist => new Shape
             {
@@ -332,6 +344,8 @@ namespace AThousandDawns.Enemies
             EnemyKind.Imp => Tinted(kind, v.archer != null ? v.archer : v.grunt, new Color(0.85f, 0.2f, 0.15f)),
             EnemyKind.GoblinChief => Tinted(kind, v.ironfist != null ? v.ironfist : v.grunt, new Color(0.45f, 0.6f, 0.25f)),
             EnemyKind.Ogre => Tinted(kind, v.nokrim != null ? v.nokrim : v.grunt, new Color(0.55f, 0.5f, 0.35f)),
+            EnemyKind.DarkElf => Tinted(kind, v.qingzhu != null ? v.qingzhu : v.grunt, new Color(0.45f, 0.3f, 0.6f)),
+            EnemyKind.DeathKnight => Tinted(kind, v.nokrim != null ? v.nokrim : v.grunt, new Color(0.2f, 0.25f, 0.3f)),
             _ => v.grunt,
         };
 
@@ -431,6 +445,8 @@ namespace AThousandDawns.Enemies
                 EnemyKind.Imp => root.AddComponent<ImpBrain>(),
                 EnemyKind.GoblinChief => root.AddComponent<GoblinChiefBrain>(),
                 EnemyKind.Ogre => root.AddComponent<OgreBrain>(),
+                EnemyKind.DarkElf => root.AddComponent<DarkElfBrain>(),
+                EnemyKind.DeathKnight => root.AddComponent<DeathKnightBrain>(),
                 _ => root.AddComponent<GruntBrain>(),
             };
             if (brain is ShieldBrain shieldBrain) shieldBrain.SetShieldVisual(mark.transform);

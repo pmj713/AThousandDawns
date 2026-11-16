@@ -774,7 +774,7 @@ namespace AThousandDawns.Prototype
             director.ResetRoom();
             Player.EnterRoom();
             var bossKind = _region >= 3 ? EnemyKind.HeavenlyDemon : _region == 2 ? EnemyKind.IronDragon : _region == 1 ? EnemyKind.BloodBuddha : EnemyKind.Nokrim;
-            if (_region < 3 && RoomBudget.FantasyOn && _rng.NextDouble() < GameConfig.GetOptional("fantasy.boss_chance", 0.3f)) bossKind = EnemyKind.Ogre; // 차원 겹침: 지역 보스 자리에 판타지 보스 (천마는 그대로)
+            if (_region < 3 && RoomBudget.FantasyOn && _rng.NextDouble() < GameConfig.GetOptional("fantasy.boss_chance", 0.3f)) bossKind = _rng.Next(2) == 0 ? EnemyKind.Ogre : EnemyKind.DeathKnight; // 차원 겹침: 지역 보스 자리에 판타지 보스 (오우거 · 데스나이트, 천마는 그대로)
             var bossBrain = arena.SpawnBoss(bossKind); // 죽림 녹림왕 · 폐사찰 혈불 · 장강 수채 철룡 · 천마총 천마
             if (bossBrain != null) ScaleForRegion(bossBrain);
             if (bossBrain != null) bossBrain.Woke += _ => ApplyHeroShield(); // 무림맹 고수를 구했으면 천마전 보호막

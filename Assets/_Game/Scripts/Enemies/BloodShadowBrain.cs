@@ -11,7 +11,7 @@ namespace AThousandDawns.Enemies
     //   혈영보: 5칸 밖에 1.5초 넘게 있으면 예고 0.4 · 잔상을 남기고 플레이어 뒤로 순간이동해 바로 베기 (원거리 대응)
     //   흡혈: 공격이 맞을 때마다 그 공격력의 30%만큼 체력 회복
     // 2페이즈: 잔상이 하나 더 (0.5초 · 1.0초 뒤 두 번), 예고 20% 빨라져요
-    public sealed class BloodShadowBrain : EnemyBrain, IMasterBrain
+    public class BloodShadowBrain : EnemyBrain, IMasterBrain // 다크 엘프 검사가 이어받아요 (판타지 고수)
     {
         enum Pattern { None, Slash, Line, Blink }
 
@@ -51,9 +51,13 @@ namespace AThousandDawns.Enemies
         protected override float DeathDelay => 1f;
         protected override float ActiveTime => _pattern == Pattern.Line ? _lineTime + 0.05f : 0.1f;
 
+        protected virtual string SlashName => "혈영 베기";
+        protected virtual string LineName => "혈선";
+        protected virtual string BlinkName => "혈영보";
+
         public override string AttackName => _pattern switch
         {
-            Pattern.Slash => "혈영 베기", Pattern.Line => "혈선", Pattern.Blink => "혈영보", _ => null,
+            Pattern.Slash => SlashName, Pattern.Line => LineName, Pattern.Blink => BlinkName, _ => null,
         };
 
         public int Phase { get; private set; } = 1;
@@ -216,6 +220,7 @@ namespace AThousandDawns.Enemies
         bool Hit(float ratio)
         {
             if (!Player.TryReceiveHit(AttackPower * ratio, transform.position, HitKnockback, Body)) return false;
+            if (_lifesteal <= 0f) return true; // 다크 엘프 검사는 흡혈이 없어요
             Body.Heal(AttackPower * ratio * _lifesteal);
             Fx(new FxCue { Kind = FxKind.Drain, From = Player.transform.position, To = transform.position });
             return true;
