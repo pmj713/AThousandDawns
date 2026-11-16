@@ -21,6 +21,7 @@ namespace AThousandDawns.EditorTools
             var bone = GetInkMaterial("Ink_Tomb_Bone", "#CFC6B0", 0.2f);         // 해골
             var iron = GetInkMaterial("Ink_Tomb_Iron", "#2E3236", 0.1f);         // 쇠사슬
             BuildTombEventPrefabs(stoneMat, roofX);   // 이벤트 방 가운데 소품 프리팹 (PrototypeSceneBuilder.TombEvents.cs)
+            BuildRiftEventPrefabs(stoneMat, null);   // 판타지 이벤트 방 소품 (PrototypeSceneBuilder.RiftEvents.cs)
 
             bool Skip(Transform t)
             {
