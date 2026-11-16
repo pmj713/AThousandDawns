@@ -20,6 +20,7 @@ namespace AThousandDawns.Prototype
     {
         [SerializeField] Site master = new Site();     // 청죽객 결투장
         [SerializeField] Site ironMaster = new Site(); // 철권 마웅 결투장
+        [SerializeField] Site fantasyMaster = new Site(); // 판타지 고수 결투장 (무너진 성 안뜰: 고블린 족장 · 다크 엘프 검사)
 
         // 테스트에서 고수를 고정해요 (null이면 무작위)
         public static EnemyKind? MasterOverride;
@@ -44,7 +45,8 @@ namespace AThousandDawns.Prototype
                 : _rng.Next(2) == 0 ? EnemyKind.Qingzhu : EnemyKind.IronFist);
             if (MasterOverride == null && RoomBudget.FantasyOn && _rng.NextDouble() < GameConfig.GetOptional("fantasy.master_chance", 0.35f))
                 kind = _rng.Next(2) == 0 ? EnemyKind.GoblinChief : EnemyKind.DarkElf; // 차원 겹침: 고수 자리에 판타지 고수가 무작위로 (고블린 족장 · 다크 엘프 검사)
-            var site = kind == EnemyKind.Qingzhu ? master : ironMaster; // 고블린 족장도 돌벽 결투장 // 혜광 · 탁랑객도 돌벽 결투장
+            bool fantasyKind = kind == EnemyKind.GoblinChief || kind == EnemyKind.DarkElf;
+            var site = kind == EnemyKind.Qingzhu ? master : fantasyKind && fantasyMaster.center != Vector3.zero ? fantasyMaster : ironMaster; // 고블린 족장도 돌벽 결투장 // 혜광 · 탁랑객도 돌벽 결투장
             MovePlayer(site.entry);
             director.ResetRoom();
             Player.EnterRoom();
@@ -90,7 +92,7 @@ namespace AThousandDawns.Prototype
                     : monk
                     ? "\"파계한 몸이 또 졌구나. 훔쳐 둔 비급을 가져가든, 이 더러운 내력을 가져가든, 그냥 보내 주든 마음대로 하게.\""
                     : shadow
-                    ? "\"좌호법이 이렇게 지다니… 내 그림자를 가져가든, 피를 가져가든, 그냥 보내 주든 마음대로 하게. 천마께선 나보다 훨씬 깊은 곳에 계시니.\""
+                    ? "\"좌호법이 이렇게 지다니… 내 그림자를 가져가든, 피를 가져가든, 그냥 보내 주든 마음대로 하게. 천마께선 이미 틈 너머의 마법까지 검에 새기셨으니.\""
                     : wave
                     ? "\"흐린 물도 결국 바다로 가는 법. 내 물결을 가져가든, 기운을 가져가든, 그냥 흘려보내든 마음대로 하게.\""
                     : "\"졌소. 내 검을 가져가든, 기운을 가져가든, 그냥 보내 주든 마음대로 하시오.\"",
