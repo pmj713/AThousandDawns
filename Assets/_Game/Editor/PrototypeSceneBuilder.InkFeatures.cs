@@ -72,6 +72,10 @@ namespace AThousandDawns.EditorTools
                     SaveFeature(RiverBankSegment(stoneMat, wetStone, reed, wetWood, rope, 2), "Feature_RiverBank_C"),
                 },
                 SaveFeature(RiverPoolRim(stoneMat, wetStone, reed, wetWood), "Feature_RiverPoolRim"));
+
+            // 차원 겹침 소품 (모든 지역): 무너진 성벽 조각 · 기사 석상 · 룬 기둥 · 마나 수정 (PrototypeSceneBuilder.InkRiftProps.cs)
+            var (riftRampart, riftKnight, riftRune, riftCrystal) = BuildRiftProps();
+            features.SetupRift(riftRampart, riftKnight, riftRune, riftCrystal);
         }
 
         // 장강 물띠 물가 토막 (길이 4 · Z, 물 폭 2.6 · X): 물가 양쪽(x = ±1.3 언저리)에 젖은 돌·낮은 갈대, 토막마다 하나씩 다른 거리
