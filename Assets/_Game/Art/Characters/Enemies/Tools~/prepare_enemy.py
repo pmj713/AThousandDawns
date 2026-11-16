@@ -2392,6 +2392,50 @@ if "demonmoves" in EXTRAS:
                 else:
                     arm(s, sh + Vector((sx * 0.45, 0.05, -0.35)), Vector((sx, 0.3, -0.3)))    # 휘청이며 팔이 벌어져요
         make_action("Defeat", [(0, "stagger"), (10, "stagger"), (22, "kneel"), (40, "kneel")], defeat_pose)
+        # 마검사 천마 시전 동작:
+        #   CastOne(화염구 비·마법진): 왼손을 하늘로 높이 들어 마력을 모았다가(예고 동안 이 자세) 앞으로 내뻗어요, 검은 오른쪽 아래로
+        #   Drain(마력 흡인): 두 손을 앞으로 뻗고 몸을 젖혀 버텨요 (검은 손에서 앞을 향해요)
+        #   Cleave(마검 천멸): 두 손으로 검을 머리 위로 높이 세워 모았다가(예고 1초) 무릎을 굽히며 발 앞 땅에 내리꽂아요
+        #   SwordSky(마검비): 오른팔을 곧게 뻗어 검을 하늘로 들고 왼손은 옆으로 펼쳐요
+        def cast_pose(stage):
+            if stage == "idle":
+                idle_end_pose(); return
+            XA = Vector((1, 0, 0))
+            shl, shr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+            if stage in ("raise", "release"):
+                up = stage == "raise"
+                lower_hips(-0.06 if up else -0.16, {"Left": FEET["Left"] + Vector((0, -0.25 if not up else 0, 0)), "Right": FEET["Right"]}, dy=0.02 if up else -0.1)
+                bend("Spine", XA, -10 if up else 14)
+                shl, shr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+                arm("Left", shl + (Vector((0.15, -0.15, 0.7)) if up else Vector((0.05, -0.7, 0.1))), Vector((1, 0.3, 0)))
+                arm("Right", shr + Vector((-0.25, 0.1, -0.5)), Vector((-1, 0.3, -0.3)))
+                point_blade(Vector((-0.3, 0.2, -1)), wrist_bend=60)
+            elif stage in ("drain_a", "drain_b"):
+                lower_hips(-0.15, {"Left": FEET["Left"] + Vector((0, -0.2, 0)), "Right": FEET["Right"] + Vector((0, 0.15, 0))}, dy=0.06)
+                bend("Spine", XA, -8 if stage == "drain_a" else -12)
+                shl, shr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+                for s, sh, sx in (("Left", shl, 1), ("Right", shr, -1)):
+                    arm(s, sh + Vector((-sx * 0.12, -0.7, 0.05 if stage == "drain_a" else 0.0)), Vector((sx, 0.3, -0.5)))
+                point_blade(Vector((0.2, -1, 0.3)), wrist_bend=80)
+            elif stage in ("c_up", "c_down"):
+                up = stage == "c_up"
+                lower_hips(-0.05 if up else -0.4, FEET, dy=0.0 if up else -0.15)
+                bend("Spine", XA, -12 if up else 30)
+                shl, shr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+                grip = (shl + shr) / 2 + (Vector((0, -0.1, 0.75)) if up else Vector((0, -0.55, -0.35)))
+                arm("Right", grip + Vector((-0.05, 0, 0)), Vector((-1, 0.3, 0)))
+                arm("Left", grip + Vector((0.05, 0, -0.08)), Vector((1, 0.3, 0)))
+                point_blade(Vector((0, 0.1, 1)) if up else Vector((0, -0.2, -1)), wrist_bend=90)
+            else:   # sky
+                lower_hips(-0.05, FEET, dy=0.02)
+                bend("Spine", XA, -8); bend("Neck", XA, -20)
+                arm("Right", shr + Vector((-0.05, -0.05, 0.75)), Vector((-1, 0.3, 0)))
+                arm("Left", shl + Vector((0.55, -0.1, 0.1)), Vector((1, 0.3, 0)))
+                point_blade(Vector((0, 0, 1)), wrist_bend=90)
+        make_action("CastOne", [(0, "raise"), (6, "raise"), (10, "release"), (18, "release"), (28, "idle")], cast_pose)
+        make_action("Drain", [(0, "drain_a"), (15, "drain_b"), (30, "drain_a")], cast_pose)
+        make_action("Cleave", [(0, "c_up"), (4, "c_down"), (16, "c_down"), (28, "idle")], cast_pose)
+        make_action("SwordSky", [(0, "idle"), (8, "sky"), (60, "sky"), (70, "idle")], cast_pose)
     rig.animation_data.action = None
     reset_pose()
 

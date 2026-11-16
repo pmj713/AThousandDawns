@@ -168,6 +168,7 @@ namespace AThousandDawns.Art
         //  - 특성 둘 이상 정예: 특성 색을 섞은 은은한 가장자리 기운이 숨 쉬듯 (하나면 머리 위 표식만)
         static readonly int AuraId = Shader.PropertyToID("_AuraColor");
         static readonly int CrackId = Shader.PropertyToID("_CrackColor");
+        static readonly int DissolveId = Shader.PropertyToID("_Dissolve");
 
         static readonly Color SplitCrack = new Color(0.62f, 0.32f, 0.85f, 1f);
         Renderer[] _bodyRenderers;
@@ -177,6 +178,11 @@ namespace AThousandDawns.Art
         int _auraTraits;
         bool _frozenShown, _statusShown;   // 빙결로 동작을 멈췄는지 · 상태 이상 기운을 보이는 중인지
         bool _alliedShown;                 // 협력한 적 보랏빛 가장자리를 보이는 중인지
+        HeavenlyDemonBrain _demon;          // 마검사 천마: 페이즈 기운 · 순간이동 흐려짐
+        string _demonAttack;
+        bool _blinkFade, _fadeUsed;
+        float _fade;
+        static readonly Color DemonViolet = new Color(0.62f, 0.3f, 1f), DemonBlue = new Color(0.3f, 0.55f, 1f), DemonFlame = new Color(1f, 0.38f, 0.1f);
         Transform _lastRival;              // 마지막으로 노린 다른 진영 적 (그 적에게 쓰러지면 그 반대쪽으로 넘어가요)
         static readonly Color AlliedGlow = new Color(0.62f, 0.3f, 1f, 1f);   // 차원 균열과 같은 보랏빛
         MaterialPropertyBlock _overlayBlock;
@@ -191,7 +197,7 @@ namespace AThousandDawns.Art
         void ApplyOverlay()
         {
             if (_bodyRenderers == null) return;
-            if (_aura.a > 0f || _crack.a > 0f) _overlayUsed = true;
+            if (_aura.a > 0f || _crack.a > 0f || _fade > 0f) _overlayUsed = true;
             if (!_overlayUsed) return;   // 한 번도 안 썼으면 블록을 건드리지 않아요 (SRP 배칭 유지)
             if (_overlayBlock == null) _overlayBlock = new MaterialPropertyBlock();
             foreach (var r in _bodyRenderers)
@@ -200,6 +206,7 @@ namespace AThousandDawns.Art
                 r.GetPropertyBlock(_overlayBlock);
                 _overlayBlock.SetColor(AuraId, _aura);
                 _overlayBlock.SetColor(CrackId, _crack);
+                if (_fadeUsed && !_brain.IsDead) _overlayBlock.SetFloat(DissolveId, _fade);   // 천마 순간이동 검격: 몸이 흐려져요 (쓴 적 있는 적만 — 쓰러진 뒤 흩어짐을 덮지 않게)
                 r.SetPropertyBlock(_overlayBlock);
             }
         }
@@ -236,6 +243,24 @@ namespace AThousandDawns.Art
                 return;
             }
             if (_statusShown) { _statusShown = false; _aura = Color.clear; _auraTraits = -1; ApplyOverlay(); }   // 풀리면 정예 기운을 다시 따져요
+
+            // 마검사 천마 (HeavenlyDemonBrain.Phase): 2페이즈 마법 — 몸 가장자리에 보랏빛·청색 마력, 3페이즈 마검 융합 — 보라와 주홍이 번갈아 타올라요.
+            //   순간이동 검격: 예고 동안 몸이 흐려졌다가(_Dissolve 일부) 나타나는 순간(Cue Blink) 또렷해져요
+            if (_demon != null && !_brain.IsDead)
+            {
+                string attack = _brain.AttackName;
+                if (attack != _demonAttack) { _demonAttack = attack; if (attack == "순간이동 검격") _blinkFade = true; }
+                if (attack != "순간이동 검격") _blinkFade = false;
+                float goal = _blinkFade ? 0.55f : 0f;
+                if (_fade != goal) { _fadeUsed = true; _fade = Mathf.MoveTowards(_fade, goal, Time.deltaTime * (_blinkFade ? 1.2f : 4f)); }
+                int phase = _demon.Phase;
+                float t = Time.time;
+                _aura = phase >= 3 ? Color.Lerp(DemonViolet, DemonFlame, 0.5f + 0.5f * Mathf.Sin(t * 3f))
+                      : phase == 2 ? Color.Lerp(DemonViolet, DemonBlue, 0.5f + 0.5f * Mathf.Sin(t * 1.5f)) : Color.clear;
+                if (phase >= 2) _aura.a = 0.35f + 0.12f * Mathf.Sin(t * 2.4f);
+                ApplyOverlay();
+                return;
+            }
 
             // 협력한 적 (차원 겹침, EnemyBrain.Allied): 몸 가장자리에 은은한 보랏빛 차원 기운이 숨 쉬어요 (발밑 원·차원 끈은 아트 2의 InkRivalFx).
             //   상태 이상보다 뒤, 정예 기운보다 앞이에요
@@ -283,6 +308,8 @@ namespace AThousandDawns.Art
             if (_transitionState != null) _transitioning = Getter<bool>(brain, "IsTransitioning");
             _hasIntro = (brain.Rank == EnemyRank.Boss || brain.Rank == EnemyRank.Master) && animator.HasState(0, Animator.StringToHash("Intro"));
             _cultist = brain as CultistBrain;
+            _demon = brain as HeavenlyDemonBrain;
+            if (_demon != null) HeavenlyDemonBrain.Cue += OnDemonCue;
             if (Resources.Load<Texture2D>($"{brain.Kind}_P2") != null) _phase = Getter<int>(brain, "Phase");
             _brain = brain;
             _animator = animator;
@@ -653,6 +680,11 @@ namespace AThousandDawns.Art
         float _leapStart;
         Vector3 _leapFrom, _leapTo, _modelRestPos;
 
+        void OnDemonCue(HeavenlyDemonBrain demon, HeavenlyDemonBrain.FxCue cue)
+        {
+            if (demon == _brain && cue.Kind == HeavenlyDemonBrain.FxKind.Blink) { _blinkFade = false; _fade = 0f; }   // 나타나는 순간 또렷하게
+        }
+
         void OnBossVolley(EnemyBrain boss, Vector3 dir)
         {
             if (boss == _brain) PlayHeld("Volley", 0.6f);
@@ -714,6 +746,7 @@ namespace AThousandDawns.Art
         {
             if (_body != null) _body.Damaged -= OnDamaged;
             if (_skeleton) SkeletonBrain.Reassembling -= OnReassembling;
+            if (_demon != null) HeavenlyDemonBrain.Cue -= OnDemonCue;
             if (_bossKit)
             {
                 EnemyBrain.BossVolley -= OnBossVolley;
