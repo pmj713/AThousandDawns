@@ -14,7 +14,7 @@ namespace AThousandDawns.Prototype
     // 그림은 아트 쪽이 RoomFeatures를 읽어 바꿔 그려요 (기본판은 단색 상자).
     public sealed partial class RoomRun
     {
-        public enum FeatureKind { Pillar, Statue, Wall, Water, Coffin, MiasmaPillar, BloodPool, BambooClump, FallenBamboo }
+        public enum FeatureKind { Pillar, Statue, Wall, Water, Coffin, MiasmaPillar, BloodPool, BambooClump, FallenBamboo, Rampart, KnightStatue, RunePillar, ManaCrystal } // 끝 넷: 차원 겹침 소품 (RoomRun.Rift)
 
         public sealed class RoomFeature
         {
@@ -53,6 +53,7 @@ namespace AThousandDawns.Prototype
                 else if (_region == 1) BuildTempleLayout(RoomLayout);
                 else if (_region == 2) BuildRiverLayout(RoomLayout);
                 else BuildTombLayout(RoomLayout);
+                PlaceRiftProps(room); // 차원 겹침 소품 (RoomRun.Rift)
                 if (_region == 1 && RoomLayout > 0) Notify("temple_layout", "폐사찰: 방마다 돌기둥 · 석불 · 무너진 담이 달라요 · 화살과 돌진을 막는 엄폐물이에요");
                 if (_region == 2 && RoomLayout > 0) Notify("river_water", "장강의 물: 들어가면 느려지고 흐르는 물은 물살 쪽으로 밀어요 · 대시 중엔 안 밀려요");
                 if (_region == 3 && RoomLayout > 1) Notify("tomb_layout", "천마총: 마기 기둥은 때마다 둘레에 마기를 뿜고, 혈지 위의 적은 회복해요 · 끌어내서 싸워요");
@@ -84,13 +85,13 @@ namespace AThousandDawns.Prototype
 
         void AddSolid(FeatureKind kind, Vector2 at, Vector2 size, float height)
         {
-            var go = GameObject.CreatePrimitive(kind == FeatureKind.Pillar || kind == FeatureKind.BambooClump ? PrimitiveType.Cylinder : PrimitiveType.Cube);
-            go.name = kind == FeatureKind.BambooClump ? "대숲" : kind == FeatureKind.FallenBamboo ? "쓰러진 대나무" : kind == FeatureKind.Pillar ? "돌기둥" : kind == FeatureKind.Statue ? "석불" : kind == FeatureKind.Coffin ? "무너진 관" : kind == FeatureKind.MiasmaPillar ? "마기 기둥" : "무너진 담";
+            var go = GameObject.CreatePrimitive(kind == FeatureKind.Pillar || kind == FeatureKind.BambooClump || kind == FeatureKind.RunePillar ? PrimitiveType.Cylinder : PrimitiveType.Cube);
+            go.name = kind == FeatureKind.BambooClump ? "대숲" : kind == FeatureKind.FallenBamboo ? "쓰러진 대나무" : kind == FeatureKind.Pillar ? "돌기둥" : kind == FeatureKind.Statue ? "석불" : kind == FeatureKind.Coffin ? "무너진 관" : kind == FeatureKind.MiasmaPillar ? "마기 기둥" : RiftName(kind) ?? "무너진 담";
             at = ScaleToRoom(at); // 작은 방 기준 자리를 지금 방 크기로
             Vector3 center = Combat.center + new Vector3(at.x, 0f, at.y);
             go.transform.position = center + Vector3.up * height * 0.5f;
-            go.transform.localScale = kind == FeatureKind.Pillar || kind == FeatureKind.BambooClump ? new Vector3(size.x, height * 0.5f, size.y) : new Vector3(size.x, height, size.y);
-            go.GetComponent<Renderer>().material.color = kind == FeatureKind.Statue ? new Color(0.42f, 0.38f, 0.33f) : kind == FeatureKind.Coffin ? new Color(0.2f, 0.18f, 0.2f) : kind == FeatureKind.MiasmaPillar ? new Color(0.15f, 0.08f, 0.1f) : kind == FeatureKind.BambooClump || kind == FeatureKind.FallenBamboo ? new Color(0.35f, 0.5f, 0.3f) : new Color(0.5f, 0.48f, 0.45f);
+            go.transform.localScale = kind == FeatureKind.Pillar || kind == FeatureKind.BambooClump || kind == FeatureKind.RunePillar ? new Vector3(size.x, height * 0.5f, size.y) : new Vector3(size.x, height, size.y);
+            go.GetComponent<Renderer>().material.color = RiftColor(kind) ?? (kind == FeatureKind.Statue ? new Color(0.42f, 0.38f, 0.33f) : kind == FeatureKind.Coffin ? new Color(0.2f, 0.18f, 0.2f) : kind == FeatureKind.MiasmaPillar ? new Color(0.15f, 0.08f, 0.1f) : kind == FeatureKind.BambooClump || kind == FeatureKind.FallenBamboo ? new Color(0.35f, 0.5f, 0.3f) : new Color(0.5f, 0.48f, 0.45f));
             _features.Add(new RoomFeature { Kind = kind, Center = center, Size = size, Go = go });
         }
 

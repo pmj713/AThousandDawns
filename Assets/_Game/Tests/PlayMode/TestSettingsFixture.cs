@@ -21,6 +21,7 @@ namespace AThousandDawns.Tests
             AThousandDawns.Prototype.RoomBudget.FantasyOverride = 0; // 예전 테스트는 지역마다 무협 적만 나온다고 봐요
             AThousandDawns.Enemies.EnemyBrain.InfectionOverride = 0; // 차원 감염 정예 특성도 꺼요 (고정 시드 정예 특성이 바뀌지 않게)
             AThousandDawns.Enemies.EnemyBrain.BossKitOverride = 0; // 보스 공통 견제기 · 이동기도 꺼요 (보스 패턴 테스트가 흔들리지 않게)
+            AThousandDawns.Prototype.RoomRun.RiftOverride = 0; // 차원 겹침 소품도 (고정 시드 방 배치 · 항아리 자리가 바뀌지 않게)
             _path = Path.Combine(Application.temporaryCachePath, $"settings_test_{Guid.NewGuid():N}.json");
             GameSettings.PathOverride = _path;
             GameSettings.Reload();
@@ -35,6 +36,7 @@ namespace AThousandDawns.Tests
             AThousandDawns.Prototype.RoomBudget.FantasyOverride = -1;
             AThousandDawns.Enemies.EnemyBrain.InfectionOverride = -1;
             AThousandDawns.Enemies.EnemyBrain.BossKitOverride = -1;
+            AThousandDawns.Prototype.RoomRun.RiftOverride = -1;
             if (File.Exists(_path)) File.Delete(_path);
             GameSettings.PathOverride = null;
             GameSettings.Reload();

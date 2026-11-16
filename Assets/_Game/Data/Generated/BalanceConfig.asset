@@ -6225,3 +6225,51 @@ MonoBehaviour:
     value: 1.6
     unit: 
     note: "\uBC29 \uD06C\uAE30: \uD070 \uBC29 \uBC29 \uC740\uC790 \uBC30\uC728"
+  - key: rift.count.r0
+    value: 1
+    unit: "\uAC1C"
+    note: "\uCC28\uC6D0 \uACB9\uCE68 \uC18C\uD488: \uC8FD\uB9BC \uBC29\uB9C8\uB2E4 (2\uCE35\uBD80\uD130)"
+  - key: rift.count.r1
+    value: 2
+    unit: "\uAC1C"
+    note: "\uCC28\uC6D0 \uACB9\uCE68 \uC18C\uD488: \uD3D0\uC0AC\uCC30 \uBC29\uB9C8\uB2E4"
+  - key: rift.count.r2
+    value: 2
+    unit: "\uAC1C"
+    note: "\uCC28\uC6D0 \uACB9\uCE68 \uC18C\uD488: \uC7A5\uAC15 \uC218\uCC44 \uBC29\uB9C8\uB2E4"
+  - key: rift.count.r3
+    value: 3
+    unit: "\uAC1C"
+    note: "\uCC28\uC6D0 \uACB9\uCE68 \uC18C\uD488: \uCC9C\uB9C8\uCD1D \uBC29\uB9C8\uB2E4"
+  - key: rift.extra_chance
+    value: 0.35
+    unit: 
+    note: "\uCC28\uC6D0 \uACB9\uCE68 \uC18C\uD488: \uD558\uB098 \uB354 \uB193\uC77C \uD655\uB960"
+  - key: rift.weight.rampart
+    value: 3
+    unit: 
+    note: "\uC18C\uD488 \uAC00\uC911\uCE58: \uBB34\uB108\uC9C4 \uC131\uBCBD \uC870\uAC01 (\uC5C4\uD3D0\uBB3C)"
+  - key: rift.weight.statue
+    value: 2
+    unit: 
+    note: "\uC18C\uD488 \uAC00\uC911\uCE58: \uAE30\uC0AC \uC11D\uC0C1 (\uC5C4\uD3D0\uBB3C)"
+  - key: rift.weight.rune
+    value: 2
+    unit: 
+    note: "\uC18C\uD488 \uAC00\uC911\uCE58: \uB8EC \uAE30\uB465 (\uC5C4\uD3D0\uBB3C)"
+  - key: rift.weight.crystal
+    value: 2
+    unit: 
+    note: "\uC18C\uD488 \uAC00\uC911\uCE58: \uB9C8\uB098 \uC218\uC815 (\uACF5\uACA9\uD558\uBA74 \uD130\uC9D0)"
+  - key: rift.crystal_radius
+    value: 2.5
+    unit: cell
+    note: "\uB9C8\uB098 \uC218\uC815 \uD3ED\uBC1C \uBC18\uACBD (\uC801\uB9CC \uB9DE\uC544\uC694)"
+  - key: rift.crystal_damage
+    value: 40
+    unit: 
+    note: "\uB9C8\uB098 \uC218\uC815 \uD3ED\uBC1C \uD53C\uD574 (\uC8FD\uB9BC \uAE30\uC900)"
+  - key: rift.crystal_region_scale
+    value: 0.6
+    unit: 
+    note: "\uB9C8\uB098 \uC218\uC815 \uD53C\uD574: \uC9C0\uC5ED\uB9C8\uB2E4 \uB354\uD558\uB294 \uBC30\uC728 (\uCC9C\uB9C8\uCD1D \xD72.8)"

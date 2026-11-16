@@ -1552,3 +1552,15 @@ room.size_budget.l,1.8,,방 크기: 큰 방 적 예산 배율,방 크기 기획
 room.size_l.extra_waves,1,,방 크기: 큰 방 웨이브 +,방 크기 기획
 room.size_silver.m,1.3,,방 크기: 중간 방 방 은자 배율 (적이 많고 오래 걸리는 만큼),방 크기 기획
 room.size_silver.l,1.6,,방 크기: 큰 방 방 은자 배율,방 크기 기획
+rift.count.r0,1,개,차원 겹침 소품: 죽림 방마다 (2층부터),차원 겹침 맵 섞기
+rift.count.r1,2,개,차원 겹침 소품: 폐사찰 방마다,차원 겹침 맵 섞기
+rift.count.r2,2,개,차원 겹침 소품: 장강 수채 방마다,차원 겹침 맵 섞기
+rift.count.r3,3,개,차원 겹침 소품: 천마총 방마다,차원 겹침 맵 섞기
+rift.extra_chance,35%,,차원 겹침 소품: 하나 더 놓일 확률,차원 겹침 맵 섞기
+rift.weight.rampart,3,,소품 가중치: 무너진 성벽 조각 (엄폐물),차원 겹침 맵 섞기
+rift.weight.statue,2,,소품 가중치: 기사 석상 (엄폐물),차원 겹침 맵 섞기
+rift.weight.rune,2,,소품 가중치: 룬 기둥 (엄폐물),차원 겹침 맵 섞기
+rift.weight.crystal,2,,소품 가중치: 마나 수정 (공격하면 터짐),차원 겹침 맵 섞기
+rift.crystal_radius,2.5,cell,마나 수정 폭발 반경 (적만 맞아요),차원 겹침 맵 섞기
+rift.crystal_damage,40,,마나 수정 폭발 피해 (죽림 기준),차원 겹침 맵 섞기
+rift.crystal_region_scale,60%,,마나 수정 피해: 지역마다 더하는 배율 (천마총 ×2.8),차원 겹침 맵 섞기
