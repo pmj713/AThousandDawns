@@ -476,16 +476,6 @@ namespace AThousandDawns.Prototype
         Keyword? _hoveredHybrid;
         Rect _hoveredHybridRect;
 
-        static readonly Texture2D[] HybridIconCache = new Texture2D[PlayerKeywords.KeywordCount];
-        static bool[] _hybridIconLooked = new bool[PlayerKeywords.KeywordCount];
-
-        // 혼종 세트 문장 (아트, Resources/HybridIcons/{id}). 한 번만 찾아요
-        static Texture2D HybridIcon(Keyword k)
-        {
-            if (!_hybridIconLooked[(int)k]) { _hybridIconLooked[(int)k] = true; HybridIconCache[(int)k] = Resources.Load<Texture2D>("HybridIcons/" + HybridSets.Id(k)); }
-            return HybridIconCache[(int)k];
-        }
-
         void DrawHybridRows(Rect area, ref float y, float rowH, Vector2 mouse)
         {
             _hoveredHybrid = null;
@@ -508,7 +498,7 @@ namespace AThousandDawns.Prototype
                 var row = new Rect(area.x + 6f * K, y, area.width - 12f * K, rowH - 4f * K);
                 if (row.Contains(mouse)) { _hoveredHybrid = k; _hoveredHybridRect = row; Fill(row, new Color(1f, 1f, 1f, 0.08f)); }
                 int level = items.HybridLevel(k);
-                ItemIcons.Draw(new Rect(row.x + 2f * K, row.y + 4f * K, row.height - 8f * K, row.height - 8f * K), HybridIcon(k));
+                AThousandDawns.Fx.InkMeridianArt.HybridCrest(new Rect(row.x + 2f * K, row.y + 4f * K, row.height - 8f * K, row.height - 8f * K), HybridSets.Id(k), level > 0); // 세트 문장 (켜지면 보랏빛 균열이 번쩍)
                 string stage = level > 0 ? $"<color=#c9a0ff><b>{level}단계</b></color>" : "<color=#9a9a9a>단계 없음</color>";
                 GUI.Label(new Rect(row.x + row.height, row.y + 6f * K, row.width - row.height, row.height), $"{HybridSets.Name(k)} {count}/{HybridSets.Tier2Count}   {stage}", _small);
                 y += rowH;
