@@ -247,7 +247,7 @@ namespace AThousandDawns.Art
             {
                 if (e == null || e.IsDead) continue;
                 if (e is WaterGhostBrain g) TickGhost(g, dt);
-                if (e.IsHastened && !_haste.ContainsKey(e))
+                if (e.IsHastened && !_haste.ContainsKey(e) && !InkFantasyFx.IsFantasy(e)) // 판타지 적은 InkFantasyFx 장미창
                 {
                     var ring = Flat(_ring, e.transform.position, 1.6f, 0f, 0.05f);
                     _haste[e] = new Haste { Ring = ring, Last = e.transform.position };
