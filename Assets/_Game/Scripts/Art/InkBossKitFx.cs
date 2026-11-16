@@ -10,6 +10,7 @@ namespace AThousandDawns.Art
     //   도약 내려찍기 (EnemyBrain.BossLeapStarted → BossLeapLanded): 떠날 자리에 흙먼지가 모이고, 날아오르는 0.35초 동안 보스 색 빛줄기가
     //     떠날 자리에서 내려찍을 자리까지 포물선으로 그어지며 그림자가 바닥을 따라가요. 착지 폭발은 InkBurstFx(Slam).
     //     보스 색: 녹림왕 금빛 · 혈불 진홍 · 철룡 하늘빛 · 천마 보랏빛 진홍 · 오우거 흙빛 주황.
+    //     고수(약한 판)도 같은 신호: 청죽객 초록 · 철권 마웅 바람빛 · 혜광 금빛 · 탁랑객 물빛 · 혈영검마 핏빛 · 고블린 족장 초록.
     //   족장 함성 (GoblinChiefBrain.WarCry): 붉은 음파 고리 세 겹이 퍼지고, 그 순간 새로 나온 고블린 발밑마다 녹갈색 연기가 피어올라요.
     //   오우거 바위 던지기 (OgreBrain.RockThrown): 그 순간 새로 뜬 바위 예고 원("Telegraph")마다 바위가 오우거 손에서 포물선으로 날아가 떨어져요
     //     (0.8초). 떨어지는 흙먼지·파편은 InkBurstFx(Quake).
@@ -79,6 +80,12 @@ namespace AThousandDawns.Art
             EnemyKind.IronDragon => new Color(0.4f, 0.75f, 1f),
             EnemyKind.HeavenlyDemon => new Color(0.75f, 0.2f, 0.6f),
             EnemyKind.Ogre => new Color(0.95f, 0.55f, 0.25f),
+            EnemyKind.Qingzhu => new Color(0.45f, 0.95f, 0.35f),      // 고수: 청죽객 대나무 초록
+            EnemyKind.IronFist => new Color(0.6f, 0.9f, 1f),          // 철권 마웅 바람빛
+            EnemyKind.Hyegwang => new Color(1f, 0.82f, 0.25f),        // 혜광 금빛
+            EnemyKind.Takrang => new Color(0.3f, 0.65f, 1f),          // 탁랑객 물빛
+            EnemyKind.BloodShadow => new Color(0.9f, 0.1f, 0.2f),     // 혈영검마 핏빛
+            EnemyKind.GoblinChief => new Color(0.55f, 0.85f, 0.3f),   // 고블린 족장 초록
             _ => new Color(1f, 0.6f, 0.3f),
         };
 
