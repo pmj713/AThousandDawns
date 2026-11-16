@@ -224,6 +224,18 @@ namespace AThousandDawns.Enemies
                 BodyPosition = new Vector3(0f, 1.3f, 0f), BodyScale = new Vector3(0.6f, 0.6f, 0.6f), // 떠 있어요
                 MarkPosition = new Vector3(0f, 1.3f, 0.35f), MarkScale = new Vector3(0.25f, 0.25f, 0.25f), // 불덩이
             },
+            EnemyKind.GoblinChief => new Shape
+            {
+                Name = "고블린 족장", Radius = 0.55f, Height = 1.8f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.9f, 0f), BodyScale = new Vector3(1.0f, 0.9f, 1.0f),
+                MarkPosition = new Vector3(0.5f, 1.1f, 0.5f), MarkScale = new Vector3(0.35f, 0.35f, 0.9f), // 쇠못 철퇴
+            },
+            EnemyKind.Ogre => new Shape
+            {
+                Name = "오우거", Radius = 0.9f, Height = 3.2f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 1.6f, 0f), BodyScale = new Vector3(1.8f, 1.6f, 1.8f),
+                MarkPosition = new Vector3(1.0f, 1.6f, 0.8f), MarkScale = new Vector3(0.4f, 0.4f, 2.2f), // 통나무 몽둥이
+            },
             // ── 천마총
             EnemyKind.Cultist => new Shape
             {
@@ -318,6 +330,8 @@ namespace AThousandDawns.Enemies
             EnemyKind.Orc => Tinted(kind, v.boar != null ? v.boar : v.grunt, new Color(0.35f, 0.55f, 0.25f)),
             EnemyKind.Skeleton => Tinted(kind, v.grunt, new Color(0.9f, 0.88f, 0.8f)),
             EnemyKind.Imp => Tinted(kind, v.archer != null ? v.archer : v.grunt, new Color(0.85f, 0.2f, 0.15f)),
+            EnemyKind.GoblinChief => Tinted(kind, v.ironfist != null ? v.ironfist : v.grunt, new Color(0.45f, 0.6f, 0.25f)),
+            EnemyKind.Ogre => Tinted(kind, v.nokrim != null ? v.nokrim : v.grunt, new Color(0.55f, 0.5f, 0.35f)),
             _ => v.grunt,
         };
 
@@ -415,6 +429,8 @@ namespace AThousandDawns.Enemies
                 EnemyKind.Orc => root.AddComponent<OrcBrain>(),
                 EnemyKind.Skeleton => root.AddComponent<SkeletonBrain>(),
                 EnemyKind.Imp => root.AddComponent<ImpBrain>(),
+                EnemyKind.GoblinChief => root.AddComponent<GoblinChiefBrain>(),
+                EnemyKind.Ogre => root.AddComponent<OgreBrain>(),
                 _ => root.AddComponent<GruntBrain>(),
             };
             if (brain is ShieldBrain shieldBrain) shieldBrain.SetShieldVisual(mark.transform);

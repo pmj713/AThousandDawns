@@ -20,6 +20,7 @@ namespace AThousandDawns.Tests
             AThousandDawns.Player.PlayerItems.ModeOverride = 0; // 예전 테스트는 경맥도(격자판) 기준이에요. 장비 칸 테스트(EquipTests)만 장비 칸으로 바꿔요
             AThousandDawns.Prototype.RoomBudget.FantasyOverride = 0; // 예전 테스트는 지역마다 무협 적만 나온다고 봐요
             AThousandDawns.Enemies.EnemyBrain.InfectionOverride = 0; // 차원 감염 정예 특성도 꺼요 (고정 시드 정예 특성이 바뀌지 않게)
+            AThousandDawns.Enemies.EnemyBrain.BossKitOverride = 0; // 보스 공통 견제기 · 이동기도 꺼요 (보스 패턴 테스트가 흔들리지 않게)
             _path = Path.Combine(Application.temporaryCachePath, $"settings_test_{Guid.NewGuid():N}.json");
             GameSettings.PathOverride = _path;
             GameSettings.Reload();
@@ -33,6 +34,7 @@ namespace AThousandDawns.Tests
             AThousandDawns.Player.PlayerItems.ModeOverride = -1;
             AThousandDawns.Prototype.RoomBudget.FantasyOverride = -1;
             AThousandDawns.Enemies.EnemyBrain.InfectionOverride = -1;
+            AThousandDawns.Enemies.EnemyBrain.BossKitOverride = -1;
             if (File.Exists(_path)) File.Delete(_path);
             GameSettings.PathOverride = null;
             GameSettings.Reload();

@@ -42,7 +42,9 @@ namespace AThousandDawns.Prototype
                 : _region == 2 ? EnemyKind.Takrang // 장강 수채: 탁랑객
                 : _region == 1 ? EnemyKind.Hyegwang // 폐사찰: 파계승 혜광
                 : _rng.Next(2) == 0 ? EnemyKind.Qingzhu : EnemyKind.IronFist);
-            var site = kind == EnemyKind.Qingzhu ? master : ironMaster; // 혜광 · 탁랑객도 돌벽 결투장
+            if (MasterOverride == null && RoomBudget.FantasyOn && _rng.NextDouble() < GameConfig.GetOptional("fantasy.master_chance", 0.35f))
+                kind = EnemyKind.GoblinChief; // 차원 겹침: 고수 자리에 판타지 고수가 무작위로
+            var site = kind == EnemyKind.Qingzhu ? master : ironMaster; // 고블린 족장도 돌벽 결투장 // 혜광 · 탁랑객도 돌벽 결투장
             MovePlayer(site.entry);
             director.ResetRoom();
             Player.EnterRoom();
@@ -69,15 +71,18 @@ namespace AThousandDawns.Prototype
             bool monk = _master.Kind == EnemyKind.Hyegwang;
             bool wave = _master.Kind == EnemyKind.Takrang;
             bool shadow = _master.Kind == EnemyKind.BloodShadow;
-            var skill = iron ? SkillKind.Quake : monk ? SkillKind.Palm : wave ? SkillKind.Takrang : shadow ? SkillKind.BloodShadow : SkillKind.BambooFlash;
+            bool chief = _master.Kind == EnemyKind.GoblinChief;
+            var skill = iron || chief ? SkillKind.Quake : monk ? SkillKind.Palm : wave ? SkillKind.Takrang : shadow ? SkillKind.BloodShadow : SkillKind.BambooFlash;
             string skillName = PlayerController.SkillLabel(skill);
             string skillText = Player.UsesDagger ? PlayerController.DaggerScrollText(skill) : PlayerController.SkillText(skill); // 비도는 비도 초식
             var v = new EventView
             {
                 Id = "master",
-                Art = iron ? "master_iron" : monk ? "master_monk" : wave ? "master_wave" : shadow ? "master_shadow" : "master_bamboo", // 고수마다 그림 (EventArt/master_*)
-                Title = iron ? "철권 마웅이 주먹을 거두었다" : monk ? "혜광이 선장을 내려놓았다" : wave ? "탁랑객이 검을 강물에 꽂았다" : shadow ? "혈영검마의 잔상이 흩어졌다" : "청죽객이 검을 내려놓았다",
-                Text = iron
+                Art = chief ? "master_goblin" : iron ? "master_iron" : monk ? "master_monk" : wave ? "master_wave" : shadow ? "master_shadow" : "master_bamboo", // 고수마다 그림 (EventArt/master_*)
+                Title = chief ? "고블린 족장이 철퇴를 내려놓았다" : iron ? "철권 마웅이 주먹을 거두었다" : monk ? "혜광이 선장을 내려놓았다" : wave ? "탁랑객이 검을 강물에 꽂았다" : shadow ? "혈영검마의 잔상이 흩어졌다" : "청죽객이 검을 내려놓았다",
+                Text = chief
+                    ? "\"크르릉… 네 녀석, 이쪽 세계 놈치고는 세군. 내 철퇴 다루는 법을 가져가든, 기운을 가져가든, 그냥 보내 주든 맘대로 해라.\""
+                    : iron
                     ? "\"허허, 내 주먹이 꺾였군. 권법을 가져가든, 기운을 가져가든, 그냥 보내 주든 마음대로 하게.\""
                     : monk
                     ? "\"파계한 몸이 또 졌구나. 훔쳐 둔 비급을 가져가든, 이 더러운 내력을 가져가든, 그냥 보내 주든 마음대로 하게.\""

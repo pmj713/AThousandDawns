@@ -55,6 +55,7 @@ namespace AThousandDawns.Prototype
         public static EnemyKind[] ForRegion(int region) => WithFantasy(region <= 0 ? Bamboo : region == 1 ? Temple : region == 2 ? River : Tomb);
 
         public static int FantasyOverride = -1; // 테스트용 (0 무협 적만 · 1 섞기)
+        public static bool FantasyOn => FantasyOverride == 1 || (FantasyOverride < 0 && GameConfig.GetOptional("fantasy.enabled", 1f) >= 0.5f);
 
         // 무협 적 + 판타지 적 (시트 fantasy.enabled = 0이면 무협 적만)
         static EnemyKind[] WithFantasy(EnemyKind[] wuxia)

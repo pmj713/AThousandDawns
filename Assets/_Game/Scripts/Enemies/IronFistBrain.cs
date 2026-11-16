@@ -18,9 +18,12 @@ namespace AThousandDawns.Enemies
     // 붕산권: 7초마다. 예고 0.8, 원 반경 3칸 충격파 + 넉백 2칸, ×1.2, 빈틈 1.0. 2페이즈는 2연속
     // 돌진: 멀 때. 예고 0.8, 벽까지 직선 초당 13칸 + 넉백, ×1.0. 벽에 부딪히면 2.5초 기절 (빈틈)
     //   2페이즈: 벽에 부딪히면 낙석 3개 (예고 원 반경 1칸, ×0.8), 기절은 1.5초
-    public sealed class IronFistBrain : EnemyBrain, IMasterBrain
+    public class IronFistBrain : EnemyBrain, IMasterBrain // 고블린 족장 · 오우거가 이어받아요 (판타지 고수 · 보스)
     {
-        public override string AttackName => _pattern switch { Pattern.Jab => "주먹 2연타", Pattern.Quake => "붕산권", Pattern.Charge => "돌진", _ => null };
+        public override string AttackName => _pattern switch { Pattern.Jab => JabName, Pattern.Quake => QuakeName, Pattern.Charge => ChargeName, _ => null };
+        protected virtual string JabName => "주먹 2연타";
+        protected virtual string QuakeName => "붕산권";
+        protected virtual string ChargeName => "돌진";
 
         enum Pattern { None, Jab, Quake, Charge }
 
@@ -127,7 +130,7 @@ namespace AThousandDawns.Enemies
             if (_quakeTimer <= 0f && distance <= _quakeRadius + 1.5f) next = Pattern.Quake;
             else if (distance <= _closeDistance) next = Pattern.Jab;
             else if (distance >= _farDistance) next = Pattern.Charge;
-            else return false; // 중간 거리면 다가가요
+            else { TryMidRange(); return false; } // 중간 거리면 다가가요 (오우거는 바위를 던져요)
             if (next == _lastPattern && _repeat >= _maxRepeat)
             {
                 if (next == Pattern.Charge) return false;
@@ -279,7 +282,7 @@ namespace AThousandDawns.Enemies
         }
 
         // 2페이즈 낙석: 플레이어 둘레에 돌 3개 (예고 원 뒤 떨어짐)
-        void DropRocks()
+        protected void DropRocks()
         {
             Vector3 p = Player.transform.position;
             for (int i = 0; i < 3; i++)
@@ -358,7 +361,12 @@ namespace AThousandDawns.Enemies
             Body.Targetable = true;
             _decisionTimer = _decisionPause;
             _repeat = 0;
+            OnEnterPhase2();
         }
+
+        // 이어받는 판타지 고수 · 보스가 덧붙여요
+        protected virtual void OnEnterPhase2() { }
+        protected virtual void TryMidRange() { }
 
         protected override void OnDied()
         {

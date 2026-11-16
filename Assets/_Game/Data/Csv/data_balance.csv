@@ -1221,6 +1221,97 @@ imp.arrow_radius,0.3,cell,임프 화염탄 판정,차원 겹침 개편
 room_cost.orc,3,,방 예산 점수: 오크,차원 겹침 개편
 room_cost.skeleton,2,,방 예산 점수: 스켈레톤,차원 겹침 개편
 room_cost.imp,2,,방 예산 점수: 임프,차원 겹침 개편
+fantasy.master_chance,35%,,"고수 자리에 판타지 고수 (고블린 족장)가 나올 확률",차원 겹침 개편
+fantasy.boss_chance,30%,,"지역 보스 자리에 판타지 보스 (오우거)가 나올 확률 (천마총 천마는 그대로)",차원 겹침 개편
+goblinchief.hp,900,,고블린 족장 (hp),차원 겹침 개편
+goblinchief.atk,16,,고블린 족장 (atk),차원 겹침 개편
+goblinchief.toughness,3,,고블린 족장 (toughness),차원 겹침 개편
+goblinchief.move_speed,3.8,cell/s,고블린 족장 (move_speed),차원 겹침 개편
+goblinchief.close_distance,2.5,cell,고블린 족장 (close_distance),차원 겹침 개편
+goblinchief.far_distance,5,cell,고블린 족장 (far_distance),차원 겹침 개편
+goblinchief.decision_pause,0.4,s,고블린 족장 (decision_pause),차원 겹침 개편
+goblinchief.transition_time,1.5,s,고블린 족장 (transition_time),차원 겹침 개편
+goblinchief.phase2_hp_ratio,50%,,고블린 족장 (phase2_hp_ratio),차원 겹침 개편
+goblinchief.max_repeat,2,,고블린 족장 (max_repeat),차원 겹침 개편
+goblinchief.jab_windup,0.5,s,고블린 족장 (jab_windup),차원 겹침 개편
+goblinchief.jab_recovery,0.7,s,고블린 족장 (jab_recovery),차원 겹침 개편
+goblinchief.jab_ratio,0.7,,고블린 족장 (jab_ratio),차원 겹침 개편
+goblinchief.jab_radius,1.5,cell,고블린 족장 (jab_radius),차원 겹침 개편
+goblinchief.jab_angle,70,deg,고블린 족장 (jab_angle),차원 겹침 개편
+goblinchief.jab_gap,0.35,s,고블린 족장 (jab_gap),차원 겹침 개편
+goblinchief.jab_lunge,0.5,cell,고블린 족장 (jab_lunge),차원 겹침 개편
+goblinchief.quake_windup,0.8,s,고블린 족장 (quake_windup),차원 겹침 개편
+goblinchief.quake_recovery,1,s,고블린 족장 (quake_recovery),차원 겹침 개편
+goblinchief.quake_ratio,1.2,,고블린 족장 (quake_ratio),차원 겹침 개편
+goblinchief.quake_radius,3,cell,고블린 족장 (quake_radius),차원 겹침 개편
+goblinchief.quake_knockback,2,cell,고블린 족장 (quake_knockback),차원 겹침 개편
+goblinchief.quake_interval,7,s,고블린 족장 (quake_interval),차원 겹침 개편
+goblinchief.p2_quake_gap,0.6,s,고블린 족장 (p2_quake_gap),차원 겹침 개편
+goblinchief.charge_windup,0.8,s,고블린 족장 (charge_windup),차원 겹침 개편
+goblinchief.charge_ratio,1,,고블린 족장 (charge_ratio),차원 겹침 개편
+goblinchief.charge_speed,13,cell/s,고블린 족장 (charge_speed),차원 겹침 개편
+goblinchief.charge_width,1.2,cell,고블린 족장 (charge_width),차원 겹침 개편
+goblinchief.charge_knockback,1.5,cell,고블린 족장 (charge_knockback),차원 겹침 개편
+goblinchief.charge_max,16,cell,고블린 족장 (charge_max),차원 겹침 개편
+goblinchief.wall_stun,2.5,s,고블린 족장 (wall_stun),차원 겹침 개편
+goblinchief.p2_wall_stun,1.5,s,고블린 족장 (p2_wall_stun),차원 겹침 개편
+goblinchief.rock_ratio,0.8,,고블린 족장 (rock_ratio),차원 겹침 개편
+goblinchief.rock_radius,1,cell,고블린 족장 (rock_radius),차원 겹침 개편
+goblinchief.rock_fall,0.8,s,고블린 족장 (rock_fall),차원 겹침 개편
+goblinchief.summon_count,3,,고블린 족장 함성: 2페이즈에 불러 모으는 고블린 수,차원 겹침 개편
+ogre.hp,1800,,오우거 (hp),차원 겹침 개편
+ogre.atk,24,,오우거 (atk),차원 겹침 개편
+ogre.toughness,5,,오우거 (toughness),차원 겹침 개편
+ogre.move_speed,3,cell/s,오우거 (move_speed),차원 겹침 개편
+ogre.close_distance,2.5,cell,오우거 (close_distance),차원 겹침 개편
+ogre.far_distance,5,cell,오우거 (far_distance),차원 겹침 개편
+ogre.decision_pause,0.4,s,오우거 (decision_pause),차원 겹침 개편
+ogre.transition_time,1.5,s,오우거 (transition_time),차원 겹침 개편
+ogre.phase2_hp_ratio,50%,,오우거 (phase2_hp_ratio),차원 겹침 개편
+ogre.max_repeat,2,,오우거 (max_repeat),차원 겹침 개편
+ogre.jab_windup,0.5,s,오우거 (jab_windup),차원 겹침 개편
+ogre.jab_recovery,0.7,s,오우거 (jab_recovery),차원 겹침 개편
+ogre.jab_ratio,0.7,,오우거 (jab_ratio),차원 겹침 개편
+ogre.jab_radius,1.5,cell,오우거 (jab_radius),차원 겹침 개편
+ogre.jab_angle,70,deg,오우거 (jab_angle),차원 겹침 개편
+ogre.jab_gap,0.35,s,오우거 (jab_gap),차원 겹침 개편
+ogre.jab_lunge,0.5,cell,오우거 (jab_lunge),차원 겹침 개편
+ogre.quake_windup,0.8,s,오우거 (quake_windup),차원 겹침 개편
+ogre.quake_recovery,1,s,오우거 (quake_recovery),차원 겹침 개편
+ogre.quake_ratio,1.2,,오우거 (quake_ratio),차원 겹침 개편
+ogre.quake_radius,3.5,cell,오우거 (quake_radius),차원 겹침 개편
+ogre.quake_knockback,2,cell,오우거 (quake_knockback),차원 겹침 개편
+ogre.quake_interval,7,s,오우거 (quake_interval),차원 겹침 개편
+ogre.p2_quake_gap,0.6,s,오우거 (p2_quake_gap),차원 겹침 개편
+ogre.charge_windup,0.8,s,오우거 (charge_windup),차원 겹침 개편
+ogre.charge_ratio,1,,오우거 (charge_ratio),차원 겹침 개편
+ogre.charge_speed,13,cell/s,오우거 (charge_speed),차원 겹침 개편
+ogre.charge_width,2,cell,오우거 (charge_width),차원 겹침 개편
+ogre.charge_knockback,1.5,cell,오우거 (charge_knockback),차원 겹침 개편
+ogre.charge_max,16,cell,오우거 (charge_max),차원 겹침 개편
+ogre.wall_stun,2.5,s,오우거 (wall_stun),차원 겹침 개편
+ogre.p2_wall_stun,1.5,s,오우거 (p2_wall_stun),차원 겹침 개편
+ogre.rock_ratio,0.8,,오우거 (rock_ratio),차원 겹침 개편
+ogre.rock_radius,1.3,cell,오우거 (rock_radius),차원 겹침 개편
+ogre.rock_fall,0.8,s,오우거 (rock_fall),차원 겹침 개편
+ogre.throw_interval,6,s,오우거 바위 던지기 간격 (중간 거리),차원 겹침 개편
+boss_kit.enabled,1,,"보스 공통 견제기 · 이동기 (0이면 끔)",차원 겹침 개편
+boss_kit.far_distance,6,cell,원거리 견제기: 이보다 멀리 있으면,차원 겹침 개편
+boss_kit.far_time,2.5,s,원거리 견제기: 멀리 있는 시간이 이만큼 넘으면,차원 겹침 개편
+boss_kit.volley_cooldown,8,s,원거리 견제기 간격,차원 겹침 개편
+boss_kit.volley_count,3,,원거리 견제기 투사체 수,차원 겹침 개편
+boss_kit.volley_spread,18,deg,원거리 견제기 부채꼴 간격,차원 겹침 개편
+boss_kit.volley_speed,11,cell/s,원거리 견제기 투사체 속도,차원 겹침 개편
+boss_kit.volley_range,14,cell,원거리 견제기 사거리,차원 겹침 개편
+boss_kit.volley_radius,0.4,cell,원거리 견제기 판정,차원 겹침 개편
+boss_kit.volley_ratio,50%,,원거리 견제기 피해 (공격 대비),차원 겹침 개편
+boss_kit.leap_distance,7,cell,이동기: 이보다 멀면 도약,차원 겹침 개편
+boss_kit.leap_cooldown,10,s,이동기 간격,차원 겹침 개편
+boss_kit.leap_windup,0.9,s,이동기 예고 (발밑 원),차원 겹침 개편
+boss_kit.leap_air,0.35,s,이동기 날아가는 시간,차원 겹침 개편
+boss_kit.leap_radius,2.2,cell,이동기 내려찍기 반경,차원 겹침 개편
+boss_kit.leap_ratio,80%,,이동기 피해 (공격 대비),차원 겹침 개편
+boss_kit.leap_knockback,1.5,cell,이동기 넉백,차원 겹침 개편
 cultist.hp,39,,마교도 체력 (졸개 30 × 1.3 · 천마총 ×4.5 = 176),몬스터!F52
 cultist.atk,8,,마교도 공격 (×2.0 = 16),몬스터!G52
 cultist.toughness,0,,마교도 강인함,몬스터!H52

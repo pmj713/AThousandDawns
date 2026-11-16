@@ -155,6 +155,56 @@ namespace AThousandDawns.Tests
             Assert.IsTrue(skeleton.IsDead, "두 번째엔 쓰러져요");
         }
 
+        [UnityTest]
+        public IEnumerator 고블린_족장과_오우거가_오류_없이_싸움([Values(EnemyKind.GoblinChief, EnemyKind.Ogre)] EnemyKind kind)
+        {
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var boss = director.Spawn(kind, player.transform.position + new Vector3(0f, 0f, 3f));
+            ((IMasterBrain)boss).SetZone(player.transform.position, new Vector2(30f, 20f));
+            Assert.AreEqual(kind == EnemyKind.Ogre ? EnemyRank.Boss : EnemyRank.Master, boss.Rank);
+            Assert.AreEqual(EnemyFaction.Fantasy, boss.Faction);
+            Time.timeScale = 2f;
+            float end = Time.time + 16f;
+            while (Time.time < end && player.Health >= player.MaxHealth) yield return null;
+            Assert.Less(player.Health, player.MaxHealth, $"{boss.DisplayName}: 공격이 들어와야 해요");
+        }
+
+        [UnityTest]
+        public IEnumerator 보스는_멀리_있으면_도약해_오고_원거리_견제기를_써요()
+        {
+            EnemyBrain.BossKitOverride = 1;
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var boss = director.Spawn(EnemyKind.Ogre, player.transform.position + new Vector3(0f, 0f, 11f));
+            ((IMasterBrain)boss).SetZone(player.transform.position + new Vector3(0f, 0f, 5f), new Vector2(40f, 30f));
+            bool leapt = false, volley = false;
+            System.Action<EnemyBrain, Vector3, Vector3> onLeap = (e, a, b) => leapt |= e == boss;
+            System.Action<EnemyBrain, Vector3> onVolley = (e, d) => volley |= e == boss;
+            EnemyBrain.BossLeapStarted += onLeap;
+            EnemyBrain.BossVolley += onVolley;
+            Time.timeScale = 2f;
+            float end = Time.time + 20f;
+            Vector3 home = player.transform.position;
+            var cc = player.GetComponent<CharacterController>();
+            while (Time.time < end && !(leapt && volley))
+            {
+                player.Heal(9999f);
+                // 플레이어가 보스에게서 계속 멀어져요 (견제기 · 이동기가 나오게)
+                Vector3 away = player.transform.position - boss.transform.position;
+                away.y = 0f;
+                if (away.magnitude < 9f && away.sqrMagnitude > 1e-4f) cc.Move(away.normalized * 6f * Time.deltaTime);
+                yield return null;
+            }
+            EnemyBrain.BossLeapStarted -= onLeap;
+            EnemyBrain.BossVolley -= onVolley;
+            EnemyBrain.BossKitOverride = 0;
+            Assert.IsTrue(leapt, "멀면 도약해 와요");
+            Assert.IsTrue(volley, "멀리서 버티면 원거리 견제기");
+        }
+
         [Test]
         public void 판타지_적은_모든_지역_목록에_섞여요()
         {
