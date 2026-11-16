@@ -6833,3 +6833,35 @@ MonoBehaviour:
     value: 2
     unit: 
     note: "\uBC29 \uC608\uC0B0 \uC810\uC218: \uAC00\uACE0\uC77C"
+  - key: elite.barrier_ratio
+    value: 0.3
+    unit: 
+    note: "\uB9C8\uBC95 \uBC29\uBCBD \uC815\uC608: \uB450\uB974\uB294 \uAC00\uD638 (\uCD5C\uB300 \uCCB4\uB825 \uB300\uBE44)"
+  - key: elite.barrier_interval
+    value: 6
+    unit: s
+    note: "\uB9C8\uBC95 \uBC29\uBCBD \uC815\uC608: \uB2E4 \uAE4E\uC778 \uB4A4 \uB2E4\uC2DC \uB450\uB974\uAE30\uAE4C\uC9C0"
+  - key: elite.curse_time
+    value: 4
+    unit: s
+    note: "\uC800\uC8FC \uC815\uC608: \uB9DE\uC73C\uBA74 \uC800\uC8FC\uC5D0 \uAC78\uB9AC\uB294 \uC2DC\uAC04"
+  - key: elite.curse_attack
+    value: 0.2
+    unit: 
+    note: "\uC800\uC8FC: \uD50C\uB808\uC774\uC5B4 \uBAA8\uB4E0 \uD53C\uD574 \uAC10\uC18C"
+  - key: elite.frenzy_radius
+    value: 6
+    unit: cell
+    note: "\uBD84\uB178 \uC815\uC608: \uC774 \uC548\uC5D0\uC11C \uB2E4\uB978 \uC801\uC774 \uC4F0\uB7EC\uC9C0\uBA74 \uC313\uC5EC\uC694"
+  - key: elite.frenzy_max
+    value: 3
+    unit: 
+    note: "\uBD84\uB178 \uC815\uC608: \uCD5C\uB300 \uACB9 \uC218"
+  - key: elite.frenzy_attack
+    value: 0.15
+    unit: 
+    note: "\uBD84\uB178 \uD55C \uACB9\uB9C8\uB2E4 \uACF5\uACA9 \uC99D\uAC00"
+  - key: elite.frenzy_speed
+    value: 0.1
+    unit: 
+    note: "\uBD84\uB178 \uD55C \uACB9\uB9C8\uB2E4 \uC774\uB3D9 \uC99D\uAC00"

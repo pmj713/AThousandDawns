@@ -103,7 +103,13 @@ namespace AThousandDawns.Player
             if (_hitShieldCooldown > 0f) _hitShieldCooldown -= dt;
             if (_madoPenaltyTimer > 0f) _madoPenaltyTimer -= dt;
             if (_ganggiImprintTimer > 0f) _ganggiImprintTimer -= dt;
+            if (CurseTime > 0f) CurseTime = Mathf.Max(0f, CurseTime - dt); // 저주 정예 (EnemyBrain.FantasyTraits)
         }
+
+        // 저주 정예에게 맞으면 (EnemyBrain.FantasyTraits): 잠시 모든 피해가 줄어요 (아트: IsCursed)
+        public float CurseTime { get; private set; }
+        public bool IsCursed => CurseTime > 0f;
+        public void Curse(float duration) => CurseTime = Mathf.Max(CurseTime, duration);
 
         // ── 피해 배율
 
@@ -116,7 +122,8 @@ namespace AThousandDawns.Player
                 if (K(Keyword.Mado) >= 2) increase += Mathf.Min(_madoMax, Qi(QiState.Deviated) * _madoPerDeviated);
                 if (K(Keyword.Jeongjong) >= 2) increase += Qi(QiState.Circulating) * _jeongjongPerCirculating;
                 if (K(Keyword.Jeongjong) >= 6 && Qi(QiState.Lacking) == 0 && Qi(QiState.Deviated) == 0) increase += _jeongjongPure;
-                if (_items != null) increase += _items.Value("rune_earring", 1) + _items.Value("wizard_hat", 1) + _items.Value("dragon_tooth", 1) + _items.Value("fire_rune_ring", 1) + _items.Value("knight_gauntlet", 1) + Hy(Keyword.Ganggi, 2); // 이계 기물: 모든 피해
+                if (_items != null) increase += _items.Value("rune_earring", 1) + _items.Value("wizard_hat", 1) + _items.Value("dragon_tooth", 1) + _items.Value("fire_rune_ring", 1) + _items.Value("knight_gauntlet", 1) + _items.Value("storm_bracer", 1) + _items.Value("fire_spirit_earring", 1) + _items.Value("knight_helm", 1) + Hy(Keyword.Ganggi, 2); // 이계 기물: 모든 피해
+                if (IsCursed) increase -= GameConfig.GetOptional("elite.curse_attack", 0.2f); // 저주: 모든 피해 −20%
                 return increase;
             }
         }

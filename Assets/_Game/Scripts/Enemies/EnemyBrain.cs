@@ -504,6 +504,7 @@ namespace AThousandDawns.Enemies
             _dead = true;
             CancelAttack();
             CleanupBossKit();
+            CleanupFantasyTraits(); // 분노 목록에서 빼요
             Director.Unregister(this);
             Controller.enabled = false;
             if (_visual != null) _visual.localScale = new Vector3(1.1f, 0.3f, 1.1f);

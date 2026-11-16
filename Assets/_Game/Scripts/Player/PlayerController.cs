@@ -425,8 +425,12 @@ namespace AThousandDawns.Player
             if (dealt > 0) AThousandDawns.Fx.ScreenShake.Kick(GameConfig.GetOptional("shake.hit", 0.25f) * Mathf.Clamp01(0.3f + dealt / Mathf.Max(1f, MaxHealth) * 4f), 0.25f); // 받은 피해만큼 화면이 흔들려요 (설정 %)
             if (TryRevive()) return true;
             // 열화 정예: 맞을 때마다 화상 (화살·폭발처럼 주인이 있는 공격 포함)
-            if (attacker != null && attacker.TryGetComponent(out AThousandDawns.Enemies.EnemyBrain brain) && brain.IsBlaze)
-                for (int i = Mathf.RoundToInt(GameConfig.Get("elite.blaze_stacks", 1f)); i > 0; i--) AddBurnStack(GameConfig.Get("player_burn.damage", 2f));
+            if (attacker != null && attacker.TryGetComponent(out AThousandDawns.Enemies.EnemyBrain brain))
+            {
+                if (brain.IsBlaze)
+                    for (int i = Mathf.RoundToInt(GameConfig.Get("elite.blaze_stacks", 1f)); i > 0; i--) AddBurnStack(GameConfig.Get("player_burn.damage", 2f));
+                if (brain.IsCurser) Curse(GameConfig.GetOptional("elite.curse_time", 4f)); // 저주 정예: 잠시 모든 피해 −20%
+            }
             if (IsDead && visual != null) visual.localScale = new Vector3(1.2f, 0.25f, 1.2f); // 시험판용 쓰러짐 표시
             return true;
         }

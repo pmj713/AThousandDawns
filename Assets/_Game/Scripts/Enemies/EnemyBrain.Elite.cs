@@ -6,7 +6,7 @@ using UnityEngine;
 namespace AThousandDawns.Enemies
 {
     // 정예 특성 (몬스터 탭 정예 첫 버전). 죽림·폐사찰은 하나, 장강 수채는 1~2개 (반반), 천마총은 2개 (몬스터 B142).
-    public enum EliteTrait { None, IronShirt, Rejuvenation, Blaze, Split, Gyeonggong, Fireball, Blink } // 경공부터 차원 감염 (판타지 적은 무공, 무협 적은 마법)
+    public enum EliteTrait { None, IronShirt, Rejuvenation, Blaze, Split, Gyeonggong, Fireball, Blink, Barrier, Curse, Frenzy } // 경공부터 차원 감염 (판타지 적은 무공, 무협 적은 마법) · 마법 방벽부터 판타지 전용 (EnemyBrain.FantasyTraits)
 
     // 정예: 일반 적에 특성 하나를 붙인 강화판 (몬스터 탭 정예 공통 규칙).
     // 체력 ×3 · 공격 ×1.2 · 크기 ×1.2, 이름 앞에 특성, 머리 위 표시는 모양으로 구분 (철포삼 네모 · 회춘 공 · 열화 기둥).
@@ -39,6 +39,9 @@ namespace AThousandDawns.Enemies
             EliteTrait.Gyeonggong => "경공",
             EliteTrait.Fireball => "화염구",
             EliteTrait.Blink => "순간이동",
+            EliteTrait.Barrier => "마법 방벽",
+            EliteTrait.Curse => "저주",
+            EliteTrait.Frenzy => "분노",
             _ => "",
         };
 
@@ -82,6 +85,7 @@ namespace AThousandDawns.Enemies
             DisplayName = $"{string.Join("·", labels)} · {_baseName}";
             if (trait == EliteTrait.IronShirt) Body.AddToughness(GameConfig.Get("elite.iron_toughness", 2f));
             if (trait == EliteTrait.Blaze) Status.BurnTakenMultiplier = GameConfig.Get("elite.blaze_burn_taken", 0.5f);
+            ApplyFantasyTrait(trait); // 마법 방벽 · 분노 (EnemyBrain.FantasyTraits)
             BuildTraitMark(trait);
             LayoutTraitMarks();
         }
@@ -94,7 +98,7 @@ namespace AThousandDawns.Enemies
                 _marks.SetParent(transform, false);
                 _marks.localPosition = Vector3.up * (Height * _eliteScale + 0.35f);
             }
-            var shape = trait == EliteTrait.IronShirt ? PrimitiveType.Cube : trait == EliteTrait.Rejuvenation ? PrimitiveType.Sphere : trait == EliteTrait.Split ? PrimitiveType.Capsule : PrimitiveType.Cylinder;
+            var shape = trait == EliteTrait.IronShirt ? PrimitiveType.Cube : trait == EliteTrait.Rejuvenation || trait == EliteTrait.Barrier ? PrimitiveType.Sphere : trait == EliteTrait.Split ? PrimitiveType.Capsule : PrimitiveType.Cylinder;
             var mark = GameObject.CreatePrimitive(shape);
             mark.name = $"Elite_{trait}";
             EnemyFactory.StripCollider(mark);
@@ -112,10 +116,13 @@ namespace AThousandDawns.Enemies
             if (trait == EliteTrait.Gyeonggong) renderer.sharedMaterial = RuntimeMaterial.Unlit(ref _gyeonggongMat, new Color(0.35f, 0.9f, 0.85f)); // 경공: 청록 바람
             else if (trait == EliteTrait.Fireball) renderer.sharedMaterial = RuntimeMaterial.Unlit(ref _fireballMat, new Color(1f, 0.3f, 0.1f));  // 화염구: 주홍
             else if (trait == EliteTrait.Blink) renderer.sharedMaterial = RuntimeMaterial.Unlit(ref _blinkMat, new Color(0.6f, 0.35f, 1f));       // 순간이동: 보랏빛 균열
+            else if (trait == EliteTrait.Barrier) renderer.sharedMaterial = RuntimeMaterial.Unlit(ref _barrierMat, new Color(0.35f, 0.6f, 1f));  // 마법 방벽: 청색
+            else if (trait == EliteTrait.Curse) renderer.sharedMaterial = RuntimeMaterial.Unlit(ref _curseMat, new Color(0.4f, 0.15f, 0.5f));   // 저주: 짙은 보라
+            else if (trait == EliteTrait.Frenzy) renderer.sharedMaterial = RuntimeMaterial.Unlit(ref _frenzyMat, new Color(0.9f, 0.1f, 0.1f));  // 분노: 붉은빛
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
 
-        static Material _gyeonggongMat, _fireballMat, _blinkMat;
+        static Material _gyeonggongMat, _fireballMat, _blinkMat, _barrierMat, _curseMat, _frenzyMat;
 
         // 특성 표식을 머리 위 같은 높이에 옆으로 나란히 (가운데 정렬, 0.45칸 간격)
         void LayoutTraitMarks()
@@ -130,6 +137,7 @@ namespace AThousandDawns.Enemies
         {
             if (_marks != null) _marks.rotation = Quaternion.identity; // 적이 돌아도 표식 줄은 화면 가로로
             TickInfection(dt); // 차원 감염 특성 (EnemyBrain.Infection)
+            TickFantasyTraits(dt); // 마법 방벽 다시 두르기 (EnemyBrain.FantasyTraits)
             if (!HasTrait(EliteTrait.Rejuvenation)) return;
             _sinceHit += dt;
             if (_sinceHit < GameConfig.Get("elite.rejuv_delay", 3f) || Status.BurnStacks > 0) return;

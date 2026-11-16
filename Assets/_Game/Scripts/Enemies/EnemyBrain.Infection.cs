@@ -18,9 +18,10 @@ namespace AThousandDawns.Enemies
 
         static bool InfectionAllows(EnemyKind kind, EliteTrait trait)
         {
+            bool fantasy = (int)kind >= (int)EnemyKind.Slime;
+            if (IsFantasyTrait(trait)) return InfectionOn && fantasy; // 마법 방벽 · 저주 · 분노: 판타지 적만 (EnemyBrain.FantasyTraits)
             if (!IsInfection(trait)) return true;
             if (!InfectionOn) return false;
-            bool fantasy = (int)kind >= (int)EnemyKind.Slime;
             return trait == EliteTrait.Gyeonggong ? fantasy : !fantasy;
         }
 

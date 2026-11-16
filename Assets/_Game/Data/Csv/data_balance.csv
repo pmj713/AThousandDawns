@@ -1704,3 +1704,11 @@ gargoyle.stone_ratio,30%,,가고일 석화 중 받는 피해 배율,판타지 �
 room_cost.harpy,2,,방 예산 점수: 하피,판타지 졸개 추가
 room_cost.werewolf,3,,방 예산 점수: 늑대인간,판타지 졸개 추가
 room_cost.gargoyle,2,,방 예산 점수: 가고일,판타지 졸개 추가
+elite.barrier_ratio,30%,,마법 방벽 정예: 두르는 가호 (최대 체력 대비),판타지 정예 특성
+elite.barrier_interval,6,s,마법 방벽 정예: 다 깎인 뒤 다시 두르기까지,판타지 정예 특성
+elite.curse_time,4,s,저주 정예: 맞으면 저주에 걸리는 시간,판타지 정예 특성
+elite.curse_attack,20%,,저주: 플레이어 모든 피해 감소,판타지 정예 특성
+elite.frenzy_radius,6,cell,분노 정예: 이 안에서 다른 적이 쓰러지면 쌓여요,판타지 정예 특성
+elite.frenzy_max,3,,분노 정예: 최대 겹 수,판타지 정예 특성
+elite.frenzy_attack,15%,,분노 한 겹마다 공격 증가,판타지 정예 특성
+elite.frenzy_speed,10%,,분노 한 겹마다 이동 증가,판타지 정예 특성

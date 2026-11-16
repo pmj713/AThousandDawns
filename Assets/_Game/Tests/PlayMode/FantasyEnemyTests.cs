@@ -172,6 +172,106 @@ namespace AThousandDawns.Tests
             Assert.Less(player.Health, player.MaxHealth, $"{boss.DisplayName}: 공격이 들어와야 해요");
         }
 
+        // 판타지 전용 정예 특성: 마법 방벽 · 저주 · 분노는 판타지 적에게만 (차원 감염이 켜져 있을 때)
+        [Test]
+        public void 판타지_특성은_판타지_적에게만()
+        {
+            EnemyBrain.InfectionOverride = 1;
+            foreach (var t in new[] { EliteTrait.Barrier, EliteTrait.Curse, EliteTrait.Frenzy })
+            {
+                Assert.IsTrue(EnemyBrain.Allows(EnemyKind.Goblin, t), $"{t}: 판타지 적");
+                Assert.IsFalse(EnemyBrain.Allows(EnemyKind.Grunt, t), $"{t}: 무협 적은 아니에요");
+            }
+            EnemyBrain.InfectionOverride = 0;
+            Assert.IsFalse(EnemyBrain.Allows(EnemyKind.Goblin, EliteTrait.Barrier), "꺼져 있으면 없어요");
+        }
+
+        [UnityTest]
+        public IEnumerator 마법_방벽은_깨져도_다시_둘러요()
+        {
+            EnemyBrain.InfectionOverride = 1;
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var elite = director.Spawn(EnemyKind.Goblin, player.transform.position + new Vector3(0f, 0f, 9f));
+            int raised = 0;
+            System.Action<EnemyBrain> on = e => { if (e == elite) raised++; };
+            EnemyBrain.BarrierRaised += on;
+            elite.MakeElite(EliteTrait.Barrier);
+            EnemyBrain.InfectionOverride = 0;
+            int ward = elite.Damageable.Ward;
+            Assert.Greater(ward, 0, "가호를 둘러요");
+            float hp = elite.Damageable.Health;
+            elite.Damageable.ApplyHit(ward);
+            Assert.AreEqual(0, elite.Damageable.Ward);
+            Assert.AreEqual(hp, elite.Damageable.Health, "방벽이 먼저 막아요");
+            Time.timeScale = 3f;
+            float end = Time.time + 12f;
+            while (Time.time < end && elite.Damageable.Ward == 0) { player.Heal(9999f); yield return null; }
+            Time.timeScale = 1f;
+            EnemyBrain.BarrierRaised -= on;
+            Assert.Greater(elite.Damageable.Ward, 0, "잠시 뒤 다시 둘러요");
+            Assert.AreEqual(2, raised);
+        }
+
+        [UnityTest]
+        public IEnumerator 저주_정예에게_맞으면_잠시_모든_피해가_줄어요()
+        {
+            EnemyBrain.InfectionOverride = 1;
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var elite = director.Spawn(EnemyKind.Goblin, player.transform.position + new Vector3(0f, 0f, 9f));
+            elite.MakeElite(EliteTrait.Curse);
+            EnemyBrain.InfectionOverride = 0;
+            float before = player.AttackIncreaseTotal;
+            Assert.IsTrue(player.TryReceiveHit(1f, elite.transform.position, 0f, elite.Damageable));
+            Assert.IsTrue(player.IsCursed);
+            Assert.AreEqual(before - GameConfig.GetOptional("elite.curse_attack", 0.2f), player.AttackIncreaseTotal, 0.001f);
+            elite.Damageable.ApplyHit(99999); // 다시 다가와 저주를 새로 걸지 않게
+            float until = Time.realtimeSinceStartup + 10f;
+            while (player.IsCursed && Time.realtimeSinceStartup < until) yield return null;
+            Assert.IsFalse(player.IsCursed, "잠시 뒤 풀려요");
+        }
+
+        [UnityTest]
+        public IEnumerator 분노_정예는_곁의_적이_쓰러지면_강해져요()
+        {
+            EnemyBrain.InfectionOverride = 1;
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var elite = director.Spawn(EnemyKind.Goblin, player.transform.position + new Vector3(0f, 0f, 9f));
+            elite.MakeElite(EliteTrait.Frenzy);
+            EnemyBrain.InfectionOverride = 0;
+            var near = director.Spawn(EnemyKind.Goblin, elite.transform.position + new Vector3(2f, 0f, 0f));
+            var far = director.Spawn(EnemyKind.Goblin, elite.transform.position + new Vector3(12f, 0f, 0f));
+            far.Damageable.ApplyHit(99999);
+            Assert.AreEqual(0, elite.FrenzyStacks, "멀면 그대로");
+            near.Damageable.ApplyHit(99999);
+            Assert.AreEqual(1, elite.FrenzyStacks, "곁의 적이 쓰러지면 한 겹");
+            yield return null;
+        }
+
+        // 이계 기물: 키워드마다 다섯 개 (혼종 세트를 여러 조합으로)
+        [Test]
+        public void 이계_기물은_키워드마다_다섯_개()
+        {
+            var db = GameConfig.Items;
+            foreach (var k in new[] { AThousandDawns.Player.Keyword.Gyeonggong, AThousandDawns.Player.Keyword.Bingbaek, AThousandDawns.Player.Keyword.Noejeong, AThousandDawns.Player.Keyword.Geumgang, AThousandDawns.Player.Keyword.Yeolyang, AThousandDawns.Player.Keyword.Ganggi })
+                Assert.AreEqual(5, db.Items.Count(d => d.otherworld && d.keyword == k), k.ToString());
+        }
+
+        [UnityTest]
+        public IEnumerator 새_이계_기물도_효과가_들어가요()
+        {
+            yield return Load();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            float before = player.AttackIncreaseTotal;
+            player.Items.Add(GameConfig.Items.Find("knight_helm"));
+            Assert.Greater(player.AttackIncreaseTotal, before, "기사 투구: 모든 피해");
+        }
+
         // 판타지 졸개 셋 (하피 · 늑대인간 · 가고일): 오류 없이 다가와 공격이 들어와요
         [UnityTest]
         public IEnumerator 하피_늑대인간_가고일이_오류_없이_싸움([Values(EnemyKind.Harpy, EnemyKind.Werewolf, EnemyKind.Gargoyle)] EnemyKind kind)

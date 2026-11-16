@@ -72,7 +72,7 @@ namespace AThousandDawns.Player
             {
                 // #열양
                 BurnDurationBonus = pure ? V("censer", 2) : V("censer", 1),
-                BurnDamageBonus = V("vermilion_feather", 1) + V("salamander_cloak", 1) + Hy(Keyword.Yeolyang, 1), // + 이계 샐러맨더 망토 · 업화
+                BurnDamageBonus = V("vermilion_feather", 1) + V("salamander_cloak", 1) + V("phoenix_charm", 1) + Hy(Keyword.Yeolyang, 1), // + 이계 샐러맨더 망토 · 업화
                 BurnMaxBonus = C("vermilion_feather", 2) + Mathf.RoundToInt(Hy(Keyword.Yeolyang, 2)),
                 BurnRampPer = V("oil_lamp", 1),
                 BurnRampMax = V("oil_lamp", 2),
@@ -93,7 +93,7 @@ namespace AThousandDawns.Player
                 ChainTargetsBonus = C("thunder_drum", 1) + Mathf.RoundToInt(Hy(Keyword.Noejeong, 1)), // + 뇌문
                 ChainDamageBonus = pure ? V("thunder_drum", 2) : 0f,
                 DischargeMaxBonus = V("thunder_brush", 1),
-                DischargeBonus = V("thunder_seal", 1) + V("thunder_rune_belt", 1) + Hy(Keyword.Noejeong, 2), // + 이계 뇌전 룬 허리띠
+                DischargeBonus = V("thunder_seal", 1) + V("thunder_rune_belt", 1) + V("lightning_boots", 1) + Hy(Keyword.Noejeong, 2), // + 이계 뇌전 룬 허리띠
                 CohesionShockMultiplier = Has("thunder_seal") ? V("thunder_seal", 2) : 1f,
                 SplashRatio = V("cloud_flute", 1),
                 SplashRadius = V("cloud_flute", 2),

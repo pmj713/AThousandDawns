@@ -1903,3 +1903,255 @@ MonoBehaviour:
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
     slot: 1
     otherworld: 1
+  - id: elf_feather_earring
+    keyword: 5
+    name: "\uC5D8\uD504 \uAE43\uD138 \uADC0\uAC78\uC774"
+    grade: 1
+    aux: 
+    minQi: 2
+    maxQi: 3
+    v1: 0.06
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.1
+    effectText: "\uC774\uB3D9\uC18D\uB3C4 +6%"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+    slot: 5
+    otherworld: 1
+  - id: harpy_feather_bracelet
+    keyword: 5
+    name: "\uD558\uD53C \uAE43\uD138 \uD314\uCC0C"
+    grade: 0
+    aux: 
+    minQi: 1
+    maxQi: 2
+    v1: 0.05
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.1
+    effectText: "\uACF5\uACA9 \uC18D\uB3C4 +5%"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+    slot: 7
+    otherworld: 1
+  - id: frost_robe
+    keyword: 1
+    name: "\uC11C\uB9AC \uB9C8\uBC95\uC0AC \uB85C\uBE0C"
+    grade: 2
+    aux: 
+    minQi: 3
+    maxQi: 5
+    v1: 0.07
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: move_speed
+    sideValue: 0.1
+    effectText: "\uBC1B\uB294 \uD53C\uD574 -7%"
+    sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+    slot: 2
+    otherworld: 1
+  - id: ice_crystal_boots
+    keyword: 1
+    name: "\uBE59\uACB0 \uC218\uC815 \uC7A5\uD654"
+    grade: 1
+    aux: 
+    minQi: 2
+    maxQi: 4
+    v1: 0.05
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: move_speed
+    sideValue: 0.1
+    effectText: "\uBC1B\uB294 \uD53C\uD574 -5%"
+    sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+    slot: 4
+    otherworld: 1
+  - id: storm_bracer
+    keyword: 2
+    name: "\uD3ED\uD48D \uC815\uB839 \uD314\uCC0C"
+    grade: 1
+    aux: 
+    minQi: 2
+    maxQi: 4
+    v1: 0.05
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.1
+    effectText: "\uBAA8\uB4E0 \uD53C\uD574 +5%"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+    slot: 7
+    otherworld: 1
+  - id: lightning_boots
+    keyword: 2
+    name: "\uBC88\uAC1C \uC7A5\uD654"
+    grade: 2
+    aux: 
+    minQi: 3
+    maxQi: 5
+    v1: 0.2
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: move_speed
+    sideValue: 0.1
+    effectText: "\uBC29\uC804 \uD53C\uD574 +20%"
+    sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+    slot: 4
+    otherworld: 1
+  - id: dwarf_greaves
+    keyword: 4
+    name: "\uB4DC\uC6CC\uD504 \uAC15\uCCA0 \uAC01\uBC18"
+    grade: 1
+    aux: 
+    minQi: 2
+    maxQi: 3
+    v1: 0.05
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: move_speed
+    sideValue: 0.1
+    effectText: "\uBC29\uC5B4\uB825 +5%"
+    sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+    slot: 3
+    otherworld: 1
+  - id: holy_amulet
+    keyword: 4
+    name: "\uC131\uAE30\uC0AC \uC131\uD45C"
+    grade: 2
+    aux: 
+    minQi: 3
+    maxQi: 5
+    v1: 0.07
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: move_speed
+    sideValue: 0.1
+    effectText: "\uBC1B\uB294 \uD53C\uD574 -7%"
+    sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+    slot: 6
+    otherworld: 1
+  - id: fire_spirit_earring
+    keyword: 0
+    name: "\uBD88\uAF43 \uC815\uB839 \uADC0\uAC78\uC774"
+    grade: 1
+    aux: 
+    minQi: 2
+    maxQi: 4
+    v1: 0.05
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.1
+    effectText: "\uBAA8\uB4E0 \uD53C\uD574 +5%"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+    slot: 5
+    otherworld: 1
+  - id: phoenix_charm
+    keyword: 0
+    name: "\uBD88\uC0AC\uC870 \uAE43\uD138 \uC7A5\uC2DD"
+    grade: 2
+    aux: 
+    minQi: 3
+    maxQi: 5
+    v1: 0.2
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: move_speed
+    sideValue: 0.1
+    effectText: "\uD654\uC0C1 \uD53C\uD574 +20%"
+    sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+    slot: 9
+    otherworld: 1
+  - id: knight_helm
+    keyword: 3
+    name: "\uAE30\uC0AC \uD22C\uAD6C"
+    grade: 1
+    aux: 
+    minQi: 2
+    maxQi: 3
+    v1: 0.05
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.1
+    effectText: "\uBAA8\uB4E0 \uD53C\uD574 +5%"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+    slot: 1
+    otherworld: 1
+  - id: spellsword_boots
+    keyword: 3
+    name: "\uB9C8\uAC80\uC0AC \uC7A5\uD654"
+    grade: 2
+    aux: 
+    minQi: 3
+    maxQi: 5
+    v1: 0.07
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.15
+    effectText: "\uACF5\uACA9 \uC18D\uB3C4 +7%"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +15%"
+    slot: 4
+    otherworld: 1
