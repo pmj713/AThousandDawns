@@ -22,7 +22,7 @@ namespace AThousandDawns.Art
         static Material _chainMat;
         static bool _loaded;
 
-        static readonly Color Iron = new Color(0.22f, 0.22f, 0.24f);
+        static readonly Color Iron = new Color(0.55f, 0.6f, 0.72f);
         static readonly Color Wood = new Color(0.45f, 0.33f, 0.22f);
 
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();

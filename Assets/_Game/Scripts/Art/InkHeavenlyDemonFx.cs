@@ -207,7 +207,7 @@ namespace AThousandDawns.Art
                     {
                         pool.transform.Rotate(0f, 0f, 18f * dt, Space.Self);
                         pool.transform.localScale = poolUnit * (1f + 0.06f * Mathf.Sin(tt * 4f));
-                        pool.color = new Color(0.28f, 0.03f, 0.06f, 0.9f * alpha);
+                        pool.color = new Color(1f, 0.35f, 0.4f, 0.9f * alpha);
                     }
                     if (ring != null)
                     {
@@ -227,7 +227,7 @@ namespace AThousandDawns.Art
             }
         }
 
-        static Color WispColor(float a) => _ownWisp ? new Color(1f, 1f, 1f, a) : new Color(0.3f, 0.06f, 0.1f, a);
+        static Color WispColor(float a) => _ownWisp ? new Color(1f, 1f, 1f, a) : new Color(1f, 0.4f, 0.4f, a);
 
         // ── 마기 손아귀: 마기 팔이 뻗어 손이 열리고, 잡으면 쥐고 끌고 와요
         void Grasp(Transform boss, Vector3 from, Vector3 dir, float range)
@@ -317,7 +317,7 @@ namespace AThousandDawns.Art
             });
         }
 
-        static Color PhantomColor(float a) => _ownPhantom ? new Color(1f, 1f, 1f, a) : new Color(0.22f, 0.12f, 0.16f, a);
+        static Color PhantomColor(float a) => _ownPhantom ? new Color(1f, 1f, 1f, a) : new Color(1f, 0.5f, 0.55f, a);
 
         // ── 검비: 하늘에서 검이 떨어져 꽂혀요
         void FallingSword(Vector3 at, float fall)

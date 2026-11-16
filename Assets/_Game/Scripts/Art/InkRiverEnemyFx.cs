@@ -83,7 +83,7 @@ namespace AThousandDawns.Art
             Transform bone = h != null ? FindDeep(h.transform, "RightHand") : null; // 작살꾼 오른손 뼈 (모델 Visual 안)
             Vector3 Hand() => bone != null ? bone.position : (h != null ? h.transform.position : at) + Vector3.up * 1f;
             var streak = Line(_ropeMat, new Color(1f, 0.3f, 0.15f), 0.12f, 6); // 먹 속도선
-            var rope = pulled ? Line(_ropeMat, new Color(0.35f, 0.27f, 0.18f), 0.07f, 6) : null;
+            var rope = pulled ? Line(_ropeMat, new Color(0.75f, 0.55f, 0.3f), 0.07f, 6) : null;
             Transform target = pulled && _player != null ? _player.transform : null;
             float t = 0f;
             _live.Add(dt =>
@@ -192,7 +192,7 @@ namespace AThousandDawns.Art
             var giant = Nearest<AnchorBrain>(stick);
             Vector3 from = giant != null ? giant.transform.position + Vector3.up * 1.4f : stick + Vector3.up * 1.4f;
             var anchor = Upright(_anchor, from, 1.3f, 6, bottom: true);
-            var chain = Line(_chainMat, new Color(0.3f, 0.3f, 0.32f), 0.16f, 5, tile: true);
+            var chain = Line(_chainMat, new Color(0.65f, 0.68f, 0.75f), 0.16f, 5, tile: true);
             float t = 0f;
             _live.Add(dt =>
             {

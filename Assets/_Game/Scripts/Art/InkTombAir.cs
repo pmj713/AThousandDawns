@@ -13,7 +13,7 @@ namespace AThousandDawns.Art
         [SerializeField] Vector3 area = new Vector3(26f, 6f, 18f);
 
         static readonly Color MistColor = new Color(0.55f, 0.12f, 0.1f, 0.28f);   // 핏빛 안개
-        static readonly Color AshColor = new Color(0.2f, 0.18f, 0.17f, 0.85f);    // 재
+        static readonly Color AshColor = new Color(0.6f, 0.55f, 0.52f, 0.85f);    // 재
         static readonly Color EmberColor = new Color(1f, 0.42f, 0.15f, 1f);       // 불씨
 
         Transform[] _mist, _bits;

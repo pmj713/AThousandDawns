@@ -68,7 +68,7 @@ namespace AThousandDawns.Art
                 if (t < fall) // 그림자가 내려와요: 크고 옅게 → 제 크기로 짙게
                 {
                     float k = t / fall;
-                    sr.color = new Color(0.25f, 0.02f, 0.02f, Mathf.Lerp(0.1f, 0.55f, k * k));
+                    sr.color = new Color(1f, 0.3f, 0.25f, Mathf.Lerp(0.1f, 0.55f, k * k));
                     sr.transform.localScale = baseScale * Mathf.Lerp(1.35f, 1f, k);
                     return true;
                 }
