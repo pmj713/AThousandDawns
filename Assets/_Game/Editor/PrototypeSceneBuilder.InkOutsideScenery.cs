@@ -45,7 +45,7 @@ namespace AThousandDawns.EditorTools
                     else FoliageCards(temple, "Grass", "Bush_B", p + Vector3.up * 0.2f, 0.45f, 2, yaw);
                 }
                 else if (pick < 0.42f) PineTree(temple, p, R(3.5f, 5.5f), seed, woodMat);
-                else if (pick < 0.54f) RuinedHall(temple, p, seed, stoneMat, woodMat, roofX);
+                else if (pick < 0.54f) RuinedHall(temple, p, seed, stoneMat, TempleLacquer(), roofX);
                 else if (pick < 0.66f) StoneLantern(temple, p, stoneMat, roofX);
                 else if (pick < 0.75f) Stele(At(temple, "Stele (비석)", p, yaw), seed, stoneMat, roofX);
                 else if (pick < 0.84f) BrokenPillar(At(temple, "Broken Pillar (부러진 돌기둥)", p, yaw), R(0.8f, 2f), seed, stoneMat);

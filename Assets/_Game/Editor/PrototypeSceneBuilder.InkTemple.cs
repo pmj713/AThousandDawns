@@ -36,7 +36,7 @@ namespace AThousandDawns.EditorTools
                 int i = 0;
                 foreach (Transform cluster in forest)
                 {
-                    if (i++ % 5 == 2) RuinedHall(grove, cluster.localPosition, seed++, stoneMat, woodMat, roofX);
+                    if (i++ % 5 == 2) RuinedHall(grove, cluster.localPosition, seed++, stoneMat, TempleLacquer(), roofX);   // 절 건물은 단청 (붉은 칠 기둥)
                     else PineTree(grove, cluster.localPosition, 4.5f + (seed % 4) * 0.5f, seed++, woodMat);
                 }
                 StripColliders(grove);
@@ -62,13 +62,13 @@ namespace AThousandDawns.EditorTools
             {
                 foreach (Transform part in camp)
                     if (part.name != "Flame") bamboo.Add(part.gameObject);   // 목책·화톳불만 끄고 불꽃은 남겨요
-                var court = BossCourtyard(camp.parent, stoneMat, woodMat, roofX, ref seed);
+                var court = BossCourtyard(camp.parent, stoneMat, TempleLacquer(), roofX, ref seed);
                 StripColliders(court);
                 temple.Add(court.gameObject);
             }
 
             // 4) 돌벽 결투장(죽림은 철권 마웅, 폐사찰은 파계승 혜광): 폐사찰에서만 절 안뜰 꾸밈을 켜요
-            var cloister = MasterCloister(stoneMat, woodMat, roofX, ref seed);
+            var cloister = MasterCloister(stoneMat, TempleLacquer(), roofX, ref seed);
             StripColliders(cloister);
             temple.Add(cloister.gameObject);
 
@@ -148,7 +148,9 @@ namespace AThousandDawns.EditorTools
             Quaternion Tilt(float deg) => Quaternion.AngleAxis(deg, across);   // 담 길이 방향으로 기울이기
             Quaternion Roll(float deg) => Quaternion.AngleAxis(deg, axis);     // 담 옆으로 미끄러지기
             var roofMat = alongX ? roofX : roofZ;
-            var earth = GetInkMaterial("Ink_Temple_Earth", "#5E5142", 0.4f);   // 드러난 보토·흙더미
+            // 드러난 보토·흙더미: 결 있는 흙 (구조물 셰이더). 캐릭터 셰이더로 그리면 반쯤 묻힌 납작한 흙더미가 가까이서 새까맣게 나왔어요
+            var earth = GetInkTriplanar("Ink3D_TempleEarth", "Floor_Ground", 2f, 0f);
+            earth.SetColor("_BaseColor", new Color(0.62f, 0.46f, 0.3f, 1f));
 
             var g = new GameObject($"Wall Ruin ({wall.name})").transform;
             g.SetParent(wall.parent, false);
@@ -381,6 +383,7 @@ namespace AThousandDawns.EditorTools
                 float x = -6f + k * 3f;
                 float h = k == 1 ? 2.2f : k == 3 ? 3.4f : 4.6f;      // 두 기둥은 부러졌어요
                 Block(hall, $"Column_{k + 1}", PrimitiveType.Cylinder, new Vector3(x, 0.9f + h * 0.5f, -1.6f), new Vector3(0.45f, h * 0.5f, 0.45f), Quaternion.identity, woodMat);
+                DancheongBandOn(hall, new Vector3(x, 0.9f + h, -1.6f), 0.225f);
             }
             for (int s = -1; s <= 1; s += 2)
             {
@@ -391,6 +394,7 @@ namespace AThousandDawns.EditorTools
                 roof.transform.localScale = new Vector3(8.2f, 1.6f, 5.6f);
                 roof.AddComponent<MeshFilter>().sharedMesh = GetRoofCapMesh(true);
                 roof.AddComponent<MeshRenderer>().sharedMaterial = roofX;
+                DancheongEaves(roof.transform);
             }
             var eave = new GameObject("Fallen Eave");
             eave.transform.SetParent(hall, false);
@@ -768,6 +772,7 @@ namespace AThousandDawns.EditorTools
             {
                 float h = k == 0 ? 2.6f : 1.4f;   // 한쪽 기둥은 부러졌어요
                 Block(hall, $"Column_{k + 1}", PrimitiveType.Cylinder, new Vector3(xs[k], 0.5f + h * 0.5f, 0.6f), new Vector3(0.24f, h * 0.5f, 0.24f), Quaternion.identity, woodMat);
+                DancheongBandOn(hall, new Vector3(xs[k], 0.5f + h, 0.6f), 0.12f);
             }
             var roof = new GameObject("Roof (내려앉음)");
             roof.transform.SetParent(hall, false);
@@ -776,6 +781,7 @@ namespace AThousandDawns.EditorTools
             roof.transform.localScale = new Vector3(4f, 0.9f, 2.6f);
             roof.AddComponent<MeshFilter>().sharedMesh = GetRoofCapMesh(true);
             roof.AddComponent<MeshRenderer>().sharedMaterial = roofX;
+            DancheongEaves(roof.transform);
             Rock(hall, "Debris", new Vector3(1.6f, 0f, -0.9f), 0.45f, seed, seed * 19f, stoneMat, false);
         }
     }
