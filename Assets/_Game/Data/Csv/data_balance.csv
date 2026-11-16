@@ -1056,6 +1056,7 @@ item_grade.r3_dense.uncommon,32%,,기물 등급 확률 고급 (천마총 짙은 
 item_grade.r3_dense.rare,24%,,기물 등급 확률 희귀 (천마총 짙은 길),등급확률!D15
 item_grade.r3_dense.legendary,10%,,기물 등급 확률 전설 (천마총 짙은 길),등급확률!E15
 meridian.width_after_boss3,6,,장강 수채 보스 격파 뒤 경맥도 가로,4지역 기획 (6×6)
+meridian.height_after_boss3,6,,장강 수채 보스 격파 뒤 경맥도 세로,4지역 기획 (6×6)
 equip.enabled,1,,"장비 칸 방식 (1이면 경맥도 대신 몸의 혈자리 장비 칸 10개, 0이면 경맥도)",차원 겹침 개편
 equip.otherworld_qi,2,,"이계 기물: 끼운 혈자리의 기 + (세지만 주화입마에 쉽게)",차원 겹침 개편
 equip.slot_qi.head,3,,"장비 칸 기본 기: 머리 (백회). 칸의 기 = 기본 기 + (공력 − 시작 공력) + 기혈",차원 겹침 개편
@@ -1143,7 +1144,6 @@ room_cost.goblin,2,,방 예산 점수: 고블린 (둘이 한 무리),차원 겹�
 room_cost.goblinarcher,2,,방 예산 점수: 고블린 궁수,차원 겹침 개편
 room_cost.goblinrogue,2,,방 예산 점수: 고블린 단검꾼,차원 겹침 개편
 room_cost.goblinshaman,2,,방 예산 점수: 고블린 주술사,차원 겹침 개편
-meridian.height_after_boss3,6,,장강 수채 보스 격파 뒤 경맥도 세로,4지역 기획 (6×6)
 cultist.hp,39,,마교도 체력 (졸개 30 × 1.3 · 천마총 ×4.5 = 176),몬스터!F52
 cultist.atk,8,,마교도 공격 (×2.0 = 16),몬스터!G52
 cultist.toughness,0,,마교도 강인함,몬스터!H52

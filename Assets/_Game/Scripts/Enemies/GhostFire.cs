@@ -11,6 +11,7 @@ namespace AThousandDawns.Enemies
 
         PlayerController _player;
         Damageable _owner;
+        public Damageable Owner => _owner; // 아트: 놓은 적에 따라 장판 모양 (고블린 주술사면 저주 장판)
         Renderer _renderer;
         float _life, _total, _radius, _damage, _slow, _slowTime, _tick;
 

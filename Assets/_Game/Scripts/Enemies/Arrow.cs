@@ -12,6 +12,7 @@ namespace AThousandDawns.Enemies
         Vector3 _direction;
         float _speed, _remaining, _radius, _attack;
         Damageable _owner; // 쏜 궁수 (#경공 6단계 간파 반격 대상)
+        public Damageable Owner => _owner; // 아트: 쏜 적에 따라 화살 모양 (고블린 궁수면 판타지 화살)
 
         public void Launch(PlayerController target, Vector3 direction, float speed, float range, float radius, float attack, Damageable owner = null)
         {

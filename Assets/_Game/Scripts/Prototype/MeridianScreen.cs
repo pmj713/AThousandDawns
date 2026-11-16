@@ -250,10 +250,7 @@ namespace AThousandDawns.Prototype
         // 장비 칸: 인체도 위에 혈자리 칸 10개 (EquipSlots.Layout). 칸 아래에 부위 · 혈자리 이름, 잠긴 칸은 흐리게
         void DrawBody(PlayerItems items, Rect area)
         {
-            AThousandDawns.Fx.InkMeridianArt.Panel(area); // 먹 패널
-            if (_bodyChart == null) _bodyChart = Resources.Load<Texture2D>("HudArt/BodyChart"); // 인체 경혈도 (아트, 정사각)
-            var chart = new Rect(area.center.x - area.height * 0.5f, area.y, area.height, area.height);
-            if (_bodyChart != null) GUI.DrawTexture(chart, _bodyChart, ScaleMode.ScaleToFit);
+            var chart = AThousandDawns.Fx.InkMeridianArt.BodyChart(area); // 가운데 정사각: 한지 인체 경혈도 + 먹 테두리 (아트)
             var board = items.Board;
             for (int i = 0; i < AThousandDawns.Items.EquipSlots.Count; i++)
             {
@@ -261,42 +258,29 @@ namespace AThousandDawns.Prototype
                 var c = AThousandDawns.Items.EquipSlots.Layout[i];
                 var rect = new Rect(area.x + area.width * c.x - SlotSize * 0.5f, area.y + area.height * c.y - SlotSize * 0.5f, SlotSize, SlotSize);
                 bool open = board.IsUnlocked(cell);
-                // 칸에서 그림 위 혈자리까지 먹선, 혈자리에는 점 (끼워 둔 칸은 붉은 점)
+                bool worn = items.At(cell) != null;
+                // 칸에서 그림 위 혈자리까지 먹 붓선, 혈자리에는 먹 점 (끼우면 붉은 먹이 번져요)
                 var p = AThousandDawns.Items.EquipSlots.Points[i];
                 var point = new Vector2(chart.x + chart.width * p.x, chart.y + chart.height * p.y);
                 var from = new Vector2(c.x < 0.5f ? rect.xMax : rect.x, rect.center.y);
-                DrawLine(from, point, new Color(0.1f, 0.09f, 0.08f, open ? 0.6f : 0.25f), 2f);
-                bool worn = items.At(cell) != null;
-                Fill(new Rect(point.x - 5f, point.y - 5f, 10f, 10f), worn ? new Color(0.75f, 0.15f, 0.1f) : new Color(0.1f, 0.09f, 0.08f, open ? 0.8f : 0.3f));
-                if (open) DrawCell(items, cell, rect);
+                AThousandDawns.Fx.InkMeridianArt.InkLine(from, point, open ? 0.6f : 0.25f, 3f * K);
+                AThousandDawns.Fx.InkMeridianArt.Acupoint(point, 10f * K, worn, open);
+                if (open)
+                {
+                    DrawCell(items, cell, rect);
+                    AThousandDawns.Fx.InkMeridianArt.EquipFrame(rect, worn); // 한지 위에서도 또렷한 먹 붓 네모
+                }
                 else
                 {
-                    Fill(rect, new Color(0.1f, 0.09f, 0.08f, 0.55f));
-                    Outline(rect, new Color(0.45f, 0.42f, 0.38f, 0.6f), 1f);
+                    AThousandDawns.Fx.InkMeridianArt.LockedSlot(rect);
                     GUI.Label(new Rect(rect.x, rect.center.y - 10f * K, rect.width, 20f * K), "<color=#8a8a8a>잠김</color>", _tag);
                 }
                 string name = AThousandDawns.Items.EquipSlots.Label(AThousandDawns.Items.EquipSlots.Kinds[i]);
-                GUI.Label(new Rect(rect.x - 30f * K, rect.yMax, rect.width + 60f * K, 18f * K),
-                    open ? $"{name} · {AThousandDawns.Items.EquipSlots.Acupoints[i]}" : $"<color=#8a8a8a>{name} (보스 격파로 열림)</color>", _tag);
+                var labelRect = new Rect(rect.x - 30f * K, rect.yMax, rect.width + 60f * K, 18f * K);
+                AThousandDawns.Fx.InkMeridianArt.LabelPlate(labelRect); // 한지 위라 밝은 글자 뒤에 짙은 먹 띠
+                GUI.Label(labelRect, open ? $"{name} · {AThousandDawns.Items.EquipSlots.Acupoints[i]}" : $"<color=#8a8a8a>{name} (보스 격파로 열림)</color>", _tag);
                 if (PadActive && cell == PadCell) _padRect = rect;
             }
-        }
-
-        Texture2D _bodyChart;
-
-        // 두 점 사이 가는 선 (IMGUI: 회전한 사각형)
-        static void DrawLine(Vector2 a, Vector2 b, Color color, float width)
-        {
-            Vector2 d = b - a;
-            float len = d.magnitude;
-            if (len < 1f) return;
-            var matrix = GUI.matrix;
-            var old = GUI.color;
-            GUIUtility.RotateAroundPivot(Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg, a);
-            GUI.color = color;
-            GUI.DrawTexture(new Rect(a.x, a.y - width * 0.5f, len, width), Texture2D.whiteTexture);
-            GUI.color = old;
-            GUI.matrix = matrix;
         }
 
         void DrawHeader(PlayerItems items, Rect area)
