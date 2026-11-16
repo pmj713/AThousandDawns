@@ -128,7 +128,7 @@ namespace AThousandDawns.EditorTools
             Block(t, "Stone", PrimitiveType.Cube, tilt * new Vector3(0f, height * 0.4f, 0f), new Vector3(0.6f, height * 0.8f, 0.42f), tilt, stone);
             Block(t, "Top", PrimitiveType.Cube, tilt * new Vector3(0f, height * 0.88f, 0f), new Vector3(0.42f, height * 0.18f, 0.32f), tilt * Quaternion.Euler(0f, 0f, 8f), stone);
             for (int k = 0; k < 3; k++)
-                Block(t, "Rune", PrimitiveType.Quad, tilt * new Vector3((k - 1) * 0.12f, height * (0.3f + 0.17f * k), -0.22f), new Vector3(0.12f, 0.3f, 1f),
+                Block(t, "Rune", PrimitiveType.Quad, tilt * new Vector3((k - 1) * 0.12f, height * (0.3f + 0.17f * k), -0.22f), new Vector3(0.24f, 0.4f, 1f),
                     tilt * Quaternion.Euler(0f, 0f, (k - 1) * 25f), rift);
             Rock(t, "Base", new Vector3(0.3f, 0f, 0.15f), 0.25f, (int)height, height * 40f, stone, false);
         }

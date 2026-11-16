@@ -21,6 +21,10 @@ namespace AThousandDawns.Art
 
         [SerializeField] GameObject[] riverBanks = new GameObject[0];   // 장강 물띠 물가 토막 (길이 4 · Z, 물 폭 2.6 · X) 변형들
         [SerializeField] GameObject riverPoolRim;                    // 장강 웅덩이 둘레 (4 × 3)
+        [SerializeField] GameObject riftRampart;                     // 차원 겹침: 무너진 성벽 조각 (2.4 × 0.6, 높이 1.6), 길이가 X
+        [SerializeField] GameObject riftKnight;                      // 차원 겹침: 기사 석상 (1 × 1, 높이 2.6), 앞이 -Z
+        [SerializeField] GameObject riftRunePillar;                  // 차원 겹침: 룬 기둥 (0.8 × 0.8, 높이 2.8)
+        [SerializeField] GameObject riftManaCrystal;                 // 차원 겹침: 마나 수정 (0.9 × 0.9, 높이 1.4, 깨지면 상자와 같이 사라져요)
 
         const int BambooRegion = 0;   // 죽림 개울엔 조약돌·풀
         const int RiverRegion = 2;    // 장강 수채 여울·물길엔 물가 토막, 웅덩이엔 둘레
@@ -45,6 +49,11 @@ namespace AThousandDawns.Art
         public void SetupRiver(GameObject[] bankSegments, GameObject poolRim)
         {
             riverBanks = bankSegments; riverPoolRim = poolRim;
+        }
+
+        public void SetupRift(GameObject rampart, GameObject knight, GameObject runePillar, GameObject manaCrystal)
+        {
+            riftRampart = rampart; riftKnight = knight; riftRunePillar = runePillar; riftManaCrystal = manaCrystal;
         }
 
         void OnEnable() => RoomRun.LayoutChanged += Dress;
@@ -78,6 +87,10 @@ namespace AThousandDawns.Art
                         RoomRun.FeatureKind.Coffin => coffin,
                         RoomRun.FeatureKind.MiasmaPillar => miasmaPillar,
                         RoomRun.FeatureKind.BloodPool => bloodPoolRim,
+                        RoomRun.FeatureKind.Rampart => riftRampart,
+                        RoomRun.FeatureKind.KnightStatue => riftKnight,
+                        RoomRun.FeatureKind.RunePillar => riftRunePillar,
+                        RoomRun.FeatureKind.ManaCrystal => riftManaCrystal,
                         _ => null,
                     };
                 if (model == null) continue;
@@ -100,6 +113,17 @@ namespace AThousandDawns.Art
                     float baseLen = f.Kind == RoomRun.FeatureKind.Coffin ? 2f : f.Kind == RoomRun.FeatureKind.BloodPool || fallen ? 3.5f : 3f;
                     scale.x = Mathf.Max(f.Size.x, f.Size.y) / baseLen;          // 길이를 맞춰요
                     if (f.Kind == RoomRun.FeatureKind.BloodPool) scale.z = Mathf.Min(f.Size.x, f.Size.y) / 2.5f;
+                }
+                else if (f.Kind == RoomRun.FeatureKind.Rampart)
+                {
+                    yaw = (f.Size.y > f.Size.x ? 90f : 0f) + (i % 2) * 180f;   // 성벽 조각은 반쯤 세로로 놓여요 (부서진 끝이 저마다 다른 쪽)
+                    scale = Vector3.one * Mathf.Max(f.Size.x, f.Size.y) / 2.4f;
+                }
+                else if (f.Kind == RoomRun.FeatureKind.KnightStatue || f.Kind == RoomRun.FeatureKind.RunePillar || f.Kind == RoomRun.FeatureKind.ManaCrystal)
+                {
+                    float baseSize = f.Kind == RoomRun.FeatureKind.KnightStatue ? 1f : f.Kind == RoomRun.FeatureKind.RunePillar ? 0.8f : 0.9f;
+                    scale = Vector3.one * Mathf.Max(f.Size.x, f.Size.y) / baseSize;   // 방 크기에 맞춰 늘어난 상자에 맞춰요
+                    yaw = f.Kind == RoomRun.FeatureKind.KnightStatue ? (f.Center.z >= 0f ? 0f : 180f) : (f.Center.x * 37f + f.Center.z * 53f) % 360f;   // 기사는 방 가운데를 봐요
                 }
                 else if (f.Kind == RoomRun.FeatureKind.Statue)
                     yaw = f.Center.z >= 0f ? 0f : 180f;                         // 석불은 방 가운데 쪽을 봐요 (앞이 -Z)
