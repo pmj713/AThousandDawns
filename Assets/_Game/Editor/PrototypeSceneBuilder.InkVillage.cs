@@ -41,12 +41,15 @@ namespace AThousandDawns.EditorTools
             var c = VillageCenter;
             float hx = VillageSize.x * 0.5f, hz = VillageSize.y * 0.5f;
 
-            BuildVillageInn(deco, c + new Vector3(-hx + 1.5f, 0f, 0f), stoneMat, woodMat, plaster, roofX, roofZ);
+            // 마을 지붕은 건물마다 색을 달리해요 (담 기와는 판과 같은 푸른 잿빛): 객잔 붉은 흙기와 · 사당 옥빛 청기와 · 어귀 기둥은 단청 붉은 칠
+            var (innRoofX, innRoofZ) = VillageRoof("Inn", new Color(1.15f, 0.62f, 0.42f, 1f));   // 기와 그림이 어두운 푸른 잿빛이라 1보다 크게
+            var (shrineRoofX, _) = VillageRoof("Shrine", new Color(0.42f, 0.8f, 0.72f, 1f));
+            BuildVillageInn(deco, c + new Vector3(-hx + 1.5f, 0f, 0f), stoneMat, woodMat, plaster, innRoofX, innRoofZ);
             BuildPlumTree(deco, c + RoomRun.TreeOffset + new Vector3(0f, 0f, 1f));
             BuildRegressionStele(deco, c + RoomRun.TreeOffset + new Vector3(-2.2f, 0f, 2.4f), -18f, stoneMat, dark); // 회귀 비석: 매화나무 왼쪽 뒤, 마을 가운데 쪽으로 살짝 돌려요 (PrototypeSceneBuilder.InkStele.cs)
             BuildVillageCave(deco, c + RoomRun.CaveOffset, stoneMat, dark);
-            BuildVillageShrine(deco, c + RoomRun.ShrineOffset + new Vector3(-1f, 0f, -1f), stoneMat, woodMat, plaster, roofX);
-            BuildVillageGate(deco, c + new Vector3(VillageExit.x, 0f, -hz - 0.25f), stoneMat, woodMat, roofX);
+            BuildVillageShrine(deco, c + RoomRun.ShrineOffset + new Vector3(-1f, 0f, -1f), stoneMat, TempleLacquer(), plaster, shrineRoofX);
+            BuildVillageGate(deco, c + new Vector3(VillageExit.x, 0f, -hz - 0.25f), stoneMat, TempleLacquer(), roofX);
             BuildWeaponRack(deco, c + RoomRun.RackOffset + new Vector3(0f, 0f, -0.6f), woodMat, iron);
             BuildVillageLife(deco, c, stoneMat, woodMat, dark, roofX); // 우물·빨랫줄·장작더미·장독대·닭장 (PrototypeSceneBuilder.InkVillageLife.cs)
             DressVillageColor(deco, c, village, stoneMat, woodMat); // 따뜻한 마당·디딤돌 길·종이 등롱 줄·텃밭·꽃 화분 (PrototypeSceneBuilder.InkVillageColor.cs)
@@ -59,6 +62,20 @@ namespace AThousandDawns.EditorTools
             Billboard(deco, "Backdrop_Ink", $"{Env2DArtFolder}/Source/Backdrop_Ink.png", c + new Vector3(0f, 0f, hz + 6f), 22f);
 
             StripColliders(deco);
+        }
+
+        // 마을 지붕 재질: 판 기와(Ink3D_RoofX/Z)와 같은 그림에 색만 달리 (판 기와 색을 바꾸지 않게 따로 만들어요)
+        static (Material x, Material z) VillageRoof(string name, Color color)
+        {
+            var x = GetInkTriplanar($"Ink3D_RoofX_{name}", "Tex_RoofTile", 1.2f, 1.5f);
+            var z = GetInkTriplanar($"Ink3D_RoofZ_{name}", "Tex_RoofTile_Z", 1.2f, 1.5f);
+            foreach (var m in new[] { x, z })
+            {
+                m.SetColor("_BaseColor", color);
+                m.SetFloat("_OutlineFromCenter", 1f);
+                UnityEditor.EditorUtility.SetDirty(m);
+            }
+            return (x, z);
         }
 
         static void ImportVillageArt()
@@ -347,6 +364,7 @@ namespace AThousandDawns.EditorTools
             {
                 Block(gate, "Post_Base", PrimitiveType.Cube, new Vector3(s * 1.7f, 0.2f, 0f), new Vector3(0.6f, 0.4f, 0.6f), Quaternion.identity, stone);
                 Block(gate, "Post", PrimitiveType.Cylinder, new Vector3(s * 1.7f, 1.7f, 0f), new Vector3(0.38f, 1.5f, 0.38f), Quaternion.identity, wood);
+                DancheongBandOn(gate, new Vector3(s * 1.7f, 3.2f, 0f), 0.19f);
             }
             Block(gate, "Beam_Upper", PrimitiveType.Cube, new Vector3(0f, 3.1f, 0f), new Vector3(4.4f, 0.28f, 0.34f), Quaternion.identity, wood);
             Block(gate, "Beam_Lower", PrimitiveType.Cube, new Vector3(0f, 2.6f, 0f), new Vector3(3.4f, 0.16f, 0.22f), Quaternion.identity, wood);
