@@ -103,26 +103,36 @@ namespace AThousandDawns.Prototype
             for (int n = 0; n < count; n++)
             {
                 var kind = PickRiftKind(rng);
-                var (size, height) = RiftShape(kind);
-                if (kind == FeatureKind.Rampart && rng.Next(2) == 0) size = new Vector2(size.y, size.x); // 세로로 놓인 조각
-                for (int s = 0; s < _riftSpots.Count; s++)
-                {
-                    var at = _riftSpots[s];
-                    if (Mathf.Abs(at.x) + size.x * 0.5f > 9f || Mathf.Abs(at.y) + size.y * 0.5f > 5.2f) continue; // 벽 안쪽
-                    if (Mathf.Abs(at.x) - size.x * 0.5f < 1.8f || Mathf.Abs(at.y) - size.y * 0.5f < 1.6f) continue;
-                    if (NearFixed(at, size)) continue;
-                    Vector2 scaled = ScaleToRoom(at);
-                    Vector3 world = Combat.center + new Vector3(scaled.x, 0f, scaled.y);
-                    if (!RiftSpotFree(world, size, bushes)) continue;
-                    AddSolid(kind, at, size, height);
-                    if (kind == FeatureKind.ManaCrystal) MakeCrystal(_features[_features.Count - 1]);
-                    Physics.SyncTransforms();
-                    _riftSpots.RemoveAt(s);
-                    placed++;
-                    break;
-                }
+                bool upright = rng.Next(2) == 0;
+                // 좁은 방(기둥 회랑 · 무너진 관)에서 큰 소품이 들어갈 자리가 없으면 작은 소품(룬 기둥 → 마나 수정)으로 바꿔 넣어요
+                bool fits = TryPlaceRift(kind, upright, bushes);
+                if (!fits && RiftKindOverride < 0 && kind != FeatureKind.RunePillar && kind != FeatureKind.ManaCrystal) fits = TryPlaceRift(FeatureKind.RunePillar, false, bushes);
+                if (!fits && RiftKindOverride < 0 && kind != FeatureKind.ManaCrystal) fits = TryPlaceRift(FeatureKind.ManaCrystal, false, bushes);
+                if (fits) placed++;
             }
             if (placed > 0) Notify("rift_props", "차원 겹침: 방에 이계의 잔해가 끼어들었어요 · 성벽 조각 · 석상 · 룬 기둥은 엄폐물, 마나 수정은 공격하면 둘레 적에게 터져요");
+        }
+
+        bool TryPlaceRift(FeatureKind kind, bool upright, AmbushBush[] bushes)
+        {
+            var (size, height) = RiftShape(kind);
+            if (kind == FeatureKind.Rampart && upright) size = new Vector2(size.y, size.x); // 세로로 놓인 조각
+            for (int s = 0; s < _riftSpots.Count; s++)
+            {
+                var at = _riftSpots[s];
+                if (Mathf.Abs(at.x) + size.x * 0.5f > 9f || Mathf.Abs(at.y) + size.y * 0.5f > 5.2f) continue; // 벽 안쪽
+                if (Mathf.Abs(at.x) - size.x * 0.5f < 1.8f || Mathf.Abs(at.y) - size.y * 0.5f < 1.6f) continue;
+                if (NearFixed(at, size)) continue;
+                Vector2 scaled = ScaleToRoom(at);
+                Vector3 world = Combat.center + new Vector3(scaled.x, 0f, scaled.y);
+                if (!RiftSpotFree(world, size, bushes)) continue;
+                AddSolid(kind, at, size, height);
+                if (kind == FeatureKind.ManaCrystal) MakeCrystal(_features[_features.Count - 1]);
+                Physics.SyncTransforms();
+                _riftSpots.RemoveAt(s);
+                return true;
+            }
+            return false;
         }
 
         static bool NearFixed(Vector2 at, Vector2 size)

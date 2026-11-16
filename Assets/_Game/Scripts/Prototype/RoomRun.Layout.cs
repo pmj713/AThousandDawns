@@ -42,7 +42,13 @@ namespace AThousandDawns.Prototype
         // 방에 들어갈 때 (null이면 치움)
         void PlaceLayout(FloorRoom room)
         {
-            foreach (var f in _features) if (f.Go != null) Destroy(f.Go);
+            foreach (var f in _features)
+            {
+                if (f.Go == null) continue;
+                var col = f.Go.GetComponent<Collider>();
+                if (col != null) col.enabled = false; // Destroy는 프레임 끝이라, 그 사이 새 소품 자리 찾기(IsFree)에 걸리지 않게 먼저 꺼요
+                Destroy(f.Go);
+            }
             _features.Clear();
             RoomLayout = -1;
             if (room != null && room.HasFight && room.FixedWaves == null && (_region >= 1 || _floor >= 2)) // 죽림은 2층부터 (1층 · 입문 죽림은 그대로)

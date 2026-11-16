@@ -32,6 +32,7 @@ namespace AThousandDawns.Tests
             RoomRun.RoomSizeOverride = -1;
             RoomRun.RiftOverride = 0;
             RoomRun.RiftKindOverride = -1;
+            RoomRun.SeedOverride = 0;
             if (System.IO.File.Exists(MetaSave.PathOverride)) System.IO.File.Delete(MetaSave.PathOverride);
             MetaSave.PathOverride = null;
             base.TearDown();
@@ -55,8 +56,10 @@ namespace AThousandDawns.Tests
         [UnityTest]
         public IEnumerator 이계_소품은_길_가운데_대나무_풀숲_다른_소품을_비켜요()
         {
+            foreach (int seed in new[] { 11, 4242, 987654 }) // 판 시드마다 자리가 달라요
             for (int region = 1; region <= 3; region++)
             {
+                RoomRun.SeedOverride = seed;
                 yield return Load(region);
                 var run = Object.FindFirstObjectByType<RoomRun>();
                 var room = run.Map.Rooms.First(r => r.HasFight && r.FixedWaves == null);
@@ -66,7 +69,7 @@ namespace AThousandDawns.Tests
                     RoomRun.LayoutOverride = layout;
                     run.Enter(room, 0);
                     var rift = run.RoomFeatures.Where(f => RoomRun.IsRift(f.Kind)).ToList();
-                    Assert.GreaterOrEqual(rift.Count, 2, $"지역 {region} 구성 {layout}: 이계 소품이 섞여요");
+                    Assert.GreaterOrEqual(rift.Count, 2, $"시드 {seed} 지역 {region} 구성 {layout}: 이계 소품이 섞여요");
                     Assert.AreEqual(rift.Count, run.RiftPropCount);
                     Vector3 c = run.RoomCenter;
                     foreach (var f in rift)
