@@ -262,6 +262,58 @@ namespace AThousandDawns.Tests
                 Assert.AreEqual(5, db.Items.Count(d => d.otherworld && d.keyword == k), k.ToString());
         }
 
+        // 이계 기물은 따로 칸 없이 무협 기물과 한 목록에서 섞여 나와요 (보상 · 객잔 · 이벤트)
+        [Test]
+        public void 보상에는_무협_기물과_이계_기물이_섞여_나와요()
+        {
+            var rng = new System.Random(7);
+            int otherworld = 0, wuxia = 0;
+            for (int i = 0; i < 200; i++)
+                foreach (var d in AThousandDawns.Items.ItemOffer.Roll(GameConfig.Items.Available, id => false, 3, new[] { 0.4f, 0.3f, 0.2f, 0.1f }, () => (float)rng.NextDouble()))
+                    if (d.otherworld) otherworld++; else wuxia++;
+            Assert.Greater(otherworld, 0, "이계 기물도 나와요");
+            Assert.Greater(wuxia, otherworld, "무협 기물이 더 많아요 (목록 비율대로)");
+        }
+
+        // 판타지 보스(오우거 · 데스나이트)는 무너진 왕좌의 방에서 (가운데 300, 0, −160)
+        [UnityTest]
+        public IEnumerator 판타지_보스는_무너진_왕좌의_방에서([Values(EnemyKind.Ogre, EnemyKind.DeathKnight, EnemyKind.Nokrim)] EnemyKind kind)
+        {
+            RoomRun.BossOverride = kind;
+            try
+            {
+                yield return SceneManager.LoadSceneAsync("Prototype_Run", LoadSceneMode.Single);
+                yield return null;
+                var run = Object.FindFirstObjectByType<RoomRun>();
+                var arena = Object.FindFirstObjectByType<PrototypeArena>();
+                var player = Object.FindFirstObjectByType<PlayerController>();
+                run.SetRegionForTest(0);
+                run.ChooseFork(0);
+                run.EnterRest();
+                var cc = player.GetComponent<CharacterController>();
+                cc.enabled = false;
+                player.transform.position = new Vector3(60f, 0f, 6.6f);
+                cc.enabled = true;
+                float until = Time.realtimeSinceStartup + 5f;
+                while (arena.Boss == null && Time.realtimeSinceStartup < until) yield return null;
+                Assert.IsNotNull(arena.Boss);
+                Assert.AreEqual(kind, arena.Boss.Kind);
+                Vector3 hall = new Vector3(300f, 0f, -160f);
+                Vector3 b = arena.Boss.transform.position;
+                float d = Vector3.Distance(new Vector3(b.x, 0f, b.z), hall);
+                if (kind == EnemyKind.Nokrim) Assert.Greater(d, 30f, "무협 보스는 원래 보스 방");
+                else
+                {
+                    Assert.Less(d, 6f, "판타지 보스는 무너진 왕좌의 방");
+                    Assert.Less(Vector3.Distance(new Vector3(player.transform.position.x, 0f, player.transform.position.z), hall), 12f, "플레이어도 그 방으로");
+                }
+            }
+            finally
+            {
+                RoomRun.BossOverride = null;
+            }
+        }
+
         [UnityTest]
         public IEnumerator 새_이계_기물도_효과가_들어가요()
         {

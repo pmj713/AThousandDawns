@@ -61,6 +61,8 @@ namespace AThousandDawns.Prototype
         [SerializeField] Site inn = new Site();
         [SerializeField] Site rest = new Site();
         [SerializeField] Site boss = new Site();
+        [SerializeField] Site fantasyBoss = new Site(); // 판타지 보스 방 (무너진 왕좌의 방: 오우거 · 데스나이트)
+        public static EnemyKind? BossOverride; // 테스트에서 지역 보스를 고정해요 (null이면 지역대로)
 
         readonly List<(EnemyKind kind, Vector3 position, Telegraph marker, bool elite)> _pending = new List<(EnemyKind, Vector3, Telegraph, bool)>();
         List<List<EnemyKind>> _waves;
@@ -770,12 +772,14 @@ namespace AThousandDawns.Prototype
             if (OffersOpen || Flat(Player.transform.position - rest.exit).magnitude > rest.exitRadius) return;
             Player.RestoreAfterTraining(_restGauge);
             _phase = Phase.Boss;
-            MovePlayer(boss.entry);
+            var bossKind = _region >= 3 ? EnemyKind.HeavenlyDemon : _region == 2 ? EnemyKind.IronDragon : _region == 1 ? EnemyKind.BloodBuddha : EnemyKind.Nokrim;
+            if (BossOverride != null) bossKind = BossOverride.Value; // 테스트용
+            else             if (_region < 3 && RoomBudget.FantasyOn && _rng.NextDouble() < GameConfig.GetOptional("fantasy.boss_chance", 0.3f)) bossKind = _rng.Next(2) == 0 ? EnemyKind.Ogre : EnemyKind.DeathKnight; // 차원 겹침: 지역 보스 자리에 판타지 보스 (오우거 · 데스나이트, 천마는 그대로)
+            bool fantasyBossRoom = (bossKind == EnemyKind.Ogre || bossKind == EnemyKind.DeathKnight) && fantasyBoss.center != Vector3.zero;
+            MovePlayer(fantasyBossRoom ? fantasyBoss.entry : boss.entry);
             director.ResetRoom();
             Player.EnterRoom();
-            var bossKind = _region >= 3 ? EnemyKind.HeavenlyDemon : _region == 2 ? EnemyKind.IronDragon : _region == 1 ? EnemyKind.BloodBuddha : EnemyKind.Nokrim;
-            if (_region < 3 && RoomBudget.FantasyOn && _rng.NextDouble() < GameConfig.GetOptional("fantasy.boss_chance", 0.3f)) bossKind = _rng.Next(2) == 0 ? EnemyKind.Ogre : EnemyKind.DeathKnight; // 차원 겹침: 지역 보스 자리에 판타지 보스 (오우거 · 데스나이트, 천마는 그대로)
-            var bossBrain = arena.SpawnBoss(bossKind); // 죽림 녹림왕 · 폐사찰 혈불 · 장강 수채 철룡 · 천마총 천마
+            var bossBrain = fantasyBossRoom ? arena.SpawnBoss(bossKind, fantasyBoss.center) : arena.SpawnBoss(bossKind); // 죽림 녹림왕 · 폐사찰 혈불 · 장강 수채 철룡 · 천마총 천마
             if (bossBrain != null) ScaleForRegion(bossBrain);
             if (bossBrain != null) bossBrain.Woke += _ => ApplyHeroShield(); // 무림맹 고수를 구했으면 천마전 보호막
             OnFightStart();

@@ -223,15 +223,17 @@ namespace AThousandDawns.Prototype
         }
 
         // kind: 지역 보스 (죽림 녹림왕 · 폐사찰 혈불). 결투장은 같은 자리
-        public EnemyBrain SpawnBoss(EnemyKind kind = EnemyKind.Nokrim)
+        // zone: 판타지 보스 방처럼 다른 자리에서 (null이면 보스 방). 결투장 문(bossGate)은 보스 방에서만 닫혀요
+        public EnemyBrain SpawnBoss(EnemyKind kind = EnemyKind.Nokrim, Vector3? zone = null)
         {
             if (_boss != null && !_boss.IsDead) return _boss;
-            _boss = director.Spawn(kind, bossZoneCenter + new Vector3(0f, 0f, 2f));
-            ((IMasterBrain)_boss).SetZone(bossZoneCenter, new Vector2(GameConfig.Get("nokrim.arena_width", 16f), GameConfig.Get("nokrim.arena_depth", 12f)));
+            Vector3 center = zone ?? bossZoneCenter;
+            _boss = director.Spawn(kind, center + new Vector3(0f, 0f, 2f));
+            ((IMasterBrain)_boss).SetZone(center, new Vector2(GameConfig.Get("nokrim.arena_width", 16f), GameConfig.Get("nokrim.arena_depth", 12f)));
             _boss.WakeRadius = 1f; // SetZone이 있으면 결투장 안에 들어와야 깨어나요
             _boss.Woke += _ =>
             {
-                SetGate(true);
+                if (zone == null) SetGate(true);
                 if (director.Player != null) director.Player.EnterRoom(); // 결투장도 방
             };
             return _boss;
