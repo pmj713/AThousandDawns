@@ -174,6 +174,8 @@ namespace AThousandDawns.EditorTools
             DressTempleInk(floorMat, stoneMat, woodMat, roofX); // 폐사찰 꾸밈: 지역이 바뀌면 대나무 대신 무너진 절 (PrototypeSceneBuilder.InkTemple.cs)
             DressOutsideInk(floorMat, bambooMat, stoneMat, woodMat, roofX); // 맵 바깥 땅 + 벽 너머 대나무: 벽 너머 흰 빈 곳을 지역별 수묵 땅으로 (PrototypeSceneBuilder.InkOutside.cs)
             DressFantasyMaster(); // 판타지 고수 결투장 "무너진 성 안뜰" (PrototypeSceneBuilder.InkFantasyMaster.cs)
+            DressFantasyBoss(); // 판타지 보스 방 "무너진 왕좌의 방" (PrototypeSceneBuilder.InkFantasyBoss.cs, 방이 생기기 전엔 건너뛰어요)
+            DressFantasyBoss(); // 판타지 보스 방 "무너진 왕좌의 방" (PrototypeSceneBuilder.InkFantasyBoss.cs, 방이 생기기 전엔 건너뛰어요)
 
             // 4) 재질 바꿔 끼우기: 씬의 모든 재질 참조(렌더러·적 연출 설정 등)를 이름으로 찾아 수묵 재질로.
             //    공격 예고·불·검기·결계·관문은 전투에서 읽혀야 하니 그대로 둬요
