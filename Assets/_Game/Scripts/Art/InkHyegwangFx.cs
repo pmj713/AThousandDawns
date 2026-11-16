@@ -157,7 +157,7 @@ namespace AThousandDawns.Art
             lr.textureMode = LineTextureMode.Stretch;
             lr.alignment = LineAlignment.View;
             lr.widthCurve = new AnimationCurve(new Keyframe(0f, 0.25f), new Keyframe(0.8f, 1.1f), new Keyframe(1f, 0.7f));
-            lr.startColor = lr.endColor = new Color(0.07f, 0.06f, 0.06f, 0.9f);
+            lr.startColor = lr.endColor = new Color(1f, 0.78f, 0.22f, 0.9f);
             lr.sortingOrder = 6;
             float t = 0f, dash = Mathf.Max(0.05f, c.Time);
             _live.Add(dt =>
@@ -168,7 +168,7 @@ namespace AThousandDawns.Art
                 float fade = Mathf.Clamp01((t - dash) / 0.5f);           // 다가간 뒤 꼬리부터 걷혀요
                 lr.SetPosition(0, Vector3.Lerp(a, b, fade * 0.9f));
                 lr.SetPosition(1, Vector3.Lerp(a, b, reach));
-                lr.startColor = lr.endColor = new Color(0.07f, 0.06f, 0.06f, 0.9f * (1f - fade));
+                lr.startColor = lr.endColor = new Color(1f, 0.78f, 0.22f, 0.9f * (1f - fade));
                 if (fade < 1f) return true;
                 Destroy(lr.gameObject);
                 return false;
@@ -178,7 +178,7 @@ namespace AThousandDawns.Art
             {
                 float s = (i + 0.5f) / puffs;
                 Expand(_splash, c.At + dir * c.Length * s + new Vector3(UnityEngine.Random.Range(-0.3f, 0.3f), 0f, UnityEngine.Random.Range(-0.3f, 0.3f)),
-                    UnityEngine.Random.Range(1f, 1.6f), 0.15f + s * dash, 0.7f, new Color(0.08f, 0.07f, 0.07f), 0.03f);
+                    UnityEngine.Random.Range(1f, 1.6f), 0.15f + s * dash, 0.7f, new Color(1f, 0.7f, 0.2f), 0.03f);
             }
         }
 

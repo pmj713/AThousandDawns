@@ -62,7 +62,7 @@ namespace AThousandDawns.Art
         {
             Vector3 a = c.From + Vector3.up * 0.9f, b = c.To + Vector3.up * 0.9f;
             if ((b - a).sqrMagnitude < 0.04f) return;
-            var ink = Line(a, b, new Color(0.08f, 0.07f, 0.06f), 0.75f, 0.15f, 0.06f);
+            var ink = Line(a, b, new Color(1f, 0.75f, 0.25f), 0.75f, 0.15f, 0.06f);
             var jade = Line(a, b, new Color(0.3f, 0.75f, 0.55f), 0.28f, 0.06f, 0.07f);
             float t = 0f;
             _live.Add(dt =>

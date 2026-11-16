@@ -148,7 +148,7 @@ namespace AThousandDawns.Art
                 float k = t / (rise + 0.4f);
                 pool.transform.localScale = unit * Mathf.Lerp(0.5f, 1.15f, Mathf.Sqrt(Mathf.Clamp01(t / 0.3f)));
                 pool.transform.Rotate(0f, 0f, 30f * dt, Space.Self);
-                pool.color = new Color(0.12f, 0.11f, 0.13f, 0.85f * (1f - Mathf.Clamp01((t - 0.4f) / (rise + 0.4f - 0.4f))));
+                pool.color = new Color(0.5f, 0.22f, 0.85f, 0.85f * (1f - Mathf.Clamp01((t - 0.4f) / (rise + 0.4f - 0.4f))));
                 spawn -= dt;
                 if (t < rise && spawn <= 0f) // 몸이 올라오는 동안 연기가 피어올라요
                 {

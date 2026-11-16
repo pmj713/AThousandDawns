@@ -6,7 +6,7 @@ Shader "AThousandDawns/InkBrushLine"
     {
         _MainTex ("Brush (알파)", 2D) = "white" {}
         _BaseColor ("Color", Color) = (0.06, 0.06, 0.07, 1)
-        _Grain ("Paper Grain (종이 결로 비는 정도)", Range(0, 1)) = 0.35
+        _Grain ("Paper Grain (종이 결로 비는 정도)", Range(0, 1)) = 0
     }
 
     SubShader

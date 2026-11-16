@@ -65,7 +65,7 @@ namespace AThousandDawns.Art
             {
                 case BurstKind.Gunpowder:
                     InkParticles.Burst(at + Vector3.up * 0.4f, 26, new Color(1f, 0.85f, 0.4f, 1f), new Color(0.9f, 0.3f, 0.08f, 1f), r * 2.2f, r * 0.9f, 0.45f, -0.2f);
-                    InkParticles.Burst(at + Vector3.up * 0.6f, 14, new Color(0.15f, 0.12f, 0.1f, 0.8f), new Color(0.3f, 0.28f, 0.26f, 0.6f), r * 1.2f, r * 1.1f, 1.1f, -0.3f);
+                    InkParticles.Burst(at + Vector3.up * 0.6f, 14, new Color(1f, 0.5f, 0.12f, 0.85f), new Color(0.3f, 0.28f, 0.26f, 0.6f), r * 1.2f, r * 1.1f, 1.1f, -0.3f);
                     InkParticles.Burst(at + Vector3.up * 0.3f, 18, new Color(1f, 0.8f, 0.3f, 1f), new Color(0.6f, 0.15f, 0.05f, 1f), r * 4f, 0.08f, 0.7f, 1f);
                     Ground(_scorch, at, r * 2.2f, 2f, Color.white, 0.8f);
                     break;
@@ -87,7 +87,7 @@ namespace AThousandDawns.Art
                     if (kind == BurstKind.Quake) Spikes(at, r); // 진각 (철권 붕산권 · 나한): 둘레에서 바윗돌이 솟았다 가라앉아요
                     break;
                 case BurstKind.Spin:
-                    Ring(_mandala, at, r * 2.2f, 0.4f, new Color(0.1f, 0.08f, 0.07f, 0.85f), 0.5f, -900f);
+                    Ring(_mandala, at, r * 2.2f, 0.4f, new Color(1f, 0.78f, 0.25f, 0.9f), 0.5f, -900f);
                     InkParticles.Burst(at + Vector3.up * 0.1f, 14, new Color(0.45f, 0.42f, 0.38f, 0.6f), new Color(0.5f, 0.48f, 0.45f, 0.3f), r * 1.8f, r * 0.5f, 0.7f);
                     break;
                 case BurstKind.Vajra:
@@ -105,7 +105,7 @@ namespace AThousandDawns.Art
                     break;
                 case BurstKind.Miasma:
                     Ring(_miasma, at, r * 2.2f, 0.55f, Color.white, 0.25f, 140f);
-                    InkParticles.Burst(at + Vector3.up * 0.4f, 16, new Color(0.15f, 0.04f, 0.06f, 0.8f), new Color(0.08f, 0.04f, 0.05f, 0.5f), r * 1.3f, r * 0.9f, 1f, -0.2f);
+                    InkParticles.Burst(at + Vector3.up * 0.4f, 16, new Color(0.65f, 0.12f, 0.55f, 0.8f), new Color(0.35f, 0.05f, 0.4f, 0.5f), r * 1.3f, r * 0.9f, 1f, -0.2f);
                     break;
                 case BurstKind.Water:
                     Ring(_ripple, at, r * 2f, 0.5f, new Color(0.7f, 0.85f, 1f, 0.9f), 0.3f, 0f);
@@ -332,7 +332,7 @@ namespace AThousandDawns.Art
                 t += dt;
                 float k = t / 0.3f;
                 sr.transform.localScale = unit * Mathf.Lerp(0.6f, 1.1f, Mathf.Sqrt(Mathf.Clamp01(k)));
-                sr.color = new Color(0.25f, 0.22f, 0.24f, 1f - k);
+                sr.color = new Color(0.55f, 0.85f, 1f, 1f - k); // 푸른 검기 자국
                 if (k < 1f) return true;
                 Destroy(sr.gameObject);
                 return false;

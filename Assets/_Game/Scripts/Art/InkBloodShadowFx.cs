@@ -176,7 +176,7 @@ namespace AThousandDawns.Art
         {
             Vector3 a = from + Vector3.up * 0.9f, b = to + Vector3.up * 0.9f;
             if ((b - a).sqrMagnitude < 0.04f || _lineMat == null) return;
-            var ink = Line(a, b, new Color(0.1f, 0.04f, 0.04f), 0.7f);
+            var ink = Line(a, b, new Color(0.6f, 0.05f, 0.3f), 0.7f);
             var red = Line(a, b, new Color(0.8f, 0.1f, 0.08f), 0.3f);
             float t = 0f;
             _live.Add(dt =>

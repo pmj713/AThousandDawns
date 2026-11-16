@@ -95,6 +95,7 @@ namespace AThousandDawns.Art
         void Bang(EnemyBrain e)
         {
             var sprite = Fantasy(e) ? _bangGlass : _bangInk;
+            var tint = Fantasy(e) ? Color.white : new Color(1f, 0.25f, 0.15f); // 무협 !: 흰 붓 모양을 붉게
             if (sprite == null) return;
             var sr = Billboard(sprite, e.transform.position + Vector3.up * (Head(e) + 0.45f), 0.55f, 12);
             if (sr == null) return;
@@ -108,7 +109,7 @@ namespace AThousandDawns.Art
                 if (e != null) pivot.position = e.transform.position + Vector3.up * (head + 0.45f + 0.25f * Mathf.Clamp01(t / 0.9f));
                 float pop = t < 0.12f ? Mathf.Lerp(0.3f, 1.25f, t / 0.12f) : Mathf.Lerp(1.25f, 1f, Mathf.Clamp01((t - 0.12f) / 0.1f));
                 sr.transform.localScale = unit * pop;
-                sr.color = new Color(1f, 1f, 1f, t < 0.65f ? 1f : Mathf.Clamp01(1f - (t - 0.65f) / 0.3f));
+                sr.color = new Color(tint.r, tint.g, tint.b, t < 0.65f ? 1f : Mathf.Clamp01(1f - (t - 0.65f) / 0.3f));
                 if (t < 0.95f) return true;
                 Destroy(pivot.gameObject);
                 return false;
@@ -120,7 +121,7 @@ namespace AThousandDawns.Art
             if (_director != null && _director.Enemies != null)
                 foreach (var e in _director.Enemies)
                     if (e != null && !e.IsDead && e.Rival != null && !_rivalLines.ContainsKey(e))
-                        _rivalLines[e] = Line(Fantasy(e) ? new Color(0.95f, 0.35f, 0.15f) : new Color(0.12f, 0.08f, 0.08f), Fantasy(e) ? new Color(1f, 0.8f, 0.3f) : new Color(0.62f, 0.08f, 0.07f), 0.07f, 2);
+                        _rivalLines[e] = Line(Fantasy(e) ? new Color(0.95f, 0.35f, 0.15f) : new Color(1f, 0.78f, 0.2f), Fantasy(e) ? new Color(1f, 0.8f, 0.3f) : new Color(0.62f, 0.08f, 0.07f), 0.07f, 2);
             _gone.Clear();
             foreach (var kv in _rivalLines)
             {

@@ -29,6 +29,6 @@ Material:
     - _Fade: 0
     - _Seed: 0
     m_Colors:
-    - _Color: {r: 0.059999965, g: 0.059999965, b: 0.06999998, a: 1}
+    - _Color: {r: 0.85, g: 0.14, b: 0.1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
