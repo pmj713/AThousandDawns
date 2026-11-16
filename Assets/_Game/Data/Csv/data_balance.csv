@@ -1564,3 +1564,13 @@ rift.weight.crystal,2,,소품 가중치: 마나 수정 (공격하면 터짐),차
 rift.crystal_radius,2.5,cell,마나 수정 폭발 반경 (적만 맞아요),차원 겹침 맵 섞기
 rift.crystal_damage,40,,마나 수정 폭발 피해 (죽림 기준),차원 겹침 맵 섞기
 rift.crystal_region_scale,60%,,마나 수정 피해: 지역마다 더하는 배율 (천마총 ×2.8),차원 겹침 맵 섞기
+master_kit.enabled,1,,"고수 공통 견제기 · 이동기 (0이면 끔, 없는 값은 boss_kit.*)",고수 공통기
+master_kit.far_distance,6.5,cell,고수 원거리 견제기: 이보다 멀리 있으면,고수 공통기
+master_kit.far_time,3.5,s,고수 원거리 견제기: 멀리 있는 시간이 이만큼 넘으면,고수 공통기
+master_kit.volley_cooldown,11,s,고수 원거리 견제기 간격,고수 공통기
+master_kit.volley_count,2,,고수 원거리 견제기 투사체 수,고수 공통기
+master_kit.volley_ratio,40%,,고수 원거리 견제기 피해 (공격 대비),고수 공통기
+master_kit.leap_distance,8,cell,고수 이동기: 이보다 멀면 도약,고수 공통기
+master_kit.leap_cooldown,14,s,고수 이동기 간격,고수 공통기
+master_kit.leap_radius,1.8,cell,고수 이동기 내려찍기 반경,고수 공통기
+master_kit.leap_ratio,60%,,고수 이동기 피해 (공격 대비),고수 공통기

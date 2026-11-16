@@ -5,11 +5,12 @@ using UnityEngine;
 
 namespace AThousandDawns.Enemies
 {
-    // 보스 공통 견제기 · 이동기 (지역 보스 전부: 녹림왕 · 혈불 · 철룡 · 천마 · 오우거). 보스 고유 패턴 사이사이에 끼어들어요.
+    // 보스 · 고수 공통 견제기 · 이동기 (지역 보스 전부: 녹림왕 · 혈불 · 철룡 · 천마 · 오우거). 보스 고유 패턴 사이사이에 끼어들어요.
     //   원거리 견제기: 플레이어가 boss_kit.far_distance보다 멀리 boss_kit.far_time초 넘게 있으면, 플레이어 쪽 부채꼴로 투사체 boss_kit.volley_count발
     //                  (멀리서 비도만 던지며 버티는 것을 막아요). 보스마다 이름과 그림이 달라요 (VolleyName · 아트는 Arrow.Owner로)
     //   이동기: 플레이어가 boss_kit.leap_distance보다 멀면, 플레이어 발밑에 예고 원 → boss_kit.leap_windup초 뒤 그 자리로 도약해 내려찍어요 (원 안이면 맞음)
-    // 값은 보스마다 {key}.kit_* 로 덮어쓸 수 있어요 (없으면 boss_kit.*). 2페이즈 전환 · 빙결 · 공격 중에는 쓰지 않아요.
+    // 고수(Rank Master: 청죽객 · 철권 마웅 · 혜광 · 탁랑객 · 혈영검마 · 고블린 족장)도 약한 판으로 써요 (master_kit.*, 없으면 boss_kit.*).
+    // 값은 보스마다 {key}.kit_* 로 덮어쓸 수 있어요 (없으면 boss_kit.* · 고수는 master_kit.*). 2페이즈 전환 · 빙결 · 공격 중에는 쓰지 않아요.
     public abstract partial class EnemyBrain
     {
         public static event System.Action<EnemyBrain, Vector3> BossVolley;                 // 보스, 쏜 방향 (아트)
@@ -23,6 +24,12 @@ namespace AThousandDawns.Enemies
             EnemyKind.IronDragon => "작살 세례",
             EnemyKind.HeavenlyDemon => "마기탄",
             EnemyKind.Ogre => "돌팔매",
+            EnemyKind.Qingzhu => "죽엽비도",
+            EnemyKind.IronFist => "권풍",
+            EnemyKind.Hyegwang => "금강 염주",
+            EnemyKind.Takrang => "물보라 갈고리",
+            EnemyKind.BloodShadow => "혈영 비검",
+            EnemyKind.GoblinChief => "투척 도끼",
             _ => "견제",
         };
 
@@ -33,13 +40,20 @@ namespace AThousandDawns.Enemies
             EnemyKind.IronDragon => "닻 뛰어들기",
             EnemyKind.HeavenlyDemon => "천마 강림",
             EnemyKind.Ogre => "몸통 덮치기",
+            EnemyKind.Qingzhu => "청죽 경공",
+            EnemyKind.IronFist => "철권 낙하",
+            EnemyKind.Hyegwang => "나한 도약",
+            EnemyKind.Takrang => "탁랑 뛰어들기",
+            EnemyKind.BloodShadow => "혈영 강하",
+            EnemyKind.GoblinChief => "족장 덮치기",
             _ => "도약",
         };
 
         public bool IsLeaping => _leapState > 0;
 
         public static int BossKitOverride = -1; // 테스트용 (0 끔 · 1 켬)
-        bool BossKitOn => BossKitOverride >= 0 ? BossKitOverride == 1 : GameConfig.GetOptional("boss_kit.enabled", 1f) > 0.5f;
+        bool KitRank => Rank == EnemyRank.Boss || Rank == EnemyRank.Master;
+        bool BossKitOn => BossKitOverride >= 0 ? BossKitOverride == 1 : GameConfig.GetOptional(Rank == EnemyRank.Boss ? "boss_kit.enabled" : "master_kit.enabled", 1f) > 0.5f;
 
         float _farTime, _volleyCooldown = 3f, _leapCooldown = 4f, _leapTimer;
         int _leapState; // 0 없음 · 1 예고 (제자리) · 2 날아감
@@ -50,7 +64,9 @@ namespace AThousandDawns.Enemies
         float Kit(string name, float fallback)
         {
             if (_kitValues.TryGetValue(name, out float v)) return v;
-            v = GameConfig.GetOptional($"{Key}.kit_{name}", GameConfig.GetOptional($"boss_kit.{name}", fallback));
+            float shared = GameConfig.GetOptional($"boss_kit.{name}", fallback);
+            if (Rank != EnemyRank.Boss) shared = GameConfig.GetOptional($"master_kit.{name}", shared); // 고수는 약한 판
+            v = GameConfig.GetOptional($"{Key}.kit_{name}", shared);
             _kitValues[name] = v;
             return v;
         }
@@ -58,7 +74,7 @@ namespace AThousandDawns.Enemies
         // Update에서 (경직 확인 전): 보스만
         void TickBossKit(float dt)
         {
-            if (Rank != EnemyRank.Boss || !_awake || Player == null || Player.IsDead || !BossKitOn) return;
+            if (!KitRank || !_awake || Player == null || Player.IsDead || !BossKitOn) return;
             if (_leapState > 0) { TickLeap(dt); return; }
             if (_volleyCooldown > 0f) _volleyCooldown -= dt;
             if (_leapCooldown > 0f) _leapCooldown -= dt;
@@ -108,7 +124,7 @@ namespace AThousandDawns.Enemies
             _leapState = 1;
             _leapTimer = Kit("leap_windup", 0.9f);
             _leapFrom = transform.position;
-            _leapTo = Director.FindFreeSpot(Player.transform.position, 0.3f);
+            _leapTo = Director.FindFreeSpot(Player.transform.position, BodyRadius + PlayerRadius + 0.3f); // 플레이어 몸 위로 내려앉으면 둘이 겹쳐 빠져나오지 못해요 (덩치 큰 오우거)
             float radius = Kit("leap_radius", 2.2f);
             _leapMarker = Telegraph.Create(null, Director.Visuals.telegraphBase, Director.Visuals.telegraphFill, Director.Visuals.telegraphOutline);
             _leapMarker.Show(TelegraphShapes.Circle(radius), true);

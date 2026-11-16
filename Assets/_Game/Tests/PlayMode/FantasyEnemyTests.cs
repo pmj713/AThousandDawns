@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Linq;
+using AThousandDawns.Core;
 using AThousandDawns.Enemies;
 using AThousandDawns.Player;
 using AThousandDawns.Prototype;
@@ -186,7 +187,7 @@ namespace AThousandDawns.Tests
             EnemyBrain.BossLeapStarted += onLeap;
             EnemyBrain.BossVolley += onVolley;
             Time.timeScale = 2f;
-            float end = Time.time + 20f;
+            float end = Time.time + 35f; // 오우거는 돌진 · 바위 던지기가 길어서 넉넉히
             Vector3 home = player.transform.position;
             var cc = player.GetComponent<CharacterController>();
             while (Time.time < end && !(leapt && volley))
@@ -203,6 +204,54 @@ namespace AThousandDawns.Tests
             EnemyBrain.BossKitOverride = 0;
             Assert.IsTrue(leapt, "멀면 도약해 와요");
             Assert.IsTrue(volley, "멀리서 버티면 원거리 견제기");
+        }
+
+        // 고수도 약한 판 공통기 (master_kit): 멀면 도약해 오고, 멀리서 버티면 견제 2발
+        [UnityTest]
+        public IEnumerator 고수도_멀리_있으면_도약해_오고_견제기를_써요()
+        {
+            EnemyBrain.BossKitOverride = 1;
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var master = director.Spawn(EnemyKind.Qingzhu, player.transform.position + new Vector3(0f, 0f, 11f));
+            Assert.AreEqual(EnemyRank.Master, master.Rank);
+            Vector3 zone = player.transform.position + new Vector3(0f, 0f, 5f);
+            ((IMasterBrain)master).SetZone(zone, new Vector2(40f, 30f));
+            Assert.AreEqual("죽엽비도", master.VolleyName);
+            Assert.AreEqual("청죽 경공", master.LeapName);
+            bool leapt = false, volley = false;
+            System.Action<EnemyBrain, Vector3, Vector3> onLeap = (e, a, b) => leapt |= e == master;
+            System.Action<EnemyBrain, Vector3> onVolley = (e, d) => volley |= e == master;
+            EnemyBrain.BossLeapStarted += onLeap;
+            EnemyBrain.BossVolley += onVolley;
+            Time.timeScale = 2f;
+            float end = Time.time + 30f;
+            var cc = player.GetComponent<CharacterController>();
+            while (Time.time < end && !(leapt && volley))
+            {
+                player.Heal(9999f);
+                Vector3 away = player.transform.position - master.transform.position;
+                away.y = 0f;
+                // 청죽객은 금방 따라붙어요: 붙으면 경기장 반대쪽으로 거리를 벌려요 (멀리서 비도로 버티는 플레이어 흉내)
+                if (away.magnitude < 3f && !master.IsLeaping)
+                {
+                    Vector3 side = master.transform.position - zone;
+                    side.y = 0f;
+                    cc.enabled = false;
+                    player.transform.position = zone - (side.sqrMagnitude > 1e-4f ? side.normalized : Vector3.forward) * 6f;
+                    cc.enabled = true;
+                }
+                else if (away.magnitude < 10f && away.sqrMagnitude > 1e-4f) cc.Move(away.normalized * 6f * Time.deltaTime);
+                yield return null;
+            }
+            EnemyBrain.BossLeapStarted -= onLeap;
+            EnemyBrain.BossVolley -= onVolley;
+            EnemyBrain.BossKitOverride = 0;
+            Time.timeScale = 1f;
+            Assert.IsTrue(leapt, "멀면 도약해 와요");
+            Assert.IsTrue(volley, "멀리서 버티면 견제기");
+            Assert.AreEqual(2, Mathf.RoundToInt(GameConfig.GetOptional("master_kit.volley_count", 2f)), "고수는 2발");
         }
 
         [Test]
