@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using AThousandDawns.Enemies;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -19,7 +18,6 @@ namespace AThousandDawns.Art
         static InkFantasyFx _host;
         static Sprite _slime, _ward, _curse;
         static bool _loaded;
-        static readonly FieldInfo OwnerField = typeof(GhostFire).GetField("_owner", BindingFlags.Instance | BindingFlags.NonPublic);
         static readonly Dictionary<GhostFire, bool> CurseCache = new Dictionary<GhostFire, bool>();
 
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
@@ -30,12 +28,12 @@ namespace AThousandDawns.Art
 
         public static bool IsFantasy(EnemyBrain e) => e != null && e.Kind >= EnemyKind.Slime;
 
-        // 고블린 주술사가 깐 장판인지 (장판마다 처음 한 번만 주인을 읽어요)
+        // 고블린 주술사가 깐 장판인지 (장판마다 처음 한 번만 GhostFire.Owner를 봐요)
         public static bool IsCurse(GhostFire fire)
         {
             if (fire == null) return false;
             if (CurseCache.TryGetValue(fire, out bool curse)) return curse;
-            var owner = OwnerField != null ? OwnerField.GetValue(fire) as Component : null;
+            var owner = fire.Owner;
             curse = owner != null && owner.GetComponentInParent<GoblinShamanBrain>() != null;
             if (CurseCache.Count > 64) CurseCache.Clear(); // 꺼진 장판 정리 (다시 읽으면 그만)
             CurseCache[fire] = curse;

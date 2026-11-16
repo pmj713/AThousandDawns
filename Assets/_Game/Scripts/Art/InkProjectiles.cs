@@ -82,15 +82,13 @@ namespace AThousandDawns.Art
             else BuildArrow(visual, FiredBy(t.position, EnemyKind.BloodArcher)); // 혈궁수면 붉은 화살
         }
 
-        // 쏜 적 (Arrow.Owner, 없으면 _owner) — 화살마다 처음 한 번만 읽어요
-        static readonly System.Reflection.PropertyInfo OwnerProp = typeof(Arrow).GetProperty("Owner");
-        static readonly System.Reflection.FieldInfo OwnerField = typeof(Arrow).GetField("Owner") ?? typeof(Arrow).GetField("_owner", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        // 쏜 적 (Arrow.Owner) — 화살마다 처음 한 번만 읽어요
 
         static EnemyKind? ShooterKind(GameObject go)
         {
             var arrow = go.GetComponent<Arrow>();
             if (arrow == null) return null;
-            var owner = (OwnerProp != null ? OwnerProp.GetValue(arrow) : OwnerField != null ? OwnerField.GetValue(arrow) : null) as Component;
+            var owner = arrow.Owner;
             var brain = owner != null ? owner.GetComponentInParent<EnemyBrain>() : null;
             return brain != null ? brain.Kind : (EnemyKind?)null;
         }
