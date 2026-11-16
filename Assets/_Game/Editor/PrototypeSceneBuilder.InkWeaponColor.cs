@@ -45,7 +45,7 @@ namespace AThousandDawns.EditorTools
                 float k = reach > 1e-4f ? t / reach : 0f;
                 return key switch
                 {
-                    "dao" or "jian" or "dagger" or "bigdao" or "hooksword" => t < 0.12f ? Wrap : t < 0.17f ? Brass : Steel,
+                    "dao" or "offdao" or "jian" or "dagger" or "bigdao" or "hooksword" => t < 0.12f ? Wrap : t < 0.17f ? Brass : Steel,
                     "khakkhara" => k > 0.8f ? Brass : t < -0.2f ? Brass : Wood,
                     "harpoon" => k > 0.8f ? Steel : Wood,
                     "axe" => k > 0.62f ? Steel : Wood,

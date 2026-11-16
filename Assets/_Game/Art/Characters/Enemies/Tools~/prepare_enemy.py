@@ -148,6 +148,12 @@ for w in WEAPONS:
         edge = Vector((0, 0, -1)); edge = (edge - axis * edge.dot(axis)).normalized()
         L, wide = {"dao": (0.62, 0.07), "dagger": (0.26, 0.035), "bigdao": (1.15, 0.16)}[w]   # bigdao: 녹림왕의 대도
         make(f"{NAME}_Weapon_{w}", "RightHand", lambda bm, g=g, a=axis, e=edge, L=L, wd=wide: blade(bm, g, a, e, L, wd))
+    elif w == "offhand":
+        # 왼손 휜 칼 (다크 엘프 쌍검): 오른손 칼과 같은 외날 칼을 왼손에 거울처럼 (동작은 오른손 칼 기준이라 왼손은 따라만 가요)
+        g = grip_of("Left")
+        axis = Vector((0, -1, -0.15)).normalized()
+        edge = Vector((0, 0, -1)); edge = (edge - axis * edge.dot(axis)).normalized()
+        make(f"{NAME}_Weapon_offdao", "LeftHand", lambda bm, g=g, a=axis, e=edge: blade(bm, g, a, e, 0.58, 0.065))
     elif w == "khakkhara":
         # 선장 (파계승): 주먹을 가로지르는 긴 쇠지팡이. 앞(칼끝 방향) 끝에 둥근 고리와 작은 고리들, 뒤 끝에 물미
         g = grip_of("Right")
@@ -2302,6 +2308,83 @@ if "bossmoves" in EXTRAS and "playeranim" in EXTRAS:
     make_action("Roar", [(0, "idle"), (6, "roar"), (14, "beat_l"), (18, "roar"), (22, "beat_r"), (26, "roar"), (38, "roar"), (45, "idle")], boss_pose)
     make_action("Throw", [(0, "lift"), (10, "lift"), (14, "throw"), (22, "throw"), (30, "idle")], boss_pose)
     make_action("LeapCrouch", [(0, "crouch"), (10, "crouch")], boss_pose)
+
+# 데스나이트 (deathknight, 양손 룬검을 오른손에): 저주 검기(CurseWave, 검을 왼쪽 뒤로 크게 감았다가 앞으로 가로로 휘둘러 검기 셋)
+#   · 죽은 자의 부름(Summon, 검을 두 손으로 치켜들었다가 발 앞 땅에 꽂고 무릎 굽혀 버텨요 — 2페이즈 전환 동안)
+if "deathknight" in EXTRAS and "playeranim" in EXTRAS:
+    XA = Vector((1, 0, 0))
+
+    def dk_pose(stage):
+        if stage == "idle":
+            idle_end_pose(); return
+        shl, shr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+        if stage in ("wind", "sweep"):
+            wind = stage == "wind"
+            feet = {"Left": FEET["Left"] + Vector((0, -0.3, 0)), "Right": FEET["Right"] + Vector((0, 0.15, 0))}
+            lower_hips(-0.15 if wind else -0.25, feet, dy=0.05 if wind else -0.15)
+            bend("Spine", UP, 40 if wind else -45)
+            shl, shr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+            grip = shr + (Vector((0.55, 0.35, 0.05)) if wind else Vector((-0.6, -0.6, -0.1)))
+            arm("Right", grip, Vector((-1, 0.3, 0)))
+            arm("Left", grip + Vector((0.12, 0.0, -0.05)), Vector((1, 0.3, 0)))
+            point_blade(Vector((0.8, 0.6, 0.2)) if wind else Vector((-0.8, -0.6, 0)), wrist_bend=80)
+        elif stage in ("raise", "plant"):
+            up = stage == "raise"
+            lower_hips(-0.05 if up else -0.45, FEET, dy=0.0 if up else -0.1)
+            bend("Spine", XA, -10 if up else 28)
+            shl, shr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+            grip = (shl + shr) / 2 + (Vector((0, -0.15, 0.7)) if up else Vector((0, -0.55, -0.45)))
+            arm("Right", grip + Vector((-0.05, 0, 0)), Vector((-1, 0.3, 0)))
+            arm("Left", grip + Vector((0.05, 0, -0.08)), Vector((1, 0.3, 0)))
+            point_blade(Vector((0, 0.05, 1)) if up else Vector((0, -0.15, -1)), wrist_bend=90)
+    make_action("CurseWave", [(0, "wind"), (8, "wind"), (12, "sweep"), (20, "sweep"), (30, "idle")], dk_pose)
+    make_action("Summon", [(0, "idle"), (8, "raise"), (16, "raise"), (20, "plant"), (52, "plant"), (60, "idle")], dk_pose)
+
+# 늑대인간·가고일 (beastmoves): 맨손 발톱 짐승 사람.
+#   Ready: 낮게 웅크려 두 팔을 벌린 발톱 자세 · Attack: 오른팔 → 왼팔로 엇갈려 크게 할퀴어요
+#   Roar (늑대인간 광폭화): 고개를 젖히고 두 팔을 벌려 울부짖어요
+#   Stone (가고일 석화): 무릎을 깊이 굽혀 웅크리고 두 팔로 머리를 감싼 석상 자세 · Unstone: 일어서며 두 팔(날개)을 활짝 펴요
+if "beastmoves" in EXTRAS and "playeranim" in EXTRAS:
+    XA = Vector((1, 0, 0))
+
+    def beast_pose(stage):
+        if stage == "idle":
+            idle_end_pose(); return
+        feet = {"Left": FEET["Left"] + Vector((0.05, -0.2, 0)), "Right": FEET["Right"] + Vector((-0.05, 0.15, 0))}
+        if stage == "crouch":
+            lower_hips(-0.3, feet, dy=0.05); bend("Spine", XA, 28)
+            for s, sx in (("Left", 1), ("Right", -1)):
+                sh = pb[f"{s}Arm"].head.copy()
+                arm(s, sh + Vector((sx * 0.45, -0.25, -0.15)), Vector((sx, 0.3, -0.5)))
+        elif stage in ("slash_r", "slash_l"):
+            right = stage == "slash_r"
+            lower_hips(-0.25, {"Left": FEET["Left"] + Vector((0, -0.4, 0)), "Right": FEET["Right"]}, dy=-0.15)
+            bend("Spine", XA, 22); bend("Spine", UP, -30 if right else 30)
+            for s, sx in (("Left", 1), ("Right", -1)):
+                sh = pb[f"{s}Arm"].head.copy()
+                hit = (s == "Right") == right
+                arm(s, sh + (Vector((-sx * 0.35, -0.7, -0.35)) if hit else Vector((sx * 0.4, 0.1, -0.2))), Vector((sx, 0.3, -0.5)))
+        elif stage == "roar":
+            lower_hips(-0.12, FEET, dy=0.05); bend("Spine", XA, -20); bend("Neck", XA, -35)
+            for s, sx in (("Left", 1), ("Right", -1)):
+                sh = pb[f"{s}Arm"].head.copy()
+                arm(s, sh + Vector((sx * 0.55, -0.1, 0.25)), Vector((sx, 0.3, 0)))
+        elif stage == "stone":
+            lower_hips(-0.55, {"Left": FEET["Left"] + Vector((0, -0.1, 0)), "Right": FEET["Right"] + Vector((0, 0.1, 0))}, dy=0.1)
+            bend("Spine", XA, 40); bend("Neck", XA, 30)
+            for s, sx in (("Left", 1), ("Right", -1)):
+                sh = pb[f"{s}Arm"].head.copy()
+                arm(s, sh + Vector((-sx * 0.1, -0.15, 0.25)), Vector((sx, 0.6, 0.4)))   # 두 팔로 머리를 감싸요
+        else:   # spread: 일어서며 두 팔을 활짝
+            lower_hips(-0.05, FEET); bend("Spine", XA, -10)
+            for s, sx in (("Left", 1), ("Right", -1)):
+                sh = pb[f"{s}Arm"].head.copy()
+                arm(s, sh + Vector((sx * 0.6, 0.1, 0.2)), Vector((sx, 0.3, 0)))
+    make_action("Ready", [(0, "crouch"), (10, "crouch")], beast_pose)
+    make_action("Attack", [(0, "crouch"), (3, "slash_r"), (7, "slash_l"), (12, "slash_l"), (22, "idle")], beast_pose)
+    make_action("Roar", [(0, "idle"), (6, "roar"), (24, "roar"), (32, "idle")], beast_pose)
+    make_action("Stone", [(0, "stone"), (10, "stone")], beast_pose)
+    make_action("Unstone", [(0, "stone"), (6, "spread"), (14, "spread"), (22, "idle")], beast_pose)
 
 # 스켈레톤 (reassemble): 뼈가 무너졌다가 1.5초(45프레임) 끝에 다시 맞춰져 일어나요.
 #   0.3초 만에 무릎부터 꺾여 바닥에 주저앉듯 쌓이고(엉덩이가 거의 땅, 등·목이 앞으로 꺾여 팔은 바닥에 늘어짐) → 덜그럭 떨다가 → 마지막 0.5초에 일어서요

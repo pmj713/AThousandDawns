@@ -65,8 +65,13 @@ namespace AThousandDawns.EditorTools
             ("Orc", EnemyKind.Orc, 3f),
             ("Skeleton", EnemyKind.Skeleton, 3f),
             ("Imp", EnemyKind.Imp, 3.5f),
+            ("Harpy", EnemyKind.Harpy, 4f),
+            ("Werewolf", EnemyKind.Werewolf, 5f),
+            ("Gargoyle", EnemyKind.Gargoyle, 3f),
             ("GoblinChief", EnemyKind.GoblinChief, 3.5f),   // 판타지 고수
             ("Ogre", EnemyKind.Ogre, 2f),                  // 판타지 보스
+            ("DarkElf", EnemyKind.DarkElf, 4f),            // 판타지 고수
+            ("DeathKnight", EnemyKind.DeathKnight, 2.2f),  // 판타지 보스
         };
 
         // 패턴 동작: attack(브레인 AttackName, null이면 다른 동작이 이어 부르는 상태) → state.
@@ -85,12 +90,12 @@ namespace AThousandDawns.EditorTools
         static readonly Dictionary<string, string> IntroClips = new Dictionary<string, string>
         {
             ["Nokrim"] = "Slam", ["Qingzhu"] = "Flash", ["IronFist"] = "Quake", ["Hyegwang"] = "Vajra", ["BloodBuddha"] = "Rain",
-            ["Takrang"] = "WaveCut", ["IronDragon"] = "Roar", ["BloodShadow"] = "ShadowRush", ["HeavenlyDemon"] = "Burst", ["GoblinChief"] = "Roar", ["Ogre"] = "Roar",
+            ["Takrang"] = "WaveCut", ["IronDragon"] = "Roar", ["BloodShadow"] = "ShadowRush", ["HeavenlyDemon"] = "Burst", ["GoblinChief"] = "Roar", ["Ogre"] = "Roar", ["DarkElf"] = "ShadowRush", ["DeathKnight"] = "Summon",
         };
 
         // 차원 겹침 판타지 적: 무협 수묵과 일부러 다르게 — 채색 동판화·스테인드글라스처럼 원색이 살고 윤곽이 굵고 곧아요.
         // 같은 수묵 셰이더에 값만 달리: 채도 끝까지 · 번짐·종이결 거의 없이 · 붓 떨림 없는 굵은 윤곽 · 명암 단계 넷
-        static readonly HashSet<string> FantasyEnemies = new HashSet<string> { "Slime", "Goblin", "GoblinArcher", "GoblinRogue", "GoblinShaman", "Orc", "Skeleton", "Imp", "GoblinChief", "Ogre" };
+        static readonly HashSet<string> FantasyEnemies = new HashSet<string> { "Slime", "Goblin", "GoblinArcher", "GoblinRogue", "GoblinShaman", "Orc", "Skeleton", "Imp", "GoblinChief", "Ogre", "DarkElf", "DeathKnight", "Harpy", "Werewolf", "Gargoyle" };
 
         static Material FantasyLook(Material m)
         {
@@ -113,6 +118,7 @@ namespace AThousandDawns.EditorTools
         {
             ["BloodArcher"] = new Color(1.7f, 1.6f, 1.6f, 1f),
             ["BloodShadow"] = new Color(1.6f, 1.55f, 1.55f, 1f),
+            ["DeathKnight"] = new Color(1.5f, 1.5f, 1.55f, 1f),
             ["BloodShaman"] = new Color(1.7f, 1.6f, 1.6f, 1f),
             ["Cultist"] = new Color(1.75f, 1.55f, 1.55f, 1f),
             ["DemonGuard"] = new Color(1.7f, 1.62f, 1.62f, 1f),
@@ -137,13 +143,15 @@ namespace AThousandDawns.EditorTools
             ["Takrang"] = ("WaveCut", null, "WhirlEnd"),
             ["BloodShadow"] = ("Slash", null, "Lunge"),
             ["GoblinChief"] = ("Throw", "LeapCrouch", "Quake"),
+            ["DarkElf"] = ("Slash", null, "Lunge"),
+            ["DeathKnight"] = ("CurseWave", "LeapCrouch", "Quake"),
         };
 
         // 모델 고유 동작 중 반복하는 것
         static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "ShoulderRun", "Idle", "Run", "Chant", "Rain", "Drag", "Whirl", "Captive" };
 
         // 고유 동작만 쓰는 적 (Generic으로 가져와요)
-        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha", "Pirate", "Harpooner", "Anchor", "Rattan", "WaterGhost", "FlagBearer", "Takrang", "IronDragon", "Cultist", "BloodArcher", "BloodShaman", "DemonGuard", "BloodBomber", "BloodShadow", "HeavenlyDemon", "CaptiveHero", "Slime", "Goblin", "GoblinArcher", "GoblinRogue", "GoblinShaman", "Orc", "Skeleton", "Imp", "GoblinChief", "Ogre" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
+        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha", "Pirate", "Harpooner", "Anchor", "Rattan", "WaterGhost", "FlagBearer", "Takrang", "IronDragon", "Cultist", "BloodArcher", "BloodShaman", "DemonGuard", "BloodBomber", "BloodShadow", "HeavenlyDemon", "CaptiveHero", "Slime", "Goblin", "GoblinArcher", "GoblinRogue", "GoblinShaman", "Orc", "Skeleton", "Imp", "GoblinChief", "Ogre", "DarkElf", "DeathKnight", "Harpy", "Werewolf", "Gargoyle" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
 
         static readonly Dictionary<string, MoveSpec[]> InkEnemyMoves = new Dictionary<string, MoveSpec[]>
         {
@@ -267,6 +275,37 @@ namespace AThousandDawns.EditorTools
             ["BloodBomber"] = new[] { new MoveSpec { attack = "핏덩이", state = "Throw", clips = new[] { "Attack" } } },
             // 혈영검마 (천마총 고수, 장검): 혈영 베기(가로베기) · 혈선(바닥까지 낮췄다 튀어나가 찌르기) · 혈영보(뒤로 순간이동해 세 번 베어 파고들기).
             //   2페이즈 전환 동안엔 ShadowRush 첫 자세(낮게 웅크림)로 버텨요 (InkEnemyAnimator)
+            // 다크 엘프 검사 (판타지 고수, 혈영검마와 같은 패턴): 월광 베기 · 그림자 질주 · 그림자 걸음, 쌍검
+            // 늑대인간 (들개 계열 발톱 베기): 웅크린 발톱 자세로 예고 → 엇갈려 할퀴기. 광폭화 포효는 Roar (InkEnemyAnimator가 WerewolfBrain.Enraged를 보고)
+            ["Werewolf"] = new[]
+            {
+                new MoveSpec { state = "Ready", clips = new[] { "Ready" }, mode = MoveMode.Run },
+                new MoveSpec { state = "Roar", clips = new[] { "Roar" }, mode = MoveMode.Play, seconds = 1f },
+            },
+            // 가고일 (돌발톱 할퀴기 = 기본 Attack): 석화(Stone, 굳어 있는 동안) · 풀림(Unstone, 날개를 펴요)
+            ["Gargoyle"] = new[]
+            {
+                new MoveSpec { state = "Stone", clips = new[] { "Stone" }, mode = MoveMode.Run },
+                new MoveSpec { state = "Unstone", clips = new[] { "Unstone" }, mode = MoveMode.Play, seconds = 0.7f },
+            },
+            ["DarkElf"] = new[]
+            {
+                new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },
+                new MoveSpec { attack = "월광 베기", state = "Slash", clips = new[] { "Slash" } },
+                new MoveSpec { attack = "그림자 질주", state = "Lunge", clips = new[] { "Lunge" } },
+                new MoveSpec { attack = "그림자 걸음", state = "ShadowRush", clips = new[] { "ShadowRush" } },
+            },
+            // 데스나이트 (판타지 보스, 철권 계열): 룬검 2연격 · 저주 내려찍기 · 망령마 돌격. 저주 검기는 CurseWave 신호, 죽은 자의 부름(2페이즈 전환)은 Summon (InkEnemyAnimator)
+            ["DeathKnight"] = new[]
+            {
+                new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },
+                new MoveSpec { attack = "룬검 2연격", state = "Jab", clips = new[] { "Punch2" } },
+                new MoveSpec { attack = "저주 내려찍기", state = "Quake", clips = new[] { "Quake" }, mode = MoveMode.Play },
+                new MoveSpec { state = "ShoulderReady", clips = new[] { "ShoulderReady" }, mode = MoveMode.Run },
+                new MoveSpec { attack = "망령마 돌격", state = "Charge", clips = new[] { "ShoulderRun" }, mode = MoveMode.Run, speed = 1.4f, ready = "ShoulderReady" },
+                new MoveSpec { state = "CurseWave", clips = new[] { "CurseWave" }, mode = MoveMode.Play, seconds = 0.9f },
+                new MoveSpec { state = "Summon", clips = new[] { "Summon" }, mode = MoveMode.Play, seconds = 2f },   // 2페이즈 전환 (IsTransitioning) 동안: 검을 땅에 꽂아요
+            },
             ["BloodShadow"] = new[]
             {
                 new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },   // 최후: 마지막 자세로 무너진 뒤 먹으로 흩어져요 (InkCorpse.Style.Dissolve)
@@ -524,7 +563,7 @@ namespace AThousandDawns.EditorTools
             if (animator == null) animator = go.AddComponent<Animator>();
             animator.runtimeAnimatorController = controller;
             animator.applyRootMotion = false;
-            if (name == "Imp") go.AddComponent<AThousandDawns.Art.InkImpWings>();   // 날갯짓 (LeftWing·RightWing 뼈를 덧돌려요)
+            if (name == "Imp" || name == "Harpy") go.AddComponent<AThousandDawns.Art.InkImpWings>();   // 날갯짓 (LeftWing·RightWing 뼈를 덧돌려요)
             if (name == "HeavenlyDemon") go.AddComponent<AThousandDawns.Art.InkDemonPhaseFx>();   // 마검사 천마: 2페이즈 룬·손 마력, 3페이즈 검 불길
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, $"{folder}/{name}_Ink.prefab");
             Object.DestroyImmediate(go);

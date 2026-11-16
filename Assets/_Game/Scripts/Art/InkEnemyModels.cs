@@ -262,6 +262,12 @@ namespace AThousandDawns.Art
                 return;
             }
 
+            if ((_enraged || _stoned) && !_brain.IsDead)
+            {
+                _aura = _stoned ? new Color(StoneGlow.r, StoneGlow.g, StoneGlow.b, 0.7f) : new Color(EnrageGlow.r, EnrageGlow.g, EnrageGlow.b, 0.45f + 0.15f * Mathf.Sin(Time.time * 6f));
+                ApplyOverlay();
+                return;
+            }
             // 협력한 적 (차원 겹침, EnemyBrain.Allied): 몸 가장자리에 은은한 보랏빛 차원 기운이 숨 쉬어요 (발밑 원·차원 끈은 아트 2의 InkRivalFx).
             //   상태 이상보다 뒤, 정예 기운보다 앞이에요
             if (_brain.Rival != null) _lastRival = _brain.Rival.transform;
@@ -303,7 +309,7 @@ namespace AThousandDawns.Art
             _buddha = brain as BloodBuddhaBrain;
             _rattan = brain as RattanBrain;
             _waterGhost = brain as WaterGhostBrain;
-            foreach (var st in new[] { "Roar", "Ascend", "ShadowRush" })
+            foreach (var st in new[] { "Summon", "Roar", "Ascend", "ShadowRush" })   // 데스나이트는 2페이즈에 검을 꽂아 죽은 자를 불러요 (Summon)
                 if (animator.HasState(0, Animator.StringToHash(st))) { _transitionState = st; break; }
             if (_transitionState != null) _transitioning = Getter<bool>(brain, "IsTransitioning");
             _hasIntro = (brain.Rank == EnemyRank.Boss || brain.Rank == EnemyRank.Master) && animator.HasState(0, Animator.StringToHash("Intro"));
@@ -327,8 +333,11 @@ namespace AThousandDawns.Art
                 EnemyBrain.BossLeapStarted += OnLeapStarted;
                 EnemyBrain.BossLeapLanded += OnLeapLanded;
                 if (brain is OgreBrain) OgreBrain.RockThrown += OnRockThrown;
+                if (brain is DeathKnightBrain) DeathKnightBrain.CurseWave += OnCurseWave;
             }
             _modelRestPos = animator.transform.localPosition;
+            if (brain is WerewolfBrain) { _werewolf = true; WerewolfBrain.Enraged += OnEnraged; }
+            if (brain is GargoyleBrain && animator.HasState(0, Animator.StringToHash("Stone"))) { _gargoyle = true; GargoyleBrain.StoneChanged += OnStoneChanged; }
             if (brain is SkeletonBrain && animator.HasState(0, Animator.StringToHash("Reassemble")))
             {
                 _skeleton = true;
@@ -690,6 +699,30 @@ namespace AThousandDawns.Art
             if (boss == _brain) PlayHeld("Volley", 0.6f);
         }
 
+        // 늑대인간 광폭화: 한 번 울부짖고(Roar) 그 뒤로 몸 가장자리가 붉게 타올라요 · 가고일 석화: 웅크린 석상 자세로 굳었다가(Stone) 풀리면 날개를 펴요(Unstone)
+        bool _werewolf, _gargoyle, _enraged, _stoned;
+        static readonly Color EnrageGlow = new Color(1f, 0.15f, 0.08f), StoneGlow = new Color(0.55f, 0.55f, 0.55f);
+
+        void OnEnraged(WerewolfBrain wolf)
+        {
+            if (wolf != _brain) return;
+            _enraged = true;
+            PlayHeld("Roar", 1f);
+        }
+
+        void OnStoneChanged(GargoyleBrain gargoyle, bool stone)
+        {
+            if (gargoyle != _brain) return;
+            _stoned = stone;
+            if (stone) { Play("Stone", 0.1f); _holdUntil = float.MaxValue; }
+            else { _holdUntil = 0f; PlayHeld("Unstone", 0.7f); }
+        }
+
+        void OnCurseWave(DeathKnightBrain knight, Vector3 dir)
+        {
+            if (knight == _brain) PlayHeld("CurseWave", 0.8f);   // 검을 크게 휘둘러 검기 세 갈래
+        }
+
         void OnRockThrown(OgreBrain ogre)
         {
             if (ogre == _brain) PlayHeld("Volley", 0.6f);
@@ -746,6 +779,8 @@ namespace AThousandDawns.Art
         {
             if (_body != null) _body.Damaged -= OnDamaged;
             if (_skeleton) SkeletonBrain.Reassembling -= OnReassembling;
+            if (_werewolf) WerewolfBrain.Enraged -= OnEnraged;
+            if (_gargoyle) GargoyleBrain.StoneChanged -= OnStoneChanged;
             if (_demon != null) HeavenlyDemonBrain.Cue -= OnDemonCue;
             if (_bossKit)
             {
@@ -753,6 +788,7 @@ namespace AThousandDawns.Art
                 EnemyBrain.BossLeapStarted -= OnLeapStarted;
                 EnemyBrain.BossLeapLanded -= OnLeapLanded;
                 OgreBrain.RockThrown -= OnRockThrown;
+                DeathKnightBrain.CurseWave -= OnCurseWave;
             }
         }
     }
