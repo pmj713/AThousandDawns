@@ -6,8 +6,8 @@ namespace AThousandDawns.Art
 {
     // 판타지 고수 결투장 "무너진 성 안뜰" (씬 루트 Room_FantasyMaster) 분위기 — 가볍게, 카메라가 안뜰 가까이 있을 때만 움직여요.
     //   공중: 연보랏빛 균열 티끌이 안뜰 위로 느리게 떠올라요 (파티클 하나, 낮은 빈도).
-    //   바닥: 1.5~3초마다 아무 자리의 바닥 균열에서 보랏빛이 확 솟았다 스러져요.
-    //   깃발: Room_FantasyMaster 아래 이름에 "Banner"가 든 것 (메인 아트, 피벗이 위쪽 가장자리)을 바람에 살랑이게 해요.
+    //   바닥: 1.5~3초마다 메인 아트 바닥 균열("Crack") 자리(없으면 아무 자리)에서 보랏빛이 확 솟았다 스러져요.
+    //   깃발: Room_FantasyMaster 아래 이름이 "Banner"로 시작하는 것 ("Banner 1"~4, 묶음 "… Banners"는 빼요, 메인 아트, 피벗이 위쪽 가장자리)을 바람에 살랑이게 해요.
     //     메인 아트 꾸미기가 늦게 붙을 수 있어서 처음 20초 동안 2초마다 새 깃발을 찾아요 (이름은 오브젝트마다 한 번만).
     // 그림: EliteFx/Blink (균열).
     public class InkCourtyardFx : MonoBehaviour
@@ -21,6 +21,7 @@ namespace AThousandDawns.Art
 
         readonly HashSet<GameObject> _roots = new HashSet<GameObject>();
         readonly HashSet<Transform> _seen = new HashSet<Transform>();
+        readonly List<Transform> _cracks = new List<Transform>(); // 메인 아트 바닥 균열 ("Crack")
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
         Transform _room;
         Bounds _area;
@@ -79,6 +80,7 @@ namespace AThousandDawns.Art
                 }
                 motes.gameObject.SetActive(false);
                 _seen.Clear();
+                _cracks.Clear();
                 _scan = 0f;
                 _scanUntil = Time.time + 20f;
                 return;
@@ -91,7 +93,9 @@ namespace AThousandDawns.Art
             foreach (var t in _room.GetComponentsInChildren<Transform>(true))
             {
                 if (!_seen.Add(t)) continue;
-                if (t.name.IndexOf("Banner", StringComparison.OrdinalIgnoreCase) >= 0 && t.GetComponent<InkBannerSway>() == null)
+                string n = t.name;
+                if (n == "Crack") _cracks.Add(t); // 바닥 균열 자리
+                if (n.StartsWith("Banner", StringComparison.OrdinalIgnoreCase) && !n.StartsWith("Banners", StringComparison.OrdinalIgnoreCase) && t.GetComponent<InkBannerSway>() == null) // "Banner 1" … (묶음 "… Banners"는 빼요)
                     t.gameObject.AddComponent<InkBannerSway>();
             }
         }
@@ -100,7 +104,11 @@ namespace AThousandDawns.Art
         void Crack()
         {
             if (_rift == null) return;
-            var p = new Vector3(UnityEngine.Random.Range(_area.min.x + 1f, _area.max.x - 1f), 0.03f, UnityEngine.Random.Range(_area.min.z + 1f, _area.max.z - 1f));
+            _cracks.RemoveAll(c => c == null);
+            var p = _cracks.Count > 0 && UnityEngine.Random.value < 0.7f // 메인 아트 바닥 균열이 있으면 대개 그 자리에서
+                ? _cracks[UnityEngine.Random.Range(0, _cracks.Count)].position + new Vector3(UnityEngine.Random.Range(-0.4f, 0.4f), 0f, UnityEngine.Random.Range(-0.4f, 0.4f))
+                : new Vector3(UnityEngine.Random.Range(_area.min.x + 1f, _area.max.x - 1f), 0f, UnityEngine.Random.Range(_area.min.z + 1f, _area.max.z - 1f));
+            p.y = 0.03f;
             var go = new GameObject("Courtyard Crack");
             go.transform.SetParent(transform, false);
             go.transform.position = p;
