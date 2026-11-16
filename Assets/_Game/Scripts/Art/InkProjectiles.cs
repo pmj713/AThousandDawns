@@ -133,6 +133,13 @@ namespace AThousandDawns.Art
                     InkParticles.Embers(visual, Vector3.zero, 0.2f, 1.5f);
                     Trail(visual, Vector3.zero, 0.3f, 0.3f, new Color(0.75f, 0.1f, 0.35f, 0.85f)); return true;
                 case EnemyKind.Ogre: Face(visual, "TempleFx/Rock", 0.6f, true); Trail(visual, Vector3.zero, 0.2f, 0.18f, new Color(0.8f, 0.65f, 0.45f, 0.6f)); return true;
+                // 고수 견제 (약한 판, 2발): 청죽객 죽엽비도 · 철권 마웅 권풍 · 혜광 금강 염주 · 탁랑객 물보라 갈고리 · 혈영검마 혈영 비검 · 고블린 족장 투척 도끼
+                case EnemyKind.Qingzhu: Flat(visual, "MasterFx/LeafKnife", 0.7f, 0f, Color.white); Trail(visual, Vector3.zero, 0.14f, 0.2f, new Color(0.45f, 0.95f, 0.35f, 0.8f)); return true;
+                case EnemyKind.IronFist: Face(visual, "MasterFx/FistWind", 0.8f, false); Trail(visual, Vector3.zero, 0.35f, 0.22f, new Color(0.6f, 0.9f, 1f, 0.6f)); return true;
+                case EnemyKind.Hyegwang: Face(visual, "MasterFx/Bead", 0.5f, false); Trail(visual, Vector3.zero, 0.2f, 0.22f, new Color(1f, 0.82f, 0.25f, 0.85f)); return true;
+                case EnemyKind.Takrang: Flat(visual, "MasterFx/Hook", 0.8f, 0f, Color.white); InkParticles.Frost(visual, Vector3.zero, 0.15f, 1.2f); Trail(visual, new Vector3(0f, 0f, -0.3f), 0.16f, 0.25f, new Color(0.35f, 0.7f, 1f, 0.8f)); return true;
+                case EnemyKind.BloodShadow: Flat(visual, "MasterFx/BloodDagger", 0.65f, 0f, Color.white); Trail(visual, Vector3.zero, 0.16f, 0.25f, new Color(0.95f, 0.1f, 0.15f, 0.85f)); return true;
+                case EnemyKind.GoblinChief: Face(visual, "MasterFx/Axe", 0.6f, true); Trail(visual, Vector3.zero, 0.14f, 0.18f, new Color(0.8f, 0.7f, 0.5f, 0.6f)); return true;
             }
             return false;
         }
