@@ -242,22 +242,15 @@ namespace AThousandDawns.EditorTools
             // 4-2b) 적: 졸개 등 모델이 있는 적은 생길 때 캡슐 대신 리깅 모델로
             DressEnemyModelsInk();
 
-            // 4-3) 지역 색: 마을은 색을 다 넣고(1), 그 밖 죽림은 마을의 90% (0.9). 진행할수록 지역마다 낮춰 갈 계획
-            var colorZones = new GameObject("Ink Color Zones").AddComponent<AThousandDawns.Art.InkColorZones>();
-            colorZones.SetZones(0.9f, new[]
-            {
-                new AThousandDawns.Art.InkColorZones.Zone
-                {
-                    name = "마을", center = VillageCenter, size = VillageSize + new Vector2(8f, 8f), amount = 1f,
-                },
-            });
+            // 4-3) 지역 색: 채색 전환으로 늘 원래 색 전부 (지역마다 색을 빼던 처리는 걷어 냈어요)
+            new GameObject("Ink Color Zones").AddComponent<AThousandDawns.Art.InkColorZones>();
 
-            // 5) 한지색 배경과 원근 안개
+            // 5) 하늘빛 배경과 원근 안개 (채색)
             var cam = Camera.main;
             if (cam != null)
             {
                 cam.clearFlags = CameraClearFlags.SolidColor;
-                ApplyPaperAtmosphere(cam);
+                ApplyColorAtmosphere(cam);
             }
         }
 

@@ -76,6 +76,10 @@ namespace AThousandDawns.EditorTools
             var stoneMat = GetInkTriplanar("Ink3D_Stone", "Tex_Stone", 1.5f, 2.5f);
             var woodMat = GetInkTriplanar("Ink3D_Wood", "Tex_Wood", 1f, 2f);
             var bambooMat = GetInkTriplanar("Ink3D_Bamboo", "Tex_BambooStalk", 1.2f, 2f);
+            // 채색 전환: 회색 결 텍스처에 재질 색을 입혀요 (InkTriplanar가 _BaseColor로 칠해요). 이 값들은 코드가 정해요
+            floorMat.SetColor("_BaseColor", new Color(0.86f, 0.76f, 0.58f, 1f));   // 다져진 황토 마당
+            stoneMat.SetColor("_BaseColor", new Color(0.8f, 0.77f, 0.7f, 1f));     // 따뜻한 화강암
+            woodMat.SetColor("_BaseColor", new Color(0.66f, 0.45f, 0.3f, 1f));     // 밤색 나무
             // 수묵 대나무 그림처럼: 줄기는 푸른 기가 도는 짙은 먹색 한 획, 마디는 하얀 틈(버텍스 색),
             // 바닥은 한지처럼 밝게 띄워 진한 줄기·잎과 대비를 줘요. 먼 숲은 한지색 안개(SetupEnvCameraAndLight)로 옅어져요.
             // 줄기 메시는 발밑이 원점이고 법선이 부드러워서 외곽선은 법선 방향으로 부풀려요.

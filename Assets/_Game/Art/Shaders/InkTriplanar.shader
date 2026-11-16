@@ -1,6 +1,6 @@
-// 대충 만든 3D 구조물(상자·원기둥 등)용 수묵 셰이더 (URP).
-// 텍스처를 월드 기준 세 방향(위·앞·옆)에서 투영해 UV 없이 입히고, 그 위에 InkCharacter와 같은
-// 먹 농담 단계·번짐·가장자리 먹·붓선 외곽선을 얹어요. 상자를 늘려도 텍스처가 늘어나지 않아요.
+// 대충 만든 3D 구조물(상자·원기둥 등)용 채색 툰 셰이더 (URP). 이름은 예전 수묵 셰이더 그대로예요.
+// 텍스처를 월드 기준 세 방향(위·앞·옆)에서 투영해 UV 없이 입히고(상자를 늘려도 결이 안 늘어나요), 회색 결에 재질 색을 입혀
+// 빛 받는 면·그늘 두 단계로 칠해요. 고른 가는 윤곽선. 수묵 시절 속성(채도·종이·번짐·마른 붓)은 남아 있지만 이제 쓰지 않아요
 Shader "AThousandDawns/InkTriplanar"
 {
     Properties
@@ -164,38 +164,17 @@ Shader "AThousandDawns/InkTriplanar"
                 float3 v = normalize(GetWorldSpaceViewDir(input.positionWS));
                 Light light = GetMainLight(TransformWorldToShadowCoord(input.positionWS));
 
-                float lit = dot(n, light.direction) * 0.5 + 0.5;
-                lit *= lerp(1.0 - _ShadowInk, 1.0, light.shadowAttenuation);
-
-                float wash = Fbm(input.positionWS * _WashNoiseScale);
-                float t = saturate(lit + (wash - 0.5) * _WashNoiseStrength);
-
-                float steps = max(_Bands - 1.0, 1.0);
-                float x = t * steps;
-                float fl = floor(x);
-                float tone = saturate((fl + smoothstep(0.5 - _BandSoftness, 0.5 + _BandSoftness, x - fl)) / steps);
-
-                float rim = pow(1.0 - saturate(dot(n, v)), _RimPower) * _RimInk;
-                tone *= 1.0 - rim;
-
-                // 텍스처: 채도를 낮추고 종이색 쪽으로 조금 띄워요. 텍스처의 어두운 결은 그대로 먹으로 남아요
-                half3 albedo = SampleTriplanar(input.positionWS, n) * _BaseColor.rgb;
-                albedo = lerp(Luminance(albedo).xxx, albedo, lerp(_Saturation, 1.0, _InkColorAmount));
-                albedo = lerp(albedo, _PaperColor.rgb, _PaperLift);
-                half3 color = lerp(_InkColor.rgb, albedo, tone * (1.0 - input.vertexInk.x));
-
-                // 마른 붓: 세로로 길게 늘인 노이즈로 옅은 결, 낮은 주파수 노이즈로 군데군데 옅은 얼룩 (월드 기준이라 물체마다 달라요)
-                float3 p = input.positionWS;
-                float streak = ValueNoise(float3(p.x * _StreakScale, p.y * _StreakScale * 0.08, p.z * _StreakScale));
-                float patch = ValueNoise(p * _PatchScale + 13.7);
-                half dry = saturate(smoothstep(0.5, 0.85, streak) * _StreakLight + smoothstep(0.45, 0.8, patch) * _PatchLight);
-                color = lerp(color, _PaperColor.rgb, dry * 0.7);
-
-                color = lerp(color, _PaperColor.rgb, input.vertexInk.y);
-
-                float grain = Hash13(float3(floor(input.positionCS.xy * 0.5), 7.0));
-                color *= 1.0 - (grain - 0.5) * _PaperGrain;
-                color = lerp(color, _PaperColor.rgb, _InkEnvFade * 0.85);
+                // 채색 툰 (수묵 걷어 냄): 회색 결 텍스처에 재질 색(_BaseColor)을 입혀요 (텍스처 밝기 0.5 근처가 재질 색 그대로).
+                //   빛 받는 면·그늘 두 단계, 그늘은 푸르스름하게, 하늘빛 환경광을 조금. 버텍스 색 빨강(대나무 마디)은 짙게, 초록 틈은 밝게
+                half3 tex = SampleTriplanar(input.positionWS, n);
+                half3 albedo = saturate(tex * 1.9) * _BaseColor.rgb;
+                float ndl = dot(n, light.direction);
+                float lightAmt = smoothstep(-0.1, 0.25, ndl) * lerp(0.4, 1.0, light.shadowAttenuation);
+                half3 lightCol = lerp(half3(1, 1, 1), light.color, 0.5);
+                half3 color = albedo * lerp(half3(0.6, 0.62, 0.76), lightCol * 1.05, lightAmt);
+                color += albedo * SampleSH(n) * 0.25;
+                color = lerp(color, color * 0.35, input.vertexInk.x);
+                color = lerp(color, albedo * 1.2, input.vertexInk.y);
 
                 color = MixFog(color, input.fogFactor);
                 return half4(color, 1.0);
@@ -242,7 +221,7 @@ Shader "AThousandDawns/InkTriplanar"
                 fromCenter = normalize(fromCenter + 1e-5);
                 float2 dir = normalize(lerp(fromNormal, fromCenter, _OutlineFromCenter) + 1e-5);
 
-                float brush = lerp(1.0, ValueNoise(positionWS * _OutlineNoiseScale) * 1.8, _OutlineJitter);
+                float brush = 0.5;   // 채색 전환: 붓 떨림 없는 고른 가는 윤곽
                 positionCS.xy += dir * (_OutlineWidth * brush * 2.0 / _ScreenParams.xy) * positionCS.w;
 
                 output.positionCS = positionCS;
@@ -252,7 +231,7 @@ Shader "AThousandDawns/InkTriplanar"
 
             half4 Frag(Varyings input) : SV_Target
             {
-                return half4(MixFog(lerp(_InkColor.rgb, _PaperColor.rgb, _InkEnvFade * 0.6), input.fogFactor), 1.0);
+                return half4(MixFog(half3(0.1, 0.09, 0.1), input.fogFactor), 1.0);   // 고른 짙은 윤곽
             }
             ENDHLSL
         }

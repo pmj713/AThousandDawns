@@ -62,35 +62,20 @@ namespace AThousandDawns.EditorTools
             cam.transform.SetPositionAndRotation(CameraOffset, Quaternion.Euler(CameraPitch, 0f, 0f));
             cam.fieldOfView = 40f;
             cam.clearFlags = CameraClearFlags.SolidColor;
-            ApplyPaperAtmosphere(cam);
+            ApplyColorAtmosphere(cam);
         }
 
-        const string InkPaperMaterialPath = "Assets/_Game/Art/PostFX/InkPaperScreen.mat";
-
-        // 한지색 배경 + 원근 안개 + 화면 전체 한지 질감 후처리 (카메라 위치는 그대로)
-        static void ApplyPaperAtmosphere(Camera cam)
+        // 채색 전환: 하늘빛 배경, 안개 없음 (카메라 위치는 그대로).
+        // 수묵 시절의 한지색 배경·화면 전체 한지 질감 후처리(InkPaperPostFX)는 걷어 냈어요 — 예전 씬에 붙어 있으면 떼요
+        static void ApplyColorAtmosphere(Camera cam)
         {
-            ColorUtility.TryParseHtmlString("#E9E4D8", out Color paper);
-            cam.backgroundColor = paper;
-
-            // 화면 전체 수묵 질감: 이 카메라에만 붙는 후처리 (재질 값은 인스펙터에서 조절해도 씬을 다시 만들 때 남아요)
-            var paperMat = AssetDatabase.LoadAssetAtPath<Material>(InkPaperMaterialPath);
-            if (paperMat == null)
-            {
-                EnsureFolder("Assets/_Game/Art/PostFX");
-                paperMat = new Material(Shader.Find("AThousandDawns/InkPaperScreen"));
-                AssetDatabase.CreateAsset(paperMat, InkPaperMaterialPath);
-            }
+            var haze = new Color(0.72f, 0.8f, 0.84f);
+            cam.backgroundColor = haze;
             var fx = cam.GetComponent<AThousandDawns.Art.InkPaperPostFX>();
-            if (fx == null) fx = cam.gameObject.AddComponent<AThousandDawns.Art.InkPaperPostFX>();
-            SetRef(fx, "material", paperMat);
+            if (fx != null) Object.DestroyImmediate(fx);
 
-            // 수묵화처럼 먼 것일수록 한지색 안개로 옅어져요. 방 가운데까지(카메라에서 약 16)는 거의 그대로, 벽 너머 숲부터 옅어져요
-            RenderSettings.fog = true;
-            RenderSettings.fogMode = FogMode.Linear;
-            RenderSettings.fogColor = paper;
-            RenderSettings.fogStartDistance = 17f;
-            RenderSettings.fogEndDistance = 40f;
+            // 원근 안개는 꺼요: 위에서 내려다보는 화면이라 벽 너머 풍경까지 안개에 묻혀 색이 빠져 보였어요
+            RenderSettings.fog = false;
         }
 
         // Prototype_Run의 층 방(CombatSize 20×12, 네 변 가운데 폭 3 문)과 같은 자리에 2D 그림을 둬요.
