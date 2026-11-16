@@ -96,6 +96,7 @@ namespace AThousandDawns.Tests
             HeavenlyDemonBrain boss = null;
             PlayerController player = null;
             yield return Spawn((b, p) => { boss = b; player = p; }, 5f);
+            int kitBefore = EnemyBrain.BossKitOverride;
             EnemyBrain.BossKitOverride = 0;
             var seen = new System.Collections.Generic.HashSet<string>();
             int blinks = 0, runes = 0, fires = 0;
@@ -140,7 +141,7 @@ namespace AThousandDawns.Tests
             finally
             {
                 HeavenlyDemonBrain.Cue -= cue;
-                EnemyBrain.BossKitOverride = -1;
+                EnemyBrain.BossKitOverride = kitBefore;
             }
         }
 
