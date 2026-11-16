@@ -121,7 +121,7 @@ namespace AThousandDawns.EditorTools
             ["Qingzhu"] = new Color(0.8f, 0.98f, 0.84f, 1f),
         };
 
-        // 보스 공통 견제기·도약에 빌려 쓸 동작: 견제(던지기·쏘기) · 도약 웅크림 · 착지 내려찍기
+        // 보스·고수 공통 견제기·도약에 빌려 쓸 동작: 견제(던지기·쏘기) · 도약 웅크림(없으면 대기) · 착지 내려찍기
         static readonly Dictionary<string, (string volley, string crouch, string land)> BossKitClips = new Dictionary<string, (string, string, string)>
         {
             ["Nokrim"] = ("Sweep", "ChargeReady", "Slam"),
@@ -129,6 +129,14 @@ namespace AThousandDawns.EditorTools
             ["IronDragon"] = ("ChainThrow", null, "MeteorSlam"),
             ["HeavenlyDemon"] = ("Grip", null, "DemonSweep"),
             ["Ogre"] = ("Throw", "LeapCrouch", "Quake"),
+            // 고수 (약한 판): 청죽객 죽엽비도·청죽 경공 · 철권 마웅 권풍·철권 낙하 · 혜광 금강 염주·나한 도약 · 탁랑객 물보라 갈고리·탁랑 뛰어들기
+            //   · 혈영검마 혈영 비검·혈영 강하 · 고블린 족장 투척 도끼·족장 덮치기
+            ["Qingzhu"] = ("Flash", null, "Chop"),
+            ["IronFist"] = ("Punch2", "ShoulderReady", "Quake"),
+            ["Hyegwang"] = ("Beads", null, "Vajra"),
+            ["Takrang"] = ("WaveCut", null, "WhirlEnd"),
+            ["BloodShadow"] = ("Slash", null, "Lunge"),
+            ["GoblinChief"] = ("Throw", "LeapCrouch", "Quake"),
         };
 
         // 모델 고유 동작 중 반복하는 것

@@ -320,7 +320,7 @@ namespace AThousandDawns.Art
             if (brain.Rank == EnemyRank.Boss || brain.Rank == EnemyRank.Master) flinchAngle = 5f;   // 고수·보스는 덩치가 커서 살짝만 움찔해요
             _hasStatue = brain.Kind == EnemyKind.Arhat && animator.HasState(0, Animator.StringToHash("Statue")) && animator.HasState(0, Animator.StringToHash("Wake"));
             _hasSpawn = !_hasIntro && !_hasStatue && animator.HasState(0, Animator.StringToHash("Spawn"));
-            if (brain.Rank == EnemyRank.Boss)   // 보스 공통 견제기·도약 (EnemyBrain.BossKit)
+            if (brain.Rank == EnemyRank.Boss || brain.Rank == EnemyRank.Master)   // 보스·고수 공통 견제기·도약 (EnemyBrain.BossKit, 고수는 약한 판)
             {
                 _bossKit = true;
                 EnemyBrain.BossVolley += OnBossVolley;
