@@ -56,36 +56,8 @@ namespace AThousandDawns.EditorTools
             for (int k = 0; k < 7; k++, seed++)   // 보랏빛 차원 균열
                 GroundCrack(root, c + new Vector3(R(-hx + 2f, hx - 2f), 0f, R(-hz + 2f, hz - 2f)), R(0f, 180f), R(1.2f, 2.4f), rift);
 
-            // 둘레 성벽: 돌벽 그림은 끄고(기와 지붕도 지워요) 총안 위턱이 있는 사암 성벽을 그 자리에
-            foreach (var wall in room.Cast<Transform>().Where(t => t.name.StartsWith("Stone_")).ToList())
-            {
-                if (wall.GetComponent<Renderer>() is Renderer wr) wr.enabled = false;
-                foreach (var cap in wall.Cast<Transform>().Where(t => t.name.StartsWith("RoofCap")).ToList()) Object.DestroyImmediate(cap.gameObject);
-                var s = wall.lossyScale;
-                bool alongX = s.x >= s.z;
-                float len = alongX ? s.x : s.z, h = s.y, thick = alongX ? s.z : s.x;
-                bool south = wall.name == "Stone_S";   // 카메라 쪽: 낮게 (안뜰을 가리지 않게)
-                var w = new GameObject($"Rampart ({wall.name})").transform;
-                w.SetParent(root, false);
-                w.position = new Vector3(wall.position.x, 0f, wall.position.z);
-                w.rotation = Quaternion.Euler(0f, alongX ? 0f : 90f, 0f);
-                // 무너진 자리 하나 (가운데 문 자리는 피해서)
-                float breach = (rng.NextDouble() < 0.5 ? -1f : 1f) * R(len * 0.18f, len * 0.36f);
-                int blocks = Mathf.RoundToInt(len / 1.2f);
-                for (int k = 0; k < blocks; k++)
-                {
-                    float x = -len * 0.5f + (k + 0.5f) * len / blocks;
-                    float drop = Mathf.Abs(x - breach) < 1.3f ? R(0.45f, 0.75f) : 0f;   // 무너진 자리는 낮아요
-                    float bh = (south ? h * 0.65f : h) * (1f - drop);
-                    Block(w, "Wall Block", PrimitiveType.Cube, new Vector3(x, bh * 0.5f, 0f), new Vector3(len / blocks + 0.02f, bh, thick + 0.1f), Quaternion.identity, sandstone);
-                    if (drop == 0f && !south)
-                        Block(w, "Merlon", PrimitiveType.Cube, new Vector3(x - len / blocks * 0.25f, bh + 0.25f, 0f), new Vector3(len / blocks * 0.45f, 0.5f, thick + 0.12f), Quaternion.identity, sandstone);
-                    if (drop > 0f)
-                        for (int r = 0; r < 3; r++)
-                            Rock(w, "Rubble", new Vector3(x + R(-0.5f, 0.5f), 0f, R(-0.9f, 0.9f)), R(0.2f, 0.35f), seed++, R(0f, 360f), sandstone, false);
-                }
-                Block(w, "Wall Moss", PrimitiveType.Cube, new Vector3(R(-len * 0.3f, len * 0.3f), 0.1f, -thick * 0.5f - 0.03f), new Vector3(1.2f, 0.2f, 0.04f), Quaternion.identity, moss);
-            }
+            // 둘레 성벽: 돌벽 그림은 끄고(기와 지붕도 지워요) 총안 위턱이 있는 성벽을 그 자리에 (PrototypeSceneBuilder.InkFantasyBoss.cs)
+            CastleRamparts(room, root, sandstone, moss, rng, ref seed);
 
             // 북쪽 가운데 부서진 고딕 아치 문 (벽 안쪽에 붙여서)
             GothicArch(root, c + new Vector3(0f, 0f, hz - 0.5f), 0f, 4, sandstone);
