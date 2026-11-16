@@ -37,6 +37,9 @@ namespace AThousandDawns.EditorTools
             var bag = player.GetComponent<AThousandDawns.Art.InkPlayerBag>();
             if (bag == null) bag = player.gameObject.AddComponent<AThousandDawns.Art.InkPlayerBag>();
             bag.Setup(GetPouchMesh(), GetInkMaterial("Ink_Bag_Hemp", "#8A7656", 0.35f), GetPouchCordMesh(), GetInkMaterial("Ink_Bag_Cord", "#3A2D22", 0.3f));
+
+            // 혼종 세트 기운 (세트 3개를 다 맞추면 몸 가장자리에 세트 색)
+            if (player.GetComponent<AThousandDawns.Art.InkPlayerHybridAura>() == null) player.gameObject.AddComponent<AThousandDawns.Art.InkPlayerHybridAura>();
         }
     }
 }
