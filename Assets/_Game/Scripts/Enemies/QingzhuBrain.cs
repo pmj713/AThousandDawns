@@ -284,7 +284,7 @@ namespace AThousandDawns.Enemies
             _strikesDone++;
             _lungeLeft = _comboLunge;
             if (_strikesDone > 1) Telegraph.Hide();
-            if (HitShapes.InSector(transform.position, AimDirection, _comboRadius, _comboAngle, Player.transform.position, PlayerRadius))
+            if (SwingHit(transform.position, AimDirection, _comboRadius, _comboAngle))
                 HitPlayer(_comboRatio); // 피격 무적 0.6초라 3번 다 맞지는 않아요
         }
 

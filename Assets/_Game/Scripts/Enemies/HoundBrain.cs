@@ -5,7 +5,7 @@ namespace AThousandDawns.Enemies
 {
     // 들개: 빠르게 플레이어 옆·뒤로 돌아 들어와 2칸 뛰어들어 물고, 옆으로 1.5칸 빠져요. 착지 순간 0.5초가 빈틈.
     // 2~3마리가 같이 나와요.
-    public class HoundBrain : LeapBrain // 고블린 단검꾼이 이어받아요
+    public class HoundBrain : LeapBrain // 고블린 단검꾼 · 하피 · 늑대인간이 이어받아요
     {
         float _hopDistance, _hopTime, _flankAngle, _hopRemaining, _flankSign = 1f;
         Vector3 _hopDirection;

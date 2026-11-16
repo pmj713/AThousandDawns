@@ -244,7 +244,7 @@ namespace AThousandDawns.Enemies
         {
             _jabsDone++;
             _lungeLeft = _jabLunge;
-            if (HitShapes.InSector(transform.position, AimDirection, _jabRadius, _jabAngle, Player.transform.position, PlayerRadius))
+            if (SwingHit(transform.position, AimDirection, _jabRadius, _jabAngle))
                 HitPlayer(_jabRatio, HitKnockback);
         }
 

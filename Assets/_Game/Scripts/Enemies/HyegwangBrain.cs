@@ -232,7 +232,7 @@ namespace AThousandDawns.Enemies
             }
             if (_lungeLeft > 0f) return;
             _sweepHitDone = true;
-            if (HitShapes.InSector(transform.position, AimDirection, _sweepRadius, _sweepAngle, Player.transform.position, PlayerRadius))
+            if (SwingHit(transform.position, AimDirection, _sweepRadius, _sweepAngle))
                 HitPlayer(_sweepRatio, HitKnockback);
         }
 

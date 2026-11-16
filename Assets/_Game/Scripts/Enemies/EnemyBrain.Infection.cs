@@ -40,13 +40,13 @@ namespace AThousandDawns.Enemies
                 return;
             }
             EliteTrait trait = HasTrait(EliteTrait.Gyeonggong) ? EliteTrait.Gyeonggong : HasTrait(EliteTrait.Fireball) ? EliteTrait.Fireball : HasTrait(EliteTrait.Blink) ? EliteTrait.Blink : EliteTrait.None;
-            if (trait == EliteTrait.None || !_awake || Player == null || Player.IsDead || Attack.IsAttacking || IsStunned) return;
+            if (trait == EliteTrait.None || !_awake || Player == null || Player.IsDead) return;
             float interval = trait == EliteTrait.Gyeonggong ? GameConfig.GetOptional("elite.gyeonggong_interval", 4f)
                 : trait == EliteTrait.Fireball ? GameConfig.GetOptional("elite.fireball_interval", 5f)
                 : GameConfig.GetOptional("elite.blink_interval", 6f);
             if (_infectionTimer < 0f) _infectionTimer = interval * Random.Range(0.4f, 0.8f); // 처음엔 조금 일찍, 정예마다 엇갈리게
-            _infectionTimer -= dt;
-            if (_infectionTimer > 0f) return;
+            if (_infectionTimer > 0f) _infectionTimer = Mathf.Max(0f, _infectionTimer - dt); // 공격 중에도 줄어요 (붙어서 계속 휘두르면 영영 못 쓰던 것)
+            if (_infectionTimer > 0f || Attack.IsAttacking || IsStunned) return; // 쓰는 건 공격이 끝난 뒤
             _infectionTimer = interval;
 
             Vector3 to = ToPlayer();
