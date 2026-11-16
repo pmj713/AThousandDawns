@@ -4241,6 +4241,10 @@ MonoBehaviour:
     value: 6
     unit: 
     note: "\uC7A5\uAC15 \uC218\uCC44 \uBCF4\uC2A4 \uACA9\uD30C \uB4A4 \uACBD\uB9E5\uB3C4 \uAC00\uB85C"
+  - key: meridian.height_after_boss3
+    value: 6
+    unit: 
+    note: "\uC7A5\uAC15 \uC218\uCC44 \uBCF4\uC2A4 \uACA9\uD30C \uB4A4 \uACBD\uB9E5\uB3C4 \uC138\uB85C"
   - key: equip.enabled
     value: 1
     unit: 
@@ -4589,10 +4593,142 @@ MonoBehaviour:
     value: 2
     unit: 
     note: "\uBC29 \uC608\uC0B0 \uC810\uC218: \uACE0\uBE14\uB9B0 \uC8FC\uC220\uC0AC"
-  - key: meridian.height_after_boss3
-    value: 6
+  - key: fantasy.rivalry
+    value: 1
     unit: 
-    note: "\uC7A5\uAC15 \uC218\uCC44 \uBCF4\uC2A4 \uACA9\uD30C \uB4A4 \uACBD\uB9E5\uB3C4 \uC138\uB85C"
+    note: "\uC801\uB07C\uB9AC \uC2F8\uC6C0: \uBB34\uD611 \uC801\uACFC \uD310\uD0C0\uC9C0 \uC801\uC774 \uC11C\uB85C \uACF5\uACA9 (0\uC774\uBA74 \uB054)"
+  - key: fantasy.rival_radius
+    value: 6
+    unit: cell
+    note: "\uB2E4\uB978 \uC9C4\uC601 \uC801\uC744 \uB178\uB9AC\uB294 \uAC70\uB9AC (\uD50C\uB808\uC774\uC5B4\uBCF4\uB2E4 \uAC00\uAE4C\uC6B8 \uB54C\uB9CC)"
+  - key: fantasy.rival_melee_reach
+    value: 1.5
+    unit: cell
+    note: "\uC801\uB07C\uB9AC \uC2F8\uC6B8 \uB54C \uADFC\uC811 \uACF5\uACA9\uC774 \uB2FF\uB294 \uCD94\uAC00 \uAC70\uB9AC (\uC0AC\uAC70\uB9AC +)"
+  - key: fantasy.rival_ratio
+    value: 1
+    unit: 
+    note: "\uC801\uB07C\uB9AC \uC2F8\uC6B8 \uB54C \uD53C\uD574 (\uACF5\uACA9\uB825 \uB300\uBE44)"
+  - key: fantasy.rival_kill_xp
+    value: 0.5
+    unit: 
+    note: "\uB2E4\uB978 \uC801\uC774 \uC4F0\uB7EC\uB728\uB9B0 \uC801\uC758 \uC218\uB828\uCE58 \uBE44\uC728"
+  - key: fantasy.ally_base
+    value: 0.1
+    unit: 
+    note: "\uD611\uB825 \uD655\uB960 \uAE30\uBCF8 (\uD611\uB825\uD55C \uC801\uC740 \uB2E4\uB978 \uC9C4\uC601\uACFC \uC2F8\uC6B0\uC9C0 \uC54A\uC544\uC694)"
+  - key: fantasy.ally_per_region
+    value: 0.2
+    unit: 
+    note: "\uD611\uB825 \uD655\uB960: \uC9C0\uC5ED\uB9C8\uB2E4 +"
+  - key: fantasy.ally_per_floor
+    value: 0.05
+    unit: 
+    note: "\uD611\uB825 \uD655\uB960: 2\uCE35\uBD80\uD130 \uCE35\uB9C8\uB2E4 +"
+  - key: fantasy.ally_per_karma
+    value: 0.05
+    unit: 
+    note: "\uD611\uB825 \uD655\uB960: \uC5C5\uBCF4 \uB2E8\uACC4\uB9C8\uB2E4 +"
+  - key: fantasy.ally_max
+    value: 0.9
+    unit: 
+    note: "\uD611\uB825 \uD655\uB960 \uCD5C\uB300"
+  - key: fantasy.infection
+    value: 1
+    unit: 
+    note: "\uCC28\uC6D0 \uAC10\uC5FC \uC815\uC608: \uD310\uD0C0\uC9C0 \uC801\uC740 \uBB34\uACF5 (\uACBD\uACF5), \uBB34\uD611 \uC801\uC740 \uB9C8\uBC95 (\uD654\uC5FC\uAD6C \xB7 \uC21C\uAC04\uC774\uB3D9) \uD2B9\uC131\uC774 \uB098\uC640\uC694 (0\uC774\uBA74 \uB054)"
+  - key: elite.gyeonggong_interval
+    value: 4
+    unit: s
+    note: "\uCC28\uC6D0 \uAC10\uC5FC \uACBD\uACF5: \uB0B4\uB2EC\uB9AC\uB294 \uAC04\uACA9"
+  - key: elite.gyeonggong_distance
+    value: 4
+    unit: cell
+    note: "\uCC28\uC6D0 \uAC10\uC5FC \uACBD\uACF5: \uB0B4\uB2EC\uB9AC\uB294 \uAC70\uB9AC (\uCD5C\uB300)"
+  - key: elite.gyeonggong_speed
+    value: 18
+    unit: cell/s
+    note: "\uCC28\uC6D0 \uAC10\uC5FC \uACBD\uACF5: \uB0B4\uB2EC\uB9AC\uB294 \uC18D\uB3C4"
+  - key: elite.fireball_interval
+    value: 5
+    unit: s
+    note: "\uCC28\uC6D0 \uAC10\uC5FC \uD654\uC5FC\uAD6C: \uB358\uC9C0\uB294 \uAC04\uACA9"
+  - key: elite.fireball_range
+    value: 10
+    unit: cell
+    note: "\uCC28\uC6D0 \uAC10\uC5FC \uD654\uC5FC\uAD6C: \uB358\uC9C0\uB294 \uAC70\uB9AC"
+  - key: elite.fireball_radius
+    value: 1.3
+    unit: cell
+    note: "\uCC28\uC6D0 \uAC10\uC5FC \uD654\uC5FC\uAD6C: \uD3ED\uBC1C \uBC18\uACBD"
+  - key: elite.fireball_fuse
+    value: 1
+    unit: s
+    note: "\uCC28\uC6D0 \uAC10\uC5FC \uD654\uC5FC\uAD6C: \uC608\uACE0 (\uB5A8\uC5B4\uC9C0\uAE30\uAE4C\uC9C0)"
+  - key: elite.fireball_ratio
+    value: 0.8
+    unit: 
+    note: "\uCC28\uC6D0 \uAC10\uC5FC \uD654\uC5FC\uAD6C: \uD53C\uD574 (\uACF5\uACA9\uB825 \uB300\uBE44)"
+  - key: elite.fireball_fire_life
+    value: 2.5
+    unit: s
+    note: "\uCC28\uC6D0 \uAC10\uC5FC \uD654\uC5FC\uAD6C: \uB0A8\uB294 \uBD88\uAE38 \uC2DC\uAC04"
+  - key: elite.blink_interval
+    value: 6
+    unit: s
+    note: "\uCC28\uC6D0 \uAC10\uC5FC \uC21C\uAC04\uC774\uB3D9: \uAC04\uACA9"
+  - key: elite.blink_distance
+    value: 2.5
+    unit: cell
+    note: "\uCC28\uC6D0 \uAC10\uC5FC \uC21C\uAC04\uC774\uB3D9: \uD50C\uB808\uC774\uC5B4 \uACC1 \uAC70\uB9AC"
+  - key: hybrid.blazing.t1
+    value: 0.3
+    unit: 
+    note: "\uC774\uACC4 \uC138\uD2B8 \uC5C5\uD654 (#\uC5F4\uC591 \uC774\uACC4 2\uAC1C): \uD654\uC0C1 \uD53C\uD574 +"
+  - key: hybrid.blazing.t2
+    value: 1
+    unit: 
+    note: "\uC5C5\uD654 (3\uAC1C): \uD654\uC0C1 \uCD5C\uB300 \uC911\uCCA9 +"
+  - key: hybrid.frostmana.t1
+    value: 1
+    unit: s
+    note: "\uC774\uACC4 \uC138\uD2B8 \uC11C\uB9AC \uB9C8\uB098 (#\uBE59\uBC31 \uC774\uACC4 2\uAC1C): \uB454\uD654 \uC9C0\uC18D +"
+  - key: hybrid.frostmana.t2
+    value: 0.5
+    unit: s
+    note: "\uC11C\uB9AC \uB9C8\uB098 (3\uAC1C): \uBE59\uACB0 \uC2DC\uAC04 +"
+  - key: hybrid.thunderrune.t1
+    value: 1
+    unit: 
+    note: "\uC774\uACC4 \uC138\uD2B8 \uB1CC\uBB38 (#\uB1CC\uC815 \uC774\uACC4 2\uAC1C): \uC5F0\uC1C4 \uBC88\uAC1C \uB300\uC0C1 +"
+  - key: hybrid.thunderrune.t2
+    value: 0.4
+    unit: 
+    note: "\uB1CC\uBB38 (3\uAC1C): \uBC29\uC804 \uD53C\uD574 +"
+  - key: hybrid.spellblade.t1
+    value: 0.1
+    unit: 
+    note: "\uC774\uACC4 \uC138\uD2B8 \uB9C8\uAC80 (#\uAC15\uAE30 \uC774\uACC4 2\uAC1C): \uACF5\uACA9 \uC18D\uB3C4 +"
+  - key: hybrid.spellblade.t2
+    value: 0.1
+    unit: 
+    note: "\uB9C8\uAC80 (3\uAC1C): \uBAA8\uB4E0 \uD53C\uD574 +"
+  - key: hybrid.mithril.t1
+    value: 0.08
+    unit: 
+    note: "\uC774\uACC4 \uC138\uD2B8 \uBBF8\uC2A4\uB9B4 \uC218\uD638 (#\uAE08\uAC15 \uC774\uACC4 2\uAC1C): \uBC1B\uB294 \uD53C\uD574 \u2212"
+  - key: hybrid.mithril.t2
+    value: 2
+    unit: 
+    note: "\uBBF8\uC2A4\uB9B4 \uC218\uD638 (3\uAC1C): \uAC15\uC778\uD568 +"
+  - key: hybrid.elvenstep.t1
+    value: 0.1
+    unit: 
+    note: "\uC774\uACC4 \uC138\uD2B8 \uC5D8\uD504 \uBC1C\uAC78\uC74C (#\uACBD\uACF5 \uC774\uACC4 2\uAC1C): \uC774\uB3D9\uC18D\uB3C4 +"
+  - key: hybrid.elvenstep.t2
+    value: 1
+    unit: 
+    note: "\uC5D8\uD504 \uBC1C\uAC78\uC74C (3\uAC1C): \uB300\uC2DC +"
   - key: cultist.hp
     value: 39
     unit: 

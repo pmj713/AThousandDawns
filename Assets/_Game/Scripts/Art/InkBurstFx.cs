@@ -90,7 +90,7 @@ namespace AThousandDawns.Art
                 case BurstKind.Shatter:
                     float w = kind == BurstKind.Quake ? 2.6f : kind == BurstKind.Shatter ? 2.2f : 2f;
                     var dust = kind == BurstKind.Quake ? new Color(0.62f, 0.5f, 0.32f, 0.7f) : new Color(0.45f, 0.42f, 0.38f, 0.7f);
-                    Ring(_quake, at, r * w, 0.5f, new Color(0.25f, 0.2f, 0.15f, 1f), 0.3f, 0f);
+                    Ring(_quake, at, r * w, 0.5f, new Color(1f, 0.85f, 0.6f, 1f), 0.3f, 0f);
                     InkParticles.Burst(at + Vector3.up * 0.15f, kind == BurstKind.Shatter ? 22 : 16, dust, new Color(dust.r, dust.g, dust.b, 0.4f), r * 1.6f, r * 0.6f, 0.9f, 0.05f, upward: true);
                     Chips(at, kind == BurstKind.Shatter ? 14 : 8, r, kind == BurstKind.Shatter ? 0.3f : 0.18f);
                     if (kind == BurstKind.Quake) Spikes(at, r); // 진각 (철권 붕산권 · 나한): 둘레에서 바윗돌이 솟았다 가라앉아요

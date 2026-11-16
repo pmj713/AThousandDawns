@@ -56,7 +56,7 @@ namespace AThousandDawns.Art
                 t += dt;
                 float k = t / 0.45f;
                 sr.transform.localScale = unit * Mathf.Lerp(0.4f, 1.1f, Mathf.Sqrt(Mathf.Clamp01(k)));
-                sr.color = new Color(0.35f, 0.32f, 0.28f, 0.55f * (1f - k));
+                sr.color = new Color(0.85f, 0.75f, 0.6f, 0.55f * (1f - k));
                 if (k >= 1f) { Destroy(sr.gameObject); _puffs.RemoveAt(i); continue; }
                 _puffs[i] = (sr, t, unit);
             }

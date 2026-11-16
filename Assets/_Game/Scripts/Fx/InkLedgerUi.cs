@@ -16,7 +16,7 @@ namespace AThousandDawns.Fx
         static readonly Color Ink = new Color(0.08f, 0.07f, 0.06f);
         static readonly Color SubInk = new Color(0.24f, 0.2f, 0.17f);
         static readonly Color Muted = new Color(0.45f, 0.42f, 0.4f);
-        static readonly Color Vermilion = new Color(0.72f, 0.16f, 0.1f);
+        static readonly Color Vermilion = new Color(0.88f, 0.15f, 0.1f);
         static readonly Regex SizeTag = new Regex("</?size[^>]*>");
 
         static GUIStyle _title, _text, _row, _rowLocked, _desc, _num, _close;

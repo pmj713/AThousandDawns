@@ -34,6 +34,12 @@ namespace AThousandDawns.Player
         readonly List<OwnedItem> _items = new List<OwnedItem>();
         readonly int[] _keywordCounts = new int[PlayerKeywords.KeywordCount];
         readonly int[] _qiCounts = new int[3];
+        readonly int[] _otherworldCounts = new int[PlayerKeywords.KeywordCount]; // 이계 세트 효과: 키워드마다 끼운 이계 기물 수 (기 부족 빼고)
+        readonly int[] _hybridLevels = new int[PlayerKeywords.KeywordCount];
+
+        public int OtherworldCount(Keyword keyword) => _otherworldCounts[(int)keyword];
+        public int HybridLevel(Keyword keyword) => _hybridLevels[(int)keyword]; // 0 · 1 (2개) · 2 (3개)
+        public static event Action<PlayerItems, Keyword, int> HybridChanged; // 세트 단계가 바뀔 때 (아트)
         PlayerKeywords _keywords;
         MeridianBoard _board;
         float _deviationMultiplier, _madoDeviation;
@@ -455,6 +461,7 @@ namespace AThousandDawns.Player
             Array.Clear(_keywordCounts, 0, _keywordCounts.Length);
             foreach (var k in _forge) if (k.HasValue) _keywordCounts[(int)k.Value]++;
             Array.Clear(_qiCounts, 0, _qiCounts.Length);
+            Array.Clear(_otherworldCounts, 0, _otherworldCounts.Length);
             foreach (var item in _items)
             {
                 item.Qi = item.OnBoard ? _board.QiAt(item.Cell) : 0;
@@ -464,6 +471,14 @@ namespace AThousandDawns.Player
                 var state = StateOf(item);
                 _qiCounts[(int)state]++;
                 _keywordCounts[(int)item.Def.keyword] += state == QiState.Lacking ? 0 : state == QiState.Circulating ? 1 : 2;
+                if (item.Def.otherworld && state != QiState.Lacking) _otherworldCounts[(int)item.Def.keyword]++;
+            }
+            for (int k = 0; k < _hybridLevels.Length; k++)
+            {
+                int level = HybridSets.Has((Keyword)k) ? HybridSets.LevelFor(_otherworldCounts[k]) : 0;
+                if (level == _hybridLevels[k]) continue;
+                _hybridLevels[k] = level;
+                HybridChanged?.Invoke(this, (Keyword)k, level);
             }
             if (_keywords != null) _keywords.SetFromItems(_keywordCounts, _qiCounts);
             Changed?.Invoke();

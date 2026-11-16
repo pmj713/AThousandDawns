@@ -20,11 +20,11 @@ namespace AThousandDawns.Fx
     {
         static readonly Color Ink = new Color(0.1f, 0.09f, 0.08f);
         static readonly Color Paper = new Color(0.94f, 0.91f, 0.84f);
-        static readonly Color Plum = new Color(0.78f, 0.27f, 0.24f); // 매화 홍 #C8463C (HUD 체력과 같은 색)
+        static readonly Color Plum = new Color(0.92f, 0.2f, 0.18f); // 매화 홍 #C8463C (HUD 체력과 같은 색)
         static readonly Color BloodCrust = new Color(0.34f, 0.05f, 0.05f); // 굳은 피 (피의 연못으로 깎인 최대 체력)
         static readonly Color BloodEdge = new Color(0.85f, 0.12f, 0.1f);
-        static readonly Color Indigo = new Color(0.22f, 0.32f, 0.52f); // 쪽빛 (기세 차는 중)
-        static readonly Color Gold = new Color(0.93f, 0.74f, 0.3f);    // 금빛 (절초 준비)
+        static readonly Color Indigo = new Color(0.2f, 0.45f, 0.95f); // 쪽빛 (기세 차는 중)
+        static readonly Color Gold = new Color(1f, 0.78f, 0.15f);    // 금빛 (절초 준비)
 
         const float Margin = 30f;
         public const float Height = Margin + 112f + 14f + 38f + 18f; // HUD(+키워드 줄)가 차지하는 위쪽 높이 (아래에 다른 것을 놓을 때)

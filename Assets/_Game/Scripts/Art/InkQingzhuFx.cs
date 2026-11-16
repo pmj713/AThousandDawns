@@ -106,7 +106,7 @@ namespace AThousandDawns.Art
                 lr.SetPosition(0, new Vector3(-length * 0.5f, 0.25f, z));
                 lr.SetPosition(1, new Vector3(length * 0.5f, 0.25f + i * 0.05f, z));
                 lr.widthMultiplier = 0.22f - i * 0.06f;
-                lr.startColor = lr.endColor = i == 0 ? new Color(0.14f, 0.2f, 0.12f) : new Color(0.32f, 0.45f, 0.26f);
+                lr.startColor = lr.endColor = i == 0 ? new Color(0.3f, 0.6f, 0.25f) : new Color(0.55f, 0.85f, 0.4f);
                 lr.sortingOrder = 6;
             }
             return root;

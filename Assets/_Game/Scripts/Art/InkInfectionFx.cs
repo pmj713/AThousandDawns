@@ -25,21 +25,14 @@ namespace AThousandDawns.Art
         static Sprite _wind, _fireball, _rift, _ring;
         static Material _lineMat;
         static bool _loaded;
-        static readonly PropertyInfo KindProp = typeof(BloodBurst).GetProperty("Kind");
-        static readonly FieldInfo KindField = typeof(BloodBurst).GetField("_kind", BindingFlags.Instance | BindingFlags.NonPublic);
         static readonly FieldInfo RadiusField = typeof(BloodBurst).GetField("_radius", BindingFlags.Instance | BindingFlags.NonPublic);
         static readonly FieldInfo TotalField = typeof(BloodBurst).GetField("_total", BindingFlags.Instance | BindingFlags.NonPublic);
 
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
         readonly HashSet<GameObject> _roots = new HashSet<GameObject>();
 
-        // 화염구 예고인지 (BloodBurst.Kind, 없으면 _kind) — 예고마다 처음 한 번만 읽어요
-        public static bool IsFireball(BloodBurst b)
-        {
-            if (b == null) return false;
-            object kind = KindProp != null ? KindProp.GetValue(b) : KindField != null ? KindField.GetValue(b) : null;
-            return kind is BurstKind k && k == BurstKind.Fireball;
-        }
+        // 화염구 예고인지 (BloodBurst.Kind)
+        public static bool IsFireball(BloodBurst b) => b != null && b.Kind == BurstKind.Fireball;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Init()

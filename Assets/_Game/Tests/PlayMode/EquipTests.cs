@@ -76,6 +76,29 @@ namespace AThousandDawns.Tests
         }
 
         [UnityTest]
+        public IEnumerator 같은_키워드_이계_기물_2개_3개면_혼종_세트_단계()
+        {
+            yield return Load();
+            _items.UnlockSlotsThrough(2); // 허리까지 열어요
+            Def3 make = (id, slot) => { var d = Def(id, slot, 1, 9, otherworld: true); d.keyword = Keyword.Geumgang; return d; };
+            _items.Add(make("t_helm", EquipSlot.Head));
+            Assert.AreEqual(1, _items.OtherworldCount(Keyword.Geumgang));
+            Assert.AreEqual(0, _items.HybridLevel(Keyword.Geumgang), "1개는 아직");
+            _items.Add(make("t_mail", EquipSlot.Top));
+            Assert.AreEqual(1, _items.HybridLevel(Keyword.Geumgang), "2개: 미스릴 수호 1단계");
+            _items.Add(make("t_belt", EquipSlot.Waist));
+            Assert.AreEqual(2, _items.HybridLevel(Keyword.Geumgang), "3개: 2단계");
+            Assert.AreEqual(0, _items.HybridLevel(Keyword.Yeolyang));
+
+            var plain = Def("t_plain", EquipSlot.Shoes);
+            plain.keyword = Keyword.Geumgang;
+            _items.Add(plain);
+            Assert.AreEqual(3, _items.OtherworldCount(Keyword.Geumgang), "무협 기물은 세지 않아요");
+        }
+
+        delegate ItemDefinition Def3(string id, EquipSlot slot);
+
+        [UnityTest]
         public IEnumerator 칸의_기는_기본_기와_공력_기혈_이계_뒤틀림()
         {
             yield return Load();

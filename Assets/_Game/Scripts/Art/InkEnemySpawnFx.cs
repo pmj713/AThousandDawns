@@ -177,7 +177,7 @@ namespace AThousandDawns.Art
                 float k = t / 0.7f;
                 pivot.position = at + Vector3.up * k * 0.6f;
                 sr.transform.localScale = new Vector3(unit.x * (1f - 0.4f * k), unit.y * (0.7f + 0.6f * k), unit.z);
-                sr.color = new Color(0.32f, 0.3f, 0.34f, Mathf.Sin(Mathf.Clamp01(k) * Mathf.PI) * 0.75f); // 먹빛 (마기의 붉은 기는 빼요)
+                sr.color = new Color(0.75f, 0.45f, 1f, Mathf.Sin(Mathf.Clamp01(k) * Mathf.PI) * 0.75f); // 먹빛 (마기의 붉은 기는 빼요)
                 if (k < 1f) return true;
                 Destroy(pivot.gameObject);
                 return false;

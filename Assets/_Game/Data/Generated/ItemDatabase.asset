@@ -1714,3 +1714,192 @@ MonoBehaviour:
     sideText: "\uBC1B\uB294 \uD53C\uD574 +15%"
     slot: 9
     otherworld: 1
+  - id: fire_rune_ring
+    keyword: 0
+    name: "\uD654\uC5FC \uB8EC \uBC18\uC9C0"
+    grade: 1
+    aux: 
+    minQi: 2
+    maxQi: 3
+    v1: 0.05
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.1
+    effectText: "\uBAA8\uB4E0 \uD53C\uD574 +5%"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+    slot: 7
+    otherworld: 1
+  - id: salamander_cloak
+    keyword: 0
+    name: "\uC0D0\uB7EC\uB9E8\uB354 \uB9DD\uD1A0"
+    grade: 2
+    aux: 
+    minQi: 3
+    maxQi: 5
+    v1: 0.2
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: move_speed
+    sideValue: 0.1
+    effectText: "\uD654\uC0C1 \uD53C\uD574 +20%"
+    sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+    slot: 2
+    otherworld: 1
+  - id: storm_circlet
+    keyword: 2
+    name: "\uD3ED\uD48D \uC11C\uD074\uB9BF"
+    grade: 1
+    aux: 
+    minQi: 2
+    maxQi: 4
+    v1: 0.05
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.1
+    effectText: "\uACF5\uACA9 \uC18D\uB3C4 +5%"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+    slot: 1
+    otherworld: 1
+  - id: thunder_rune_belt
+    keyword: 2
+    name: "\uB1CC\uC804 \uB8EC \uD5C8\uB9AC\uB760"
+    grade: 2
+    aux: 
+    minQi: 3
+    maxQi: 5
+    v1: 0.2
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: move_speed
+    sideValue: 0.1
+    effectText: "\uBC29\uC804 \uD53C\uD574 +20%"
+    sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+    slot: 8
+    otherworld: 1
+  - id: knight_gauntlet
+    keyword: 3
+    name: "\uAE30\uC0AC \uAC74\uD2C0\uB9BF"
+    grade: 1
+    aux: 
+    minQi: 2
+    maxQi: 3
+    v1: 0.05
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: move_speed
+    sideValue: 0.1
+    effectText: "\uBAA8\uB4E0 \uD53C\uD574 +5%"
+    sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+    slot: 7
+    otherworld: 1
+  - id: rune_scabbard
+    keyword: 3
+    name: "\uB8EC \uAC80\uC9D1"
+    grade: 0
+    aux: 
+    minQi: 1
+    maxQi: 2
+    v1: 0.05
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.1
+    effectText: "\uACF5\uACA9 \uC18D\uB3C4 +5%"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+    slot: 8
+    otherworld: 1
+  - id: wind_spirit_cloak
+    keyword: 5
+    name: "\uBC14\uB78C \uC815\uB839 \uB9DD\uD1A0"
+    grade: 1
+    aux: 
+    minQi: 2
+    maxQi: 4
+    v1: 0.06
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.1
+    effectText: "\uC774\uB3D9\uC18D\uB3C4 +6%"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+    slot: 2
+    otherworld: 1
+  - id: ice_spirit_pendant
+    keyword: 1
+    name: "\uC5BC\uC74C \uC815\uB839 \uBAA9\uAC78\uC774"
+    grade: 2
+    aux: 
+    minQi: 3
+    maxQi: 5
+    v1: 0.06
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: move_speed
+    sideValue: 0.1
+    effectText: "\uBC1B\uB294 \uD53C\uD574 -6%"
+    sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+    slot: 6
+    otherworld: 1
+  - id: paladin_helm
+    keyword: 4
+    name: "\uC131\uAE30\uC0AC \uD22C\uAD6C"
+    grade: 1
+    aux: 
+    minQi: 2
+    maxQi: 4
+    v1: 0.05
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: move_speed
+    sideValue: 0.1
+    effectText: "\uBC29\uC5B4\uB825 +5%"
+    sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+    slot: 1
+    otherworld: 1
