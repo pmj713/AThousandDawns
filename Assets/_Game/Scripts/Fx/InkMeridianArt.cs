@@ -11,8 +11,8 @@ namespace AThousandDawns.Fx
     public static class InkMeridianArt
     {
         static readonly Color Paper = new Color(0.94f, 0.91f, 0.84f);
-        static readonly Color Plum = new Color(0.78f, 0.27f, 0.24f);
-        static readonly Color PanelInk = new Color(0.07f, 0.065f, 0.06f);
+        static readonly Color Plum = new Color(0.92f, 0.2f, 0.18f);
+        static readonly Color PanelInk = new Color(0.08f, 0.1f, 0.24f); // 채색: 짙은 남빛 (먹 대신)
 
         static Texture2D _bg, _swatch, _frame, _blot, _button, _buttonHover;
         static bool _loaded;
@@ -26,7 +26,7 @@ namespace AThousandDawns.Fx
             {
                 GUI.color = Color.white;
                 GUI.DrawTexture(screen, _bg, ScaleMode.ScaleAndCrop);
-                GUI.color = new Color(0f, 0f, 0f, 0.3f); // 글자가 읽히게 한 겹 더 어둡게
+                GUI.color = new Color(0f, 0f, 0f, 0.15f); // 글자가 읽히게 한 겹 더 어둡게
             }
             else GUI.color = new Color(0f, 0f, 0f, 0.86f);
             GUI.DrawTexture(screen, Texture2D.whiteTexture);
