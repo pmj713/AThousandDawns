@@ -509,6 +509,22 @@ namespace AThousandDawns.Fx
             _key.normal.textColor = Paper;
         }
 
+        // 보스·고수 체력바: 판타지 진영(차원 겹침)이면 이름 왼쪽에 작은 스테인드글라스 문장 (FantasyFx/Crest, 숨 쉬듯 은은히 빛나요). 무협 보스는 그대로.
+        public static void FactionCrest(Rect labelArea, AThousandDawns.Enemies.EnemyBrain enemy)
+        {
+            if (enemy == null || enemy.Faction != AThousandDawns.Enemies.EnemyFaction.Fantasy) return;
+            if (!_crestLoaded) { _crestLoaded = true; _crest = Resources.Load<Texture2D>("FantasyFx/Crest"); }
+            if (_crest == null) return;
+            var old = GUI.color;
+            float s = 40f, pulse = 0.85f + 0.15f * Mathf.Sin(Time.unscaledTime * 2.2f);
+            GUI.color = new Color(1f, 1f, 1f, pulse);
+            GUI.DrawTexture(new Rect(labelArea.x - s - 6f, labelArea.y + 19f - s * 0.5f, s, s), _crest, ScaleMode.ScaleToFit);
+            GUI.color = old;
+        }
+
+        static Texture2D _crest;
+        static bool _crestLoaded;
+
         static void Load()
         {
             if (_loaded) return;
