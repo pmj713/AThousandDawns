@@ -30,7 +30,7 @@ namespace AThousandDawns.Tests
         }
 
         [UnityTest]
-        public IEnumerator 고블린_넷과_슬라임이_오류_없이_싸움([Values(EnemyKind.Slime, EnemyKind.Goblin, EnemyKind.GoblinArcher, EnemyKind.GoblinRogue, EnemyKind.GoblinShaman)] EnemyKind kind)
+        public IEnumerator 고블린_넷과_슬라임이_오류_없이_싸움([Values(EnemyKind.Slime, EnemyKind.Goblin, EnemyKind.GoblinArcher, EnemyKind.GoblinRogue, EnemyKind.GoblinShaman, EnemyKind.Orc, EnemyKind.Skeleton, EnemyKind.Imp)] EnemyKind kind)
         {
             yield return Load();
             var director = Object.FindFirstObjectByType<EnemyDirector>();
@@ -133,6 +133,26 @@ namespace AThousandDawns.Tests
             EnemyBrain.Blinked -= blinked;
             EnemyBrain.InfectionOverride = 0;
             Assert.IsTrue(used || (trait == EliteTrait.Fireball && BloodBurst.Live > 0), $"{trait}을(를) 써요");
+        }
+
+        [UnityTest]
+        public IEnumerator 스켈레톤은_한_번_무너졌다_다시_일어나고_두_번째엔_쓰러짐()
+        {
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var skeleton = (SkeletonBrain)director.Spawn(EnemyKind.Skeleton, player.transform.position + new Vector3(0f, 0f, 6f));
+            skeleton.Damageable.ApplyHit(99999, false);
+            Assert.IsFalse(skeleton.IsDead, "처음엔 무너지기만 해요");
+            Assert.IsTrue(skeleton.IsReassembling);
+            Assert.IsFalse(skeleton.Damageable.Targetable, "무너진 동안은 맞지 않아요");
+            float until = Time.realtimeSinceStartup + 4f;
+            while (skeleton.IsReassembling && Time.realtimeSinceStartup < until) yield return null;
+            Assert.IsFalse(skeleton.IsReassembling, "다시 맞춰져요");
+            Assert.IsTrue(skeleton.Damageable.Targetable);
+            Assert.Greater(skeleton.Damageable.Health, skeleton.Damageable.MaxHealth * 0.4f, "체력 절반으로 일어나요");
+            skeleton.Damageable.ApplyHit(99999, false);
+            Assert.IsTrue(skeleton.IsDead, "두 번째엔 쓰러져요");
         }
 
         [Test]

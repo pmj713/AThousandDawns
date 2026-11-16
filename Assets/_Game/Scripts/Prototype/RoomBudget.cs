@@ -46,6 +46,7 @@ namespace AThousandDawns.Prototype
         public static readonly EnemyKind[] Fantasy =
         {
             EnemyKind.Slime, EnemyKind.Goblin, EnemyKind.GoblinArcher, EnemyKind.GoblinRogue, EnemyKind.GoblinShaman,
+            EnemyKind.Orc, EnemyKind.Skeleton, EnemyKind.Imp,
         };
 
         public static bool IsFantasy(EnemyKind kind) => Array.IndexOf(Fantasy, kind) >= 0;
@@ -100,12 +101,15 @@ namespace AThousandDawns.Prototype
                 case EnemyKind.GoblinArcher: return Key("goblinarcher", 2f);
                 case EnemyKind.GoblinRogue: return Key("goblinrogue", 2f);
                 case EnemyKind.GoblinShaman: return Key("goblinshaman", 2f);
+                case EnemyKind.Orc: return Key("orc", 3f);
+                case EnemyKind.Skeleton: return Key("skeleton", 2f);
+                case EnemyKind.Imp: return Key("imp", 2f);
                 default: return 99;
             }
         }
 
         // 방마다 수를 묶는 적: 멀리서 쏘는 적 (궁수 · 망령), 부르는 적 (나팔수 · 목탁승)
-        static bool IsShooter(EnemyKind kind) => kind == EnemyKind.Archer || kind == EnemyKind.Wraith || kind == EnemyKind.Harpooner || kind == EnemyKind.BloodArcher || kind == EnemyKind.GoblinArcher;
+        static bool IsShooter(EnemyKind kind) => kind == EnemyKind.Archer || kind == EnemyKind.Wraith || kind == EnemyKind.Harpooner || kind == EnemyKind.BloodArcher || kind == EnemyKind.GoblinArcher || kind == EnemyKind.Imp;
         static bool IsCaller(EnemyKind kind) => kind == EnemyKind.Horn || kind == EnemyKind.Moktak || kind == EnemyKind.FlagBearer || kind == EnemyKind.BloodShaman || kind == EnemyKind.GoblinShaman;
 
         static int Key(string kind, float fallback) => Math.Max(1, (int)Math.Round(GameConfig.Get("room_cost." + kind, fallback)));

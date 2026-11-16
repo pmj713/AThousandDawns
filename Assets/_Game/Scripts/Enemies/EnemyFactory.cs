@@ -206,6 +206,24 @@ namespace AThousandDawns.Enemies
                 BodyPosition = new Vector3(0f, 0.6f, 0f), BodyScale = new Vector3(0.55f, 0.6f, 0.55f),
                 MarkPosition = new Vector3(0.3f, 1.0f, 0.2f), MarkScale = new Vector3(0.06f, 1.1f, 0.06f), // 해골 지팡이
             },
+            EnemyKind.Orc => new Shape
+            {
+                Name = "오크", Radius = 0.55f, Height = 1.9f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.95f, 0f), BodyScale = new Vector3(1.0f, 0.95f, 1.0f),
+                MarkPosition = new Vector3(0.45f, 1.0f, 0.45f), MarkScale = new Vector3(0.2f, 0.2f, 0.8f), // 큰 도끼
+            },
+            EnemyKind.Skeleton => new Shape
+            {
+                Name = "스켈레톤", Radius = 0.32f, Height = 1.7f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.85f, 0f), BodyScale = new Vector3(0.5f, 0.85f, 0.5f),
+                MarkPosition = new Vector3(0.3f, 0.9f, 0.4f), MarkScale = new Vector3(0.08f, 0.06f, 0.8f), // 녹슨 검
+            },
+            EnemyKind.Imp => new Shape
+            {
+                Name = "임프", Radius = 0.3f, Height = 1.0f, Primitive = PrimitiveType.Sphere,
+                BodyPosition = new Vector3(0f, 1.3f, 0f), BodyScale = new Vector3(0.6f, 0.6f, 0.6f), // 떠 있어요
+                MarkPosition = new Vector3(0f, 1.3f, 0.35f), MarkScale = new Vector3(0.25f, 0.25f, 0.25f), // 불덩이
+            },
             // ── 천마총
             EnemyKind.Cultist => new Shape
             {
@@ -297,6 +315,9 @@ namespace AThousandDawns.Enemies
             EnemyKind.GoblinArcher => Tinted(kind, v.archer != null ? v.archer : v.grunt, new Color(0.45f, 0.6f, 0.3f)),
             EnemyKind.GoblinRogue => Tinted(kind, v.hound != null ? v.hound : v.grunt, new Color(0.35f, 0.5f, 0.3f)),
             EnemyKind.GoblinShaman => Tinted(kind, v.horn != null ? v.horn : v.grunt, new Color(0.5f, 0.35f, 0.6f)),
+            EnemyKind.Orc => Tinted(kind, v.boar != null ? v.boar : v.grunt, new Color(0.35f, 0.55f, 0.25f)),
+            EnemyKind.Skeleton => Tinted(kind, v.grunt, new Color(0.9f, 0.88f, 0.8f)),
+            EnemyKind.Imp => Tinted(kind, v.archer != null ? v.archer : v.grunt, new Color(0.85f, 0.2f, 0.15f)),
             _ => v.grunt,
         };
 
@@ -391,6 +412,9 @@ namespace AThousandDawns.Enemies
                 EnemyKind.GoblinArcher => root.AddComponent<GoblinArcherBrain>(),
                 EnemyKind.GoblinRogue => root.AddComponent<GoblinRogueBrain>(),
                 EnemyKind.GoblinShaman => root.AddComponent<GoblinShamanBrain>(),
+                EnemyKind.Orc => root.AddComponent<OrcBrain>(),
+                EnemyKind.Skeleton => root.AddComponent<SkeletonBrain>(),
+                EnemyKind.Imp => root.AddComponent<ImpBrain>(),
                 _ => root.AddComponent<GruntBrain>(),
             };
             if (brain is ShieldBrain shieldBrain) shieldBrain.SetShieldVisual(mark.transform);

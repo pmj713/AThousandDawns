@@ -1178,6 +1178,49 @@ hybrid.mithril.t1,8%,,"이계 세트 미스릴 수호 (#금강 이계 2개): 받
 hybrid.mithril.t2,2,,미스릴 수호 (3개): 강인함 +,차원 겹침 개편
 hybrid.elvenstep.t1,10%,,"이계 세트 엘프 발걸음 (#경공 이계 2개): 이동속도 +",차원 겹침 개편
 hybrid.elvenstep.t2,1,,엘프 발걸음 (3개): 대시 +,차원 겹침 개편
+orc.hp,90,,오크 체력,차원 겹침 개편
+orc.atk,14,,오크 공격,차원 겹침 개편
+orc.toughness,3,,오크 강인함,차원 겹침 개편
+orc.move_speed,3,cell/s,오크 이동,차원 겹침 개편
+orc.attack_range,8,cell,오크 돌진 시작 거리,차원 겹침 개편
+orc.charge_distance,8,cell,오크 돌진 거리,차원 겹침 개편
+orc.windup,0.8,s,오크 돌진 예고,차원 겹침 개편
+orc.recovery,1,s,오크 빈틈,차원 겹침 개편
+orc.attack_interval,4,s,오크 공격 간격,차원 겹침 개편
+orc.charge_speed,13,cell/s,오크 돌진 속도,차원 겹침 개편
+orc.wall_stun,1.5,s,오크 벽에 부딪혀 멍한 시간,차원 겹침 개편
+orc.charge_width,1.4,cell,오크 돌진 폭,차원 겹침 개편
+skeleton.hp,28,,스켈레톤 체력,차원 겹침 개편
+skeleton.atk,8,,스켈레톤 공격,차원 겹침 개편
+skeleton.toughness,0,,스켈레톤 강인함,차원 겹침 개편
+skeleton.move_speed,3.2,cell/s,스켈레톤 이동,차원 겹침 개편
+skeleton.attack_range,1.2,cell,스켈레톤 베기 반경,차원 겹침 개편
+skeleton.lunge,1.4,cell,스켈레톤 전진 베기 거리,차원 겹침 개편
+skeleton.windup,0.6,s,스켈레톤 예고,차원 겹침 개편
+skeleton.recovery,0.6,s,스켈레톤 빈틈,차원 겹침 개편
+skeleton.attack_interval,1.8,s,스켈레톤 공격 간격,차원 겹침 개편
+skeleton.attack_angle,60,deg,스켈레톤 베기 각도,차원 겹침 개편
+skeleton.lunge_time,0.15,s,스켈레톤 전진 시간,차원 겹침 개편
+skeleton.reassemble_time,1.5,s,"스켈레톤: 처음 쓰러질 때 뼈가 무너졌다 다시 맞춰지는 시간 (맞지 않음)",차원 겹침 개편
+skeleton.revive_health,50%,,스켈레톤: 다시 일어날 때 체력,차원 겹침 개편
+imp.hp,16,,임프 체력,차원 겹침 개편
+imp.atk,7,,임프 공격,차원 겹침 개편
+imp.toughness,0,,임프 강인함,차원 겹침 개편
+imp.move_speed,4,cell/s,임프 이동 (날아다녀요),차원 겹침 개편
+imp.attack_range,9,cell,임프 화염탄 사거리,차원 겹침 개편
+imp.windup,0.6,s,임프 화염탄 예고,차원 겹침 개편
+imp.recovery,0.4,s,임프 빈틈,차원 겹침 개편
+imp.attack_interval,2.4,s,임프 공격 간격,차원 겹침 개편
+imp.keep_min,5,cell,임프 유지 거리 최소,차원 겹침 개편
+imp.keep_max,7,cell,임프 유지 거리 최대,차원 겹침 개편
+imp.retreat_distance,2.5,cell,임프 물러나기,차원 겹침 개편
+imp.strafe_speed,3,cell/s,임프 옆으로 날기,차원 겹침 개편
+imp.shot_pause,0.2,s,임프 던지는 순간 멈춤,차원 겹침 개편
+imp.arrow_speed,9,cell/s,임프 화염탄 속도,차원 겹침 개편
+imp.arrow_radius,0.3,cell,임프 화염탄 판정,차원 겹침 개편
+room_cost.orc,3,,방 예산 점수: 오크,차원 겹침 개편
+room_cost.skeleton,2,,방 예산 점수: 스켈레톤,차원 겹침 개편
+room_cost.imp,2,,방 예산 점수: 임프,차원 겹침 개편
 cultist.hp,39,,마교도 체력 (졸개 30 × 1.3 · 천마총 ×4.5 = 176),몬스터!F52
 cultist.atk,8,,마교도 공격 (×2.0 = 16),몬스터!G52
 cultist.toughness,0,,마교도 강인함,몬스터!H52
