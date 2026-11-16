@@ -40,7 +40,6 @@ namespace AThousandDawns.EditorTools
             ["Ink_Jar"] = new Color(0.56f, 0.34f, 0.2f),
             ["Ink_Onggi"] = new Color(0.36f, 0.22f, 0.13f),
             ["Ink_Iron"] = new Color(0.36f, 0.38f, 0.42f),
-            ["Ink_Enemy_Weapon"] = new Color(0.5f, 0.53f, 0.58f),
             ["Ink_Barrier_Wood"] = new Color(0.4f, 0.24f, 0.15f),
             ["Ink_Bamboo_Earth"] = new Color(0.46f, 0.4f, 0.24f),
             ["Ink_Bag_Hemp"] = new Color(0.72f, 0.6f, 0.4f),
