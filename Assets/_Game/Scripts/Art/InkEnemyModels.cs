@@ -303,7 +303,7 @@ namespace AThousandDawns.Art
             _buddha = brain as BloodBuddhaBrain;
             _rattan = brain as RattanBrain;
             _waterGhost = brain as WaterGhostBrain;
-            foreach (var st in new[] { "Roar", "Ascend", "ShadowRush" })
+            foreach (var st in new[] { "Summon", "Roar", "Ascend", "ShadowRush" })   // 데스나이트는 2페이즈에 검을 꽂아 죽은 자를 불러요 (Summon)
                 if (animator.HasState(0, Animator.StringToHash(st))) { _transitionState = st; break; }
             if (_transitionState != null) _transitioning = Getter<bool>(brain, "IsTransitioning");
             _hasIntro = (brain.Rank == EnemyRank.Boss || brain.Rank == EnemyRank.Master) && animator.HasState(0, Animator.StringToHash("Intro"));
@@ -327,6 +327,7 @@ namespace AThousandDawns.Art
                 EnemyBrain.BossLeapStarted += OnLeapStarted;
                 EnemyBrain.BossLeapLanded += OnLeapLanded;
                 if (brain is OgreBrain) OgreBrain.RockThrown += OnRockThrown;
+                if (brain is DeathKnightBrain) DeathKnightBrain.CurseWave += OnCurseWave;
             }
             _modelRestPos = animator.transform.localPosition;
             if (brain is SkeletonBrain && animator.HasState(0, Animator.StringToHash("Reassemble")))
@@ -690,6 +691,11 @@ namespace AThousandDawns.Art
             if (boss == _brain) PlayHeld("Volley", 0.6f);
         }
 
+        void OnCurseWave(DeathKnightBrain knight, Vector3 dir)
+        {
+            if (knight == _brain) PlayHeld("CurseWave", 0.8f);   // 검을 크게 휘둘러 검기 세 갈래
+        }
+
         void OnRockThrown(OgreBrain ogre)
         {
             if (ogre == _brain) PlayHeld("Volley", 0.6f);
@@ -753,6 +759,7 @@ namespace AThousandDawns.Art
                 EnemyBrain.BossLeapStarted -= OnLeapStarted;
                 EnemyBrain.BossLeapLanded -= OnLeapLanded;
                 OgreBrain.RockThrown -= OnRockThrown;
+                DeathKnightBrain.CurseWave -= OnCurseWave;
             }
         }
     }
