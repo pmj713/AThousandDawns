@@ -30,7 +30,7 @@ namespace AThousandDawns.Player
         void GainXpFromKill(Damageable dead)
         {
             if (IsDead || !dead.TryGetComponent(out EnemyBrain enemy)) return; // 허수아비는 수련치 없음
-            _xpCarry += _xpByRank[(int)enemy.Rank] * (1f + RunXpBonus);
+            _xpCarry += _xpByRank[(int)enemy.Rank] * (1f + RunXpBonus) * (enemy.KilledByRival ? GameConfig.GetOptional("fantasy.rival_kill_xp", 0.5f) : 1f); // 다른 적이 쓰러뜨렸으면 적게
             int whole = UnityEngine.Mathf.FloorToInt(_xpCarry + 1e-4f);
             _xpCarry -= whole;
             _level.Add(whole);

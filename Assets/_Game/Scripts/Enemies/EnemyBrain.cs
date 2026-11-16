@@ -113,6 +113,7 @@ namespace AThousandDawns.Enemies
             Attack.ActiveStarted += () =>
             {
                 Telegraph.Hide();
+                HitRival(); // 다른 진영 적을 노리는 중이면 그 적이 맞아요 (EnemyBrain.Rival)
                 OnActiveStarted();
             };
             Attack.Finished += () =>
@@ -179,6 +180,8 @@ namespace AThousandDawns.Enemies
                 Wake();
             }
 
+            TickRival(Time.deltaTime); // 적끼리 싸움: 노릴 다른 진영 적
+
             if (_stunTimer > 0f)
             {
                 _stunTimer -= dt;
@@ -188,9 +191,9 @@ namespace AThousandDawns.Enemies
             switch (Attack.Current)
             {
                 case EnemyAttackTimeline.Phase.Ready:
-                    bool canAttack = _cooldown <= 0f && (!UsesToken || _tokens.HasFree || HasToken);
+                    bool canAttack = _cooldown <= 0f && (!UsesToken || Rival != null || _tokens.HasFree || HasToken); // 다른 적을 노릴 땐 토큰 없이
                     TickMovement(dt, canAttack);
-                    if (canAttack && WantsToAttack(ToPlayer().magnitude) && (!UsesToken || _tokens.TryAcquire(this))) BeginAttack();
+                    if (canAttack && WantsToAttack(ToPlayer().magnitude) && (!UsesToken || Rival != null || _tokens.TryAcquire(this))) BeginAttack();
                     break;
                 case EnemyAttackTimeline.Phase.Windup:
                     if (!Attack.IsPaused) TickWindup(dt, Attack.IsTracking);
@@ -257,7 +260,7 @@ namespace AThousandDawns.Enemies
 
         protected Vector3 ToPlayer()
         {
-            Vector3 d = Player.transform.position - transform.position;
+            Vector3 d = (Rival != null ? Rival.transform.position : Player.transform.position) - transform.position; // 다른 진영 적을 노리면 그쪽으로
             d.y = 0f;
             return d;
         }

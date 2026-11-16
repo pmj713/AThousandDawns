@@ -61,6 +61,38 @@ namespace AThousandDawns.Tests
             Assert.AreEqual(0, director.Enemies.Count(e => e != null && !e.IsDead && e.Kind == EnemyKind.Slime), "작은 것은 다시 안 갈라져요");
         }
 
+        [UnityTest]
+        public IEnumerator 무협_적과_판타지_적은_서로_싸우고_협력하면_안_싸움([Values(false, true)] bool allied)
+        {
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            Vector3 far = player.transform.position + new Vector3(0f, 0f, 9f); // 플레이어보다 서로가 훨씬 가까워요
+            var grunt = director.Spawn(EnemyKind.Grunt, far);
+            var goblin = director.Spawn(EnemyKind.Goblin, far + new Vector3(1.5f, 0f, 0f));
+            grunt.Allied = goblin.Allied = allied;
+            Assert.AreEqual(EnemyFaction.Wuxia, grunt.Faction);
+            Assert.AreEqual(EnemyFaction.Fantasy, goblin.Faction);
+            int hits = 0;
+            System.Action<EnemyBrain, EnemyBrain, Vector3> count = (a, b, at) => hits++;
+            EnemyBrain.RivalHit += count;
+            float gruntHp = grunt.Damageable.Health, goblinHp = goblin.Damageable.Health;
+            Time.timeScale = 2f;
+            float end = Time.time + 8f;
+            while (Time.time < end && hits == 0) { player.Heal(9999f); yield return null; }
+            EnemyBrain.RivalHit -= count;
+            if (allied)
+            {
+                Assert.AreEqual(0, hits, "협력한 적은 서로 안 때려요");
+                Assert.IsNull(grunt.Rival);
+            }
+            else
+            {
+                Assert.Greater(hits, 0, "서로를 노려 때려요");
+                Assert.IsTrue(grunt.Damageable.Health < gruntHp || goblin.Damageable.Health < goblinHp);
+            }
+        }
+
         [Test]
         public void 판타지_적은_모든_지역_목록에_섞여요()
         {

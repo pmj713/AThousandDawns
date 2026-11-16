@@ -554,6 +554,7 @@ namespace AThousandDawns.Prototype
                 }
                 if (health != 1f) enemy.Damageable.ScaleMaxHealth(health);
                 ScaleForRegion(enemy); // 폐사찰: 체력 ×1.8 · 공격 ×1.3
+                enemy.Allied = UnityEngine.Random.value < AllyChance; // 적끼리 싸움: 협력한 적은 다른 진영과 싸우지 않아요
             }
             _pending.Clear();
             _warning = false;
@@ -620,6 +621,12 @@ namespace AThousandDawns.Prototype
             }
             if (text.Length > 0) ShowBanner(text.Substring(3)); // 앞의 " · " 떼고
         }
+
+        // 차원 겹침: 깊이 갈수록 무협 적과 판타지 적이 손을 잡아요 (지역 · 층 · 업보). 협력하면 서로 싸우지 않아요
+        public float AllyChance => Mathf.Clamp(
+            GameConfig.GetOptional("fantasy.ally_base", 0.1f) + _region * GameConfig.GetOptional("fantasy.ally_per_region", 0.2f)
+            + Mathf.Max(0, _floor - 1) * GameConfig.GetOptional("fantasy.ally_per_floor", 0.05f) + _karma * GameConfig.GetOptional("fantasy.ally_per_karma", 0.05f),
+            0f, GameConfig.GetOptional("fantasy.ally_max", 0.9f));
 
         // ── 객잔
 

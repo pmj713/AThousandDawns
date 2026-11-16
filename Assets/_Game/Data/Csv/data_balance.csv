@@ -1144,6 +1144,16 @@ room_cost.goblin,2,,방 예산 점수: 고블린 (둘이 한 무리),차원 겹�
 room_cost.goblinarcher,2,,방 예산 점수: 고블린 궁수,차원 겹침 개편
 room_cost.goblinrogue,2,,방 예산 점수: 고블린 단검꾼,차원 겹침 개편
 room_cost.goblinshaman,2,,방 예산 점수: 고블린 주술사,차원 겹침 개편
+fantasy.rivalry,1,,적끼리 싸움: 무협 적과 판타지 적이 서로 공격 (0이면 끔),차원 겹침 개편
+fantasy.rival_radius,6,cell,다른 진영 적을 노리는 거리 (플레이어보다 가까울 때만),차원 겹침 개편
+fantasy.rival_melee_reach,1.5,cell,적끼리 싸울 때 근접 공격이 닿는 추가 거리 (사거리 +),차원 겹침 개편
+fantasy.rival_ratio,100%,,적끼리 싸울 때 피해 (공격력 대비),차원 겹침 개편
+fantasy.rival_kill_xp,50%,,다른 적이 쓰러뜨린 적의 수련치 비율,차원 겹침 개편
+fantasy.ally_base,10%,,"협력 확률 기본 (협력한 적은 다른 진영과 싸우지 않아요)",차원 겹침 개편
+fantasy.ally_per_region,20%,,협력 확률: 지역마다 +,차원 겹침 개편
+fantasy.ally_per_floor,5%,,협력 확률: 2층부터 층마다 +,차원 겹침 개편
+fantasy.ally_per_karma,5%,,협력 확률: 업보 단계마다 +,차원 겹침 개편
+fantasy.ally_max,90%,,협력 확률 최대,차원 겹침 개편
 cultist.hp,39,,마교도 체력 (졸개 30 × 1.3 · 천마총 ×4.5 = 176),몬스터!F52
 cultist.atk,8,,마교도 공격 (×2.0 = 16),몬스터!G52
 cultist.toughness,0,,마교도 강인함,몬스터!H52
