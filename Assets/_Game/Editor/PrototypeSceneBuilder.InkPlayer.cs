@@ -40,13 +40,6 @@ namespace AThousandDawns.EditorTools
 
             // 혼종 세트 기운 (세트 3개를 다 맞추면 몸 가장자리에 세트 색)
             if (player.GetComponent<AThousandDawns.Art.InkPlayerHybridAura>() == null) player.gameObject.AddComponent<AThousandDawns.Art.InkPlayerHybridAura>();
-
-            // 장비가 몸에 보여요 (끼운 기물마다 모양·색): 흰 채색 재질 틀을 넘기면 색마다 복제해 써요. 작은 장식이라 외곽선은 얇게
-            var gearMat = FantasyLook(GetInkMaterial("Ink_PlayerGear", "#FFFFFF", 1f));
-            gearMat.SetFloat("_OutlineWidth", 2.5f);
-            var gear = player.GetComponent<AThousandDawns.Art.InkPlayerGear>();
-            if (gear == null) gear = player.gameObject.AddComponent<AThousandDawns.Art.InkPlayerGear>();
-            gear.Setup(gearMat);
         }
     }
 }
