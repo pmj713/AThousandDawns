@@ -246,7 +246,51 @@ namespace AThousandDawns.Fx
             GUI.color = old;
         }
 
-        static Texture2D _paper, _body, _enso, _stroke;
+        // ── 혼종 세트 문장 (이계 세트 효과, 장비 화면 키워드 목록 아래 "혼종 세트" 줄)
+        // 문장: Resources/HybridIcons/{id}. 켜진 세트는 또렷하게, 꺼진 세트는 옅은 잿빛.
+        // 꺼져 있다가 켜지는 순간 (화면이 열려 있는 동안): 보랏빛 균열 테두리가 크게 번쩍 조여들고 보랏빛 번짐이 터져요.
+        //   신호 없이 이 함수가 id마다 지난 상태를 기억해서 알아차려요 (화면을 처음 열 때 이미 켜져 있던 세트는 번쩍이지 않아요).
+        public static void HybridCrest(Rect rect, string id, bool active)
+        {
+            Load();
+            if (string.IsNullOrEmpty(id)) return;
+            if (!_hybridTex.TryGetValue(id, out var tex)) _hybridTex[id] = tex = Resources.Load<Texture2D>("HybridIcons/" + id);
+            float now = Time.unscaledTime;
+            if (!_hybridState.TryGetValue(id, out var state) || now - state.seen > 0.5f) state = (active, -10f, now); // 화면을 새로 열었어요: 번쩍이지 않아요
+            else if (active && !state.on) state.since = now; // 방금 켜졌어요
+            state.on = active;
+            state.seen = now;
+            _hybridState[id] = state;
+            var old = GUI.color;
+            if (tex != null)
+            {
+                GUI.color = active ? Color.white : new Color(0.62f, 0.6f, 0.6f, 0.45f);
+                GUI.DrawTexture(rect, tex, ScaleMode.ScaleToFit);
+            }
+            float age = now - state.since;
+            if (active && age < 0.8f)
+            {
+                float k = age / 0.8f;
+                if (_blot != null)
+                {
+                    GUI.color = new Color(0.62f, 0.3f, 1f, 0.6f * (1f - k));
+                    float g = Mathf.Lerp(1.2f, 2.4f, Mathf.Sqrt(k));
+                    GUI.DrawTexture(new Rect(rect.center.x - rect.width * g * 0.5f, rect.center.y - rect.height * g * 0.5f, rect.width * g, rect.height * g), _blot, ScaleMode.StretchToFill);
+                }
+                if (_rift != null)
+                {
+                    GUI.color = new Color(1f, 1f, 1f, 1f - k * k);
+                    float s = Mathf.Lerp(1.9f, 1.15f, 1f - (1f - k) * (1f - k));
+                    GUI.DrawTexture(new Rect(rect.center.x - rect.width * s * 0.5f, rect.center.y - rect.height * s * 0.5f, rect.width * s, rect.height * s), _rift, ScaleMode.StretchToFill);
+                }
+            }
+            GUI.color = old;
+        }
+
+        static readonly System.Collections.Generic.Dictionary<string, Texture2D> _hybridTex = new System.Collections.Generic.Dictionary<string, Texture2D>();
+        static readonly System.Collections.Generic.Dictionary<string, (bool on, float since, float seen)> _hybridState = new System.Collections.Generic.Dictionary<string, (bool on, float since, float seen)>();
+
+        static Texture2D _paper, _body, _enso, _stroke, _rift;
 
         static void Load()
         {
@@ -256,6 +300,7 @@ namespace AThousandDawns.Fx
             _body = Resources.Load<Texture2D>("HudArt/BodyChart");
             _enso = Resources.Load<Texture2D>("HudArt/Enso");
             _stroke = Resources.Load<Texture2D>("HudArt/HpStroke");
+            _rift = Resources.Load<Texture2D>("HudArt/RiftFrame");
             _bg = Resources.Load<Texture2D>("HudArt/MeridianBg");
             _swatch = Resources.Load<Texture2D>("HudArt/InkSwatch");
             _frame = Resources.Load<Texture2D>("HudArt/CellFrame");
