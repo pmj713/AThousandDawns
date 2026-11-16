@@ -94,6 +94,48 @@ namespace AThousandDawns.Tests
         }
 
         [Test]
+        public void 차원_감염_특성은_판타지_적은_무공_무협_적은_마법만()
+        {
+            EnemyBrain.InfectionOverride = 1;
+            try
+            {
+                Assert.IsTrue(EnemyBrain.Allows(EnemyKind.Goblin, EliteTrait.Gyeonggong));
+                Assert.IsFalse(EnemyBrain.Allows(EnemyKind.Goblin, EliteTrait.Fireball));
+                Assert.IsFalse(EnemyBrain.Allows(EnemyKind.Grunt, EliteTrait.Gyeonggong));
+                Assert.IsTrue(EnemyBrain.Allows(EnemyKind.Grunt, EliteTrait.Fireball));
+                Assert.IsTrue(EnemyBrain.Allows(EnemyKind.Cultist, EliteTrait.Blink));
+                EnemyBrain.InfectionOverride = 0;
+                Assert.IsFalse(EnemyBrain.Allows(EnemyKind.Grunt, EliteTrait.Fireball), "끄면 안 나와요");
+            }
+            finally { EnemyBrain.InfectionOverride = 0; }
+        }
+
+        [UnityTest]
+        public IEnumerator 차원_감염_정예는_경공_화염구_순간이동을_써요([Values(EliteTrait.Gyeonggong, EliteTrait.Fireball, EliteTrait.Blink)] EliteTrait trait)
+        {
+            EnemyBrain.InfectionOverride = 1;
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var kind = trait == EliteTrait.Gyeonggong ? EnemyKind.Goblin : EnemyKind.Grunt;
+            var elite = director.Spawn(kind, player.transform.position + new Vector3(0f, 0f, 8f));
+            elite.MakeElite(trait);
+            Assert.IsTrue(elite.HasTrait(trait));
+            bool used = false;
+            System.Action<EnemyBrain, Vector3> dashed = (e, at) => used |= e == elite;
+            System.Action<EnemyBrain, Vector3, Vector3> blinked = (e, a, b) => used |= e == elite;
+            EnemyBrain.Dashed += dashed;
+            EnemyBrain.Blinked += blinked;
+            Time.timeScale = 2f;
+            float end = Time.time + 14f;
+            while (Time.time < end && !used && !(trait == EliteTrait.Fireball && BloodBurst.Live > 0)) { player.Heal(9999f); yield return null; }
+            EnemyBrain.Dashed -= dashed;
+            EnemyBrain.Blinked -= blinked;
+            EnemyBrain.InfectionOverride = 0;
+            Assert.IsTrue(used || (trait == EliteTrait.Fireball && BloodBurst.Live > 0), $"{trait}을(를) 써요");
+        }
+
+        [Test]
         public void 판타지_적은_모든_지역_목록에_섞여요()
         {
             RoomBudget.FantasyOverride = 1;
