@@ -12,7 +12,7 @@ namespace AThousandDawns.Art
     //   깃발: 방 아래 이름이 "Banner"로 시작하는 것 (묶음 "… Banners"는 빼요, 피벗이 위쪽 가장자리)을 바람에 살랑이게 해요.
     //     메인 아트 꾸미기가 늦게 붙을 수 있어서 방을 찾은 뒤 20초 동안 2초마다 새 깃발 · 균열을 찾아요 (이름은 오브젝트마다 한 번만).
     //   왕좌의 방: 뚫린 지붕 틈에서 보랏빛 빛줄기 셋이 비스듬히 내려와 천천히 일렁여요.
-    //     보스가 깨어나면 (EnemyBrain.Woke) 왕좌 뒤 균열 ("Throne"이 든 오브젝트 뒤쪽, 없으면 북쪽 벽 가운데)이 한 번 크게 번쩍여요.
+    //     보스가 깨어나면 (EnemyBrain.Woke) 왕좌 뒤 균열 (메인 아트 "Great Rift" 자리, 없으면 "Throne"이 든 오브젝트 뒤쪽 +Z, 그것도 없으면 북쪽 벽 가운데)이 한 번 크게 번쩍여요.
     // 그림: EliteFx/Blink (균열).
     public class InkCourtyardFx : MonoBehaviour
     {
@@ -21,7 +21,7 @@ namespace AThousandDawns.Art
 
         sealed class Site
         {
-            public Transform Room, Throne;
+            public Transform Room, Throne, GreatRift;
             public Bounds Area;
             public ParticleSystem Motes, Dust;
             public bool Boss, Awake;
@@ -134,6 +134,7 @@ namespace AThousandDawns.Art
                 string n = t.name;
                 if (n == "Crack") s.Cracks.Add(t);
                 if (s.Throne == null && n.IndexOf("Throne", StringComparison.OrdinalIgnoreCase) >= 0) s.Throne = t;
+                if (s.GreatRift == null && n == "Great Rift") s.GreatRift = t; // 메인 아트: 왕좌 뒤 북쪽 벽 너머 하늘의 큰 균열
                 if (n.StartsWith("Banner", StringComparison.OrdinalIgnoreCase) && !n.StartsWith("Banners", StringComparison.OrdinalIgnoreCase) && t.GetComponent<InkBannerSway>() == null) // "Banner 1" … (묶음 "… Banners"는 빼요)
                     t.gameObject.AddComponent<InkBannerSway>();
             }
@@ -240,7 +241,13 @@ namespace AThousandDawns.Art
         void ThroneFlare(Site s)
         {
             if (s.Room == null) return;
-            Vector3 p = s.Throne != null ? s.Throne.position + Vector3.forward * 1.2f : new Vector3(s.Area.center.x, 0f, s.Area.max.z - 1f); // 왕좌 뒤 (없으면 북쪽 벽 가운데)
+            if (s.GreatRift != null) // 하늘의 큰 균열 자리에서 번쩍 (세운 균열을 바닥에서 그 높이까지)
+            {
+                var g = s.GreatRift.position;
+                Flare(new Vector3(g.x, 0f, g.z), Mathf.Max(5f, g.y * 1.6f), 1f, 1.6f, true);
+                return;
+            }
+            Vector3 p = s.Throne != null ? s.Throne.position + Vector3.forward * 1.2f : new Vector3(s.Area.center.x, 0f, s.Area.max.z - 1f); // 왕좌 뒤 (등받이 +Z, 없으면 북쪽 벽 가운데)
             Flare(p, 5f, 1f, 1.6f, true);
         }
 
