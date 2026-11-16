@@ -6313,3 +6313,75 @@ MonoBehaviour:
     value: 0.6
     unit: 
     note: "\uACE0\uC218 \uC774\uB3D9\uAE30 \uD53C\uD574 (\uACF5\uACA9 \uB300\uBE44)"
+  - key: fantasy_event.chance.r0
+    value: 0.25
+    unit: 
+    note: "\uD310\uD0C0\uC9C0 \uC774\uBCA4\uD2B8: \uC8FD\uB9BC\uC5D0\uC11C \uC774\uBCA4\uD2B8 \uBC29\uC774 \uD310\uD0C0\uC9C0 \uCABD\uC77C \uD655\uB960"
+  - key: fantasy_event.chance.r1
+    value: 0.35
+    unit: 
+    note: "\uD310\uD0C0\uC9C0 \uC774\uBCA4\uD2B8: \uD3D0\uC0AC\uCC30"
+  - key: fantasy_event.chance.r2
+    value: 0.45
+    unit: 
+    note: "\uD310\uD0C0\uC9C0 \uC774\uBCA4\uD2B8: \uC7A5\uAC15 \uC218\uCC44"
+  - key: fantasy_event.chance.r3
+    value: 0.55
+    unit: 
+    note: "\uD310\uD0C0\uC9C0 \uC774\uBCA4\uD2B8: \uCC9C\uB9C8\uCD1D"
+  - key: price.forge_fee
+    value: 80
+    unit: "\uC740\uC790"
+    note: "\uC774\uACC4 \uB300\uC7A5\uAC04: \uAE30\uBB3C\uC744 \uAC19\uC740 \uD0A4\uC6CC\uB4DC \uC774\uACC4 \uAE30\uBB3C\uB85C \uBCBC\uB9AC\uB294 \uAC12"
+  - key: price.chapel_offer
+    value: 60
+    unit: "\uC740\uC790"
+    note: "\uBB34\uB108\uC9C4 \uC131\uB2F9 \uC81C\uB2E8: \uBC14\uCE58\uB294 \uC740\uC790"
+  - key: event.chapel_bless_chance
+    value: 0.65
+    unit: 
+    note: "\uC131\uB2F9 \uC81C\uB2E8: \uCD95\uBCF5 \uD655\uB960 (\uC544\uB2C8\uBA74 \uC800\uC8FC)"
+  - key: event.chapel_bless
+    value: 0.2
+    unit: 
+    note: "\uC131\uB2F9 \uCD95\uBCF5: \uC774\uBC88 \uCE35 \uBC1B\uB294 \uD53C\uD574 \uAC10\uC18C"
+  - key: event.chapel_curse
+    value: 0.15
+    unit: 
+    note: "\uC131\uB2F9 \uC800\uC8FC: \uC774\uBC88 \uCE35 \uBC1B\uB294 \uD53C\uD574 \uC99D\uAC00"
+  - key: event.chapel_pray_heal
+    value: 0.15
+    unit: 
+    note: "\uC131\uB2F9 \uC81C\uB2E8: \uAE30\uB3C4\uB9CC \uD558\uBA74 \uCCB4\uB825 \uD68C\uBCF5 (\uCD5C\uB300 \uCCB4\uB825 \uB300\uBE44)"
+  - key: event.spring_heal
+    value: 0.4
+    unit: 
+    note: "\uB9C8\uB098 \uC0D8: \uB9C8\uC2DC\uBA74 \uCCB4\uB825 \uD68C\uBCF5 (\uCD5C\uB300 \uCCB4\uB825 \uB300\uBE44)"
+  - key: event.spring_power
+    value: 1
+    unit: 
+    note: "\uB9C8\uB098 \uC0D8: \uBAB8\uC5D0 \uBD80\uC73C\uBA74 \uC774\uBC88 \uCE35 \uACF5\uB825"
+  - key: event.sealed_xp
+    value: 10
+    unit: 
+    note: "\uBD09\uC778\uB41C \uB9C8\uAC80: \uB2E4\uC2DC \uBD09\uC778\uD558\uBA74 \uC218\uB828\uCE58"
+  - key: event.sealed_skeletons
+    value: 2
+    unit: "\uB9C8\uB9AC"
+    note: "\uBD09\uC778\uB41C \uB9C8\uAC80: \uC815\uC608 \uC624\uD06C\uC640 \uAC19\uC774 \uB098\uC624\uB294 \uC2A4\uCF08\uB808\uD1A4"
+  - key: event.sealed_grade.common
+    value: 0
+    unit: 
+    note: "\uBD09\uC778\uB41C \uB9C8\uAC80 \uBCF4\uC0C1 \uB4F1\uAE09: \uC77C\uBC18"
+  - key: event.sealed_grade.uncommon
+    value: 0
+    unit: 
+    note: "\uBD09\uC778\uB41C \uB9C8\uAC80 \uBCF4\uC0C1 \uB4F1\uAE09: \uACE0\uAE09"
+  - key: event.sealed_grade.rare
+    value: 0.75
+    unit: 
+    note: "\uBD09\uC778\uB41C \uB9C8\uAC80 \uBCF4\uC0C1 \uB4F1\uAE09: \uD76C\uADC0"
+  - key: event.sealed_grade.legendary
+    value: 0.25
+    unit: 
+    note: "\uBD09\uC778\uB41C \uB9C8\uAC80 \uBCF4\uC0C1 \uB4F1\uAE09: \uC804\uC124"

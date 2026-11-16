@@ -19,7 +19,7 @@ namespace AThousandDawns.Prototype
             "blood_pool" => bloodPoolProp,
             "demon_altar" => demonAltarProp,
             "captive_hero" => captiveHeroProp,
-            _ => null,
+            _ => FantasyPropFor(id), // 판타지 이벤트 소품 (RoomRun.FantasyEvents.cs)
         };
 
         // 방에 들어갈 때: 이전 소품을 치우고 이벤트 방이면 가운데에 세워요 (구한 고수는 다시 세우지 않아요)
@@ -32,6 +32,7 @@ namespace AThousandDawns.Prototype
             var prefab = PropFor(room.EventId);
             if (prefab == null) return;
             _eventProp = Instantiate(prefab, Combat.center, Quaternion.identity);
+            if (room.EventId == "sealed_blade" && room.Cleared) HideSealedBlade(); // 이미 뽑은 마검
         }
 
         // 구출 전투에서 이겼을 때

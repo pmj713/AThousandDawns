@@ -612,6 +612,7 @@ namespace AThousandDawns.Prototype
                 arena.GrantOffer(RareOnlyWeights()); // 목어 소리 매복을 물리침
                 text += " · 파계승들을 물리쳤어요, 희귀 기물";
             }
+            FinishSealedFight(ref text); // 봉인된 마검 (RoomRun.FantasyEvents.cs)
             if (_escortFight)
             {
                 _escortFight = false;

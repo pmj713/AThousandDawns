@@ -52,7 +52,7 @@ namespace AThousandDawns.Prototype
                 if (room.Kind != FloorRoomKind.Event) continue;
                 var left = UnusedEvents();
                 if (left.Count == 0) continue;
-                room.EventId = left[_rng.Next(left.Count)];
+                room.EventId = PickEventId(left); // 판타지 이벤트는 지역 확률로 (RoomRun.FantasyEvents.cs)
                 _usedEvents.Add(room.EventId);
             }
         }
@@ -65,6 +65,7 @@ namespace AThousandDawns.Prototype
             if (_region == 1) foreach (var id in TempleEventIds) if (!_usedEvents.Contains(id)) left.Add(id);
             if (_region == 2) foreach (var id in RiverEventIds) if (!_usedEvents.Contains(id)) left.Add(id);
             if (_region >= 3) foreach (var id in TombEventIds) if (!_usedEvents.Contains(id)) left.Add(id);
+            if (RoomBudget.FantasyOn) foreach (var id in FantasyEventIds) if (!_usedEvents.Contains(id)) left.Add(id); // 판타지 이벤트 (RoomRun.FantasyEvents.cs)
             return left;
         }
 
@@ -394,7 +395,7 @@ namespace AThousandDawns.Prototype
                     break;
 
                 default:
-                    if (!BuildTempleEvent(v, id) && !BuildRiverEvent(v, id) && !BuildTombEvent(v, id)) return null; // RoomRun.TempleEvents.cs · RiverEvents.cs · TombEvents.cs
+                    if (!BuildTempleEvent(v, id) && !BuildRiverEvent(v, id) && !BuildTombEvent(v, id) && !BuildFantasyEvent(v, id)) return null; // RoomRun.TempleEvents.cs · RiverEvents.cs · TombEvents.cs
                     break;
             }
             return v;

@@ -1574,3 +1574,21 @@ master_kit.leap_distance,8,cell,고수 이동기: 이보다 멀면 도약,고수
 master_kit.leap_cooldown,14,s,고수 이동기 간격,고수 공통기
 master_kit.leap_radius,1.8,cell,고수 이동기 내려찍기 반경,고수 공통기
 master_kit.leap_ratio,60%,,고수 이동기 피해 (공격 대비),고수 공통기
+fantasy_event.chance.r0,25%,,판타지 이벤트: 죽림에서 이벤트 방이 판타지 쪽일 확률,판타지 이벤트
+fantasy_event.chance.r1,35%,,판타지 이벤트: 폐사찰,판타지 이벤트
+fantasy_event.chance.r2,45%,,판타지 이벤트: 장강 수채,판타지 이벤트
+fantasy_event.chance.r3,55%,,판타지 이벤트: 천마총,판타지 이벤트
+price.forge_fee,80,은자,이계 대장간: 기물을 같은 키워드 이계 기물로 벼리는 값,판타지 이벤트
+price.chapel_offer,60,은자,무너진 성당 제단: 바치는 은자,판타지 이벤트
+event.chapel_bless_chance,65%,,성당 제단: 축복 확률 (아니면 저주),판타지 이벤트
+event.chapel_bless,20%,,성당 축복: 이번 층 받는 피해 감소,판타지 이벤트
+event.chapel_curse,15%,,성당 저주: 이번 층 받는 피해 증가,판타지 이벤트
+event.chapel_pray_heal,15%,,성당 제단: 기도만 하면 체력 회복 (최대 체력 대비),판타지 이벤트
+event.spring_heal,40%,,마나 샘: 마시면 체력 회복 (최대 체력 대비),판타지 이벤트
+event.spring_power,1,,마나 샘: 몸에 부으면 이번 층 공력,판타지 이벤트
+event.sealed_xp,10,,봉인된 마검: 다시 봉인하면 수련치,판타지 이벤트
+event.sealed_skeletons,2,마리,봉인된 마검: 정예 오크와 같이 나오는 스켈레톤,판타지 이벤트
+event.sealed_grade.common,0%,,봉인된 마검 보상 등급: 일반,판타지 이벤트
+event.sealed_grade.uncommon,0%,,봉인된 마검 보상 등급: 고급,판타지 이벤트
+event.sealed_grade.rare,75%,,봉인된 마검 보상 등급: 희귀,판타지 이벤트
+event.sealed_grade.legendary,25%,,봉인된 마검 보상 등급: 전설,판타지 이벤트
