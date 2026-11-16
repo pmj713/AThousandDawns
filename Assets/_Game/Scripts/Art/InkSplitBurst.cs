@@ -27,6 +27,7 @@ namespace AThousandDawns.Art
 
         static void OnSplit(EnemyBrain elite, Vector3 at, EnemyBrain a, EnemyBrain b)
         {
+            if (elite is SlimeBrain) return; // 슬라임은 InkFantasyFx가 유리 슬라임으로 철퍽
             Vector3 side = elite != null ? elite.transform.right : Vector3.right; // 갈라진 둘은 좌우로 벌어져 서요
             Vector3 dirA = a != null ? a.transform.position - at : -side;
             Vector3 dirB = b != null ? b.transform.position - at : side;

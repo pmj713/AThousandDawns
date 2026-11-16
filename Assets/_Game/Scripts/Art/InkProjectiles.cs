@@ -8,6 +8,7 @@ namespace AThousandDawns.Art
     // 수묵 시험판: 적 투사체와 폭발에 수묵 겉모습을 입혀요 (게임 코드는 그대로, 새로 생긴 오브젝트 이름을 보고 렌더러만 끄고 모양을 덧달아요).
     //   "Arrow"     궁수 화살: 먹색 화살대·촉·깃 + 붓 먹선 꼬리. 근처에서 쏜 게 살수면 표창: 빙빙 도는 네 날 표창 + 가는 꼬리
     //               쏜 게 혈궁수(천마총)면 핏빛 화살대·깃 + 붉은 꼬리
+    //               쏜 게 고블린 궁수(차원 겹침, Arrow.Owner)면 금빛 화살대·붉은 유리 촉·청록 깃 + 붉은 금빛 꼬리
     //   "Telegraph" (부모 없는 것 = EnemyDirector.SpawnBurst, 화약 산적 폭발·녹림왕 내려찍기): 바닥에 먹이 확 번지고,
     //               가운데 주홍 불꽃이 번쩍했다 빠지고, 먹 연기가 피어올라 옅어져요
     // 재질은 씬 빌더(PrototypeSceneBuilder.InkRunProps)가 채워요.
@@ -76,8 +77,47 @@ namespace AThousandDawns.Art
             var s = t.lossyScale;
             visual.localScale = new Vector3(1f / s.x, 1f / s.y, 1f / s.z);
 
-            if (FiredByAssassin(t.position)) BuildShuriken(visual);
+            if (ShooterKind(arrow) == EnemyKind.GoblinArcher) BuildGoblinArrow(visual); // 차원 겹침: 붉은·금빛 유리 화살
+            else if (FiredByAssassin(t.position)) BuildShuriken(visual);
             else BuildArrow(visual, FiredBy(t.position, EnemyKind.BloodArcher)); // 혈궁수면 붉은 화살
+        }
+
+        // 쏜 적 (Arrow.Owner, 없으면 _owner) — 화살마다 처음 한 번만 읽어요
+        static readonly System.Reflection.PropertyInfo OwnerProp = typeof(Arrow).GetProperty("Owner");
+        static readonly System.Reflection.FieldInfo OwnerField = typeof(Arrow).GetField("Owner") ?? typeof(Arrow).GetField("_owner", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+        static EnemyKind? ShooterKind(GameObject go)
+        {
+            var arrow = go.GetComponent<Arrow>();
+            if (arrow == null) return null;
+            var owner = (OwnerProp != null ? OwnerProp.GetValue(arrow) : OwnerField != null ? OwnerField.GetValue(arrow) : null) as Component;
+            var brain = owner != null ? owner.GetComponentInParent<EnemyBrain>() : null;
+            return brain != null ? brain.Kind : (EnemyKind?)null;
+        }
+
+        // 고블린 궁수 (판타지): 금빛 화살대 · 붉은 유리 촉 · 청록 깃 + 붉은→금빛 빛 꼬리 (수묵과 다른 또렷한 채색)
+        void BuildGoblinArrow(Transform visual)
+        {
+            var shaft = Tinted(shaftMaterial, new Color(0.85f, 0.6f, 0.15f));
+            var head = Tinted(featherMaterial, new Color(0.85f, 0.1f, 0.12f));
+            var feather = Tinted(featherMaterial, new Color(0.1f, 0.65f, 0.6f), "Teal");
+            Box(visual, "Shaft", new Vector3(0f, 0f, -0.05f), new Vector3(0.04f, 0.04f, 0.78f), Quaternion.identity, shaft);
+            Box(visual, "Head", new Vector3(0f, 0f, 0.38f), new Vector3(0.11f, 0.03f, 0.11f), Quaternion.Euler(0f, 45f, 0f), head);
+            for (int i = -1; i <= 1; i += 2)
+                Box(visual, "Fletch", new Vector3(i * 0.04f, 0.01f, -0.38f), new Vector3(0.07f, 0.012f, 0.16f), Quaternion.Euler(0f, i * 18f, 0f), feather);
+            Trail(visual, new Vector3(0f, 0f, -0.42f), 0.2f, 0.28f, new Color(1f, 0.55f, 0.15f, 0.9f));
+        }
+
+        readonly Dictionary<string, Material> _tinted = new Dictionary<string, Material>();
+        Material Tinted(Material source, Color color, string key = null)
+        {
+            if (source == null) return null;
+            key = source.name + (key ?? color.ToString());
+            if (_tinted.TryGetValue(key, out var m)) return m;
+            m = new Material(source) { name = source.name + " (Fantasy)" };
+            m.SetColor("_BaseColor", color);
+            _tinted[key] = m;
+            return m;
         }
 
         // 쏜 자리 가까이 살수가 있으면 표창이에요 (화살과 표창은 같은 길로 나와요)

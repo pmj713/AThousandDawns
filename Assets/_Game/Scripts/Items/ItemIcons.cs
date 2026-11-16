@@ -47,7 +47,25 @@ namespace AThousandDawns.Items
         }
 
         // IMGUI: 아이콘이 있으면 rect 안에 비율을 지켜 그리고 true
-        public static bool Draw(Rect rect, ItemDefinition def, float alpha = 1f) => Draw(rect, Get(def), alpha);
+        public static bool Draw(Rect rect, ItemDefinition def, float alpha = 1f)
+        {
+            bool drawn = Draw(rect, Get(def), alpha);
+            if (drawn && def.otherworld) DrawRift(rect, alpha);
+            return drawn;
+        }
+
+        // 이계 기물 표시: 아이콘 둘레에 보랏빛 차원 균열 테두리가 천천히 숨 쉬듯 빛나요 (HudArt/RiftFrame)
+        public static void DrawRift(Rect rect, float alpha = 1f)
+        {
+            var tex = Load("HudArt/RiftFrame");
+            if (tex == null) return;
+            float pulse = 0.75f + 0.25f * Mathf.Sin(Time.unscaledTime * 2.4f);
+            float grow = Mathf.Min(rect.width, rect.height) * 0.14f;
+            var old = GUI.color;
+            GUI.color = new Color(old.r, old.g, old.b, old.a * alpha * pulse);
+            GUI.DrawTexture(new Rect(rect.x - grow, rect.y - grow, rect.width + grow * 2f, rect.height + grow * 2f), tex, ScaleMode.StretchToFill, true);
+            GUI.color = old;
+        }
 
         public static bool Draw(Rect rect, Texture2D tex, float alpha = 1f)
         {

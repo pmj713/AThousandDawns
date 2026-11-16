@@ -98,8 +98,8 @@ namespace AThousandDawns.Fx
             if (_rod != null)
             {
                 Tint(Color.white, 1f);
-                GUIUtility.RotateAroundPivot(90f, new Vector2(x, cy));
-                GUI.DrawTexture(new Rect(x - len * 0.5f, cy - thick * 0.5f, len, thick), _rod, ScaleMode.StretchToFill);
+                GUI.matrix = _matrix * Matrix4x4.TRS(new Vector3(x, cy, 0f), Quaternion.Euler(0f, 0f, 90f), Vector3.one); // RotateAroundPivot은 UiScale 배율에서 축이 어긋나요
+                GUI.DrawTexture(new Rect(-len * 0.5f, -thick * 0.5f, len, thick), _rod, ScaleMode.StretchToFill);
                 GUI.matrix = _matrix;
             }
             else
