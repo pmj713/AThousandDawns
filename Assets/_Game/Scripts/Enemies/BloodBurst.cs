@@ -12,6 +12,7 @@ namespace AThousandDawns.Enemies
         Damageable _owner;
         bool _hasOwner; // 던진 적이 있는 핏덩이 (죽음의 폭발 · 혈지 마기는 주인이 없어요)
         BurstKind _kind;
+        public BurstKind Kind => _kind; // 아트: 핏덩이 · 죽음의 폭발 · 마기 기둥 · 화염구 예고를 다르게
         float _timer, _total, _radius, _damage, _fireLife;
 
         public static int Live { get; private set; }
