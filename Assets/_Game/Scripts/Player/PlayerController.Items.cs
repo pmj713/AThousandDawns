@@ -60,6 +60,9 @@ namespace AThousandDawns.Player
             ElementalMods.Current = new ElementalMods();
         }
 
+        // 이계 세트 효과: 그 단계에 이르렀으면 세트 수치, 아니면 0 (HybridSets)
+        float Hy(Keyword keyword, int tier) => _items != null && _items.HybridLevel(keyword) >= tier ? HybridSets.Value(keyword, tier) : 0f;
+
         // 기물·기·키워드가 바뀔 때마다 (기물이 바뀌면 키워드 개수도 바뀌어 OnKeywordsChanged에서 불러요)
         void RefreshItems()
         {
@@ -69,28 +72,28 @@ namespace AThousandDawns.Player
             {
                 // #열양
                 BurnDurationBonus = pure ? V("censer", 2) : V("censer", 1),
-                BurnDamageBonus = V("vermilion_feather", 1),
-                BurnMaxBonus = C("vermilion_feather", 2),
+                BurnDamageBonus = V("vermilion_feather", 1) + V("salamander_cloak", 1) + Hy(Keyword.Yeolyang, 1), // + 이계 샐러맨더 망토 · 업화
+                BurnMaxBonus = C("vermilion_feather", 2) + Mathf.RoundToInt(Hy(Keyword.Yeolyang, 2)),
                 BurnRampPer = V("oil_lamp", 1),
                 BurnRampMax = V("oil_lamp", 2),
                 BurnRampInterval = Has("oil_lamp") ? V("oil_lamp", 3) : 2f,
                 BurnOvercap = C("fire_scale", 1),
                 BurnTick = ForgeBurnTick, // 대장간 열양 강화판
                 // #빙백
-                SlowDurationBonus = V("snow_hood", 1),
+                SlowDurationBonus = V("snow_hood", 1) + Hy(Keyword.Bingbaek, 1), // + 서리 마나
                 SlowExtraChance = V("frost_bead", 1), // 꾸러미 1 한기 구슬
                 SlowWindupExtra = V("snowflake_crystal", 1) * (pure ? V("snowflake_crystal", 2) : 1f),
                 BossSlowBonus = V("ice_beads", 1),
                 BossFreezeImmunityReduction = pure ? V("ice_beads", 2) : 0f,
-                FreezeDurationBonus = V("icemirror", 1),
+                FreezeDurationBonus = V("icemirror", 1) + Hy(Keyword.Bingbaek, 2),
                 FreezeImmunityMultiplier = Deviated("icemirror") ? MirrorDeviatedImmunity : 1f,
                 PatternBan = V("snow_lotus_sachet", 1),
                 // #뇌정
                 ShockDurationBonus = pure ? V("thunderstone", 2) : V("thunderstone", 1),
-                ChainTargetsBonus = C("thunder_drum", 1),
+                ChainTargetsBonus = C("thunder_drum", 1) + Mathf.RoundToInt(Hy(Keyword.Noejeong, 1)), // + 뇌문
                 ChainDamageBonus = pure ? V("thunder_drum", 2) : 0f,
                 DischargeMaxBonus = V("thunder_brush", 1),
-                DischargeBonus = V("thunder_seal", 1),
+                DischargeBonus = V("thunder_seal", 1) + V("thunder_rune_belt", 1) + Hy(Keyword.Noejeong, 2), // + 이계 뇌전 룬 허리띠
                 CohesionShockMultiplier = Has("thunder_seal") ? V("thunder_seal", 2) : 1f,
                 SplashRatio = V("cloud_flute", 1),
                 SplashRadius = V("cloud_flute", 2),

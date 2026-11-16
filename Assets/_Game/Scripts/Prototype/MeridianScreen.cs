@@ -469,6 +469,50 @@ namespace AThousandDawns.Prototype
                 GUI.Label(new Rect(row.x + row.height, row.y + 6f * K, row.width - row.height, row.height), $"{Colored(k)} {count}   {stageText}", _small);
                 y += rowH;
             }
+            DrawHybridRows(area, ref y, rowH, mouse);
+        }
+
+        // 이계 세트 (혼종 키워드): 이계 기물이 하나라도 있는 키워드만. 2개 · 3개에서 단계, 마우스를 올리면 효과
+        Keyword? _hoveredHybrid;
+        Rect _hoveredHybridRect;
+
+        static readonly Texture2D[] HybridIconCache = new Texture2D[PlayerKeywords.KeywordCount];
+        static bool[] _hybridIconLooked = new bool[PlayerKeywords.KeywordCount];
+
+        // 혼종 세트 문장 (아트, Resources/HybridIcons/{id}). 한 번만 찾아요
+        static Texture2D HybridIcon(Keyword k)
+        {
+            if (!_hybridIconLooked[(int)k]) { _hybridIconLooked[(int)k] = true; HybridIconCache[(int)k] = Resources.Load<Texture2D>("HybridIcons/" + HybridSets.Id(k)); }
+            return HybridIconCache[(int)k];
+        }
+
+        void DrawHybridRows(Rect area, ref float y, float rowH, Vector2 mouse)
+        {
+            _hoveredHybrid = null;
+            var items = Player.Items;
+            if (items == null || !items.Board.EquipMode) return;
+            bool title = false;
+            for (int i = 0; i < PlayerKeywords.KeywordCount; i++)
+            {
+                var k = (Keyword)i;
+                int count = items.OtherworldCount(k);
+                if (!HybridSets.Has(k) || count == 0) continue;
+                if (!title)
+                {
+                    if (y + 26f * K > area.yMax) return;
+                    GUI.Label(new Rect(area.x + 8f * K, y + 4f * K, area.width - 16f * K, 22f * K), "<color=#c9a0ff><b>혼종 세트</b> (이계 기물)</color>", _small);
+                    y += 28f * K;
+                    title = true;
+                }
+                if (y + rowH > area.yMax) return;
+                var row = new Rect(area.x + 6f * K, y, area.width - 12f * K, rowH - 4f * K);
+                if (row.Contains(mouse)) { _hoveredHybrid = k; _hoveredHybridRect = row; Fill(row, new Color(1f, 1f, 1f, 0.08f)); }
+                int level = items.HybridLevel(k);
+                ItemIcons.Draw(new Rect(row.x + 2f * K, row.y + 4f * K, row.height - 8f * K, row.height - 8f * K), HybridIcon(k));
+                string stage = level > 0 ? $"<color=#c9a0ff><b>{level}단계</b></color>" : "<color=#9a9a9a>단계 없음</color>";
+                GUI.Label(new Rect(row.x + row.height, row.y + 6f * K, row.width - row.height, row.height), $"{HybridSets.Name(k)} {count}/{HybridSets.Tier2Count}   {stage}", _small);
+                y += rowH;
+            }
         }
 
         // 마우스를 올린 기물(판 위) · 키워드의 설명을 그 옆에 띄워요. 끌고 있을 땐 아래 설명 칸만
@@ -483,6 +527,15 @@ namespace AThousandDawns.Prototype
                 var dd = _dragged.Def;
                 DrawTooltipBox(PadActive ? new Vector2(_padRect.xMax + 12f * K, _padRect.y) : new Vector2(mouse.x + 60f * K, mouse.y + 30f * K),
                     $"<b>{dd.name}</b>  이 칸 기 {qi} → {PreviewLabel(dd, qi, bonus, Preview(dd, qi, bonus))}\n{ScaledEffect(dd, qi, bonus)}");
+                return;
+            }
+            if (_hoveredHybrid is Keyword h && Player.Items != null)
+            {
+                int count = Player.Items.OtherworldCount(h);
+                string text = $"<b><color=#c9a0ff>{HybridSets.Name(h)}</color></b>  {Colored(h)} 이계 기물 {count}개 (기 부족은 빼요)" +
+                    (count >= HybridSets.Tier1Count ? $"\n<color=#ffd27a>{HybridSets.Tier1Count}개 ✔</color>  {HybridSets.TierText(h, 1)}" : $"\n<color=#8a8a8a>{HybridSets.Tier1Count}개  {HybridSets.TierText(h, 1)}</color>") +
+                    (count >= HybridSets.Tier2Count ? $"\n<color=#ffd27a>{HybridSets.Tier2Count}개 ✔</color>  {HybridSets.TierText(h, 2)}" : $"\n<color=#8a8a8a>{HybridSets.Tier2Count}개  {HybridSets.TierText(h, 2)}</color>");
+                DrawTooltipBox(new Vector2(_hoveredHybridRect.xMax + 12f * K, _hoveredHybridRect.y), text);
                 return;
             }
             if (_hoveredKeyword is Keyword k && Player.Keywords != null)
