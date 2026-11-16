@@ -25,6 +25,7 @@ Shader "AThousandDawns/InkCharacter"
         _AuraColor ("Aura (가장자리 기운, a = 세기)", Color) = (0, 0, 0, 0)
         _CrackColor ("Crack (갈라진 금, a = 양)", Color) = (0, 0, 0, 0)
         _Dissolve ("Dissolve (먹으로 흩어짐 0~1)", Range(0, 1)) = 0
+        _VertexTint ("Vertex Tint (정점 색을 곱해요, 무기 부위 색)", Range(0, 1)) = 0
 
         [Header(Brush Outline)]
         _OutlineWidth ("Outline Width (px)", Range(0, 8)) = 3
@@ -62,6 +63,7 @@ Shader "AThousandDawns/InkCharacter"
             half4 _AuraColor;
             half4 _CrackColor;
             half _Dissolve;
+            half _VertexTint;
         CBUFFER_END
 
             // 지역 색 양 (InkColorZones가 전역으로 정해요): 0 = 재질 채도 그대로(수묵), 1 = 원래 색 전부
@@ -156,6 +158,7 @@ Shader "AThousandDawns/InkCharacter"
                 float4 positionOS : POSITION;
                 float3 normalOS : NORMAL;
                 float2 uv : TEXCOORD0;
+                half4 color : COLOR;
             };
 
             struct Varyings
@@ -166,6 +169,7 @@ Shader "AThousandDawns/InkCharacter"
                 half fogFactor : TEXCOORD2;
                 float2 uv : TEXCOORD3;
                 float3 positionOS : TEXCOORD4;
+                half4 color : TEXCOORD5;
             };
 
             Varyings Vert(Attributes input)
@@ -178,6 +182,7 @@ Shader "AThousandDawns/InkCharacter"
                 output.fogFactor = ComputeFogFactor(pos.positionCS.z);
                 output.uv = TRANSFORM_TEX(input.uv, _BaseMap);
                 output.positionOS = input.positionOS.xyz;
+                output.color = input.color;
                 return output;
             }
 
@@ -190,6 +195,7 @@ Shader "AThousandDawns/InkCharacter"
                 // 채색 툰 (수묵 걷어 냄): 텍스처·재질 원래 색 그대로, 빛 받는 면과 그늘 두 단계 (경계는 부드럽게).
                 //   그늘은 색을 살린 채 푸르스름하게 어둡고, 하늘빛 환경광을 조금 더해 새까맣게 떨어지지 않아요. 가장자리에 옅은 역광
                 half3 baseRgb = _BaseColor.rgb * SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv).rgb;
+                baseRgb *= lerp(half3(1, 1, 1), input.color.rgb, _VertexTint);   // 무기: 부위마다 칠한 정점 색 (칼날 강철 · 자루 나무 · 코등이 금속)
                 float ndl = dot(n, light.direction);
                 float lightAmt = smoothstep(-0.1, 0.2, ndl) * lerp(0.35, 1.0, light.shadowAttenuation);
                 half3 lightCol = lerp(half3(1, 1, 1), light.color, 0.5);

@@ -494,7 +494,7 @@ namespace AThousandDawns.EditorTools
             bool fantasy = FantasyEnemies.Contains(name);
             if (fantasy) FantasyLook(body);
             EditorUtility.SetDirty(body);
-            var weapon = fantasy ? FantasyLook(GetInkMaterial("Ink_Fantasy_Weapon", "#6B4A2B", 0.85f)) : GetInkMaterial("Ink_Enemy_Weapon", "#3A3F44", 0.1f);
+            var weapon = WeaponMaterial(fantasy ? FantasyLook(GetInkMaterial("Ink_Fantasy_Weapon", "#6B4A2B", 0.85f)) : GetInkMaterial("Ink_Enemy_Weapon", "#3A3F44", 0.1f));   // 부위 색은 정점 색 (PrototypeSceneBuilder.InkWeaponColor.cs)
             var red = GetInkMaterial("Ink_Enemy_Red", "#B3261E", 0.9f);       // 깃발·목도리처럼 알아보는 붉은 천
             var rattan = GetInkMaterial("Ink_Enemy_Rattan", "#9C7A45", 0.5f);  // 등나무 방패
 
@@ -516,7 +516,8 @@ namespace AThousandDawns.EditorTools
                 }
                 else if (r.name.Contains("_Red_")) m = red;
                 else if (r.name.Contains("_Rattan_")) m = rattan;
-                else m = r.name.Contains("Weapon") || r.name.Contains("Dao") ? weapon : body;
+                else if (r.name.Contains("_Weapon_")) { m = weapon; TintWeapon(r, folder, name); }
+                else m = r.name.Contains("Dao") ? weapon : body;
                 r.sharedMaterials = Enumerable.Repeat(m, Mathf.Max(1, r.sharedMaterials.Length)).ToArray();
             }
             var animator = go.GetComponent<Animator>();
