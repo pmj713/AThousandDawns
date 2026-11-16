@@ -140,6 +140,8 @@ namespace AThousandDawns.Art
                 case EnemyKind.Takrang: Flat(visual, "MasterFx/Hook", 0.8f, 0f, Color.white); InkParticles.Frost(visual, Vector3.zero, 0.15f, 1.2f); Trail(visual, new Vector3(0f, 0f, -0.3f), 0.16f, 0.25f, new Color(0.35f, 0.7f, 1f, 0.8f)); return true;
                 case EnemyKind.BloodShadow: Flat(visual, "MasterFx/BloodDagger", 0.65f, 0f, Color.white); Trail(visual, Vector3.zero, 0.16f, 0.25f, new Color(0.95f, 0.1f, 0.15f, 0.85f)); return true;
                 case EnemyKind.GoblinChief: Face(visual, "MasterFx/Axe", 0.6f, true); Trail(visual, Vector3.zero, 0.14f, 0.18f, new Color(0.8f, 0.7f, 0.5f, 0.6f)); return true;
+                case EnemyKind.DarkElf: Flat(visual, "DarkElfFx/PoisonDagger", 0.7f, 0f, Color.white); Trail(visual, Vector3.zero, 0.14f, 0.22f, new Color(0.5f, 1f, 0.3f, 0.8f)); return true; // 다크 엘프 독 단검
+                case EnemyKind.DeathKnight: Flat(visual, "DeathKnightFx/GhostCrescent", 1.2f, -90f, Color.white); InkParticles.Frost(visual, Vector3.zero, 0.3f, 1.5f); Trail(visual, Vector3.zero, 0.35f, 0.25f, new Color(0.3f, 1f, 0.85f, 0.8f)); return true; // 데스나이트 저주 검기: 청록 유령불 초승달
             }
             return false;
         }
