@@ -74,7 +74,7 @@ namespace AThousandDawns.Art
             if (_director != null && _director.Enemies != null)
                 foreach (var e in _director.Enemies)
                 {
-                    if (e == null || e.IsDead || e.Damageable == null || e.Damageable.Ward <= 0 || _wards.ContainsKey(e)) continue;
+                    if (e == null || e.IsDead || e.Damageable == null || e.Damageable.Ward <= 0 || _wards.ContainsKey(e) || e.HasTrait(EliteTrait.Barrier)) continue; // 마법 방벽 정예는 InkFantasyEliteFx 청색 육각 막
                     var shell = Upright(_ring, Center(e), Mathf.Max(1.2f, e.Height * 1.3f), 6);
                     if (shell != null) { _wards[e] = shell; Pop(shell); }
                 }

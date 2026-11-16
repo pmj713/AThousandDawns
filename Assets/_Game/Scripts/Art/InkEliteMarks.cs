@@ -244,6 +244,9 @@ namespace AThousandDawns.Art
                 case "Gyeonggong": return new Color(0.2f, 0.9f, 0.85f);  // 청록 바람
                 case "Fireball": return new Color(1f, 0.42f, 0.1f);      // 주홍 불덩이
                 case "Blink": return new Color(0.7f, 0.3f, 1f);          // 보랏빛 균열
+                case "Barrier": return new Color(0.45f, 0.8f, 1f);       // 마법 방벽 청색
+                case "Curse": return new Color(0.55f, 0.2f, 0.85f);      // 저주 짙은 보라
+                case "Frenzy": return new Color(1f, 0.25f, 0.15f);       // 분노 붉은색
             }
             return new Color(1f, 0.3f, 0.1f); // 열화
         }
