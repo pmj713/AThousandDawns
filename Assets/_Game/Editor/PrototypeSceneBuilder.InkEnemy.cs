@@ -258,12 +258,19 @@ namespace AThousandDawns.EditorTools
             ["HeavenlyDemon"] = new[]
             {
                 new MoveSpec { attack = "천마일검", state = "Slash1", clips = new[] { "Slash1" } },
-                new MoveSpec { attack = "천마군림", state = "DemonSweep", clips = new[] { "DemonSweep" } },
+                new MoveSpec { attack = "마검 천마군림", state = "DemonSweep", clips = new[] { "DemonSweep" } },   // 3페이즈 (기존 천마군림 베기)
                 new MoveSpec { attack = "십자 검기", state = "CrossCut", clips = new[] { "Combo" } },
                 new MoveSpec { attack = "마기 장판", state = "MiasmaChop", clips = new[] { "Chop" } },
                 new MoveSpec { attack = "마기 손아귀", state = "Grip", clips = new[] { "Grip" } },
-                new MoveSpec { attack = "흡인", state = "Pull", clips = new[] { "Burst" }, mode = MoveMode.Play, seconds = 3.0f },
-                new MoveSpec { attack = "검비", state = "SwordRain", clips = new[] { "Burst" }, mode = MoveMode.Play, seconds = 2.5f },
+                new MoveSpec { attack = "마력 흡인", state = "Pull", clips = new[] { "Drain" }, mode = MoveMode.Play, seconds = 3.0f },   // 두 손을 앞으로 뻗어 빨아들여요
+                new MoveSpec { attack = "마검비", state = "SwordRain", clips = new[] { "SwordSky" }, mode = MoveMode.Play, seconds = 2.5f },   // 검을 하늘로
+                // 2페이즈 마법: 한 손을 들어 시전 (예고 동안 첫 자세에서 멈췄다가 판정 순간 내뻗어요)
+                new MoveSpec { attack = "화염구 비", state = "Meteor", clips = new[] { "CastOne" } },
+                new MoveSpec { attack = "마법진", state = "Rune", clips = new[] { "CastOne" } },
+                // 순간이동 검격: 흐려지는 동안(InkEnemyAnimator) 베기 자세로 멈췄다가, 플레이어 등 뒤에 나타나 베어요
+                new MoveSpec { attack = "순간이동 검격", state = "Blink", clips = new[] { "Slash1" } },
+                // 3페이즈 마검 천멸: 예고 1초 동안 검을 높이 들어 모았다가 내리꽂아요
+                new MoveSpec { attack = "마검 천멸", state = "Cleave", clips = new[] { "Cleave" } },
                 new MoveSpec { state = "Ascend", clips = new[] { "Ascend" } },
                 new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },   // 격파: 무릎 꿇고 고개 숙인 채 멈춰요 (엔딩 내내, InkCorpse)
             },
@@ -494,6 +501,7 @@ namespace AThousandDawns.EditorTools
             animator.runtimeAnimatorController = controller;
             animator.applyRootMotion = false;
             if (name == "Imp") go.AddComponent<AThousandDawns.Art.InkImpWings>();   // 날갯짓 (LeftWing·RightWing 뼈를 덧돌려요)
+            if (name == "HeavenlyDemon") go.AddComponent<AThousandDawns.Art.InkDemonPhaseFx>();   // 마검사 천마: 2페이즈 룬·손 마력, 3페이즈 검 불길
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, $"{folder}/{name}_Ink.prefab");
             Object.DestroyImmediate(go);
             AssetDatabase.SaveAssets();
