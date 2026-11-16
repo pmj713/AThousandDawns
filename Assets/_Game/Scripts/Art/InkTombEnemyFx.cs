@@ -194,7 +194,9 @@ namespace AThousandDawns.Art
             InkRootWatch.Prune(_roots);
             foreach (var root in InkRootWatch.New(_roots)) // 처음 보는 루트만 이름을 확인해요
             {
-                if (root.name != "핏덩이" || _globs.Contains(root) || root.GetComponent<BloodBurst>() == null) continue;
+                if (root.name != "핏덩이" || _globs.Contains(root)) continue;
+                var burst = root.GetComponent<BloodBurst>();
+                if (burst == null || InkInfectionFx.IsFireball(burst)) continue; // 화염구 예고는 InkInfectionFx가 불덩이로
                 _globs.Add(root);
                 var go = root;
                 Vector3 land = root.transform.position;

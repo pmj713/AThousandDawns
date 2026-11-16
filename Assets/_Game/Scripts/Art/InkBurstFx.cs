@@ -11,6 +11,7 @@ namespace AThousandDawns.Art
     //   신호: EnemyDirector.Burst · PlayerController.BurstCue (자리, 반경, BurstKind). Default는 예전 공용 먹 폭발(InkProjectiles) 그대로.
     //   Gunpowder 화약: 주황 불덩이가 확 부풀고 검은 연기 · 불티 · 그을린 자국
     //   BloodGlob 핏덩이: 핏물이 바닥에 철퍽 번지고 핏방울이 튀어요 / BloodDeath 혈폭자 죽음: 더 크게 + 붉은 피 안개
+    //   Fireball 차원 감염 정예 화염구: 주홍 불길이 사방으로 터지고 불꽃 고리 두 겹 + 그을음 (예고·떨어지는 불덩이는 InkFantasyFx)
     //   Slam 내려찍기 · Quake 진각: 땅이 갈라진 고리 + 흙먼지 + 돌 부스러기 (진각은 더 넓고 누런 흙빛, 진각은 둘레에서 바윗돌이 솟았다 가라앉아요)
     //   Spin 회전베기: 먹 소용돌이 원이 빠르게 돌며 퍼지고 흙먼지가 둥글게
     //   Vajra 금강: 금빛 고리 두 겹이 퍼지고 금빛 반짝이 / Gangi 강기: 쪽빛 기운 고리와 푸른 빛 입자
@@ -68,6 +69,14 @@ namespace AThousandDawns.Art
                     InkParticles.Burst(at + Vector3.up * 0.6f, 14, new Color(1f, 0.5f, 0.12f, 0.85f), new Color(0.3f, 0.28f, 0.26f, 0.6f), r * 1.2f, r * 1.1f, 1.1f, -0.3f);
                     InkParticles.Burst(at + Vector3.up * 0.3f, 18, new Color(1f, 0.8f, 0.3f, 1f), new Color(0.6f, 0.15f, 0.05f, 1f), r * 4f, 0.08f, 0.7f, 1f);
                     Ground(_scorch, at, r * 2.2f, 2f, Color.white, 0.8f);
+                    break;
+                case BurstKind.Fireball: // 차원 감염 정예 화염구: 불덩이가 떨어져 터지며 주홍 불길이 사방으로 + 불꽃 고리 두 겹
+                    InkParticles.Burst(at + Vector3.up * 0.5f, 34, new Color(1f, 0.9f, 0.45f, 1f), new Color(1f, 0.32f, 0.06f, 1f), r * 2.6f, r * 1.1f, 0.5f, -0.4f);
+                    InkParticles.Burst(at + Vector3.up * 0.8f, 16, new Color(1f, 0.45f, 0.1f, 0.9f), new Color(0.45f, 0.3f, 0.25f, 0.5f), r * 1.1f, r * 1.3f, 1.2f, -0.5f);
+                    InkParticles.Burst(at + Vector3.up * 0.3f, 22, new Color(1f, 0.85f, 0.35f, 1f), new Color(1f, 0.25f, 0.05f, 1f), r * 4.5f, 0.09f, 0.8f, 1f);
+                    Ring(_ring, at, r * 2.6f, 0.35f, new Color(1f, 0.55f, 0.12f, 1f), 0.3f, 300f);
+                    Ring(_ring, at, r * 3.2f, 0.5f, new Color(1f, 0.8f, 0.3f, 0.8f), 0.2f, -200f, 0.08f);
+                    Ground(_scorch, at, r * 2.4f, 2.5f, new Color(1f, 0.75f, 0.6f, 1f), 0.9f);
                     break;
                 case BurstKind.BloodGlob:
                 case BurstKind.BloodDeath:
