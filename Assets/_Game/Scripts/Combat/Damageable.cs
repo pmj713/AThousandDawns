@@ -137,6 +137,12 @@ namespace AThousandDawns.Combat
                 if (Ward == 0) SetTint(null);
             }
             if (!invincible) Health = Mathf.Max(0f, Health - amount);
+            if (Health <= 0f && Undying > 0) // 스켈레톤: 한 번은 쓰러지지 않고 무너져요 (다시 일어나는 건 그 적이)
+            {
+                Undying--;
+                Health = 1f;
+                Collapsed?.Invoke(this);
+            }
             if (reacts) _flashTimer = 0.08f;
             DamagePopups.Spawn(transform.position + Vector3.up * 2.2f, amount, style);
             LastHitReacts = reacts;
@@ -146,6 +152,10 @@ namespace AThousandDawns.Combat
         }
 
         public bool LastHitReacts { get; private set; } = true;
+
+        // 쓰러질 피해를 이 횟수만큼 버텨요 (체력 1로 남고 Collapsed). 스켈레톤이 써요
+        public int Undying { get; set; }
+        public event Action<Damageable> Collapsed;
 
         // 목탁승 가호: 이만큼의 피해를 먼저 막아요. 가호가 있는 동안 몸이 금빛이에요 (다 깎이면 원래 색)
         static readonly Color WardColor = new Color(1f, 0.82f, 0.4f);
