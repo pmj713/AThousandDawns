@@ -76,10 +76,10 @@ namespace AThousandDawns.EditorTools
             var stoneMat = GetInkTriplanar("Ink3D_Stone", "Tex_Stone", 1.5f, 2.5f);
             var woodMat = GetInkTriplanar("Ink3D_Wood", "Tex_Wood", 1f, 2f);
             var bambooMat = GetInkTriplanar("Ink3D_Bamboo", "Tex_BambooStalk", 1.2f, 2f);
-            // 채색 전환: 회색 결 텍스처에 재질 색을 입혀요 (InkTriplanar가 _BaseColor로 칠해요). 이 값들은 코드가 정해요
-            floorMat.SetColor("_BaseColor", new Color(0.86f, 0.76f, 0.58f, 1f));   // 다져진 황토 마당
-            stoneMat.SetColor("_BaseColor", new Color(0.8f, 0.77f, 0.7f, 1f));     // 따뜻한 화강암
-            woodMat.SetColor("_BaseColor", new Color(0.66f, 0.45f, 0.3f, 1f));     // 밤색 나무
+            // 채색 텍스처 (VARCO, 이음새 없음): 재질 색은 거의 중립 0.53 (= 텍스처 그대로, InkTriplanar가 × 1.9). 이 값들은 코드가 정해요
+            floorMat.SetColor("_BaseColor", new Color(0.53f, 0.53f, 0.53f, 1f));   // 다져진 흙 마당 (지역마다 InkRegionLook이 바닥 그림을 바꿔요)
+            stoneMat.SetColor("_BaseColor", new Color(0.55f, 0.54f, 0.52f, 1f));   // 화강암 돌담
+            woodMat.SetColor("_BaseColor", new Color(0.53f, 0.53f, 0.53f, 1f));    // 밤색 판자
             // 수묵 대나무 그림처럼: 줄기는 푸른 기가 도는 짙은 먹색 한 획, 마디는 하얀 틈(버텍스 색),
             // 바닥은 한지처럼 밝게 띄워 진한 줄기·잎과 대비를 줘요. 먼 숲은 한지색 안개(SetupEnvCameraAndLight)로 옅어져요.
             // 줄기 메시는 발밑이 원점이고 법선이 부드러워서 외곽선은 법선 방향으로 부풀려요.
@@ -93,7 +93,7 @@ namespace AThousandDawns.EditorTools
             bambooMat.SetFloat("_RimPower", 2f);
             bambooMat.SetFloat("_Bands", 3f);
             bambooMat.SetFloat("_BandSoftness", 0.3f);
-            bambooMat.SetColor("_BaseColor", BambooStalkColor);   // 원래 대나무 색. 채도는 _Saturation(0) ~ 지역 색 양(_InkColorAmount)으로 정해져요
+            bambooMat.SetColor("_BaseColor", new Color(0.53f, 0.53f, 0.53f, 1f));   // 대나무 줄기 그림 색 그대로
             bambooMat.SetFloat("_StreakLight", 0.6f);   // 세로로 옅은 마른 붓 결
             bambooMat.SetFloat("_StreakScale", 8f);
             bambooMat.SetFloat("_PatchLight", 0.45f);   // 마디·줄기마다 다른 옅은 얼룩
@@ -522,7 +522,6 @@ namespace AThousandDawns.EditorTools
             return mat;
         }
 
-        static readonly Color BambooStalkColor = new Color(0.50f, 0.62f, 0.34f, 1f);   // 연두빛 대나무 줄기
         static readonly Color BambooLeafColor = new Color(0.45f, 0.62f, 0.32f, 1f);    // 대나무 잎
         static readonly Color BushNatureColor = new Color(0.36f, 0.52f, 0.28f, 1f);          // 덤불 (대나무 잎보다 짙은 초록)
 

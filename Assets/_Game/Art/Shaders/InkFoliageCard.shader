@@ -114,10 +114,9 @@ Shader "AThousandDawns/InkFoliageCard"
                 half ink = (1.0 - light.shadowAttenuation) * _ShadowInk
                          + (1.0 - input.uv.y) * _BottomInk
                          + (1.0 - facing) * _NormalInk;
-                // 채색 전환: 먹 잎 그림의 모양(알파)은 그대로 두고 잎 색(_NatureColor, 없으면 기본 초록)으로 칠해요.
-                //   먹 획의 밝기 차이는 결로 조금 남기고, 그늘·아래쪽은 짙은 초록으로 (검은 먹 대신)
-                half3 leaf = _NatureColor.a > 0.01 ? _NatureColor.rgb : half3(0.38, 0.56, 0.3);
-                half3 base = leaf * lerp(0.5, 1.1, saturate(Luminance(tex.rgb * _Tint.rgb)));   // 먹 획이 짙은 잎 결로 남아요 (가장 밝아도 잎 색 1.1배라 멀리서 작은 밉맵의 흰 바탕이 섞여도 하얗게 뜨지 않아요)
+                // 채색 잎 카드: 그림 색 그대로 (투명한 곳도 잎 평균색이라 작은 밉맵에서 하얗게 뜨지 않아요).
+                //   그늘·아래쪽은 푸르스름하게 짙어져요
+                half3 base = tex.rgb * _Tint.rgb;
                 half3 color = lerp(base * 1.1, base * half3(0.45, 0.55, 0.6), saturate(ink) * 0.7);
                 color += base * SampleSH(normalize(input.normalWS)) * 0.1;
                 return half4(MixFog(color, input.fogFactor), 1.0);

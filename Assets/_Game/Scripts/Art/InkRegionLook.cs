@@ -10,10 +10,10 @@ namespace AThousandDawns.Art
     {
         static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
         static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
-        // 채색 전환: 바닥 결 텍스처는 회색이라 지역 바닥 색을 따로 입혀요 — 죽림 이끼 낀 흙 · 폐사찰 누런 돌마당 · 장강 젖은 푸른 모래 · 천마총 붉은 흙
+        // 지역 바닥 색: 바닥 그림(채색)에 곱하는 빛 — 죽림 흙과 낙엽 · 폐사찰 이끼 낀 돌마당 · 장강 젖은 자갈과 물웅덩이 · 천마총 불씨 금 간 검붉은 돌
         static readonly Color[] FloorColors =
         {
-            new Color(0.66f, 0.74f, 0.5f), new Color(0.86f, 0.76f, 0.58f), new Color(0.6f, 0.72f, 0.76f), new Color(0.66f, 0.42f, 0.38f),
+            new Color(0.53f, 0.56f, 0.5f), new Color(0.55f, 0.53f, 0.5f), new Color(0.52f, 0.54f, 0.56f), new Color(0.55f, 0.5f, 0.5f),   // 바닥 그림이 이미 채색이라 거의 중립 (지역 빛만 살짝)
         };
 
         [SerializeField] Material floorMaterial;
