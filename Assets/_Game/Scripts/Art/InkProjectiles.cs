@@ -77,7 +77,9 @@ namespace AThousandDawns.Art
             var s = t.lossyScale;
             visual.localScale = new Vector3(1f / s.x, 1f / s.y, 1f / s.z);
 
-            if (ShooterKind(arrow) == EnemyKind.GoblinArcher) BuildGoblinArrow(visual); // 차원 겹침: 붉은·금빛 유리 화살
+            var shooter = ShooterKind(arrow);
+            if (shooter == EnemyKind.GoblinArcher) BuildGoblinArrow(visual); // 차원 겹침: 붉은·금빛 유리 화살
+            else if (shooter == EnemyKind.Imp) BuildImpBolt(visual); // 임프 화염탄: 작은 불덩이 + 불꼬리
             else if (FiredByAssassin(t.position)) BuildShuriken(visual);
             else BuildArrow(visual, FiredBy(t.position, EnemyKind.BloodArcher)); // 혈궁수면 붉은 화살
         }
@@ -94,6 +96,28 @@ namespace AThousandDawns.Art
         }
 
         // 고블린 궁수 (판타지): 금빛 화살대 · 붉은 유리 촉 · 청록 깃 + 붉은→금빛 빛 꼬리 (수묵과 다른 또렷한 채색)
+        // 임프 화염탄 (판타지): 돌아가는 작은 불덩이 + 불길 + 주홍 불꼬리. 사라질 때(맞거나 사거리 끝) 작은 불꽃이 튀어요 (InkImpBolt)
+        void BuildImpBolt(Transform visual)
+        {
+            if (!_fireballLoaded) { _fireballLoaded = true; _fireball = Resources.Load<Sprite>("EliteFx/Fireball"); }
+            if (_fireball != null)
+            {
+                var pivot = new GameObject("Bolt").transform;
+                pivot.SetParent(visual, false);
+                pivot.gameObject.AddComponent<InkFaceCamera>();
+                var go = new GameObject("Sprite");
+                go.transform.SetParent(pivot, false);
+                go.transform.localScale = Vector3.one * (0.5f / Mathf.Max(0.01f, _fireball.bounds.size.x));
+                go.AddComponent<SpriteRenderer>().sprite = _fireball;
+            }
+            InkParticles.Fire(visual, Vector3.zero, 0.25f, 1.2f);
+            Trail(visual, Vector3.zero, 0.22f, 0.25f, new Color(1f, 0.5f, 0.1f, 0.9f));
+            visual.gameObject.AddComponent<InkImpBolt>();
+        }
+
+        static Sprite _fireball;
+        static bool _fireballLoaded;
+
         void BuildGoblinArrow(Transform visual)
         {
             var shaft = Tinted(shaftMaterial, new Color(0.85f, 0.6f, 0.15f));
@@ -331,6 +355,16 @@ namespace AThousandDawns.Art
                 Set(r, new Color(Smoke.r, Smoke.g, Smoke.b, Smoke.a * Mathf.Sin(Mathf.Clamp01(t / 1.4f) * Mathf.PI)));
             }
             if (t > 1.6f) Destroy(gameObject);
+        }
+    }
+
+    // 임프 화염탄이 사라질 때 (맞거나 사거리 끝) 그 자리에 작은 불꽃이 튀어요. 씬이 닫히며 지워질 때는 그리지 않아요.
+    public class InkImpBolt : MonoBehaviour
+    {
+        void OnDestroy()
+        {
+            if (!gameObject.scene.isLoaded) return;
+            InkParticles.Burst(transform.position, 12, new Color(1f, 0.85f, 0.4f, 1f), new Color(1f, 0.3f, 0.05f, 0.9f), 2.4f, 0.12f, 0.35f, 0.5f);
         }
     }
 }
