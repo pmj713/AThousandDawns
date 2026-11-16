@@ -12,14 +12,14 @@ namespace AThousandDawns.Prototype
     {
         static readonly string[] FirstEndingLines =
         {
-            "천마가 무릎을 꿇는다. 검은 마기가 흩어지고, 무덤 위로 첫 빛이 스민다.",
-            "천마: …천 번을 죽고도 돌아왔구나. 그 고집이… 결국 새벽을 데려왔어.",
+            "마검사 천마가 무릎을 꿇는다. 검에 새긴 주문이 하나씩 꺼지고, 하늘의 틈이 천천히 닫힌다. 무덤 위로 첫 빛이 스민다.",
+            "천마: …천 번을 죽고도 돌아왔구나. 저쪽 세계의 힘으로도… 그 고집은 꺾지 못했어.",
             "기시감 노인: 이번 새벽은, 다시 저물지 않을지도 모르지.",
         };
 
         static readonly string[] AgainEndingLines =
         {
-            "천마가 다시 쓰러진다. 익숙한 새벽빛이 무덤을 적신다.",
+            "마검사 천마가 다시 쓰러진다. 익숙한 새벽빛이 무덤을 적시고, 하늘의 틈이 또 조금 좁아진다.",
         };
 
         public static event Action<bool> EndingStarted; // 첫 격파인지

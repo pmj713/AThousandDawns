@@ -21,6 +21,7 @@ namespace AThousandDawns.EditorTools
         static readonly Vector3 InnCenter = new Vector3(180f, 0f, 0f);
         static readonly Vector3 MasterCenter = new Vector3(240f, 0f, 0f);
         static readonly Vector3 IronMasterCenter = new Vector3(300f, 0f, 0f);
+        static readonly Vector3 FantasyMasterCenter = new Vector3(300f, 0f, -80f); // 판타지 고수 결투장 (무너진 성 안뜰)
         const string WoodColor = "#7A5536";   // 객잔 계산대 (임시)
         const string ClerkColor = "#D9C9A8";  // 점소이 (임시)
         const string StoneColor = "#6E6A64";  // 철권 마웅 결투장 돌벽 (임시)
@@ -142,6 +143,14 @@ namespace AThousandDawns.EditorTools
             Box("Stone_N", ironRoom, IronMasterCenter + new Vector3(0f, 1f, MasterSize.y * 0.5f + 0.25f), new Vector3(MasterSize.x + 1f, 2f, 0.5f), stoneMat);
             Box("Stone_S", ironRoom, IronMasterCenter + new Vector3(0f, 1f, -MasterSize.y * 0.5f - 0.25f), new Vector3(MasterSize.x + 1f, 2f, 0.5f), stoneMat);
 
+            // 판타지 고수 결투장 (고블린 족장 · 다크 엘프 검사): 무너진 성 안뜰. 충돌은 철권 결투장과 같은 사방 돌벽 (꾸미기는 아트)
+            var fantasyRoom = new GameObject("Room_FantasyMaster").transform;
+            Box("Floor", fantasyRoom, FantasyMasterCenter + new Vector3(0f, -0.1f, 0f), new Vector3(MasterSize.x + 1f, 0.2f, MasterSize.y + 1f), floorMat);
+            Box("Stone_W", fantasyRoom, FantasyMasterCenter + new Vector3(-MasterSize.x * 0.5f - 0.25f, 1f, 0f), new Vector3(0.5f, 2f, MasterSize.y + 0.5f), stoneMat);
+            Box("Stone_E", fantasyRoom, FantasyMasterCenter + new Vector3(MasterSize.x * 0.5f + 0.25f, 1f, 0f), new Vector3(0.5f, 2f, MasterSize.y + 0.5f), stoneMat);
+            Box("Stone_N", fantasyRoom, FantasyMasterCenter + new Vector3(0f, 1f, MasterSize.y * 0.5f + 0.25f), new Vector3(MasterSize.x + 1f, 2f, 0.5f), stoneMat);
+            Box("Stone_S", fantasyRoom, FantasyMasterCenter + new Vector3(0f, 1f, -MasterSize.y * 0.5f - 0.25f), new Vector3(MasterSize.x + 1f, 2f, 0.5f), stoneMat);
+
             BuildVillage(floorMat, wallMat);
 
             // 정비실: 12×10, 북쪽 문은 늘 열려 있어요
@@ -190,6 +199,7 @@ namespace AThousandDawns.EditorTools
             SetCombatSite(runSo.FindProperty("combatLarge"), CombatLargeCenter, CombatLargeSize, large);
             SetSite(runSo.FindProperty("master"), MasterCenter, MasterSize, new Vector3(0f, 0f, -MasterSize.y * 0.5f + 1.5f), new Vector3(0f, 0f, 99f));
             SetSite(runSo.FindProperty("ironMaster"), IronMasterCenter, MasterSize, new Vector3(0f, 0f, -MasterSize.y * 0.5f + 1.5f), new Vector3(0f, 0f, 99f));
+            SetSite(runSo.FindProperty("fantasyMaster"), FantasyMasterCenter, MasterSize, new Vector3(0f, 0f, -MasterSize.y * 0.5f + 1.5f), new Vector3(0f, 0f, 99f));
             SetSite(runSo.FindProperty("inn"), InnCenter, new Vector2(12f, 10f), new Vector3(0f, 0f, -3.5f), new Vector3(0f, 0f, 6.6f));
             SetSite(runSo.FindProperty("rest"), RestCenter, new Vector2(12f, 10f), new Vector3(0f, 0f, -3.5f), new Vector3(0f, 0f, 6.6f));
             SetSite(runSo.FindProperty("boss"), BossCenter, BossSize, new Vector3(0f, 0f, -BossSize.y * 0.5f + 1.5f), new Vector3(0f, 0f, 99f));

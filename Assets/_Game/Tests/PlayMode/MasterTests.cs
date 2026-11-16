@@ -80,6 +80,27 @@ namespace AThousandDawns.Tests
             Assert.AreEqual(3, _run.CurrentEvent.Choices.Count);
         }
 
+        // 판타지 고수(고블린 족장 · 다크 엘프 검사)는 무너진 성 안뜰 결투장에서 (가운데 300, 0, −80)
+        [UnityTest]
+        public IEnumerator 판타지_고수는_무너진_성_안뜰에서([Values(EnemyKind.GoblinChief, EnemyKind.DarkElf, EnemyKind.IronFist)] EnemyKind kind)
+        {
+            RoomRun.MasterOverride = kind;
+            yield return SceneManager.LoadSceneAsync("Prototype_Run", LoadSceneMode.Single);
+            yield return null;
+            _run = Object.FindFirstObjectByType<RoomRun>();
+            _player = Object.FindFirstObjectByType<PlayerController>();
+            for (int floor = 1; floor <= 3; floor++)
+            {
+                _run.ChooseFork(0);
+                _run.LeaveFloor();
+            }
+            Assert.AreEqual(RoomRun.Phase.Master, _run.CurrentPhase);
+            Vector3 castle = new Vector3(300f, 0f, -80f);
+            float d = Vector3.Distance(new Vector3(_run.Master.transform.position.x, 0f, _run.Master.transform.position.z), castle);
+            if (kind == EnemyKind.IronFist) Assert.Greater(d, 30f, "무협 고수는 원래 돌벽 결투장");
+            else Assert.Less(d, 10f, "판타지 고수는 무너진 성 안뜰");
+        }
+
         [UnityTest]
         public IEnumerator 비급_전수를_고르면_초식이_죽림섬으로_바뀌고_객잔으로()
         {
