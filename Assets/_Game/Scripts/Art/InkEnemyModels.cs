@@ -176,6 +176,9 @@ namespace AThousandDawns.Art
         bool _splitShown;
         int _auraTraits;
         bool _frozenShown, _statusShown;   // 빙결로 동작을 멈췄는지 · 상태 이상 기운을 보이는 중인지
+        bool _alliedShown;                 // 협력한 적 보랏빛 가장자리를 보이는 중인지
+        Transform _lastRival;              // 마지막으로 노린 다른 진영 적 (그 적에게 쓰러지면 그 반대쪽으로 넘어가요)
+        static readonly Color AlliedGlow = new Color(0.62f, 0.3f, 1f, 1f);   // 차원 균열과 같은 보랏빛
         MaterialPropertyBlock _overlayBlock;
         bool _overlayUsed;
 
@@ -233,6 +236,18 @@ namespace AThousandDawns.Art
                 return;
             }
             if (_statusShown) { _statusShown = false; _aura = Color.clear; _auraTraits = -1; ApplyOverlay(); }   // 풀리면 정예 기운을 다시 따져요
+
+            // 협력한 적 (차원 겹침, EnemyBrain.Allied): 몸 가장자리에 은은한 보랏빛 차원 기운이 숨 쉬어요 (발밑 원·차원 끈은 아트 2의 InkRivalFx).
+            //   상태 이상보다 뒤, 정예 기운보다 앞이에요
+            if (_brain.Rival != null) _lastRival = _brain.Rival.transform;
+            if (_brain.Allied && !_brain.IsDead)
+            {
+                _aura = new Color(AlliedGlow.r, AlliedGlow.g, AlliedGlow.b, 0.3f + 0.12f * Mathf.Sin(Time.time * 1.8f));
+                _alliedShown = true;
+                ApplyOverlay();
+                return;
+            }
+            if (_alliedShown) { _alliedShown = false; _aura = Color.clear; _auraTraits = -1; ApplyOverlay(); }
 
             // 특성이 둘 이상인 정예: 특성 색 기운 (특성이 늘면 다시 섞어요)
             int count = _brain.IsElite ? _brain.Traits.Count : 0;
@@ -579,14 +594,16 @@ namespace AThousandDawns.Art
             enabled = false;
         }
 
-        // 사람형 적이 쓰러지는 갈래 (매번 같지 않게). 넘어가는 쪽은 플레이어 반대쪽(맞은 쪽)이 기준이에요
+        // 사람형 적이 쓰러지는 갈래 (매번 같지 않게). 넘어가는 쪽은 플레이어(다른 적에게 쓰러졌으면 그 적) 반대쪽이 기준이에요
         //  - 크게 맞음(마지막 한 방이 최대 체력의 1/4 이상): 맞은 반대쪽으로 미끄러지며 날아가듯 넘어가요
         //  - 그 밖엔 무작위로: 뒤로 넘어가기 · 앞으로 고꾸라지기(맞은 쪽으로) · 무릎부터 주저앉았다 앞으로 · 옆으로 돌며 쓰러지기
         static AThousandDawns.Player.PlayerController s_player;
         void VariedFall(InkCorpse corpse, Transform t)
         {
             if (s_player == null) s_player = FindFirstObjectByType<AThousandDawns.Player.PlayerController>();
-            var away = s_player != null ? t.position - s_player.transform.position : -t.forward;
+            // 다른 진영 적에게 쓰러졌으면 그 적 반대쪽으로 (적끼리 싸움)
+            var killer = _brain.KilledByRival && _lastRival != null ? _lastRival : s_player != null ? s_player.transform : null;
+            var away = killer != null ? t.position - killer.position : -t.forward;
             away.y = 0f;
             away = away.sqrMagnitude > 1e-4f ? away.normalized : -t.forward;
             float max = _body != null ? _body.MaxHealth : 1f;
