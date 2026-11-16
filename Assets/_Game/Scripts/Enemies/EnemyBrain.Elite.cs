@@ -6,7 +6,7 @@ using UnityEngine;
 namespace AThousandDawns.Enemies
 {
     // 정예 특성 (몬스터 탭 정예 첫 버전). 죽림·폐사찰은 하나, 장강 수채는 1~2개 (반반), 천마총은 2개 (몬스터 B142).
-    public enum EliteTrait { None, IronShirt, Rejuvenation, Blaze, Split }
+    public enum EliteTrait { None, IronShirt, Rejuvenation, Blaze, Split, Gyeonggong, Fireball, Blink } // 경공부터 차원 감염 (판타지 적은 무공, 무협 적은 마법)
 
     // 정예: 일반 적에 특성 하나를 붙인 강화판 (몬스터 탭 정예 공통 규칙).
     // 체력 ×3 · 공격 ×1.2 · 크기 ×1.2, 이름 앞에 특성, 머리 위 표시는 모양으로 구분 (철포삼 네모 · 회춘 공 · 열화 기둥).
@@ -36,6 +36,9 @@ namespace AThousandDawns.Enemies
             EliteTrait.Rejuvenation => "회춘",
             EliteTrait.Blaze => "열화",
             EliteTrait.Split => "분열",
+            EliteTrait.Gyeonggong => "경공",
+            EliteTrait.Fireball => "화염구",
+            EliteTrait.Blink => "순간이동",
             _ => "",
         };
 
@@ -47,6 +50,7 @@ namespace AThousandDawns.Enemies
             && !(kind == EnemyKind.Rattan && trait == EliteTrait.IronShirt)
             && !(kind == EnemyKind.DemonGuard && trait == EliteTrait.IronShirt)
             && !(kind == EnemyKind.Bomber && trait == EliteTrait.Rejuvenation)
+            && InfectionAllows(kind, trait) // 차원 감염: 판타지 적은 무공 (경공), 무협 적은 마법 (화염구 · 순간이동)
             && !(trait == EliteTrait.Split && (kind == EnemyKind.Bomber || kind == EnemyKind.BloodBomber || kind == EnemyKind.Snake || kind == EnemyKind.Slime)); // 터지는 적 · 숨는 적 · 원래 갈라지는 슬라임은 분열 없음
 
         // 만들어진 바로 뒤에 불러요 (EnemyDirector.Spawn 다음)
@@ -105,8 +109,13 @@ namespace AThousandDawns.Enemies
                 : trait == EliteTrait.Rejuvenation ? RuntimeMaterial.Unlit(ref _rejuvMat, color)
                 : trait == EliteTrait.Split ? RuntimeMaterial.Unlit(ref _splitMat, color)
                 : RuntimeMaterial.Unlit(ref _blazeMat, color);
+            if (trait == EliteTrait.Gyeonggong) renderer.sharedMaterial = RuntimeMaterial.Unlit(ref _gyeonggongMat, new Color(0.35f, 0.9f, 0.85f)); // 경공: 청록 바람
+            else if (trait == EliteTrait.Fireball) renderer.sharedMaterial = RuntimeMaterial.Unlit(ref _fireballMat, new Color(1f, 0.3f, 0.1f));  // 화염구: 주홍
+            else if (trait == EliteTrait.Blink) renderer.sharedMaterial = RuntimeMaterial.Unlit(ref _blinkMat, new Color(0.6f, 0.35f, 1f));       // 순간이동: 보랏빛 균열
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
+
+        static Material _gyeonggongMat, _fireballMat, _blinkMat;
 
         // 특성 표식을 머리 위 같은 높이에 옆으로 나란히 (가운데 정렬, 0.45칸 간격)
         void LayoutTraitMarks()
@@ -120,6 +129,7 @@ namespace AThousandDawns.Enemies
         void TickElite(float dt)
         {
             if (_marks != null) _marks.rotation = Quaternion.identity; // 적이 돌아도 표식 줄은 화면 가로로
+            TickInfection(dt); // 차원 감염 특성 (EnemyBrain.Infection)
             if (!HasTrait(EliteTrait.Rejuvenation)) return;
             _sinceHit += dt;
             if (_sinceHit < GameConfig.Get("elite.rejuv_delay", 3f) || Status.BurnStacks > 0) return;
