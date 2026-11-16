@@ -1,6 +1,6 @@
 # Blender(5.x) 백그라운드 스크립트: VARCO로 만든 동물(리깅 없음 .glb)에 뼈를 직접 심고 동작을 만들어 Unity용 FBX로 내보내요.
 #   blender --background --factory-startup --python prepare_animal.py -- <in.glb> <out_dir> <Name> <kind> <length> <yaw> [preview.png]
-#   kind: quad(네 발 짐승: 멧돼지·들개) / snake(뱀)
+#   kind: quad(네 발 짐승: 멧돼지·들개) / snake(뱀) / slime(슬라임: 몸통 뼈 크기로 출렁임) / 그 밖(등불 귀신)
 #   length: 몸길이(m, 머리~꼬리 끝). yaw: 가져온 모델을 Z축으로 돌릴 각도(도) — 머리가 -Y(앞)를 보도록
 #   - 뼈: quad는 엉덩이·등·가슴·목·머리·꼬리 2마디 + 다리 4개(허벅지·정강이·발), snake는 머리부터 꼬리까지 12마디 사슬
 #   - 무게: 다리는 배 아래 다리 기둥의 정점만, 나머지는 몸통 뼈 마디까지 거리로 나눠요
@@ -56,6 +56,44 @@ img = next((n.image for m in body.data.materials if m and m.node_tree for n in m
             if n.type == 'TEX_IMAGE' and n.image), None)
 if img is not None:
     img.filepath_raw = os.path.join(out_dir, f"{NAME}_Albedo.png"); img.file_format = 'PNG'; img.save()
+
+if KIND == "slime" and img is not None:
+    # 슬라임 얼굴: 3D 생성에서 투명한 몸 속 눈·입이 사라져요 → 앞(-Y) 겉면에 성난 눈 둘과 톱니 입을 붙여요.
+    # 재질을 하나로 두려고 새 면의 UV는 모두 그림에서 가장 어두운 곳(속 덩어리)을 가리켜요
+    import numpy as np
+    px = np.array(img.pixels[:], dtype=np.float32).reshape(img.size[1], img.size[0], 4)
+    lum = px[:, :, 0] * 0.3 + px[:, :, 1] * 0.59 + px[:, :, 2] * 0.11 + (px[:, :, 3] < 0.5) * 9
+    iy, ix = np.unravel_index(int(np.argmin(lum)), lum.shape)
+    dark_uv = ((ix + 0.5) / img.size[0], (iy + 0.5) / img.size[1])
+
+    def front_y(x, z):
+        near = [v.y for v in vs if abs(v.x - x) < 0.04 * W and abs(v.z - z) < 0.04 * TOP]
+        return min(near) if near else Y0
+
+    bm = bmesh.new(); bm.from_mesh(body.data)
+    uv = bm.loops.layers.uv.active
+    new_faces = []
+    for sx in (-1, 1):
+        x, z = sx * 0.2 * W, 0.55 * TOP
+        ret = bmesh.ops.create_uvsphere(bm, u_segments=12, v_segments=8, radius=1.0)
+        bmesh.ops.scale(bm, verts=ret["verts"], vec=Vector((0.12 * W, 0.03 * W, 0.085 * W)))
+        bmesh.ops.rotate(bm, verts=ret["verts"], cent=Vector(), matrix=Matrix.Rotation(math.radians(-30 * sx), 3, 'Y'))   # 안쪽 끝이 내려간 성난 눈
+        bmesh.ops.translate(bm, verts=ret["verts"], vec=Vector((x, front_y(x, z) + 0.01 * W, z)))
+        new_faces += list({f for v in ret["verts"] for f in v.link_faces})
+    for k in range(5):                                                   # 톱니 입: 위아래로 엇갈린 작은 이빨 다섯
+        x, z = (k - 2) * 0.055 * W, 0.4 * TOP + (0.012 if k % 2 else -0.012) * W
+        ret = bmesh.ops.create_cube(bm, size=1.0)
+        bmesh.ops.scale(bm, verts=ret["verts"], vec=Vector((0.065 * W, 0.02 * W, 0.045 * W)))
+        bmesh.ops.rotate(bm, verts=ret["verts"], cent=Vector(), matrix=Matrix.Rotation(math.radians(45), 3, 'Y'))
+        bmesh.ops.translate(bm, verts=ret["verts"], vec=Vector((x, front_y(x, z) + 0.005 * W, z)))
+        new_faces += list({f for v in ret["verts"] for f in v.link_faces})
+    for f in new_faces:
+        f.material_index = 0
+        for l in f.loops:
+            l[uv].uv = dark_uv
+    bm.to_mesh(body.data); bm.free()
+    vs = [v.co.copy() for v in body.data.vertices]
+    print("ANIMAL slime face uv", dark_uv)
 
 # ── 뼈
 arm_data = bpy.data.armatures.new(f"{NAME}_Armature")
@@ -140,6 +178,10 @@ elif KIND == "snake":
     bone("Root", (0, 0, 0), (0, 0, 0.1))
     for i in range(n):
         bone(f"Seg{i}", pts[i], pts[i + 1], "Root" if i == 0 else f"Seg{i - 1}", i > 0)
+elif KIND == "slime":
+    # 슬라임: 밑동 Root와 몸통 뼈 하나 (바닥에서 꼭대기까지). 몸통 뼈 크기를 바꿔 출렁여요 (뼈 Y = 위)
+    bone("Root", (0, 0, 0), (0, 0, 0.1))
+    bone("Body", (0, 0, 0), (0, 0, TOP), "Root")
 else:
     # 떠다니는 물체 (등불 귀신): 밑동 Root와 몸통 뼈 하나
     bone("Root", (0, 0, 0), (0, 0, 0.1))
@@ -424,6 +466,62 @@ elif KIND == "snake":
             idle_pose(0.0)
     make_action("Spawn", [(0, "coil"), (5, "coil"), (12, "rise"), (18, "threat"), (26, "idle")], spawn_pose)
 
+elif KIND == "slime":
+    # 슬라임: 몸통 뼈 크기만 바꿔 바닥에 붙은 채 출렁여요 (뼈 Y = 위, X·Z = 옆). 부피가 비슷하게 남도록 납작해지면 옆으로 퍼져요
+    def squash(h, lean=0.0, dz=0.0, dy=0.0):
+        if dz or dy:
+            lift(dz, dy)
+        if lean:
+            turn("Body", X, lean)
+        w = 1.0 / math.sqrt(max(h, 0.05))
+        pb["Body"].scale = (w, h, w)                                   # 돌린 뒤에 키워요 (돌리면 크기가 풀려요)
+
+    make_action("Idle", [(f, f / 40) for f in range(0, 41, 4)],
+                lambda t: squash(1.0 + 0.07 * math.sin(2 * math.pi * t), lean=3 * math.sin(2 * math.pi * t + 1.2)))
+
+    def hop(t):
+        # 이동 (20프레임에 한 번 튀어요): 웅크림 → 위로 늘며 뜀 → 내려앉아 납작 → 출렁
+        if t < 0.15:
+            squash(1.0 - 0.3 * t / 0.15)
+        elif t < 0.65:
+            k = (t - 0.15) / 0.5
+            squash(1.25 - 0.25 * k, lean=-8, dz=0.45 * math.sin(math.pi * k))
+        elif t < 0.8:
+            squash(0.68)
+        else:
+            squash(0.68 + 0.32 * (t - 0.8) / 0.2)
+    make_action("Run", [(f, f / 20) for f in range(0, 21, 2)], hop)
+
+    make_action("Ready", [(0, None), (10, None)], lambda _: squash(0.62, lean=6))   # 덮치기 예고: 납작 웅크려요
+
+    def leap(k):
+        # 몸통 박치기·도약: 웅크림 → 앞으로 길게 늘며 솟음 → 앞에 철퍼덕 → 제 모양
+        if k == 0:
+            squash(0.62, lean=6)
+        elif k == 1:
+            squash(1.4, lean=-35, dz=0.6, dy=-0.6)
+        elif k == 2:
+            squash(0.5, dy=-1.0)
+        else:
+            squash(1.0)
+    make_action("Attack", [(0, 0), (4, 1), (9, 2), (14, 2), (22, 3)], leap)
+
+    def wobble(k):
+        # 피격: 움푹 눌렸다가 위로 튀며 흔들려요
+        squash([0.6, 1.25, 0.85, 1.08, 1.0][k], lean=[-10, 6, -4, 2, 0][k])
+    make_action("Hit", [(0, 0), (3, 1), (6, 2), (9, 3), (13, 4)], wobble)
+
+    def melt(k):
+        # 쓰러짐: 부르르 떨다 녹아 바닥에 퍼진 젤리 웅덩이가 돼요
+        squash([1.0, 0.85, 0.4, 0.12, 0.08][k], lean=[0, 8, -4, 0, 0][k])
+    make_action("Death", [(0, 0), (4, 1), (12, 2), (20, 3), (30, 4)], melt)
+
+    def plop(k):
+        # 등장: 위에서 떨어져 철퍼덕 퍼졌다가 둥글게 모여요
+        if k is None:
+            squash(1.0); return
+        squash([0.7, 1.4, 0.45, 1.15, 0.95][k], dz=[0.0, 1.2, 0.0, 0.0, 0.0][k])
+    make_action("Spawn", [(0, 1), (6, 1), (10, 2), (15, 3), (19, 4), (24, None)], plop)
 else:
     # 등불 귀신: 바닥에서 떠서 둥실거리며 흔들려요. 귀화(Attack, 예고 1초 동안 그대로 재생)는 부풀며 떨다가 터지기 직전 크게 부풀어요
     def hover(t, lean=0.0, sway=6.0):

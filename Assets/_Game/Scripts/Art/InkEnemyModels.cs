@@ -164,7 +164,7 @@ namespace AThousandDawns.Art
         static readonly Color StatueGray = new Color(0.62f, 0.6f, 0.57f, 1f);
 
         // 몸에 덧입히는 표시 (InkCharacter의 _AuraColor · _CrackColor)
-        //  - 분열해 나온 적(IsSplitChild): 모델 0.8배, 몸 군데군데 보랏빛 금 (체력이 적어 약하다는 표시)
+        //  - 분열해 나온 적(IsSplitChild): 모델 0.8배, 몸 군데군데 보랏빛 금 (체력이 적어 약하다는 표시). 작은 슬라임은 금 없이 0.6배
         //  - 특성 둘 이상 정예: 특성 색을 섞은 은은한 가장자리 기운이 숨 쉬듯 (하나면 머리 위 표식만)
         static readonly int AuraId = Shader.PropertyToID("_AuraColor");
         static readonly int CrackId = Shader.PropertyToID("_CrackColor");
@@ -208,10 +208,11 @@ namespace AThousandDawns.Art
             if (!_splitShown && _age < 1f && _brain.IsSplitChild)
             {
                 _splitShown = true;
-                _animator.transform.localScale *= 0.8f;
-                _modelScale *= 0.8f;
-                _crack = SplitCrack;
-                ApplyOverlay();
+                bool slime = _brain.Kind == EnemyKind.Slime;   // 갈라진 작은 슬라임: 같은 모델을 작게 (젤리라 금은 없어요)
+                float shrink = slime ? 0.6f : 0.8f;
+                _animator.transform.localScale *= shrink;
+                _modelScale *= shrink;
+                if (!slime) { _crack = SplitCrack; ApplyOverlay(); }
             }
             // 상태 이상 (몸 가장자리 기운이 정예 기운보다 먼저): 빙결은 얼음빛 테두리 + 동작이 그 자리에서 멈춰요,
             //   화상은 중첩이 쌓일수록 가장자리가 그을린 듯 어두워져요. 몸 둘레 불꽃·서리 입자는 아트 2가 그려요
@@ -562,7 +563,7 @@ namespace AThousandDawns.Art
             bool beast = _brain.Kind == EnemyKind.Boar || _brain.Kind == EnemyKind.Hound || _brain.Kind == EnemyKind.Snake;
             // 무거운 갑옷·술사는 앞으로 고꾸라져요, 혈폭자는 부풀어 터지고, 수귀는 물 밑으로 꺼져요
             bool forward = _brain.Kind == EnemyKind.DemonGuard || _brain.Kind == EnemyKind.BloodShaman || _brain.Kind == EnemyKind.Arhat;
-            var style = _brain.Kind == EnemyKind.BloodBomber ? InkCorpse.Style.Swell : _brain.Kind == EnemyKind.WaterGhost ? InkCorpse.Style.Sink : InkCorpse.Style.Fall;
+            var style = _brain.Kind == EnemyKind.BloodBomber ? InkCorpse.Style.Swell : _brain.Kind == EnemyKind.WaterGhost || _brain.Kind == EnemyKind.Slime ? InkCorpse.Style.Sink : InkCorpse.Style.Fall;   // 슬라임은 녹아 가라앉아요
             // 마지막 동작(Defeat)이 있는 보스: 넘어지지 않고 그 자세로 무너지며 무기를 떨궈요. 천마는 엔딩 내내 남고, 다른 보스는 잠시 뒤 먹으로 흩어져요
             if (_animator.HasState(0, Animator.StringToHash("Defeat")))
             {

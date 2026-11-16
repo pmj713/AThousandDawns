@@ -56,6 +56,12 @@ namespace AThousandDawns.EditorTools
             ("BloodBomber", EnemyKind.BloodBomber, 3f),
             ("BloodShadow", EnemyKind.BloodShadow, 4f),   // 천마총 고수
             ("HeavenlyDemon", EnemyKind.HeavenlyDemon, 3.5f),   // 최종 보스
+            // 차원 겹침 판타지 적 (모든 지역): 고블린 셋은 한 몸에 장비만 달라요 (몽둥이 · 활 · 단검)
+            ("Slime", EnemyKind.Slime, 3f),
+            ("Goblin", EnemyKind.Goblin, 3.5f),
+            ("GoblinArcher", EnemyKind.GoblinArcher, 3f),
+            ("GoblinRogue", EnemyKind.GoblinRogue, 5f),
+            ("GoblinShaman", EnemyKind.GoblinShaman, 3f),
         };
 
         // 패턴 동작: attack(브레인 AttackName, null이면 다른 동작이 이어 부르는 상태) → state.
@@ -77,11 +83,30 @@ namespace AThousandDawns.EditorTools
             ["Takrang"] = "WaveCut", ["IronDragon"] = "Roar", ["BloodShadow"] = "ShadowRush", ["HeavenlyDemon"] = "Burst",
         };
 
+        // 차원 겹침 판타지 적: 무협 수묵과 일부러 다르게 — 채색 동판화·스테인드글라스처럼 원색이 살고 윤곽이 굵고 곧아요.
+        // 같은 수묵 셰이더에 값만 달리: 채도 끝까지 · 번짐·종이결 거의 없이 · 붓 떨림 없는 굵은 윤곽 · 명암 단계 넷
+        static readonly HashSet<string> FantasyEnemies = new HashSet<string> { "Slime", "Goblin", "GoblinArcher", "GoblinRogue", "GoblinShaman" };
+
+        static Material FantasyLook(Material m)
+        {
+            m.SetFloat("_Saturation", 1f);
+            m.SetFloat("_Bands", 4f);
+            m.SetFloat("_BandSoftness", 0.04f);
+            m.SetFloat("_ShadowInk", 0.4f);
+            m.SetFloat("_WashNoiseStrength", 0.04f);
+            m.SetFloat("_PaperGrain", 0.015f);
+            m.SetFloat("_RimInk", 0.35f);
+            m.SetFloat("_OutlineWidth", 4f);
+            m.SetFloat("_OutlineJitter", 0.08f);
+            EditorUtility.SetDirty(m);
+            return m;
+        }
+
         // 모델 고유 동작 중 반복하는 것
         static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "ShoulderRun", "Idle", "Run", "Chant", "Rain", "Drag", "Whirl", "Captive" };
 
         // 고유 동작만 쓰는 적 (Generic으로 가져와요)
-        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha", "Pirate", "Harpooner", "Anchor", "Rattan", "WaterGhost", "FlagBearer", "Takrang", "IronDragon", "Cultist", "BloodArcher", "BloodShaman", "DemonGuard", "BloodBomber", "BloodShadow", "HeavenlyDemon", "CaptiveHero" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
+        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha", "Pirate", "Harpooner", "Anchor", "Rattan", "WaterGhost", "FlagBearer", "Takrang", "IronDragon", "Cultist", "BloodArcher", "BloodShaman", "DemonGuard", "BloodBomber", "BloodShadow", "HeavenlyDemon", "CaptiveHero", "Slime", "Goblin", "GoblinArcher", "GoblinRogue", "GoblinShaman" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
 
         static readonly Dictionary<string, MoveSpec[]> InkEnemyMoves = new Dictionary<string, MoveSpec[]>
         {
@@ -170,6 +195,8 @@ namespace AThousandDawns.EditorTools
             ["BloodArcher"] = new[] { new MoveSpec { attack = "혈시 3연발", state = "TripleShot", clips = new[] { "TripleShot" }, mode = MoveMode.Play, seconds = 1.4f } },   // 0.8초에 첫 발, 0.25초마다 다시 메겨 두 발 더
             // 혈인: 1.2초 예고 동안 두 팔을 하늘로 들어 쓰러진 자를 일으켜요 (그대로 재생)
             ["BloodShaman"] = new[] { new MoveSpec { attack = "혈인술", state = "Raise", clips = new[] { "Raise" }, mode = MoveMode.Play, seconds = 1.4f } },
+            // 고블린 주술사: 1.2초 예고 동안 해골 지팡이를 하늘로 치켜들고 주문 (둘레 광폭화 + 저주 장판, 그대로 재생)
+            ["GoblinShaman"] = new[] { new MoveSpec { attack = "주술", state = "Cast", clips = new[] { "Raise" }, mode = MoveMode.Play, seconds = 1.4f } },
             // 천마 근위: 평소 공격은 기본 Attack(방패 세운 채 베기) · 반격: 0.3초 안에 빠르게 되받아 베기
             ["DemonGuard"] = new[] { new MoveSpec { attack = "반격", state = "Counter", clips = new[] { "Attack" }, mode = MoveMode.Play, seconds = 0.5f } },
             // 혈폭자: 핏덩이를 머리 위로 들었다가 내던져요
@@ -387,8 +414,10 @@ namespace AThousandDawns.EditorTools
             var body = GetInkMaterial($"Ink_{name}_Body", "#FFFFFF", 0.45f);
             body.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{folder}/{name}_Albedo.png"));
             body.SetColor("_BaseColor", Color.white);
+            bool fantasy = FantasyEnemies.Contains(name);
+            if (fantasy) FantasyLook(body);
             EditorUtility.SetDirty(body);
-            var weapon = GetInkMaterial("Ink_Enemy_Weapon", "#3A3F44", 0.1f);
+            var weapon = fantasy ? FantasyLook(GetInkMaterial("Ink_Fantasy_Weapon", "#6B4A2B", 0.85f)) : GetInkMaterial("Ink_Enemy_Weapon", "#3A3F44", 0.1f);
             var red = GetInkMaterial("Ink_Enemy_Red", "#B3261E", 0.9f);       // 깃발·목도리처럼 알아보는 붉은 천
             var rattan = GetInkMaterial("Ink_Enemy_Rattan", "#9C7A45", 0.5f);  // 등나무 방패
 

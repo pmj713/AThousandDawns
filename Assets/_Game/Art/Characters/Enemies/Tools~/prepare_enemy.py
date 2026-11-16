@@ -138,6 +138,51 @@ for w in WEAPONS:
             box(bm, g + a * 0.22, a, e, 0.75, 0.035, 0.035)                 # 자루
             box(bm, g + a * 0.55 + e * 0.06, a, e, 0.12, 0.16, 0.03)        # 날 (칼날 쪽으로 넓게)
         make(f"{NAME}_Weapon_axe", "RightHand", build)
+    elif w == "club":
+        # 고블린 몽둥이: 끝으로 굵어지는 옹이 박힌 나무 몽둥이 (단면 여섯 모, 굵은 쪽에 박힌 쇠못 넷)
+        g = grip_of("Right")
+        axis = Vector((0, -1, -0.15)).normalized()
+        side = Vector((0, 0, -1)); side = (side - axis * side.dot(axis)).normalized()
+
+        def build(bm, g=g, a=axis, e=side):
+            t = a.cross(e).normalized()
+            rings = []
+            for u, r in ((-0.08, 0.02), (0.08, 0.024), (0.26, 0.045), (0.4, 0.062), (0.45, 0.045), (0.48, 0.0)):
+                c = g + a * u
+                rings.append([bm.verts.new(c)] if r == 0 else
+                             [bm.verts.new(c + (e * math.cos(k * math.pi / 3) + t * math.sin(k * math.pi / 3)) * r) for k in range(6)])
+            for r0, r1 in zip(rings[:-1], rings[1:]):
+                for i in range(6):
+                    j = (i + 1) % 6
+                    if len(r1) == 1:
+                        bm.faces.new((r0[i], r0[j], r1[0]))
+                    else:
+                        bm.faces.new((r0[i], r0[j], r1[j], r1[i]))
+            bm.faces.new(list(reversed(rings[0])))
+            for k in range(4):                                              # 쇠못
+                d = (e * math.cos(k * math.pi / 2 + 0.4) + t * math.sin(k * math.pi / 2 + 0.4)).normalized()
+                box(bm, g + a * (0.33 + 0.04 * (k % 2)) + d * 0.062, d, a, 0.05, 0.012, 0.012)
+        make(f"{NAME}_Weapon_club", "RightHand", build)
+    elif w == "skullstaff":
+        # 고블린 주술사 지팡이: 비틀린 나무 지팡이 위에 작은 해골, 아래로 늘어진 깃털·뼈 장식 둘
+        g = grip_of("Right")
+        axis = Vector((0, -1, -0.15)).normalized()
+        side = Vector((0, 0, -1)); side = (side - axis * side.dot(axis)).normalized()
+
+        def build(bm, g=g, a=axis, e=side):
+            t = a.cross(e).normalized()
+            for k in range(6):                                              # 비틀린 대 (마디마다 조금씩 꺾여요)
+                c = g + a * (-0.3 + k * 0.18) + e * 0.006 * math.sin(k * 1.7)
+                box(bm, c, a, e, 0.19, 0.035, 0.035)
+            head = g + a * 0.68
+            ret = bmesh.ops.create_uvsphere(bm, u_segments=10, v_segments=7, radius=1.0)   # 해골 머리
+            bmesh.ops.scale(bm, verts=ret["verts"], vec=Vector((0.09, 0.1, 0.09)))
+            bmesh.ops.translate(bm, verts=ret["verts"], vec=head)
+            box(bm, head + a * 0.02 + e * 0.07, e, t, 0.05, 0.1, 0.07)       # 턱
+            for k in (-1, 1):                                               # 늘어진 장식 (뼈 조각)
+                box(bm, head - a * 0.1 + t * 0.07 * k + e * 0.1, e, t, 0.16, 0.02, 0.02)
+            box(bm, g - a * 0.36, a, e, 0.06, 0.045, 0.045)                  # 밑동 쇠
+        make(f"{NAME}_Weapon_skullstaff", "RightHand", build)
     elif w == "broom":
         # 싸리비 (마을 주민): 긴 대 끝에 묶은 싸리 다발
         g = grip_of("Right")
@@ -1023,7 +1068,7 @@ def hold_moktak():
     arm("Left", chest + Vector((0.1, -0.3, -0.18)), Vector((1, 0.3, -0.6)))
 
 
-HAS_BLADE = bool({"dao", "bigdao", "jian", "hooksword", "axe", "broom"} & EXTRAS)   # 도끼·싸리비(마을 주민)도 칼처럼 손에서 뻗어요
+HAS_BLADE = bool({"dao", "bigdao", "jian", "hooksword", "axe", "broom", "club"} & EXTRAS)   # 도끼·싸리비(마을 주민)·몽둥이(고블린)도 칼처럼 손에서 뻗어요
 SPREAD = float(next((w.split("=")[1] for w in WEAPONS if w.startswith("armspread=")), "1"))
 player_objs, player_acts = [], []
 if "playeranim" in EXTRAS or "sweep" in EXTRAS:
@@ -1085,7 +1130,7 @@ if "playeranim" in EXTRAS or "sweep" in EXTRAS:
             point_blade(Vector((0, -0.2, 1)), wrist_bend=90)                 # 작살·깃대는 세워 들고 걸어요
         if "anchor" in WEAPONS or "meteor" in WEAPONS:
             point_blade(Vector((0, 0.25, -1)), wrist_bend=90)                # 쇠닻은 아래로 늘어뜨려 끌어요
-        if "khakkhara" in WEAPONS:
+        if "khakkhara" in WEAPONS or "skullstaff" in WEAPONS:
             point_blade(Vector((0, -0.15, 1)), wrist_bend=90)                 # 선장은 세워 들고 걸어요
         if "prayer" in EXTRAS:
             prayer_arms()                                                    # 석상 나한: 걸을 때도 합장
@@ -2060,7 +2105,36 @@ if "tombmoves" in EXTRAS:
         sl = pb["LeftArm"].head.copy()
         arm("Left", sl + Vector((0.14, -0.55, -0.1)), Vector((1, 0.3, -0.5)))   # 방패를 몸 앞으로 내밀어요
 
-    if "dao" in WEAPONS and "rattan" not in WEAPONS:
+    if "dagger" in WEAPONS:
+        # 고블린 단검잡이: Ready 낮게 웅크려 단검을 허리춤에 숨겼다가(예고) → Attack 앞으로 몸을 날려 찌르고 → 뒤로 뛰어 빠져요
+        def stab_pose(stage):
+            if stage == "idle":
+                idle_end_pose(); return
+            if stage == "crouch":
+                lower_hips(-0.3, {"Left": FEET["Left"] + Vector((0, -0.2, 0)), "Right": FEET["Right"] + Vector((0, 0.15, 0))}, dy=0.08)
+                bend("Spine", Vector((1, 0, 0)), 25)
+                sh = pb["RightArm"].head.copy()   # 숙인 뒤의 어깨
+                arm("Right", sh + Vector((-0.1, 0.15, -0.4)), Vector((-1, 0.3, -0.3)))
+                point_blade(Vector((0, -1, 0.2)), wrist_bend=80)
+                free_left_back()
+            elif stage == "stab":
+                lower_hips(-0.22, {"Left": FEET["Left"] + Vector((0, -0.55, 0)), "Right": FEET["Right"] + Vector((0, 0.2, 0))}, dy=-0.3)
+                bend("Spine", Vector((1, 0, 0)), 20)
+                sh = pb["RightArm"].head.copy()
+                arm("Right", sh + Vector((-0.12, -0.95, -0.15)).normalized() * REACH, Vector((-1, 0.3, -0.5)))
+                point_blade(Vector((0, -1, 0)), wrist_bend=80)
+                free_left_back()
+            else:   # hop: 뒤로 뛰어 빠지며 몸을 세워요
+                lower_hips(-0.1, {"Left": FEET["Left"] + Vector((0, 0.2, 0)), "Right": FEET["Right"] + Vector((0, 0.35, 0))}, dy=0.3)
+                bend("Spine", Vector((1, 0, 0)), -6)
+                sh = pb["RightArm"].head.copy()
+                arm("Right", sh + Vector((-0.15, -0.3, -0.35)), Vector((-1, 0.3, -0.3)))
+                point_blade(Vector((0, -1, 0.3)), wrist_bend=80)
+                free_left_back()
+        make_action("Ready", [(0, "crouch"), (10, "crouch")], stab_pose)
+        make_action("Attack", [(0, "crouch"), (3, "stab"), (10, "stab"), (15, "hop"), (20, "hop"), (28, "idle")], stab_pose)
+
+    if ("dao" in WEAPONS or "club" in WEAPONS) and "rattan" not in WEAPONS:   # 고블린 몽둥이도 같은 내려베기
         left = guard_left if "towershield" in WEAPONS else free_left_back
         make_action("Attack", [(0, ("load", left)), (4, ("cut1", left)), (14, ("cut1", left)), (24, ("idle", None))], slash_pose)
 
@@ -2114,6 +2188,8 @@ if "tombmoves" in EXTRAS:
                     lower_hips(-0.14, {"Left": FEET["Left"] + Vector((0, -0.3, 0)), "Right": FEET["Right"]}, dy=-0.12)
                     bend("Spine", Vector((1, 0, 0)), 14)
                     arm(s, sh + Vector((-sx * 0.1, -0.7, 0.0)), Vector((sx, 0.3, -0.6)))
+            if "skullstaff" in WEAPONS:
+                point_blade(Vector((0, -0.2, 1)), wrist_bend=90)   # 고블린 주술사: 지팡이를 세워 든 채 주문을 외워요
         make_action("Raise", [(0, "idle"), (8, "raise"), (36, "raise"), (44, "idle")], shaman_pose)
         make_action("Attack", [(0, "gather"), (4, "cast"), (12, "cast"), (22, "idle")], shaman_pose)
 
