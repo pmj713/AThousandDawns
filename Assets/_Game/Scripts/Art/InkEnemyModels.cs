@@ -293,6 +293,15 @@ namespace AThousandDawns.Art
             if (brain.Rank == EnemyRank.Boss || brain.Rank == EnemyRank.Master) flinchAngle = 5f;   // 고수·보스는 덩치가 커서 살짝만 움찔해요
             _hasStatue = brain.Kind == EnemyKind.Arhat && animator.HasState(0, Animator.StringToHash("Statue")) && animator.HasState(0, Animator.StringToHash("Wake"));
             _hasSpawn = !_hasIntro && !_hasStatue && animator.HasState(0, Animator.StringToHash("Spawn"));
+            if (brain.Rank == EnemyRank.Boss)   // 보스 공통 견제기·도약 (EnemyBrain.BossKit)
+            {
+                _bossKit = true;
+                EnemyBrain.BossVolley += OnBossVolley;
+                EnemyBrain.BossLeapStarted += OnLeapStarted;
+                EnemyBrain.BossLeapLanded += OnLeapLanded;
+                if (brain is OgreBrain) OgreBrain.RockThrown += OnRockThrown;
+            }
+            _modelRestPos = animator.transform.localPosition;
             if (brain is SkeletonBrain && animator.HasState(0, Animator.StringToHash("Reassemble")))
             {
                 _skeleton = true;
@@ -351,7 +360,8 @@ namespace AThousandDawns.Art
         {
             if (_brain == null || _animator == null || _animator.runtimeAnimatorController == null) return;
             TickOverlay();
-            if (Time.time < _reassembleUntil) return;   // 스켈레톤: 뼈가 무너졌다 맞춰지는 1.5초 동안은 그 동작만
+            if (_leaping) TickLeap();
+            if (Time.time < _holdUntil) return;   // 한 번 트는 동작(스켈레톤 다시 일어남·보스 견제·도약) 동안은 그 동작만
             // 방패병: 대시 공격으로 방패가 부서지면 방패 소품을 감춰요
             if (_shieldBrain != null && !_shieldHidden && _shieldBrain.ShieldBroken)
             {
@@ -636,21 +646,81 @@ namespace AThousandDawns.Art
             }
         }
 
+        // 보스 공통 견제기·도약 (EnemyBrain.BossKit): 견제는 던지기·쏘기 동작 한 번, 도약은 0.9초 웅크렸다가(LeapCrouch)
+        //   0.35초 동안 모델만 들어 올려 떠날 자리 → 내려찍을 자리로 포물선을 그리고 (브레인은 착지 순간에 순간이동해요), 착지하며 내려찍어요(LeapLand)
+        const float LeapWindup = 0.9f, LeapAir = 0.35f;   // boss_kit.leap_windup · leap_air 기본값과 같아요
+        bool _bossKit, _leaping;
+        float _leapStart;
+        Vector3 _leapFrom, _leapTo, _modelRestPos;
+
+        void OnBossVolley(EnemyBrain boss, Vector3 dir)
+        {
+            if (boss == _brain) PlayHeld("Volley", 0.6f);
+        }
+
+        void OnRockThrown(OgreBrain ogre)
+        {
+            if (ogre == _brain) PlayHeld("Volley", 0.6f);
+        }
+
+        void OnLeapStarted(EnemyBrain boss, Vector3 from, Vector3 to)
+        {
+            if (boss != _brain) return;
+            _leaping = true;
+            _leapStart = Time.time;
+            _leapFrom = from;
+            _leapTo = to;
+            PlayHeld("LeapCrouch", LeapWindup + LeapAir + 0.1f);
+        }
+
+        void OnLeapLanded(EnemyBrain boss, Vector3 at)
+        {
+            if (boss != _brain) return;
+            _leaping = false;
+            _animator.transform.localPosition = _modelRestPos;
+            PlayHeld("LeapLand", 0.5f);
+        }
+
+        void TickLeap()
+        {
+            float t = Time.time - _leapStart - LeapWindup;
+            if (t < 0f) return;
+            float k = Mathf.Clamp01(t / LeapAir);
+            var offset = Vector3.Lerp(Vector3.zero, _leapTo - _leapFrom, k);
+            offset.y = 0f;
+            float height = 4f * k * (1f - k) * Mathf.Clamp(Vector3.Distance(_leapFrom, _leapTo) * 0.35f, 1.5f, 3.5f);
+            _animator.transform.position = transform.TransformPoint(_modelRestPos) + offset + Vector3.up * height;
+        }
+
+        void PlayHeld(string state, float seconds)
+        {
+            if (!_animator.HasState(0, Animator.StringToHash(state))) return;
+            Play(state, 0.08f);
+            _holdUntil = Time.time + seconds;
+        }
+
         // 스켈레톤 뼈 무너짐 → 1.5초 끝에 다시 맞춰져 일어나요 (Reassemble 클립이 그 길이에 맞춰져 있어요)
         bool _skeleton;
-        float _reassembleUntil;
+        float _holdUntil;
 
         void OnReassembling(SkeletonBrain skeleton)
         {
             if (skeleton != _brain) return;
             Play("Reassemble", 0.05f);
-            _reassembleUntil = Time.time + 1.5f;
+            _holdUntil = Time.time + 1.5f;
         }
 
         void OnDestroy()
         {
             if (_body != null) _body.Damaged -= OnDamaged;
             if (_skeleton) SkeletonBrain.Reassembling -= OnReassembling;
+            if (_bossKit)
+            {
+                EnemyBrain.BossVolley -= OnBossVolley;
+                EnemyBrain.BossLeapStarted -= OnLeapStarted;
+                EnemyBrain.BossLeapLanded -= OnLeapLanded;
+                OgreBrain.RockThrown -= OnRockThrown;
+            }
         }
     }
 

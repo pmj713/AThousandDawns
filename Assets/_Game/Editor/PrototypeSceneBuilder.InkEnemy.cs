@@ -65,6 +65,8 @@ namespace AThousandDawns.EditorTools
             ("Orc", EnemyKind.Orc, 3f),
             ("Skeleton", EnemyKind.Skeleton, 3f),
             ("Imp", EnemyKind.Imp, 3.5f),
+            ("GoblinChief", EnemyKind.GoblinChief, 3.5f),   // 판타지 고수
+            ("Ogre", EnemyKind.Ogre, 2f),                  // 판타지 보스
         };
 
         // 패턴 동작: attack(브레인 AttackName, null이면 다른 동작이 이어 부르는 상태) → state.
@@ -83,12 +85,12 @@ namespace AThousandDawns.EditorTools
         static readonly Dictionary<string, string> IntroClips = new Dictionary<string, string>
         {
             ["Nokrim"] = "Slam", ["Qingzhu"] = "Flash", ["IronFist"] = "Quake", ["Hyegwang"] = "Vajra", ["BloodBuddha"] = "Rain",
-            ["Takrang"] = "WaveCut", ["IronDragon"] = "Roar", ["BloodShadow"] = "ShadowRush", ["HeavenlyDemon"] = "Burst",
+            ["Takrang"] = "WaveCut", ["IronDragon"] = "Roar", ["BloodShadow"] = "ShadowRush", ["HeavenlyDemon"] = "Burst", ["GoblinChief"] = "Roar", ["Ogre"] = "Roar",
         };
 
         // 차원 겹침 판타지 적: 무협 수묵과 일부러 다르게 — 채색 동판화·스테인드글라스처럼 원색이 살고 윤곽이 굵고 곧아요.
         // 같은 수묵 셰이더에 값만 달리: 채도 끝까지 · 번짐·종이결 거의 없이 · 붓 떨림 없는 굵은 윤곽 · 명암 단계 넷
-        static readonly HashSet<string> FantasyEnemies = new HashSet<string> { "Slime", "Goblin", "GoblinArcher", "GoblinRogue", "GoblinShaman", "Orc", "Skeleton", "Imp" };
+        static readonly HashSet<string> FantasyEnemies = new HashSet<string> { "Slime", "Goblin", "GoblinArcher", "GoblinRogue", "GoblinShaman", "Orc", "Skeleton", "Imp", "GoblinChief", "Ogre" };
 
         static Material FantasyLook(Material m)
         {
@@ -105,11 +107,21 @@ namespace AThousandDawns.EditorTools
             return m;
         }
 
+        // 보스 공통 견제기·도약에 빌려 쓸 동작: 견제(던지기·쏘기) · 도약 웅크림 · 착지 내려찍기
+        static readonly Dictionary<string, (string volley, string crouch, string land)> BossKitClips = new Dictionary<string, (string, string, string)>
+        {
+            ["Nokrim"] = ("Sweep", "ChargeReady", "Slam"),
+            ["BloodBuddha"] = ("Palm", null, "Palm"),
+            ["IronDragon"] = ("ChainThrow", null, "MeteorSlam"),
+            ["HeavenlyDemon"] = ("Grip", null, "DemonSweep"),
+            ["Ogre"] = ("Throw", "LeapCrouch", "Quake"),
+        };
+
         // 모델 고유 동작 중 반복하는 것
         static readonly HashSet<string> LoopingOwnClips = new HashSet<string> { "ChargeRun", "ShoulderRun", "Idle", "Run", "Chant", "Rain", "Drag", "Whirl", "Captive" };
 
         // 고유 동작만 쓰는 적 (Generic으로 가져와요)
-        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha", "Pirate", "Harpooner", "Anchor", "Rattan", "WaterGhost", "FlagBearer", "Takrang", "IronDragon", "Cultist", "BloodArcher", "BloodShaman", "DemonGuard", "BloodBomber", "BloodShadow", "HeavenlyDemon", "CaptiveHero", "Slime", "Goblin", "GoblinArcher", "GoblinRogue", "GoblinShaman", "Orc", "Skeleton", "Imp" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
+        static readonly HashSet<string> GenericRigs = new HashSet<string> { "Nokrim", "Qingzhu", "IronFist", "Boar", "Hound", "Snake", "Wraith", "Arhat", "Moktak", "Monk", "Lantern", "Hyegwang", "BloodBuddha", "Pirate", "Harpooner", "Anchor", "Rattan", "WaterGhost", "FlagBearer", "Takrang", "IronDragon", "Cultist", "BloodArcher", "BloodShaman", "DemonGuard", "BloodBomber", "BloodShadow", "HeavenlyDemon", "CaptiveHero", "Slime", "Goblin", "GoblinArcher", "GoblinRogue", "GoblinShaman", "Orc", "Skeleton", "Imp", "GoblinChief", "Ogre" };   // 동물은 뼈를 직접 심어(prepare_animal.py) 사람 뼈대가 아니에요
 
         static readonly Dictionary<string, MoveSpec[]> InkEnemyMoves = new Dictionary<string, MoveSpec[]>
         {
@@ -209,6 +221,24 @@ namespace AThousandDawns.EditorTools
             },
             // 스켈레톤: 베기는 기본 Attack. 뼈가 무너졌다가 1.5초 끝에 다시 맞춰져 일어나요 (InkEnemyAnimator가 SkeletonBrain.Reassembling을 보고)
             ["Skeleton"] = new[] { new MoveSpec { state = "Reassemble", clips = new[] { "Reassemble" }, mode = MoveMode.Play, seconds = 1.5f } },
+            // 고블린 족장 (판타지 고수, 철권 마웅과 같은 규칙): 철퇴 2연타 · 내려찍기 · 돌진. 2페이즈 전환(함성)은 Roar (InkEnemyAnimator가 IsTransitioning을 보고)
+            ["GoblinChief"] = new[]
+            {
+                new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },
+                new MoveSpec { attack = "철퇴 2연타", state = "Jab", clips = new[] { "Punch2" } },
+                new MoveSpec { attack = "철퇴 내려찍기", state = "Quake", clips = new[] { "Quake" }, mode = MoveMode.Play },
+                new MoveSpec { state = "ShoulderReady", clips = new[] { "ShoulderReady" }, mode = MoveMode.Run },
+                new MoveSpec { attack = "돌진", state = "Charge", clips = new[] { "ShoulderRun" }, mode = MoveMode.Run, speed = 1.6f, ready = "ShoulderReady" },
+            },
+            // 오우거 (판타지 보스): 몽둥이 2연타 · 땅 내려치기 · 분노 돌진 (머리를 숙이고). 페이즈 전환은 가슴을 치며 포효(Roar). 바위 던지기는 Volley(Throw)
+            ["Ogre"] = new[]
+            {
+                new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },
+                new MoveSpec { attack = "몽둥이 2연타", state = "Jab", clips = new[] { "Punch2" } },
+                new MoveSpec { attack = "땅 내려치기", state = "Quake", clips = new[] { "Quake" }, mode = MoveMode.Play },
+                new MoveSpec { state = "ShoulderReady", clips = new[] { "ShoulderReady" }, mode = MoveMode.Run },
+                new MoveSpec { attack = "분노 돌진", state = "Charge", clips = new[] { "ShoulderRun" }, mode = MoveMode.Run, speed = 1.4f, ready = "ShoulderReady" },
+            },
             // 천마 근위: 평소 공격은 기본 Attack(방패 세운 채 베기) · 반격: 0.3초 안에 빠르게 되받아 베기
             ["DemonGuard"] = new[] { new MoveSpec { attack = "반격", state = "Counter", clips = new[] { "Attack" }, mode = MoveMode.Play, seconds = 0.5f } },
             // 혈폭자: 핏덩이를 머리 위로 들었다가 내던져요
@@ -413,6 +443,11 @@ namespace AThousandDawns.EditorTools
                     AddMove(spec.state, chain, spec.mode, spec.seconds, spec.speed);
                     if (spec.attack != null) moves.Add(new Move { attack = spec.attack, state = spec.state, mode = spec.mode, after = spec.after, ready = spec.ready });
                 }
+            // 보스 공통 견제기·도약 (EnemyBrain.BossKit, InkEnemyAnimator가 신호를 보고): 보스마다 이미 있는 동작을 빌려 써요.
+            //   Volley = 견제 투사체 (던지기·쏘기), LeapCrouch = 도약 예고 웅크림 (없으면 대기 그대로), LeapLand = 착지 내려찍기
+            if (BossKitClips.TryGetValue(name, out var kit))
+                foreach (var (state, clipName, mode, seconds) in new[] { ("Volley", kit.volley, MoveMode.Play, 0.7f), ("LeapCrouch", kit.crouch, MoveMode.Run, 0f), ("LeapLand", kit.land, MoveMode.Play, 0.6f) })
+                    if (clipName != null && clips.TryGetValue(clipName, out var kitClip)) AddMove(state, new[] { kitClip }, mode, seconds, 0f);
             // 등장 연출 (보스·고수가 깨어나는 순간 한 번, InkEnemyAnimator): 저마다 위세 있는 동작을 1.4초에 그대로 재생해요
             if (IntroClips.TryGetValue(name, out var introName) && clips.TryGetValue(introName, out var introClip))
                 AddMove("Intro", new[] { introClip }, MoveMode.Play, 1.4f, 0f);

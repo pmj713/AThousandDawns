@@ -185,7 +185,7 @@ for w in WEAPONS:
         def build(bm, g=g, a=axis, e=side):
             t = a.cross(e).normalized()
             rings = []
-            sc = max(1.0, HEIGHT / 1.8)                                      # 큰 덩치(오크)는 몽둥이도 크게
+            sc = max(1.0, HEIGHT / 1.8) ** 1.4                               # 큰 덩치(오크·오우거)는 몽둥이가 덩치보다 더 크게 (통나무처럼)
             for u, r in ((-0.08 * sc, 0.02 * sc), (0.08 * sc, 0.024 * sc), (0.26 * sc, 0.045 * sc), (0.4 * sc, 0.062 * sc), (0.45 * sc, 0.045 * sc), (0.48 * sc, 0.0)):
                 c = g + a * u
                 rings.append([bm.verts.new(c)] if r == 0 else
@@ -2262,6 +2262,45 @@ if "tombmoves" in EXTRAS:
 #   천마 — Slash1: 곧게 선 채 단정한 일검 (1페이즈) · DemonSweep: 칼을 머리 위로 치켜들었다가 허리째 크게 휘둘러요 (2페이즈)
 #          Burst: 칼끝을 땅으로 내리고 두 팔을 펼쳐 가슴을 젖혀 마기를 터뜨려요 (3페이즈, 그대로 재생)
 #          Ascend: 페이즈가 바뀔 때 무릎을 꿇었다가 천천히 일어서며 두 팔을 펼쳐요
+# 판타지 보스 (bossmoves: 고블린 족장 · 오우거): 페이즈 전환 포효(Roar, 고개를 젖히고 두 팔을 벌렸다가 주먹으로 가슴을 번갈아 쳐요 — 족장의 함성도 이 동작)
+#   · 던지기(Throw, 두 손으로 머리 위로 들어 올렸다 앞으로 내던져요: 오우거 바위·보스 견제) · 도약 웅크림(LeapCrouch, 낮게 웅크려 두 팔을 뒤로)
+if "bossmoves" in EXTRAS and "playeranim" in EXTRAS:
+    XA = Vector((1, 0, 0))
+
+    def boss_pose(stage):
+        if stage == "idle":
+            idle_end_pose(); return
+        if stage in ("roar", "beat_l", "beat_r"):
+            lower_hips(-0.1, FEET, dy=0.05)
+            bend("Spine", XA, -18); bend("Neck", XA, -25)
+            for s, sx in (("Left", 1), ("Right", -1)):
+                sh = pb[f"{s}Arm"].head.copy()
+                if stage == f"beat_{s[0].lower()}":
+                    arm(s, sh + Vector((-sx * 0.12, -0.25, -0.12)), Vector((sx, 0.3, -0.5)))   # 가슴 치기
+                else:
+                    arm(s, sh + Vector((sx * 0.45, -0.1, 0.35)), Vector((sx, 0.3, 0)))
+        elif stage == "lift":
+            lower_hips(-0.1, FEET, dy=0.08)
+            bend("Spine", XA, -16)
+            for s, sx in (("Left", 1), ("Right", -1)):
+                sh = pb[f"{s}Arm"].head.copy()
+                arm(s, sh + Vector((-sx * 0.1, 0.15, 0.7)), Vector((sx, 0.3, 0)))
+        elif stage == "throw":
+            lower_hips(-0.2, {"Left": FEET["Left"] + Vector((0, -0.35, 0)), "Right": FEET["Right"]}, dy=-0.15)
+            bend("Spine", XA, 26)
+            for s, sx in (("Left", 1), ("Right", -1)):
+                sh = pb[f"{s}Arm"].head.copy()
+                arm(s, sh + Vector((-sx * 0.12, -0.7, -0.15)), Vector((sx, 0, -0.5)))
+        else:   # crouch
+            lower_hips(-0.35, FEET, dy=0.1)
+            bend("Spine", XA, 30)
+            for s, sx in (("Left", 1), ("Right", -1)):
+                sh = pb[f"{s}Arm"].head.copy()
+                arm(s, sh + Vector((sx * 0.3, 0.25, -0.35)), Vector((sx, 0.3, -0.3)))
+    make_action("Roar", [(0, "idle"), (6, "roar"), (14, "beat_l"), (18, "roar"), (22, "beat_r"), (26, "roar"), (38, "roar"), (45, "idle")], boss_pose)
+    make_action("Throw", [(0, "lift"), (10, "lift"), (14, "throw"), (22, "throw"), (30, "idle")], boss_pose)
+    make_action("LeapCrouch", [(0, "crouch"), (10, "crouch")], boss_pose)
+
 # 스켈레톤 (reassemble): 뼈가 무너졌다가 1.5초(45프레임) 끝에 다시 맞춰져 일어나요.
 #   0.3초 만에 무릎부터 꺾여 바닥에 주저앉듯 쌓이고(엉덩이가 거의 땅, 등·목이 앞으로 꺾여 팔은 바닥에 늘어짐) → 덜그럭 떨다가 → 마지막 0.5초에 일어서요
 if "reassemble" in EXTRAS and "playeranim" in EXTRAS:
