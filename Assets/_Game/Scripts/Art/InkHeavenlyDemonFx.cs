@@ -18,6 +18,10 @@ namespace AThousandDawns.Art
     //   검비 (Mark, 원): 하늘에서 검이 떨어져 꽂히고 (MarkFall) 핏물·금이 번져요.
     //   페이즈 전환 (Transition): 마기가 터지고 전환 동안 천마 둘레에서 마기 연기가 솟아요.
     //   천마전 보호막 (RoomRun.HeroShieldCue): 둘레에서 금빛 내력 줄기가 소용돌이치며 플레이어에게 흘러들고 흰 고리가 퍼져요.
+    //   마검사 천마 (2페이즈 마법 · 3페이즈 마검 융합): 화염구 비 (Mark Fireball) = 하늘에서 불덩이 + 주홍 불꽃 고리 · 마법진 (Mark Rune) = 보라·청색 룬 원이 돌며 차올라요 (기둥은 InkBurstFx Rune)
+    //     마검비 (Mark FireSword) = 불길 두른 검 · 순간이동 (Blink) = 두 자리에 보랏빛 균열 · 순간이동 검격 (Sword 부채꼴 Mark) = 보랏빛 초승달
+    //     마검 천멸 (Cleave) = 마기와 화염이 섞인 폭발 · 3페이즈 천마군림 = 초승달 따라 불꽃 · 2페이즈 마력 흡인 = 보라·청색 소용돌이
+    //     페이즈 전환 (Transition.Phase) = 2: 보라·청색 마력 폭발 + 룬 원 / 3: 마기 + 화염 융합 폭발
     // 그림: Art/Env/BossFx/Resources/HeavenlyDemonFx (Sword · Hand · Wisp · Crescent · Phantom).
     //       없으면 BloodBuddhaFx · TombFx 그림을 검게 물들여 대신해요.
     public class InkHeavenlyDemonFx : MonoBehaviour
@@ -25,12 +29,16 @@ namespace AThousandDawns.Art
         static InkHeavenlyDemonFx _host;
         static Sprite _sword, _hand, _wisp, _crescent, _phantom, _splash, _ring, _drop;
         static bool _ownWisp, _ownCrescent, _ownPhantom, _ownHand;
+        static Sprite _fireball, _rift, _rune; // 마검사 천마 (2·3페이즈)
         static Material _lineMat;
         static Sprite _miasmaA, _miasmaB;
         static bool _loaded;
 
         static readonly Color Dark = new Color(0.6f, 0.04f, 0.14f);      // 마기 (검붉은 먹)
         static readonly Color Blood = new Color(0.62f, 0.06f, 0.07f);
+        static readonly Color MagicViolet = new Color(0.62f, 0.3f, 1f);   // 2페이즈 마법
+        static readonly Color MagicBlue = new Color(0.3f, 0.65f, 1f);
+        static readonly Color Flame = new Color(1f, 0.45f, 0.1f);         // 3페이즈 마검 (마기 + 불)
         static readonly Color Qi = new Color(1f, 0.88f, 0.55f);           // 내력 (금빛)
 
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
@@ -72,19 +80,36 @@ namespace AThousandDawns.Art
             if (b != null) h._boss = b;
             switch (c.Kind)
             {
-                case HeavenlyDemonBrain.FxKind.Slash: h.Slash(c.At, Flat(c.Dir), c.Radius, c.Angle); break;
+                case HeavenlyDemonBrain.FxKind.Slash:
+                    h.Slash(c.At, Flat(c.Dir), c.Radius, c.Angle);
+                    if (b != null && b.Phase >= 3) h.FireSweep(c.At, Flat(c.Dir), c.Radius, c.Angle); // 마검 천마군림: 초승달에 불꽃이 섞여요
+                    break;
                 case HeavenlyDemonBrain.FxKind.Cross: h.Wave(c.Target, Flat(c.Dir)); break;
                 case HeavenlyDemonBrain.FxKind.Grasp: h.Grasp(b != null ? b.transform : null, c.At, Flat(c.Dir), c.Radius); break;
                 case HeavenlyDemonBrain.FxKind.Grasped: h._graspTarget = c.Target; break;
                 case HeavenlyDemonBrain.FxKind.Mark:
-                    if (c.Sector) h.Phantom(c.At, Flat(c.Dir), c.Time, c.Radius);
-                    else h.FallingSword(c.At, c.Time);
+                    switch (c.Style)
+                    {
+                        case HeavenlyDemonBrain.MarkStyle.Fireball: h.FallingFireball(c.At, c.Time, c.Radius); break;
+                        case HeavenlyDemonBrain.MarkStyle.Rune: h.RuneCircle(c.At, c.Time, c.Radius); break;
+                        case HeavenlyDemonBrain.MarkStyle.FireSword: h.FallingSword(c.At, c.Time, fire: true); break;
+                        default:
+                            if (c.Sector && c.Style == HeavenlyDemonBrain.MarkStyle.Sword) h.BlinkSlash(c.At, Flat(c.Dir), c.Time, c.Radius, c.Angle); // 순간이동 검격
+                            else if (c.Sector) h.Phantom(c.At, Flat(c.Dir), c.Time, c.Radius);
+                            else h.FallingSword(c.At, c.Time);
+                            break;
+                    }
                     break;
-                case HeavenlyDemonBrain.FxKind.MarkFall:
-                    if (!c.Sector) h.SwordImpact(c.At, c.Radius);
+                case HeavenlyDemonBrain.FxKind.MarkFall: // 화염구·마검비는 BurstKind.Fireball, 마법진은 BurstKind.Rune (InkBurstFx)
+                    if (!c.Sector && c.Style == HeavenlyDemonBrain.MarkStyle.Sword) h.SwordImpact(c.At, c.Radius);
                     break;
                 case HeavenlyDemonBrain.FxKind.PullBurst: h.Burst(c.At, c.Radius + 1f, 8); break;
-                case HeavenlyDemonBrain.FxKind.Transition: h.Transition(b != null ? b.transform : null, c.At, c.Radius, c.Time); break;
+                case HeavenlyDemonBrain.FxKind.Transition:
+                    h.Transition(b != null ? b.transform : null, c.At, c.Radius, c.Time);
+                    h.PhaseBurst(c.At, c.Phase);
+                    break;
+                case HeavenlyDemonBrain.FxKind.Blink: h.Rift(c.At, 0f); h.Rift(c.To, 0.05f); break;
+                case HeavenlyDemonBrain.FxKind.Cleave: h.Cleave(c.At, c.Radius); break;
             }
         }
 
@@ -320,11 +345,12 @@ namespace AThousandDawns.Art
         static Color PhantomColor(float a) => _ownPhantom ? new Color(1f, 1f, 1f, a) : new Color(1f, 0.5f, 0.55f, a);
 
         // ── 검비: 하늘에서 검이 떨어져 꽂혀요
-        void FallingSword(Vector3 at, float fall)
+        void FallingSword(Vector3 at, float fall, bool fire = false)
         {
             var sr = Upright(_sword, at, 0.55f, 8, bottom: true);
             if (sr == null) return;
             if (_sword == _crescent) sr.color = Dark;
+            if (fire) { InkParticles.Fire(sr.transform.parent, Vector3.up * 0.3f, 0.6f, 1.6f); sr.color = new Color(1f, 0.75f, 0.55f); } // 마검비: 불길을 두른 검
             var pivot = sr.transform.parent;
             float t = 0f, life = Mathf.Max(0.1f, fall);
             const float high = 9f;
@@ -369,6 +395,140 @@ namespace AThousandDawns.Art
             });
         }
 
+        // ── 마검사 천마 2·3페이즈 (무공 → 마법 → 마검 융합)
+
+        // 화염구 비 (Mark Fireball): 하늘에서 불덩이가 불티를 끌며 떨어지고, 예고 원 둘레에 주홍 불꽃 고리가 차올라요. 터지는 불길은 InkBurstFx(Fireball).
+        void FallingFireball(Vector3 at, float fall, float radius)
+        {
+            at.y = 0f;
+            var sr = Upright(_fireball, at, 1f, 9);
+            var ring = Flat(_ring, at, radius * 2.1f, UnityEngine.Random.Range(0f, 360f), 0.05f, 5);
+            if (sr == null) return;
+            var pivot = sr.transform.parent;
+            InkParticles.Embers(pivot, Vector3.zero, 0.3f, 2f);
+            Vector3 sky = at + new Vector3(1.2f, 8f, -1.2f);
+            float t = 0f, life = Mathf.Max(0.1f, fall);
+            _live.Add(dt =>
+            {
+                t += dt;
+                float k = Mathf.Clamp01(t / life);
+                if (pivot != null)
+                {
+                    pivot.position = Vector3.Lerp(sky, at + Vector3.up * 0.3f, k * k);
+                    sr.transform.localRotation = Quaternion.Euler(0f, 0f, t * 420f);
+                    sr.color = new Color(1f, 1f, 1f, Mathf.Clamp01(t / 0.15f));
+                }
+                if (ring != null)
+                {
+                    ring.transform.Rotate(0f, 0f, 150f * dt, Space.Self);
+                    ring.color = new Color(Flame.r, Flame.g, Flame.b, 0.3f + 0.6f * k);
+                }
+                if (k < 1f) return true;
+                if (pivot != null) Destroy(pivot.gameObject);
+                if (ring != null) Destroy(ring.gameObject);
+                return false;
+            });
+        }
+
+        // 마법진 (Mark Rune): 보라·청색 룬 원이 돌며 차올라요 (터지기 직전엔 빨리 돌고 밝아져요). 기둥은 InkBurstFx(Rune).
+        void RuneCircle(Vector3 at, float time, float radius)
+        {
+            var sr = Flat(_rune, at, radius * 2.2f, UnityEngine.Random.Range(0f, 360f), 0.045f, 5);
+            if (sr == null) return;
+            Vector3 unit = sr.transform.localScale;
+            float t = 0f, life = Mathf.Max(0.2f, time);
+            _live.Add(dt =>
+            {
+                if (sr == null) return false;
+                t += dt;
+                float k = Mathf.Clamp01(t / life);
+                sr.transform.Rotate(0f, 0f, Mathf.Lerp(30f, 260f, k * k) * dt, Space.Self);
+                sr.transform.localScale = unit * Mathf.Lerp(0.55f, 1f, Mathf.Sqrt(Mathf.Clamp01(t / 0.35f)));
+                float a = t <= life ? 0.4f + 0.6f * k : 1f - (t - life) / 0.3f;
+                sr.color = new Color(1f, 1f, 1f, Mathf.Clamp01(a));
+                if (t < life + 0.3f) return true;
+                Destroy(sr.gameObject);
+                return false;
+            });
+        }
+
+        // 순간이동 (Blink): 떠난 자리·나타난 자리에 보랏빛 마력 균열이 확 열렸다 닫혀요
+        void Rift(Vector3 at, float delay)
+        {
+            var sr = Upright(_rift, new Vector3(at.x, 0f, at.z), 1.3f, 9, bottom: true);
+            if (sr == null) return;
+            Vector3 unit = sr.transform.localScale;
+            sr.transform.localScale = new Vector3(0f, unit.y, unit.z);
+            float t = -delay;
+            bool burst = false;
+            _live.Add(dt =>
+            {
+                if (sr == null) return false;
+                t += dt;
+                if (t < 0f) return true;
+                if (!burst) { burst = true; InkParticles.Burst(at + Vector3.up, 16, new Color(0.9f, 0.7f, 1f, 1f), new Color(MagicViolet.r, MagicViolet.g, MagicViolet.b, 0.5f), 2.6f, 0.12f, 0.5f, 0.3f); }
+                float open = t < 0.12f ? t / 0.12f : t < 0.35f ? 1f : Mathf.Clamp01(1f - (t - 0.35f) / 0.25f);
+                sr.transform.localScale = new Vector3(unit.x * open, unit.y * (0.8f + 0.2f * open), unit.z);
+                if (t < 0.6f) return true;
+                Destroy(sr.transform.parent.gameObject);
+                return false;
+            });
+        }
+
+        // 순간이동 검격 (Mark Sword, 부채꼴): 나타난 자리에서 보랏빛 마력 초승달이 예고 끝에 휩쓸어요
+        void BlinkSlash(Vector3 at, Vector3 dir, float delay, float radius, float angle)
+        {
+            Crescent(at + dir * radius * 0.45f, dir, radius * 2f, 0.3f, delay);
+            if (angle > 100f)
+            {
+                Crescent(at + dir * radius * 0.25f, Quaternion.Euler(0f, 45f, 0f) * dir, radius * 1.6f, 0.3f, delay + 0.03f);
+                Crescent(at + dir * radius * 0.25f, Quaternion.Euler(0f, -45f, 0f) * dir, radius * 1.6f, 0.3f, delay + 0.03f);
+            }
+            float t = 0f;
+            _live.Add(dt =>
+            {
+                t += dt;
+                if (t < delay) return true;
+                InkParticles.Burst(at + dir * radius * 0.6f + Vector3.up * 0.8f, 14, new Color(0.85f, 0.65f, 1f, 1f), new Color(MagicBlue.r, MagicBlue.g, MagicBlue.b, 0.4f), radius * 1.6f, 0.1f, 0.4f, 0f);
+                return false;
+            });
+        }
+
+        // 마검 천마군림 (3페이즈 Slash): 초승달을 따라 주홍 불꽃이 흩날려요
+        void FireSweep(Vector3 at, Vector3 dir, float radius, float angle)
+        {
+            int n = angle > 180f ? 7 : 4;
+            for (int i = 0; i < n; i++)
+            {
+                float a = Mathf.Lerp(-angle * 0.5f, angle * 0.5f, n == 1 ? 0.5f : i / (n - 1f));
+                Vector3 p = at + Quaternion.Euler(0f, a, 0f) * dir * radius * 0.7f + Vector3.up * 0.8f;
+                InkParticles.Burst(p, 6, new Color(1f, 0.85f, 0.4f, 1f), new Color(Flame.r, Flame.g, Flame.b, 0.6f), 2f, 0.25f, 0.45f, -0.6f);
+            }
+        }
+
+        // 마검 천멸 (Cleave): 천마 둘레로 마기와 화염이 섞여 터져요 (8방향 검기는 Cross, 검기 줄 위 불길은 FireSword Mark)
+        void Cleave(Vector3 at, float radius)
+        {
+            Burst(at, radius, 12);
+            InkParticles.Burst(at + Vector3.up * 0.8f, 40, new Color(1f, 0.85f, 0.4f, 1f), new Color(Flame.r, Flame.g, Flame.b, 0.7f), radius * 2.4f, 0.35f, 0.7f, -0.6f);
+            InkParticles.Burst(at + Vector3.up * 1.2f, 20, new Color(Dark.r, Dark.g, Dark.b, 0.9f), new Color(MagicViolet.r, MagicViolet.g, MagicViolet.b, 0.4f), radius * 1.4f, 0.6f, 1f, -0.4f);
+        }
+
+        // 페이즈 전환: 2페이즈(마법) = 보라·청색 마력 폭발 + 룬 원 번쩍, 3페이즈(마검) = 마기와 화염이 섞인 폭발
+        void PhaseBurst(Vector3 at, int phase)
+        {
+            if (phase == 2)
+            {
+                InkParticles.Burst(at + Vector3.up, 46, new Color(0.85f, 0.75f, 1f, 1f), new Color(MagicBlue.r, MagicBlue.g, MagicBlue.b, 0.5f), 6f, 0.3f, 0.9f, 0.2f);
+                RuneCircle(at, 0.6f, 4f);
+            }
+            else if (phase >= 3)
+            {
+                InkParticles.Burst(at + Vector3.up, 40, new Color(1f, 0.8f, 0.35f, 1f), new Color(Flame.r, Flame.g, Flame.b, 0.6f), 6f, 0.4f, 0.9f, -0.5f);
+                InkParticles.Burst(at + Vector3.up * 1.4f, 24, new Color(MagicViolet.r, MagicViolet.g, MagicViolet.b, 0.9f), new Color(Dark.r, Dark.g, Dark.b, 0.4f), 4f, 0.6f, 1.1f, -0.3f);
+            }
+        }
+
         // ── 흡인: 둘레에서 먹선이 소용돌이치며 빨려 들어요
         void TickPull(float dt)
         {
@@ -387,7 +547,8 @@ namespace AThousandDawns.Art
             Vector3 c = _boss.transform.position;
             float ang = UnityEngine.Random.Range(0f, 360f);
             bool red = UnityEngine.Random.value < 0.35f;
-            var lr = Line(c, c, red ? Blood : Dark, red ? 0.18f : 0.3f, 6);
+            bool magic = _boss != null && _boss.Phase == 2; // 2페이즈 "마력 흡인": 보라·청색 마력 줄기
+            var lr = Line(c, c, magic ? (red ? MagicBlue : MagicViolet) : red ? Blood : Dark, red ? 0.18f : 0.3f, 6);
             if (lr == null) return;
             var boss = _boss.transform;
             float t = 0f;
@@ -429,7 +590,8 @@ namespace AThousandDawns.Art
                 sr.transform.Rotate(0f, 0f, 220f * dt, Space.Self);
                 sr.transform.localScale = unit * (1f + 0.08f * Mathf.Sin(t * 12f));
                 float a = on ? Mathf.Clamp01(t / 0.3f) : sr.color.a - dt / 0.25f;
-                sr.color = new Color(Dark.r, Dark.g, Dark.b, Mathf.Clamp01(a) * 0.85f);
+                var swirl = _boss != null && _boss.Phase == 2 ? MagicViolet : Dark;
+                sr.color = new Color(swirl.r, swirl.g, swirl.b, Mathf.Clamp01(a) * 0.85f);
                 if (on || a > 0f) return true;
                 Destroy(sr.gameObject);
                 return false;
@@ -706,6 +868,9 @@ namespace AThousandDawns.Art
             _ownHand = _hand != null;
             if (_hand == null) _hand = Resources.Load<Sprite>("BloodBuddhaFx/Palm") ?? _ring;
             _sword = Resources.Load<Sprite>("HeavenlyDemonFx/Sword") ?? _crescent;
+            _fireball = Resources.Load<Sprite>("EliteFx/Fireball");
+            _rift = Resources.Load<Sprite>("EliteFx/Blink");
+            _rune = Resources.Load<Sprite>("HeavenlyDemonFx/RuneCircle");
             _miasmaA = MakeMiasma(1);
             _miasmaB = MakeMiasma(2);
             _lineMat = new Material(Shader.Find("Sprites/Default"));

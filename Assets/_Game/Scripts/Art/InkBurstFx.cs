@@ -12,6 +12,7 @@ namespace AThousandDawns.Art
     //   Gunpowder 화약: 주황 불덩이가 확 부풀고 검은 연기 · 불티 · 그을린 자국
     //   BloodGlob 핏덩이: 핏물이 바닥에 철퍽 번지고 핏방울이 튀어요 / BloodDeath 혈폭자 죽음: 더 크게 + 붉은 피 안개
     //   Fireball 차원 감염 정예 화염구: 주홍 불길이 사방으로 터지고 불꽃 고리 두 겹 + 그을음 (예고·떨어지는 불덩이는 InkFantasyFx)
+    //   Rune 마검사 천마 마법진: 보라·청색 빛기둥이 솟고 룬 불티 + 보랏빛 고리
     //   Slam 내려찍기 · Quake 진각: 땅이 갈라진 고리 + 흙먼지 + 돌 부스러기 (진각은 더 넓고 누런 흙빛, 진각은 둘레에서 바윗돌이 솟았다 가라앉아요)
     //   Spin 회전베기: 먹 소용돌이 원이 빠르게 돌며 퍼지고 흙먼지가 둥글게
     //   Vajra 금강: 금빛 고리 두 겹이 퍼지고 금빛 반짝이 / Gangi 강기: 쪽빛 기운 고리와 푸른 빛 입자
@@ -77,6 +78,11 @@ namespace AThousandDawns.Art
                     Ring(_ring, at, r * 2.6f, 0.35f, new Color(1f, 0.55f, 0.12f, 1f), 0.3f, 300f);
                     Ring(_ring, at, r * 3.2f, 0.5f, new Color(1f, 0.8f, 0.3f, 0.8f), 0.2f, -200f, 0.08f);
                     Ground(_scorch, at, r * 2.4f, 2.5f, new Color(1f, 0.75f, 0.6f, 1f), 0.9f);
+                    break;
+                case BurstKind.Rune: // 마검사 천마 마법진: 원이 다 차면 보라·청색 빛기둥이 솟고 룬 불티가 흩어져요
+                    Pillar(at, r);
+                    InkParticles.Burst(at + Vector3.up * 0.6f, 30, new Color(0.85f, 0.8f, 1f, 1f), new Color(0.35f, 0.6f, 1f, 0.5f), r * 2f, 0.12f, 0.8f, -1.2f);
+                    Ring(_ring, at, r * 2.6f, 0.4f, new Color(0.65f, 0.35f, 1f, 1f), 0.3f, 260f);
                     break;
                 case BurstKind.BloodGlob:
                 case BurstKind.BloodDeath:
@@ -154,6 +160,41 @@ namespace AThousandDawns.Art
         }
 
         // 퍼지는 고리 (spin: 초당 회전, delay: 늦게 시작)
+        // 마법진 빛기둥 (HeavenlyDemonFx/RunePillar): 바닥에서 위로 확 솟았다가 가늘어지며 사라져요
+        void Pillar(Vector3 at, float r)
+        {
+            if (!_pillarLoaded) { _pillarLoaded = true; _pillar = Resources.Load<Sprite>("HeavenlyDemonFx/RunePillar"); }
+            if (_pillar == null || _live.Count > MaxLive) return;
+            var pivot = new GameObject("Rune Pillar").transform;
+            pivot.SetParent(transform, false);
+            pivot.position = at;
+            pivot.gameObject.AddComponent<InkFaceCamera>();
+            var go = new GameObject("Sprite");
+            go.transform.SetParent(pivot, false);
+            float k0 = r * 1.3f / Mathf.Max(0.01f, _pillar.bounds.size.x);
+            float h = _pillar.bounds.size.y * k0;
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = _pillar;
+            sr.sortingOrder = 9;
+            float t = 0f;
+            _live.Add(dt =>
+            {
+                if (sr == null) return false;
+                t += dt;
+                float rise = 1f - Mathf.Pow(1f - Mathf.Clamp01(t / 0.15f), 3f);
+                float thin = t < 0.35f ? 1f : Mathf.Clamp01(1f - (t - 0.35f) / 0.45f);
+                go.transform.localScale = new Vector3(k0 * Mathf.Lerp(0.3f, 1f, thin), k0 * rise, k0);
+                go.transform.localPosition = Vector3.up * h * rise * 0.5f; // 바닥에 붙어서 위로 자라요
+                sr.color = new Color(1f, 1f, 1f, thin);
+                if (thin > 0f) return true;
+                Destroy(pivot.gameObject);
+                return false;
+            });
+        }
+
+        static Sprite _pillar;
+        static bool _pillarLoaded;
+
         void Ring(Sprite sprite, Vector3 at, float size, float life, Color color, float height, float spin, float delay = 0f)
         {
             if (_live.Count > MaxLive) return;
