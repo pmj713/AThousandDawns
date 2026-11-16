@@ -213,7 +213,7 @@ namespace AThousandDawns.Enemies
                 if (OnLine(from, from + dir * _lineLength, Player.transform.position)) Hit(ratio);
                 return;
             }
-            if (HitShapes.InSector(from, dir, _slashRadius, _slashAngle, Player.transform.position, PlayerRadius)) Hit(ratio);
+            if (SwingHit(from, dir, _slashRadius, _slashAngle)) Hit(ratio);
         }
 
         // 맞히면 흡혈

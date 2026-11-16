@@ -1657,3 +1657,50 @@ deathknight.wave_speed,9,cell/s,데스나이트 저주 검기 속도,판타지 �
 deathknight.wave_range,12,cell,데스나이트 저주 검기 사거리,판타지 고수·보스 추가
 deathknight.wave_ratio,0.6,,데스나이트 저주 검기 피해 배율,판타지 고수·보스 추가
 deathknight.summon_count,3,,데스나이트 죽은 자의 부름: 2페이즈에 일으키는 스켈레톤,판타지 고수·보스 추가
+harpy.hp,20,,하피 체력,판타지 졸개 추가
+harpy.atk,7,,하피 공격,판타지 졸개 추가
+harpy.toughness,0,,하피 강인함,판타지 졸개 추가
+harpy.move_speed,5,cell/s,하피 이동 (날아다녀요),판타지 졸개 추가
+harpy.attack_range,4,cell,하피 급강하 시작 거리 (멀리서 뛰어들어요),판타지 졸개 추가
+harpy.lunge,4,cell,하피 급강하 거리,판타지 졸개 추가
+harpy.windup,0.6,s,하피 급강하 예고,판타지 졸개 추가
+harpy.recovery,0.6,s,하피 빈틈,판타지 졸개 추가
+harpy.attack_interval,2.2,s,하피 공격 간격,판타지 졸개 추가
+harpy.leap_time,0.3,s,하피 급강하 시간,판타지 졸개 추가
+harpy.bite_reach,0.4,cell,하피 발톱 판정,판타지 졸개 추가
+harpy.hop_distance,2.5,cell,하피 할퀸 뒤 빠지기 거리,판타지 졸개 추가
+harpy.hop_time,0.25,s,하피 빠지기 시간,판타지 졸개 추가
+harpy.flank_angle,140,deg,하피 돌아 들어가는 각도,판타지 졸개 추가
+werewolf.hp,60,,늑대인간 체력,판타지 졸개 추가
+werewolf.atk,11,,늑대인간 공격,판타지 졸개 추가
+werewolf.toughness,2,,늑대인간 강인함,판타지 졸개 추가
+werewolf.move_speed,4.8,cell/s,늑대인간 이동,판타지 졸개 추가
+werewolf.attack_range,2,cell,늑대인간 파고들기 시작 거리,판타지 졸개 추가
+werewolf.lunge,2.2,cell,늑대인간 파고들기 거리,판타지 졸개 추가
+werewolf.windup,0.45,s,늑대인간 발톱 예고,판타지 졸개 추가
+werewolf.recovery,0.5,s,늑대인간 빈틈,판타지 졸개 추가
+werewolf.attack_interval,1.8,s,늑대인간 공격 간격,판타지 졸개 추가
+werewolf.leap_time,0.18,s,늑대인간 파고들기 시간,판타지 졸개 추가
+werewolf.bite_reach,0.4,cell,늑대인간 발톱 판정,판타지 졸개 추가
+werewolf.hop_distance,1.5,cell,늑대인간 빠지기 거리,판타지 졸개 추가
+werewolf.hop_time,0.2,s,늑대인간 빠지기 시간,판타지 졸개 추가
+werewolf.flank_angle,100,deg,늑대인간 돌아 들어가는 각도,판타지 졸개 추가
+werewolf.enrage_hp,50%,,늑대인간 광폭화: 체력이 이 아래로 떨어지면 (한 번),판타지 졸개 추가
+werewolf.enrage_speed,1.4,,늑대인간 광폭화 이동 배율,판타지 졸개 추가
+werewolf.enrage_interval,0.6,,늑대인간 광폭화 공격 간격 배율,판타지 졸개 추가
+gargoyle.hp,45,,가고일 체력,판타지 졸개 추가
+gargoyle.atk,9,,가고일 공격,판타지 졸개 추가
+gargoyle.toughness,3,,가고일 강인함,판타지 졸개 추가
+gargoyle.move_speed,3,cell/s,가고일 이동,판타지 졸개 추가
+gargoyle.attack_range,1.2,cell,가고일 돌발톱 반경,판타지 졸개 추가
+gargoyle.lunge,1.5,cell,가고일 전진 할퀴기 거리,판타지 졸개 추가
+gargoyle.windup,0.55,s,가고일 예고,판타지 졸개 추가
+gargoyle.recovery,0.3,s,가고일 빈틈 (곧 석화),판타지 졸개 추가
+gargoyle.attack_interval,1.5,s,가고일 공격 간격,판타지 졸개 추가
+gargoyle.attack_angle,80,deg,가고일 할퀴기 각도,판타지 졸개 추가
+gargoyle.lunge_time,0.15,s,가고일 전진 시간,판타지 졸개 추가
+gargoyle.stone_time,2,s,가고일 석화: 공격 뒤 굳어 있는 시간,판타지 졸개 추가
+gargoyle.stone_ratio,30%,,가고일 석화 중 받는 피해 배율,판타지 졸개 추가
+room_cost.harpy,2,,방 예산 점수: 하피,판타지 졸개 추가
+room_cost.werewolf,3,,방 예산 점수: 늑대인간,판타지 졸개 추가
+room_cost.gargoyle,2,,방 예산 점수: 가고일,판타지 졸개 추가

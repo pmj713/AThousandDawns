@@ -171,7 +171,7 @@ namespace AThousandDawns.Enemies
             switch (_pattern)
             {
                 case Pattern.Slash:
-                    if (HitShapes.InSector(transform.position, AimDirection, _slashRadius, _slashAngle, Player.transform.position, PlayerRadius))
+                    if (SwingHit(transform.position, AimDirection, _slashRadius, _slashAngle))
                         Player.TryReceiveHit(AttackPower * _slashRatio, transform.position, HitKnockback, Body);
                     break;
                 case Pattern.Waves:

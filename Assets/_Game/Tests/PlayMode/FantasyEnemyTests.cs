@@ -172,6 +172,95 @@ namespace AThousandDawns.Tests
             Assert.Less(player.Health, player.MaxHealth, $"{boss.DisplayName}: 공격이 들어와야 해요");
         }
 
+        // 판타지 졸개 셋 (하피 · 늑대인간 · 가고일): 오류 없이 다가와 공격이 들어와요
+        [UnityTest]
+        public IEnumerator 하피_늑대인간_가고일이_오류_없이_싸움([Values(EnemyKind.Harpy, EnemyKind.Werewolf, EnemyKind.Gargoyle)] EnemyKind kind)
+        {
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var enemy = director.Spawn(kind, player.transform.position + new Vector3(0f, 0f, 5f));
+            Assert.AreEqual(EnemyFaction.Fantasy, enemy.Faction);
+            Assert.IsTrue(RoomBudget.IsFantasy(kind), "어느 지역에서나 섞여요");
+            Time.timeScale = 2f;
+            float end = Time.time + 15f;
+            while (Time.time < end && player.Health >= player.MaxHealth) yield return null;
+            Time.timeScale = 1f;
+            Assert.Less(player.Health, player.MaxHealth, $"{enemy.DisplayName}: 공격이 들어와야 해요");
+        }
+
+        [UnityTest]
+        public IEnumerator 늑대인간은_체력_절반_아래에서_광폭화()
+        {
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var wolf = (WerewolfBrain)director.Spawn(EnemyKind.Werewolf, player.transform.position + new Vector3(0f, 0f, 6f));
+            int enraged = 0;
+            System.Action<WerewolfBrain> on = w => enraged++;
+            WerewolfBrain.Enraged += on;
+            wolf.Damageable.ApplyHit(Mathf.CeilToInt(wolf.Damageable.MaxHealth * 0.3f));
+            yield return null;
+            Assert.IsFalse(wolf.IsEnraged, "아직");
+            wolf.Damageable.ApplyHit(Mathf.CeilToInt(wolf.Damageable.MaxHealth * 0.3f));
+            yield return null;
+            wolf.Damageable.ApplyHit(1);
+            yield return null;
+            WerewolfBrain.Enraged -= on;
+            Assert.IsTrue(wolf.IsEnraged, "절반 아래");
+            Assert.AreEqual(1, enraged, "한 번만");
+        }
+
+        [UnityTest]
+        public IEnumerator 가고일은_할퀸_뒤_석화해_피해를_덜_받아요()
+        {
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var gargoyle = (GargoyleBrain)director.Spawn(EnemyKind.Gargoyle, player.transform.position + new Vector3(0f, 0f, 2.5f));
+            Assert.AreEqual(1f, gargoyle.Damageable.ResolveSituational(player.transform.position, AThousandDawns.Combat.HitTag.Basic), "평소엔 그대로");
+            bool stoned = false;
+            System.Action<GargoyleBrain, bool> on = (g, s) => stoned |= s;
+            GargoyleBrain.StoneChanged += on;
+            float end = Time.time + 10f;
+            while (Time.time < end && !gargoyle.IsStone)
+            {
+                player.Heal(9999f);
+                yield return null;
+            }
+            GargoyleBrain.StoneChanged -= on;
+            Assert.IsTrue(gargoyle.IsStone, "할퀸 뒤 석화");
+            Assert.IsTrue(stoned);
+            Assert.AreEqual(GameConfig.GetOptional("gargoyle.stone_ratio", 0.3f), gargoyle.Damageable.ResolveSituational(player.transform.position, AThousandDawns.Combat.HitTag.Basic), 0.001f, "석화 중 피해 30%");
+            Vector3 at = gargoyle.transform.position;
+            yield return new WaitForSeconds(0.5f);
+            Assert.Less(Vector3.Distance(at, gargoyle.transform.position), 0.05f, "굳어 있어요");
+        }
+
+        // 휘두르기 궤적 신호: 고수의 부채꼴 근접 판정마다 한 번
+        [UnityTest]
+        public IEnumerator 고수가_휘두르면_궤적_신호가_와요()
+        {
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var master = director.Spawn(EnemyKind.IronFist, player.transform.position + new Vector3(0f, 0f, 2f));
+            ((IMasterBrain)master).SetZone(player.transform.position, new Vector2(30f, 20f));
+            int swings = 0;
+            float radius = 0f;
+            System.Action<EnemyBrain, Vector3, Vector3, float, float> on = (e, at, dir, r, a) => { if (e == master) { swings++; radius = r; } };
+            EnemyBrain.Swung += on;
+            float end = Time.time + 12f;
+            while (Time.time < end && swings == 0)
+            {
+                player.Heal(9999f);
+                yield return null;
+            }
+            EnemyBrain.Swung -= on;
+            Assert.Greater(swings, 0, "주먹 2연타마다 신호");
+            Assert.Greater(radius, 0f);
+        }
+
         // 데스나이트: 중간 거리에서 저주 검기 셋, 2페이즈에 들어서면 스켈레톤을 일으켜요
         [UnityTest]
         public IEnumerator 데스나이트는_저주_검기를_날리고_2페이즈에_스켈레톤을_일으켜요()

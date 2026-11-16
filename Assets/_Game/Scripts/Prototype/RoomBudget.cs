@@ -46,7 +46,7 @@ namespace AThousandDawns.Prototype
         public static readonly EnemyKind[] Fantasy =
         {
             EnemyKind.Slime, EnemyKind.Goblin, EnemyKind.GoblinArcher, EnemyKind.GoblinRogue, EnemyKind.GoblinShaman,
-            EnemyKind.Orc, EnemyKind.Skeleton, EnemyKind.Imp,
+            EnemyKind.Orc, EnemyKind.Skeleton, EnemyKind.Imp, EnemyKind.Harpy, EnemyKind.Werewolf, EnemyKind.Gargoyle,
         };
 
         public static bool IsFantasy(EnemyKind kind) => Array.IndexOf(Fantasy, kind) >= 0;
@@ -105,6 +105,9 @@ namespace AThousandDawns.Prototype
                 case EnemyKind.Orc: return Key("orc", 3f);
                 case EnemyKind.Skeleton: return Key("skeleton", 2f);
                 case EnemyKind.Imp: return Key("imp", 2f);
+                case EnemyKind.Harpy: return Key("harpy", 2f);
+                case EnemyKind.Werewolf: return Key("werewolf", 3f);
+                case EnemyKind.Gargoyle: return Key("gargoyle", 2f);
                 default: return 99;
             }
         }

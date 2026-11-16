@@ -248,6 +248,24 @@ namespace AThousandDawns.Enemies
                 BodyPosition = new Vector3(0f, 1.2f, 0f), BodyScale = new Vector3(1.3f, 1.2f, 1.3f),
                 MarkPosition = new Vector3(0.7f, 1.3f, 0.7f), MarkScale = new Vector3(0.12f, 0.12f, 2.0f), // 룬 양손검
             },
+            EnemyKind.Harpy => new Shape
+            {
+                Name = "하피", Radius = 0.32f, Height = 1.2f, Primitive = PrimitiveType.Sphere, // 임프처럼 떠 있어요
+                BodyPosition = new Vector3(0f, 1.25f, 0f), BodyScale = new Vector3(0.7f, 0.7f, 0.7f),
+                MarkPosition = new Vector3(0f, 1.3f, 0.4f), MarkScale = new Vector3(1.1f, 0.06f, 0.25f), // 날개
+            },
+            EnemyKind.Werewolf => new Shape
+            {
+                Name = "늑대인간", Radius = 0.45f, Height = 2.0f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 1.0f, 0f), BodyScale = new Vector3(0.85f, 1.0f, 0.85f),
+                MarkPosition = new Vector3(0.4f, 1.0f, 0.45f), MarkScale = new Vector3(0.12f, 0.08f, 0.45f), // 발톱
+            },
+            EnemyKind.Gargoyle => new Shape
+            {
+                Name = "가고일", Radius = 0.4f, Height = 1.7f, Primitive = PrimitiveType.Capsule,
+                BodyPosition = new Vector3(0f, 0.85f, 0f), BodyScale = new Vector3(0.8f, 0.85f, 0.8f),
+                MarkPosition = new Vector3(0f, 1.3f, -0.3f), MarkScale = new Vector3(1.2f, 0.5f, 0.1f), // 접은 돌 날개
+            },
             // ── 천마총
             EnemyKind.Cultist => new Shape
             {
@@ -346,6 +364,9 @@ namespace AThousandDawns.Enemies
             EnemyKind.Ogre => Tinted(kind, v.nokrim != null ? v.nokrim : v.grunt, new Color(0.55f, 0.5f, 0.35f)),
             EnemyKind.DarkElf => Tinted(kind, v.qingzhu != null ? v.qingzhu : v.grunt, new Color(0.45f, 0.3f, 0.6f)),
             EnemyKind.DeathKnight => Tinted(kind, v.nokrim != null ? v.nokrim : v.grunt, new Color(0.2f, 0.25f, 0.3f)),
+            EnemyKind.Harpy => Tinted(kind, v.archer != null ? v.archer : v.grunt, new Color(0.6f, 0.4f, 0.3f)),
+            EnemyKind.Werewolf => Tinted(kind, v.hound != null ? v.hound : v.grunt, new Color(0.5f, 0.5f, 0.55f)),
+            EnemyKind.Gargoyle => Tinted(kind, v.grunt, new Color(0.55f, 0.55f, 0.52f)),
             _ => v.grunt,
         };
 
@@ -447,6 +468,9 @@ namespace AThousandDawns.Enemies
                 EnemyKind.Ogre => root.AddComponent<OgreBrain>(),
                 EnemyKind.DarkElf => root.AddComponent<DarkElfBrain>(),
                 EnemyKind.DeathKnight => root.AddComponent<DeathKnightBrain>(),
+                EnemyKind.Harpy => root.AddComponent<HarpyBrain>(),
+                EnemyKind.Werewolf => root.AddComponent<WerewolfBrain>(),
+                EnemyKind.Gargoyle => root.AddComponent<GargoyleBrain>(),
                 _ => root.AddComponent<GruntBrain>(),
             };
             if (brain is ShieldBrain shieldBrain) shieldBrain.SetShieldVisual(mark.transform);

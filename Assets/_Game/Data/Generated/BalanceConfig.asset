@@ -6645,3 +6645,191 @@ MonoBehaviour:
     value: 3
     unit: 
     note: "\uB370\uC2A4\uB098\uC774\uD2B8 \uC8FD\uC740 \uC790\uC758 \uBD80\uB984: 2\uD398\uC774\uC988\uC5D0 \uC77C\uC73C\uD0A4\uB294 \uC2A4\uCF08\uB808\uD1A4"
+  - key: harpy.hp
+    value: 20
+    unit: 
+    note: "\uD558\uD53C \uCCB4\uB825"
+  - key: harpy.atk
+    value: 7
+    unit: 
+    note: "\uD558\uD53C \uACF5\uACA9"
+  - key: harpy.toughness
+    value: 0
+    unit: 
+    note: "\uD558\uD53C \uAC15\uC778\uD568"
+  - key: harpy.move_speed
+    value: 5
+    unit: cell/s
+    note: "\uD558\uD53C \uC774\uB3D9 (\uB0A0\uC544\uB2E4\uB140\uC694)"
+  - key: harpy.attack_range
+    value: 4
+    unit: cell
+    note: "\uD558\uD53C \uAE09\uAC15\uD558 \uC2DC\uC791 \uAC70\uB9AC (\uBA40\uB9AC\uC11C \uB6F0\uC5B4\uB4E4\uC5B4\uC694)"
+  - key: harpy.lunge
+    value: 4
+    unit: cell
+    note: "\uD558\uD53C \uAE09\uAC15\uD558 \uAC70\uB9AC"
+  - key: harpy.windup
+    value: 0.6
+    unit: s
+    note: "\uD558\uD53C \uAE09\uAC15\uD558 \uC608\uACE0"
+  - key: harpy.recovery
+    value: 0.6
+    unit: s
+    note: "\uD558\uD53C \uBE48\uD2C8"
+  - key: harpy.attack_interval
+    value: 2.2
+    unit: s
+    note: "\uD558\uD53C \uACF5\uACA9 \uAC04\uACA9"
+  - key: harpy.leap_time
+    value: 0.3
+    unit: s
+    note: "\uD558\uD53C \uAE09\uAC15\uD558 \uC2DC\uAC04"
+  - key: harpy.bite_reach
+    value: 0.4
+    unit: cell
+    note: "\uD558\uD53C \uBC1C\uD1B1 \uD310\uC815"
+  - key: harpy.hop_distance
+    value: 2.5
+    unit: cell
+    note: "\uD558\uD53C \uD560\uD038 \uB4A4 \uBE60\uC9C0\uAE30 \uAC70\uB9AC"
+  - key: harpy.hop_time
+    value: 0.25
+    unit: s
+    note: "\uD558\uD53C \uBE60\uC9C0\uAE30 \uC2DC\uAC04"
+  - key: harpy.flank_angle
+    value: 140
+    unit: deg
+    note: "\uD558\uD53C \uB3CC\uC544 \uB4E4\uC5B4\uAC00\uB294 \uAC01\uB3C4"
+  - key: werewolf.hp
+    value: 60
+    unit: 
+    note: "\uB291\uB300\uC778\uAC04 \uCCB4\uB825"
+  - key: werewolf.atk
+    value: 11
+    unit: 
+    note: "\uB291\uB300\uC778\uAC04 \uACF5\uACA9"
+  - key: werewolf.toughness
+    value: 2
+    unit: 
+    note: "\uB291\uB300\uC778\uAC04 \uAC15\uC778\uD568"
+  - key: werewolf.move_speed
+    value: 4.8
+    unit: cell/s
+    note: "\uB291\uB300\uC778\uAC04 \uC774\uB3D9"
+  - key: werewolf.attack_range
+    value: 2
+    unit: cell
+    note: "\uB291\uB300\uC778\uAC04 \uD30C\uACE0\uB4E4\uAE30 \uC2DC\uC791 \uAC70\uB9AC"
+  - key: werewolf.lunge
+    value: 2.2
+    unit: cell
+    note: "\uB291\uB300\uC778\uAC04 \uD30C\uACE0\uB4E4\uAE30 \uAC70\uB9AC"
+  - key: werewolf.windup
+    value: 0.45
+    unit: s
+    note: "\uB291\uB300\uC778\uAC04 \uBC1C\uD1B1 \uC608\uACE0"
+  - key: werewolf.recovery
+    value: 0.5
+    unit: s
+    note: "\uB291\uB300\uC778\uAC04 \uBE48\uD2C8"
+  - key: werewolf.attack_interval
+    value: 1.8
+    unit: s
+    note: "\uB291\uB300\uC778\uAC04 \uACF5\uACA9 \uAC04\uACA9"
+  - key: werewolf.leap_time
+    value: 0.18
+    unit: s
+    note: "\uB291\uB300\uC778\uAC04 \uD30C\uACE0\uB4E4\uAE30 \uC2DC\uAC04"
+  - key: werewolf.bite_reach
+    value: 0.4
+    unit: cell
+    note: "\uB291\uB300\uC778\uAC04 \uBC1C\uD1B1 \uD310\uC815"
+  - key: werewolf.hop_distance
+    value: 1.5
+    unit: cell
+    note: "\uB291\uB300\uC778\uAC04 \uBE60\uC9C0\uAE30 \uAC70\uB9AC"
+  - key: werewolf.hop_time
+    value: 0.2
+    unit: s
+    note: "\uB291\uB300\uC778\uAC04 \uBE60\uC9C0\uAE30 \uC2DC\uAC04"
+  - key: werewolf.flank_angle
+    value: 100
+    unit: deg
+    note: "\uB291\uB300\uC778\uAC04 \uB3CC\uC544 \uB4E4\uC5B4\uAC00\uB294 \uAC01\uB3C4"
+  - key: werewolf.enrage_hp
+    value: 0.5
+    unit: 
+    note: "\uB291\uB300\uC778\uAC04 \uAD11\uD3ED\uD654: \uCCB4\uB825\uC774 \uC774 \uC544\uB798\uB85C \uB5A8\uC5B4\uC9C0\uBA74 (\uD55C \uBC88)"
+  - key: werewolf.enrage_speed
+    value: 1.4
+    unit: 
+    note: "\uB291\uB300\uC778\uAC04 \uAD11\uD3ED\uD654 \uC774\uB3D9 \uBC30\uC728"
+  - key: werewolf.enrage_interval
+    value: 0.6
+    unit: 
+    note: "\uB291\uB300\uC778\uAC04 \uAD11\uD3ED\uD654 \uACF5\uACA9 \uAC04\uACA9 \uBC30\uC728"
+  - key: gargoyle.hp
+    value: 45
+    unit: 
+    note: "\uAC00\uACE0\uC77C \uCCB4\uB825"
+  - key: gargoyle.atk
+    value: 9
+    unit: 
+    note: "\uAC00\uACE0\uC77C \uACF5\uACA9"
+  - key: gargoyle.toughness
+    value: 3
+    unit: 
+    note: "\uAC00\uACE0\uC77C \uAC15\uC778\uD568"
+  - key: gargoyle.move_speed
+    value: 3
+    unit: cell/s
+    note: "\uAC00\uACE0\uC77C \uC774\uB3D9"
+  - key: gargoyle.attack_range
+    value: 1.2
+    unit: cell
+    note: "\uAC00\uACE0\uC77C \uB3CC\uBC1C\uD1B1 \uBC18\uACBD"
+  - key: gargoyle.lunge
+    value: 1.5
+    unit: cell
+    note: "\uAC00\uACE0\uC77C \uC804\uC9C4 \uD560\uD034\uAE30 \uAC70\uB9AC"
+  - key: gargoyle.windup
+    value: 0.55
+    unit: s
+    note: "\uAC00\uACE0\uC77C \uC608\uACE0"
+  - key: gargoyle.recovery
+    value: 0.3
+    unit: s
+    note: "\uAC00\uACE0\uC77C \uBE48\uD2C8 (\uACE7 \uC11D\uD654)"
+  - key: gargoyle.attack_interval
+    value: 1.5
+    unit: s
+    note: "\uAC00\uACE0\uC77C \uACF5\uACA9 \uAC04\uACA9"
+  - key: gargoyle.attack_angle
+    value: 80
+    unit: deg
+    note: "\uAC00\uACE0\uC77C \uD560\uD034\uAE30 \uAC01\uB3C4"
+  - key: gargoyle.lunge_time
+    value: 0.15
+    unit: s
+    note: "\uAC00\uACE0\uC77C \uC804\uC9C4 \uC2DC\uAC04"
+  - key: gargoyle.stone_time
+    value: 2
+    unit: s
+    note: "\uAC00\uACE0\uC77C \uC11D\uD654: \uACF5\uACA9 \uB4A4 \uAD73\uC5B4 \uC788\uB294 \uC2DC\uAC04"
+  - key: gargoyle.stone_ratio
+    value: 0.3
+    unit: 
+    note: "\uAC00\uACE0\uC77C \uC11D\uD654 \uC911 \uBC1B\uB294 \uD53C\uD574 \uBC30\uC728"
+  - key: room_cost.harpy
+    value: 2
+    unit: 
+    note: "\uBC29 \uC608\uC0B0 \uC810\uC218: \uD558\uD53C"
+  - key: room_cost.werewolf
+    value: 3
+    unit: 
+    note: "\uBC29 \uC608\uC0B0 \uC810\uC218: \uB291\uB300\uC778\uAC04"
+  - key: room_cost.gargoyle
+    value: 2
+    unit: 
+    note: "\uBC29 \uC608\uC0B0 \uC810\uC218: \uAC00\uACE0\uC77C"
