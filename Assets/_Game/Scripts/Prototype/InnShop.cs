@@ -42,7 +42,7 @@ namespace AThousandDawns.Prototype
             _ => "price.item_legendary",
         }, grade == ItemGrade.Common ? 120f : grade == ItemGrade.Uncommon ? 300f : grade == ItemGrade.Rare ? 500f : 900f));
 
-        // 매각가: 객잔 판매가 × 매각 비율 (은자 시트 C33). 면벽수련 할인과 상관없이 기본 판매가로 셈해요.
+        // 매각가: 객잔 판매가 × 매각 비율 (은자 시트 C33). 영혼수련 할인과 상관없이 기본 판매가로 셈해요.
         public static int SellPrice(ItemDefinition def, float ratio = -1f) =>
             (int)Math.Round(ItemPrice(def.grade) * (ratio >= 0f ? ratio : GameConfig.GetOptional("inn.sell_ratio", 0.4f)));
 
@@ -66,20 +66,21 @@ namespace AThousandDawns.Prototype
             foreach (var def in picked) shop._slots.Add(new Slot { Kind = SlotKind.Item, Item = def, Price = ItemPrice(def.grade) });
 
             // 부품 1개: 해금한 종류 중 무작위 (은자 시트 B23)
-            if (parts != null && parts.Count > 0)
+            if (parts != null && parts.Count > 0 && !AThousandDawns.Player.PlayerItems.EquipMode) // 장비 칸엔 부품이 없어요
                 shop._slots.Add(new Slot { Kind = SlotKind.Part, Part = parts[rng.Next(parts.Count)], Price = (int)Math.Round(GameConfig.Get("price.part", 100f)) });
 
             // 비급은 진열하지 않아요 (초식이 셋뿐이라 고수 보상으로만 · SlotKind.Scroll은 예전 저장용으로 남겨 둬요)
 
             // 이혈: 단전 하나 옮기기 (은자 시트 B26)
-            shop._slots.Add(new Slot { Kind = SlotKind.MoveDanjeon, Price = (int)Math.Round(GameConfig.GetOptional("price.move_danjeon", 100f)) });
+            if (!AThousandDawns.Player.PlayerItems.EquipMode) // 장비 칸엔 단전이 없어요
+                shop._slots.Add(new Slot { Kind = SlotKind.MoveDanjeon, Price = (int)Math.Round(GameConfig.GetOptional("price.move_danjeon", 100f)) });
 
             int potions = (int)Math.Round(GameConfig.Get("inn.potion_stock", 2f));
             int potionPrice = (int)Math.Round(GameConfig.Get("price.potion", 60f));
             for (int i = 0; i < potions; i++) shop._slots.Add(new Slot { Kind = SlotKind.Potion, Price = potionPrice });
             shop._slots.Add(new Slot { Kind = SlotKind.Lodging, Price = (int)Math.Round(GameConfig.Get("price.lodging", 40f)) });
             shop._slots.Add(new Slot { Kind = SlotKind.Rumor, Price = (int)Math.Round(GameConfig.GetOptional("price.rumor", 200f)) }); // 소문 듣기: 다음 층 기연 방 (객잔마다 한 번)
-            if (priceScale != 1f) foreach (var s in shop._slots) s.Price = (int)Math.Round(s.Price * priceScale); // 면벽수련 은 10: 객잔 −15%
+            if (priceScale != 1f) foreach (var s in shop._slots) s.Price = (int)Math.Round(s.Price * priceScale); // 영혼수련 은 10: 객잔 −15%
             shop._slots.Add(new Slot { Kind = SlotKind.Sell }); // 매각: 누르면 가진 기물 목록 (RoomRun.OpenSell)
             return shop;
         }

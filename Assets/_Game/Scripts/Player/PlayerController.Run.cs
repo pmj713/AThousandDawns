@@ -16,7 +16,7 @@
 
         float GaugeGainMultiplier => 1f + RunGaugeBonus;
 
-        // 면벽수련 (판을 시작할 때 RoomRun이 정해요)
+        // 영혼수련 (판을 시작할 때 RoomRun이 정해요)
         public float RunAttackSpeedBonus { get; private set; }  // 쾌: 공격 속도 +
         public float RunOpenerSpeed { get; private set; }       // 쾌 5: 평타 1·2타 공격 속도 +
         public float RunFinisherRecoveryCut { get; private set; } // 쾌 10: 3타째 뒤 쉬는 틈 −
@@ -112,7 +112,7 @@
             return true;
         }
 
-        // 판 중간 저장에서 되살릴 때 (기물·면벽수련을 먼저 적용해 최대 체력이 정해진 뒤에)
+        // 판 중간 저장에서 되살릴 때 (기물·영혼수련을 먼저 적용해 최대 체력이 정해진 뒤에)
         public void RestoreRunState(float health, int potions, float gauge, bool revive)
         {
             Potions = UnityEngine.Mathf.Clamp(potions, 0, PotionMax);

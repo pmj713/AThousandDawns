@@ -15,7 +15,7 @@ namespace AThousandDawns.Tests
         }
 
         [Test]
-        public void 심득은_면벽수련_5에_심득_봉우리마다_5()
+        public void 심득은_영혼수련_5에_심득_봉우리마다_5()
         {
             Assert.AreEqual(0, Meditation.TotalPoints(new MetaSave()));
             Assert.AreEqual(5, Meditation.TotalPoints(WithBuds("meditation")));

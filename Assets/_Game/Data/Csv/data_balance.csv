@@ -549,7 +549,7 @@ book.tongmaek,40,기억,회귀록 통맥,회귀록!E7
 book.jeomhyeol,70,기억,회귀록 점혈,회귀록!E8
 book.hanok,110,기억,회귀록 한옥,회귀록!E9
 book.forge,140,기억,회귀록 대장간,회귀록!E10
-book.meditation,180,기억,회귀록 면벽수련,회귀록!E11
+book.meditation,180,기억,회귀록 영혼수련,회귀록!E11
 book.potion_kit,220,기억,회귀록 금창약 지참,회귀록!E12
 book.insight1,180,기억,회귀록 심득 +5 (1차),회귀록!E13
 book.flying_dagger,270,기억,회귀록 비도,회귀록!E14
@@ -566,19 +566,19 @@ book.relic3,220,기억,회귀록 기억 용량 +1 (3차),회귀록!E24
 book.relic4,270,기억,회귀록 기억 용량 +1 (4차),회귀록!E25
 part.hanok_max_qi,2,,부품 한옥: 붙어 있는 기물의 최대 기 +,기획 대화 (냉각기 +2)
 price.part,100,은자,객잔 부품 가격 (해금된 종류 중 무작위),은자!B23
-meditation.points_per_bud,5,,면벽수련·심득 봉우리 하나당 심득,회귀록!G11 (심득 지급)
-meditation.swift_per_point,1%,,쾌: 포인트당 공격 속도,기획 대화 (면벽수련)
-meditation.swift_opener_speed,15%,,쾌 5: 평타 1·2타 공격 속도 +,기획 대화 (면벽수련 재조정)
-meditation.iron_per_point,2,,강: 포인트당 최대 체력,기획 대화 (면벽수련)
-meditation.iron_toughness,3,,강 5: 강인함 +,기획 대화 (면벽수련)
-meditation.iron_revive,40%,,강 20: 기사회생 체력 비율,기획 대화 (면벽수련)
-meditation.meridian_per_point,2%,,맥: 포인트당 수련치 +,기획 대화 (면벽수련)
-meditation.shadow_per_point,2%,,은: 포인트당 은자 획득 +,기획 대화 (면벽수련)
-meditation.shadow_start_silver,50,은자,은 5: 시작 은자,기획 대화 (면벽수련)
-meditation.shadow_inn_discount,15%,,은 10: 객잔 가격 −,기획 대화 (면벽수련)
-meditation.qi_per_point,1%,,기: 포인트당 기세 충전 +,기획 대화 (면벽수련)
-meditation.qi_skill_cooldown,10%,,기 5: 초식 쿨타임 −,기획 대화 (면벽수련)
-meditation.qi_fight_gauge,30%,,기 10: 전투 시작 시 기세,기획 대화 (면벽수련)
+meditation.points_per_bud,5,,영혼수련·심득 봉우리 하나당 심득,회귀록!G11 (심득 지급)
+meditation.swift_per_point,1%,,쾌: 포인트당 공격 속도,기획 대화 (영혼수련)
+meditation.swift_opener_speed,15%,,쾌 5: 평타 1·2타 공격 속도 +,기획 대화 (영혼수련 재조정)
+meditation.iron_per_point,2,,강: 포인트당 최대 체력,기획 대화 (영혼수련)
+meditation.iron_toughness,3,,강 5: 강인함 +,기획 대화 (영혼수련)
+meditation.iron_revive,40%,,강 20: 기사회생 체력 비율,기획 대화 (영혼수련)
+meditation.meridian_per_point,2%,,맥: 포인트당 수련치 +,기획 대화 (영혼수련)
+meditation.shadow_per_point,2%,,은: 포인트당 은자 획득 +,기획 대화 (영혼수련)
+meditation.shadow_start_silver,50,은자,은 5: 시작 은자,기획 대화 (영혼수련)
+meditation.shadow_inn_discount,15%,,은 10: 객잔 가격 −,기획 대화 (영혼수련)
+meditation.qi_per_point,1%,,기: 포인트당 기세 충전 +,기획 대화 (영혼수련)
+meditation.qi_skill_cooldown,10%,,기 5: 초식 쿨타임 −,기획 대화 (영혼수련)
+meditation.qi_fight_gauge,30%,,기 10: 전투 시작 시 기세,기획 대화 (영혼수련)
 luck.common_cut,1%,,행운 1당 일반 확률 감소,등급확률!B5
 luck.uncommon_share,0.6,,행운으로 줄인 일반 확률 중 고급 몫,등급확률!B6
 luck.rare_share,0.3,,행운으로 줄인 일반 확률 중 희귀 몫,등급확률!B7
@@ -603,18 +603,18 @@ forge.geumgang_shield_strong,3%,,대장간 금강 강화판: 보호막,무기 95
 forge.geumgang_cap_strong,15%,,대장간 금강 강화판: 융합 보호막 최대,무기 95~109행 (대장간 융합)
 forge.geumgang_duration,0,초,대장간 금강: 보호막 지속 (0이면 깨질 때까지),기획 대화 (대장간)
 room.hidden_chance,15%,,층마다 기연 방이 생길 확률,판구조!B15
-room.hidden_sense_power,4,,기연 방을 지도에서 느끼는 공력 (면벽수련 오 5면 −1),기획 대화 (기연 방 감지)
+room.hidden_sense_power,4,,기연 방을 지도에서 느끼는 공력 (영혼수련 오 5면 −1),기획 대화 (기연 방 감지)
 room.hidden_crack_radius,2,칸,금 간 벽 앞에서 F를 누를 수 있는 거리 (임시),
 jar.per_room,3,,전투 방마다 항아리 수 (부딪히면 깨짐),은자!C4
 jar.silver,1,은자,항아리 하나 은자 (방당 3),은자!C4
 jar.break_radius,0.9,칸,항아리에 부딪히는 거리 (임시),
-meditation.swift_finisher_recovery_cut,50%,,쾌 10: 3타째 뒤 쉬는 틈 −,기획 대화 (면벽수련 재조정)
-meditation.swift_echo_ratio,50%,,쾌 20: 3타째 잔상 피해 (3타 피해 ×),기획 대화 (면벽수련 재조정)
+meditation.swift_finisher_recovery_cut,50%,,쾌 10: 3타째 뒤 쉬는 틈 −,기획 대화 (영혼수련 재조정)
+meditation.swift_echo_ratio,50%,,쾌 20: 3타째 잔상 피해 (3타 피해 ×),기획 대화 (영혼수련 재조정)
 meditation.swift_echo_delay,0.12,초,쾌 20: 3타째 뒤 잔상이 베기까지 (임시),
-meditation.iron_room_heal,4%,,강 10: 전투 방을 비울 때 체력 회복 (최대 체력 비율),기획 대화 (면벽수련 재조정)
-meditation.meridian_power_cut,1,,맥 20: 단전 2개로 시작하는 대신 공력 −,기획 대화 (면벽수련)
-meditation.shadow_inn_interest,20%,,은 20: 객잔에 들를 때 가진 은자 이자,기획 대화 (면벽수련 재조정)
-meditation.shadow_inn_interest_max,100,은자,은 20: 이자 최대,기획 대화 (면벽수련 재조정)
+meditation.iron_room_heal,4%,,강 10: 전투 방을 비울 때 체력 회복 (최대 체력 비율),기획 대화 (영혼수련 재조정)
+meditation.meridian_power_cut,1,,맥 20: 단전 2개로 시작하는 대신 공력 −,기획 대화 (영혼수련)
+meditation.shadow_inn_interest,20%,,은 20: 객잔에 들를 때 가진 은자 이자,기획 대화 (영혼수련 재조정)
+meditation.shadow_inn_interest_max,100,은자,은 20: 이자 최대,기획 대화 (영혼수련 재조정)
 price.scroll,300,은자,객잔 비급 가격,은자!B22
 inn.scroll_chance,25%,,객잔에 비급이 진열될 확률,은자!C22 설명
 price.move_danjeon,100,은자,객잔 이혈: 단전 하나 옮기기,은자!B26
@@ -1056,6 +1056,93 @@ item_grade.r3_dense.uncommon,32%,,기물 등급 확률 고급 (천마총 짙은 
 item_grade.r3_dense.rare,24%,,기물 등급 확률 희귀 (천마총 짙은 길),등급확률!D15
 item_grade.r3_dense.legendary,10%,,기물 등급 확률 전설 (천마총 짙은 길),등급확률!E15
 meridian.width_after_boss3,6,,장강 수채 보스 격파 뒤 경맥도 가로,4지역 기획 (6×6)
+equip.enabled,1,,"장비 칸 방식 (1이면 경맥도 대신 몸의 혈자리 장비 칸 10개, 0이면 경맥도)",차원 겹침 개편
+equip.otherworld_qi,2,,"이계 기물: 끼운 혈자리의 기 + (세지만 주화입마에 쉽게)",차원 겹침 개편
+equip.slot_qi.head,3,,"장비 칸 기본 기: 머리 (백회). 칸의 기 = 기본 기 + (공력 − 시작 공력) + 기혈",차원 겹침 개편
+equip.slot_qi.top,4,,장비 칸 기본 기: 상의 (단중),차원 겹침 개편
+equip.slot_qi.bottom,4,,장비 칸 기본 기: 하의 (기해),차원 겹침 개편
+equip.slot_qi.shoes,1,,장비 칸 기본 기: 신발 (용천),차원 겹침 개편
+equip.slot_qi.earring,2,,장비 칸 기본 기: 귀걸이 둘 (청궁),차원 겹침 개편
+equip.slot_qi.neck,3,,장비 칸 기본 기: 목걸이 (천돌),차원 겹침 개편
+equip.slot_qi.bracelet,2,,장비 칸 기본 기: 팔찌 (내관),차원 겹침 개편
+equip.slot_qi.waist,3,,장비 칸 기본 기: 허리 (대맥),차원 겹침 개편
+equip.slot_qi.charm,2,,장비 칸 기본 기: 무기 장신구 (노궁),차원 겹침 개편
+fantasy.enabled,1,,"판타지 적 (슬라임 · 고블린)이 모든 지역에 섞여 나와요 (0이면 무협 적만)",차원 겹침 개편
+slime.hp,35,,슬라임 체력,차원 겹침 개편
+slime.atk,7,,슬라임 공격,차원 겹침 개편
+slime.toughness,0,,슬라임 강인함,차원 겹침 개편
+slime.move_speed,2.5,cell/s,슬라임 이동 (튀어 오기),차원 겹침 개편
+slime.attack_range,2.5,cell,슬라임 덮치기 시작 거리,차원 겹침 개편
+slime.lunge,2.5,cell,슬라임 덮치기 거리,차원 겹침 개편
+slime.windup,0.6,s,슬라임 덮치기 예고,차원 겹침 개편
+slime.recovery,0.8,s,슬라임 빈틈,차원 겹침 개편
+slime.attack_interval,2.2,s,슬라임 공격 간격,차원 겹침 개편
+slime.leap_time,0.3,s,슬라임 덮치기 시간,차원 겹침 개편
+slime.bite_reach,0.4,cell,슬라임 몸통 판정,차원 겹침 개편
+slime.split_count,2,,슬라임이 쓰러지면 갈라지는 수 (작은 것은 다시 안 갈라져요),차원 겹침 개편
+slime.split_health,40%,,갈라진 작은 슬라임 체력 비율,차원 겹침 개편
+goblin.hp,22,,고블린 (몽둥이) 체력,차원 겹침 개편
+goblin.atk,6,,고블린 공격,차원 겹침 개편
+goblin.toughness,0,,고블린 강인함,차원 겹침 개편
+goblin.move_speed,4,cell/s,고블린 이동,차원 겹침 개편
+goblin.attack_range,1,cell,고블린 몽둥이 반경,차원 겹침 개편
+goblin.lunge,1.2,cell,고블린 전진 휘두르기 거리,차원 겹침 개편
+goblin.windup,0.5,s,고블린 예고,차원 겹침 개편
+goblin.recovery,0.5,s,고블린 빈틈,차원 겹침 개편
+goblin.attack_interval,1.6,s,고블린 공격 간격,차원 겹침 개편
+goblin.attack_angle,70,deg,고블린 휘두르기 각도,차원 겹침 개편
+goblin.lunge_time,0.15,s,고블린 전진 시간,차원 겹침 개편
+goblinarcher.hp,18,,고블린 궁수 체력,차원 겹침 개편
+goblinarcher.atk,6,,고블린 궁수 공격,차원 겹침 개편
+goblinarcher.toughness,0,,고블린 궁수 강인함,차원 겹침 개편
+goblinarcher.move_speed,3.5,cell/s,고블린 궁수 이동,차원 겹침 개편
+goblinarcher.attack_range,9,cell,고블린 궁수 사거리,차원 겹침 개편
+goblinarcher.windup,0.6,s,고블린 궁수 예고,차원 겹침 개편
+goblinarcher.recovery,0.4,s,고블린 궁수 빈틈,차원 겹침 개편
+goblinarcher.attack_interval,2.2,s,고블린 궁수 공격 간격,차원 겹침 개편
+goblinarcher.keep_min,4.5,cell,고블린 궁수 유지 거리 최소,차원 겹침 개편
+goblinarcher.keep_max,6.5,cell,고블린 궁수 유지 거리 최대,차원 겹침 개편
+goblinarcher.retreat_distance,2,cell,고블린 궁수 물러나기,차원 겹침 개편
+goblinarcher.strafe_speed,2.2,cell/s,고블린 궁수 옆걸음,차원 겹침 개편
+goblinarcher.shot_pause,0.2,s,고블린 궁수 쏘는 순간 멈춤,차원 겹침 개편
+goblinarcher.arrow_speed,11,cell/s,고블린 화살 속도,차원 겹침 개편
+goblinarcher.arrow_radius,0.2,cell,고블린 화살 판정,차원 겹침 개편
+goblinrogue.hp,18,,고블린 단검꾼 체력,차원 겹침 개편
+goblinrogue.atk,7,,고블린 단검꾼 공격,차원 겹침 개편
+goblinrogue.toughness,0,,고블린 단검꾼 강인함,차원 겹침 개편
+goblinrogue.move_speed,5.5,cell/s,고블린 단검꾼 이동,차원 겹침 개편
+goblinrogue.attack_range,1.8,cell,고블린 단검꾼 파고들기 시작 거리,차원 겹침 개편
+goblinrogue.lunge,1.8,cell,고블린 단검꾼 파고들기 거리,차원 겹침 개편
+goblinrogue.windup,0.3,s,고블린 단검꾼 예고,차원 겹침 개편
+goblinrogue.recovery,0.5,s,고블린 단검꾼 빈틈,차원 겹침 개편
+goblinrogue.attack_interval,1.4,s,고블린 단검꾼 공격 간격,차원 겹침 개편
+goblinrogue.leap_time,0.15,s,고블린 단검꾼 파고들기 시간,차원 겹침 개편
+goblinrogue.bite_reach,0.3,cell,고블린 단검꾼 찌르기 판정,차원 겹침 개편
+goblinrogue.hop_distance,1.8,cell,고블린 단검꾼 빠지기 거리,차원 겹침 개편
+goblinrogue.hop_time,0.2,s,고블린 단검꾼 빠지기 시간,차원 겹침 개편
+goblinrogue.flank_angle,120,deg,고블린 단검꾼 돌아 들어가는 각도,차원 겹침 개편
+goblinshaman.hp,30,,고블린 주술사 체력,차원 겹침 개편
+goblinshaman.atk,5,,고블린 주술사 공격,차원 겹침 개편
+goblinshaman.toughness,0,,고블린 주술사 강인함,차원 겹침 개편
+goblinshaman.move_speed,3,cell/s,고블린 주술사 이동,차원 겹침 개편
+goblinshaman.windup,1.2,s,고블린 주술사 주문 예고 (맞으면 끊김),차원 겹침 개편
+goblinshaman.recovery,0.5,s,고블린 주술사 빈틈,차원 겹침 개편
+goblinshaman.attack_interval,6,s,고블린 주술사 주문 간격,차원 겹침 개편
+goblinshaman.keep_distance,6,cell,고블린 주술사 유지 거리,차원 겹침 개편
+goblinshaman.summon_count,0,,고블린 주술사는 부르지 않아요,차원 겹침 개편
+goblinshaman.command_radius,7,cell,고블린 주술사 광폭화 범위,차원 겹침 개편
+goblinshaman.command_haste,25%,,고블린 주술사 광폭화: 이동 · 공격 빨라짐,차원 겹침 개편
+goblinshaman.command_time,4,s,고블린 주술사 광폭화 시간,차원 겹침 개편
+goblinshaman.curse_radius,1.5,cell,고블린 주술사 저주 장판 반경,차원 겹침 개편
+goblinshaman.curse_life,4,s,고블린 주술사 저주 장판 시간,차원 겹침 개편
+goblinshaman.curse_ratio,50%,,고블린 주술사 저주 장판 피해 (공격 대비),차원 겹침 개편
+goblinshaman.curse_slow,30%,,고블린 주술사 저주 장판 둔화,차원 겹침 개편
+goblinshaman.curse_slow_time,1.5,s,고블린 주술사 저주 장판 둔화 시간,차원 겹침 개편
+room_cost.slime,2,,방 예산 점수: 슬라임,차원 겹침 개편
+room_cost.goblin,2,,방 예산 점수: 고블린 (둘이 한 무리),차원 겹침 개편
+room_cost.goblinarcher,2,,방 예산 점수: 고블린 궁수,차원 겹침 개편
+room_cost.goblinrogue,2,,방 예산 점수: 고블린 단검꾼,차원 겹침 개편
+room_cost.goblinshaman,2,,방 예산 점수: 고블린 주술사,차원 겹침 개편
 meridian.height_after_boss3,6,,장강 수채 보스 격파 뒤 경맥도 세로,4지역 기획 (6×6)
 cultist.hp,39,,마교도 체력 (졸개 30 × 1.3 · 천마총 ×4.5 = 176),몬스터!F52
 cultist.atk,8,,마교도 공격 (×2.0 = 16),몬스터!G52

@@ -37,6 +37,11 @@ namespace AThousandDawns.Player
         PlayerKeywords _keywords;
         MeridianBoard _board;
         float _deviationMultiplier, _madoDeviation;
+        int _otherworldQi;
+
+        // 장비 칸 방식 (경맥도 대신, 시트 equip.enabled). 테스트는 ModeOverride로 고를 수 있어요 (0 경맥도 · 1 장비 칸)
+        public static int ModeOverride = -1;
+        public static bool EquipMode => ModeOverride >= 0 ? ModeOverride == 1 : GameConfig.GetOptional("equip.enabled", 1f) > 0.5f;
 
         public IReadOnlyList<OwnedItem> Items => _items;
         readonly List<OwnedPart> _parts = new List<OwnedPart>();
@@ -78,6 +83,12 @@ namespace AThousandDawns.Player
                 HanhyeolMaxQi = Mathf.RoundToInt(GameConfig.Get("meridian.hanhyeol_max_qi", 1f)),
                 HanokMaxQi = Mathf.RoundToInt(GameConfig.Get("part.hanok_max_qi", 2f)),
             };
+            if (EquipMode)
+            {
+                _board.SetEquipMode(Mathf.RoundToInt(GameConfig.Get("player.gongryeok", 3f)));
+                StartDanjeons = 0;
+            }
+            _otherworldQi = Mathf.RoundToInt(GameConfig.GetOptional("equip.otherworld_qi", 2f));
         }
 
         public bool Has(string id) => Find(id) != null;
@@ -100,7 +111,7 @@ namespace AThousandDawns.Player
         public OwnedItem Add(ItemDefinition def, Action<bool> resolved = null)
         {
             if (def == null || Has(def.id)) return null;
-            bool onBoard = TryFindEmptyCell(out var cell);
+            bool onBoard = TryFindEmptyCell(def, out var cell);
             if (!onBoard && BagFull)
             {
                 Pending = def;
@@ -133,7 +144,7 @@ namespace AThousandDawns.Player
                 resolved?.Invoke(false);
                 return null;
             }
-            var item = new OwnedItem { Def = def, OnBoard = discard.OnBoard, Cell = discard.Cell };
+            var item = new OwnedItem { Def = def, OnBoard = discard.OnBoard && Fits(discard.Cell, def), Cell = discard.Cell }; // 장비 칸: 부위가 다르면 주머니로
             _items.Add(item);
             Recount();
             Acquired?.Invoke(def);
@@ -145,7 +156,7 @@ namespace AThousandDawns.Player
         public OwnedItem Restore(ItemDefinition def, bool onBoard, Vector2Int cell)
         {
             if (def == null || Has(def.id)) return null;
-            var item = new OwnedItem { Def = def, OnBoard = onBoard && _board.Contains(cell), Cell = cell };
+            var item = new OwnedItem { Def = def, OnBoard = onBoard && _board.Contains(cell) && Fits(cell, def), Cell = cell };
             _items.Add(item);
             Recount();
             return item;
@@ -172,34 +183,52 @@ namespace AThousandDawns.Player
         public OwnedItem Replace(OwnedItem item, ItemDefinition def)
         {
             if (item == null || def == null || Has(def.id) || !_items.Contains(item)) return null;
-            var next = new OwnedItem { Def = def, OnBoard = item.OnBoard, Cell = item.Cell };
+            var next = new OwnedItem { Def = def, OnBoard = item.OnBoard && Fits(item.Cell, def), Cell = item.Cell };
             _items[_items.IndexOf(item)] = next;
             Recount();
             Acquired?.Invoke(def);
             return next;
         }
 
-        public bool TryFindEmptyCell(out Vector2Int cell)
+        public bool TryFindEmptyCell(out Vector2Int cell) => TryFindEmptyCell(null, out cell);
+
+        // 장비 칸: 이 기물 부위에 맞는 열린 빈 칸. 경맥도: 왼쪽 위부터 빈 칸
+        public bool TryFindEmptyCell(ItemDefinition def, out Vector2Int cell)
         {
             for (int y = 0; y < _board.Height; y++)
             for (int x = 0; x < _board.Width; x++)
             {
                 cell = new Vector2Int(x, y);
-                if (At(cell) == null && _board.PartAt(cell) == PartKind.None) return true;
+                if (At(cell) == null && _board.PartAt(cell) == PartKind.None && Fits(cell, def)) return true;
             }
             cell = default;
             return false;
         }
 
+        // 장비 칸: 열린 칸이고 기물 부위가 맞아야 해요. 경맥도: 언제나
+        public bool Fits(Vector2Int cell, ItemDefinition def) =>
+            !_board.EquipMode || (_board.IsUnlocked(cell) && EquipSlots.Fits(cell.x, def != null ? def.slot : EquipSlot.None));
+
+        // 장비 칸 열기: 지역 보스를 쓰러뜨릴 때 (그 지역까지 열린 칸 모두. 이어하기에서도 지역으로 되살려요)
+        public void UnlockSlotsThrough(int clearedRegion)
+        {
+            if (!_board.EquipMode) return;
+            for (int r = 0; r <= clearedRegion; r++)
+                foreach (int slot in EquipSlots.UnlockAfterBoss(r)) _board.Unlock(slot);
+            Recount();
+        }
+
         // 칸에 놓아요. 그 칸에 다른 기물이 있으면 자리를 바꾸고 (주머니에서 왔으면 그 기물이 주머니로).
         public void Place(OwnedItem item, Vector2Int cell)
         {
-            if (item == null || !_board.Contains(cell) || _board.PartAt(cell) != PartKind.None) return; // 부품 칸에는 기물을 못 놓아요
+            if (item == null || !_board.Contains(cell) || _board.PartAt(cell) != PartKind.None || !Fits(cell, item.Def)) return; // 부품 칸 · 잠긴 장비 칸 · 부위가 다른 칸에는 못 놓아요
             var other = At(cell);
             if (other == item) return;
             if (other != null)
             {
-                other.OnBoard = item.OnBoard;
+                bool swap = !item.OnBoard || Fits(item.Cell, other.Def); // 장비 칸끼리 바꿀 때 부위가 안 맞으면 주머니로
+                if (!swap && BagFull) return;
+                other.OnBoard = item.OnBoard && swap;
                 other.Cell = item.Cell;
             }
             item.OnBoard = true;
@@ -288,7 +317,7 @@ namespace AThousandDawns.Player
             Recount();
         }
 
-        // 판을 시작할 때 고르는 단전 수 (면벽수련 맥 20이면 2)
+        // 판을 시작할 때 고르는 단전 수 (영혼수련 맥 20이면 2)
         public int StartDanjeons { get; set; } = 1;
 
         public bool AddDanjeon(Vector2Int cell)
@@ -429,6 +458,7 @@ namespace AThousandDawns.Player
             foreach (var item in _items)
             {
                 item.Qi = item.OnBoard ? _board.QiAt(item.Cell) : 0;
+                if (item.OnBoard && item.Def.otherworld) item.Qi += _otherworldQi; // 이계 기물: 끼운 혈자리의 기를 뒤틀어 올려요 (세지만 주화입마에 쉽게)
                 item.MaxQiBonus = (item.OnBoard ? _board.MaxQiBonusAt(item.Cell) : 0) + GlobalMaxQiBonus;
                 if (!item.OnBoard) continue;
                 var state = StateOf(item);

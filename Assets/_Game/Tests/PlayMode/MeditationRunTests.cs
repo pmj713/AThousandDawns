@@ -14,7 +14,7 @@ using MArt = AThousandDawns.Core.Meditation.Art;
 
 namespace AThousandDawns.Tests
 {
-    // 면벽수련이 판 시작에 적용되는지 (강·은·기·쾌·맥)와 강 10·20 (방 회복, 기사회생), 기 20·맥 20·은 20.
+    // 영혼수련이 판 시작에 적용되는지 (강·은·기·쾌·맥)와 강 10·20 (방 회복, 기사회생), 기 20·맥 20·은 20.
     public class MeditationRunTests : InputTestFixture
     {
         string _savePath;

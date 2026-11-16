@@ -32,6 +32,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uD3C9\uD0C0 1\xB72\uD0C0\uC5D0 \uD654\uC0C1 \uD655\uB960 +10%"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+    slot: 7
+    otherworld: 0
   - id: ember_dagger
     keyword: 0
     name: "\uC7BF\uBD88 \uB2E8\uAC80"
@@ -51,6 +53,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uD3C9\uD0C0 3\uD0C0\uC9F8\uAC00 \uD654\uC0C1 +1\uC911\uCCA9 \uB354. \uC8FC\uD654\uC785\uB9C8\uBA74 +2\uC911\uCCA9"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+    slot: 9
+    otherworld: 0
   - id: flint
     keyword: 0
     name: "\uBD80\uC2EF\uB3CC"
@@ -70,6 +74,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uB2E4\uB978 \uC801\uC744 \uB9DE\uD788\uC9C0 \uC54A\uACE0 \uAC19\uC740 \uC801\uB9CC 3\uBC88 \uB9DE\uD788\uBA74 \uD654\uC0C1 +1\uC911\uCCA9"
     sideText: "\uB300\uC2DC \uD68C\uBCF5 -10%"
+    slot: 8
+    otherworld: 0
   - id: censer
     keyword: 0
     name: "\uD5A5\uB85C"
@@ -89,6 +95,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uD654\uC0C1 \uC9C0\uC18D +1\uCD08. 0\uAC1C\uBA74 +2\uCD08"
     sideText: "\uACF5\uACA9 \uC18D\uB3C4 -10%"
+    slot: 8
+    otherworld: 0
   - id: flame_fan
     keyword: 0
     name: "\uD654\uC5FC \uBD80\uCC44"
@@ -108,6 +116,8 @@ MonoBehaviour:
     sideValue: 0.2
     effectText: "\uCD08\uC2DD \uC801\uC911 \uC2DC \uD654\uC0C1 +1\uC911\uCCA9"
     sideText: "\uCD08\uC2DD \uCFE8\uD0C0\uC784 +20%"
+    slot: 9
+    otherworld: 0
   - id: oil_lamp
     keyword: 0
     name: "\uB4F1\uC794"
@@ -127,6 +137,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uD654\uC0C1\uC774 \uAEBC\uC9C0\uC9C0 \uC54A\uACE0 \uC774\uC5B4\uC9C0\uBA74 2\uCD08\uB9C8\uB2E4 \uADF8 \uC801\uC758 \uD654\uC0C1 \uD53C\uD574 +4% (\uCD5C\uB300 +20%)"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+    slot: 8
+    otherworld: 0
   - id: crimson_gloves
     keyword: 0
     name: "\uD64D\uC5FC \uC7A5\uAC11"
@@ -146,6 +158,8 @@ MonoBehaviour:
     sideValue: 0.15
     effectText: "\uD53C\uACA9 \uC2DC \uC8FC\uBCC0 2\uCE78 \uC801\uC5D0\uAC8C \uD654\uC0C1 1\uC911\uCCA9. \uC8FC\uD654\uC785\uB9C8\uBA74 2\uC911\uCCA9, \uBC94\uC704 2\uBC30"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +15%"
+    slot: 7
+    otherworld: 0
   - id: fire_gourd
     keyword: 0
     name: "\uC5FC\uD654 \uD638\uB9AC\uBCD1"
@@ -165,6 +179,8 @@ MonoBehaviour:
     sideValue: 0.15
     effectText: "\uD654\uC0C1 \uC911\uC778 \uC801\uC774 \uC8FD\uC740 \uC790\uB9AC\uC5D0 3\uCD08\uAC04 \uBD88\uAE38. \uC548\uC5D0 \uC788\uB294 \uC801\uC740 1\uCD08\uB9C8\uB2E4 \uD654\uC0C1 1\uC911\uCCA9. 0\uAC1C\uBA74 \uBD88\uAE38 \uD06C\uAE30 +50%"
     sideText: "\uCD08\uC2DD \uCFE8\uD0C0\uC784 +15%"
+    slot: 8
+    otherworld: 0
   - id: fire_scale
     keyword: 0
     name: "\uD654\uB8E1 \uBE44\uB298"
@@ -184,6 +200,8 @@ MonoBehaviour:
     sideValue: 0.2
     effectText: "\uCD5C\uB300 \uC911\uCCA9\uC778 \uC801\uC5D0\uAC8C \uD654\uC0C1\uC744 \uB610 \uAC78\uBA74 \uADF8 \uC801\uB9CC \uCD5C\uB300 \uC911\uCCA9 +1 (\uCD5C\uB300 +1, \uD654\uC0C1\uC774 \uAEBC\uC9C0\uBA74 \uCC98\uC74C\uC73C\uB85C)"
     sideText: "\uCD08\uC2DD \uCFE8\uD0C0\uC784 +20%"
+    slot: 2
+    otherworld: 0
   - id: vermilion_feather
     keyword: 0
     name: "\uC8FC\uC791 \uAE43\uD138"
@@ -203,6 +221,8 @@ MonoBehaviour:
     sideValue: 0.15
     effectText: "\uD654\uC0C1 \uD53C\uD574 +25%, \uD654\uC0C1 \uCD5C\uB300 \uC911\uCCA9 +1"
     sideText: "\uD654\uC0C1 \uC5C6\uB294 \uC801\uC5D0\uAC8C \uC8FC\uB294 \uD53C\uD574 -15%"
+    slot: 1
+    otherworld: 0
   - id: frost_ring
     keyword: 1
     name: "\uC11C\uB9AC \uACE0\uB9AC"
@@ -222,6 +242,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uD3C9\uD0C0 1\xB72\uD0C0\uC5D0 \uB454\uD654 \uD655\uB960 +10%"
     sideText: "\uACF5\uACA9 \uC18D\uB3C4 -10%"
+    slot: 5
+    otherworld: 0
   - id: icicle_needle
     keyword: 1
     name: "\uACE0\uB4DC\uB984 \uCE68"
@@ -241,6 +263,8 @@ MonoBehaviour:
     sideValue: 0.15
     effectText: "\uCD08\uC2DD \uC801\uC911 \uC2DC \uB454\uD654 +1\uC911\uCCA9"
     sideText: "\uCD08\uC2DD \uCFE8\uD0C0\uC784 +15%"
+    slot: 9
+    otherworld: 0
   - id: snow_hood
     keyword: 1
     name: "\uBE59\uC124 \uB450\uAC74"
@@ -260,6 +284,8 @@ MonoBehaviour:
     sideValue: 0.05
     effectText: "\uB454\uD654 \uC9C0\uC18D +0.5\uCD08"
     sideText: "\uACF5\uACA9 \uC18D\uB3C4 -5%"
+    slot: 1
+    otherworld: 0
   - id: snowflake_crystal
     keyword: 1
     name: "\uB208\uC1A1\uC774 \uC218\uC815"
@@ -279,6 +305,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uB454\uD654 3\uC911\uCCA9\uC778 \uC801\uC740 \uACF5\uACA9 \uC608\uACE0\uAC00 0.1\uCD08 \uAE38\uC5B4\uC9D0. 0\uAC1C\uBA74 2\uBC30"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+    slot: 6
+    otherworld: 0
   - id: coldiron_pin
     keyword: 1
     name: "\uD55C\uCCA0 \uBE44\uB140"
@@ -298,6 +326,8 @@ MonoBehaviour:
     sideValue: 0.2
     effectText: "\uB300\uC2DC \uACF5\uACA9 \uACBD\uB85C\uC5D0 2\uCD08\uAC04 \uC11C\uB9AC \uAE38 (\uBC1F\uC740 \uC801 \uB454\uD654 1\uC911\uCCA9), \uAE38\uC774 +1\uCE78"
     sideText: "\uB300\uC2DC \uD68C\uBCF5 -20%"
+    slot: 1
+    otherworld: 0
   - id: ice_beads
     keyword: 1
     name: "\uBE59\uBC31 \uC5FC\uC8FC"
@@ -317,6 +347,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uACE0\uC218\xB7\uBCF4\uC2A4\uC5D0\uAC8C \uB4E4\uC5B4\uAC00\uB294 \uB454\uD654 +25%p (\uB808\uBCA8 2\uBA74 \uC808\uBC18 \uADDC\uCE59\uC774 \uC0AC\uB77C\uC9D0). 0\uAC1C\uBA74 \uBCF4\uC2A4 \uBE59\uACB0 \uBA74\uC5ED -1\uCD08"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+    slot: 7
+    otherworld: 0
   - id: cold_amber
     keyword: 1
     name: "\uD55C\uAE30 \uD638\uBC15"
@@ -336,6 +368,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uB300\uC2DC \uACF5\uACA9\uC73C\uB85C \uB454\uD654\uB41C \uC801\uC744 \uB9DE\uD788\uBA74 \uBE59\uACB0 \uD655\uB960 +10%. \uC8FC\uD654\uC785\uB9C8\uBA74 \uBE59\uACB0\uB420 \uB54C \uC8FC\uBCC0 2\uCE78 \uC801 \uB454\uD654 2\uC911\uCCA9"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+    slot: 6
+    otherworld: 0
   - id: snow_lotus_sachet
     keyword: 1
     name: "\uC124\uB828 \uD5A5\uB0AD"
@@ -355,6 +389,8 @@ MonoBehaviour:
     sideValue: 1
     effectText: "\uBE59\uACB0\uB85C \uCDE8\uC18C\uB41C \uBCF4\uC2A4 \uD328\uD134\uC740 3\uCD08 \uB3D9\uC548 \uB2E4\uC2DC \uB098\uC624\uC9C0 \uC54A\uC74C"
     sideText: "\uD53C\uACA9 \uC2DC \uC790\uC2E0\uB3C4 1\uCD08 \uB454\uD654"
+    slot: 8
+    otherworld: 0
   - id: snow_reishi
     keyword: 1
     name: "\uC124\uC0B0 \uC601\uC9C0"
@@ -374,6 +410,8 @@ MonoBehaviour:
     sideValue: 0.05
     effectText: "\uD53C\uACA9 \uC2DC \uC8FC\uBCC0 2\uCE78 \uC801 1\uCD08 \uBE59\uACB0 (8\uCD08\uB9C8\uB2E4 \uD55C \uBC88), \uBC94\uC704 +0.5\uCE78"
     sideText: "\uCD5C\uB300 \uCCB4\uB825 -5%"
+    slot: 8
+    otherworld: 0
   - id: icemirror
     keyword: 1
     name: "\uD55C\uBE59 \uAC70\uC6B8"
@@ -393,6 +431,8 @@ MonoBehaviour:
     sideValue: 0.15
     effectText: "\uBE59\uACB0 \uC2DC\uAC04 +0.3\uCD08. \uC8FC\uD654\uC785\uB9C8\uBA74 \uBE59\uACB0 \uBA74\uC5ED \uC2DC\uAC04 \uC808\uBC18"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +15%"
+    slot: 6
+    otherworld: 0
   - id: lightningwood_comb
     keyword: 2
     name: "\uBCBD\uC870\uBAA9 \uBE57"
@@ -412,6 +452,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uD3C9\uD0C0 1\xB72\uD0C0\uC5D0 \uAC10\uC804 \uD655\uB960 +15%"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+    slot: 1
+    otherworld: 0
   - id: copper_coin
     keyword: 2
     name: "\uAD6C\uB9AC \uB3D9\uC804"
@@ -431,6 +473,8 @@ MonoBehaviour:
     sideValue: 0.05
     effectText: "\uC801 \uCC98\uCE58 \uC2DC \uC5F0\uC1C4 \uBC88\uAC1C \uD655\uB960 +15%"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -5%"
+    slot: 5
+    otherworld: 0
   - id: thunder_brush
     keyword: 2
     name: "\uB1CC\uC815 \uBD93"
@@ -450,6 +494,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uAC10\uC804\uC774 \uCD5C\uB300 \uC911\uCCA9\uC778 \uC801\uC744 \uBC29\uC804\uC2DC\uD0A4\uBA74 \uBC29\uC804 \uD53C\uD574 +15%"
     sideText: "\uB300\uC2DC \uAC70\uB9AC -10%"
+    slot: 9
+    otherworld: 0
   - id: thunderstone
     keyword: 2
     name: "\uB1CC\uC11D"
@@ -469,6 +515,8 @@ MonoBehaviour:
     sideValue: 0.05
     effectText: "\uAC10\uC804 \uC9C0\uC18D +0.5\uCD08. 0\uAC1C\uBA74 +1\uCD08"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +5%"
+    slot: 6
+    otherworld: 0
   - id: thunder_bell
     keyword: 2
     name: "\uB1CC\uC815 \uBC29\uC6B8"
@@ -488,6 +536,8 @@ MonoBehaviour:
     sideValue: 2
     effectText: "\uC808\uCD08 \uC0AC\uC6A9 \uC2DC \uC5F0\uC1C4 \uBC88\uAC1C +2\uD68C. \uC8FC\uD654\uC785\uB9C8\uBA74 2\uBC30"
     sideText: "\uC808\uCD08 \uD6C4 2\uCD08\uAC04 \uB300\uC2DC \uBD88\uAC00"
+    slot: 5
+    otherworld: 0
   - id: thundercloud_talisman
     keyword: 2
     name: "\uB1CC\uC6B4 \uBD80\uC801"
@@ -507,6 +557,8 @@ MonoBehaviour:
     sideValue: 0.2
     effectText: "\uCD08\uC2DD\uC73C\uB85C \uC5F0\uC1C4 \uBC88\uAC1C\uAC00 \uBC1C\uB3D9\uD558\uBA74 \uCCAB \uB300\uC0C1\uC5D0\uAC8C \uB099\uB8B0 1\uAC1C"
     sideText: "\uCD08\uC2DD \uCFE8\uD0C0\uC784 +20%"
+    slot: 2
+    otherworld: 0
   - id: hawk_talon
     keyword: 2
     name: "\uB9E4 \uBC1C\uD1B1"
@@ -526,6 +578,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uD3C9\uD0C0 3\uD0C0\uC9F8 \uAC10\uC804 +1\uC911\uCCA9 \uB354. \uC8FC\uD654\uC785\uB9C8\uBA74 \uC5F0\uC1C4 \uBC88\uAC1C\uC5D0 \uB9DE\uC740 \uC801\uC5D0\uAC8C \uBC29\uC804 \uB4A4 \uAC10\uC804 1\uC911\uCCA9\uC744 \uB0A8\uAE40"
     sideText: "\uACF5\uACA9 \uC18D\uB3C4 -10%"
+    slot: 6
+    otherworld: 0
   - id: thunder_drum
     keyword: 2
     name: "\uCC9C\uB465 \uBD81"
@@ -545,6 +599,8 @@ MonoBehaviour:
     sideValue: 1
     effectText: "\uC5F0\uC1C4 \uBC88\uAC1C\uC758 \uC5F0\uC1C4 \uC218 +1. 0\uAC1C\uBA74 \uC5F0\uC1C4 \uD53C\uD574 +30%"
     sideText: "\uB300\uC2DC \uD69F\uC218 -1"
+    slot: 8
+    otherworld: 0
   - id: cloud_flute
     keyword: 2
     name: "\uC6B4\uB8B0 \uD53C\uB9AC"
@@ -564,6 +620,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uBC29\uC804 \uD53C\uD574\uC758 30%\uAC00 \uC8FC\uBCC0 2\uCE78 \uC801\uC5D0\uAC8C \uD37C\uC9D0"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+    slot: 8
+    otherworld: 0
   - id: thunder_seal
     keyword: 2
     name: "\uB1CC\uC815 \uC625\uC0C8"
@@ -583,6 +641,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uBC29\uC804 \uD53C\uD574 +25%. \uC751\uC9D1\uB41C \uBC88\uAC1C\uB85C \uBC29\uC804\uD558\uBA74 \uAC10\uC804 \uC911\uCCA9\uC744 2\uBC30\uB85C \uC148"
     sideText: "10\uCD08\uB9C8\uB2E4 \uAE30\uC138 -10%"
+    slot: 8
+    otherworld: 0
   - id: breeze_tassel
     keyword: 3
     name: "\uCCAD\uD48D \uAC80\uC218"
@@ -602,6 +662,8 @@ MonoBehaviour:
     sideValue: 0.05
     effectText: "\uD3C9\uD0C0 \uACF5\uACA9 \uC18D\uB3C4 +5%"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +5%"
+    slot: 9
+    otherworld: 0
   - id: whetstone
     keyword: 3
     name: "\uC5F0\uB9C8\uC11D"
@@ -621,6 +683,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uCD08\uC2DD\uC744 \uC4F4 \uC9C1\uD6C4 \uD3C9\uD0C0 3\uD68C\uC758 \uD53C\uD574 +15%"
     sideText: "\uB300\uC2DC \uD68C\uBCF5 -10%"
+    slot: 8
+    otherworld: 0
   - id: leather_bracer
     keyword: 3
     name: "\uAC00\uC8FD \uC190\uBAA9\uB300"
@@ -640,6 +704,8 @@ MonoBehaviour:
     sideValue: 0.05
     effectText: "\uD3C9\uD0C0 \uC0AC\uAC70\uB9AC +8%"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -5%"
+    slot: 7
+    otherworld: 0
   - id: wooden_sword
     keyword: 3
     name: "\uBAA9\uAC80"
@@ -659,6 +725,8 @@ MonoBehaviour:
     sideValue: 0.05
     effectText: "\uD3C9\uD0C0 \uD53C\uD574 +6%. 0\uAC1C\uBA74 2\uBC30"
     sideText: "\uACF5\uACA9 \uC18D\uB3C4 -5%"
+    slot: 9
+    otherworld: 0
   - id: ink_scabbard
     keyword: 3
     name: "\uBB35\uCCA0 \uCE7C\uC9D1"
@@ -678,6 +746,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uD3C9\uD0C0 3\uD0C0\uC9F8 \uD53C\uD574 +20%. 0\uAC1C\uBA74 3\uD0C0\uC9F8 \uBC94\uC704 +30%"
     sideText: "\uACF5\uACA9 \uC18D\uB3C4 -10%"
+    slot: 9
+    otherworld: 0
   - id: iron_sandbag
     keyword: 3
     name: "\uCCA0\uC7A5 \uBAA8\uB798\uC8FC\uBA38\uB2C8"
@@ -697,6 +767,8 @@ MonoBehaviour:
     sideValue: 0.15
     effectText: "\uD3C9\uD0C0\uB85C \uC801\uC744 \uCC98\uCE58\uD558\uBA74 \uB2E4\uC74C \uD3C9\uD0C0 \uD53C\uD574 +25%"
     sideText: "\uB300\uC2DC \uD68C\uBCF5 -15%"
+    slot: 3
+    otherworld: 0
   - id: blood_bandage
     keyword: 3
     name: "\uD608\uC218 \uBD95\uB300"
@@ -716,6 +788,8 @@ MonoBehaviour:
     sideValue: 0.15
     effectText: "\uD3C9\uD0C0 \uD53C\uD574 +10%. \uC8FC\uD654\uC785\uB9C8\uBA74 \uD3C9\uD0C0 \uC801\uC911 \uC2DC \uAC15\uAE30 \uD30C\uD3B8 1\uAC1C"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +15%"
+    slot: 7
+    otherworld: 0
   - id: ganggi_bead
     keyword: 3
     name: "\uAC15\uAE30 \uAD6C\uC2AC"
@@ -735,6 +809,8 @@ MonoBehaviour:
     sideValue: 0.15
     effectText: "\uAC15\uAE30 \uAD00\uD1B5 +1. \uC8FC\uD654\uC785\uB9C8\uBA74 \uAC15\uAE30\uAC00 \uD130\uC9C0\uBA70 \uC8FC\uBCC0\uC5D0 \uD53C\uD574"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +15%"
+    slot: 6
+    otherworld: 0
   - id: sword_manual
     keyword: 3
     name: "\uAC80\uBCF4 \uC870\uAC01"
@@ -754,6 +830,8 @@ MonoBehaviour:
     sideValue: 0.2
     effectText: "3\uD0C0\uC9F8 \uD6C4 0.5\uCD08 \uC548\uC5D0 \uB2E4\uC2DC \uACF5\uACA9\uD558\uBA74 4\uD0C0\uC9F8 \uCD94\uAC00 (\uD53C\uD574 +30%)"
     sideText: "\uCD08\uC2DD \uCFE8\uD0C0\uC784 +20%"
+    slot: 2
+    otherworld: 0
   - id: broken_blade
     keyword: 3
     name: "\uBD80\uB7EC\uC9C4 \uAC80\uB0A0"
@@ -773,6 +851,8 @@ MonoBehaviour:
     sideValue: 1
     effectText: "\uD3C9\uD0C0 \uC801\uC911\uB9C8\uB2E4 \uACF5\uACA9 \uC18D\uB3C4 +1% \uC911\uCCA9 (\uCD5C\uB300\uCE58 +10%). 3\uCD08 \uC26C\uBA74 \uCD08\uAE30\uD654"
     sideText: "\uD53C\uACA9 \uC2DC \uC911\uCCA9 \uCD08\uAE30\uD654"
+    slot: 9
+    otherworld: 0
   - id: guardian_norigae
     keyword: 4
     name: "\uC218\uD638 \uB178\uB9AC\uAC1C"
@@ -792,6 +872,8 @@ MonoBehaviour:
     sideValue: 0.05
     effectText: "\uCD08\uC2DD \uC0AC\uC6A9 \uC2DC \uBCF4\uD638\uB9C9 (\uCD5C\uB300 \uCCB4\uB825\uC758 3%)"
     sideText: "\uACF5\uACA9 \uC18D\uB3C4 -5%"
+    slot: 8
+    otherworld: 0
   - id: turtle_shell
     keyword: 4
     name: "\uAC70\uBD81 \uB4F1\uAECD\uC9C8"
@@ -811,6 +893,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uAC15\uC778\uD568 +2. 0\uAC1C\uBA74 2\uBC30"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+    slot: 2
+    otherworld: 0
   - id: wooden_figure
     keyword: 4
     name: "\uBAA9\uC778 \uC870\uAC01"
@@ -830,6 +914,8 @@ MonoBehaviour:
     sideValue: 0.05
     effectText: "\uCD5C\uB300 \uCCB4\uB825 +8"
     sideText: "\uACF5\uACA9 \uC18D\uB3C4 -5%"
+    slot: 6
+    otherworld: 0
   - id: bamboo_armor
     keyword: 4
     name: "\uC8FD\uAC11 \uC870\uAC01"
@@ -849,6 +935,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uBC29\uC5B4\uB825 +3"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+    slot: 2
+    otherworld: 0
   - id: iron_bracelet
     keyword: 4
     name: "\uCCA0\uAC11 \uD314\uCC0C"
@@ -868,6 +956,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uB300\uC2DC \uACF5\uACA9 \uC801\uC911 \uC2DC \uBCF4\uD638\uB9C9 (\uCD5C\uB300 \uCCB4\uB825\uC758 4%)"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+    slot: 7
+    otherworld: 0
   - id: iron_chain
     keyword: 4
     name: "\uC1E0\uC0AC\uC2AC"
@@ -887,6 +977,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uD53C\uACA9 \uD6C4 1\uCD08\uAC04 \uBC1B\uB294 \uD53C\uD574 -15%"
     sideText: "\uB300\uC2DC \uAC70\uB9AC -10%"
+    slot: 8
+    otherworld: 0
   - id: blood_stone
     keyword: 4
     name: "\uD608\uC11D"
@@ -906,6 +998,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uC801 \uCC98\uCE58 \uC2DC \uCCB4\uB825 +1. \uC8FC\uD654\uC785\uB9C8\uBA74 +2"
     sideText: "\uCD5C\uB300 \uCCB4\uB825 -10%"
+    slot: 5
+    otherworld: 0
   - id: vajra
     keyword: 4
     name: "\uAE08\uAC15\uC800"
@@ -925,6 +1019,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uD53C\uACA9 \uC2DC \uCDA9\uACA9\uD30C (\uD53C\uD574 +25%)\uC640 \uAE30\uC138 +5%. \uC8FC\uD654\uC785\uB9C8\uBA74 \uB109\uBC31 \uCD94\uAC00"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+    slot: 9
+    otherworld: 0
   - id: golden_kasaya
     keyword: 4
     name: "\uAE08\uBE5B \uAC00\uC0AC"
@@ -944,6 +1040,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uCCB4\uB825 50% \uC774\uD558\uC77C \uB54C \uBC1B\uB294 \uD53C\uD574 -10%. 0\uAC1C\uBA74 2\uBC30"
     sideText: "\uACF5\uACA9 \uC18D\uB3C4 -10%"
+    slot: 2
+    otherworld: 0
   - id: unbreakable_tablet
     keyword: 4
     name: "\uBD88\uAD34 \uD638\uD328"
@@ -963,6 +1061,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uC4F0\uB7EC\uC9C8 \uD53C\uD574\uB97C \uBC1B\uC73C\uBA74 \uCCB4\uB825 1\uB85C \uBC84\uD2F0\uACE0 \uBB34\uC801 0.5\uCD08 (\uC804\uD22C\uB2F9 1\uD68C)"
     sideText: "\uCD5C\uB300 \uCCB4\uB825 -10%"
+    slot: 8
+    otherworld: 0
   - id: straw_sandals
     keyword: 5
     name: "\uC9DA\uC2E0"
@@ -982,6 +1082,8 @@ MonoBehaviour:
     sideValue: 0.05
     effectText: "\uC774\uB3D9\uC18D\uB3C4 +5%"
     sideText: "\uCD5C\uB300 \uCCB4\uB825 -5%"
+    slot: 4
+    otherworld: 0
   - id: wind_knot
     keyword: 5
     name: "\uBC14\uB78C \uB9E4\uB4ED"
@@ -1001,6 +1103,8 @@ MonoBehaviour:
     sideValue: 0.2
     effectText: "\uB300\uC2DC \uD68C\uBCF5 +15%. \uC8FC\uD654\uC785\uB9C8\uBA74 \uB300\uC2DC \uD6C4 0.5\uCD08\uAC04 \uACF5\uACA9 \uC18D\uB3C4 +50%"
     sideText: "\uB300\uC2DC \uAC70\uB9AC -20%"
+    slot: 1
+    otherworld: 0
   - id: leggings
     keyword: 5
     name: "\uAC01\uBC18"
@@ -1020,6 +1124,8 @@ MonoBehaviour:
     sideValue: 0.05
     effectText: "\uB300\uC2DC \uAC70\uB9AC +10%"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +5%"
+    slot: 3
+    otherworld: 0
   - id: pinwheel
     keyword: 5
     name: "\uBC14\uB78C\uAC1C\uBE44"
@@ -1039,6 +1145,8 @@ MonoBehaviour:
     sideValue: 0.05
     effectText: "\uB300\uC2DC \uBB34\uC801 \uC2DC\uAC04 +0.03\uCD08. 0\uAC1C\uBA74 2\uBC30"
     sideText: "\uACF5\uACA9 \uC18D\uB3C4 -5%"
+    slot: 9
+    otherworld: 0
   - id: swallow_feather
     keyword: 5
     name: "\uBE44\uC5F0 \uAE43\uD138"
@@ -1058,6 +1166,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uB300\uC2DC \uACF5\uACA9 \uD53C\uD574 +15%. 3\uB808\uBCA8\uC774\uBA74 \uB300\uC2DC +1"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+    slot: 5
+    otherworld: 0
   - id: willow_dart
     keyword: 5
     name: "\uBC84\uB4E4\uC78E \uD45C\uCC3D"
@@ -1077,6 +1187,8 @@ MonoBehaviour:
     sideValue: 0.15
     effectText: "\uB300\uC2DC\uD560 \uB54C \uC55E\uC73C\uB85C \uD45C\uCC3D 1\uAC1C \uBC1C\uC0AC (\uD53C\uD574 +20%)"
     sideText: "\uB300\uC2DC \uD68C\uBCF5 -15%"
+    slot: 9
+    otherworld: 0
   - id: black_wind_cloak
     keyword: 5
     name: "\uD751\uD48D \uB9DD\uD1A0"
@@ -1096,6 +1208,8 @@ MonoBehaviour:
     sideValue: 0.15
     effectText: "\uB300\uC2DC \uD6C4 1\uCD08\uAC04 \uC774\uB3D9\uC18D\uB3C4 +15%. \uC8FC\uD654\uC785\uB9C8\uBA74 \uB300\uC2DC \uD6C4 \uCCAB \uACF5\uACA9 \uD53C\uD574 +50%"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +15%"
+    slot: 2
+    otherworld: 0
   - id: afterimage_mask
     keyword: 5
     name: "\uC794\uC601 \uAC00\uBA74"
@@ -1115,6 +1229,8 @@ MonoBehaviour:
     sideValue: 1
     effectText: "\uB300\uC2DC\uD558\uBA74 \uC794\uC0C1\uC774 \uB0A8\uC544 \uC801\uC744 \uB04C\uC5B4\uB4E4\uC784 (+0.5\uCD08). 0\uAC1C\uBA74 \uC794\uC0C1\uC774 \uD130\uC9C0\uBA70 \uD53C\uD574"
     sideText: "\uB300\uC2DC \uD69F\uC218 -1"
+    slot: 1
+    otherworld: 0
   - id: cloud_dragon_belt
     keyword: 5
     name: "\uC6B4\uB8E1 \uD5C8\uB9AC\uB760"
@@ -1134,6 +1250,8 @@ MonoBehaviour:
     sideValue: 0.05
     effectText: "\uB300\uC2DC \uACF5\uACA9\uC774 \uACBD\uB85C\uC758 \uBAA8\uB4E0 \uC801\uC744 \uAD00\uD1B5, \uD53C\uD574 +20%"
     sideText: "\uCD5C\uB300 \uCCB4\uB825 -5%"
+    slot: 8
+    otherworld: 0
   - id: cloud_silk
     keyword: 5
     name: "\uAD6C\uB984 \uBE44\uB2E8"
@@ -1153,6 +1271,8 @@ MonoBehaviour:
     sideValue: 0.5
     effectText: "\uB300\uC2DC\uAC00 \uC9C0\uB098\uAC04 \uC801\uC5D0\uAC8C \uD53C\uD574 (+50%). \uB300\uC2DC \uACF5\uACA9 \uC801\uC911 \uC2DC \uAE30\uC138 +3%"
     sideText: "\uB300\uC2DC \uBB34\uC801 \uC2DC\uAC04 \uC808\uBC18"
+    slot: 3
+    otherworld: 0
   - id: ash_urn
     keyword: 0
     name: "\uC7AC \uD56D\uC544\uB9AC"
@@ -1172,6 +1292,8 @@ MonoBehaviour:
     sideValue: 0.2
     effectText: "\uD654\uC0C1 3\uC911\uCCA9 \uC774\uC0C1\uC778 \uC801\uC774 \uC8FD\uC73C\uBA74 \uADF8 \uC911\uCCA9\uC758 \uC808\uBC18\uC774 \uC8FC\uBCC0 2\uCE78 \uC801\uC5D0\uAC8C \uC62E\uACA8\uBD99\uC74C"
     sideText: "\uCD08\uC2DD \uCFE8\uD0C0\uC784 +20%"
+    slot: 8
+    otherworld: 0
   - id: frost_bead
     keyword: 1
     name: "\uD55C\uAE30 \uAD6C\uC2AC"
@@ -1191,6 +1313,8 @@ MonoBehaviour:
     sideValue: 0.05
     effectText: "\uC801\uC5D0\uAC8C \uB454\uD654\uB97C \uAC78 \uB54C 25% \uD655\uB960\uB85C 1\uC911\uCCA9 \uB354"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -5%"
+    slot: 5
+    otherworld: 0
   - id: lightning_rod
     keyword: 2
     name: "\uD53C\uB8B0\uCE68"
@@ -1210,6 +1334,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uAC10\uC804 3\uC911\uCCA9 \uC774\uC0C1\uC778 \uC801\uC744 \uB9DE\uD788\uBA74 \uC5F0\uC1C4 \uBC88\uAC1C \uD655\uB960 +20%. 0\uAC1C\uBA74 2\uBC30"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+    slot: 1
+    otherworld: 0
   - id: finishing_edge
     keyword: 3
     name: "\uACB0\uC0B4 \uAC80\uACB0"
@@ -1229,6 +1355,8 @@ MonoBehaviour:
     sideValue: 0.05
     effectText: "\uCCB4\uB825 30% \uC774\uD558\uC778 \uC801\uC5D0\uAC8C \uD3C9\uD0C0 \uD53C\uD574 +20%"
     sideText: "\uACF5\uACA9 \uC18D\uB3C4 -5%"
+    slot: 9
+    otherworld: 0
   - id: iron_vest
     keyword: 4
     name: "\uCCA0\uD3EC\uC0BC \uC870\uB07C"
@@ -1248,6 +1376,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uBCF4\uD638\uB9C9\uC774 \uC788\uC73C\uBA74 \uAC15\uC778\uD568 +3. \uC8FC\uD654\uC785\uB9C8\uBA74 \uBCF4\uD638\uB9C9\uC774 \uAE68\uC9C8 \uB54C \uCDA9\uACA9\uD30C (\uD53C\uD574 +50%)"
     sideText: "\uCD5C\uB300 \uCCB4\uB825 -10%"
+    slot: 2
+    otherworld: 0
   - id: shadow_step
     keyword: 5
     name: "\uADF8\uB9BC\uC790 \uBCF4\uBC95\uC11C"
@@ -1267,6 +1397,8 @@ MonoBehaviour:
     sideValue: 0.15
     effectText: "\uB300\uC2DC \uBB34\uC801 \uC911\uC5D0 \uC801 \uACF5\uACA9\uC744 \uD53C\uD558\uBA74 \uAE30\uC138 +5%\uC640 \uB2E4\uC74C \uD3C9\uD0C0 \uD53C\uD574 +40%"
     sideText: "\uB300\uC2DC \uD68C\uBCF5 -15%"
+    slot: 4
+    otherworld: 0
   - id: charcoal_bag
     keyword: 0
     name: "\uC22F \uC8FC\uBA38\uB2C8"
@@ -1286,6 +1418,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uCD08\uC2DD\uC73C\uB85C \uB9DE\uD78C \uC801\uC758 \uD654\uC0C1 1\uC911\uCCA9\uB2F9 \uD53C\uD574 +4%"
     sideText: "\uACF5\uACA9 \uC18D\uB3C4 -10%"
+    slot: 8
+    otherworld: 0
   - id: thunder_glove
     keyword: 2
     name: "\uB1CC\uACA9 \uC7A5\uAC11"
@@ -1305,6 +1439,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uB300\uC2DC \uACF5\uACA9 \uC801\uC911 \uC2DC \uAC10\uC804 +1\uC911\uCCA9. \uC8FC\uD654\uC785\uB9C8\uBA74 \uC5F0\uC1C4 \uBC88\uAC1C\uB3C4 \uBC1C\uB3D9"
     sideText: "\uB300\uC2DC \uAC70\uB9AC -10%"
+    slot: 7
+    otherworld: 0
   - id: frost_armor
     keyword: 1
     name: "\uC11C\uB9AC \uAC11\uC637"
@@ -1324,6 +1460,8 @@ MonoBehaviour:
     sideValue: 0.15
     effectText: "\uD53C\uACA9 \uC2DC \uB54C\uB9B0 \uC801\uC5D0\uAC8C \uB454\uD654 2\uC911\uCCA9. 0\uAC1C\uBA74 0.5\uCD08 \uBE59\uACB0"
     sideText: "\uCD08\uC2DD \uCFE8\uD0C0\uC784 +15%"
+    slot: 2
+    otherworld: 0
   - id: guard_talisman
     keyword: 4
     name: "\uD638\uC2E0 \uBD80\uC801"
@@ -1343,6 +1481,8 @@ MonoBehaviour:
     sideValue: 0.1
     effectText: "\uBC29\uC744 \uBE44\uC6B8 \uB54C\uB9C8\uB2E4 \uBCF4\uD638\uB9C9 +5% \uC313\uC5EC \uB2E4\uC74C \uBC29\uAE4C\uC9C0 \uC774\uC5B4\uC9D0 (\uCD5C\uB300 20%)"
     sideText: "\uCD5C\uB300 \uCCB4\uB825 -10%"
+    slot: 6
+    otherworld: 0
   - id: sword_scroll
     keyword: 3
     name: "\uC77C\uC12C \uAC80\uACB0"
@@ -1362,6 +1502,8 @@ MonoBehaviour:
     sideValue: 0.15
     effectText: "\uD3C9\uD0C0 5\uD68C\uB9C8\uB2E4 \uB2E4\uC74C \uD3C9\uD0C0\uAC00 \uC55E\uC73C\uB85C 4\uCE78\uC744 \uBCA0\uB294 \uC77C\uC12C (\uD53C\uD574 +80%)"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +15%"
+    slot: 9
+    otherworld: 0
   - id: cloud_boots
     keyword: 5
     name: "\uCC9C\uB9AC \uC2E0\uBC1C"
@@ -1381,3 +1523,194 @@ MonoBehaviour:
     sideValue: 0.2
     effectText: "\uB300\uC2DC \uCD5C\uB300 \uD69F\uC218 +1. \uB300\uC2DC \uACF5\uACA9 \uD53C\uD574 +20%"
     sideText: "\uB300\uC2DC \uD68C\uBCF5 -20%"
+    slot: 4
+    otherworld: 0
+  - id: goblin_boots
+    keyword: 5
+    name: "\uACE0\uBE14\uB9B0 \uAC00\uC8FD\uC7A5\uD654"
+    grade: 0
+    aux: 
+    minQi: 1
+    maxQi: 2
+    v1: 0.06
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.1
+    effectText: "\uC774\uB3D9\uC18D\uB3C4 +6%"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+    slot: 4
+    otherworld: 1
+  - id: slime_bracelet
+    keyword: 1
+    name: "\uC2AC\uB77C\uC784 \uD314\uCC0C"
+    grade: 0
+    aux: 
+    minQi: 1
+    maxQi: 3
+    v1: 0.04
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: move_speed
+    sideValue: 0.1
+    effectText: "\uBC1B\uB294 \uD53C\uD574 -4%"
+    sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+    slot: 7
+    otherworld: 1
+  - id: rune_earring
+    keyword: 2
+    name: "\uB8EC \uADC0\uAC78\uC774"
+    grade: 1
+    aux: 
+    minQi: 2
+    maxQi: 3
+    v1: 0.05
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.1
+    effectText: "\uBAA8\uB4E0 \uD53C\uD574 +5%"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+    slot: 5
+    otherworld: 1
+  - id: elven_leggings
+    keyword: 5
+    name: "\uC5D8\uD504 \uAC00\uC8FD \uBC14\uC9C0"
+    grade: 1
+    aux: 
+    minQi: 3
+    maxQi: 4
+    v1: 0.06
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.1
+    effectText: "\uACF5\uACA9 \uC18D\uB3C4 +6%"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
+    slot: 3
+    otherworld: 1
+  - id: wizard_hat
+    keyword: 1
+    name: "\uB9C8\uBC95\uC0AC \uACE0\uAE54\uBAA8\uC790"
+    grade: 1
+    aux: 
+    minQi: 2
+    maxQi: 4
+    v1: 0.04
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: move_speed
+    sideValue: 0.1
+    effectText: "\uBAA8\uB4E0 \uD53C\uD574 +4%"
+    sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+    slot: 1
+    otherworld: 1
+  - id: dwarf_belt
+    keyword: 4
+    name: "\uB4DC\uC6CC\uD504 \uAC15\uCCA0 \uD5C8\uB9AC\uB760"
+    grade: 1
+    aux: 
+    minQi: 2
+    maxQi: 3
+    v1: 0.05
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: move_speed
+    sideValue: 0.1
+    effectText: "\uBC29\uC5B4\uB825 +5%"
+    sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
+    slot: 8
+    otherworld: 1
+  - id: mithril_chainmail
+    keyword: 4
+    name: "\uBBF8\uC2A4\uB9B4 \uC0AC\uC2AC \uAC11\uC637"
+    grade: 2
+    aux: 
+    minQi: 3
+    maxQi: 5
+    v1: 0.08
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: move_speed
+    sideValue: 0.15
+    effectText: "\uBC1B\uB294 \uD53C\uD574 -8%"
+    sideText: "\uC774\uB3D9\uC18D\uB3C4 -15%"
+    slot: 2
+    otherworld: 1
+  - id: dragon_tooth
+    keyword: 0
+    name: "\uC6A9 \uC774\uBE68 \uBAA9\uAC78\uC774"
+    grade: 2
+    aux: 
+    minQi: 3
+    maxQi: 5
+    v1: 0.08
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.15
+    effectText: "\uBAA8\uB4E0 \uD53C\uD574 +8%"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +15%"
+    slot: 6
+    otherworld: 1
+  - id: spellblade_tassel
+    keyword: 3
+    name: "\uB9C8\uAC80 \uC220"
+    grade: 2
+    aux: 
+    minQi: 2
+    maxQi: 4
+    v1: 0.08
+    v2: 0
+    v3: 0
+    v4: 0
+    v1Scales: 1
+    v2Scales: 0
+    v3Scales: 0
+    v4Scales: 0
+    side: taken
+    sideValue: 0.15
+    effectText: "\uACF5\uACA9 \uC18D\uB3C4 +8%"
+    sideText: "\uBC1B\uB294 \uD53C\uD574 +15%"
+    slot: 9
+    otherworld: 1

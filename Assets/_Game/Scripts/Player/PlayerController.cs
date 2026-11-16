@@ -149,7 +149,7 @@ namespace AThousandDawns.Player
             Hurt?.Invoke(damage);
             if (IsDead && visual != null) visual.localScale = new Vector3(1.2f, 0.25f, 1.2f);
         }
-        public float SkillCooldown => _skillCooldown * (1f + Side("skill_cooldown")) * (1f - RunSkillCooldownCut); // 기물 부작용: 초식 쿨타임 +% · 면벽수련 기 5
+        public float SkillCooldown => _skillCooldown * (1f + Side("skill_cooldown")) * (1f - RunSkillCooldownCut); // 기물 부작용: 초식 쿨타임 +% · 영혼수련 기 5
         public float SkillCooldownLeft => Mathf.Max(0f, _skillCooldownLeft);
 
         public event Action<int> Hurt;
@@ -286,7 +286,7 @@ namespace AThousandDawns.Player
             TickKeywordTimers(dt);
             TickItemTimers(dt);
             TickMartialItemTimers(dt);
-            TickEcho(dt); // 면벽수련 쾌 20: 잔상
+            TickEcho(dt); // 영혼수련 쾌 20: 잔상
             TickDaggers(dt); // 비도: 날아가기 · 꽂힘 · 사라짐
             TickShadowEchoes(dt); // 혈영참 잔상
             TickBurn(dt);
@@ -352,7 +352,7 @@ namespace AThousandDawns.Player
                 }
             }
 
-            _combo.Tick(dt * AttackSpeedMultiplier * MeditationComboSpeed, _input.AttackHeld); // #강기 2단계: 평타 속도 +15% · 면벽수련 쾌 5·10
+            _combo.Tick(dt * AttackSpeedMultiplier * MeditationComboSpeed, _input.AttackHeld); // #강기 2단계: 평타 속도 +15% · 영혼수련 쾌 5·10
             UpdateMovement(dt);
         }
 
@@ -742,7 +742,7 @@ namespace AThousandDawns.Player
             int count = HitSector(radius, angle, hit, finisher ? HitTag.Finisher : HitTag.Basic, width);
             Gauge = Mathf.Min(GaugeCap, Gauge + count * (finisher ? _gaugeFinisher : _gaugeBasic) * GaugeGainMultiplier);
             FireGanggiOnSwing(finisher, hit);
-            if (finisher && !extra) QueueEcho(radius, angle, hit); // 면벽수련 쾌 20
+            if (finisher && !extra) QueueEcho(radius, angle, hit); // 영혼수련 쾌 20
             AfterBasicSwing(count, hit);
             if (finisher) ForgeAfterFinisher(count); // 대장간 금강
         }

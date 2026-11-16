@@ -291,7 +291,7 @@ namespace AThousandDawns.EditorTools
             Box("Corridor_N", room, center + new Vector3(0f, 0.75f, hz + 2.75f), new Vector3(4f, 1.5f, 0.5f), wallMat);
         }
 
-        // ── 마을 (24×16): 객잔 마루(시작) · 매화나무(회귀록) · 뒷산 동굴(면벽수련) · 사당(유품록) · 마을 어귀(무기 거치대, 출발)
+        // ── 마을 (24×16): 객잔 마루(시작) · 매화나무(회귀록) · 뒷산 동굴(영혼수련) · 사당(유품록) · 마을 어귀(무기 거치대, 출발)
         static readonly Vector3 VillageCenter = new Vector3(360f, 0f, 0f);
         static readonly Vector2 VillageSize = new Vector2(24f, 16f);
         static readonly Vector3 VillageEntry = new Vector3(-7f, 0f, 0f);  // 객잔 마루

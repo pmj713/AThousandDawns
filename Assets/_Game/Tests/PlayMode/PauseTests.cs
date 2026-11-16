@@ -133,7 +133,8 @@ namespace AThousandDawns.Tests
             _run.ChoosePause(RoomRun.PauseItem.GiveUp);
             Assert.IsFalse(_run.IsPaused, "메뉴가 닫히고");
             Assert.IsTrue(player.IsDead, "그 자리에서 쓰러져요");
-            for (int i = 0; i < 600 && !_run.IsShowingResult; i++) yield return null;
+            float until = Time.realtimeSinceStartup + 5f; // 결과 화면은 쓰러지고 1.5초 뒤 (프레임 수가 아니라 시간으로 기다려요)
+            while (!_run.IsShowingResult && Time.realtimeSinceStartup < until) yield return null;
             Assert.IsTrue(_run.IsShowingResult, "평소처럼 결과 화면");
         }
     }

@@ -12,7 +12,7 @@ namespace AThousandDawns.Player
         PlayerLevel _level;
         float _levelMaxHealth;
         readonly int[] _xpByRank = new int[5];
-        float _xpCarry; // 면벽수련 맥: 수련치 +%의 소수점은 모아 뒀다가
+        float _xpCarry; // 영혼수련 맥: 수련치 +%의 소수점은 모아 뒀다가
 
         public PlayerLevel Level => _level;
 

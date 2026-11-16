@@ -16,6 +16,7 @@ namespace AThousandDawns.Prototype
     public sealed class MeridianScreen : MonoBehaviour
     {
         const float K = 1.4f; // 경맥도 화면 크기 배율 (기준 1920×1080에서). 글자 크기도 같이 키웠어요 (EnsureStyles).
+        const float BodyWidth = 700f * K, BodyHeight = 470f * K, SlotSize = 64f * K; // 장비 칸: 가운데 인체도 (정사각) + 좌우 칸 두 줄
         const float CellSize = 96f * K, Gap = 6f * K, BagWidth = 300f * K, KeywordWidth = 230f * K, DetailHeight = 128f * K, HeaderHeight = 64f * K;
 
         static readonly Color LackingColor = new Color(0.6f, 0.6f, 0.6f);
@@ -200,11 +201,12 @@ namespace AThousandDawns.Prototype
 
             AThousandDawns.Fx.InkMeridianArt.Backdrop(UiScale.Width, UiScale.Height); // 먹 번짐 + 경혈도 바탕 (뒤의 HUD 글자가 비치지 않게)
 
-            float boardW = board.Width * (CellSize + Gap) - Gap;
-            float boardH = board.Height * (CellSize + Gap) - Gap;
-            bool picking = Player.Level != null && Player.Level.Pending > 0 && board.Danjeons.Count > 0;
+            bool equip = board.EquipMode; // 장비 칸: 인체도 위 혈자리 칸 10개
+            float boardW = equip ? BodyWidth : board.Width * (CellSize + Gap) - Gap;
+            float boardH = equip ? BodyHeight : board.Height * (CellSize + Gap) - Gap;
+            bool picking = Player.Level != null && Player.Level.Pending > 0 && (equip || board.Danjeons.Count > 0);
             if (!picking) _acupoint = Acupoint.None;
-            bool hasParts = items.Parts.Count > 0;
+            bool hasParts = items.Parts.Count > 0 && !equip; // 장비 칸엔 부품이 없어요
             if (!hasParts) _placingPart = PartKind.None;
             float header = HeaderHeight + (picking ? AcupointRowHeight : 0f) + (hasParts ? AcupointRowHeight : 0f);
             float totalW = KeywordWidth + 24f * K + boardW + 24f * K + BagWidth; // 왼쪽 키워드 단계 · 가운데 판 · 오른쪽 주머니
@@ -220,6 +222,8 @@ namespace AThousandDawns.Prototype
             if (hasParts) DrawPartRow(items, new Rect(full, top + HeaderHeight + (picking ? AcupointRowHeight : 0f), totalW, AcupointRowHeight - 6f * K));
 
             float boardTop = top + header;
+            if (equip) DrawBody(items, new Rect(left, boardTop, boardW, boardH));
+            else
             for (int y = 0; y < board.Height; y++)
             for (int x = 0; x < board.Width; x++)
             {
@@ -243,15 +247,79 @@ namespace AThousandDawns.Prototype
 
         Rect _padRect; // 게임패드 커서 칸 (집은 기물이 그 위에 매달려요)
 
+        // 장비 칸: 인체도 위에 혈자리 칸 10개 (EquipSlots.Layout). 칸 아래에 부위 · 혈자리 이름, 잠긴 칸은 흐리게
+        void DrawBody(PlayerItems items, Rect area)
+        {
+            AThousandDawns.Fx.InkMeridianArt.Panel(area); // 먹 패널
+            if (_bodyChart == null) _bodyChart = Resources.Load<Texture2D>("HudArt/BodyChart"); // 인체 경혈도 (아트, 정사각)
+            var chart = new Rect(area.center.x - area.height * 0.5f, area.y, area.height, area.height);
+            if (_bodyChart != null) GUI.DrawTexture(chart, _bodyChart, ScaleMode.ScaleToFit);
+            var board = items.Board;
+            for (int i = 0; i < AThousandDawns.Items.EquipSlots.Count; i++)
+            {
+                var cell = new Vector2Int(i, 0);
+                var c = AThousandDawns.Items.EquipSlots.Layout[i];
+                var rect = new Rect(area.x + area.width * c.x - SlotSize * 0.5f, area.y + area.height * c.y - SlotSize * 0.5f, SlotSize, SlotSize);
+                bool open = board.IsUnlocked(cell);
+                // 칸에서 그림 위 혈자리까지 먹선, 혈자리에는 점 (끼워 둔 칸은 붉은 점)
+                var p = AThousandDawns.Items.EquipSlots.Points[i];
+                var point = new Vector2(chart.x + chart.width * p.x, chart.y + chart.height * p.y);
+                var from = new Vector2(c.x < 0.5f ? rect.xMax : rect.x, rect.center.y);
+                DrawLine(from, point, new Color(0.1f, 0.09f, 0.08f, open ? 0.6f : 0.25f), 2f);
+                bool worn = items.At(cell) != null;
+                Fill(new Rect(point.x - 5f, point.y - 5f, 10f, 10f), worn ? new Color(0.75f, 0.15f, 0.1f) : new Color(0.1f, 0.09f, 0.08f, open ? 0.8f : 0.3f));
+                if (open) DrawCell(items, cell, rect);
+                else
+                {
+                    Fill(rect, new Color(0.1f, 0.09f, 0.08f, 0.55f));
+                    Outline(rect, new Color(0.45f, 0.42f, 0.38f, 0.6f), 1f);
+                    GUI.Label(new Rect(rect.x, rect.center.y - 10f * K, rect.width, 20f * K), "<color=#8a8a8a>잠김</color>", _tag);
+                }
+                string name = AThousandDawns.Items.EquipSlots.Label(AThousandDawns.Items.EquipSlots.Kinds[i]);
+                GUI.Label(new Rect(rect.x - 30f * K, rect.yMax, rect.width + 60f * K, 18f * K),
+                    open ? $"{name} · {AThousandDawns.Items.EquipSlots.Acupoints[i]}" : $"<color=#8a8a8a>{name} (보스 격파로 열림)</color>", _tag);
+                if (PadActive && cell == PadCell) _padRect = rect;
+            }
+        }
+
+        Texture2D _bodyChart;
+
+        // 두 점 사이 가는 선 (IMGUI: 회전한 사각형)
+        static void DrawLine(Vector2 a, Vector2 b, Color color, float width)
+        {
+            Vector2 d = b - a;
+            float len = d.magnitude;
+            if (len < 1f) return;
+            var matrix = GUI.matrix;
+            var old = GUI.color;
+            GUIUtility.RotateAroundPivot(Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg, a);
+            GUI.color = color;
+            GUI.DrawTexture(new Rect(a.x, a.y - width * 0.5f, len, width), Texture2D.whiteTexture);
+            GUI.color = old;
+            GUI.matrix = matrix;
+        }
+
         void DrawHeader(PlayerItems items, Rect area)
         {
             var board = items.Board;
+            if (board.EquipMode)
+            {
+                GUI.Label(new Rect(area.x, area.y, area.width, 28f * K),
+                    $"장비 · 공력 {board.Power}   (E 닫기 · 끌어서 끼우기 · 오른쪽 클릭 주머니)", _small);
+                GUI.Label(new Rect(area.x, area.y + 26f * K, area.width - 220f * K, 30f * K),
+                    "칸의 기 = 혈자리 기본 기 + 공력 (+ 기혈). 기물은 제 부위에만 끼워요. <color=#c9a0ff>이계 기물</color>은 혈자리의 기를 뒤틀어 기 +2 (세지만 주화입마에 쉽게).", _small);
+                var minusE = new Rect(area.xMax - 210f * K, area.y + 26f * K, 100f * K, 26f * K);
+                var plusE = new Rect(area.xMax - 104f * K, area.y + 26f * K, 100f * K, 26f * K);
+                if (GUI.Button(minusE, "공력 − (시험)", _button)) Player.Gongryeok -= 1;
+                if (GUI.Button(plusE, "공력 + (시험)", _button)) Player.Gongryeok += 1;
+                return;
+            }
             GUI.Label(new Rect(area.x, area.y, area.width, 28f * K),
                 $"경맥도 · 공력 {board.Power} · 단전 {board.Danjeons.Count}/{board.MaxDanjeons}   (E 닫기 · 끌어서 옮기기 · 오른쪽 클릭 주머니 · Shift+클릭 단전 시험)", _small);
             string guide = board.Danjeons.Count == 0
                 ? "<color=#ffd27a><b>하단전을 열 칸을 고르세요.</b> 한 번 고르면 바뀌지 않아요. 칸의 기 = 단전마다 (공력 − 거리)</color>"
                 : board.Danjeons.Count < items.StartDanjeons
-                ? "<color=#ffd27a><b>두 번째 단전을 열 칸을 고르세요</b> (면벽수련 맥 20). 한 번 고르면 바뀌지 않아요.</color>"
+                ? "<color=#ffd27a><b>두 번째 단전을 열 칸을 고르세요</b> (영혼수련 맥 20). 한 번 고르면 바뀌지 않아요.</color>"
                 : items.DanjeonMoves > 0
                 ? (_moveFrom.HasValue ? $"<color=#ffd27a><b>이혈</b> · 단전을 옮길 새 칸을 고르세요 (같은 칸을 누르면 취소)</color>" : $"<color=#ffd27a><b>이혈 {items.DanjeonMoves}번</b> · 옮길 단전을 누르세요</color>")
                 : "칸의 기 = 단전마다 (공력 − 거리)의 합. 거리는 상하좌우로 센 칸 수예요.";
@@ -274,14 +342,17 @@ namespace AThousandDawns.Prototype
                 "통혈 · 지나는 기가 줄지 않음",
                 $"한혈 · 최대 기 +{Player.Items.Board.HanhyeolMaxQi}",
             };
+            bool equip = Player.Items.Board.EquipMode; // 장비 칸엔 기가 흐르는 길이 없어서 통혈은 빼요
+            int count = equip ? 2 : 3;
             float x = area.x + 260f * K;
-            float w = (area.xMax - x - 8f * K) / 3f;
-            for (int i = 0; i < 3; i++)
+            float w = (area.xMax - x - 8f * K) / count;
+            for (int i = 0; i < count; i++)
             {
-                var kind = (Acupoint)(i + 1);
+                int k = equip && i == 1 ? 2 : i; // 장비 칸: 기혈 · 한혈
+                var kind = (Acupoint)(k + 1);
                 var rect = new Rect(x + i * w, area.y + 4f * K, w - 6f * K, area.height - 8f * K);
                 bool chosen = _acupoint == kind;
-                if (GUI.Button(rect, (chosen ? "▶ " : "") + labels[i], _button)) _acupoint = chosen ? Acupoint.None : kind;
+                if (GUI.Button(rect, (chosen ? "▶ " : "") + labels[k], _button)) _acupoint = chosen ? Acupoint.None : kind;
                 if (chosen) Outline(rect, new Color(1f, 0.85f, 0.4f), 2f);
             }
         }
@@ -341,7 +412,7 @@ namespace AThousandDawns.Prototype
             if (hover || AThousandDawns.Core.GameSettings.Current.qiNumbers == AThousandDawns.Core.GameSettings.QiNumbers.Always) // 설정: 기 숫자
                 GUI.Label(new Rect(rect.x + 6f * K, rect.y + 4f * K, 50f * K, 18f * K), $"기 <b>{qi}</b>", _small);
             if (_confirmCell == cell) Outline(new Rect(rect.x + 2f * K, rect.y + 2f * K, rect.width - 4f * K, rect.height - 4f * K), new Color(1f, 0.55f, 0.45f), 3f); // 확인 대기
-            if (board.Danjeons.Count == 0 && InTutorial && cell == new Vector2Int(board.Width / 2, board.Height / 2)) // 입문: 가운데 칸 추천
+            if (!board.EquipMode && board.Danjeons.Count == 0 && InTutorial && cell == new Vector2Int(board.Width / 2, board.Height / 2)) // 입문: 가운데 칸 추천
             {
                 float pulse = 0.6f + 0.4f * Mathf.Sin(Time.unscaledTime * 4f);
                 Outline(new Rect(rect.x + 2f * K, rect.y + 2f * K, rect.width - 4f * K, rect.height - 4f * K), new Color(1f, 0.85f, 0.4f, pulse), 4f);
@@ -446,7 +517,7 @@ namespace AThousandDawns.Prototype
             }
             if (_hovered == null || !_hovered.OnBoard || !_hoveredCell.HasValue) return;
             var def = _hovered.Def;
-            string body = $"<b>{def.name}</b>  {Colored(def.keyword)} · {ItemDefinition.GradeLabel(def.grade)} · 기 {def.minQi}–{def.maxQi}\n" +
+            string body = $"<b>{def.name}</b>  {Colored(def.keyword)} · {ItemDefinition.GradeLabel(def.grade)}{SlotTag(def)} · 기 {def.minQi}–{def.maxQi}\n" +
                           $"<color=#ffd27a>지금 기 {_hovered.Qi} · {StateLabel(_hovered)}</color>\n{ScaledEffect(def, _hovered.Qi, _hovered.MaxQiBonus)}";
             DrawTooltipBox(new Vector2(mouse.x + 24f * K, mouse.y + 16f * K), body);
         }
@@ -509,7 +580,7 @@ namespace AThousandDawns.Prototype
                 if (item.OnBoard) continue;
                 var rect = new Rect(0f, row, content.width, 30f * K);
                 bool dragging = item == _dragged;
-                string label = $"{(dragging ? "<color=#9a9a9a>(옮기는 중)</color> " : "")}<b>{item.Def.name}</b>  {Colored(item.Def.keyword)} · {ItemDefinition.GradeLabel(item.Def.grade)} · 기 {item.Def.minQi}–{item.Def.maxQi}";
+                string label = $"{(dragging ? "<color=#9a9a9a>(옮기는 중)</color> " : "")}<b>{item.Def.name}</b>  {Colored(item.Def.keyword)} · {ItemDefinition.GradeLabel(item.Def.grade)}{SlotTag(item.Def)} · 기 {item.Def.minQi}–{item.Def.maxQi}";
                 if (rect.Contains(e.mousePosition))
                 {
                     _hovered = item;
@@ -534,7 +605,9 @@ namespace AThousandDawns.Prototype
         {
             var e = Event.current;
             if (_dragged == null || e.rawType != EventType.MouseUp) return;
-            if (_hoveredCell.HasValue) items.Place(_dragged, _hoveredCell.Value);
+            if (_hoveredCell.HasValue && !items.Fits(_hoveredCell.Value, _dragged.Def))
+                Notice(items.Board.IsUnlocked(_hoveredCell.Value) ? $"{AThousandDawns.Items.EquipSlots.Label(_dragged.Def.slot)} 기물이에요 · 이 칸에는 못 끼워요" : "잠긴 칸이에요 · 지역 보스를 쓰러뜨리면 열려요");
+            else if (_hoveredCell.HasValue) items.Place(_dragged, _hoveredCell.Value);
             else if (_bagRect.Contains(e.mousePosition) && !items.ToBag(_dragged)) Notice(items.HasBag ? "주머니가 가득해요" : "주머니가 없어요 · 회귀록에서 열어요");
             _dragged = null;
             if (e.type == EventType.MouseUp) e.Use();
@@ -602,7 +675,7 @@ namespace AThousandDawns.Prototype
                 def = _dragged.Def;
                 effect = ScaledEffect(def, qi, bonus); // 끌고 있는 칸의 기로 바로 다시 계산
             }
-            string text = $"<b>{def.name}</b>  {Colored(def.keyword)} · {ItemDefinition.GradeLabel(def.grade)}{aux} · 기 {def.minQi}–{def.maxQi}   <color=#ffd27a>{where}</color>\n" +
+            string text = $"<b>{def.name}</b>  {Colored(def.keyword)} · {ItemDefinition.GradeLabel(def.grade)}{SlotTag(def)}{aux} · 기 {def.minQi}–{def.maxQi}   <color=#ffd27a>{where}</color>\n" +
                           $"{effect}\n" + (shown.Purified && def == shown.Def ? "<color=#9ad0ff>정화됨 · 주화입마 부작용 없음 (참회실)</color>" : $"<color=#ff8a7a>주화입마 부작용: {def.sideText}</color>");
             GUI.Label(new Rect(area.x + 10f * K, area.y + 8f * K, area.width - 20f * K, area.height - 16f * K), text, _detail);
         }
@@ -624,7 +697,7 @@ namespace AThousandDawns.Prototype
         {
             if (_confirmCell.HasValue && _confirmCell != cell) _confirmCell = null; // 다른 칸을 누르면 확인 취소
             var board = items.Board;
-            if (shift && button == 0)
+            if (shift && button == 0 && !board.EquipMode)
             {
                 // 시험용: 단전 열기/닫기 (중단전·상단전 시험)
                 if (board.IsDanjeon(cell)) items.RemoveDanjeon(cell);
@@ -708,7 +781,8 @@ namespace AThousandDawns.Prototype
             int dx = AThousandDawns.Core.Pad.Left ? -1 : AThousandDawns.Core.Pad.Right ? 1 : 0;
             int dy = AThousandDawns.Core.Pad.Up ? -1 : AThousandDawns.Core.Pad.Down ? 1 : 0;
             if (dx != 0 || dy != 0)
-                PadCell = new Vector2Int(Mathf.Clamp(PadCell.x + dx, 0, board.Width - 1), Mathf.Clamp(PadCell.y + dy, 0, board.Height - 1));
+                PadCell = board.EquipMode ? new Vector2Int(Mathf.Clamp(PadCell.x + dx + dy, 0, board.Width - 1), 0) // 장비 칸: 위아래 · 좌우 모두 다음 칸
+                    : new Vector2Int(Mathf.Clamp(PadCell.x + dx, 0, board.Width - 1), Mathf.Clamp(PadCell.y + dy, 0, board.Height - 1));
 
             if (AThousandDawns.Core.Pad.Confirm)
             {
@@ -725,7 +799,7 @@ namespace AThousandDawns.Prototype
                 else { _dragged = bag[_padBagIndex++ % bag.Count]; Notice($"{_dragged.Def.name} · 놓을 칸에서 A"); }
                 return true;
             }
-            bool picking = Player.Level != null && Player.Level.Pending > 0 && board.Danjeons.Count > 0;
+            bool picking = Player.Level != null && Player.Level.Pending > 0 && (board.EquipMode || board.Danjeons.Count > 0);
             if (picking && (AThousandDawns.Core.Pad.LeftShoulder || AThousandDawns.Core.Pad.RightShoulder))
             {
                 int step = AThousandDawns.Core.Pad.LeftShoulder ? 2 : 1; // 기혈 → 통혈 → 한혈 → (없음)
@@ -797,6 +871,11 @@ namespace AThousandDawns.Prototype
             }
             return -1;
         }
+
+        // 장비 칸이면 부위 (+ 이계 기물 표시)
+        string SlotTag(ItemDefinition def) =>
+            Player == null || Player.Items == null || !Player.Items.Board.EquipMode || def == null ? ""
+            : $" · {AThousandDawns.Items.EquipSlots.Label(def.slot)}{(def.otherworld ? " · <color=#c9a0ff>이계</color>" : "")}";
 
         static string AcupointName(Acupoint point) => point == Acupoint.Gihyeol ? "기혈" : point == Acupoint.Tonghyeol ? "통혈" : "한혈";
 

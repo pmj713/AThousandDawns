@@ -4,7 +4,7 @@ using MArt = AThousandDawns.Core.Meditation.Art;
 
 namespace AThousandDawns.Prototype
 {
-    // 면벽수련을 판에 적용 (판을 시작할 때). 플레이어 몸에 붙는 것은 PlayerController.ApplyMeditation, 판 진행에 붙는 것은 여기.
+    // 영혼수련을 판에 적용 (판을 시작할 때). 플레이어 몸에 붙는 것은 PlayerController.ApplyMeditation, 판 진행에 붙는 것은 여기.
     // 쾌: 공격 속도 · 1·2타 빠르게 · 3타 뒤 틈 −50% · 3타 잔상    강: 최대 체력 · 강인함 +3 · 방을 비우면 체력 4% · 기사회생 40%
     // 맥: 수련치 · 시작 혈자리 · 시작 부품 고르기 · 단전 2개 (공력 −1)  오: 행운 · 기연 감지 −1 · 갈림길 +1 · 고수 보상 2가지
     // 은: 은자 · 시작 은자 +50 · 객잔 −15% · 객잔 이자 20%          기: 기세 충전 · 초식 쿨타임 −10% · 전투 시작 기세 30% · 기세 200%
@@ -38,8 +38,8 @@ namespace AThousandDawns.Prototype
 
             _roomHeal = On(MArt.Iron, 1) ? G("meditation.iron_room_heal", 0.04f) : 0f;
             if (On(MArt.Meridian, 0)) Player.Level.GrantPending();       // 시작 혈자리
-            _startPartPick = On(MArt.Meridian, 1) && _unlockedParts.Count > 0; // 1층에서 부품 고르기
-            if (On(MArt.Meridian, 2) && Player.Items != null)             // 단전 2개로 시작, 대신 공력 −1
+            _startPartPick = On(MArt.Meridian, 1) && _unlockedParts.Count > 0 && (Player.Items == null || !Player.Items.Board.EquipMode); // 1층에서 부품 고르기
+            if (On(MArt.Meridian, 2) && Player.Items != null && !Player.Items.Board.EquipMode)             // 단전 2개로 시작, 대신 공력 −1 (장비 칸엔 단전이 없어요)
             {
                 Player.Items.StartDanjeons = 2;
                 Player.Gongryeok -= Mathf.RoundToInt(G("meditation.meridian_power_cut", 1f));

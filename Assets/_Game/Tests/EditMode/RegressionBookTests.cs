@@ -32,7 +32,7 @@ namespace AThousandDawns.Tests
         {
             var meta = new MetaSave { memory = 1000 };
             StringAssert.StartsWith("먼저", RegressionBook.Blocker(meta, Node("bag_plus1")));
-            StringAssert.StartsWith("먼저", RegressionBook.Blocker(meta, Node("potion_kit")), "금창약 지참은 면벽수련 다음");
+            StringAssert.StartsWith("먼저", RegressionBook.Blocker(meta, Node("potion_kit")), "금창약 지참은 영혼수련 다음");
         }
 
         [Test]
@@ -40,7 +40,7 @@ namespace AThousandDawns.Tests
         {
             var meta = new MetaSave { memory = 1000 };
             Assert.IsNull(RegressionBook.Blocker(meta, Node("tongmaek")), "부품 통맥은 피울 수 있어요");
-            Assert.IsNull(RegressionBook.Blocker(meta, Node("meditation")), "면벽수련도 피울 수 있어요");
+            Assert.IsNull(RegressionBook.Blocker(meta, Node("meditation")), "영혼수련도 피울 수 있어요");
             Assert.AreEqual("첫 천마 격파 후", RegressionBook.Blocker(meta, Node("relic1")));
             meta.bloomed.AddRange(new[] { "tongmaek", "jeomhyeol", "hanok" });
             Assert.IsNull(RegressionBook.Blocker(meta, Node("forge")), "대장간도 피울 수 있어요");

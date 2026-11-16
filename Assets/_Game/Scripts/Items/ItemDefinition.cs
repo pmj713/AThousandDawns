@@ -21,6 +21,8 @@ namespace AThousandDawns.Items
         public string side;    // 주화입마 부작용 종류
         public float sideValue;
         public string effectText, sideText;
+        public EquipSlot slot;   // 장비 부위 (장비 칸 방식). None이면 어느 칸이든
+        public bool otherworld;  // 이계 기물 (차원 틈에서 흘러온 판타지 물건): 끼운 혈자리의 기를 뒤틀어 올려요
 
         public int MaxLevel => maxQi - minQi + 1;
         public bool IsMado => aux == "마도";
