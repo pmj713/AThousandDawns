@@ -51,6 +51,8 @@ FWD = Vector((0, -1, 0))   # 몸 앞
 def make(name, bone, build):
     bm = bmesh.new()
     build(bm)
+    if "_Red_" in name:   # 깃발·목도리 같은 한 겹 천은 두께를 줘요 (한 겹이면 뒷면에서 윤곽선만 보여 새까맣게 나왔어요)
+        bmesh.ops.solidify(bm, geom=bm.faces[:], thickness=0.015)
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
     me = bpy.data.meshes.new(name); bm.to_mesh(me); bm.free()
     o = bpy.data.objects.new(name, me); bpy.context.scene.collection.objects.link(o)

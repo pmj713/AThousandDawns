@@ -107,6 +107,20 @@ namespace AThousandDawns.EditorTools
             return m;
         }
 
+        // 몸 텍스처 보정 (채색 점검): 천마총 적들은 VARCO 텍스처가 아주 어두워 위에서 보면 검은 덩어리라 밝히고 (1보다 크면 밝아져요),
+        //   청죽객은 흰 도포가 색이 없어 대나무빛 옅은 초록을 입혀요. 망령·수귀는 일부러 하얀 귀신이라 그대로
+        static readonly Dictionary<string, Color> BodyColor = new Dictionary<string, Color>
+        {
+            ["BloodArcher"] = new Color(1.7f, 1.6f, 1.6f, 1f),
+            ["BloodShadow"] = new Color(1.6f, 1.55f, 1.55f, 1f),
+            ["BloodShaman"] = new Color(1.7f, 1.6f, 1.6f, 1f),
+            ["Cultist"] = new Color(1.75f, 1.55f, 1.55f, 1f),
+            ["DemonGuard"] = new Color(1.7f, 1.62f, 1.62f, 1f),
+            ["HeavenlyDemon"] = new Color(1.4f, 1.36f, 1.36f, 1f),
+            ["Assassin"] = new Color(1.35f, 1.3f, 1.3f, 1f),
+            ["Qingzhu"] = new Color(0.8f, 0.98f, 0.84f, 1f),
+        };
+
         // 보스 공통 견제기·도약에 빌려 쓸 동작: 견제(던지기·쏘기) · 도약 웅크림 · 착지 내려찍기
         static readonly Dictionary<string, (string volley, string crouch, string land)> BossKitClips = new Dictionary<string, (string, string, string)>
         {
@@ -468,6 +482,7 @@ namespace AThousandDawns.EditorTools
             var body = GetInkMaterial($"Ink_{name}_Body", "#FFFFFF", 0.45f);
             body.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{folder}/{name}_Albedo.png"));
             body.SetColor("_BaseColor", Color.white);
+            if (BodyColor.TryGetValue(name, out var bodyColor)) body.SetColor("_BaseColor", bodyColor);   // 너무 어둡거나 색 없는 텍스처 보정
             bool fantasy = FantasyEnemies.Contains(name);
             if (fantasy) FantasyLook(body);
             EditorUtility.SetDirty(body);
