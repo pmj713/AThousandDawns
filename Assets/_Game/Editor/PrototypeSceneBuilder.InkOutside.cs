@@ -48,6 +48,7 @@ namespace AThousandDawns.EditorTools
             var renderer = ground.GetComponent<MeshRenderer>();
             renderer.sharedMaterial = mat;
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            DressOutsideRift();   // 차원 균열 먼저 (모든 지역, PrototypeSceneBuilder.InkRift.cs): 대나무·지역 풍경이 균열 둘레를 비워 둬요
             var scenery = DressOutsideScenery(stoneMat, woodMat, roofX);   // 먼저 세워요 (대나무 자리를 피하지 않게)
             var bamboo = DressOutsideBamboo(bambooMat);
             ground.AddComponent<AThousandDawns.Art.InkOutsideGround>().Setup(textures, new[] { bamboo.gameObject, scenery[0], scenery[1], scenery[2] });
@@ -114,6 +115,9 @@ namespace AThousandDawns.EditorTools
                     var p = new Vector3(x + R(-0.9f, 0.9f), 0f, z + R(-0.9f, 0.9f));
                     if (OnFloor(p, margin)) continue;        // 방 안·벽 바로 옆은 비워요
                     if (Blocked(p)) continue;
+                    bool clear = false;                      // 차원 균열 둘레는 비워 둬요 (대나무 잎에 묻히지 않게)
+                    foreach (var q in RiftClear) if ((q - p).sqrMagnitude < RiftClearRadius * RiftClearRadius) { clear = true; break; }
+                    if (clear) continue;
                     if (rng.NextDouble() < skip) continue;   // 듬성듬성
                     bool near = false;
                     foreach (var q in placed) if ((q - p).sqrMagnitude < Step * Step * 0.5f) { near = true; break; }
