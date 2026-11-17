@@ -8,15 +8,18 @@ namespace AThousandDawns.Enemies
     // 보스 공통: 경직·넉백 없음, 빙결 1초 + 패턴 취소, 체력 50%에서 2초 전환 (무적), 같은 패턴은 연속 2번까지.
     // 1페이즈
     //   유성추 휘두르기: 6칸 안이면 예고 0.9 · 앞 부채꼴 반경 6칸 140° ×1.0 + 넉백 2칸
-    //   유성추 내려찍기: 멀면 플레이어 자리에 예고 원 (반경 2칸, 1초) → ×1.2
+    //   닻 충격파: 멀면 예고 0.9초 뒤 제자리에 닻을 내리꽂아요 → 충격파 고리 3개가 0.6초 간격으로 퍼져 나가요
+    //             (초당 5칸, 두께 0.8칸, 10칸까지). 고리 띠 안에 있으면 고리마다 한 번 ×0.7 (대시로 뚫거나 고리 사이에 서요)
     //   사슬 당기기: 7칸 밖에 2초 넘게 있으면 예고 0.7 · 직선 10칸 (폭 1.2칸) ×0.6, 맞으면 철룡 2.5칸 앞까지 끌려오고 곧바로 유성추 휘두르기 (예고 절반)
+    //             (플레이어를 끌어당기는 패턴은 철룡만 있어요)
     //   수하 부르기: 15초마다 깃발수가 없으면 깃발수 하나 + 수적 졸개 둘
     // 2페이즈 (배가 부서져요): 방 곳곳 물길 3곳 (반경 2.5칸, 안에 있으면 이동 −30%)
-    //   연속 내려찍기: 내려찍기가 0.5초 간격으로 플레이어를 따라 세 번
-    //   물기둥: 9초마다 0.4초 간격으로 플레이어 둘레에 물기둥 5개 (예고 0.8초, 반경 1.3칸) ×0.7
+    //   닻 충격파: 고리 4개
+    //   물기둥 줄: 9초마다 철룡에서 플레이어 쪽으로 곧은 줄 위에 물기둥 7개 (반경 1.1칸, 1.5칸 간격).
+    //             예고 0.8초 뒤 가까운 쪽부터 0.18초 간격으로 차례로 솟아요 ×0.7
     public sealed class IronDragonBrain : EnemyBrain, IMasterBrain
     {
-        enum Pattern { None, Swing, Slam, Hook, Summon, Geyser }
+        enum Pattern { None, Swing, Ring, Hook, Summon, Geyser }
 
         struct Mark
         {
@@ -25,28 +28,42 @@ namespace AThousandDawns.Enemies
             public Telegraph Marker;
         }
 
+        // 닻 충격파 고리: 닻을 내리꽂은 자리에서 바깥으로 퍼져요
+        struct ShockRing
+        {
+            public Vector3 At;
+            public float Radius;
+            public bool Hit; // 고리마다 한 번만
+            public LineRenderer Line;
+        }
+
         Pattern _pattern, _lastPattern;
         int _repeat, _maxRepeat;
         float _decisionPause, _transitionTime, _phase2Ratio;
         float _swingWindup, _swingRadius, _swingAngle, _swingRatio, _swingKnockback;
-        float _slamWindup, _slamRadius, _slamRatio, _slamGap;
-        int _slamHits, _slamFollow;
-        float _slamFollowTimer;
+        float _ringWindup, _ringSpeed, _ringWidth, _ringMax, _ringGap, _ringRatio;
+        int _ringCount, _ringCountP2, _ringsDone;
+        Vector3 _ringCenter;
         float _hookFar, _hookDelay, _hookWindup, _hookRange, _hookWidth, _hookRatio, _hookStop, _farTimer;
         bool _hooked;
         float _summonInterval, _summonTimer;
-        float _geyserInterval, _geyserTimer, _geyserWindup, _geyserFall, _geyserRadius, _geyserRatio, _geyserGap;
-        int _geyserCount, _geysersDone;
+        float _geyserInterval, _geyserTimer, _geyserWindup, _geyserFall, _geyserRadius, _geyserRatio, _geyserStep, _geyserSpacing;
+        int _geyserCount;
         float _waterRadius, _waterSlow;
         int _waterCount;
         float _decisionTimer, _transitionTimer, _activeTimer;
         Vector3 _zoneCenter;
         Vector2 _zoneSize = new Vector2(24f, 18f);
         readonly List<Mark> _marks = new List<Mark>();
+        readonly List<ShockRing> _rings = new List<ShockRing>();
         readonly List<GameObject> _water = new List<GameObject>();
+        static readonly Vector3[] RingPoints = new Vector3[40];
 
         // 이펙트 신호 (아트: Scripts/Art/InkIronDragonFx). 판정과 상관없이 그림만 그려요.
-        public enum FxKind { Slam, Geyser, Hook, Swing, Transition }
+        // Slam은 유성추 내려찍기가 없어져 더는 보내지 않아요 (아트 코드가 쓰고 있어 값만 남겨 둬요).
+        // Geyser: 물기둥 줄의 물기둥 하나마다 (At 자리, Radius 반경, Time 솟을 때까지)
+        // Ring: 충격파 고리 하나가 퍼지기 시작할 때 (At 닻 자리, Radius 최대 반경, Length 두께, Time 최대 반경까지 걸리는 시간)
+        public enum FxKind { Slam, Geyser, Hook, Swing, Transition, Ring }
         public struct FxCue { public FxKind Kind; public Vector3 At, Dir; public float Radius, Time, Length, Angle; public bool Hooked; }
         public static event System.Action<IronDragonBrain, FxCue> Cue;
         void Fx(FxCue cue) => Cue?.Invoke(this, cue);
@@ -59,18 +76,20 @@ namespace AThousandDawns.Enemies
         public override EnemyRank Rank => EnemyRank.Boss;
         protected override bool FreezeBlocked => IsTransitioning;
         protected override float DeathDelay => 1.5f;
-        protected override float ActiveTime => _pattern == Pattern.Geyser ? (_geyserCount - 1) * _geyserGap + 0.05f : 0.1f;
+        protected override float ActiveTime => _pattern == Pattern.Ring ? (RingCount - 1) * _ringGap + 0.05f : 0.1f;
 
         public override string AttackName => _pattern switch
         {
-            Pattern.Swing => "유성추 휘두르기", Pattern.Slam => "유성추 내려찍기", Pattern.Hook => "사슬 당기기",
-            Pattern.Summon => "수하 부르기", Pattern.Geyser => "물기둥", _ => null,
+            Pattern.Swing => "유성추 휘두르기", Pattern.Ring => "닻 충격파", Pattern.Hook => "사슬 당기기",
+            Pattern.Summon => "수하 부르기", Pattern.Geyser => "물기둥 줄", _ => null,
         };
 
         public int Phase { get; private set; } = 1;
         public bool IsTransitioning => _transitionTimer > 0f;
         public bool HookedPlayer => _hooked;
         public int WaterCount => _water.Count;
+        public int ActiveRings => _rings.Count;
+        int RingCount => Phase == 2 ? _ringCountP2 : _ringCount;
 
         public void SetZone(Vector3 center, Vector2 size)
         {
@@ -92,11 +111,14 @@ namespace AThousandDawns.Enemies
             _swingAngle = Tuning("swing_angle", 140f);
             _swingRatio = Tuning("swing_ratio", 1f);
             _swingKnockback = Tuning("swing_knockback", 2f);
-            _slamWindup = Tuning("slam_windup", 1f);
-            _slamRadius = Tuning("slam_radius", 2f);
-            _slamRatio = Tuning("slam_ratio", 1.2f);
-            _slamGap = Tuning("p2_slam_gap", 0.5f);
-            _slamHits = Mathf.Max(1, Mathf.RoundToInt(Tuning("p2_slam_hits", 3f)));
+            _ringWindup = Tuning("ring_windup", 0.9f);
+            _ringSpeed = Mathf.Max(0.1f, Tuning("ring_speed", 5f));
+            _ringWidth = Tuning("ring_width", 0.8f);
+            _ringMax = Tuning("ring_max", 10f);
+            _ringGap = Tuning("ring_gap", 0.6f);
+            _ringRatio = Tuning("ring_ratio", 0.7f);
+            _ringCount = Mathf.Max(1, Mathf.RoundToInt(Tuning("ring_count", 3f)));
+            _ringCountP2 = Mathf.Max(1, Mathf.RoundToInt(Tuning("p2_ring_count", 4f)));
             _hookFar = Tuning("hook_far", 7f);
             _hookDelay = Tuning("hook_delay", 2f);
             _hookWindup = Tuning("hook_windup", 0.7f);
@@ -108,10 +130,11 @@ namespace AThousandDawns.Enemies
             _geyserInterval = Tuning("p2_geyser_interval", 9f);
             _geyserWindup = Tuning("p2_geyser_windup", 0.6f);
             _geyserFall = Tuning("p2_geyser_fall", 0.8f);
-            _geyserRadius = Tuning("p2_geyser_radius", 1.3f);
             _geyserRatio = Tuning("p2_geyser_ratio", 0.7f);
-            _geyserGap = Tuning("p2_geyser_gap", 0.4f);
-            _geyserCount = Mathf.Max(1, Mathf.RoundToInt(Tuning("p2_geyser_count", 5f)));
+            _geyserCount = Mathf.Max(1, Mathf.RoundToInt(Tuning("geyser_count", 7f)));
+            _geyserRadius = Tuning("geyser_radius", 1.1f);
+            _geyserStep = Tuning("geyser_step", 0.18f);
+            _geyserSpacing = Tuning("geyser_spacing", 1.5f);
             _waterCount = Mathf.RoundToInt(Tuning("p2_water_count", 3f));
             _waterRadius = Tuning("p2_water_radius", 2.5f);
             _waterSlow = Tuning("p2_water_slow", 0.3f);
@@ -131,8 +154,8 @@ namespace AThousandDawns.Enemies
                 _transitionTimer -= dt;
                 if (_transitionTimer <= 0f) EnterPhase2();
             }
-            TickSlamFollow(dt);
             TickMarks(dt);
+            TickRings(dt);
             TickWater();
         }
 
@@ -147,9 +170,9 @@ namespace AThousandDawns.Enemies
             else if (_summonTimer <= 0f && Director.Count(EnemyKind.FlagBearer) == 0) next = Pattern.Summon;
             else if (Phase == 2 && _geyserTimer <= 0f) next = Pattern.Geyser;
             else if (distance <= _swingRadius * 0.85f) next = Pattern.Swing;
-            else next = Pattern.Slam;
-            if (next == _lastPattern && _repeat >= _maxRepeat && !_hooked && (next == Pattern.Swing || next == Pattern.Slam))
-                next = next == Pattern.Swing ? Pattern.Slam : Pattern.Swing;
+            else next = Pattern.Ring;
+            if (next == _lastPattern && _repeat >= _maxRepeat && !_hooked && (next == Pattern.Swing || next == Pattern.Ring))
+                next = next == Pattern.Swing ? Pattern.Ring : Pattern.Swing;
             _repeat = next == _lastPattern ? _repeat + 1 : 1;
             _lastPattern = next;
             _pattern = next;
@@ -160,7 +183,7 @@ namespace AThousandDawns.Enemies
                     WindupTime = _hooked ? _swingWindup * 0.5f : _swingWindup; // 끌려오면 예고가 짧아요
                     _hooked = false;
                     break;
-                case Pattern.Slam: WindupTime = _slamWindup; break;
+                case Pattern.Ring: WindupTime = _ringWindup; break;
                 case Pattern.Hook:
                     WindupTime = _hookWindup;
                     RecoveryTime = 0.3f;
@@ -187,6 +210,7 @@ namespace AThousandDawns.Enemies
             if (to.magnitude > _swingRadius * 0.6f) Move(to.normalized * MoveSpeed, dt);
         }
 
+        // 닻 충격파 · 물기둥 줄은 예고 동안 제자리에 서 있어요
         protected override void TickWindup(float dt, bool tracking)
         {
             if (_pattern == Pattern.Swing && tracking) FaceToward(ToPlayer());
@@ -199,26 +223,15 @@ namespace AThousandDawns.Enemies
         {
             Pattern.Swing => TelegraphShapes.Lunge(_swingRadius, _swingAngle, 0f),
             Pattern.Hook => TelegraphShapes.Rect(_hookWidth, _hookRange),
-            _ => TelegraphShapes.Circle(BodyRadius + 0.3f), // 몸 둘레에 기운이 모여요 (실제 판정은 바닥 예고 원)
+            _ => TelegraphShapes.Circle(BodyRadius + 0.3f), // 몸 둘레에 기운이 모여요 (실제 판정은 충격파 고리 · 바닥 예고 원)
         };
-
-        protected override void OnAttackStarted()
-        {
-            if (_pattern != Pattern.Slam) return;
-            AddMark(Player.transform.position, _slamWindup, _slamRadius, _slamRatio);
-            if (Phase == 2) // 연속 내려찍기: 플레이어를 따라 두 번 더
-            {
-                _slamFollow = _slamHits - 1;
-                _slamFollowTimer = _slamGap;
-            }
-        }
 
         // ── 판정
 
         protected override void OnActiveStarted()
         {
             _activeTimer = 0f;
-            _geysersDone = 0;
+            _ringsDone = 0;
             switch (_pattern)
             {
                 case Pattern.Swing:
@@ -227,20 +240,24 @@ namespace AThousandDawns.Enemies
                     if (HitShapes.InSector(transform.position, AimDirection, _swingRadius, _swingAngle, Player.transform.position, PlayerRadius))
                         Player.TryReceiveHit(AttackPower * _swingRatio, transform.position, _swingKnockback, Body);
                     break;
+                case Pattern.Ring:
+                    _ringCenter = new Vector3(transform.position.x, 0f, transform.position.z); // 닻을 내리꽂은 자리
+                    LaunchRing();
+                    break;
                 case Pattern.Hook: Hook(); break;
                 case Pattern.Summon:
                     Director.SpawnSummon(EnemyKind.FlagBearer, Director.FindFreeSpot(transform.position + Facing * 2f, 1f));
                     for (int i = 0; i < 2; i++) Director.SpawnSummon(EnemyKind.Pirate, Director.FindFreeSpot(transform.position + Facing * 2.5f, 1.5f));
                     break;
-                case Pattern.Geyser: Geyser(); break;
+                case Pattern.Geyser: GeyserLine(); break;
             }
         }
 
         protected override void TickActive(float dt)
         {
             _activeTimer += dt;
-            if (_pattern == Pattern.Geyser)
-                while (_geysersDone < _geyserCount && _activeTimer >= _geysersDone * _geyserGap) Geyser();
+            if (_pattern == Pattern.Ring)
+                while (_ringsDone < RingCount && _activeTimer >= _ringsDone * _ringGap) LaunchRing();
         }
 
         // 사슬 당기기: 앞 직선 위에 있으면 맞고 철룡 앞으로 끌려와요
@@ -257,24 +274,74 @@ namespace AThousandDawns.Enemies
             Fx(new FxCue { Kind = FxKind.Hook, At = transform.position, Dir = AimDirection, Length = _hookRange, Hooked = true });
         }
 
-        void Geyser()
+        // ── 닻 충격파: 고리가 닻 자리에서 바깥으로 퍼지고, 띠 안에 있으면 고리마다 한 번 맞아요
+
+        void LaunchRing()
         {
-            _geysersDone++;
-            Vector2 r = Random.insideUnitCircle * 2.5f;
-            AddMark(Player.transform.position + new Vector3(r.x, 0f, r.y), _geyserFall, _geyserRadius, _geyserRatio);
+            _ringsDone++;
+            var go = new GameObject("충격파");
+            go.transform.position = _ringCenter + new Vector3(0f, 0.05f, 0f);
+            var line = go.AddComponent<LineRenderer>();
+            line.useWorldSpace = false;
+            line.loop = true;
+            line.positionCount = RingPoints.Length;
+            line.widthMultiplier = _ringWidth;
+            line.sharedMaterial = Director.Visuals.telegraphFill;
+            line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            line.receiveShadows = false;
+            _rings.Add(new ShockRing { At = _ringCenter, Radius = 0f, Line = line });
+            SetRingRadius(line, 0f);
+            Director.SpawnBurst(_ringCenter, _ringWidth, AThousandDawns.Combat.BurstKind.Water);
+            Fx(new FxCue { Kind = FxKind.Ring, At = _ringCenter, Radius = _ringMax, Length = _ringWidth, Time = _ringMax / _ringSpeed });
         }
 
-        void TickSlamFollow(float dt)
+        void TickRings(float dt)
         {
-            if (_slamFollow <= 0) return;
-            _slamFollowTimer -= dt;
-            if (_slamFollowTimer > 0f) return;
-            _slamFollow--;
-            _slamFollowTimer = _slamGap;
-            AddMark(Player.transform.position, _slamWindup, _slamRadius, _slamRatio);
+            for (int i = _rings.Count - 1; i >= 0; i--)
+            {
+                var r = _rings[i];
+                r.Radius += _ringSpeed * dt;
+                if (r.Radius > _ringMax)
+                {
+                    if (r.Line != null) Destroy(r.Line.gameObject);
+                    _rings.RemoveAt(i);
+                    continue;
+                }
+                if (r.Line != null) SetRingRadius(r.Line, r.Radius);
+                if (!r.Hit && Player != null)
+                {
+                    Vector3 d = Player.transform.position - r.At;
+                    d.y = 0f;
+                    if (Mathf.Abs(d.magnitude - r.Radius) <= _ringWidth * 0.5f + PlayerRadius && Player.TryReceiveHit(AttackPower * _ringRatio, r.At, -1f, Body))
+                        r.Hit = true; // 대시 무적 중이면 안 맞고 지나가요
+                }
+                _rings[i] = r;
+            }
         }
 
-        // ── 바닥 예고 원 (내려찍기 · 물기둥): 시간이 다 되면 그 자리에 떨어져요
+        static void SetRingRadius(LineRenderer line, float radius)
+        {
+            for (int i = 0; i < RingPoints.Length; i++)
+            {
+                float a = i * Mathf.PI * 2f / RingPoints.Length;
+                RingPoints[i] = new Vector3(Mathf.Cos(a) * radius, 0f, Mathf.Sin(a) * radius);
+            }
+            line.SetPositions(RingPoints);
+        }
+
+        // ── 물기둥 줄 (2페이즈): 철룡에서 플레이어 쪽으로 곧은 줄, 가까운 쪽부터 차례로 솟아요
+
+        void GeyserLine()
+        {
+            Vector3 dir = ToPlayer();
+            dir.y = 0f;
+            dir = dir.sqrMagnitude > 1e-4f ? dir.normalized : AimDirection;
+            Vector3 origin = new Vector3(transform.position.x, 0f, transform.position.z);
+            for (int i = 0; i < _geyserCount; i++)
+                AddMark(origin + dir * (_geyserSpacing * (i + 1)), _geyserFall + i * _geyserStep, _geyserRadius, _geyserRatio);
+        }
+
+        // ── 바닥 예고 원 (물기둥): 시간이 다 되면 그 자리에서 솟아요
 
         void AddMark(Vector3 at, float fall, float radius, float ratio)
         {
@@ -284,7 +351,7 @@ namespace AThousandDawns.Enemies
             marker.SetPose(at, Vector3.forward);
             marker.SetProgress(0f);
             _marks.Add(new Mark { At = at, Timer = fall, Total = fall, Radius = radius, Ratio = ratio, Marker = marker });
-            Fx(new FxCue { Kind = _pattern == Pattern.Geyser ? FxKind.Geyser : FxKind.Slam, At = at, Radius = radius, Time = fall });
+            Fx(new FxCue { Kind = FxKind.Geyser, At = at, Radius = radius, Time = fall });
         }
 
         void TickMarks(float dt)
@@ -361,7 +428,6 @@ namespace AThousandDawns.Enemies
         protected override void OnFreezeStarted(bool cancelledAttack)
         {
             _hooked = false;
-            _slamFollow = 0;
             _pattern = Pattern.None;
             _decisionTimer = _decisionPause;
         }
@@ -397,6 +463,8 @@ namespace AThousandDawns.Enemies
         {
             foreach (var m in _marks) if (m.Marker != null) Destroy(m.Marker.gameObject);
             _marks.Clear();
+            foreach (var r in _rings) if (r.Line != null) Destroy(r.Line.gameObject);
+            _rings.Clear();
             foreach (var w in _water) if (w != null) Destroy(w);
             _water.Clear();
         }

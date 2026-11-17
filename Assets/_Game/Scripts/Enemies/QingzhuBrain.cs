@@ -7,7 +7,7 @@ namespace AThousandDawns.Enemies
 {
     // 청죽객 (죽림 고수, 몬스터 탭 60·103~106·115행): 체력 1100, 공격 18, 이동 5, 3~4칸 거리를 유지.
     // 고수 공통: 경직·넉백 없음, 빙결 1초 + 패턴 취소 (10초 면역), 체력 50%에서 1.5초 전환 (무적), 같은 패턴은 연속 2번까지.
-    // 쾌검 3연격: 가까울 때. 예고 0.5, 앞 부채꼴 2칸 90° × 3번 (0.3초 간격, 2페이즈 0.25), 한 번에 0.8칸 전진, ×0.6, 빈틈 0.8
+    // 쾌검 3연격: 가까울 때. 예고 0.5, 앞 직선 찌르기 (몸 앞에서 2.6칸, 폭 0.9칸) × 3번 (0.3초 간격, 2페이즈 0.25), 한 번에 0.8칸 전진, ×0.6, 빈틈 0.8
     // 죽림섬: 8초마다 (2페이즈 6초). 예고 0.6, 플레이어를 가로지르는 직선 4칸 3개 (2페이즈 4개) → 0.25초 간격 순간이동 베기, ×0.8, 빈틈 1.2
     // 대나무 베기: 10초마다. 예고 1.0, 직선 5칸 폭 1칸, ×1.0. 쓰러진 대나무는 6초 동안 벽 (투사체도 막음). 2페이즈 2그루씩
     public sealed class QingzhuBrain : EnemyBrain, IMasterBrain
@@ -19,7 +19,7 @@ namespace AThousandDawns.Enemies
         Pattern _pattern, _lastPattern;
         int _repeat, _maxRepeat, _strikes, _flashLines, _bambooLines;
         float _keepMin, _keepMax, _decisionPause, _transitionTime, _phase2Ratio;
-        float _comboWindup, _comboRecovery, _comboRatio, _comboRadius, _comboAngle, _comboGap, _comboLunge;
+        float _comboWindup, _comboRecovery, _comboRatio, _comboWidth, _comboLength, _comboGap, _comboLunge;
         float _flashWindup, _flashRecovery, _flashRatio, _flashLength, _flashWidth, _flashGap, _flashInterval;
         float _bambooWindup, _bambooRecovery, _bambooRatio, _bambooLength, _bambooWidth, _bambooInterval, _bambooLife, _bambooSpread;
         float _decisionTimer, _transitionTimer, _flashTimer, _bambooTimer, _activeTimer, _lungeLeft;
@@ -78,8 +78,8 @@ namespace AThousandDawns.Enemies
             _comboWindup = Tuning("combo_windup", 0.5f);
             _comboRecovery = Tuning("combo_recovery", 0.8f);
             _comboRatio = Tuning("combo_ratio", 0.6f);
-            _comboRadius = Tuning("combo_radius", 2f);
-            _comboAngle = Tuning("combo_angle", 90f);
+            _comboWidth = Tuning("combo_width", 0.9f);
+            _comboLength = Tuning("combo_length", 2.6f);
             _comboGap = Tuning("combo_gap", 0.3f);
             _comboLunge = Tuning("combo_lunge", 0.8f);
             _strikes = 3;
@@ -171,7 +171,7 @@ namespace AThousandDawns.Enemies
 
         protected override List<Vector2> TelegraphShape() => _pattern switch
         {
-            Pattern.Combo => TelegraphShapes.Lunge(_comboRadius, _comboAngle, _comboLunge),
+            Pattern.Combo => TelegraphShapes.Rect(_comboWidth, ComboReach), // 첫 찌르기 자리 (몸 가운데부터)
             _ => TelegraphShapes.Circle(0.01f), // 죽림섬·대나무는 직선 예고 (_extra)를 써요
         };
 
@@ -284,9 +284,14 @@ namespace AThousandDawns.Enemies
             _strikesDone++;
             _lungeLeft = _comboLunge;
             if (_strikesDone > 1) Telegraph.Hide();
-            if (SwingHit(transform.position, AimDirection, _comboRadius, _comboAngle))
+            // 앞 직선 찌르기 (부채꼴이 아니라 Swung 대신 Thrust 신호)
+            Thrusted(ComboReach, _comboWidth);
+            if (HitShapes.InRect(transform.position, AimDirection, ComboReach, _comboWidth, Player.transform.position, PlayerRadius))
                 HitPlayer(_comboRatio); // 피격 무적 0.6초라 3번 다 맞지는 않아요
         }
+
+        // 찌르기 길이: 몸 앞에서 combo_length칸 (판정·예고는 몸 가운데부터 재요)
+        float ComboReach => BodyRadius + _comboLength;
 
         // 죽림섬 직선의 반쪽 길이: 플레이어에서 그 방향으로 벽·대나무 앞까지만 (벽 너머나 방 밖으로 순간이동하지 않게)
         float FlashReach(Vector3 from, Vector3 dir)

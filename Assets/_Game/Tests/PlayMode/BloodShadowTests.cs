@@ -117,6 +117,45 @@ namespace AThousandDawns.Tests
             Assert.Less(Vector3.Distance(master.transform.position, player.transform.position), 3f, "뒤로 순간이동해 붙어요");
         }
 
+        // 4~10칸이면 혈조: 플레이어 쪽 직선으로 피 가시가 차례로 솟아요 (자리마다 아트 신호, 한 줄에 한 번만 맞아요)
+        [UnityTest]
+        public IEnumerator 혈조는_직선으로_가시가_차례로_솟음()
+        {
+            yield return LoadCombat();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var master = (BloodShadowBrain)director.Spawn(EnemyKind.BloodShadow, player.transform.position + new Vector3(0f, 0f, 7f));
+
+            int starts = 0, spikes = 0;
+            void OnCue(BloodShadowBrain b, BloodShadowBrain.FxCue c)
+            {
+                if (b != master) return;
+                if (c.Kind == BloodShadowBrain.FxKind.SpikeStart) starts++;
+                if (c.Kind == BloodShadowBrain.FxKind.Spike) spikes++;
+            }
+            BloodShadowBrain.Cue += OnCue;
+            try
+            {
+                bool named = false;
+                yield return WaitUntil(() =>
+                {
+                    named |= master.AttackName == "혈조";
+                    return starts > 0;
+                }, 4f);
+                Assert.IsTrue(named, "먼 거리 대응은 혈조");
+                Assert.AreEqual(1, starts);
+                Assert.Greater(master.SpikesPending, 0, "가시가 한꺼번에가 아니라 차례로 솟아요");
+                float hp = player.Health;
+                yield return WaitUntil(() => master.SpikesPending == 0, 2f);
+                Assert.AreEqual(9, spikes, "9칸 / 1칸마다 한 자리");
+                Assert.Less(player.Health, hp, "직선 위에 서 있으면 맞아요");
+            }
+            finally
+            {
+                BloodShadowBrain.Cue -= OnCue;
+            }
+        }
+
         [UnityTest]
         public IEnumerator 혈영참은_돌진해_베고_잔상이_다시_벰()
         {

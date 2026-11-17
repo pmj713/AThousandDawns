@@ -13,7 +13,7 @@ using Object = UnityEngine.Object;
 
 namespace AThousandDawns.Tests
 {
-    // 장강 수채 고수 탁랑객: 물결 베기 · 탁류 보법 · 2페이즈 · 꺾으면 비급 탁랑참
+    // 장강 수채 고수 탁랑객: 물살 찌르기 · 물결 베기 · 탁류 보법 · 2페이즈 · 꺾으면 비급 탁랑참
     public class TakrangTests : InputTestFixture
     {
         string _savePath;
@@ -105,6 +105,39 @@ namespace AThousandDawns.Tests
             yield return WaitUntil(() => (flowed |= master.AttackName == "탁류 보법") && Vector3.Distance(master.transform.position, player.transform.position) < 3f, 8f);
             Assert.IsTrue(flowed, "멀리 있으면 탁류 보법");
             Assert.Less(Vector3.Distance(master.transform.position, player.transform.position), 3f, "옆으로 돌아 붙어요");
+        }
+
+        // 가까우면 물살 찌르기: 앞 직선으로 찌르고 맞으면 뒤로 2칸 밀려나요
+        [UnityTest]
+        public IEnumerator 가까우면_물살_찌르기로_밀어냄()
+        {
+            PrototypeArena.AutoSpawn = false;
+            yield return SceneManager.LoadSceneAsync("Prototype_Combat", LoadSceneMode.Single);
+            yield return null;
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var master = (TakrangBrain)director.Spawn(EnemyKind.Takrang, player.transform.position + new Vector3(0f, 0f, 1.8f));
+            var cc = player.GetComponent<CharacterController>();
+
+            // 1.8칸에 붙어 있다가 물살 찌르기 예고가 뜨면 그대로 서 있어요
+            yield return WaitUntil(() =>
+            {
+                if (master.AttackName == "물살 찌르기") return true;
+                Vector3 away = player.transform.position - master.transform.position;
+                away.y = 0f;
+                cc.enabled = false;
+                player.transform.position = master.transform.position + (away.sqrMagnitude > 1e-4f ? away.normalized : Vector3.back) * 1.8f;
+                cc.enabled = true;
+                return false;
+            }, 6f);
+            Assert.AreEqual("물살 찌르기", master.AttackName, "가까우면 물살 찌르기");
+
+            float hp = player.Health;
+            yield return WaitUntil(() => player.Health < hp, 2f);
+            Assert.Less(player.Health, hp, "앞 직선 찌르기에 맞아요");
+            float hitDistance = Vector3.Distance(master.transform.position, player.transform.position);
+            yield return new WaitForSeconds(0.6f);
+            Assert.Greater(Vector3.Distance(master.transform.position, player.transform.position), hitDistance + 1.2f, "뒤로 밀려나요");
         }
 
         [UnityTest]

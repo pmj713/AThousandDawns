@@ -9,11 +9,12 @@ namespace AThousandDawns.Enemies
     //   혈영 베기: 가까우면 (2.8칸) 예고 0.5 · 앞 부채꼴 반경 2.6칸 120° ×1.0 → 그 자리에 잔상이 남아 0.5초 뒤 같은 베기 ×0.6
     //   혈선: 3~6칸이면 예고 0.6 · 4칸 직선으로 돌진하며 베기 (폭 1.2칸) ×1.0 → 잔상이 0.5초 뒤 같은 길을 다시 베기 ×0.6
     //   혈영보: 5칸 밖에 1.5초 넘게 있으면 예고 0.4 · 잔상을 남기고 플레이어 뒤로 순간이동해 바로 베기 (원거리 대응)
+    //   혈조: 4~10칸이면 (7초마다) 예고 0.7 · 플레이어 쪽 9칸 직선 (폭 1칸)에 피 가시가 초당 12칸으로 차례로 솟아요 ×0.8 (원거리 대응)
     //   흡혈: 공격이 맞을 때마다 그 공격력의 30%만큼 체력 회복
     // 2페이즈: 잔상이 하나 더 (0.5초 · 1.0초 뒤 두 번), 예고 20% 빨라져요
     public class BloodShadowBrain : EnemyBrain, IMasterBrain // 다크 엘프 검사가 이어받아요 (판타지 고수)
     {
-        enum Pattern { None, Slash, Line, Blink }
+        enum Pattern { None, Slash, Line, Blink, Spike }
 
         struct Echo // 잔상: 잠시 뒤 같은 베기를 한 번 더
         {
@@ -35,8 +36,20 @@ namespace AThousandDawns.Enemies
         bool _lineHit;
         readonly List<Echo> _echoes = new List<Echo>();
 
+        struct Spike // 혈조: 직선 위 한 자리, 시간이 되면 솟아요
+        {
+            public Vector3 At;
+            public float Timer;
+        }
+
+        float _spikeMin, _spikeMax, _spikeInterval, _spikeWindup, _spikeLength, _spikeWidth, _spikeSpeed, _spikeRatio, _spikeStep;
+        float _spikeCooldown, _spikeSeg;
+        Vector3 _spikeDir;
+        bool _spikeHit;
+        readonly List<Spike> _spikes = new List<Spike>();
+
         // 이펙트 신호 (아트: Scripts/Art/InkBloodShadowFx). 판정과 상관없이 그림만 그려요.
-        public enum FxKind { EchoStart, EchoCut, Blink, Drain }
+        public enum FxKind { EchoStart, EchoCut, Blink, Drain, SpikeStart, Spike } // SpikeStart: From · To(끝) · Dir · Time(끝까지 솟는 시간) / Spike: From(솟는 자리) · Dir
         public struct FxCue { public FxKind Kind; public Vector3 From, To, Dir; public float Time; public bool Line; }
         public static event System.Action<BloodShadowBrain, FxCue> Cue;
         void Fx(FxCue cue) => Cue?.Invoke(this, cue);
@@ -54,15 +67,18 @@ namespace AThousandDawns.Enemies
         protected virtual string SlashName => "혈영 베기";
         protected virtual string LineName => "혈선";
         protected virtual string BlinkName => "혈영보";
+        protected virtual string SpikeName => "혈조";
+        protected virtual bool UsesSpikes => true; // 다크 엘프 검사는 끌 수 있어요
 
         public override string AttackName => _pattern switch
         {
-            Pattern.Slash => SlashName, Pattern.Line => LineName, Pattern.Blink => BlinkName, _ => null,
+            Pattern.Slash => SlashName, Pattern.Line => LineName, Pattern.Blink => BlinkName, Pattern.Spike => SpikeName, _ => null,
         };
 
         public int Phase { get; private set; } = 1;
         public bool IsTransitioning => _transitionTimer > 0f;
         public int EchoesPending => _echoes.Count;
+        public int SpikesPending => _spikes.Count; // 아직 안 솟은 혈조 가시 (테스트용)
 
         public void SetZone(Vector3 center, Vector2 size) { }
 
@@ -93,12 +109,22 @@ namespace AThousandDawns.Enemies
             _echoDelay = Tuning("echo_delay", 0.5f);
             _echoRatio = Tuning("echo_ratio", 0.6f);
             _lifesteal = Tuning("lifesteal", 0.3f);
+            _spikeMin = Tuning("spike_min", 4f);
+            _spikeMax = Tuning("spike_max", 10f);
+            _spikeInterval = Tuning("spike_interval", 7f);
+            _spikeWindup = Tuning("spike_windup", 0.7f);
+            _spikeLength = Tuning("spike_length", 9f);
+            _spikeWidth = Tuning("spike_width", 1f);
+            _spikeSpeed = Mathf.Max(0.1f, Tuning("spike_speed", 12f));
+            _spikeRatio = Tuning("spike_ratio", 0.8f);
+            _spikeStep = Mathf.Max(0.2f, Tuning("spike_step", 1f));
         }
 
         protected override void TickAlways(float dt)
         {
             if (!IsAwake) return;
             if (_decisionTimer > 0f) _decisionTimer -= dt;
+            if (_spikeCooldown > 0f) _spikeCooldown -= dt;
             _farTimer = ToPlayer().magnitude > _farDistance ? _farTimer + dt : 0f; // 멀리서만 싸우면 혈영보
             if (_transitionTimer > 0f)
             {
@@ -106,6 +132,7 @@ namespace AThousandDawns.Enemies
                 if (_transitionTimer <= 0f) EnterPhase2();
             }
             TickEchoes(dt);
+            TickSpikes(dt);
         }
 
         // ── 고르기
@@ -116,9 +143,10 @@ namespace AThousandDawns.Enemies
             Pattern next;
             if (_farTimer >= _blinkDelay) next = Pattern.Blink;
             else if (distance <= _closeDistance) next = Pattern.Slash;
+            else if (UsesSpikes && _spikeCooldown <= 0f && distance >= _spikeMin && distance <= _spikeMax) next = Pattern.Spike;
             else if (distance >= _lineMin && distance <= _lineMax) next = Pattern.Line;
             else return false; // 다가가요
-            if (next == _lastPattern && _repeat >= _maxRepeat && next != Pattern.Blink)
+            if (next == _lastPattern && _repeat >= _maxRepeat && next != Pattern.Blink && next != Pattern.Spike)
                 next = next == Pattern.Slash ? (distance >= _lineMin ? Pattern.Line : Pattern.Slash) : Pattern.Slash;
             _repeat = next == _lastPattern ? _repeat + 1 : 1;
             _lastPattern = next;
@@ -132,6 +160,11 @@ namespace AThousandDawns.Enemies
                 case Pattern.Blink:
                     WindupTime = _blinkWindup * speed;
                     _farTimer = 0f;
+                    break;
+                case Pattern.Spike:
+                    WindupTime = _spikeWindup * speed;
+                    _spikeCooldown = _spikeInterval;
+                    _farTimer = 0f; // 혈조로 대답했으니 혈영보는 잠시 뒤로
                     break;
             }
             return true;
@@ -149,6 +182,7 @@ namespace AThousandDawns.Enemies
         {
             Pattern.Slash => TelegraphShapes.Lunge(_slashRadius, _slashAngle, 0f),
             Pattern.Line => TelegraphShapes.Rect(_lineWidth, _lineLength),
+            Pattern.Spike => TelegraphShapes.Rect(_spikeWidth, _spikeLength), // 혈조: 솟을 직선
             _ => TelegraphShapes.Circle(BodyRadius + 0.4f), // 혈영보: 몸 둘레에 피 안개
         };
 
@@ -180,6 +214,9 @@ namespace AThousandDawns.Enemies
                     Director.SpawnBurst(transform.position, 0.8f, AThousandDawns.Combat.BurstKind.Echo);
                     Cut(Pattern.Slash, transform.position, AimDirection, _slashRatio);
                     Fx(new FxCue { Kind = FxKind.Blink, From = blinkFrom, To = transform.position, Dir = AimDirection });
+                    break;
+                case Pattern.Spike:
+                    StartSpikes(transform.position, AimDirection);
                     break;
             }
         }
@@ -262,6 +299,52 @@ namespace AThousandDawns.Enemies
             }
         }
 
+        // ── 혈조: 보스에서 플레이어 쪽으로 가시가 차례로 솟아요 (자리마다 한 번, 한 줄에 한 번만 맞아요)
+
+        void StartSpikes(Vector3 from, Vector3 dir)
+        {
+            dir.y = 0f;
+            dir = dir.sqrMagnitude > 1e-4f ? dir.normalized : Vector3.forward;
+            _spikeDir = dir;
+            _spikeHit = false;
+            _spikes.Clear();
+            int count = Mathf.Max(1, Mathf.CeilToInt(_spikeLength / _spikeStep));
+            _spikeSeg = _spikeLength / count;
+            for (int i = 0; i < count; i++)
+            {
+                float along = (i + 0.5f) * _spikeSeg;
+                _spikes.Add(new Spike { At = from + dir * along, Timer = along / _spikeSpeed });
+            }
+            Fx(new FxCue { Kind = FxKind.SpikeStart, From = from, To = from + dir * _spikeLength, Dir = dir, Time = _spikeLength / _spikeSpeed });
+        }
+
+        void TickSpikes(float dt)
+        {
+            for (int i = _spikes.Count - 1; i >= 0; i--)
+            {
+                var s = _spikes[i];
+                s.Timer -= dt;
+                if (s.Timer > 0f)
+                {
+                    _spikes[i] = s;
+                    continue;
+                }
+                _spikes.RemoveAt(i);
+                Fx(new FxCue { Kind = FxKind.Spike, From = s.At, Dir = _spikeDir });
+                if (!_spikeHit && OnSpike(s.At, Player.transform.position)) _spikeHit = Hit(_spikeRatio);
+            }
+        }
+
+        // 가시 한 자리: 직선을 따라 한 칸 길이, 폭 spike_width
+        bool OnSpike(Vector3 at, Vector3 p)
+        {
+            Vector3 rel = p - at;
+            rel.y = 0f;
+            float along = Mathf.Abs(Vector3.Dot(rel, _spikeDir));
+            float side = Mathf.Abs(Vector3.Dot(rel, new Vector3(_spikeDir.z, 0f, -_spikeDir.x)));
+            return along <= _spikeSeg * 0.5f + PlayerRadius && side <= _spikeWidth * 0.5f + PlayerRadius;
+        }
+
         protected override void OnAttackFinished() => _decisionTimer = _decisionPause;
 
         protected override void OnFreezeStarted(bool cancelledAttack)
@@ -297,6 +380,7 @@ namespace AThousandDawns.Enemies
         {
             foreach (var e in _echoes) if (e.Marker != null) Destroy(e.Marker.gameObject);
             _echoes.Clear();
+            _spikes.Clear();
         }
     }
 }

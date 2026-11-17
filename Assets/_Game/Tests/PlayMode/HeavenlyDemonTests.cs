@@ -13,7 +13,7 @@ using Object = UnityEngine.Object;
 
 namespace AThousandDawns.Tests
 {
-    // 천마총 최종 보스 천마: 3페이즈 · 마기 손아귀 · 해체대법 안전 반경 · 격파하면 천마 격파 (회귀의 기억 · 유품)
+    // 천마총 최종 보스 천마: 3페이즈 · 마기 포박 · 해체대법 안전 반경 · 격파하면 천마 격파 (회귀의 기억 · 유품)
     public class HeavenlyDemonTests : InputTestFixture
     {
         string _savePath;
@@ -89,7 +89,7 @@ namespace AThousandDawns.Tests
             Assert.Less(player.Health, hp, "마기 속에 있으면 아파요");
         }
 
-        // 마검사 천마: 2페이즈는 마법 (화염구 비 · 순간이동 검격 · 마법진), 3페이즈는 마검 융합 (마검 천멸 · 마검비)
+        // 마검사 천마: 2페이즈는 마법 (유성 · 차원 베기 · 마법진), 3페이즈는 마검 융합 (마검 천멸 · 마검비)
         [UnityTest]
         public IEnumerator 이페이즈는_마법_삼페이즈는_마검_융합()
         {
@@ -99,10 +99,11 @@ namespace AThousandDawns.Tests
             int kitBefore = EnemyBrain.BossKitOverride;
             EnemyBrain.BossKitOverride = 0;
             var seen = new System.Collections.Generic.HashSet<string>();
-            int blinks = 0, runes = 0, fires = 0;
+            int rifts = 0, meteors = 0, runes = 0, fires = 0;
             System.Action<HeavenlyDemonBrain, HeavenlyDemonBrain.FxCue> cue = (b, c) =>
             {
-                if (c.Kind == HeavenlyDemonBrain.FxKind.Blink) blinks++;
+                if (c.Kind == HeavenlyDemonBrain.FxKind.RiftCut) rifts++;
+                if (c.Kind == HeavenlyDemonBrain.FxKind.MarkFall && c.Style == HeavenlyDemonBrain.MarkStyle.Fireball) meteors++;
                 if (c.Kind == HeavenlyDemonBrain.FxKind.MarkFall && c.Style == HeavenlyDemonBrain.MarkStyle.Rune) runes++;
                 if (c.Kind == HeavenlyDemonBrain.FxKind.MarkFall && c.Style == HeavenlyDemonBrain.MarkStyle.FireSword) fires++;
             };
@@ -116,12 +117,15 @@ namespace AThousandDawns.Tests
                 {
                     player.Heal(9999f);
                     if (boss.AttackName != null) seen.Add(boss.AttackName);
-                    return seen.Contains("화염구 비") && seen.Contains("마법진") && blinks > 0 && runes > 0;
+                    return seen.Contains("유성") && seen.Contains("마법진") && seen.Contains("차원 베기") && rifts > 0 && meteors > 0 && runes > 0;
                 }, 25f);
-                Assert.Contains("화염구 비", new System.Collections.Generic.List<string>(seen));
+                Assert.Contains("유성", new System.Collections.Generic.List<string>(seen));
                 Assert.Contains("마법진", new System.Collections.Generic.List<string>(seen));
-                Assert.Greater(blinks, 0, "순간이동 검격");
+                Assert.Contains("차원 베기", new System.Collections.Generic.List<string>(seen));
+                Assert.Greater(rifts, 0, "차원 베기: 균열 사이가 베어져요");
+                Assert.Greater(meteors, 0, "유성이 떨어져요");
                 Assert.Greater(runes, 0, "마법진이 터져요");
+                Assert.IsFalse(seen.Contains("화염구 비") || seen.Contains("순간이동 검격") || seen.Contains("마력 흡인"), "없어진 패턴");
                 Assert.IsFalse(seen.Contains("마검 천멸"), "융합은 3페이즈부터");
 
                 Time.timeScale = 1f;
@@ -145,30 +149,48 @@ namespace AThousandDawns.Tests
             }
         }
 
+        // 멀리서만 싸우면 마기 포박: 느린 구슬이 날아와 맞으면 잠깐 묶여요 (끌어당기지 않아요)
         [UnityTest]
-        public IEnumerator 멀리_있으면_마기_손아귀로_끌어당김()
+        public IEnumerator 멀리_있으면_마기_포박으로_묶음()
         {
             HeavenlyDemonBrain boss = null;
             PlayerController player = null;
             yield return Spawn((b, p) => { boss = b; player = p; }, 9f);
-            bool grasped = false;
-            float closest = float.MaxValue;
-            var cc = player.GetComponent<CharacterController>();
-            yield return WaitUntil(() =>
+            int launched = 0, bound = 0;
+            float boundSlow = 0f;
+            System.Action<HeavenlyDemonBrain, HeavenlyDemonBrain.FxCue> cue = (b, c) =>
             {
-                player.Heal(9999f);
-                grasped |= boss.GraspedPlayer;
-                if (!grasped && !player.IsInvulnerable)
+                if (c.Kind == HeavenlyDemonBrain.FxKind.Bind) launched++;
+                if (c.Kind == HeavenlyDemonBrain.FxKind.Bound)
                 {
-                    cc.enabled = false;
-                    player.transform.position = boss.transform.position + new Vector3(0f, 0f, -9f);
-                    cc.enabled = true;
+                    bound++;
+                    boundSlow = player.SlowRatio;
                 }
-                if (grasped) closest = Mathf.Min(closest, Vector3.Distance(player.transform.position, boss.transform.position));
-                return grasped && closest < 4f;
-            }, 15f);
-            Assert.IsTrue(grasped, "멀리 있으면 붙잡혀요");
-            Assert.Less(closest, 4f, "천마 앞으로 끌려와요");
+            };
+            HeavenlyDemonBrain.Cue += cue;
+            try
+            {
+                var cc = player.GetComponent<CharacterController>();
+                yield return WaitUntil(() =>
+                {
+                    player.Heal(9999f);
+                    if (launched == 0 && !player.IsInvulnerable) // 구슬이 날아오기 전까지 멀리 붙잡아 둬요
+                    {
+                        cc.enabled = false;
+                        player.transform.position = boss.transform.position + new Vector3(0f, 0f, -9f);
+                        cc.enabled = true;
+                    }
+                    return bound > 0;
+                }, 15f);
+                Assert.Greater(launched, 0, "멀리 있으면 마기 포박을 던져요");
+                Assert.Greater(bound, 0, "구슬에 맞으면 묶여요");
+                Assert.GreaterOrEqual(boundSlow, 0.95f, "묶이면 못 움직여요");
+                Assert.IsFalse(boss.IsPulling, "끌어당기지 않아요");
+            }
+            finally
+            {
+                HeavenlyDemonBrain.Cue -= cue;
+            }
         }
 
         // 천마총 보스를 쓰러뜨리면 판 끝 · 천마 격파 (결과 화면 · 회귀의 기억 · 유품 가지)

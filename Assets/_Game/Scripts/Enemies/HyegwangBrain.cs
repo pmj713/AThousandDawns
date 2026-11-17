@@ -7,10 +7,10 @@ namespace AThousandDawns.Enemies
 {
     // 파계승 혜광 (폐사찰 고수, 몬스터 시트 63행): 체력 1100 · 공격 18 (폐사찰 배율 전). 결투장은 사방 돌벽.
     // 고수 공통: 경직·넉백 없음, 빙결 1초 + 패턴 취소, 체력 50%에서 1.5초 전환 (무적), 같은 패턴은 연속 2번까지.
-    // 선장 휘두르기: 가까울 때. 예고 0.5, 2칸 내디디며 앞 부채꼴 반경 3칸 150°, ×1.0, 빈틈 0.8
+    // 선장 휘두르기: 가까울 때. 예고 0.5, 제자리에서 선장을 한 바퀴 돌려 둘레 반경 2.6칸 (360°), ×1.0, 넉백 조금, 빈틈 0.8
     // 금강불괴: 9초마다 (2페이즈 6초). 1.8초 (2페이즈 1초) 동안 서서 버티며 맞아도 1씩만 (원형 예고가 차올라요) → 끝에 반경 3.5칸 충격파 ×1.2 + 넉백 2칸
     // 염주 던지기: 3칸 밖이면. 예고 0.6, 염주가 8칸 날아갔다가 돌아와요 (가는 길·오는 길 한 번씩 맞음) ×0.7, 초속 14칸. 세 갈래 (2페이즈는 다섯 갈래)
-    // 축지: 5칸 밖에 2초 넘게 있으면. 예고 0.4, 플레이어 1.5칸 앞까지 순식간에 다가가 (최대 10칸) 그대로 선장 휘두르기 판정 (원거리로만 싸우지 못하게)
+    // 축지: 5칸 밖에 2초 넘게 있으면. 예고 0.4, 플레이어 1.5칸 앞까지 순식간에 다가가 (최대 10칸) 그대로 선장을 한 바퀴 돌려요 (선장 휘두르기 판정, 원거리로만 싸우지 못하게)
     // 2페이즈: 휘두르기 예고 20% 빨라짐 · 염주 예고 40% 빨라짐 · 금강불괴 강화 (버티는 동안 맞을 때마다 충격파 반경 +0.4칸, 최대 +2칸)
     public sealed class HyegwangBrain : EnemyBrain, IMasterBrain
     {
@@ -29,7 +29,7 @@ namespace AThousandDawns.Enemies
         Pattern _pattern, _lastPattern;
         int _repeat, _maxRepeat;
         float _closeDistance, _farDistance, _decisionPause, _transitionTime, _phase2Ratio, _phase2Speed;
-        float _sweepWindup, _sweepRecovery, _sweepRatio, _sweepRadius, _sweepAngle, _sweepLunge, _sweepLungeTime, _lungeLeft;
+        float _sweepWindup, _sweepRecovery, _sweepRatio, _spinRadius, _spinKnockback, _lungeLeft;
         bool _sweepHitDone;
         float _vajraTime, _vajraTime2, _vajraRecovery, _vajraRatio, _vajraRadius, _vajraKnockback, _vajraInterval, _vajraInterval2;
         float _vajraGrow, _vajraGrowMax, _vajraBonus;
@@ -46,8 +46,8 @@ namespace AThousandDawns.Enemies
         public override EnemyRank Rank => EnemyRank.Master;
         protected override bool FreezeBlocked => IsTransitioning;
         protected override float DeathDelay => 1f;
-        protected override bool RadialTelegraph => _pattern == Pattern.Vajra;
-        protected override float ActiveTime => _pattern == Pattern.Sweep ? _sweepLungeTime + 0.05f : _pattern == Pattern.Rush ? _rushTime + 0.05f : 0.1f;
+        protected override bool RadialTelegraph => _pattern == Pattern.Vajra || _pattern == Pattern.Sweep;
+        protected override float ActiveTime => _pattern == Pattern.Rush ? _rushTime + 0.05f : 0.1f;
 
         // 지금 금강불괴 충격파 반경 (2페이즈는 버티는 동안 맞을수록 커져요)
         public float VajraRadius => _vajraRadius + _vajraBonus;
@@ -69,12 +69,10 @@ namespace AThousandDawns.Enemies
             _phase2Speed = Tuning("p2_windup_ratio", 0.8f);
             _maxRepeat = Mathf.RoundToInt(Tuning("max_repeat", 2f));
             _sweepWindup = Tuning("sweep_windup", 0.5f);
-            _sweepLunge = Tuning("sweep_lunge", 2f);
-            _sweepLungeTime = Mathf.Max(0.05f, Tuning("sweep_lunge_time", 0.15f));
             _sweepRecovery = Tuning("sweep_recovery", 0.8f);
             _sweepRatio = Tuning("sweep_ratio", 1f);
-            _sweepRadius = Tuning("sweep_radius", 3f);
-            _sweepAngle = Tuning("sweep_angle", 150f);
+            _spinRadius = Tuning("sweep_radius_spin", 2.6f);
+            _spinKnockback = Tuning("sweep_knockback", 0.5f);
             _vajraTime = Tuning("vajra_time", 1.8f);
             _vajraTime2 = Tuning("p2_vajra_time", 1f);
             _vajraGrow = Tuning("p2_vajra_grow", 0.4f);
@@ -182,10 +180,10 @@ namespace AThousandDawns.Enemies
 
         protected override List<Vector2> TelegraphShape() => _pattern switch
         {
-            Pattern.Sweep => TelegraphShapes.Lunge(_sweepRadius, _sweepAngle, _sweepLunge),
+            Pattern.Sweep => TelegraphShapes.Circle(_spinRadius),
             Pattern.Vajra => TelegraphShapes.Circle(_vajraRadius),
             Pattern.Beads => TelegraphShapes.Rect(0.6f, _beadRange),
-            Pattern.Rush => TelegraphShapes.Rect(1.4f, RushLength() + _sweepRadius),
+            Pattern.Rush => TelegraphShapes.Rect(1.4f, RushLength() + _spinRadius),
             _ => TelegraphShapes.Circle(0.5f),
         };
 
@@ -195,10 +193,10 @@ namespace AThousandDawns.Enemies
         {
             switch (_pattern)
             {
-                case Pattern.Sweep: // 내디디며 휘둘러요 (판정은 다 내디딘 뒤)
-                    StartLunge(_sweepLunge, _sweepLungeTime);
+                case Pattern.Sweep: // 제자리에서 선장을 한 바퀴 돌려요
+                    Spin();
                     break;
-                case Pattern.Rush: // 축지: 순식간에 다가가 휘둘러요
+                case Pattern.Rush: // 축지: 순식간에 다가가 한 바퀴 돌려요
                     Fx(new FxCue { Kind = FxKind.Rush, At = transform.position, Dir = AimDirection, Length = RushLength(), Time = _rushTime });
                     StartLunge(RushLength(), _rushTime);
                     break;
@@ -222,7 +220,7 @@ namespace AThousandDawns.Enemies
 
         protected override void TickActive(float dt)
         {
-            if ((_pattern != Pattern.Sweep && _pattern != Pattern.Rush) || _sweepHitDone) return;
+            if (_pattern != Pattern.Rush || _sweepHitDone) return;
             if (_lungeLeft > 0f)
             {
                 float step = Mathf.Min(_lungeLeft, _lungeLength / _lungeTime * dt);
@@ -232,8 +230,14 @@ namespace AThousandDawns.Enemies
             }
             if (_lungeLeft > 0f) return;
             _sweepHitDone = true;
-            if (SwingHit(transform.position, AimDirection, _sweepRadius, _sweepAngle))
-                HitPlayer(_sweepRatio, HitKnockback);
+            Spin();
+        }
+
+        // 선장 한 바퀴: 둘레 원 전체 (Swung 신호는 360°로 나가요)
+        void Spin()
+        {
+            if (SwingHit(transform.position, AimDirection, _spinRadius, 360f))
+                HitPlayer(_sweepRatio, _spinKnockback);
         }
 
         void StartLunge(float length, float time)

@@ -439,9 +439,9 @@ namespace AThousandDawns.Tests
             Assert.Greater(radius, 0f);
         }
 
-        // 데스나이트: 중간 거리에서 저주 검기 셋, 2페이즈에 들어서면 스켈레톤을 일으켜요
+        // 데스나이트: 중간 거리에서 망령 기병 돌격 (줄 셋), 2페이즈에 들어서면 스켈레톤을 일으켜요
         [UnityTest]
-        public IEnumerator 데스나이트는_저주_검기를_날리고_2페이즈에_스켈레톤을_일으켜요()
+        public IEnumerator 데스나이트는_망령_기병을_달리게_하고_2페이즈에_스켈레톤을_일으켜요()
         {
             yield return Load();
             var director = Object.FindFirstObjectByType<EnemyDirector>();
@@ -465,7 +465,7 @@ namespace AThousandDawns.Tests
                 if (away.magnitude < 4f && away.sqrMagnitude > 1e-4f) cc.Move(away.normalized * 6f * Time.deltaTime); // 중간 거리 (4~5칸)
                 yield return null;
             }
-            Assert.Greater(waves, 0, "중간 거리에서 저주 검기");
+            Assert.Greater(waves, 0, "중간 거리에서 망령 기병 돌격");
             boss.Damageable.ApplyHit(Mathf.CeilToInt(boss.Damageable.MaxHealth * 0.55f));
             yield return new WaitUntil(() => raised > 0 || Time.time > end + 10f);
             yield return null;
@@ -476,7 +476,7 @@ namespace AThousandDawns.Tests
             Assert.GreaterOrEqual(director.Enemies.Count(e => e.Kind == EnemyKind.Skeleton), 3, "스켈레톤 셋");
         }
 
-        // 다크 엘프 검사: 혈영검마 규칙에 이름이 바뀌고 흡혈이 없어요
+        // 다크 엘프 검사: 쌍검 난무 · 그림자 숨기 · 독 단검 (흡혈 없음)
         [UnityTest]
         public IEnumerator 다크_엘프_검사는_흡혈_없이_그림자_검술을_써요()
         {
@@ -499,8 +499,66 @@ namespace AThousandDawns.Tests
             }
             Time.timeScale = 1f;
             Assert.Less(player.Health, player.MaxHealth, "공격이 들어와요");
-            Assert.IsTrue(names.Overlaps(new[] { "월광 베기", "그림자 질주", "그림자 걸음" }), string.Join(",", names));
+            Assert.IsTrue(names.Overlaps(new[] { "쌍검 난무", "그림자 숨기", "그림자 기습", "독 단검" }), string.Join(",", names));
             Assert.LessOrEqual(elf.Damageable.Health, hurt + 0.01f, "흡혈이 없어요");
+        }
+
+        // 보스 패턴 개편: 철권 마웅 · 족장 · 오우거 · 데스나이트는 근접 · 먼 거리 수가 서로 겹치지 않아요
+        [UnityTest]
+        public IEnumerator 철권_계열_보스는_저마다_다른_근접과_먼_거리_수([Values(EnemyKind.IronFist, EnemyKind.GoblinChief, EnemyKind.Ogre, EnemyKind.DeathKnight)] EnemyKind kind)
+        {
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var boss = director.Spawn(kind, player.transform.position + new Vector3(0f, 0f, 1.8f));
+            ((IMasterBrain)boss).SetZone(player.transform.position, new Vector2(30f, 20f));
+            var names = new System.Collections.Generic.HashSet<string>();
+            bool grabbed = false, leapt = false;
+            System.Action<IronFistBrain, Vector3, Vector3> onGrab = (b, a, d) => grabbed |= b == boss;
+            System.Action<IronFistBrain, Vector3, Vector3> onLeap = (b, a, c) => leapt |= b == boss;
+            IronFistBrain.Grabbed += onGrab;
+            IronFistBrain.FarLeaped += onLeap;
+            Time.timeScale = 2f;
+            var cc = player.GetComponent<CharacterController>();
+            float end = Time.time + 25f, farFrom = Time.time + 8f;
+            while (Time.time < end && !(names.Count > 0 && (kind == EnemyKind.IronFist ? grabbed : leapt)))
+            {
+                player.Heal(9999f);
+                if (boss.AttackName != null) names.Add(boss.AttackName);
+                if (Time.time > farFrom) // 처음엔 붙어 있다가 나중엔 멀어져요 (먼 거리 수)
+                {
+                    Vector3 away = player.transform.position - boss.transform.position;
+                    away.y = 0f;
+                    if (away.magnitude < 7f && away.sqrMagnitude > 1e-4f) cc.Move(away.normalized * 7f * Time.deltaTime);
+                }
+                yield return null;
+            }
+            IronFistBrain.Grabbed -= onGrab;
+            IronFistBrain.FarLeaped -= onLeap;
+            Time.timeScale = 1f;
+            string melee = kind switch { EnemyKind.IronFist => "주먹 2연타", EnemyKind.GoblinChief => "철퇴 휘돌리기", EnemyKind.Ogre => "몽둥이 내려찍기", _ => "대검 올려베기" };
+            Assert.IsTrue(names.Contains(melee) || names.Contains("잡아 던지기"), string.Join(",", names));
+            if (kind == EnemyKind.IronFist) Assert.IsTrue(grabbed, "붙어 있으면 잡아 던지기");
+            else Assert.IsTrue(leapt, "멀어지면 뛰어 와요");
+        }
+
+        // 다크 엘프 쌍검 난무에 맞으면 독 (체력이 조금씩 줄지만 쓰러지지 않아요)
+        [UnityTest]
+        public IEnumerator 다크_엘프_쌍검_난무에_맞으면_독()
+        {
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var elf = (DarkElfBrain)director.Spawn(EnemyKind.DarkElf, player.transform.position + new Vector3(0f, 0f, 1.6f));
+            Time.timeScale = 2f;
+            float end = Time.time + 10f;
+            while (Time.time < end && !elf.PlayerPoisoned)
+            {
+                player.Heal(9999f);
+                yield return null;
+            }
+            Time.timeScale = 1f;
+            Assert.IsTrue(elf.PlayerPoisoned, "쌍검 난무나 그림자 기습에 맞으면 독");
         }
 
         [UnityTest]
