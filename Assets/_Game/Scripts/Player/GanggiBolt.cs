@@ -26,13 +26,13 @@ namespace AThousandDawns.Player
 
         // damage = 방어력 빼기 전 피해. pierce = 첫 적 뒤에 더 지나가는 적 수 (PierceAll이면 모두).
         public static void Fire(Vector3 origin, Vector3 direction, float speed, float range, float width, float damage, int pierce,
-            float explodeRatio = 0f, float explodeRadius = 0f, bool dart = false)
+            float explodeRatio = 0f, float explodeRadius = 0f, bool dart = false, string label = null)
         {
             direction.y = 0f;
             if (direction.sqrMagnitude < 1e-4f) return;
             Sfx.Play(dart ? SfxId.DaggerThrow : SfxId.BoltFire, dart ? 0.7f : 1f);
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = dart ? "버들잎 표창" : "강기";
+            go.name = label ?? (dart ? "버들잎 표창" : "강기"); // 아트가 이름으로 그림을 골라요 (하피 깃털 등)
             var collider = go.GetComponent<Collider>();
             collider.enabled = false;
             Destroy(collider);

@@ -1941,7 +1941,7 @@ MonoBehaviour:
     v4Scales: 0
     side: taken
     sideValue: 0.1
-    effectText: "\uB300\uC2DC\uD560 \uB54C \uC55E\uC73C\uB85C \uAE43\uD138 2\uAC1C\uB97C \uB0A0\uB824\uC694 (\uD53C\uD574 30%)"
+    effectText: "\uB300\uC2DC\uAC00 \uB05D\uB098\uBA74 \uB3C4\uCC29\uD55C \uC790\uB9AC\uC5D0\uC11C \uC55E\uC73C\uB85C \uAE43\uD138 2\uAC1C\uB97C \uB0A0\uB824\uC694 (\uD53C\uD574 30%)"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
     slot: 7
     otherworld: 1

@@ -30,14 +30,13 @@ namespace AThousandDawns.Enemies
         public Material telegraphOutline;
     }
 
-    // 방 하나의 적 관리: 공격 토큰(동시 공격 수), 살아 있는 적 목록, 생성, 풀숲, 소환 횟수, 폭발.
+    // 방 하나의 적 관리: 공격 토큰(동시 공격 수), 살아 있는 적 목록, 생성, 소환 횟수, 폭발.
     public sealed class EnemyDirector : MonoBehaviour
     {
         [SerializeField] PlayerController player;
         [SerializeField] EnemyVisuals visuals = new EnemyVisuals();
 
         readonly List<EnemyBrain> _enemies = new List<EnemyBrain>();
-        readonly List<AmbushBush> _bushes = new List<AmbushBush>();
         readonly List<Damageable> _blastTargets = new List<Damageable>();
         readonly Collider[] _overlap = new Collider[64];
         DamageRules _rules;
@@ -54,7 +53,6 @@ namespace AThousandDawns.Enemies
             MeleeTokens = new AttackTokenPool(Mathf.RoundToInt(GameConfig.Get("enemy.melee_tokens", 2f)));
             RangedTokens = new AttackTokenPool(Mathf.RoundToInt(GameConfig.Get("enemy.ranged_tokens", 1f)));
             SummonsLeft = Mathf.RoundToInt(GameConfig.Get("horn.summon_max", 2f));
-            _bushes.AddRange(FindObjectsByType<AmbushBush>(FindObjectsSortMode.None));
             _rules = new DamageRules(
                 GameConfig.Get("damage.toughness_floor_ratio", 0.2f),
                 GameConfig.Get("damage.gongryeok_per_point", 0.1f),
@@ -118,26 +116,6 @@ namespace AThousandDawns.Enemies
             return true;
         }
 
-        // 비어 있는 풀숲 가운데 near에서 가장 가까운 곳을 owner 몫으로 잡아요. exclude는 될 수 있으면 피해요 (방금 나온 풀숲).
-        public AmbushBush ClaimBush(EnemyBrain owner, Vector3 near, AmbushBush exclude)
-        {
-            AmbushBush best = null;
-            float bestDistance = float.MaxValue;
-            foreach (var bush in _bushes)
-            {
-                if (bush == null || bush == exclude || (bush.Occupant != null && bush.Occupant != owner)) continue;
-                float d = Vector3.Distance(bush.transform.position, near);
-                if (d < bestDistance)
-                {
-                    best = bush;
-                    bestDistance = d;
-                }
-            }
-            if (best == null && exclude != null && (exclude.Occupant == null || exclude.Occupant == owner)) best = exclude;
-            if (best != null) best.Occupant = owner;
-            return best;
-        }
-
         // 화약 산적 폭발: 반경 안 다른 적·목인장에게 피해 (강인함·방어력 적용).
         public void Blast(Vector3 center, float radius, float attack, Damageable source)
         {
@@ -192,13 +170,20 @@ namespace AThousandDawns.Enemies
             return new Vector3(around.x, 0f, around.z);
         }
 
+        // 방을 옮길 때 (새 방 적이 나오기 전). 아트는 쓰러진 시체 · 남은 연출을 여기서 치워요 (방은 같은 자리를 다시 써요)
+        public static event System.Action RoomReset;
+
         // 새 방에 들어갈 때: 방마다 세는 것(나팔수 호출 횟수)을 처음으로
         public void ResetRoom()
         {
+            // 쓰러지는 중인 적(DeathDelay 동안 남아요)이 새 방에서 쓰러지는 연출을 하지 않게 바로 지워요. 방에 들어갈 때 한 번만 찾아요
+            foreach (var e in FindObjectsByType<EnemyBrain>(FindObjectsSortMode.None))
+                if (e.IsDead) Destroy(e.gameObject);
             SummonsLeft = Mathf.RoundToInt(GameConfig.Get("horn.summon_max", 2f));
             GhostFire.ClearAll(); // 방을 옮기면 도깨비불 장판도 사라져요
             AnchorBrain.ClearPosts(); // 쇠닻 기둥도
             BloodShamanBrain.ClearCorpses(); // 혈인이 되살릴 시체도 방마다
+            RoomReset?.Invoke();
         }
 
         public bool IsFree(Vector3 p, float radius)

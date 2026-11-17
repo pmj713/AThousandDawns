@@ -476,6 +476,36 @@ namespace AThousandDawns.Tests
             Assert.GreaterOrEqual(director.Enemies.Count(e => e.Kind == EnemyKind.Skeleton), 3, "스켈레톤 셋");
         }
 
+        // 데스나이트: 가까이 붙어 있어도 망령 기병 3갈래를 섞어 쓰고, 2페이즈엔 맞은편 3갈래까지 6줄 (X자)
+        [UnityTest]
+        public IEnumerator 데스나이트는_가까이서도_망령_기병_2페이즈는_X자()
+        {
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var boss = (DeathKnightBrain)director.Spawn(EnemyKind.DeathKnight, player.transform.position + new Vector3(0f, 0f, 2f));
+            ((IMasterBrain)boss).SetZone(player.transform.position, new Vector2(30f, 20f));
+            var dirs = new System.Collections.Generic.List<Vector3>();
+            System.Action<DeathKnightBrain, Vector3> onWave = (b, d) => { if (b == boss) dirs.Add(d); };
+            DeathKnightBrain.CurseWave += onWave;
+            Time.timeScale = 2f;
+            float end = Time.time + 12f;
+            int most = 0;
+            while (Time.time < end && dirs.Count == 0) { player.Heal(9999f); yield return null; }
+            Assert.Greater(dirs.Count, 0, "붙어 있어도 망령 기병");
+            boss.Damageable.ApplyHit(Mathf.CeilToInt(boss.Damageable.MaxHealth * 0.55f));
+            dirs.Clear();
+            end = Time.time + 20f;
+            while (Time.time < end && dirs.Count < 2) { player.Heal(9999f); most = Mathf.Max(most, boss.LanesPending); yield return null; }
+            yield return null;
+            most = Mathf.Max(most, boss.LanesPending);
+            DeathKnightBrain.CurseWave -= onWave;
+            Time.timeScale = 1f;
+            Assert.AreEqual(2, dirs.Count, "2페이즈는 두 묶음");
+            Assert.AreEqual(6, most, "3갈래 × 2");
+            Assert.Less(Vector3.Dot(dirs[0], dirs[1]), 0.1f, "맞은편에서 엇갈려요 (X자)");
+        }
+
         // 다크 엘프 검사: 쌍검 난무 · 그림자 숨기 · 독 단검 (흡혈 없음)
         [UnityTest]
         public IEnumerator 다크_엘프_검사는_흡혈_없이_그림자_검술을_써요()

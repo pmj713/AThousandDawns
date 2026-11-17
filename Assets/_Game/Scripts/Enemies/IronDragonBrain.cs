@@ -112,10 +112,10 @@ namespace AThousandDawns.Enemies
             _swingRatio = Tuning("swing_ratio", 1f);
             _swingKnockback = Tuning("swing_knockback", 2f);
             _ringWindup = Tuning("ring_windup", 0.9f);
-            _ringSpeed = Mathf.Max(0.1f, Tuning("ring_speed", 5f));
+            _ringSpeed = Mathf.Max(0.1f, Tuning("ring_speed", 4f));
             _ringWidth = Tuning("ring_width", 0.8f);
             _ringMax = Tuning("ring_max", 10f);
-            _ringGap = Tuning("ring_gap", 0.6f);
+            _ringGap = Tuning("ring_gap", 0.9f);
             _ringRatio = Tuning("ring_ratio", 0.7f);
             _ringCount = Mathf.Max(1, Mathf.RoundToInt(Tuning("ring_count", 3f)));
             _ringCountP2 = Mathf.Max(1, Mathf.RoundToInt(Tuning("p2_ring_count", 4f)));

@@ -130,6 +130,8 @@ namespace AThousandDawns.Tests
             Assert.Greater(AnchorBrain.PostCount, 0, "닻을 던져요");
             yield return WaitUntil(() => Vector3.Distance(_player.transform.position, anchor.transform.position) < start - 3f, 2f);
             Assert.Less(Vector3.Distance(_player.transform.position, anchor.transform.position), start - 3f, "꽂힌 자리로 날아와요");
+            yield return WaitUntil(() => AnchorBrain.PostCount == 0, 3f);
+            Assert.AreEqual(0, AnchorBrain.PostCount, "닻에 다다르면 거둬들여 땅에 남지 않아요");
         }
 
         [UnityTest]

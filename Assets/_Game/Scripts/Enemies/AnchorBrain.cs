@@ -7,7 +7,7 @@ namespace AThousandDawns.Enemies
 {
     // 쇠닻 거한 (장강 수채, 몬스터 시트 48행): 쇠닻을 사슬째 던져 꽂고, 꽂힌 자리로 자기 몸을 끌어당겨 날아와요 (강인함 3).
     //   닻 던지기: 3~8칸이면 예고 1초 (직선) → 닻이 먼저 날아가 벽 앞 / 사거리 끝에 꽂힌 뒤에야 거한이 초당 14칸으로 끌려가요. 지나가는 길 (폭 1.6칸)에 있으면 맞아요 ×1.0.
-    //   꽂힌 닻은 3초 동안 길을 막는 기둥으로 남아요 (플레이어·적 모두 못 지나감). 방을 옮기면 사라져요.
+    //   꽂힌 닻은 거한이 끌려가는 동안 길을 막는 기둥이고 (플레이어·적 모두 못 지나감), 거한이 다다르면 거둬들여요. 방을 옮기면 사라져요.
     //   쇠닻 휘두르기: 2.5칸 안이면 예고 0.8초 뒤 앞쪽 반원 (반경 2.2칸) ×0.8 + 넉백 1.5칸.
     public sealed class AnchorBrain : EnemyBrain
     {
@@ -145,9 +145,16 @@ namespace AThousandDawns.Enemies
                 _traveled += step;
                 total -= step;
                 CheckHit();
-                if ((flags & CollisionFlags.Sides) != 0) { Attack.EndActive(); return; }
+                if ((flags & CollisionFlags.Sides) != 0) { Arrive(); return; }
             }
-            if (_traveled >= _planned - 1e-4f) Attack.EndActive();
+            if (_traveled >= _planned - 1e-4f) Arrive();
+        }
+
+        // 닻에 다다르면 거둬들여요 (땅에 남지 않아요)
+        void Arrive()
+        {
+            if (_post != null) { Posts.Remove(_post); Destroy(_post); _post = null; }
+            Attack.EndActive();
         }
 
         void CheckHit()

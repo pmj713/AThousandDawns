@@ -190,7 +190,6 @@ namespace AThousandDawns.Player
         void OnDashStartedForItems()
         {
             _dashTouched.Clear();
-            OtherworldDashStart(); // 하피 깃털 팔찌
 
             // 버들잎 표창: 대시할 때 앞으로 표창
             int darts = C("willow_dart", 2);
@@ -235,6 +234,7 @@ namespace AThousandDawns.Player
         {
             if (Deviated("wind_knot")) _windKnotTimer = V("wind_knot", 2); // 바람 매듭 주화입마: 대시 후 공격 속도
             OtherworldDashEnd(); // 엘프 가죽 바지 · 마검사 장화 · 빙결 수정 장화
+            OtherworldDashFeathers(); // 하피 깃털 팔찌 (도착한 뒤에 날아가요)
             if (Has("black_wind_cloak"))
             {
                 _cloakTimer = V("black_wind_cloak", 2); // 흑풍 망토: 대시 후 공격 속도

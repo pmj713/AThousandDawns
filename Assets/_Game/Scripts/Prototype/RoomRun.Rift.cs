@@ -180,7 +180,7 @@ namespace AThousandDawns.Prototype
             int damage = Mathf.RoundToInt(GameConfig.GetOptional("rift.crystal_damage", 40f) * (1f + _region * GameConfig.GetOptional("rift.crystal_region_scale", 0.6f)));
             if (director != null)
             {
-                director.SpawnBurst(f.Center, radius, AThousandDawns.Combat.BurstKind.Rune);
+                // 터지는 그림은 아트가 따로 그려요 (룬 기둥을 같이 띄우면 천마 연출과 겹쳐요)
                 _crystalTargets.Clear();
                 _crystalTargets.AddRange(director.Enemies); // 맞아 죽으면 목록에서 빠지니까 복사본으로
                 foreach (var e in _crystalTargets)
