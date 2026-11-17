@@ -21,7 +21,7 @@ namespace AThousandDawns.Art
 
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
         readonly HashSet<Component> _dressed = new HashSet<Component>();
-        float _scan, _groveScan;
+        float _scan, _groveScan, _nokrimScan;
         BurningGrove _grove;
         InkBurningGroveFX _groveCards;
         readonly HashSet<GameObject> _cardsDone = new HashSet<GameObject>();
@@ -104,7 +104,7 @@ namespace AThousandDawns.Art
 
         void TickGrove(float dt)
         {
-            TickNokrim();
+            TickNokrim(dt);
             if (_grove == null)
             {
                 _groveScan -= dt;
@@ -181,13 +181,15 @@ namespace AThousandDawns.Art
         }
 
         // 녹림왕 몸 · 대도: 2페이즈부터 오른손에서 불길, 몸 둘레 불티·그을음
-        void TickNokrim()
+        void TickNokrim(float dt)
         {
             if (_nokrim == null || _nokrim.IsDead)
             {
                 if (_nokrimFire != null) { Destroy(_nokrimFire); _nokrimFire = null; }
-                if (_grove == null) return; // 불타는 죽림이 붙을 때만 (2페이즈) 찾아요
-                if (_nokrim == null) _nokrim = FindAnyObjectByType<NokrimBrain>();
+                _nokrimScan -= dt; // 2페이즈 판정은 _grove 대신 Phase>=2 (불타는 죽림이 없어졌어요) — 녹림왕은 1초마다 한 번만 찾아요
+                if (_nokrimScan > 0f) return;
+                _nokrimScan = 1f;
+                _nokrim = FindAnyObjectByType<NokrimBrain>();
                 if (_nokrim == null || _nokrim.IsDead) return;
             }
             if (_nokrimFire != null || _nokrim.Phase < 2) return;
