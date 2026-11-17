@@ -210,28 +210,70 @@ namespace AThousandDawns.Art
         }
 
         // 카메라를 보는 그림 (roll이면 굴러가요)
-        // 권풍: 반투명 바람빛 주먹 그림(2.2칸) + 둘레 부드러운 빛 + 굵은 바람 꼬리 + 흩날리는 바람 입자
+        // 권풍 (플레이테스트 3차: 2D 그림 대신 진행 방향으로 날아가는 3D 주먹): visual의 앞(+Z) = 날아가는 방향.
+        //   반투명 바람빛 주먹 (코드로 만든 3D, 주먹 마디가 앞) + 뒤로 퍼지는 바람 원뿔 + 주먹 둘레에 앞을 향해 도는 바람 고리 둘
+        //   + 굵은 바람 꼬리 + 흩날리는 바람 입자
+        static Mesh _fist, _wake;
+        static Material _fistMat;
+
         void FistWave(Transform visual)
         {
-            var sprite = VolleySprite("MasterFx/FistWind");
-            var glow = GlowSprite();
-            var pivot = new GameObject("Fist Wave").transform;
-            pivot.SetParent(visual, false);
-            pivot.gameObject.AddComponent<InkFaceCamera>();
-            if (glow != null) Orb(pivot, glow, 3f, new Color(0.55f, 0.85f, 1f, 0.35f), 8);
-            if (sprite != null)
-            {
-                var go = new GameObject("Fist");
-                go.transform.SetParent(pivot, false);
-                go.transform.localScale = Vector3.one * (2.2f / Mathf.Max(0.01f, Mathf.Max(sprite.bounds.size.x, sprite.bounds.size.y)));
-                var sr = go.AddComponent<SpriteRenderer>();
-                sr.sprite = sprite;
-                sr.color = new Color(0.85f, 0.95f, 1f, 0.7f);
-                sr.sortingOrder = 9;
-            }
+            FistAssets();
+            var fist = new GameObject("Fist Wave");
+            fist.transform.SetParent(visual, false);
+            fist.transform.localScale = Vector3.one * 1.6f;
+            fist.AddComponent<MeshFilter>().sharedMesh = _fist;
+            var fr = fist.AddComponent<MeshRenderer>();
+            fr.sharedMaterial = _fistMat;
+            fr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            var wake = new GameObject("Fist Wake");
+            wake.transform.SetParent(visual, false);
+            wake.transform.localScale = Vector3.one * 1.6f;
+            wake.AddComponent<MeshFilter>().sharedMesh = _wake;
+            var wr = wake.AddComponent<MeshRenderer>();
+            wr.sharedMaterial = _fistMat;
+            wr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            var ring = VolleySprite("PouchFx/Ring");
+            if (ring != null)
+                for (int i = 0; i < 2; i++) // 앞을 향한 바람 고리 (진행 방향에 수직, 빙글 돌아요)
+                {
+                    var go = new GameObject("Wind Ring");
+                    go.transform.SetParent(visual, false);
+                    go.transform.localPosition = new Vector3(0f, 0f, -0.3f - i * 0.7f);
+                    go.transform.localScale = Vector3.one * ((1.6f - i * 0.35f) / Mathf.Max(0.01f, ring.bounds.size.x));
+                    var sr = go.AddComponent<SpriteRenderer>();
+                    sr.sprite = ring;
+                    sr.color = new Color(0.8f, 0.95f, 1f, 0.55f - i * 0.2f);
+                    sr.sortingOrder = 8;
+                    go.AddComponent<InkRoll>();
+                }
             Trail(visual, Vector3.zero, 1.1f, 0.35f, new Color(0.6f, 0.9f, 1f, 0.45f));
             var wind = InkParticles.Frost(visual, Vector3.zero, 0.8f, 2f);
             InkParticles.EmitBox(wind, Vector3.zero, new Vector3(1.4f, 1.2f, 0.6f), 0.2f);
+        }
+
+        // 주먹 (원점 = 주먹 가운데, 앞 +Z로 마디): 손등 덩어리 · 마디 넷 · 굽힌 손가락 · 엄지 · 손목 / 바람 원뿔 (주먹 뒤로 넓어지며 옅어져요)
+        static void FistAssets()
+        {
+            if (_fistMat == null) _fistMat = new Material(Shader.Find("Sprites/Default")) { name = "Fist Wave" };
+            if (_fist != null) return;
+            Color light = new Color(0.9f, 0.97f, 1f, 0.75f), dark = new Color(0.45f, 0.75f, 1f, 0.6f);
+            var b = new MeshBits();
+            b.Box(new Vector3(0f, 0f, -0.05f), new Vector3(0.62f, 0.5f, 0.5f), light, dark);           // 손등 · 손바닥
+            for (int i = 0; i < 4; i++)
+            {
+                float x = -0.225f + i * 0.15f;
+                b.Box(new Vector3(x, 0.12f, 0.26f), new Vector3(0.14f, 0.18f, 0.16f), light, dark);    // 마디
+                b.Box(new Vector3(x, -0.08f, 0.24f), new Vector3(0.13f, 0.2f, 0.14f), dark, dark);    // 굽힌 손가락
+            }
+            b.Box(new Vector3(0.36f, -0.08f, 0.1f), new Vector3(0.14f, 0.16f, 0.32f), light, dark);    // 엄지
+            b.Xf = Matrix4x4.TRS(new Vector3(0f, 0f, -0.3f), Quaternion.Euler(-90f, 0f, 0f), Vector3.one);
+            b.Cone(0f, 0.45f, 0.2f, 0.16f, 8, light, dark);                                          // 손목 (뒤로)
+            _fist = b.Build("Fist Wave");
+            var w = new MeshBits();
+            w.Xf = Matrix4x4.TRS(new Vector3(0f, 0f, -0.2f), Quaternion.Euler(-90f, 0f, 0f), Vector3.one);
+            w.Cone(0f, 1.6f, 0.45f, 0.95f, 12, new Color(0.75f, 0.92f, 1f, 0.35f), new Color(0.5f, 0.8f, 1f, 0.05f));
+            _wake = w.Build("Fist Wake");
         }
 
         static void Face(Transform visual, string path, float width, bool roll)

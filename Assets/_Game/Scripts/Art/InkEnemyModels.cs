@@ -262,9 +262,9 @@ namespace AThousandDawns.Art
                 return;
             }
 
-            if ((_enraged || _stoned) && !_brain.IsDead)
+            if (_stoned && !_brain.IsDead) // 늑대인간 광폭의 붉은 기운은 몸이 아니라 손톱에서 (InkBeastFx, 플레이테스트 3차)
             {
-                _aura = _stoned ? new Color(StoneGlow.r, StoneGlow.g, StoneGlow.b, 0.7f) : new Color(EnrageGlow.r, EnrageGlow.g, EnrageGlow.b, 0.45f + 0.15f * Mathf.Sin(Time.time * 6f));
+                _aura = new Color(StoneGlow.r, StoneGlow.g, StoneGlow.b, 0.7f);
                 ApplyOverlay();
                 return;
             }
@@ -793,14 +793,13 @@ namespace AThousandDawns.Art
             if (boss == _brain) PlayHeld("Volley", 0.6f);
         }
 
-        // 늑대인간 광폭화: 한 번 울부짖고(Roar) 그 뒤로 몸 가장자리가 붉게 타올라요 · 가고일 석화: 웅크린 석상 자세로 굳었다가(Stone) 풀리면 날개를 펴요(Unstone)
-        bool _werewolf, _gargoyle, _enraged, _stoned;
-        static readonly Color EnrageGlow = new Color(1f, 0.15f, 0.08f), StoneGlow = new Color(0.55f, 0.55f, 0.55f);
+        // 늑대인간 광폭화: 한 번 울부짖고(Roar) 붉은 기운은 손톱에서 (InkBeastFx) · 가고일 석화: 웅크린 석상 자세로 굳었다가(Stone) 풀리면 날개를 펴요(Unstone)
+        bool _werewolf, _gargoyle, _stoned;
+        static readonly Color StoneGlow = new Color(0.55f, 0.55f, 0.55f);
 
         void OnEnraged(WerewolfBrain wolf)
         {
             if (wolf != _brain) return;
-            _enraged = true;
             PlayHeld("Roar", 1f);
         }
 

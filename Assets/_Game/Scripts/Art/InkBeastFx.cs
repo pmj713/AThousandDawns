@@ -203,7 +203,7 @@ namespace AThousandDawns.Art
             _flierKeys.AddRange(_fliers.Keys);
             foreach (var e in _flierKeys)
             {
-                if (e == null || e.IsDead) { _fliers.Remove(e); continue; }
+                if (e == null || e.IsDead) { _fliers.Remove(e); _hands.Remove(e); continue; }
                 var s = _fliers[e];
                 Vector3 p = e.transform.position, move = p - s.last;
                 float speed = dt > 0f ? move.magnitude / dt : 0f;
@@ -222,16 +222,15 @@ namespace AThousandDawns.Art
                 {
                     if (s.fast && !fast && e.AttackName == "발톱 베기") Claws(p, s.last - p); // 덮치고 멈추는 순간: 세 줄 발톱 자국
                     var w = e as WerewolfBrain;
-                    if (w != null && w.IsEnraged) // 광폭: 몸에서 붉은 기운
+                    if (w != null && w.IsEnraged) // 광폭 (플레이테스트 3차: 몸이 아니라 손톱에서): 두 손에서 붉은 기운이 피어오르고, 휘두르면 붉은 손톱 자국 꼬리
                     {
+                        var hands = Hands(w);
                         s.puff -= dt;
                         if (s.puff <= 0f)
                         {
-                            s.puff = 0.14f;
-                            Vector2 r = UnityEngine.Random.insideUnitCircle;
-                            var c = BodyCenter(e, out float half); // 몸 한가운데 높이에서 몸통 둘레로
-                            r *= Mathf.Max(0.35f, half * 0.6f);
-                            InkParticles.Burst(c + new Vector3(r.x, UnityEngine.Random.Range(-half, half) * 0.6f, r.y), 2, new Color(1f, 0.25f, 0.15f, 0.7f), new Color(0.5f, 0.05f, 0.05f, 0f), 0.4f, 0.45f, 0.8f, -1.2f);
+                            s.puff = 0.07f;
+                            foreach (var h in hands)
+                                if (h != null) InkParticles.Burst(h.position, 2, new Color(1f, 0.3f, 0.18f, 0.85f), new Color(0.55f, 0.04f, 0.04f, 0f), 0.5f, 0.22f, 0.5f, -1.4f);
                         }
                     }
                 }
@@ -288,11 +287,51 @@ namespace AThousandDawns.Art
             return e.transform.position + c.offset;
         }
 
+        // 늑대인간 두 손 (뼈 LeftHand · RightHand, 늑대인간마다 처음 한 번만 찾아요) — 찾을 때 손마다 붉은 손톱 꼬리(TrailRenderer)를 달아요
+        readonly Dictionary<EnemyBrain, Transform[]> _hands = new Dictionary<EnemyBrain, Transform[]>();
+        static Material _clawTrail;
+
+        Transform[] Hands(EnemyBrain e)
+        {
+            if (_hands.TryGetValue(e, out var found)) return found;
+            found = new[] { Bone(e.transform, "LeftHand"), Bone(e.transform, "RightHand") };
+            _hands[e] = found;
+            if (_clawTrail == null) _clawTrail = new Material(Shader.Find("Sprites/Default")) { name = "Werewolf Claw Trail" };
+            foreach (var h in found)
+            {
+                if (h == null) continue;
+                var go = new GameObject("Claw Trail");
+                go.transform.SetParent(h, false);
+                var trail = go.AddComponent<TrailRenderer>();
+                trail.sharedMaterial = _clawTrail;
+                trail.time = 0.2f;
+                trail.minVertexDistance = 0.04f;
+                trail.widthMultiplier = 0.22f;
+                trail.widthCurve = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(1f, 0f));
+                trail.colorGradient = new Gradient
+                {
+                    colorKeys = new[] { new GradientColorKey(new Color(1f, 0.45f, 0.3f), 0f), new GradientColorKey(new Color(0.8f, 0.05f, 0.05f), 1f) },
+                    alphaKeys = new[] { new GradientAlphaKey(0.85f, 0f), new GradientAlphaKey(0f, 1f) },
+                };
+                trail.alignment = LineAlignment.View;
+                trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+            return found;
+        }
+
+        static Transform Bone(Transform root, string name)
+        {
+            if (root.name == name || root.name.EndsWith(":" + name)) return root;
+            foreach (Transform child in root) { var t = Bone(child, name); if (t != null) return t; }
+            return null;
+        }
+
         static void OnEnraged(WerewolfBrain w) // 포효: 붉은 김이 터져요
         {
             if (w == null) return;
             var p = w.transform.position;
-            InkParticles.Burst(Host().BodyCenter(w, out _), 22, new Color(1f, 0.4f, 0.3f, 0.9f), new Color(0.6f, 0.08f, 0.06f, 0f), 2.4f, 0.6f, 0.8f, -0.8f);
+            foreach (var h in Host().Hands(w)) // 포효: 두 손톱에서 붉은 기운이 터져요
+                if (h != null) InkParticles.Burst(h.position, 14, new Color(1f, 0.4f, 0.3f, 0.9f), new Color(0.6f, 0.08f, 0.06f, 0f), 1.8f, 0.4f, 0.7f, -0.8f);
             Host().Ring(_ring, p, 3f, 0.4f, new Color(1f, 0.2f, 0.12f, 1f), 0.03f);
         }
 

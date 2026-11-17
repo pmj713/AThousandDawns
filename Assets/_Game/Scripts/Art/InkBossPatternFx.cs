@@ -836,63 +836,177 @@ namespace AThousandDawns.Art
             });
         }
 
-        // ── 데스나이트 망령 기병
+        // ── 데스나이트 망령 기병 (플레이테스트 3차 다시): 반투명 청록 유령 말(코드로 만든 3D 말, 네 다리가 달려요) 위에
+        //   데스나이트 실루엣(그 순간 모습을 구운 메시)이 타고 줄을 따라 질주해요. 지나간 자리엔 말 잔상이 흐려지며 남고,
+        //   말발굽마다 유령불이 튀고, 바닥엔 청록 유령불 자국이 남았다 사라져요.
 
-        static void OnRide(DeathKnightBrain k, Vector3 from, Vector3 to) => Host().Ride(from, to);
+        static Mesh _horse, _leg;
+        static Material _ghost;
+        Mesh _riderMesh;
+        DeathKnightBrain _riderOf;
+        float _riderBaked = -10f;
 
-        void Ride(Vector3 from, Vector3 to)
+        static void OnRide(DeathKnightBrain k, Vector3 from, Vector3 to) => Host().Ride(k, from, to);
+
+        void Ride(DeathKnightBrain knight, Vector3 from, Vector3 to)
         {
-            if (_glow == null) return;
             from.y = 0f; to.y = 0f;
             Vector3 dir = Flat(to - from);
-            const float run = 0.45f;
-            var pivot = new GameObject("Spectral Rider").transform;
-            pivot.SetParent(transform, false);
-            pivot.position = from + Vector3.up * 1f;
-            var face = new GameObject("Glow").transform;
-            face.SetParent(pivot, false);
-            face.gameObject.AddComponent<InkFaceCamera>();
-            GlowOrb(face, 2.4f, new Color(Teal.r, Teal.g, Teal.b, 0.6f), 9);          // 말 몸
-            GlowOrb(face, 1f, new Color(0.85f, 1f, 0.97f, 0.95f), 10);                  // 빛나는 속
-            var head = new GameObject("Head").transform;                                   // 앞으로 내민 말 머리
-            head.SetParent(pivot, false);
-            head.localPosition = dir * 1.1f + Vector3.up * 0.4f;
-            head.gameObject.AddComponent<InkFaceCamera>();
-            GlowOrb(head, 1.1f, new Color(Teal.r, Teal.g, Teal.b, 0.75f), 9);
-            var rider = new GameObject("Rider").transform;                                 // 등 위 기수
-            rider.SetParent(pivot, false);
-            rider.localPosition = -dir * 0.2f + Vector3.up * 1f;
-            rider.gameObject.AddComponent<InkFaceCamera>();
-            GlowOrb(rider, 1f, new Color(0.5f, 1f, 0.9f, 0.7f), 9);
-            var wisp = InkParticles.Frost(pivot, Vector3.zero, 0.6f, 3f);
-            var trail = Line(new Color(Teal.r, Teal.g, Teal.b, 0.7f), 0.7f, 2);
+            float length = Vector3.Distance(from, to);
+            float run = Mathf.Clamp(length / 30f, 0.35f, 0.7f); // 초당 약 30칸
+            GhostAssets();
+            var horse = new GameObject("Spectral Rider").transform;
+            horse.SetParent(transform, false);
+            horse.SetPositionAndRotation(from, Quaternion.LookRotation(dir));
+            var body = GhostPart(horse, _horse, Vector3.zero, Teal, 0.55f);
+            var legs = new Transform[4];
+            var legRenderers = new Renderer[4];
+            for (int i = 0; i < 4; i++)
+            {
+                var hip = new GameObject("Leg").transform;
+                hip.SetParent(horse, false);
+                hip.localPosition = new Vector3(i % 2 == 0 ? 0.2f : -0.2f, 1f, i < 2 ? 0.6f : -0.6f);
+                legRenderers[i] = GhostPart(hip, _leg, Vector3.zero, Teal, 0.55f);
+                legs[i] = hip;
+            }
+            var riderMesh = RiderMesh(knight);
+            Renderer rider = null;
+            if (riderMesh != null)
+            {
+                rider = GhostPart(horse, riderMesh, new Vector3(0f, 0.75f, -0.15f), new Color(0.6f, 1f, 0.95f), 0.5f);
+                rider.transform.localScale = Vector3.one * 0.85f;
+            }
+            var eyes = new GameObject("Eyes").transform; // 말 머리 쪽 빛
+            eyes.SetParent(horse, false);
+            eyes.localPosition = new Vector3(0f, 1.9f, 1.35f);
+            eyes.gameObject.AddComponent<InkFaceCamera>();
+            if (_glow != null) GlowOrb(eyes, 0.5f, new Color(0.8f, 1f, 0.95f, 0.9f), 10);
+            var wisp = InkParticles.Frost(horse, new Vector3(0f, 1.1f, -0.6f), 0.6f, 3f);
+            var trail = Line(new Color(Teal.r, Teal.g, Teal.b, 0.6f), 0.9f, 2);
             trail.SetPosition(0, from + Vector3.up * 0.05f);
             trail.SetPosition(1, from + Vector3.up * 0.05f);
-            float t = 0f, hoof = 0f;
+            Flash(from + Vector3.up, Teal, 6f, 3f, 0.4f);
+            float t = 0f, hoof = 0f, ghost = 0f;
             _live.Add(dt =>
             {
                 t += dt;
                 float k = Mathf.Clamp01(t / run);
                 Vector3 p = Vector3.Lerp(from, to, k);
-                if (pivot != null)
+                if (horse != null)
                 {
-                    pivot.position = p + Vector3.up * (1f + 0.12f * Mathf.Abs(Mathf.Sin(t * 30f)));
+                    float gallop = t * 22f;
+                    horse.position = p + Vector3.up * (0.12f * Mathf.Abs(Mathf.Sin(gallop)));
+                    horse.rotation = Quaternion.LookRotation(dir) * Quaternion.Euler(6f * Mathf.Sin(gallop), 0f, 0f); // 앞뒤로 들썩
+                    for (int i = 0; i < 4; i++) legs[i].localRotation = Quaternion.Euler(38f * Mathf.Sin(gallop + (i < 2 ? 0f : Mathf.PI) + (i % 2) * 0.6f), 0f, 0f);
+                    float a = Mathf.Clamp01(t / 0.08f) * Mathf.Clamp01((run - t) / 0.12f + 0.3f); // 나타났다 끝에서 흐려져요
+                    var c = new Color(Teal.r, Teal.g, Teal.b, 0.55f * a);
+                    Tint(body, c);
+                    foreach (var lr in legRenderers) Tint(lr, c);
+                    if (rider != null) Tint(rider, new Color(0.6f, 1f, 0.95f, 0.5f * a));
                     hoof -= dt;
-                    if (hoof <= 0f && k < 1f) { hoof = 0.05f; InkParticles.Burst(p + Vector3.up * 0.1f, 3, new Color(0.7f, 1f, 0.95f, 1f), new Color(Teal.r, Teal.g, Teal.b, 0f), 1f, 0.2f, 0.4f, -1f); }
-                    if (k >= 1f) { if (wisp != null) wisp.transform.SetParent(transform, true); Destroy(pivot.gameObject); pivot = null; }
+                    if (hoof <= 0f && k < 1f) { hoof = 0.05f; InkParticles.Burst(p + Vector3.up * 0.1f, 3, new Color(0.7f, 1f, 0.95f, 1f), new Color(Teal.r, Teal.g, Teal.b, 0f), 1.2f, 0.22f, 0.45f, -1f); }
+                    ghost -= dt;
+                    if (ghost <= 0f && k < 1f) { ghost = 0.06f; Afterimage(horse.position, horse.rotation); }
+                    if (k >= 1f)
+                    {
+                        InkParticles.Burst(p + Vector3.up * 1.2f, 18, new Color(0.7f, 1f, 0.95f, 1f), new Color(Teal.r, Teal.g, Teal.b, 0f), 2.5f, 0.35f, 0.6f, -0.8f); // 끝에서 흩어져요
+                        if (wisp != null) { wisp.transform.SetParent(transform, true); InkParticles.SetRate(wisp, 0f); Destroy(wisp.gameObject, 1.5f); }
+                        Destroy(horse.gameObject);
+                        horse = null;
+                    }
                 }
                 if (trail != null)
                 {
                     trail.SetPosition(1, p + Vector3.up * 0.05f);
-                    float a = 0.7f * (1f - Mathf.Clamp01((t - run) / 0.6f));
-                    trail.startColor = trail.endColor = new Color(Teal.r, Teal.g, Teal.b, a);
+                    trail.startColor = trail.endColor = new Color(Teal.r, Teal.g, Teal.b, 0.6f * (1f - Mathf.Clamp01((t - run) / 0.6f)));
                 }
-                if (wisp != null && k >= 1f) InkParticles.SetRate(wisp, 0f);
                 if (t < run + 0.6f) return true;
                 if (trail != null) Destroy(trail.gameObject);
-                if (wisp != null) Destroy(wisp.gameObject, 1.5f);
                 return false;
             });
+        }
+
+        // 말 잔상: 몸통만 그 자리에 남아 0.3초에 흐려져요
+        void Afterimage(Vector3 at, Quaternion rot)
+        {
+            var go = new GameObject("Rider Afterimage");
+            go.transform.SetParent(transform, false);
+            go.transform.SetPositionAndRotation(at, rot);
+            var r = GhostPart(go.transform, _horse, Vector3.zero, Teal, 0.3f);
+            float t = 0f;
+            _live.Add(dt =>
+            {
+                if (go == null) return false;
+                t += dt;
+                Tint(r, new Color(Teal.r, Teal.g, Teal.b, 0.3f * (1f - t / 0.3f)));
+                if (t < 0.3f) return true;
+                Destroy(go);
+                return false;
+            });
+        }
+
+        Renderer GhostPart(Transform parent, Mesh mesh, Vector3 local, Color color, float alpha)
+        {
+            var go = new GameObject(mesh.name);
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = local;
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var r = go.AddComponent<MeshRenderer>();
+            r.sharedMaterial = _ghost;
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            r.receiveShadows = false;
+            Tint(r, new Color(color.r, color.g, color.b, alpha));
+            return r;
+        }
+
+        // 기수: 데스나이트의 그 순간 모습을 메시로 구워요 (한 돌격 묶음에 한 번, 1초 안이면 다시 써요)
+        Mesh RiderMesh(DeathKnightBrain knight)
+        {
+            if (knight == null) return _riderMesh;
+            if (_riderMesh != null && _riderOf == knight && Time.time - _riderBaked < 1f) return _riderMesh;
+            var skin = knight.GetComponentInChildren<SkinnedMeshRenderer>();
+            if (skin == null) return null;
+            if (_riderMesh == null) _riderMesh = new Mesh { name = "Spectral Knight" };
+            skin.BakeMesh(_riderMesh, true);
+            // 구운 메시는 skin 자리 기준이라, 데스나이트 몸 기준(앞 = +Z)으로 돌려 놓아요
+            var toKnight = Matrix4x4.TRS(Vector3.zero, Quaternion.Inverse(knight.transform.rotation) * skin.transform.rotation, Vector3.one);
+            var v = _riderMesh.vertices;
+            for (int i = 0; i < v.Length; i++) v[i] = toKnight.MultiplyPoint3x4(v[i]);
+            _riderMesh.vertices = v;
+            var colors = new Color[v.Length];
+            for (int i = 0; i < colors.Length; i++) colors[i] = Color.Lerp(new Color(0.3f, 0.75f, 0.7f), Color.white, Mathf.Clamp01(v[i].y / 2.2f)); // 위로 갈수록 밝게
+            _riderMesh.colors = colors;
+            _riderMesh.RecalculateBounds();
+            _riderOf = knight;
+            _riderBaked = Time.time;
+            return _riderMesh;
+        }
+
+        // 유령 말 (앞 = +Z, 발이 원점 높이): 몸통 · 목 · 갈기 · 머리 · 귀 · 꼬리 / 다리는 따로 (엉덩이가 원점, 아래로 1)
+        static void GhostAssets()
+        {
+            if (_ghost == null) _ghost = new Material(Shader.Find("Sprites/Default")) { name = "Spectral Rider" };
+            if (_horse != null) return;
+            Color light = new Color(0.75f, 1f, 0.95f), dark = new Color(0.1f, 0.5f, 0.5f), mane = new Color(0.9f, 1f, 1f);
+            var b = new MeshBits();
+            b.Xf = Matrix4x4.TRS(new Vector3(0f, 1.15f, 0f), Quaternion.Euler(90f, 0f, 0f), Vector3.one);
+            b.Cone(-0.85f, 0.85f, 0.32f, 0.4f, 10, light, dark);                                // 몸통 (엉덩이 → 가슴)
+            b.Xf = Matrix4x4.TRS(new Vector3(0f, 1.3f, 0.7f), Quaternion.Euler(40f, 0f, 0f), Vector3.one);
+            b.Cone(0f, 0.75f, 0.24f, 0.15f, 8, light, dark);                                   // 목
+            b.Box(new Vector3(0f, 0.4f, -0.17f), new Vector3(0.05f, 0.75f, 0.12f), mane, light); // 갈기 (목 뒤쪽)
+            b.Xf = Matrix4x4.TRS(new Vector3(0f, 1.9f, 1.25f), Quaternion.Euler(60f, 0f, 0f), Vector3.one);
+            b.Box(Vector3.zero, new Vector3(0.22f, 0.6f, 0.3f), light, dark);                  // 머리
+            b.Xf = Matrix4x4.TRS(new Vector3(0.07f, 2.1f, 1.08f), Quaternion.Euler(-15f, 0f, 0f), Vector3.one);
+            b.Cone(0f, 0.18f, 0.04f, 0.005f, 4, light, dark);                                  // 귀
+            b.Xf = Matrix4x4.TRS(new Vector3(-0.07f, 2.1f, 1.08f), Quaternion.Euler(-15f, 0f, 0f), Vector3.one);
+            b.Cone(0f, 0.18f, 0.04f, 0.005f, 4, light, dark);
+            b.Xf = Matrix4x4.TRS(new Vector3(0f, 1.3f, -0.85f), Quaternion.Euler(-130f, 0f, 0f), Vector3.one);
+            b.Cone(0f, 0.8f, 0.12f, 0.02f, 6, mane, light);                                    // 꼬리 (뒤로 날려요)
+            _horse = b.Build("Ghost Horse");
+            var l = new MeshBits();
+            l.Cone(-1f, 0f, 0.07f, 0.11f, 6, light, dark);
+            l.Box(new Vector3(0f, -0.97f, 0.02f), new Vector3(0.13f, 0.08f, 0.16f), mane, light); // 발굽
+            _leg = l.Build("Ghost Leg");
         }
 
         // ── 다크 엘프
