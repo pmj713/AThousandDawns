@@ -46,8 +46,7 @@ namespace AThousandDawns.Art
                     case "버들잎 표창": Feather(root, false); break;
                 }
             }
-            for (int i = _live.Count - 1; i >= 0; i--)
-                if (!_live[i](dt)) _live.RemoveAt(i);
+            InkRoomReset.Tick(_live, dt, transform); // 방을 옮기면 제 밑의 연출을 지워요
         }
 
         // ── 살수 연막

@@ -56,8 +56,15 @@ namespace AThousandDawns.Art
         void Awake() => _block = new MaterialPropertyBlock();
 
         // 맞는 모든 것(적·플레이어)의 피해를 전역 이벤트 하나로 받아요 (예전엔 0.5초마다 씬의 Damageable을 모두 찾아 하나씩 구독했어요)
-        void OnEnable() => Damageable.AnyDamaged += OnDamaged;
-        void OnDisable() => Damageable.AnyDamaged -= OnDamaged;
+        void OnEnable() { Damageable.AnyDamaged += OnDamaged; AThousandDawns.Enemies.EnemyDirector.RoomReset += ClearRoom; }
+        void OnDisable() { Damageable.AnyDamaged -= OnDamaged; AThousandDawns.Enemies.EnemyDirector.RoomReset -= ClearRoom; }
+
+        // 방을 옮기면 (같은 크기 방은 같은 월드 자리를 다시 써요) 앞 방의 얼룩 · 날던 방울을 모두 지워요 (플레이테스트 4차)
+        void ClearRoom()
+        {
+            foreach (var s in _pool) { s.Age = -1f; if (s.Renderer != null) s.Renderer.enabled = false; }
+            foreach (var d in _drops) { d.Alive = false; if (d.Renderer != null) d.Renderer.enabled = false; }
+        }
 
         void Update()
         {

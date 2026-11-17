@@ -110,8 +110,7 @@ namespace AThousandDawns.Art
                     p.Rune.color = new Color(1f, 1f, 1f, (0.35f + 0.3f * (0.5f + 0.5f * Mathf.Sin(time * 1.6f + p.Seed))) * p.Fade);
                 }
             }
-            for (int i = _live.Count - 1; i >= 0; i--)
-                if (!_live[i](dt)) _live.RemoveAt(i);
+            InkRoomReset.Tick(_live, dt); // 방 꾸밈이라 방을 옮겨도 지우지 않아요
         }
 
         static void Remove(Prop p)

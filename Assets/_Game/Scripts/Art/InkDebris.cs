@@ -18,6 +18,24 @@ namespace AThousandDawns.Art
         Vector3 _scale;
         int _bounces;
 
+        // 방을 옮기면 (같은 크기 방은 같은 월드 자리를 다시 써요) 남은 파편을 모두 지워요 (플레이테스트 4차)
+        static readonly List<InkDebris> Live = new List<InkDebris>();
+        void OnEnable() => Live.Add(this);
+        void OnDisable() => Live.Remove(this);
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        static void Init()
+        {
+            AThousandDawns.Enemies.EnemyDirector.RoomReset -= ClearRoom;
+            AThousandDawns.Enemies.EnemyDirector.RoomReset += ClearRoom;
+        }
+
+        static void ClearRoom()
+        {
+            for (int i = Live.Count - 1; i >= 0; i--) if (Live[i] != null) Destroy(Live[i].gameObject);
+            Live.Clear();
+        }
+
         // origin: 터지는 자리 · up: 위로 솟는 세기 · spread: 옆으로 퍼지는 세기 · size: 조각 크기(월드)
         public static void Burst(Vector3 origin, float ground, Shape shape, Color color, Material template, int count, float size, float up, float spread, float life = 1.4f)
         {

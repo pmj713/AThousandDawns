@@ -52,8 +52,7 @@ namespace AThousandDawns.Art
             TickEnemies();
             _scan -= dt;
             if (_scan <= 0f) { _scan = 0.05f; DressGlobs(); }
-            for (int i = _live.Count - 1; i >= 0; i--)
-                if (!_live[i](dt)) _live.RemoveAt(i);
+            InkRoomReset.Tick(_live, dt, transform); // 방을 옮기면 제 밑의 연출을 지워요
         }
 
         void TickEnemies()

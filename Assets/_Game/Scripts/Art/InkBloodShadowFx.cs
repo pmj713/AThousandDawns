@@ -68,8 +68,7 @@ namespace AThousandDawns.Art
         void Update()
         {
             float dt = Time.deltaTime;
-            for (int i = _live.Count - 1; i >= 0; i--)
-                if (!_live[i](dt)) _live.RemoveAt(i);
+            InkRoomReset.Tick(_live, dt, transform); // 방을 옮기면 제 밑의 연출을 지워요
         }
 
         // ── 잔상: 붉은 그림자 사람이 짙어지다가 피 안개로 흩어져요

@@ -133,8 +133,7 @@ namespace AThousandDawns.Art
             }
             TickPull(dt);
             TickFog(dt);
-            for (int i = _live.Count - 1; i >= 0; i--)
-                if (!_live[i](dt)) _live.RemoveAt(i);
+            InkRoomReset.Tick(_live, dt, transform); // 방을 옮기면 제 밑의 연출을 지워요
         }
 
         // ── 천마일검 · 천마군림: 검은 초승달이 휩쓸어요

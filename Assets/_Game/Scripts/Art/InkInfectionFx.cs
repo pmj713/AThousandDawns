@@ -73,8 +73,7 @@ namespace AThousandDawns.Art
                     var b = root.GetComponent<BloodBurst>();
                     if (IsFireball(b)) Fireball(b);
                 }
-            for (int i = _live.Count - 1; i >= 0; i--)
-                if (!_live[i](dt)) _live.RemoveAt(i);
+            InkRoomReset.Tick(_live, dt, transform); // 방을 옮기면 제 밑의 연출을 지워요
         }
 
         // ── 경공 (플레이테스트 3차: 그 적의 잔상): 출발할 때 (Dashed) 그 자리에 청록 바람이 한 번 일고,
