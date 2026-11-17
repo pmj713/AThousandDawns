@@ -334,6 +334,11 @@ namespace AThousandDawns.Art
                 EnemyBrain.BossLeapLanded += OnLeapLanded;
                 if (brain is OgreBrain) OgreBrain.RockThrown += OnRockThrown;
                 if (brain is DeathKnightBrain) DeathKnightBrain.CurseWave += OnCurseWave;
+                // 보스·고수 패턴 개편: 공격과 따로 오는 신호마다 손짓 동작
+                if (brain is NokrimBrain) NokrimBrain.BambooFall += OnBambooFall;
+                if (brain is IronFistBrain) IronFistBrain.FistWave += OnFistWave;
+                if (brain is GoblinChiefBrain) GoblinChiefBrain.TrapThrown += OnTrapThrown;
+                if (brain is OgreBrain) OgreBrain.Enraged += OnOgreEnraged;
             }
             _modelRestPos = animator.transform.localPosition;
             if (brain is WerewolfBrain) { _werewolf = true; WerewolfBrain.Enraged += OnEnraged; }
@@ -799,9 +804,37 @@ namespace AThousandDawns.Art
             else { _holdUntil = 0f; PlayHeld("Unstone", 0.7f); }
         }
 
+        // 망령 기병 돌격 예고: 대검을 하늘로 들어 앞을 겨눠 기병을 불러요 (예전 저주 검기 휘두르기 대신)
         void OnCurseWave(DeathKnightBrain knight, Vector3 dir)
         {
-            if (knight == _brain) PlayHeld("CurseWave", 0.8f);   // 검을 크게 휘둘러 검기 세 갈래
+            if (knight == _brain) PlayHeld(_animator.HasState(0, Animator.StringToHash("RideCall")) ? "RideCall" : "CurseWave", 1f);
+        }
+
+        // 녹림왕 2페이즈 불타는 대나무: 대도를 어깨 위로 감았다 비스듬히 베어 넘기는 손짓
+        void OnBambooFall(NokrimBrain nokrim, Vector3 center, Vector3 dir, float length, float width, float fall)
+        {
+            if (nokrim == _brain && !_moving) PlayHeld("BambooChop", 1f);
+        }
+
+        // 철권 마웅 권풍: 허리에 당겼다 정권을 크게 내질러요
+        void OnFistWave(IronFistBrain fist, Vector3 dir)
+        {
+            if (fist == _brain && !_moving) PlayHeld("FistWave", 0.7f);
+        }
+
+        // 고블린 족장 덫 던지기: 덫마다 신호가 와서, 이미 던지는 중이면 다시 틀지 않아요
+        float _trapUntil;
+        void OnTrapThrown(GoblinChiefBrain chief, Vector3 at)
+        {
+            if (chief != _brain || _moving || Time.time < _trapUntil) return;
+            _trapUntil = Time.time + 0.8f;
+            PlayHeld("TrapThrow", 0.8f);
+        }
+
+        // 오우거 분노 (2페이즈): 가슴을 치며 포효
+        void OnOgreEnraged(OgreBrain ogre)
+        {
+            if (ogre == _brain) PlayHeld("Roar", 1.3f);
         }
 
         void OnRockThrown(OgreBrain ogre)
@@ -870,6 +903,10 @@ namespace AThousandDawns.Art
                 EnemyBrain.BossLeapLanded -= OnLeapLanded;
                 OgreBrain.RockThrown -= OnRockThrown;
                 DeathKnightBrain.CurseWave -= OnCurseWave;
+                NokrimBrain.BambooFall -= OnBambooFall;
+                IronFistBrain.FistWave -= OnFistWave;
+                GoblinChiefBrain.TrapThrown -= OnTrapThrown;
+                OgreBrain.Enraged -= OnOgreEnraged;
             }
         }
     }
