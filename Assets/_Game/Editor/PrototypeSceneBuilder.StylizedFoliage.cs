@@ -7,32 +7,90 @@ namespace AThousandDawns.EditorTools
     // 입체 채색 잎·덤불 (플레이 테스트: 그림 카드 덤불·대나무 잎이 채색 입체 장면에서 어색했어요).
     //   대나무 잎: 잔가지에 가늘고 긴 잎(마름모 칼날 모양, 앞뒤 면)을 마디마다 부채꼴로 달아 끝이 처지게 — 그림 카드 자리·크기 그대로 바꿔 끼워요
     //   덤불: 울퉁불퉁한 공 여러 개를 겹친 둥근 덩어리 + 겉에 작은 잎 뭉치, 아래는 짙고 위는 밝은 정점 색 (셀 명암이 덩이마다 생겨요)
-    //   재질은 채색 캐릭터 셰이더(InkCharacter)에 정점 색을 곱해요 (_VertexTint 1). 메시는 Art/Env/Foliage3D에 변형 셋씩 저장
+    //   재질은 대나무 줄기와 같은 구조물 셰이더(InkTriplanar)·같은 값에 줄기 색으로 그린 잎 그림 (아래 StalkStyle). 메시는 Art/Env/Foliage3D에 변형 셋씩 저장
     public static partial class PrototypeSceneBuilder
     {
         const string Foliage3DFolder = "Assets/_Game/Art/Env/Foliage3D";
         static readonly Dictionary<string, Mesh> s_foliage3D = new Dictionary<string, Mesh>();
 
-        static Material LeafMaterial()
+        // 플레이 테스트 2차: 채색 캐릭터 셰이더의 납작한 셀 명암·굵은 외곽선이 대나무 줄기(그림 텍스처 + 세로 붓결)와 그림풍이 달랐어요.
+        //   잎·덤불도 줄기와 같은 구조물 셰이더(InkTriplanar)에 같은 값(명암 단계·가장자리 먹·붓결·얼룩)을 쓰고,
+        //   줄기 그림과 같은 색으로 그린 잎 그림(Tex_LeafPaint, 겹친 잎 붓질)을 입혀요. 정점 색은 쓰지 않아요 (_VertexInk 0)
+        static Material StalkStyle(Material m, float rim, float outline)
         {
-            var m = FantasyLook(GetInkMaterial("Ink3D_BambooLeaf", "#FFFFFF", 1f));
-            m.SetFloat("_VertexTint", 1f);
-            m.SetFloat("_OutlineWidth", 0f);   // 가는 잎에 테두리를 두르면 검은 가시 덩어리로 보였어요
-            m.SetFloat("_RimInk", 0f);
-            m.SetFloat("_ShadowInk", 0.2f);
+            m.SetFloat("_OutlineFromCenter", 0f);
+            m.SetFloat("_OutlineWidth", outline);
+            m.SetFloat("_VertexInk", 0f);
+            m.SetFloat("_PaperLift", 0f);
+            m.SetFloat("_Saturation", 0f);
+            m.SetFloat("_RimInk", rim);
+            m.SetFloat("_RimPower", 2f);
+            m.SetFloat("_Bands", 3f);
+            m.SetFloat("_BandSoftness", 0.3f);
+            m.SetColor("_BaseColor", new Color(0.53f, 0.53f, 0.53f, 1f));
+            m.SetFloat("_StreakLight", 0.6f);
+            m.SetFloat("_StreakScale", 8f);
+            m.SetFloat("_PatchLight", 0.45f);
+            m.SetFloat("_PatchScale", 0.9f);
             EditorUtility.SetDirty(m);
             return m;
         }
 
+        static Material LeafMaterial()
+        {
+            LeafPaintTexture();
+            return StalkStyle(GetInkTriplanar("Ink3D_BambooLeafPaint", "Tex_LeafPaint", 0.5f, 0f), 0.3f, 0f);   // 가는 잎은 외곽선 없이
+        }
+
         static Material BushMaterial()
         {
-            var m = FantasyLook(GetInkMaterial("Ink3D_Bush", "#FFFFFF", 1f));
-            m.SetFloat("_VertexTint", 1f);
-            m.SetFloat("_OutlineWidth", 2.5f);
-            m.SetFloat("_RimInk", 0.15f);
-            m.SetFloat("_ShadowInk", 0.35f);
-            EditorUtility.SetDirty(m);
-            return m;
+            LeafPaintTexture();
+            return StalkStyle(GetInkTriplanar("Ink3D_BushPaint", "Tex_LeafPaint", 0.9f, 1f), 0.55f, 1f);    // 줄기처럼 얇은 외곽선
+        }
+
+        // 잎 그림 (이음새 없음): 줄기 그림의 초록들(짙은 초록 · 초록 · 연두 · 노란 결)로 끝이 뾰족한 잎 붓질 수백 개를 겹쳐 칠해요. 가운데 잎맥은 밝게
+        static void LeafPaintTexture()
+        {
+            string path = $"{Env2DArtFolder}/Tex_LeafPaint.png";
+            if (System.IO.File.Exists(path)) return;
+            const int S = 512;
+            var rnd = new System.Random(919);
+            float R(float a, float b) => a + (float)rnd.NextDouble() * (b - a);
+            Color Hex(string h) { ColorUtility.TryParseHtmlString(h, out var col); return col; }
+            var dark = Hex("#1E6A0C"); var mid = Hex("#3C9A12"); var green = Hex("#52B018"); var light = Hex("#8CCD28"); var glow = Hex("#C8E63C");
+            var px = new Color[S * S];
+            for (int i = 0; i < px.Length; i++) px[i] = Color.Lerp(dark, mid, 0.35f);
+            void Leaf(float cx, float cy, float len, float wid, float rot, Color col, Color vein)
+            {
+                float cs = Mathf.Cos(rot), sn = Mathf.Sin(rot);
+                int r = Mathf.CeilToInt(len) + 1;
+                for (int dy = -r; dy <= r; dy++)
+                    for (int dx = -r; dx <= r; dx++)
+                    {
+                        float u = (dx * cs + dy * sn) / len, w = (-dx * sn + dy * cs);
+                        if (u < -1f || u > 1f) continue;
+                        float half = wid * (1f - u * u) * (u < 0f ? 1f : 1f - 0.35f * u);   // 끝이 뾰족한 잎
+                        if (Mathf.Abs(w) > half) continue;
+                        int xx = (((int)cx + dx) % S + S) % S, yy = (((int)cy + dy) % S + S) % S;
+                        float edge = Mathf.Abs(w) / Mathf.Max(half, 0.01f);
+                        var c = Color.Lerp(col, Color.Lerp(col, dark, 0.35f), edge * edge);          // 가장자리는 조금 짙게
+                        if (Mathf.Abs(w) < 0.7f) c = Color.Lerp(c, vein, 0.6f * (1f - Mathf.Abs(u)));   // 잎맥
+                        px[yy * S + xx] = c;
+                    }
+            }
+            for (int k = 0; k < 520; k++)
+            {
+                float pick = (float)rnd.NextDouble();
+                var col = pick < 0.25f ? mid : pick < 0.6f ? green : pick < 0.9f ? light : glow;
+                Leaf(R(0f, S), R(0f, S), R(14f, 26f), R(3.5f, 6f), R(0f, Mathf.PI * 2f), col, Color.Lerp(col, glow, 0.7f));
+            }
+            var tex = new Texture2D(S, S, TextureFormat.RGB24, false);
+            tex.SetPixels(px);
+            tex.Apply();
+            System.IO.File.WriteAllBytes(path, tex.EncodeToPNG());
+            Object.DestroyImmediate(tex);
+            AssetDatabase.ImportAsset(path);
+            ImportAsTiledTexture(path);
         }
 
         // 그림 카드 대신: 대나무 잎 카드 → 잎 가지 count개를 같은 각도로 엇갈려 꽂아요. 덤불 카드 → 둥근 덤불 하나 (카드 아래 끝이 밑동)
@@ -55,7 +113,10 @@ namespace AThousandDawns.EditorTools
                     go.transform.localRotation = Quaternion.Euler(0f, yaw + k * 180f / count, 0f);
                     go.transform.localScale = new Vector3(k % 2 == 0 ? height : -height, height, height);
                     go.AddComponent<MeshFilter>().sharedMesh = mesh;
-                    go.AddComponent<MeshRenderer>().sharedMaterial = mat;
+                    var leafRenderer = go.AddComponent<MeshRenderer>();
+                    leafRenderer.sharedMaterial = mat;
+                    // 플레이 테스트 2차: 움직일 때마다 잎이 검게·초록으로 번갈아 반짝였어요 — 얇은 잎이 제 그림자를 받는 그림자 여드름이라 잎은 그림자를 드리우지 않아요
+                    leafRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                     variant = (variant + 1) % 3;
                     mesh = LeafSprayMesh(variant);
                 }
