@@ -62,6 +62,17 @@ namespace AThousandDawns.Art
 
         void Arc(Vector3 at, Vector3 dir, float radius, float angle, Color color)
         {
+            if (angle >= 300f) // 한 바퀴 (혜광 선장 휘두르기 360°): 초승달 여덟 개가 차례로 둘레를 휩쓸고 금빛 불티 고리
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    Vector3 d = Quaternion.Euler(0f, i * 45f, 0f) * dir;
+                    Crescent(at + d * radius * 0.55f, d, radius * 1.15f, color, i * 0.03f);
+                }
+                for (int i = 0; i < 8; i++)
+                    InkParticles.Burst(at + Quaternion.Euler(0f, i * 45f + 22f, 0f) * dir * radius + Vector3.up * 0.8f, 3, Color.Lerp(color, Color.white, 0.5f), new Color(color.r, color.g, color.b, 0.4f), radius * 0.8f, 0.1f, 0.35f, 0f);
+                return;
+            }
             Crescent(at + dir * radius * 0.5f, dir, radius * 1.9f, color, 0f);
             if (angle > 150f)
             {

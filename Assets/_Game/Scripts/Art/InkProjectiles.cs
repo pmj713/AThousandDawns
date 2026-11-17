@@ -177,7 +177,7 @@ namespace AThousandDawns.Art
                 case EnemyKind.Ogre: Face(visual, "TempleFx/Rock", 0.6f, true); Trail(visual, Vector3.zero, 0.2f, 0.18f, new Color(0.8f, 0.65f, 0.45f, 0.6f)); return true;
                 // 고수 견제 (약한 판, 2발): 청죽객 죽엽비도 · 철권 마웅 권풍 · 혜광 금강 염주 · 탁랑객 물보라 갈고리 · 혈영검마 혈영 비검 · 고블린 족장 투척 도끼
                 case EnemyKind.Qingzhu: Flat(visual, "MasterFx/LeafKnife", 0.7f, 0f, Color.white); Trail(visual, Vector3.zero, 0.14f, 0.2f, new Color(0.45f, 0.95f, 0.35f, 0.8f)); return true;
-                case EnemyKind.IronFist: Face(visual, "MasterFx/FistWind", 0.8f, false); Trail(visual, Vector3.zero, 0.35f, 0.22f, new Color(0.6f, 0.9f, 1f, 0.6f)); return true;
+                case EnemyKind.IronFist: FistWave(visual); return true; // 철권 마웅 권풍 (FistWave): 크고 느린 반투명 주먹 장풍
                 case EnemyKind.Hyegwang: Face(visual, "MasterFx/Bead", 0.5f, false); Trail(visual, Vector3.zero, 0.2f, 0.22f, new Color(1f, 0.82f, 0.25f, 0.85f)); return true;
                 case EnemyKind.Takrang: Flat(visual, "MasterFx/Hook", 0.8f, 0f, Color.white); InkParticles.Frost(visual, Vector3.zero, 0.15f, 1.2f); Trail(visual, new Vector3(0f, 0f, -0.3f), 0.16f, 0.25f, new Color(0.35f, 0.7f, 1f, 0.8f)); return true;
                 case EnemyKind.BloodShadow: Flat(visual, "MasterFx/BloodDagger", 0.65f, 0f, Color.white); Trail(visual, Vector3.zero, 0.16f, 0.25f, new Color(0.95f, 0.1f, 0.15f, 0.85f)); return true;
@@ -210,6 +210,30 @@ namespace AThousandDawns.Art
         }
 
         // 카메라를 보는 그림 (roll이면 굴러가요)
+        // 권풍: 반투명 바람빛 주먹 그림(2.2칸) + 둘레 부드러운 빛 + 굵은 바람 꼬리 + 흩날리는 바람 입자
+        void FistWave(Transform visual)
+        {
+            var sprite = VolleySprite("MasterFx/FistWind");
+            var glow = GlowSprite();
+            var pivot = new GameObject("Fist Wave").transform;
+            pivot.SetParent(visual, false);
+            pivot.gameObject.AddComponent<InkFaceCamera>();
+            if (glow != null) Orb(pivot, glow, 3f, new Color(0.55f, 0.85f, 1f, 0.35f), 8);
+            if (sprite != null)
+            {
+                var go = new GameObject("Fist");
+                go.transform.SetParent(pivot, false);
+                go.transform.localScale = Vector3.one * (2.2f / Mathf.Max(0.01f, Mathf.Max(sprite.bounds.size.x, sprite.bounds.size.y)));
+                var sr = go.AddComponent<SpriteRenderer>();
+                sr.sprite = sprite;
+                sr.color = new Color(0.85f, 0.95f, 1f, 0.7f);
+                sr.sortingOrder = 9;
+            }
+            Trail(visual, Vector3.zero, 1.1f, 0.35f, new Color(0.6f, 0.9f, 1f, 0.45f));
+            var wind = InkParticles.Frost(visual, Vector3.zero, 0.8f, 2f);
+            InkParticles.EmitBox(wind, Vector3.zero, new Vector3(1.4f, 1.2f, 0.6f), 0.2f);
+        }
+
         static void Face(Transform visual, string path, float width, bool roll)
         {
             var sprite = VolleySprite(path);
