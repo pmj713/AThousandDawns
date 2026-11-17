@@ -154,11 +154,9 @@ namespace AThousandDawns.Fx
         static void Styles()
         {
             if (_line != null) return;
-            _line = new GUIStyle(GUI.skin.label) { fontSize = 30, alignment = TextAnchor.MiddleCenter, wordWrap = true, richText = true };
-            _line.normal.textColor = Color.white;
-            _speaker = new GUIStyle(_line) { fontSize = 20, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft };
-            _hint = new GUIStyle(_line) { fontSize = 16, alignment = TextAnchor.MiddleRight };
-            InkMeridianArt.LockText(_line); InkMeridianArt.LockText(_speaker); InkMeridianArt.LockText(_hint); // 마우스를 올려도 글자색 그대로
+            _line = InkUi.Text(InkUi.Heading, Color.white, TextAnchor.MiddleCenter, wrap: true); // UI 규칙 (InkUi): 대사 Heading · 화자 Label · 안내 Small
+            _speaker = InkUi.Text(InkUi.Label, Color.white, TextAnchor.MiddleLeft, bold: true);
+            _hint = InkUi.Text(InkUi.Small, Color.white, TextAnchor.MiddleRight);
         }
 
         static void Load()

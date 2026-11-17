@@ -13,10 +13,10 @@ namespace AThousandDawns.Fx
     // 사용: PrototypeHud.DrawEvent 맨 앞에서 if (InkLedgerUi.Draw(run, ev)) return;
     public static class InkLedgerUi
     {
-        static readonly Color Ink = new Color(0.08f, 0.07f, 0.06f);
-        static readonly Color SubInk = new Color(0.24f, 0.2f, 0.17f);
-        static readonly Color Muted = new Color(0.45f, 0.42f, 0.4f);
-        static readonly Color Vermilion = new Color(0.88f, 0.15f, 0.1f);
+        static readonly Color Ink = InkUi.Ink;
+        static readonly Color SubInk = InkUi.SubInk;
+        static readonly Color Muted = InkUi.Muted;
+        static readonly Color Vermilion = InkUi.Accent;
         static readonly Regex SizeTag = new Regex("</?size[^>]*>");
 
         static GUIStyle _title, _text, _row, _rowLocked, _desc, _num, _close;
@@ -185,24 +185,16 @@ namespace AThousandDawns.Fx
 
         static Rect Grow(Rect r, float d) => new Rect(r.x - d * 0.5f, r.y - d * 0.5f, r.width + d, r.height + d);
 
-        static void Styles()
+        static void Styles() // UI 규칙 (InkUi): 제목 Title · 줄 Body · 설명 Label · 닫기 Heading
         {
             if (_title != null) return;
-            _title = new GUIStyle(GUI.skin.label) { fontSize = 46, fontStyle = FontStyle.Bold, richText = true };
-            _title.normal.textColor = Ink;
-            _text = new GUIStyle(GUI.skin.label) { fontSize = 24, wordWrap = true, richText = true };
-            _text.normal.textColor = Ink;
-            _row = new GUIStyle(GUI.skin.label) { fontSize = 26, alignment = TextAnchor.MiddleLeft, wordWrap = false, clipping = TextClipping.Clip, richText = true };
-            _row.normal.textColor = Ink;
-            _rowLocked = new GUIStyle(_row);
-            _rowLocked.normal.textColor = Muted;
-            _desc = new GUIStyle(_row) { fontSize = 20 };
-            _desc.normal.textColor = SubInk;
-            _num = new GUIStyle(GUI.skin.label) { fontSize = 24, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
-            _num.normal.textColor = Color.white;
-            _close = new GUIStyle(GUI.skin.label) { fontSize = 34, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
-            _close.normal.textColor = new Color(1f, 0.96f, 0.9f);
-            foreach (var s in new[] { _title, _text, _row, _rowLocked, _desc, _num, _close }) InkMeridianArt.LockText(s); // 마우스를 올려도 글자색 그대로
+            _title = InkUi.Text(InkUi.Title, Ink, TextAnchor.UpperLeft, bold: true);
+            _text = InkUi.Text(InkUi.Body, Ink, TextAnchor.UpperLeft, wrap: true);
+            _row = new GUIStyle(InkUi.Text(InkUi.Body, Ink)) { clipping = TextClipping.Clip };
+            _rowLocked = new GUIStyle(InkUi.Text(InkUi.Body, Muted)) { clipping = TextClipping.Clip };
+            _desc = new GUIStyle(InkUi.Text(InkUi.Label, SubInk)) { clipping = TextClipping.Clip };
+            _num = InkUi.Text(InkUi.Body, Color.white, TextAnchor.MiddleCenter, bold: true);
+            _close = InkUi.Text(InkUi.Heading, InkUi.PaperText, TextAnchor.MiddleCenter, bold: true);
         }
 
         static void Load()
