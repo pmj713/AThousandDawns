@@ -84,7 +84,7 @@ namespace AThousandDawns.Tests
             var director = Object.FindFirstObjectByType<EnemyDirector>();
             var player = Object.FindFirstObjectByType<PlayerController>();
             Assert.AreEqual(6, run.Karma);
-            Assert.AreEqual(3, run.Tracking, "3단계: 추적도 3으로 시작");
+            Assert.AreEqual(0, run.Noise, "3단계: 추적도 대신 싸우는 방마다 졸개 +1 (소란은 0에서 시작)");
 
             Vector3 at = player.transform.position + new Vector3(0f, 0f, 8f);
             var plain = director.Spawn(EnemyKind.Grunt, at);

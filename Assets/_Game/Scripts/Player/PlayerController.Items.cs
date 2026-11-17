@@ -72,7 +72,7 @@ namespace AThousandDawns.Player
             {
                 // #열양
                 BurnDurationBonus = pure ? V("censer", 2) : V("censer", 1),
-                BurnDamageBonus = V("vermilion_feather", 1) + V("salamander_cloak", 1) + V("phoenix_charm", 1) + Hy(Keyword.Yeolyang, 1), // + 이계 샐러맨더 망토 · 업화
+                BurnDamageBonus = V("vermilion_feather", 1) + V("salamander_cloak", 1) + Hy(Keyword.Yeolyang, 1), // + 이계 샐러맨더 망토 · 업화
                 BurnMaxBonus = C("vermilion_feather", 2) + Mathf.RoundToInt(Hy(Keyword.Yeolyang, 2)),
                 BurnRampPer = V("oil_lamp", 1),
                 BurnRampMax = V("oil_lamp", 2),
@@ -93,7 +93,7 @@ namespace AThousandDawns.Player
                 ChainTargetsBonus = C("thunder_drum", 1) + Mathf.RoundToInt(Hy(Keyword.Noejeong, 1)), // + 뇌문
                 ChainDamageBonus = pure ? V("thunder_drum", 2) : 0f,
                 DischargeMaxBonus = V("thunder_brush", 1),
-                DischargeBonus = V("thunder_seal", 1) + V("thunder_rune_belt", 1) + V("lightning_boots", 1) + Hy(Keyword.Noejeong, 2), // + 이계 뇌전 룬 허리띠
+                DischargeBonus = V("thunder_seal", 1) + Hy(Keyword.Noejeong, 2), // + 이계 뇌전 룬 허리띠
                 CohesionShockMultiplier = Has("thunder_seal") ? V("thunder_seal", 2) : 1f,
                 SplashRatio = V("cloud_flute", 1),
                 SplashRadius = V("cloud_flute", 2),
@@ -106,7 +106,7 @@ namespace AThousandDawns.Player
             _maxHealth = newMax;
             Health = Mathf.Min(Health, _maxHealth);
             // 대시 회복: 바람 매듭 +, 부작용 −%
-            _dash.RechargeSpeed = Mathf.Max(0.1f, (1f + V("wind_knot", 1)) * (1f - Side("dash_recharge")));
+            _dash.RechargeSpeed = Mathf.Max(0.1f, (1f + V("wind_knot", 1) + OtherworldDashRecharge) * (1f - Side("dash_recharge")));
             RefreshMartialItems();
         }
 
@@ -115,6 +115,7 @@ namespace AThousandDawns.Player
             if (_noDashTimer > 0f) _noDashTimer -= dt;
             if (_reishiCooldown > 0f) _reishiCooldown -= dt;
             TickPackItemTimers(dt);
+            TickOtherworldItems(dt);
 
             // 뇌정 옥새 부작용: 간격마다 기세 −(최대 비율)
             float drain = Side("gauge_drain");
@@ -140,6 +141,7 @@ namespace AThousandDawns.Player
             if (_items == null || _items.Items.Count == 0 || target.IsDead) return;
             var status = StatusEffects.For(target);
             ApplyPackOnHit(target, tag, status); // 피뢰침 · 뇌격 장갑
+            OtherworldOnHit(target, tag, status); // 이계 기물 (PlayerController.ItemsOtherworld)
             int fire = K(Keyword.Yeolyang), frost = K(Keyword.Bingbaek);
             switch (tag)
             {
@@ -216,6 +218,7 @@ namespace AThousandDawns.Player
         void OnHurtForItems()
         {
             if (_items == null || _items.Items.Count == 0) return;
+            OtherworldHurt(); // 슬라임 팔찌 · 서리 마법사 로브 · 성기사 성표
 
             // 홍염 장갑: 주변 적에게 화상 1중첩 (주화입마면 2중첩, 범위 2배)
             if (Has("crimson_gloves"))
@@ -253,6 +256,7 @@ namespace AThousandDawns.Player
             if (_items == null || _items.Items.Count == 0 || IsDead) return;
             OnEnemyDiedForMartialItems(); // 혈석
             OnEnemyDiedForPack(dead); // 재 항아리
+            OtherworldEnemyDied(dead); // 뇌전 룬 허리띠 · 불사조 깃털 장식
 
             // 염화 호리병: 화상 중인 적이 죽은 자리에 불길. 안에 있는 적은 간격마다 화상 1중첩 (0개면 불길 크기 +50%)
             if (Has("fire_gourd") && dead.TryGetComponent(out StatusEffects deadStatus) && deadStatus.BurnStacks > 0)

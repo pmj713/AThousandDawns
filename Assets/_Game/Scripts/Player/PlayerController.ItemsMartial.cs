@@ -48,16 +48,16 @@ namespace AThousandDawns.Player
             V("breeze_tassel", 1)
             + Mathf.Min(V("broken_blade", 2), _bladeStacks * V("broken_blade", 1))
             + (_windKnotTimer > 0f ? V("wind_knot", 3) : 0f)
-            + V("elven_leggings", 1) + V("spellblade_tassel", 1) + V("storm_circlet", 1) + V("rune_scabbard", 1) + V("harpy_feather_bracelet", 1) + V("spellsword_boots", 1) + Hy(Keyword.Ganggi, 1); // 이계 기물 · 마검
+            + OtherworldAttackSpeed + Hy(Keyword.Ganggi, 1); // 이계 기물 · 흑풍 망토 (PlayerController.ItemsOtherworld) · 마검
 
-        // 짚신 · 흑풍 망토 (대시 후)
-        float ItemMoveSpeedBonus => V("straw_sandals", 1) + (_cloakTimer > 0f ? V("black_wind_cloak", 1) : 0f) + V("goblin_boots", 1) + V("wind_spirit_cloak", 1) + V("elf_feather_earring", 1) + Hy(Keyword.Gyeonggong, 1); // + 이계 기물 · 엘프 발걸음
+        // 엘프 발걸음 (이동속도 기물은 대시 쪽으로 바꿨어요: PlayerController.ItemsOtherworld)
+        float ItemMoveSpeedBonus => Hy(Keyword.Gyeonggong, 1);
 
         // 거북 등껍질 (0개면 2배)
         float ItemToughness => V("turtle_shell", 1) * (Pure ? V("turtle_shell", 2) : 1f) + PackToughness + Hy(Keyword.Geumgang, 2); // + 철포삼 조끼
 
         // 죽갑 조각
-        float EffectiveDefense => Defense + V("bamboo_armor", 1) + V("dwarf_belt", 1) + V("paladin_helm", 1) + V("dwarf_greaves", 1); // + 이계 드워프 강철 허리띠
+        float EffectiveDefense => Defense + V("bamboo_armor", 1) + OtherworldDefense; // + 드워프 강철 허리띠 (보호막 동안)
 
         // 쇠사슬 (피격 후 잠시) · 금빛 가사 (체력 절반 이하, 0개면 2배)
         float ItemDamageReduction
@@ -65,7 +65,7 @@ namespace AThousandDawns.Player
             get
             {
                 float reduction = _chainTimer > 0f ? V("iron_chain", 1) : 0f;
-                reduction += V("slime_bracelet", 1) + V("mithril_chainmail", 1) + V("ice_spirit_pendant", 1) + V("frost_robe", 1) + V("ice_crystal_boots", 1) + V("holy_amulet", 1) + Hy(Keyword.Geumgang, 1); // 이계: 슬라임 팔찌 · 미스릴 사슬 갑옷
+                reduction += OtherworldReduction + Hy(Keyword.Geumgang, 1); // 이계: 미스릴 사슬 갑옷 · 슬라임 팔찌 (맞은 뒤)
                 if (Has("golden_kasaya") && Health <= MaxHealth * V("golden_kasaya", 3))
                     reduction += V("golden_kasaya", 1) * (Pure ? V("golden_kasaya", 2) : 1f);
                 return reduction;
@@ -84,7 +84,7 @@ namespace AThousandDawns.Player
         }
 
         // 바람개비 (0개면 2배) · 구름 비단 부작용 (대시 무적 시간 절반)
-        float DashIframe => (_dashIframe + V("pinwheel", 1) * (Pure ? V("pinwheel", 2) : 1f)) * Mathf.Max(0f, 1f - Side("dash_iframe"));
+        float DashIframe => (_dashIframe + OtherworldDashIframe + V("pinwheel", 1) * (Pure ? V("pinwheel", 2) : 1f)) * Mathf.Max(0f, 1f - Side("dash_iframe"));
 
         void RefreshMartialItems()
         {
@@ -190,6 +190,7 @@ namespace AThousandDawns.Player
         void OnDashStartedForItems()
         {
             _dashTouched.Clear();
+            OtherworldDashStart(); // 하피 깃털 팔찌
 
             // 버들잎 표창: 대시할 때 앞으로 표창
             int darts = C("willow_dart", 2);
@@ -214,7 +215,8 @@ namespace AThousandDawns.Player
         // 구름 비단: 대시가 지나간 적에게 피해 (대시 한 번에 적마다 한 번)
         void TouchDuringDash()
         {
-            if (!Has("cloud_silk")) return;
+            bool silk = Has("cloud_silk");
+            if (!silk && !OtherworldDashTouches) return;
             float raw = BaseDamage * (1f + V("cloud_silk", 1));
             float reach = BodyRadius + _dashPathWidth * 0.5f;
             foreach (var d in Damageable.All())
@@ -224,16 +226,18 @@ namespace AThousandDawns.Player
                 offset.y = 0f;
                 if (offset.magnitude > reach + d.BodyRadius) continue;
                 _dashTouched.Add(d);
-                d.ApplyHit(DamageFormula.Proc(raw, 1f, d.Defense), false);
+                if (silk) d.ApplyHit(DamageFormula.Proc(raw, 1f, d.Defense), false);
+                OtherworldDashTouch(d); // 바람 정령 망토 · 번개 장화
             }
         }
 
         void OnDashEndedForItems()
         {
             if (Deviated("wind_knot")) _windKnotTimer = V("wind_knot", 2); // 바람 매듭 주화입마: 대시 후 공격 속도
+            OtherworldDashEnd(); // 엘프 가죽 바지 · 마검사 장화 · 빙결 수정 장화
             if (Has("black_wind_cloak"))
             {
-                _cloakTimer = V("black_wind_cloak", 2); // 흑풍 망토: 대시 후 이동속도
+                _cloakTimer = V("black_wind_cloak", 2); // 흑풍 망토: 대시 후 공격 속도
                 if (Deviated("black_wind_cloak")) _cloakFirstAttack = true; // 주화입마: 대시 후 첫 공격 피해 +
             }
         }

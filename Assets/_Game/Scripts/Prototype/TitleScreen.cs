@@ -345,16 +345,16 @@ namespace AThousandDawns.Prototype
         void EnsureStyles()
         {
             if (_menu != null) return;
-            _titleBig = new GUIStyle(GUI.skin.label) { fontSize = 120, alignment = TextAnchor.MiddleCenter, normal = { textColor = Ink } };
-            _titleSmall = new GUIStyle(GUI.skin.label) { fontSize = 30, alignment = TextAnchor.MiddleCenter, normal = { textColor = Faint } };
-            _sealText = new GUIStyle(GUI.skin.label) { fontSize = 40, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, normal = { textColor = Paper } };
-            _menu = new GUIStyle(GUI.skin.label) { fontSize = 34, alignment = TextAnchor.MiddleLeft, normal = { textColor = Faint } };
-            _menuOn = new GUIStyle(_menu) { fontStyle = FontStyle.Bold, normal = { textColor = Ink } };
-            _info = new GUIStyle(GUI.skin.label) { fontSize = 22, alignment = TextAnchor.MiddleLeft, normal = { textColor = Ink } };
-            _subtitle = new GUIStyle(_info) { alignment = TextAnchor.MiddleCenter };
-            _hint = new GUIStyle(GUI.skin.label) { fontSize = 18, alignment = TextAnchor.MiddleLeft, normal = { textColor = Faint } };
-            _small = new GUIStyle(GUI.skin.label) { fontSize = 18, alignment = TextAnchor.MiddleCenter, normal = { textColor = Faint } };
-            _body = new GUIStyle(GUI.skin.label) { fontSize = 34, alignment = TextAnchor.MiddleCenter, wordWrap = true, richText = true, normal = { textColor = Ink } };
+            _titleBig = new GUIStyle(GUI.skin.label) { fontSize = 120, alignment = TextAnchor.MiddleCenter, normal = { textColor = Ink } }; UiStyle.Steady(_titleBig);
+            _titleSmall = new GUIStyle(GUI.skin.label) { fontSize = 30, alignment = TextAnchor.MiddleCenter, normal = { textColor = Faint } }; UiStyle.Steady(_titleSmall);
+            _sealText = new GUIStyle(GUI.skin.label) { fontSize = 40, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, normal = { textColor = Paper } }; UiStyle.Steady(_sealText);
+            _menu = new GUIStyle(GUI.skin.label) { fontSize = 34, alignment = TextAnchor.MiddleLeft, normal = { textColor = Faint } }; UiStyle.Steady(_menu);
+            _menuOn = new GUIStyle(_menu) { fontStyle = FontStyle.Bold, normal = { textColor = Ink } }; UiStyle.Steady(_menuOn);
+            _info = new GUIStyle(GUI.skin.label) { fontSize = 22, alignment = TextAnchor.MiddleLeft, normal = { textColor = Ink } }; UiStyle.Steady(_info);
+            _subtitle = new GUIStyle(_info) { alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_subtitle);
+            _hint = new GUIStyle(GUI.skin.label) { fontSize = 18, alignment = TextAnchor.MiddleLeft, normal = { textColor = Faint } }; UiStyle.Steady(_hint);
+            _small = new GUIStyle(GUI.skin.label) { fontSize = 18, alignment = TextAnchor.MiddleCenter, normal = { textColor = Faint } }; UiStyle.Steady(_small);
+            _body = new GUIStyle(GUI.skin.label) { fontSize = 34, alignment = TextAnchor.MiddleCenter, wordWrap = true, richText = true, normal = { textColor = Ink } }; UiStyle.Steady(_body);
             // 마우스를 올리거나 누를 때도 같은 색 (기본 스킨은 흰색으로 바뀌어 한지 바탕에서 안 보여요)
             foreach (var s in new[] { _titleBig, _titleSmall, _subtitle, _hint, _menu, _menuOn, _info, _small, _body, _sealText })
                 s.hover.textColor = s.active.textColor = s.focused.textColor = s.onNormal.textColor = s.onHover.textColor = s.normal.textColor;

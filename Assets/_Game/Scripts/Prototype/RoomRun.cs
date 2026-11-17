@@ -136,7 +136,7 @@ namespace AThousandDawns.Prototype
                 else
                 {
                     GrantRelics(); // 유품록에서 고른 유품
-                    StartKarma(); // 업보 3단계: 추적도 3
+                    StartKarma(); // 업보
                     if (StartsTutorial()) BeginTutorialFloor(); // 처음엔 입문 죽림
                     else BeginFork(1);
                 }
@@ -147,7 +147,7 @@ namespace AThousandDawns.Prototype
         {
             if (_bannerTimer > 0f) _bannerTimer -= Time.unscaledDeltaTime;
             if (Player == null) return;
-            TickRecord(); // 플레이 시간 · 최대 추적도
+            TickRecord(); // 플레이 시간
             if (TickResult()) return; // 쓰러짐·판 끝 → 결과 화면
             if (TickPause()) return;  // Esc 일시정지
             TickTutorial();
@@ -185,7 +185,6 @@ namespace AThousandDawns.Prototype
                 case Phase.Inn: TickInn(); break;
                 case Phase.Master: TickMaster(); break;
                 case Phase.Floor:
-                    TickHunt(Time.deltaTime);
                     TickWater(Time.deltaTime); // 장강 물: 느려지고 물살에 밀려요
                     TickJars(); // 항아리는 싸우는 중에도 부딪히면 깨져요
                     if (_fighting) TickFight();
@@ -284,7 +283,6 @@ namespace AThousandDawns.Prototype
             RevealFerry(); // 뱃사공: 지도가 다 보여요
             _phase = Phase.Floor;
             ShowBanner($"{RegionName} {_floor}층 · {PathLabel(_path)}");
-            BeginHunt();
             Enter(_map.Start, -1);
             if (_startPartPick) // 영혼수련 맥 10: 시작 시 부품 고르기
             {
@@ -354,6 +352,7 @@ namespace AThousandDawns.Prototype
                 OnFightStart();
                 _waves = room.FixedWaves ?? PlanRoom(_floor, 0, SizeBudget, SizeExtraWaves); // 입문 죽림은 손으로 짠 구성
                 AddAlmsCurse(); // 시주함을 털었으면 망령이 따라와요
+                AddNoiseEnemies(room.FixedWaves != null); // 소란 · 업보 3단계 졸개 (RoomRun.Noise)
                 _wave = -1;
                 _elitesThisRoom = 0;
                 _eliteWave = -1;
@@ -369,7 +368,6 @@ namespace AThousandDawns.Prototype
                 if (room.Kind == FloorRoomKind.Event && !room.Cleared) OpenEvent(room, room.EventId);
                 if (room.Kind == FloorRoomKind.Hidden && !room.Cleared) OpenHiddenRoom(room);
             }
-            OnHuntEnter(room);
             OnTutorialEnter(room);
             MarkSave(); // 비운 방·싸움 없는 방이면 바로, 싸우는 방이면 비운 뒤에 저장돼요
         }
@@ -413,7 +411,6 @@ namespace AThousandDawns.Prototype
         {
             OnTutorialFloorLeft();
             ClearPending();
-            EndHunt();
             EndFloorEffects();
             _record.FloorsCleared++; // 관문을 지나면 그 층 돌파
             _fighting = false;
@@ -525,12 +522,6 @@ namespace AThousandDawns.Prototype
                 return;
             }
             foreach (var e in director.Enemies) if (e != null && !e.IsDead) return;
-            if (AssassinIncoming) return; // 살수가 들어오는 중
-            if (_duel)
-            {
-                EndDuel();
-                return;
-            }
             StartNextWave();
         }
 
@@ -569,7 +560,6 @@ namespace AThousandDawns.Prototype
             _room.Cleared = true;
             SetLocks(false);
             Sfx.Play(SfxId.RoomClear, 0.7f);
-            AddTracking(Mathf.RoundToInt(GameConfig.Get("tracking.per_room", 1f)));
             Player.OnRoomCleared(); // 호신 부적
             float mult = _path.Dense ? DenseMultiplier : 1f;
             int silver = BoostSilver(Mathf.RoundToInt(RoomSilver * mult * SizeSilver) + // 큰 방일수록 은자도 많이 (RoomRun.RoomSize)
@@ -637,15 +627,13 @@ namespace AThousandDawns.Prototype
         {
             var db = GameConfig.Items;
             EnterInnSite(db == null ? null : InnShop.Stock(db.Available, Player.Items, ApplyLuck(RegionGradeWeights(), _luck), _rng, _innStockBonus, _unlockedParts, _innPriceScale, Player.Skill));
-            int before = Tracking;
-            Tracking = Mathf.FloorToInt(Tracking * GameConfig.Get("tracking.inn_ratio", 0.5f)); // 객잔에 들르면 추적도 절반
             int interest = InnInterest(); // 영혼수련 은 20
             Silver += interest;
-            Notify("inn", "객잔: 차원 틈을 넘나드는 점소이(F)는 어느 지역에서든 장사 중이에요 · 기물·금창약을 사요 · 들르면 추적도 절반 · 북쪽 문은 정비실");
-            ShowBanner($"객잔 · 점소이 앞에서 {KeyName(Bind.Interact)}로 진열대 (북쪽 문: 정비실) · 추적도 {before} → {Tracking}{(interest > 0 ? $" · 은자 이자 +{interest}" : "")}");
+            Notify("inn", "객잔: 차원 틈을 넘나드는 점소이(F)는 어느 지역에서든 장사 중이에요 · 기물·금창약을 사요 · 북쪽 문은 정비실");
+            ShowBanner($"객잔 · 점소이 앞에서 {KeyName(Bind.Interact)}로 진열대 (북쪽 문: 정비실){(interest > 0 ? $" · 은자 이자 +{interest}" : "")}");
         }
 
-        // 객잔 자리로 옮기기 (이어하기에서는 저장한 진열 그대로, 추적도·이자는 다시 안 받아요)
+        // 객잔 자리로 옮기기 (이어하기에서는 저장한 진열 그대로, 이자는 다시 안 받아요)
         void EnterInnSite(InnShop shop)
         {
             ClearPending();
@@ -784,10 +772,8 @@ namespace AThousandDawns.Prototype
             if (bossBrain != null) bossBrain.Woke += _ => ApplyHeroShield(); // 무림맹 고수를 구했으면 천마전 보호막
             OnFightStart();
             if (_bossGauge > 0f) Player.RaiseGaugeTo(_bossGauge); // 기시감: 천마에 대해 물음 (마지막 보스전 = 지금은 녹림왕)
-            bool hunted = Tracking >= Mathf.RoundToInt(GameConfig.Get("tracking.assassin2", 10f));
-            if (hunted && bossBrain != null) bossBrain.Damageable.ScaleMaxHealth(GameConfig.Get("tracking.boss_hp", 1.15f)); // 추적도 10 이상: 보스 체력 +15%
             string bossName = bossBrain != null ? bossBrain.DisplayName : "보스";
-            ShowBanner(hunted ? $"{bossName} · 추적도 {Tracking}: 체력 +15%" : bossName);
+            ShowBanner(bossName);
         }
 
         void FinishRun()
@@ -917,7 +903,7 @@ namespace AThousandDawns.Prototype
                     default: where = IsForking ? $"{RegionName} {_floor}층 갈림길" : ""; break;
                 }
                 if (IsForking) where = $"{RegionName} {_floor}층 갈림길";
-                return $"{where} · 은자 {Silver} · 추적도 {Tracking} · 시드 {Seed}";
+                return $"{where} · 은자 {Silver} · 시드 {Seed}";
             }
         }
     }

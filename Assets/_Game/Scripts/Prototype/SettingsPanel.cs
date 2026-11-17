@@ -275,7 +275,7 @@ namespace AThousandDawns.Prototype
             GUIStyle Make(int size, TextAnchor anchor, Color color, FontStyle style = FontStyle.Normal)
             {
                 var s = new GUIStyle(GUI.skin.label) { fontSize = size, alignment = anchor, fontStyle = style, richText = true };
-                s.normal.textColor = s.hover.textColor = s.active.textColor = color;
+                s.normal.textColor = s.hover.textColor = s.active.textColor = color; UiStyle.Steady(s);
                 return s;
             }
             _title = Make(30, TextAnchor.MiddleLeft, text, FontStyle.Bold);
@@ -283,7 +283,7 @@ namespace AThousandDawns.Prototype
             _label = Make(20, TextAnchor.MiddleLeft, text);
             _value = Make(20, TextAnchor.MiddleCenter, text, FontStyle.Bold);
             _hint = Make(16, TextAnchor.MiddleLeft, faint);
-            _arrow = new GUIStyle(GUI.skin.button) { fontSize = 18 };
+            _arrow = new GUIStyle(GUI.skin.button) { fontSize = 18 }; UiStyle.Steady(_arrow);
         }
     }
 }

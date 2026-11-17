@@ -172,7 +172,30 @@ namespace AThousandDawns.Tests
             Assert.Less(player.Health, player.MaxHealth, $"{boss.DisplayName}: 공격이 들어와야 해요");
         }
 
-        // 판타지 전용 정예 특성: 마법 방벽 · 저주 · 분노는 판타지 적에게만 (차원 감염이 켜져 있을 때)
+        // 적끼리 싸울 때 멀리 있는 플레이어는 맞지 않아요 (슬라임이 무협 적을 덮칠 때 플레이어 체력이 줄던 것)
+        [UnityTest]
+        public IEnumerator 적끼리_싸울_때_멀리_있는_플레이어는_안_맞아요()
+        {
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            Vector3 far = player.transform.position + new Vector3(0f, 0f, 14f);
+            director.Spawn(EnemyKind.Slime, far);
+            director.Spawn(EnemyKind.Grunt, far + new Vector3(1.5f, 0f, 0f));
+            int rivalHits = 0;
+            System.Action<EnemyBrain, EnemyBrain, Vector3> on = (a, b, at) => rivalHits++;
+            EnemyBrain.RivalHit += on;
+            float hp = player.Health;
+            Time.timeScale = 2f;
+            float end = Time.time + 10f;
+            while (Time.time < end && rivalHits < 3) yield return null;
+            Time.timeScale = 1f;
+            EnemyBrain.RivalHit -= on;
+            Assert.Greater(rivalHits, 0, "서로 싸워요");
+            Assert.AreEqual(hp, player.Health, "멀리 있는 플레이어는 그대로");
+        }
+
+        // 판타지 전용 정예 특성:마법 방벽 · 저주 · 분노는 판타지 적에게만 (차원 감염이 켜져 있을 때)
         [Test]
         public void 판타지_특성은_판타지_적에게만()
         {
@@ -319,9 +342,12 @@ namespace AThousandDawns.Tests
         {
             yield return Load();
             var player = Object.FindFirstObjectByType<PlayerController>();
-            float before = player.AttackIncreaseTotal;
+            float before = player.SkillCooldown;
+            player.Items.Add(GameConfig.Items.Find("wizard_hat"));
+            Assert.Less(player.SkillCooldown, before, "마법사 고깔모자: 초식 쿨타임 −");
+            float attack = player.AttackIncreaseTotal;
             player.Items.Add(GameConfig.Items.Find("knight_helm"));
-            Assert.Greater(player.AttackIncreaseTotal, before, "기사 투구: 모든 피해");
+            Assert.AreEqual(attack, player.AttackIncreaseTotal, 0.0001f, "기사 투구는 모든 피해가 아니라 정예 · 고수 · 보스에게만");
         }
 
         // 판타지 졸개 셋 (하피 · 늑대인간 · 가고일): 오류 없이 다가와 공격이 들어와요

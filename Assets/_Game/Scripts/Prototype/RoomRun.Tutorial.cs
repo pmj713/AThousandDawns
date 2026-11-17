@@ -10,7 +10,7 @@ namespace AThousandDawns.Prototype
 {
     // 튜토리얼 (기획 대화 튜토리얼안). 원칙: 필요한 순간에 한 번에 하나씩, 해 보면 사라지기, 전투는 멈추지 않기.
     // 1단계 입문 죽림: 첫 판 1층만 손으로 짠 방 6개 (한 번 통과하면 다음부터는 무작위)
-    //   1 빈 방: WASD 이동 · 2 졸개 둘: 첫 공격 예고에서 멈춤 → Space 대시로 피하면 다시 움직임 → 좌클릭 평타 · 3 방패 산적: 대시 공격
+    //   1 빈 방: WASD 이동 · 2 졸개 둘: 첫 공격 예고에서 멈춤 → Space 대시로 피하면 다시 움직임 → 좌클릭 평타 · 3 방패 산적: 초식으로 방패 깨기
     //   4 졸개 무리: 우클릭 초식 → Q 절초 · 5 보상 방: 첫 기물(기 낮은 일반)과 경맥도 기초 · 6 관문
     //   2층 갈림길은 기물 옅은 길 · 짙은 길 둘만.
     // 2단계 상황별 첫 안내: 처음 일어날 때 한 번만 화면 구석에 한 줄 (본 것은 MetaSave.seenHints).
@@ -48,7 +48,6 @@ namespace AThousandDawns.Prototype
             Time.timeScale = 1f;
             _phase = Phase.Floor;
             ShowBanner("죽림 1층 · 입문");
-            BeginHunt();
             Enter(_map.Start, -1);
         }
 
@@ -78,7 +77,7 @@ namespace AThousandDawns.Prototype
                     _dodgeArmed = true; // 졸개가 처음 공격하려는 순간 멈추고 대시를 알려 줘요
                     SetHint("산적 졸개가 다가와요 · 공격 예고(주황 바닥)를 잘 보세요", () => !_fighting);
                     break;
-                case 2: SetHint($"방패는 정면 공격을 막아요 · {KeyName(Bind.Dash)} 대시 직후 {KeyName(Bind.Attack)} 대시 공격이면 깨져요", () => !_fighting); break;
+                case 2: SetHint($"방패는 정면 공격을 막아요 · {KeyName(Bind.Skill)} 초식이면 방패가 깨져요 (옆 · 뒤로 돌아 베어도 돼요)", () => !_fighting); break;
                 case 3:
                     Player.RaiseGaugeTo(0.8f); // 이 방에서 절초까지 써 보게 기세를 채워 둬요
                     SetHint($"{KeyName(Bind.Skill)} 초식 · 주변을 한 바퀴 베요", () => Player.IsCastingSkill || !_fighting);
@@ -157,7 +156,6 @@ namespace AThousandDawns.Prototype
                     else if (state == QiState.Deviated) Notify("qi_deviated", "주화입마 (붉은색): 강해지지만 부작용이 생겨요");
                 }
             if (Player.Level != null && Player.Level.Pending > 0) Notify("level_up", "개혈 대기: 싸움이 끝나면 경맥도(E)에서 혈자리를 열어요");
-            if (Tracking >= 3) Notify("tracking", "추적도: 방을 비울수록 올라 마교 살수가 쫓아와요 · 객잔에 들르면 절반");
             if (Player.UltimateReady && _phase != Phase.Village) Notify("ultimate", $"기세가 가득 찼어요 · {KeyName(Bind.Ultimate)} 절초");
         }
 

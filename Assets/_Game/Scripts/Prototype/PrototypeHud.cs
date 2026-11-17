@@ -160,7 +160,7 @@ namespace AThousandDawns.Prototype
             if (run != null && run.InVillage && run.NearSpot != RoomRun.VillageSpot.None && (run.Book == null || !run.Book.IsOpen))
                 KeyHint.Draw(prompt, run.SpotPrompt(run.NearSpot), _big, _big.fontSize);
             if (run != null && run.AtGate && !run.IsForking)
-                KeyHint.Draw(prompt, $"{interact} 다음 층으로 · 남은 전투 방 {run.Map.FightsLeft()} · 추적도 {run.Tracking}", _big, _big.fontSize);
+                KeyHint.Draw(prompt, $"{interact} 다음 층으로 · 남은 전투 방 {run.Map.FightsLeft()}", _big, _big.fontSize);
             if (run != null && run.NearCrack)
                 KeyHint.Draw(prompt, $"벽에 금이 가 있어요 · {interact} 벽을 부수기", _big, _big.fontSize);
             if (run != null && run.NearPouch)
@@ -262,7 +262,7 @@ namespace AThousandDawns.Prototype
                 };
                 c.a *= 1f - p.Age / DamagePopups.Lifetime;
                 var style = p.Style == PopupStyle.Dot ? _popupSmall : p.Style == PopupStyle.Burst ? _popupBig : _popup;
-                style.normal.textColor = c;
+                style.normal.textColor = c; UiStyle.Steady(style);
                 GUI.Label(new Rect(g.x - 50, g.y - 20, 100, 40), p.Amount.ToString(), style);
             }
         }
@@ -331,18 +331,6 @@ namespace AThousandDawns.Prototype
                 GUI.color = Color.white;
                 string mark = r.Kind == FloorRoomKind.Start ? "시" : r.Kind == FloorRoomKind.Reward ? "보" : r.Kind == FloorRoomKind.Gate ? "관" : r.Kind == FloorRoomKind.Event ? "사" : r.Kind == FloorRoomKind.Hidden ? (r.Found ? "기" : "?") : r.Visited && r.HasFight && !r.Cleared ? "!" : "";
                 if (mark != "") GUI.Label(rect, mark, _statusLabel);
-                // 살수가 있는 방은 붉은 테두리
-                foreach (var hunter in run.Hunters)
-                {
-                    if (hunter.Dead || hunter.Engaged || hunter.Room != r) continue;
-                    GUI.color = new Color(0.9f, 0.15f, 0.15f);
-                    const float t = 4f;
-                    GUI.DrawTexture(new Rect(rect.x - t, rect.y - t, rect.width + 2 * t, t), Texture2D.whiteTexture);
-                    GUI.DrawTexture(new Rect(rect.x - t, rect.yMax, rect.width + 2 * t, t), Texture2D.whiteTexture);
-                    GUI.DrawTexture(new Rect(rect.x - t, rect.y, t, rect.height), Texture2D.whiteTexture);
-                    GUI.DrawTexture(new Rect(rect.xMax, rect.y, t, rect.height), Texture2D.whiteTexture);
-                    GUI.color = Color.white;
-                }
             }
             GUI.color = old;
         }
@@ -591,6 +579,15 @@ namespace AThousandDawns.Prototype
         float _offerOpenedAt = -1f; // 기물 고르기가 열린 때 (족자 연출)
 
         // 기물 고르기 카드 3장 (시간이 멈춰 있어요). 1·2·3 또는 클릭, Esc 넘기기
+        // 기물 카드의 자리 줄: 장비 칸이면 끼는 부위, 경맥도(격자)면 빈 칸에
+        string SlotLine(ItemDefinition def)
+        {
+            bool equip = player != null && player.Items != null && player.Items.Board.EquipMode;
+            if (!equip) return $"기 {def.minQi}–{def.maxQi} · 경맥도 빈 칸에 놓여요 (가득 차면 주머니)";
+            string slot = def.slot == AThousandDawns.Items.EquipSlot.None ? "아무 부위" : AThousandDawns.Items.EquipSlots.Label(def.slot);
+            return $"{slot}에 끼워요 · 기 {def.minQi}–{def.maxQi} (칸이 차 있으면 주머니)";
+        }
+
         void DrawOffer()
         {
             if (arena == null || !arena.IsChoosing) { _offerOpenedAt = -1f; return; }
@@ -612,7 +609,7 @@ namespace AThousandDawns.Prototype
                 string aux = string.IsNullOrEmpty(def.aux) ? "" : $" · 보조 #{def.aux}";
                 string text = $"<size=13>[{i + 1}]</size>  <b><size=19>{def.name}</size></b>\n" +
                               $"{Colored(def.keyword)} · {GradeColored(def.grade)}{aux}\n" +
-                              $"기 {def.minQi}–{def.maxQi} · 경맥도 빈 칸에 왼쪽 위부터 놓여요 (가득 차면 주머니)\n\n" +
+                              $"{SlotLine(def)}\n\n" +
                               $"{def.effectText}\n\n" +
                               $"<color=#ff8a7a>주화입마 부작용: {def.sideText}</color>";
                 float cx = x + i * (cardW + gap);
@@ -703,29 +700,29 @@ namespace AThousandDawns.Prototype
         void EnsureStyles()
         {
             if (_label != null) return;
-            _label = new GUIStyle(GUI.skin.label) { fontSize = 16, richText = true };
-            _label.normal.textColor = Color.white;
-            _wrapLabel = new GUIStyle(_label) { wordWrap = true };
-            _popup = new GUIStyle(GUI.skin.label) { fontSize = 22, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
-            _dummy = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleCenter };
-            _dummy.normal.textColor = Color.black;
-            _big = new GUIStyle(GUI.skin.label) { fontSize = 32, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
-            _big.normal.textColor = _big.hover.textColor = _big.active.textColor = Color.white; // 마우스를 올려도 색이 그대로
-            _bossLabel = new GUIStyle(GUI.skin.label) { fontSize = 18, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
-            _bossLabel.normal.textColor = Color.white;
-            _popupSmall = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleCenter };
-            _popupBig = new GUIStyle(GUI.skin.label) { fontSize = 32, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
-            _statusLabel = new GUIStyle(GUI.skin.label) { fontSize = 13, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
-            _hintLabel = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.MiddleCenter, richText = true };
-            _statusLabel.normal.textColor = SlowDot;
-            _card = new GUIStyle(GUI.skin.button) { fontSize = 15, wordWrap = true, richText = true, alignment = TextAnchor.UpperLeft, padding = new RectOffset(14, 14, 12, 12) };
-            _card.normal.textColor = _card.hover.textColor = Color.white;
+            _label = new GUIStyle(GUI.skin.label) { fontSize = 16, richText = true }; UiStyle.Steady(_label);
+            _label.normal.textColor = Color.white; UiStyle.Steady(_label);
+            _wrapLabel = new GUIStyle(_label) { wordWrap = true }; UiStyle.Steady(_wrapLabel);
+            _popup = new GUIStyle(GUI.skin.label) { fontSize = 22, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_popup);
+            _dummy = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_dummy);
+            _dummy.normal.textColor = Color.black; UiStyle.Steady(_dummy);
+            _big = new GUIStyle(GUI.skin.label) { fontSize = 32, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_big);
+            _big.normal.textColor = _big.hover.textColor = _big.active.textColor = Color.white; UiStyle.Steady(_big); // 마우스를 올려도 색이 그대로
+            _bossLabel = new GUIStyle(GUI.skin.label) { fontSize = 18, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_bossLabel);
+            _bossLabel.normal.textColor = Color.white; UiStyle.Steady(_bossLabel);
+            _popupSmall = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_popupSmall);
+            _popupBig = new GUIStyle(GUI.skin.label) { fontSize = 32, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_popupBig);
+            _statusLabel = new GUIStyle(GUI.skin.label) { fontSize = 13, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_statusLabel);
+            _hintLabel = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.MiddleCenter, richText = true }; UiStyle.Steady(_hintLabel);
+            _statusLabel.normal.textColor = SlowDot; UiStyle.Steady(_statusLabel);
+            _card = new GUIStyle(GUI.skin.button) { fontSize = 15, wordWrap = true, richText = true, alignment = TextAnchor.UpperLeft, padding = new RectOffset(14, 14, 12, 12) }; UiStyle.Steady(_card);
+            _card.normal.textColor = _card.hover.textColor = Color.white; UiStyle.Steady(_card);
             // 기물 아이콘 자리를 비운 카드 (위 · 왼쪽)
-            _cardTop = new GUIStyle(_card) { padding = new RectOffset(14, 14, 112, 12) };
-            _cardLeft = new GUIStyle(_card) { padding = new RectOffset(72, 14, 12, 12) };
-            _cardLeftSmall = new GUIStyle(_card) { padding = new RectOffset(54, 14, 10, 10) };
-            _itemLine = new GUIStyle(_label) { fontSize = 15, richText = true, wordWrap = true };
-            _itemSmall = new GUIStyle(_label) { fontSize = 14, richText = true, wordWrap = false, margin = new RectOffset(4, 4, 0, 0), padding = new RectOffset(0, 0, 1, 1) };
+            _cardTop = new GUIStyle(_card) { padding = new RectOffset(14, 14, 112, 12) }; UiStyle.Steady(_cardTop);
+            _cardLeft = new GUIStyle(_card) { padding = new RectOffset(72, 14, 12, 12) }; UiStyle.Steady(_cardLeft);
+            _cardLeftSmall = new GUIStyle(_card) { padding = new RectOffset(54, 14, 10, 10) }; UiStyle.Steady(_cardLeftSmall);
+            _itemLine = new GUIStyle(_label) { fontSize = 15, richText = true, wordWrap = true }; UiStyle.Steady(_itemLine);
+            _itemSmall = new GUIStyle(_label) { fontSize = 14, richText = true, wordWrap = false, margin = new RectOffset(4, 4, 0, 0), padding = new RectOffset(0, 0, 1, 1) }; UiStyle.Steady(_itemSmall);
         }
     }
 }

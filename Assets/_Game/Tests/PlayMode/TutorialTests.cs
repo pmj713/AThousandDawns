@@ -79,7 +79,7 @@ namespace AThousandDawns.Tests
             // 방패 방: 방패 산적 하나
             _run.Enter(rooms[2], 1);
             yield return null;
-            StringAssert.Contains("대시 공격", KeyHint.Plain(_run.Hint));
+            StringAssert.Contains("초식이면 방패가 깨져요", KeyHint.Plain(_run.Hint));
             yield return null;
             yield return new WaitForSeconds(1.2f);
             Assert.AreEqual(1, _director.Enemies.Count);

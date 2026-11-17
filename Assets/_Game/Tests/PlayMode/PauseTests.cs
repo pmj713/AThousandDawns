@@ -82,15 +82,15 @@ namespace AThousandDawns.Tests
         {
             yield return Load();
             var meta = MetaSave.Load();
-            meta.seenHints.Add("tracking");
+            meta.seenHints.Add("fork_dense");
             meta.Save();
             _run.OpenPause();
             _run.ChoosePause(RoomRun.PauseItem.Book);
             Assert.IsTrue(_run.PauseBookOpen);
             var book = _run.PauseBook;
             Assert.IsTrue(book.Entries.Any(e => e.Id == "basic_move"), "조작은 처음부터");
-            Assert.IsTrue(book.Entries.Any(e => e.Id == "tracking"), "본 안내");
-            Assert.IsFalse(book.Entries.Any(e => e.Id == "assassin"), "아직 안 본 안내는 접혀 있어요");
+            Assert.IsTrue(book.Entries.Any(e => e.Id == "fork_dense"), "본 안내");
+            Assert.IsFalse(book.Entries.Any(e => e.Id == "event"), "아직 안 본 안내는 접혀 있어요");
             Assert.AreEqual(HintBook.All.Length - book.Entries.Count, book.LockedCount);
             yield return Esc();
             Assert.IsFalse(_run.PauseBookOpen, "Esc로 닫으면 일시정지 메뉴로");

@@ -196,10 +196,10 @@ namespace AThousandDawns.Prototype
                     v.Choices.Add(new EventChoice { Label = "아무 병이나 집는다 · 금창약 / 원기단 (이번 층 공력 +1) / 독약", Act = RandomBottle });
                     v.Choices.Add(new EventChoice
                     {
-                        Label = $"샅샅이 뒤진다 · 추적도 +{Price("event.search_tracking", 1f)} · 금창약 1개",
+                        Label = $"샅샅이 뒤진다 · 소란 +{Price("event.search_tracking", 1f)} (다음 싸우는 방에 졸개) · 금창약 1개",
                         Act = () =>
                         {
-                            AddTracking(Price("event.search_tracking", 1f));
+                            AddNoise(Price("event.search_tracking", 1f));
                             return Player.AddPotion() ? "금창약을 찾았어요." : "금창약을 찾았지만 더 들 수 없어 두고 왔어요.";
                         },
                     });
@@ -249,8 +249,8 @@ namespace AThousandDawns.Prototype
                     });
                     v.Choices.Add(new EventChoice
                     {
-                        Label = $"못 본 척한다 · 추적도 −{Price("event.ignore_tracking", 1f)}",
-                        Act = () => { AddTracking(-Price("event.ignore_tracking", 1f)); return "조용히 지나갔어요."; },
+                        Label = $"못 본 척한다",
+                        Act = () => { return "조용히 지나갔어요."; },
                     });
                     break;
 
@@ -303,12 +303,12 @@ namespace AThousandDawns.Prototype
                     });
                     v.Choices.Add(new EventChoice
                     {
-                        Label = $"짐을 턴다 · 은자 +{loot}, 추적도 +{rumor} (소문이 퍼짐)",
+                        Label = $"짐을 턴다 · 은자 +{loot}, 소란 +{rumor} (다음 싸우는 방에 졸개)",
                         Act = () =>
                         {
                             Silver += loot;
-                            AddTracking(rumor);
-                            return $"표사들이 달아났어요. 은자 +{loot} · 소문이 퍼져 추적도 {Tracking}";
+                            AddNoise(rumor);
+                            return $"표사들이 달아났어요. 은자 +{loot} · 소문을 들은 졸개 {Noise}명이 다음 싸우는 방으로 몰려와요";
                         },
                     });
                     v.Choices.Add(Pass("지나간다"));
@@ -383,10 +383,10 @@ namespace AThousandDawns.Prototype
                     });
                     v.Choices.Add(new EventChoice
                     {
-                        Label = $"깊이 참오한다 · 추적도 +{deep}, 혈자리 하나를 바로 연다",
+                        Label = $"깊이 참오한다 · 소란 +{deep} (다음 싸우는 방에 졸개), 혈자리 하나를 바로 연다",
                         Act = () =>
                         {
-                            AddTracking(deep);
+                            AddNoise(deep);
                             Player.Level.GrantPending();
                             return "깨달음을 얻었어요. 경맥도(E)에서 혈자리를 열 수 있어요.";
                         },

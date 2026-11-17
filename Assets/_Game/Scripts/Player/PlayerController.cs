@@ -149,7 +149,7 @@ namespace AThousandDawns.Player
             Hurt?.Invoke(damage);
             if (IsDead && visual != null) visual.localScale = new Vector3(1.2f, 0.25f, 1.2f);
         }
-        public float SkillCooldown => _skillCooldown * (1f + Side("skill_cooldown")) * (1f - RunSkillCooldownCut); // 기물 부작용: 초식 쿨타임 +% · 영혼수련 기 5
+        public float SkillCooldown => _skillCooldown * (1f + Side("skill_cooldown")) * Mathf.Max(0.2f, 1f - OtherworldSkillCooldownCut) * (1f - RunSkillCooldownCut); // 기물 부작용: 초식 쿨타임 +% · 영혼수련 기 5
         public float SkillCooldownLeft => Mathf.Max(0f, _skillCooldownLeft);
 
         public event Action<int> Hurt;
@@ -405,11 +405,11 @@ namespace AThousandDawns.Player
             OnHurtByForPack(attacker); // 서리 갑옷
 
             _invulnerableTimer = Mathf.Max(_invulnerableTimer, _hurtIframe);
-            _stunTimer = _hurtStun;
+            _stunTimer = _hurtStun * (1f - OtherworldStaggerCut); // 드워프 강철 각반: 경직 −
             Vector3 away = transform.position - source;
             away.y = 0f;
             if (away.sqrMagnitude < 1e-4f) away = -_facing;
-            _knockbackVelocity = away.normalized * ((knockback >= 0f ? knockback : _hurtKnockback) / Mathf.Max(0.01f, _hurtStun));
+            _knockbackVelocity = away.normalized * ((knockback >= 0f ? knockback : _hurtKnockback) * (1f - OtherworldStaggerCut) / Mathf.Max(0.01f, _hurtStun)); // 드워프 강철 각반: 넉백 −
 
             _combo.Cancel();
             CancelPotion(); // 맞으면 금창약도 끊겨요 (소모되지 않음)
@@ -657,7 +657,7 @@ namespace AThousandDawns.Player
             OnDashStartedForDagger(); // 비도 경공 융합: 주변 비도 다시 던지기
         }
 
-        float DashDistance => _dashDistance * (1f + V("leggings", 1)) * Mathf.Max(0.1f, 1f - Side("dash_distance")); // 각반 · 기물 부작용
+        float DashDistance => _dashDistance * (1f + V("leggings", 1) + OtherworldDashDistance) * Mathf.Max(0.1f, 1f - Side("dash_distance")); // 각반 · 기물 부작용
 
         void UpdateDash(float dt)
         {
@@ -806,7 +806,7 @@ namespace AThousandDawns.Player
             var hit = template;
             hit.Toughness = target.Toughness;
             hit.Defense = target.Defense;
-            hit.Situational *= target.ResolveSituational(transform.position, tag) * UnburnedMultiplier(target) * PackTargetMultiplier(target, tag); // 결살 검결 · 숯 주머니
+            hit.Situational *= target.ResolveSituational(transform.position, tag) * UnburnedMultiplier(target) * PackTargetMultiplier(target, tag) * OtherworldTargetMultiplier(target, tag); // 결살 검결 · 숯 주머니
             target.ApplyHit(DamageFormula.ToEnemy(hit, _rules));
             if (target.IsDead) _swingKills++;
             ApplyItemsOnHit(target, tag);

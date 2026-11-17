@@ -7,8 +7,8 @@ using UnityEngine;
 namespace AThousandDawns.Prototype
 {
     // 장강 수채 전용 이벤트 3개 (3지역 기획): 장강 수채에서만 이벤트 풀에 더해져요.
-    //   난파선: 뒤지면 추적도 +2, 대신 일반이 안 나오는 기물 고르기 (그 지역 등급표에서 일반만 뺌).
-    //   수적 통행세: 은자 100을 낸다 / 거절하고 싸운다 (수적 졸개 둘 + 정예 수적 하나, 이기면 은자 +150) / 몰래 지나간다 (추적도 +3).
+    //   난파선: 뒤지면 소란 +2, 대신 일반이 안 나오는 기물 고르기 (그 지역 등급표에서 일반만 뺌).
+    //   수적 통행세: 은자 100을 낸다 / 거절하고 싸운다 (수적 졸개 둘 + 정예 수적 하나, 이기면 은자 +150) / 몰래 지나간다 (소란 +3).
     //   뱃사공: 은자 60을 내면 다음 층 지도가 처음부터 전부 보여요 (기연 방이 있으면 그 자리도).
     public sealed partial class RoomRun
     {
@@ -30,14 +30,14 @@ namespace AThousandDawns.Prototype
                     int noise = Price("event.wreck_tracking", 2f);
                     v.Choices.Add(new EventChoice
                     {
-                        Label = $"짐칸을 뒤진다 · 추적도 +{noise}, 일반이 안 나오는 기물 고르기",
+                        Label = $"짐칸을 뒤진다 · 소란 +{noise} (다음 싸우는 방에 졸개), 일반이 안 나오는 기물 고르기",
                         Act = () =>
                         {
-                            AddTracking(noise);
+                            AddNoise(noise);
                             var weights = RegionGradeWeights();
                             weights[0] = 0f; // 일반은 빼요
                             arena.GrantOffer(weights);
-                            return $"썩은 상자 사이에서 쓸 만한 물건을 찾았어요. 삐걱대는 소리에 추적도 {Tracking}";
+                            return $"썩은 상자 사이에서 쓸 만한 물건을 찾았어요. 삐걱대는 소리에 졸개 {Noise}명이 깨어났어요";
                         },
                     });
                     v.Choices.Add(Pass("지나간다"));
@@ -64,8 +64,8 @@ namespace AThousandDawns.Prototype
                     });
                     v.Choices.Add(new EventChoice
                     {
-                        Label = $"몰래 지나간다 · 추적도 +{sneak}",
-                        Act = () => { AddTracking(sneak); return $"갈대숲으로 돌아 지나갔지만 발자국이 남았어요. 추적도 {Tracking}"; },
+                        Label = $"몰래 지나간다 · 소란 +{sneak} (다음 싸우는 방에 졸개)",
+                        Act = () => { AddNoise(sneak); return $"갈대숲으로 돌아 지나갔지만 발자국이 남았어요. 졸개 {Noise}명이 뒤따라와요"; },
                     });
                     return true;
                 }

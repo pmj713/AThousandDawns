@@ -58,16 +58,10 @@ namespace AThousandDawns.Items
             new Vector2(0.08f, 0.48f),  // 무기 장신구 (왼쪽)
         };
 
-        // 처음부터 열린 칸 (옷 넷 + 목걸이 · 팔찌). 나머지는 지역 보스를 쓰러뜨릴 때마다 (귀걸이 둘 → 허리 → 무기 장신구)
-        public static bool OpenAtStart(int index) => index <= 3 || index == 6 || index == 7;
+        // 처음부터 모든 칸이 열려 있어요 (예전엔 보스마다 귀걸이 · 허리 · 무기 장신구가 열렸어요)
+        public static bool OpenAtStart(int index) => true;
 
-        public static int[] UnlockAfterBoss(int region) => region switch
-        {
-            0 => new[] { 4, 5 },
-            1 => new[] { 8 },
-            2 => new[] { 9 },
-            _ => new int[0],
-        };
+        public static int[] UnlockAfterBoss(int region) => System.Array.Empty<int>();
 
         public static string Label(EquipSlot slot) => slot switch
         {

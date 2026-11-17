@@ -86,7 +86,6 @@ namespace AThousandDawns.Tests
             var item = items.Add(def);
             items.Place(item, new Vector2Int(3, 1));
             _run.GiveSilver(77);
-            _run.SetTracking(4);
             _player.Level.Restore(3, 0, 0);
 
             var room = _run.Map.Rooms.First(r => r.Kind == FloorRoomKind.Combat && !r.Optional);
@@ -105,8 +104,7 @@ namespace AThousandDawns.Tests
             }, 5f);
             var saved = RunSave.Load();
             Assert.IsNotNull(saved);
-            int silver = _run.Silver, tracking = _run.Tracking, rooms = _run.Map.Rooms.Count, cleared = _run.Map.Rooms.Count(r => r.Cleared);
-            Assert.AreEqual(5, tracking, "4 + 방을 비워 +1");
+            int silver = _run.Silver, rooms = _run.Map.Rooms.Count, cleared = _run.Map.Rooms.Count(r => r.Cleared);
 
             yield return Load(true);
             Assert.AreEqual(RoomRun.Phase.Floor, _run.CurrentPhase);
@@ -114,7 +112,6 @@ namespace AThousandDawns.Tests
             Assert.AreEqual(cleared, _run.Map.Rooms.Count(r => r.Cleared), "비운 방도 그대로");
             Assert.AreEqual(room.Cell, _run.Room.Cell, "그 방부터");
             Assert.AreEqual(silver, _run.Silver);
-            Assert.AreEqual(tracking, _run.Tracking);
             Assert.IsTrue(_player.Items.Board.IsDanjeon(new Vector2Int(2, 1)));
             var back = _player.Items.Find(def.id);
             Assert.IsNotNull(back, "기물");

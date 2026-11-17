@@ -1588,39 +1588,39 @@ MonoBehaviour:
   - key: tracking.per_room
     value: 1
     unit: 
-    note: "\uC804\uD22C \uBC29\uC744 \uBE44\uC6B8 \uB54C\uB9C8\uB2E4 \uCD94\uC801\uB3C4 +"
+    note: "(\uC0AC\uC6A9 \uC548 \uD568 \xB7 \uCD94\uC801\uC790 \uC81C\uAC70) \uC804\uD22C \uBC29\uC744 \uBE44\uC6B8 \uB54C\uB9C8\uB2E4 \uCD94\uC801\uB3C4 +"
   - key: tracking.assassin1
     value: 5
     unit: 
-    note: "\uCD94\uC801\uB3C4 \uC774 \uAC12 \uC774\uC0C1\uC774\uBA74 \uB2E4\uC74C \uCE35\uC5D0 \uC0B4\uC218 1\uBA85"
+    note: "(\uC0AC\uC6A9 \uC548 \uD568 \xB7 \uCD94\uC801\uC790 \uC81C\uAC70) \uCD94\uC801\uB3C4 \uC774 \uAC12 \uC774\uC0C1\uC774\uBA74 \uB2E4\uC74C \uCE35\uC5D0 \uC0B4\uC218 1\uBA85"
   - key: tracking.assassin2
     value: 10
     unit: 
-    note: "\uCD94\uC801\uB3C4 \uC774 \uAC12 \uC774\uC0C1\uC774\uBA74 \uC0B4\uC218 2\uBA85 + \uBCF4\uC2A4 \uCCB4\uB825 \uC99D\uAC00"
+    note: "(\uC0AC\uC6A9 \uC548 \uD568 \xB7 \uCD94\uC801\uC790 \uC81C\uAC70) \uCD94\uC801\uB3C4 \uC774 \uAC12 \uC774\uC0C1\uC774\uBA74 \uC0B4\uC218 2\uBA85 + \uBCF4\uC2A4 \uCCB4\uB825 \uC99D\uAC00"
   - key: tracking.boss_hp
     value: 1.15
     unit: 
-    note: "\uCD94\uC801\uB3C4 \uB192\uC744 \uB54C \uBCF4\uC2A4 \uCCB4\uB825 \uBC30\uC728 (+15%)"
+    note: "(\uC0AC\uC6A9 \uC548 \uD568 \xB7 \uCD94\uC801\uC790 \uC81C\uAC70) \uCD94\uC801\uB3C4 \uB192\uC744 \uB54C \uBCF4\uC2A4 \uCCB4\uB825 \uBC30\uC728 (+15%)"
   - key: tracking.kill_reduce
     value: 2
     unit: 
-    note: "\uC0B4\uC218 \uCC98\uCE58 \uC2DC \uCD94\uC801\uB3C4 \u2212"
+    note: "(\uC0AC\uC6A9 \uC548 \uD568 \xB7 \uCD94\uC801\uC790 \uC81C\uAC70) \uC0B4\uC218 \uCC98\uCE58 \uC2DC \uCD94\uC801\uB3C4 \u2212"
   - key: tracking.inn_ratio
     value: 0.5
     unit: 
-    note: "\uAC1D\uC794\uC5D0 \uB4E4\uB974\uBA74 \uCD94\uC801\uB3C4 \uBE44\uC728 (\uC808\uBC18)"
+    note: "(\uC0AC\uC6A9 \uC548 \uD568 \xB7 \uCD94\uC801\uC790 \uC81C\uAC70) \uAC1D\uC794\uC5D0 \uB4E4\uB974\uBA74 \uCD94\uC801\uB3C4 \uBE44\uC728 (\uC808\uBC18)"
   - key: assassin.appear_rooms
     value: 2
     unit: 
-    note: "\uCE35\uC5D0 \uB4E4\uC5B4\uC640 \uC774\uB9CC\uD07C \uBC29\uC744 \uC9C0\uB098\uBA74 \uCCAB\uC9F8 \uC0B4\uC218\uAC00 \uB098\uD0C0\uB0A8"
+    note: "(\uC0AC\uC6A9 \uC548 \uD568 \xB7 \uCD94\uC801\uC790 \uC81C\uAC70) \uCE35\uC5D0 \uB4E4\uC5B4\uC640 \uC774\uB9CC\uD07C \uBC29\uC744 \uC9C0\uB098\uBA74 \uCCAB\uC9F8 \uC0B4\uC218\uAC00 \uB098\uD0C0\uB0A8"
   - key: assassin.step_time
     value: 6
     unit: s
-    note: "\uC0B4\uC218\uAC00 \uBC29 \uD558\uB098\uB97C \uCAD3\uC544\uC624\uB294 \uC2DC\uAC04 (\uC784\uC2DC)"
+    note: "(\uC0AC\uC6A9 \uC548 \uD568 \xB7 \uCD94\uC801\uC790 \uC81C\uAC70) \uC0B4\uC218\uAC00 \uBC29 \uD558\uB098\uB97C \uCAD3\uC544\uC624\uB294 \uC2DC\uAC04 (\uC784\uC2DC)"
   - key: assassin.warning
     value: 1.5
     unit: s
-    note: "\uB530\uB77C\uC7A1\uD614\uC744 \uB54C \uB09C\uC785\xB7\uACB0\uD22C \uACBD\uACE0"
+    note: "(\uC0AC\uC6A9 \uC548 \uD568 \xB7 \uCD94\uC801\uC790 \uC81C\uAC70) \uB530\uB77C\uC7A1\uD614\uC744 \uB54C \uB09C\uC785\xB7\uACB0\uD22C \uACBD\uACE0"
   - key: assassin.stagger_every
     value: 3
     unit: 
@@ -1772,7 +1772,7 @@ MonoBehaviour:
   - key: event.search_tracking
     value: 1
     unit: 
-    note: "\uBC84\uB824\uC9C4 \uC57D\uBC29 \uC0C5\uC0C5\uC774 \uB4A4\uC9C0\uAE30: \uCD94\uC801\uB3C4 +"
+    note: "\uBC84\uB824\uC9C4 \uC57D\uBC29 \uC0C5\uC0C5\uC774 \uB4A4\uC9C0\uAE30: \uC18C\uB780 +"
   - key: price.gamble_stake
     value: 50
     unit: "\uC740\uC790"
@@ -1796,7 +1796,7 @@ MonoBehaviour:
   - key: event.ignore_tracking
     value: 1
     unit: 
-    note: "\uBD99\uC7A1\uD78C \uBB34\uC778 \uBABB \uBCF8 \uCC99: \uCD94\uC801\uB3C4 \u2212"
+    note: "(\uC0AC\uC6A9 \uC548 \uD568 \xB7 \uCD94\uC801\uC790 \uC81C\uAC70) \uBD99\uC7A1\uD78C \uBB34\uC778 \uBABB \uBCF8 \uCC99: \uCD94\uC801\uB3C4 \u2212"
   - key: price.shrine_incense
     value: 20
     unit: "\uC740\uC790"
@@ -1824,7 +1824,7 @@ MonoBehaviour:
   - key: event.scripture_tracking
     value: 2
     unit: 
-    note: "\uBCBD\uC5D0 \uC0C8\uAE34 \uAC80\uACB0 \uAE4A\uC774 \uCC38\uC624: \uCD94\uC801\uB3C4 +"
+    note: "\uBCBD\uC5D0 \uC0C8\uAE34 \uAC80\uACB0 \uAE4A\uC774 \uCC38\uC624: \uC18C\uB780 +"
   - key: room.master_floor
     value: 2
     unit: 
@@ -2504,7 +2504,7 @@ MonoBehaviour:
   - key: event.rob_tracking
     value: 3
     unit: 
-    note: "\uD45C\uAD6D \uD589\uB82C: \uC9D0\uC744 \uD138\uBA74 \uCD94\uC801\uB3C4 +"
+    note: "\uD45C\uAD6D \uD589\uB82C: \uC9D0\uC744 \uD138\uBA74 \uC18C\uB780 +"
   - key: price.smith_fee
     value: 60
     unit: "\uC740\uC790"
@@ -3192,11 +3192,11 @@ MonoBehaviour:
   - key: assassin.kill_health
     value: 0.3
     unit: 
-    note: "\uC0B4\uC218: \uC774\uBC88 \uD310\uC5D0 \uC4F0\uB7EC\uB728\uB9B0 \uC0B4\uC218 1\uBA85\uB2F9 \uB2E4\uC74C \uC0B4\uC218 \uCCB4\uB825 +"
+    note: "(\uC0AC\uC6A9 \uC548 \uD568 \xB7 \uCD94\uC801\uC790 \uC81C\uAC70) \uC0B4\uC218: \uC774\uBC88 \uD310\uC5D0 \uC4F0\uB7EC\uB728\uB9B0 \uC0B4\uC218 1\uBA85\uB2F9 \uB2E4\uC74C \uC0B4\uC218 \uCCB4\uB825 +"
   - key: assassin.kill_attack
     value: 0.15
     unit: 
-    note: "\uC0B4\uC218: \uC4F0\uB7EC\uB728\uB9B0 \uC0B4\uC218 1\uBA85\uB2F9 \uB2E4\uC74C \uC0B4\uC218 \uACF5\uACA9 +"
+    note: "(\uC0AC\uC6A9 \uC548 \uD568 \xB7 \uCD94\uC801\uC790 \uC81C\uAC70) \uC0B4\uC218: \uC4F0\uB7EC\uB728\uB9B0 \uC0B4\uC218 1\uBA85\uB2F9 \uB2E4\uC74C \uC0B4\uC218 \uACF5\uACA9 +"
   - key: price.alms
     value: 50
     unit: "\uC740\uC790"
@@ -4168,7 +4168,7 @@ MonoBehaviour:
   - key: event.wreck_tracking
     value: 2
     unit: 
-    note: "\uC7A5\uAC15 \uB09C\uD30C\uC120 \uB4A4\uC9C0\uAE30: \uCD94\uC801\uB3C4 +"
+    note: "\uC7A5\uAC15 \uB09C\uD30C\uC120 \uB4A4\uC9C0\uAE30: \uC18C\uB780 +"
   - key: event.toll_silver
     value: 100
     unit: "\uC740\uC790"
@@ -4180,7 +4180,7 @@ MonoBehaviour:
   - key: event.toll_sneak_tracking
     value: 3
     unit: 
-    note: "\uC7A5\uAC15 \uC218\uC801 \uD1B5\uD589\uC138 \uBAB0\uB798 \uC9C0\uB098\uAC00\uAE30: \uCD94\uC801\uB3C4 +"
+    note: "\uC7A5\uAC15 \uC218\uC801 \uD1B5\uD589\uC138 \uBAB0\uB798 \uC9C0\uB098\uAC00\uAE30: \uC18C\uB780 +"
   - key: event.ferry_silver
     value: 60
     unit: "\uC740\uC790"
@@ -6092,7 +6092,7 @@ MonoBehaviour:
   - key: event.altar_tracking
     value: 3
     unit: 
-    note: "\uCC9C\uB9C8\uCD1D \uB9C8\uAD50 \uC81C\uB2E8 \uBD80\uC218\uAE30: \uCD94\uC801\uB3C4 +"
+    note: "\uCC9C\uB9C8\uCD1D \uB9C8\uAD50 \uC81C\uB2E8 \uBD80\uC218\uAE30: \uC18C\uB780 +"
   - key: event.altar_silver
     value: 120
     unit: "\uC740\uC790"
@@ -6116,7 +6116,7 @@ MonoBehaviour:
   - key: karma.start_tracking
     value: 3
     unit: 
-    note: "\uC5C5\uBCF4 3\uB2E8\uACC4: \uD310\uC744 \uC774 \uCD94\uC801\uB3C4\uB85C \uC2DC\uC791"
+    note: "(\uC0AC\uC6A9 \uC548 \uD568 \xB7 \uCD94\uC801\uC790 \uC81C\uAC70) \uC5C5\uBCF4 3\uB2E8\uACC4: \uD310\uC744 \uC774 \uCD94\uC801\uB3C4\uB85C \uC2DC\uC791"
   - key: karma.attack
     value: 0.15
     unit: 
@@ -6865,3 +6865,7 @@ MonoBehaviour:
     value: 0.1
     unit: 
     note: "\uBD84\uB178 \uD55C \uACB9\uB9C8\uB2E4 \uC774\uB3D9 \uC99D\uAC00"
+  - key: karma.extra_enemies
+    value: 1
+    unit: "\uBA85"
+    note: "\uC5C5\uBCF4 3\uB2E8\uACC4: \uC2F8\uC6B0\uB294 \uBC29\uB9C8\uB2E4 \uCCAB \uC6E8\uC774\uBE0C\uC5D0 \uADF8 \uC9C0\uC5ED \uC878\uAC1C +"

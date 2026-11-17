@@ -7,14 +7,14 @@ namespace AThousandDawns.Prototype
 {
     // 업보 (기억 시트 B12, 몬스터 시트 B142): 천마를 격파하면 다음 판에 걸 수 있는 단계가 하나씩 열려요 (최대 6).
     // 마을 사당에서 골라요. 단계는 쌓여요 (3단계 = 1·2·3단계 모두). 단계마다 얻는 기억 +10%.
-    //   1 적 체력 +15% · 2 정예 특성 +1 · 3 추적도 3으로 시작 · 4 적 공격 +15% · 5 방 은자 −20% · 6 고수·보스 체력 +25%
+    //   1 적 체력 +15% · 2 정예 특성 +1 · 3 싸우는 방마다 졸개 +1 (RoomRun.Noise) · 4 적 공격 +15% · 5 방 은자 −20% · 6 고수·보스 체력 +25%
     public sealed partial class RoomRun
     {
         public const int KarmaStages = 6;
 
         public static readonly string[] KarmaRules =
         {
-            "적 체력 +15%", "정예 특성 +1", "추적도 3으로 시작", "적 공격 +15%", "방 은자 −20%", "고수·보스 체력 +25%",
+            "적 체력 +15%", "정예 특성 +1", "싸우는 방마다 졸개 +1", "적 공격 +15%", "방 은자 −20%", "고수·보스 체력 +25%",
         };
 
         public static event Action<int> KarmaChanged; // 사당에서 단계를 바꿀 때 (마을 업보 등불)
@@ -31,10 +31,9 @@ namespace AThousandDawns.Prototype
             _karma = Mathf.Clamp(meta.karma, 0, _karmaMax);
         }
 
-        // 새 판을 시작할 때만 (이어하기는 저장한 추적도 그대로)
+        // 새 판을 시작할 때만
         void StartKarma()
         {
-            if (_karma >= 3) SetTracking(Mathf.RoundToInt(GameConfig.GetOptional("karma.start_tracking", 3f)));
             if (_karma > 0) ShowBanner($"업보 {_karma}단계 · 얻는 기억 +{_karma * GameConfig.GetOptional("memory.karma_bonus", 0.1f):0%}");
         }
 

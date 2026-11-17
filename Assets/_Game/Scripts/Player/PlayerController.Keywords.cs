@@ -122,7 +122,7 @@ namespace AThousandDawns.Player
                 if (K(Keyword.Mado) >= 2) increase += Mathf.Min(_madoMax, Qi(QiState.Deviated) * _madoPerDeviated);
                 if (K(Keyword.Jeongjong) >= 2) increase += Qi(QiState.Circulating) * _jeongjongPerCirculating;
                 if (K(Keyword.Jeongjong) >= 6 && Qi(QiState.Lacking) == 0 && Qi(QiState.Deviated) == 0) increase += _jeongjongPure;
-                if (_items != null) increase += _items.Value("rune_earring", 1) + _items.Value("wizard_hat", 1) + _items.Value("dragon_tooth", 1) + _items.Value("fire_rune_ring", 1) + _items.Value("knight_gauntlet", 1) + _items.Value("storm_bracer", 1) + _items.Value("fire_spirit_earring", 1) + _items.Value("knight_helm", 1) + Hy(Keyword.Ganggi, 2); // 이계 기물: 모든 피해
+                if (_items != null) increase += Hy(Keyword.Ganggi, 2); // 마검 2단계 (이계 기물은 조건부 피해로: PlayerController.ItemsOtherworld)
                 if (IsCursed) increase -= GameConfig.GetOptional("elite.curse_attack", 0.2f); // 저주: 모든 피해 −20%
                 return increase;
             }
@@ -194,6 +194,7 @@ namespace AThousandDawns.Player
         public void EnterRoom()
         {
             _tabletUsed = false; // 불괴 호패: 전투(방)마다 1회
+            OtherworldEnterRoom(); // 성기사 투구 · 성기사 성표
             if (K(Keyword.Geumgang) >= 2) _shields.Add(Mathf.RoundToInt(_maxHealth * _geumgangRoomShield), 0f, ShieldCap);
         }
 

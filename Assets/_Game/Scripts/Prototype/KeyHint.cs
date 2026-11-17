@@ -95,7 +95,7 @@ namespace AThousandDawns.Prototype
         {
             if (!LeftStyles.TryGetValue(from, out var s))
             {
-                s = new GUIStyle(from) { alignment = TextAnchor.MiddleLeft };
+                s = new GUIStyle(from) { alignment = TextAnchor.MiddleLeft }; UiStyle.Steady(s);
                 LeftStyles[from] = s;
             }
             return s;
@@ -158,7 +158,7 @@ namespace AThousandDawns.Prototype
         {
             _keyStyle ??= new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, clipping = TextClipping.Overflow };
             _keyStyle.fontSize = Mathf.RoundToInt(keyH * 0.5f);
-            _keyStyle.normal.textColor = _keyStyle.hover.textColor = KeyText;
+            _keyStyle.normal.textColor = _keyStyle.hover.textColor = KeyText; UiStyle.Steady(_keyStyle);
             return _keyStyle;
         }
 
@@ -167,7 +167,7 @@ namespace AThousandDawns.Prototype
             int key = style.GetHashCode() * 31 + fontSize;
             if (!Sized.TryGetValue(key, out var s) || s == null)
             {
-                s = new GUIStyle(style) { fontSize = fontSize, richText = true, clipping = TextClipping.Overflow };
+                s = new GUIStyle(style) { fontSize = fontSize, richText = true, clipping = TextClipping.Overflow }; UiStyle.Steady(s);
                 s.hover.textColor = s.active.textColor = s.focused.textColor = s.normal.textColor; // 안내 글은 마우스를 올려도 색이 바뀌지 않게
                 Sized[key] = s;
             }

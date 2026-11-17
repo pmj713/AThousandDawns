@@ -487,15 +487,15 @@ namespace AThousandDawns.Prototype
         void EnsureStyles()
         {
             if (_title != null) return;
-            _title = new GUIStyle(GUI.skin.label) { fontSize = 32, alignment = TextAnchor.MiddleLeft, richText = true };
-            _title.normal.textColor = Ink;
-            _label = new GUIStyle(GUI.skin.label) { fontSize = 22, richText = true, wordWrap = true }; // 한지 위에서도 읽히게 (4차 플레이 테스트)
-            _label.normal.textColor = Ink;
-            _small = new GUIStyle(GUI.skin.label) { fontSize = 19, richText = true, wordWrap = true };
-            _small.normal.textColor = new Color(0.14f, 0.11f, 0.1f); // 짙은 먹 (옅은 갈색은 한지 결에 묻혀요)
-            _node = new GUIStyle(GUI.skin.label) { fontSize = 17, alignment = TextAnchor.UpperCenter, richText = true };
-            _node.normal.textColor = Ink;
-            _button = new GUIStyle(GUI.skin.button) { fontSize = 22 };
+            _title = new GUIStyle(GUI.skin.label) { fontSize = 32, alignment = TextAnchor.MiddleLeft, richText = true }; UiStyle.Steady(_title);
+            _title.normal.textColor = Ink; UiStyle.Steady(_title);
+            _label = new GUIStyle(GUI.skin.label) { fontSize = 22, richText = true, wordWrap = true }; UiStyle.Steady(_label); // 한지 위에서도 읽히게 (4차 플레이 테스트)
+            _label.normal.textColor = Ink; UiStyle.Steady(_label);
+            _small = new GUIStyle(GUI.skin.label) { fontSize = 19, richText = true, wordWrap = true }; UiStyle.Steady(_small);
+            _small.normal.textColor = new Color(0.14f, 0.11f, 0.1f); UiStyle.Steady(_small); // 짙은 먹 (옅은 갈색은 한지 결에 묻혀요)
+            _node = new GUIStyle(GUI.skin.label) { fontSize = 17, alignment = TextAnchor.UpperCenter, richText = true }; UiStyle.Steady(_node);
+            _node.normal.textColor = Ink; UiStyle.Steady(_node);
+            _button = new GUIStyle(GUI.skin.button) { fontSize = 22 }; UiStyle.Steady(_button);
             AThousandDawns.Fx.InkMeridianArt.Restyle(_button); // 먹 붓 획 버튼 (한지색 글자, 누르면 붉은 먹)
         }
     }

@@ -411,7 +411,18 @@ namespace AThousandDawns.Enemies
             return free >= distance - 0.05f;
         }
 
-        protected bool TryHitPlayer() => Player.TryReceiveHit(AttackPower, transform.position, HitKnockback, Body);
+        // 다른 진영 적을 노리는 중이면 (Rival) 거리 판정이 그 적 기준이라, 플레이어가 실제로 곁에 있을 때만 맞아요
+        // (멀리 있는 플레이어가 슬라임이 무협 적을 덮칠 때 같이 맞던 것)
+        protected bool TryHitPlayer()
+        {
+            if (Rival != null)
+            {
+                Vector3 d = Player.transform.position - transform.position;
+                d.y = 0f;
+                if (d.magnitude > BodyRadius + PlayerRadius + Mathf.Max(1f, AttackRange) + 0.3f) return false;
+            }
+            return Player.TryReceiveHit(AttackPower, transform.position, HitKnockback, Body);
+        }
 
         // 지역 배율 (폐사찰 ×1.3): 나온 직후 한 번
         public void ScaleAttack(float multiplier) => AttackPower *= multiplier;

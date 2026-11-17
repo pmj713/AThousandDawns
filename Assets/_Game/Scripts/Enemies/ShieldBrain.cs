@@ -6,7 +6,7 @@ namespace AThousandDawns.Enemies
 {
     // 방패 산적: 정면 120°는 피해 ×0.2, 초당 180°로만 돌아서 옆·뒤가 열려요.
     // 방패를 든 채 초당 2칸으로 다가와 2칸 돌진 베기 + 넉백 1칸. 돌진 뒤 빈틈(0.8초) 동안 방패를 내려요.
-    // 대시 공격에 맞으면 방패가 깨져요 (그 한 방은 온전히 들어가요).
+    // 초식 · 절초에 맞으면 방패가 깨져요 (그 한 방은 온전히 들어가요).
     public class ShieldBrain : LungeSlashBrain // 등패수 (RattanBrain)가 이어받아요
     {
         static readonly Vector3 RaisedPosition = new Vector3(0f, 0.85f, 0.5f);
@@ -41,7 +41,7 @@ namespace AThousandDawns.Enemies
         float ResolveHit(Vector3 attacker, HitTag tag)
         {
             if (_broken) return 1f;
-            if (tag == HitTag.DashAttack)
+            if (tag == HitTag.Skill || tag == HitTag.Ultimate) // 초식 (우클릭) · 절초로 방패를 부숴요 (대시 공격이 아니라)
             {
                 _broken = true;
                 if (_shield != null) Destroy(_shield.gameObject);

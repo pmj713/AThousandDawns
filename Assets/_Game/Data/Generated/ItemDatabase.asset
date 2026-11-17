@@ -1070,7 +1070,7 @@ MonoBehaviour:
     aux: 
     minQi: 1
     maxQi: 2
-    v1: 0.05
+    v1: 0.12
     v2: 0
     v3: 0
     v4: 0
@@ -1080,7 +1080,7 @@ MonoBehaviour:
     v4Scales: 0
     side: max_hp
     sideValue: 0.05
-    effectText: "\uC774\uB3D9\uC18D\uB3C4 +5%"
+    effectText: "\uB300\uC2DC \uAC70\uB9AC +12%"
     sideText: "\uCD5C\uB300 \uCCB4\uB825 -5%"
     slot: 4
     otherworld: 0
@@ -1206,7 +1206,7 @@ MonoBehaviour:
     v4Scales: 0
     side: taken
     sideValue: 0.15
-    effectText: "\uB300\uC2DC \uD6C4 1\uCD08\uAC04 \uC774\uB3D9\uC18D\uB3C4 +15%. \uC8FC\uD654\uC785\uB9C8\uBA74 \uB300\uC2DC \uD6C4 \uCCAB \uACF5\uACA9 \uD53C\uD574 +50%"
+    effectText: "\uB300\uC2DC \uD6C4 1\uCD08\uAC04 \uACF5\uACA9 \uC18D\uB3C4 +15%. \uC8FC\uD654\uC785\uB9C8\uBA74 \uB300\uC2DC \uD6C4 \uCCAB \uACF5\uACA9 \uD53C\uD574 +50%"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +15%"
     slot: 2
     otherworld: 0
@@ -1532,7 +1532,7 @@ MonoBehaviour:
     aux: 
     minQi: 1
     maxQi: 2
-    v1: 0.06
+    v1: 0.15
     v2: 0
     v3: 0
     v4: 0
@@ -1542,7 +1542,7 @@ MonoBehaviour:
     v4Scales: 0
     side: taken
     sideValue: 0.1
-    effectText: "\uC774\uB3D9\uC18D\uB3C4 +6%"
+    effectText: "\uB300\uC2DC \uD68C\uBCF5 \uC18D\uB3C4 +15%"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
     slot: 4
     otherworld: 1
@@ -1553,17 +1553,17 @@ MonoBehaviour:
     aux: 
     minQi: 1
     maxQi: 3
-    v1: 0.04
-    v2: 0
+    v1: 1.5
+    v2: 0.25
     v3: 0
     v4: 0
-    v1Scales: 1
-    v2Scales: 0
+    v1Scales: 0
+    v2Scales: 1
     v3Scales: 0
     v4Scales: 0
     side: move_speed
     sideValue: 0.1
-    effectText: "\uBC1B\uB294 \uD53C\uD574 -4%"
+    effectText: "\uB9DE\uC73C\uBA74 1.5\uCD08 \uB3D9\uC548 \uBC1B\uB294 \uD53C\uD574 -25%"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
     slot: 7
     otherworld: 1
@@ -1574,7 +1574,7 @@ MonoBehaviour:
     aux: 
     minQi: 2
     maxQi: 3
-    v1: 0.05
+    v1: 0.15
     v2: 0
     v3: 0
     v4: 0
@@ -1584,7 +1584,7 @@ MonoBehaviour:
     v4Scales: 0
     side: taken
     sideValue: 0.1
-    effectText: "\uBAA8\uB4E0 \uD53C\uD574 +5%"
+    effectText: "\uAC10\uC804\uB41C \uC801\uC5D0\uAC8C \uC8FC\uB294 \uD53C\uD574 +15%"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
     slot: 5
     otherworld: 1
@@ -1595,9 +1595,9 @@ MonoBehaviour:
     aux: 
     minQi: 3
     maxQi: 4
-    v1: 0.06
-    v2: 0
-    v3: 0
+    v1: 0.15
+    v2: 1
+    v3: 0.15
     v4: 0
     v1Scales: 1
     v2Scales: 0
@@ -1605,7 +1605,7 @@ MonoBehaviour:
     v4Scales: 0
     side: taken
     sideValue: 0.1
-    effectText: "\uACF5\uACA9 \uC18D\uB3C4 +6%"
+    effectText: "\uB300\uC2DC \uAC70\uB9AC +15%, \uB300\uC2DC \uD6C4 1\uCD08 \uB3D9\uC548 \uACF5\uACA9 \uC18D\uB3C4 +15%"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
     slot: 3
     otherworld: 1
@@ -1616,7 +1616,7 @@ MonoBehaviour:
     aux: 
     minQi: 2
     maxQi: 4
-    v1: 0.04
+    v1: 0.12
     v2: 0
     v3: 0
     v4: 0
@@ -1626,7 +1626,7 @@ MonoBehaviour:
     v4Scales: 0
     side: move_speed
     sideValue: 0.1
-    effectText: "\uBAA8\uB4E0 \uD53C\uD574 +4%"
+    effectText: "\uCD08\uC2DD \uCFE8\uD0C0\uC784 -12%"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
     slot: 1
     otherworld: 1
@@ -1637,7 +1637,7 @@ MonoBehaviour:
     aux: 
     minQi: 2
     maxQi: 3
-    v1: 0.05
+    v1: 0.12
     v2: 0
     v3: 0
     v4: 0
@@ -1647,7 +1647,7 @@ MonoBehaviour:
     v4Scales: 0
     side: move_speed
     sideValue: 0.1
-    effectText: "\uBC29\uC5B4\uB825 +5%"
+    effectText: "\uBCF4\uD638\uB9C9\uC774 \uC788\uB294 \uB3D9\uC548 \uBC29\uC5B4\uB825 +12%"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
     slot: 8
     otherworld: 1
@@ -1679,7 +1679,7 @@ MonoBehaviour:
     aux: 
     minQi: 3
     maxQi: 5
-    v1: 0.08
+    v1: 0.18
     v2: 0
     v3: 0
     v4: 0
@@ -1689,7 +1689,7 @@ MonoBehaviour:
     v4Scales: 0
     side: taken
     sideValue: 0.15
-    effectText: "\uBAA8\uB4E0 \uD53C\uD574 +8%"
+    effectText: "\uD654\uC0C1 \uC911\uC778 \uC801\uC5D0\uAC8C \uC8FC\uB294 \uD53C\uD574 +18%"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +15%"
     slot: 6
     otherworld: 1
@@ -1700,17 +1700,17 @@ MonoBehaviour:
     aux: 
     minQi: 2
     maxQi: 4
-    v1: 0.08
-    v2: 0
+    v1: 1.5
+    v2: 0.15
     v3: 0
     v4: 0
-    v1Scales: 1
-    v2Scales: 0
+    v1Scales: 0
+    v2Scales: 1
     v3Scales: 0
     v4Scales: 0
     side: taken
     sideValue: 0.15
-    effectText: "\uACF5\uACA9 \uC18D\uB3C4 +8%"
+    effectText: "\uCD08\uC2DD \uC801\uC911 \uB4A4 1.5\uCD08 \uB3D9\uC548 \uACF5\uACA9 \uC18D\uB3C4 +15%"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +15%"
     slot: 9
     otherworld: 1
@@ -1721,17 +1721,17 @@ MonoBehaviour:
     aux: 
     minQi: 2
     maxQi: 3
-    v1: 0.05
+    v1: 1
     v2: 0
     v3: 0
     v4: 0
-    v1Scales: 1
+    v1Scales: 0
     v2Scales: 0
     v3Scales: 0
     v4Scales: 0
     side: taken
     sideValue: 0.1
-    effectText: "\uBAA8\uB4E0 \uD53C\uD574 +5%"
+    effectText: "\uCD08\uC2DD \uC801\uC911 \uC2DC \uD654\uC0C1 +1\uC911\uCCA9"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
     slot: 7
     otherworld: 1
@@ -1763,17 +1763,17 @@ MonoBehaviour:
     aux: 
     minQi: 2
     maxQi: 4
-    v1: 0.05
+    v1: 1
     v2: 0
     v3: 0
     v4: 0
-    v1Scales: 1
+    v1Scales: 0
     v2Scales: 0
     v3Scales: 0
     v4Scales: 0
     side: taken
     sideValue: 0.1
-    effectText: "\uACF5\uACA9 \uC18D\uB3C4 +5%"
+    effectText: "\uCD08\uC2DD \uC801\uC911 \uC2DC \uAC10\uC804 +1\uC911\uCCA9"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
     slot: 1
     otherworld: 1
@@ -1784,8 +1784,8 @@ MonoBehaviour:
     aux: 
     minQi: 3
     maxQi: 5
-    v1: 0.2
-    v2: 0
+    v1: 0.25
+    v2: 1
     v3: 0
     v4: 0
     v1Scales: 1
@@ -1794,7 +1794,7 @@ MonoBehaviour:
     v4Scales: 0
     side: move_speed
     sideValue: 0.1
-    effectText: "\uBC29\uC804 \uD53C\uD574 +20%"
+    effectText: "\uCC98\uCE58\uD558\uBA74 25% \uD655\uB960\uB85C \uC5F0\uC1C4 \uBC88\uAC1C"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
     slot: 8
     otherworld: 1
@@ -1805,7 +1805,7 @@ MonoBehaviour:
     aux: 
     minQi: 2
     maxQi: 3
-    v1: 0.05
+    v1: 0.2
     v2: 0
     v3: 0
     v4: 0
@@ -1815,7 +1815,7 @@ MonoBehaviour:
     v4Scales: 0
     side: move_speed
     sideValue: 0.1
-    effectText: "\uBAA8\uB4E0 \uD53C\uD574 +5%"
+    effectText: "\uD3C9\uD0C0 3\uD0C0\uC9F8 \uD53C\uD574 +20%"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
     slot: 7
     otherworld: 1
@@ -1847,7 +1847,7 @@ MonoBehaviour:
     aux: 
     minQi: 2
     maxQi: 4
-    v1: 0.06
+    v1: 0.6
     v2: 0
     v3: 0
     v4: 0
@@ -1857,7 +1857,7 @@ MonoBehaviour:
     v4Scales: 0
     side: taken
     sideValue: 0.1
-    effectText: "\uC774\uB3D9\uC18D\uB3C4 +6%"
+    effectText: "\uB300\uC2DC\uB85C \uC9C0\uB098\uAC04 \uC801\uC5D0\uAC8C \uD53C\uD574 (\uAE30\uC900 \uD53C\uD574\uC758 60%, \uB300\uC2DC \uD55C \uBC88\uC5D0 \uC801\uB9C8\uB2E4 \uD55C \uBC88)"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
     slot: 2
     otherworld: 1
@@ -1868,7 +1868,7 @@ MonoBehaviour:
     aux: 
     minQi: 3
     maxQi: 5
-    v1: 0.06
+    v1: 0.18
     v2: 0
     v3: 0
     v4: 0
@@ -1878,7 +1878,7 @@ MonoBehaviour:
     v4Scales: 0
     side: move_speed
     sideValue: 0.1
-    effectText: "\uBC1B\uB294 \uD53C\uD574 -6%"
+    effectText: "\uB454\uD654 \xB7 \uBE59\uACB0\uB41C \uC801\uC5D0\uAC8C \uC8FC\uB294 \uD53C\uD574 +18%"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
     slot: 6
     otherworld: 1
@@ -1889,7 +1889,7 @@ MonoBehaviour:
     aux: 
     minQi: 2
     maxQi: 4
-    v1: 0.05
+    v1: 0.08
     v2: 0
     v3: 0
     v4: 0
@@ -1899,7 +1899,7 @@ MonoBehaviour:
     v4Scales: 0
     side: move_speed
     sideValue: 0.1
-    effectText: "\uBC29\uC5B4\uB825 +5%"
+    effectText: "\uC2F8\uC6B0\uB294 \uBC29\uC5D0 \uB4E4\uC5B4\uAC08 \uB54C\uB9C8\uB2E4 \uCD5C\uB300 \uCCB4\uB825 8% \uBCF4\uD638\uB9C9"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
     slot: 1
     otherworld: 1
@@ -1910,7 +1910,7 @@ MonoBehaviour:
     aux: 
     minQi: 2
     maxQi: 3
-    v1: 0.06
+    v1: 0.1
     v2: 0
     v3: 0
     v4: 0
@@ -1920,7 +1920,7 @@ MonoBehaviour:
     v4Scales: 0
     side: taken
     sideValue: 0.1
-    effectText: "\uC774\uB3D9\uC18D\uB3C4 +6%"
+    effectText: "\uB300\uC2DC \uBB34\uC801 \uC2DC\uAC04 +0.1\uCD08"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
     slot: 5
     otherworld: 1
@@ -1931,8 +1931,8 @@ MonoBehaviour:
     aux: 
     minQi: 1
     maxQi: 2
-    v1: 0.05
-    v2: 0
+    v1: 0.3
+    v2: 2
     v3: 0
     v4: 0
     v1Scales: 1
@@ -1941,7 +1941,7 @@ MonoBehaviour:
     v4Scales: 0
     side: taken
     sideValue: 0.1
-    effectText: "\uACF5\uACA9 \uC18D\uB3C4 +5%"
+    effectText: "\uB300\uC2DC\uD560 \uB54C \uC55E\uC73C\uB85C \uAE43\uD138 2\uAC1C\uB97C \uB0A0\uB824\uC694 (\uD53C\uD574 30%)"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
     slot: 7
     otherworld: 1
@@ -1952,9 +1952,9 @@ MonoBehaviour:
     aux: 
     minQi: 3
     maxQi: 5
-    v1: 0.07
-    v2: 0
-    v3: 0
+    v1: 2.5
+    v2: 4
+    v3: 2
     v4: 0
     v1Scales: 1
     v2Scales: 0
@@ -1962,7 +1962,7 @@ MonoBehaviour:
     v4Scales: 0
     side: move_speed
     sideValue: 0.1
-    effectText: "\uBC1B\uB294 \uD53C\uD574 -7%"
+    effectText: "\uB9DE\uC73C\uBA74 \uB458\uB808 2.5\uCE78 \uC801 \uB454\uD654 +2\uC911\uCCA9 (4\uCD08\uC5D0 \uD55C \uBC88)"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
     slot: 2
     otherworld: 1
@@ -1973,7 +1973,7 @@ MonoBehaviour:
     aux: 
     minQi: 2
     maxQi: 4
-    v1: 0.05
+    v1: 2.5
     v2: 0
     v3: 0
     v4: 0
@@ -1983,7 +1983,7 @@ MonoBehaviour:
     v4Scales: 0
     side: move_speed
     sideValue: 0.1
-    effectText: "\uBC1B\uB294 \uD53C\uD574 -5%"
+    effectText: "\uB300\uC2DC\uD55C \uAE38\uC5D0 2.5\uCD08 \uB3D9\uC548 \uC11C\uB9AC (\uC9C0\uB098\uB294 \uC801 \uB454\uD654)"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
     slot: 4
     otherworld: 1
@@ -1994,8 +1994,8 @@ MonoBehaviour:
     aux: 
     minQi: 2
     maxQi: 4
-    v1: 0.05
-    v2: 0
+    v1: 0.3
+    v2: 1.5
     v3: 0
     v4: 0
     v1Scales: 1
@@ -2004,7 +2004,7 @@ MonoBehaviour:
     v4Scales: 0
     side: taken
     sideValue: 0.1
-    effectText: "\uBAA8\uB4E0 \uD53C\uD574 +5%"
+    effectText: "\uD3C9\uD0C0 3\uD0C0\uC9F8 \uC801\uC911 \uC2DC 30% \uD655\uB960\uB85C \uB099\uB8B0 (\uD53C\uD574 150%)"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
     slot: 7
     otherworld: 1
@@ -2015,17 +2015,17 @@ MonoBehaviour:
     aux: 
     minQi: 3
     maxQi: 5
-    v1: 0.2
+    v1: 1
     v2: 0
     v3: 0
     v4: 0
-    v1Scales: 1
+    v1Scales: 0
     v2Scales: 0
     v3Scales: 0
     v4Scales: 0
     side: move_speed
     sideValue: 0.1
-    effectText: "\uBC29\uC804 \uD53C\uD574 +20%"
+    effectText: "\uB300\uC2DC\uB85C \uC9C0\uB098\uAC04 \uC801 \uAC10\uC804 +1\uC911\uCCA9"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
     slot: 4
     otherworld: 1
@@ -2036,7 +2036,7 @@ MonoBehaviour:
     aux: 
     minQi: 2
     maxQi: 3
-    v1: 0.05
+    v1: 0.5
     v2: 0
     v3: 0
     v4: 0
@@ -2046,7 +2046,7 @@ MonoBehaviour:
     v4Scales: 0
     side: move_speed
     sideValue: 0.1
-    effectText: "\uBC29\uC5B4\uB825 +5%"
+    effectText: "\uB9DE\uC558\uC744 \uB54C \uACBD\uC9C1 \xB7 \uB109\uBC31 -50%"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
     slot: 3
     otherworld: 1
@@ -2057,8 +2057,8 @@ MonoBehaviour:
     aux: 
     minQi: 3
     maxQi: 5
-    v1: 0.07
-    v2: 0
+    v1: 0.2
+    v2: 0.3
     v3: 0
     v4: 0
     v1Scales: 1
@@ -2067,7 +2067,7 @@ MonoBehaviour:
     v4Scales: 0
     side: move_speed
     sideValue: 0.1
-    effectText: "\uBC1B\uB294 \uD53C\uD574 -7%"
+    effectText: "\uCCB4\uB825\uC774 30% \uC544\uB798\uB85C \uB5A8\uC5B4\uC9C0\uBA74 \uBC29\uB9C8\uB2E4 \uD55C \uBC88 \uCCB4\uB825 20% \uD68C\uBCF5"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
     slot: 6
     otherworld: 1
@@ -2078,7 +2078,7 @@ MonoBehaviour:
     aux: 
     minQi: 2
     maxQi: 4
-    v1: 0.05
+    v1: 0.15
     v2: 0
     v3: 0
     v4: 0
@@ -2088,7 +2088,7 @@ MonoBehaviour:
     v4Scales: 0
     side: taken
     sideValue: 0.1
-    effectText: "\uBAA8\uB4E0 \uD53C\uD574 +5%"
+    effectText: "\uD3C9\uD0C0 1\xB72\uD0C0\uC5D0 \uD654\uC0C1 \uD655\uB960 +15%"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
     slot: 5
     otherworld: 1
@@ -2099,7 +2099,7 @@ MonoBehaviour:
     aux: 
     minQi: 3
     maxQi: 5
-    v1: 0.2
+    v1: 3
     v2: 0
     v3: 0
     v4: 0
@@ -2109,7 +2109,7 @@ MonoBehaviour:
     v4Scales: 0
     side: move_speed
     sideValue: 0.1
-    effectText: "\uD654\uC0C1 \uD53C\uD574 +20%"
+    effectText: "\uD654\uC0C1 \uC911\uC778 \uC801\uC744 \uCC98\uCE58\uD558\uBA74 \uCCB4\uB825 +3"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
     slot: 9
     otherworld: 1
@@ -2120,7 +2120,7 @@ MonoBehaviour:
     aux: 
     minQi: 2
     maxQi: 3
-    v1: 0.05
+    v1: 0.12
     v2: 0
     v3: 0
     v4: 0
@@ -2130,7 +2130,7 @@ MonoBehaviour:
     v4Scales: 0
     side: taken
     sideValue: 0.1
-    effectText: "\uBAA8\uB4E0 \uD53C\uD574 +5%"
+    effectText: "\uC815\uC608 \xB7 \uACE0\uC218 \xB7 \uBCF4\uC2A4\uC5D0\uAC8C \uC8FC\uB294 \uD53C\uD574 +12%"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
     slot: 1
     otherworld: 1
@@ -2141,7 +2141,7 @@ MonoBehaviour:
     aux: 
     minQi: 3
     maxQi: 5
-    v1: 0.07
+    v1: 0.8
     v2: 0
     v3: 0
     v4: 0
@@ -2151,7 +2151,7 @@ MonoBehaviour:
     v4Scales: 0
     side: taken
     sideValue: 0.15
-    effectText: "\uACF5\uACA9 \uC18D\uB3C4 +7%"
+    effectText: "\uB300\uC2DC \uD6C4 \uCCAB \uD3C9\uD0C0\uAC00 \uC55E\uC73C\uB85C \uAC80\uAE30\uB97C \uB0A0\uB824\uC694 (\uD53C\uD574 80%)"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +15%"
     slot: 4
     otherworld: 1

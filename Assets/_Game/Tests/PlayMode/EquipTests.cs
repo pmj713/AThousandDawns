@@ -63,15 +63,11 @@ namespace AThousandDawns.Tests
             Assert.AreEqual(new Vector2Int(0, 0), hat.Cell, "머리 칸");
 
             var earring = _items.Add(Def("t_ear", EquipSlot.Earring));
-            Assert.IsFalse(earring.OnBoard, "귀걸이 칸은 아직 잠겨 있어 주머니로");
-            _items.Place(earring, new Vector2Int(4, 0));
-            Assert.IsFalse(earring.OnBoard, "잠긴 칸에는 못 끼워요");
+            Assert.IsTrue(earring.OnBoard, "모든 칸이 처음부터 열려 있어요");
+            Assert.AreEqual(new Vector2Int(4, 0), earring.Cell, "왼쪽 귀걸이 칸");
             _items.Place(earring, new Vector2Int(0, 0));
-            Assert.IsFalse(earring.OnBoard, "다른 부위 칸에도 못 끼워요");
-
-            _items.UnlockSlotsThrough(0); // 죽림 보스: 귀걸이 둘
+            Assert.AreEqual(new Vector2Int(4, 0), earring.Cell, "다른 부위 칸에는 못 끼워요");
             _items.Place(earring, new Vector2Int(5, 0));
-            Assert.IsTrue(earring.OnBoard);
             Assert.AreEqual(new Vector2Int(5, 0), earring.Cell, "오른쪽 귀걸이 칸");
         }
 

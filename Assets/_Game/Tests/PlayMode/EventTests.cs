@@ -124,7 +124,7 @@ namespace AThousandDawns.Tests
         }
 
         [UnityTest]
-        public IEnumerator 표국_호위는_웨이브_3개_뒤_은자_150_짐을_털면_100과_추적도()
+        public IEnumerator 표국_호위는_웨이브_3개_뒤_은자_150_짐을_털면_100과_소란()
         {
             yield return Load();
             Assert.AreEqual(3, _run.PlanRoom(1, 3).Count, "웨이브 3개");
@@ -141,11 +141,11 @@ namespace AThousandDawns.Tests
             Assert.GreaterOrEqual(_run.Silver, 150 + 18, "방 은자 + 호위 삯 150");
 
             yield return Load();
-            int tracking = _run.Tracking;
+            int noise = _run.Noise;
             _run.OpenEventForTest("escort");
             Assert.IsTrue(_run.ChooseEvent(Index("짐을 턴다")));
             Assert.AreEqual(100, _run.Silver);
-            Assert.AreEqual(tracking + 3, _run.Tracking);
+            Assert.AreEqual(noise + 3, _run.Noise);
         }
 
         [UnityTest]
@@ -223,18 +223,18 @@ namespace AThousandDawns.Tests
         }
 
         [UnityTest]
-        public IEnumerator 검결과_약방은_추적도와_혈자리_금창약()
+        public IEnumerator 검결과_약방은_소란와_혈자리_금창약()
         {
             yield return Load();
             _run.OpenEventForTest("scripture");
             Assert.IsTrue(_run.ChooseEvent(Index("깊이 참오한다")));
-            Assert.AreEqual(2, _run.Tracking);
+            Assert.AreEqual(2, _run.Noise);
             Assert.AreEqual(1, _player.Level.Pending, "혈자리 하나");
             _run.CloseEvent();
 
             _run.OpenEventForTest("pharmacy");
             Assert.IsTrue(_run.ChooseEvent(Index("샅샅이 뒤진다")));
-            Assert.AreEqual(3, _run.Tracking);
+            Assert.AreEqual(3, _run.Noise);
             Assert.AreEqual(1, _player.Potions);
             _run.CloseEvent();
         }
@@ -323,13 +323,13 @@ namespace AThousandDawns.Tests
         // ── 장강 수채 전용 이벤트
 
         [UnityTest]
-        public IEnumerator 난파선_뒤지면_추적도와_일반이_없는_기물_고르기()
+        public IEnumerator 난파선_뒤지면_소란와_일반이_없는_기물_고르기()
         {
             yield return Load();
-            int tracking = _run.Tracking;
+            int noise = _run.Noise;
             _run.OpenEventForTest("wreck");
             Assert.IsTrue(_run.ChooseEvent(Index("짐칸을 뒤진다")));
-            Assert.AreEqual(tracking + 2, _run.Tracking);
+            Assert.AreEqual(noise + 2, _run.Noise);
             _run.CloseEvent();
             yield return WaitUntil(() => _arena.IsChoosing, 2f);
             Assert.IsTrue(_arena.IsChoosing);
@@ -342,9 +342,9 @@ namespace AThousandDawns.Tests
             yield return Load();
             _run.OpenEventForTest("toll");
             Assert.AreEqual("은자가 모자라요", _run.CurrentEvent.Choices[Index("통행세를 낸다")].Locked);
-            int tracking = _run.Tracking;
+            int noise = _run.Noise;
             Assert.IsTrue(_run.ChooseEvent(Index("몰래 지나간다")));
-            Assert.AreEqual(tracking + 3, _run.Tracking);
+            Assert.AreEqual(noise + 3, _run.Noise);
             _run.CloseEvent();
 
             _run.GiveSilver(100);
@@ -428,14 +428,14 @@ namespace AThousandDawns.Tests
         }
 
         [UnityTest]
-        public IEnumerator 마교_제단_기물을_바치면_공력_부수면_추적도와_은자()
+        public IEnumerator 마교_제단_기물을_바치면_공력_부수면_소란와_은자()
         {
             yield return Load();
             _run.OpenEventForTest("demon_altar");
             Assert.AreEqual("바칠 기물이 없어요", _run.CurrentEvent.Choices[Index("기물을 바친다")].Locked);
-            int tracking = _run.Tracking, silver = _run.Silver;
+            int noise = _run.Noise, silver = _run.Silver;
             Assert.IsTrue(_run.ChooseEvent(Index("부순다")));
-            Assert.AreEqual(tracking + 3, _run.Tracking);
+            Assert.AreEqual(noise + 3, _run.Noise);
             Assert.AreEqual(silver + 120, _run.Silver);
             _run.CloseEvent();
 

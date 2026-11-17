@@ -15,7 +15,7 @@ namespace AThousandDawns.Prototype
     // 쓰러뜨리면 기물 대신 셋 중 하나 (기획 대화):
     //   비급 전수: 그 고수의 초식을 얻음 (회선참 대신 · 비도는 비도 초식이 바뀜)
     //   흡성: 공력 +1, 대신 이번 지역 동안 모든 기물의 최대 기 −1
-    //   방면: 살려 보냄 → 추적도 0 + 은자
+    //   방면: 살려 보냄 → 은자 + 금창약
     public sealed partial class RoomRun
     {
         [SerializeField] Site master = new Site();     // 청죽객 결투장
@@ -61,7 +61,7 @@ namespace AThousandDawns.Prototype
         {
             if (_master == null || !_master.IsDead || _masterChoiceShown || OffersOpen) return;
             _masterChoiceShown = true;
-            Notify("master", "고수를 꺾었어요: 비급 전수(초식이 바뀜) · 흡성(공력 +1) · 방면(추적도 0) 중 하나");
+            Notify("master", "고수를 꺾었어요: 비급 전수(초식이 바뀜) · 흡성(공력 +1) · 방면(은자 · 금창약) 중 하나");
             OpenMasterChoice(_masterPicks, new System.Collections.Generic.HashSet<int>());
         }
 
@@ -115,14 +115,13 @@ namespace AThousandDawns.Prototype
             });
             v.Choices.Add(new EventChoice
             {
-                Label = $"방면 · 살려 보낸다 (추적도 0, 은자 +{spare}, 금창약 +1)",
+                Label = $"방면 · 살려 보낸다 (은자 +{spare}, 금창약 +1)",
                 Act = () =>
                 {
-                    Tracking = 0;
                     Silver += spare;
                     bool potion = Player.AddPotion(); // 고수가 품에서 금창약을 꺼내 줘요 (가득하면 그만큼 은자)
                     if (!potion) Silver += PotionSilver;
-                    return $"{_master.DisplayName}이(가) 은혜를 갚겠다며 마교의 추적을 따돌려 주고 금창약을 건네요. 추적도 0 · 은자 +{spare}{(potion ? " · 금창약 +1" : $" · 은자 +{PotionSilver} (금창약이 가득해요)")}";
+                    return $"{_master.DisplayName}이(가) 은혜를 갚겠다며 품에서 은자와 금창약을 꺼내 건네요. 은자 +{spare}{(potion ? " · 금창약 +1" : $" · 은자 +{PotionSilver} (금창약이 가득해요)")}";
                 },
             });
             if (picks > 1) v.Title += $" · {picks}가지 중 하나 더";

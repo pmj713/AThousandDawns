@@ -392,15 +392,15 @@ potion.heal,40%,,금창약 회복량 (최대 체력 비율),조작!B73
 potion.move_ratio,50%,,금창약 누르는 동안 이동속도,조작!B74
 potion.reuse,1,s,금창약 다시 마실 수 있기까지,조작!B76
 interact.range,1.2,cell,상호작용 범위 (점소이),조작!B80
-tracking.per_room,1,,전투 방을 비울 때마다 추적도 +,기획 대화 (추적도)
-tracking.assassin1,5,,추적도 이 값 이상이면 다음 층에 살수 1명,몬스터!C126 설명
-tracking.assassin2,10,,추적도 이 값 이상이면 살수 2명 + 보스 체력 증가,몬스터!C126 설명
-tracking.boss_hp,1.15,,추적도 높을 때 보스 체력 배율 (+15%),몬스터!C126 설명
-tracking.kill_reduce,2,,살수 처치 시 추적도 −,몬스터!C129 설명
-tracking.inn_ratio,50%,,객잔에 들르면 추적도 비율 (절반),기획 대화 (객잔 규칙)
-assassin.appear_rooms,2,,층에 들어와 이만큼 방을 지나면 첫째 살수가 나타남,몬스터!C126 설명
-assassin.step_time,6,s,살수가 방 하나를 쫓아오는 시간 (임시),
-assassin.warning,1.5,s,따라잡혔을 때 난입·결투 경고,몬스터!C127 설명
+tracking.per_room,1,,(사용 안 함 · 추적자 제거) 전투 방을 비울 때마다 추적도 +,기획 대화 (추적도)
+tracking.assassin1,5,,(사용 안 함 · 추적자 제거) 추적도 이 값 이상이면 다음 층에 살수 1명,몬스터!C126 설명
+tracking.assassin2,10,,(사용 안 함 · 추적자 제거) 추적도 이 값 이상이면 살수 2명 + 보스 체력 증가,몬스터!C126 설명
+tracking.boss_hp,1.15,,(사용 안 함 · 추적자 제거) 추적도 높을 때 보스 체력 배율 (+15%),몬스터!C126 설명
+tracking.kill_reduce,2,,(사용 안 함 · 추적자 제거) 살수 처치 시 추적도 −,몬스터!C129 설명
+tracking.inn_ratio,50%,,(사용 안 함 · 추적자 제거) 객잔에 들르면 추적도 비율 (절반),기획 대화 (객잔 규칙)
+assassin.appear_rooms,2,,(사용 안 함 · 추적자 제거) 층에 들어와 이만큼 방을 지나면 첫째 살수가 나타남,몬스터!C126 설명
+assassin.step_time,6,s,(사용 안 함 · 추적자 제거) 살수가 방 하나를 쫓아오는 시간 (임시),
+assassin.warning,1.5,s,(사용 안 함 · 추적자 제거) 따라잡혔을 때 난입·결투 경고,몬스터!C127 설명
 assassin.stagger_every,3,,살수 경직 저항: 이만큼 맞을 때마다 1번 경직,몬스터!C125 설명
 assassin.twin_windup,0.4,s,쌍검 2연격 예고,몬스터!D132
 assassin.twin_recovery,0.6,s,쌍검 2연격 빈틈,몬스터!E132
@@ -438,20 +438,20 @@ event.needle_heal,25%,,떠돌이 의원 침: 체력 회복 비율,은자!C29 설
 event.bottle_potion,60%,,버려진 약방 아무 병: 금창약 확률,기획 대화 (이벤트)
 event.bottle_pill,25%,,버려진 약방 아무 병: 원기단 확률 (이번 층 공력 +1),기획 대화 (이벤트)
 event.poison_damage,15%,,버려진 약방 독약: 체력 감소 (최대 체력 비율),기획 대화 (이벤트)
-event.search_tracking,1,,버려진 약방 샅샅이 뒤지기: 추적도 +,기획 대화 (이벤트)
+event.search_tracking,1,,버려진 약방 샅샅이 뒤지기: 소란 +,기획 대화 (이벤트)
 price.gamble_stake,50,은자,투전판 판돈,은자!B32
 event.gamble_win,50%,,투전판 이길 확률,기획 대화 (이벤트)
 event.gamble_power,4,,투전판 속임수 꿰뚫기: 필요한 공력,기획 대화 (이벤트)
 event.rescue_geumgang,4,,붙잡힌 무인 기세로 물리치기: 필요한 #금강 단계,기획 대화 (이벤트)
 event.rescue_grunts,2,,붙잡힌 무인 구출 전투: 정예와 함께 나오는 졸개 수 (임시),
-event.ignore_tracking,1,,붙잡힌 무인 못 본 척: 추적도 −,기획 대화 (이벤트)
+event.ignore_tracking,1,,(사용 안 함 · 추적자 제거) 붙잡힌 무인 못 본 척: 추적도 −,기획 대화 (이벤트)
 price.shrine_incense,20,은자,산신당 향,은자!B31
 event.shrine_move,10%,,산신당 축복: 이동속도 +,기획 대화 (이벤트 예시)
 event.shrine_gauge,15%,,산신당 축복: 기세 충전 +,기획 대화 (이벤트 예시)
 event.offering_silver,80,은자,산신당 공물 챙기기: 은자 +,기획 대화 (이벤트)
 event.offering_taken,15%,,산신의 노여움: 이번 층 받는 피해 +,기획 대화 (이벤트)
 event.scripture_xp,15,,벽에 새긴 검결 훑어보기: 수련치 +,기획 대화 (이벤트)
-event.scripture_tracking,2,,벽에 새긴 검결 깊이 참오: 추적도 +,기획 대화 (이벤트)
+event.scripture_tracking,2,,벽에 새긴 검결 깊이 참오: 소란 +,기획 대화 (이벤트)
 room.master_floor,2,,고수가 지키는 관문 층,기획 대화 (고수: 각 지역 2층 관문)
 master.spare_silver,150,은자,"고수 방면: 은자 + (금창약 1개도, 가득하면 그만큼 은자)",
 qingzhu.hp,1100,,청죽객 체력 (죽림),몬스터!E60
@@ -621,7 +621,7 @@ price.move_danjeon,100,은자,객잔 이혈: 단전 하나 옮기기,은자!B26
 event.escort_silver,150,은자,표국 행렬: 호위 성공 보상,기획 대화 (이벤트 8 표국 행렬)
 event.escort_waves,3,,표국 행렬: 호위 전투 웨이브 수,기획 대화 (이벤트 8 표국 행렬)
 event.rob_silver,100,은자,표국 행렬: 짐을 털면 은자,기획 대화 (이벤트 8 표국 행렬)
-event.rob_tracking,3,,표국 행렬: 짐을 털면 추적도 +,기획 대화 (이벤트 8 표국 행렬)
+event.rob_tracking,3,,표국 행렬: 짐을 털면 소란 +,기획 대화 (이벤트 8 표국 행렬)
 price.smith_fee,60,은자,서툰 대장장이 삯,은자!B30
 event.smith_success,50%,,서툰 대장장이: 등급 한 단계 위 확률 (나머지는 망가짐),기획 대화 (이벤트 7 서툰 대장장이)
 event.tomb_xp,10,,검이 꽂힌 무덤: 절하면 수련치,기획 대화 (이벤트 9 검이 꽂힌 무덤)
@@ -793,8 +793,8 @@ knife.ultimate_time_s1,5,초,만천화우 비 시간 (중단전 · 범위 밖 �
 knife.ultimate_time_s2,5,초,만천화우 비 시간 (상단전),무기!D61
 price.rumor,200,은자,객잔 소문 듣기: 다음 층 기연 방 (객잔마다 한 번),은자!B27
 room.hidden_xp,30,,기연 방 "낡은 책을 읽는다" 수련치 (비급 대신),
-assassin.kill_health,30%,,살수: 이번 판에 쓰러뜨린 살수 1명당 다음 살수 체력 +,
-assassin.kill_attack,15%,,살수: 쓰러뜨린 살수 1명당 다음 살수 공격 +,
+assassin.kill_health,30%,,(사용 안 함 · 추적자 제거) 살수: 이번 판에 쓰러뜨린 살수 1명당 다음 살수 체력 +,
+assassin.kill_attack,15%,,(사용 안 함 · 추적자 제거) 살수: 쓰러뜨린 살수 1명당 다음 살수 공격 +,
 price.alms,50,은자,폐사찰 시주함: 시주하는 은자,2지역 기획 (폐사찰 이벤트)
 event.alms_guard,10%,,폐사찰 시주함 시주: 이번 층 받는 피해 −,2지역 기획 (폐사찰 이벤트)
 event.alms_steal,80,은자,폐사찰 시주함 털기: 은자 +,2지역 기획 (폐사찰 이벤트)
@@ -1037,10 +1037,10 @@ irondragon.p2_geyser_ratio,0.7,,철룡 물기둥 피해 배율,
 irondragon.p2_water_count,3,,철룡 2페이즈 물길 수 (배가 부서지며 생김),
 irondragon.p2_water_radius,2.5,cell,철룡 물길 반경,
 irondragon.p2_water_slow,30%,,철룡 물길 안 이동속도 감소,
-event.wreck_tracking,2,,장강 난파선 뒤지기: 추적도 +,3지역 기획 (장강 이벤트)
+event.wreck_tracking,2,,장강 난파선 뒤지기: 소란 +,3지역 기획 (장강 이벤트)
 event.toll_silver,100,은자,장강 수적 통행세: 내는 은자,3지역 기획 (장강 이벤트)
 event.toll_reward,150,은자,장강 수적 통행세 거절 전투: 이기면 은자 +,3지역 기획 (장강 이벤트)
-event.toll_sneak_tracking,3,,장강 수적 통행세 몰래 지나가기: 추적도 +,3지역 기획 (장강 이벤트)
+event.toll_sneak_tracking,3,,장강 수적 통행세 몰래 지나가기: 소란 +,3지역 기획 (장강 이벤트)
 event.ferry_silver,60,은자,장강 뱃사공: 뱃삯 (다음 층 지도가 다 보임),3지역 기획 (장강 이벤트)
 elite.second_trait.r2,50%,,장강 수채 정예: 특성이 하나 더 붙을 확률 (1~2개),몬스터!B142
 elite.second_trait.r3,100%,,천마총 정예: 특성이 하나 더 붙을 확률 (늘 2개),몬스터!B142
@@ -1518,13 +1518,13 @@ event.blood_pool_grade.uncommon,30%,,피의 연못 보상 고급 확률,4지역 
 event.blood_pool_grade.rare,40%,,피의 연못 보상 희귀 확률,4지역 기획 (천마총 이벤트)
 event.blood_pool_grade.legendary,30%,,피의 연못 보상 전설 확률,4지역 기획 (천마총 이벤트)
 event.hero_shield,20%,,천마총 갇힌 무림맹 고수: 구하면 천마전 시작 보호막 (최대 체력 비율),4지역 기획 (천마총 이벤트)
-event.altar_tracking,3,,천마총 마교 제단 부수기: 추적도 +,4지역 기획 (천마총 이벤트)
+event.altar_tracking,3,,천마총 마교 제단 부수기: 소란 +,4지역 기획 (천마총 이벤트)
 event.altar_silver,120,은자,천마총 마교 제단 부수기: 은자 +,4지역 기획 (천마총 이벤트)
 relic.base_capacity,1,칸,유품록 기본 기억 용량 (첫 천마 격파 후. 회귀록 유품 가지 봉우리마다 +1),유품록 기획
 relic.cost_legendary,2,칸,전설 유품이 차지하는 기억 (나머지 등급은 1),유품록 기획
 memory.karma_bonus,10%,,회귀의 기억: 업보 단계마다 얻는 기억 + (합계에),기억!B12
 karma.health,15%,,업보 1단계: 적 체력 +,업보 기획
-karma.start_tracking,3,,업보 3단계: 판을 이 추적도로 시작,업보 기획
+karma.start_tracking,3,,(사용 안 함 · 추적자 제거) 업보 3단계: 판을 이 추적도로 시작,업보 기획
 karma.attack,15%,,업보 4단계: 적 공격 +,업보 기획
 karma.silver_cut,20%,,업보 5단계: 방 은자 −,업보 기획
 karma.boss_health,25%,,업보 6단계: 고수·보스 체력 + (1단계와 곱해요),업보 기획
@@ -1712,3 +1712,4 @@ elite.frenzy_radius,6,cell,분노 정예: 이 안에서 다른 적이 쓰러지�
 elite.frenzy_max,3,,분노 정예: 최대 겹 수,판타지 정예 특성
 elite.frenzy_attack,15%,,분노 한 겹마다 공격 증가,판타지 정예 특성
 elite.frenzy_speed,10%,,분노 한 겹마다 이동 증가,판타지 정예 특성
+karma.extra_enemies,1,명,업보 3단계: 싸우는 방마다 첫 웨이브에 그 지역 졸개 +,추적자 제거 (업보 3단계 대신)

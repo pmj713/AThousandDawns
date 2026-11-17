@@ -71,7 +71,6 @@ namespace AThousandDawns.Prototype
             ("준 피해", DamageDealt.ToString("N0")),
             ("최대 단일 피해", MaxHit.ToString("N0")),
             ("받은 피해", DamageTaken.ToString("N0")),
-            ("최대 추적도", MaxTracking.ToString()),
             ("새로 만난 기물", $"{NewItems}종"),
         };
 

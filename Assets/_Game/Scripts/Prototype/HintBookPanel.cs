@@ -286,7 +286,7 @@ namespace AThousandDawns.Prototype
             GUIStyle Make(GUIStyle from, int size, TextAnchor anchor, Color color, FontStyle style = FontStyle.Normal, bool wrap = false)
             {
                 var s = new GUIStyle(from) { fontSize = size, alignment = anchor, fontStyle = style, richText = true, wordWrap = wrap };
-                s.normal.textColor = s.hover.textColor = s.active.textColor = s.focused.textColor = color;
+                s.normal.textColor = s.hover.textColor = s.active.textColor = s.focused.textColor = color; UiStyle.Steady(s);
                 s.normal.background = s.hover.background = s.active.background = null;
                 return s;
             }

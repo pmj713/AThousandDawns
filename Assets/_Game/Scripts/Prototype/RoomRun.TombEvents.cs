@@ -10,7 +10,7 @@ namespace AThousandDawns.Prototype
     // 천마총 전용 이벤트 3개 (4지역 기획): 천마총에서만 이벤트 풀에 더해져요.
     //   피의 연못: 이번 판 동안 최대 체력 −10%, 대신 전설이 잘 나오는 기물 고르기 (일반 0 · 고급 30 · 희귀 40 · 전설 30).
     //   갇힌 무림맹 고수: 구하면 혈인 · 천마 근위와 전투, 이기면 천마전을 보호막 (최대 체력 20%)을 두르고 시작해요.
-    //   마교 제단: 기물 하나를 바치면 공력 +1 / 부수면 추적도 +3, 은자 +120.
+    //   마교 제단: 기물 하나를 바치면 공력 +1 / 부수면 소란 +3, 은자 +120.
     public sealed partial class RoomRun
     {
         public static readonly string[] TombEventIds = { "blood_pool", "captive_hero", "demon_altar" };
@@ -72,13 +72,13 @@ namespace AThousandDawns.Prototype
                     });
                     v.Choices.Add(new EventChoice
                     {
-                        Label = $"부순다 · 추적도 +{noise}, 은자 +{loot}",
+                        Label = $"부순다 · 소란 +{noise} (다음 싸우는 방에 졸개), 은자 +{loot}",
                         Act = () =>
                         {
-                            AddTracking(noise);
+                            AddNoise(noise);
                             Silver += loot;
                             AThousandDawns.Fx.InkEventFx.Play(AThousandDawns.Fx.InkEventFx.AltarBreak, "demon_altar");
-                            return $"제단이 무너지며 공물이 쏟아져요. 은자 +{loot} · 소란에 추적도 {Tracking}";
+                            return $"제단이 무너지며 공물이 쏟아져요. 은자 +{loot} · 소란에 졸개 {Noise}명이 몰려와요";
                         },
                     });
                     v.Choices.Add(Pass("지나간다"));

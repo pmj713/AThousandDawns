@@ -61,9 +61,6 @@ namespace AThousandDawns.Tests
             grunt.Damageable.ApplyHit(12);
             Assert.AreEqual(19, run.Record.DamageDealt, "준 피해");
             Assert.AreEqual(12, run.Record.MaxHit, "최대 단일 피해");
-            run.SetTracking(6);
-            yield return null;
-            Assert.AreEqual(6, run.Record.MaxTracking);
 
             Assert.IsTrue(player.TryReceiveHit(99999f, grunt.transform.position, -1f, grunt.Damageable));
             Assert.Greater(run.Record.DamageTaken, 0, "받은 피해");

@@ -70,7 +70,6 @@ namespace AThousandDawns.Prototype
             HookPlayerRecord();
             if (IsShowingResult || _phase == Phase.Village) return;
             _record.PlaySeconds += Time.deltaTime;
-            _record.MaxTracking = Mathf.Max(_record.MaxTracking, Tracking);
         }
 
         // 처치 기록 (목인장처럼 적이 아닌 것은 빼요)

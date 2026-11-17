@@ -8,7 +8,7 @@ namespace AThousandDawns.Prototype
 {
     // 판 중간 저장 (RunSave): 방에 들어가거나 방을 비우거나 갈림길·객잔·정비실에 오면 "저장할 일"이 생기고,
     // 싸움·기물 고르기·이벤트·진열대가 모두 끝난 안전한 순간에 저장해요. 이어하기는 마지막 저장 시점부터.
-    // 저장하지 않는 것: 살수 (층을 다시 들어갈 때 추적도로 새로 정해짐), 보호막, 쿨타임, 입문 죽림 (첫 판 1층).
+    // 저장하지 않는 것: 보호막, 쿨타임, 입문 죽림 (첫 판 1층).
     public sealed partial class RoomRun
     {
         // 시작 화면 "이어하기"에서 켜요 (씬을 부른 뒤 Start에서 한 번 씀)
@@ -35,7 +35,7 @@ namespace AThousandDawns.Prototype
             if (IsForking) return true; // 갈림길 (층 사이)
             return _phase switch
             {
-                Phase.Floor => !_fighting && _room != null && !AssassinIncoming,
+                Phase.Floor => !_fighting && _room != null,
                 Phase.Inn => true,
                 Phase.Rest => true,
                 _ => false,
@@ -53,7 +53,7 @@ namespace AThousandDawns.Prototype
                 pathDense = _path.Dense,
                 masterDone = _masterDone,
                 rumor = _rumor,
-                tracking = Tracking,
+                tracking = _noise, // 예전 추적도 자리에 소란을 저장해요
                 silver = Silver,
                 floorPower = _floorPower,
                 floorTaken = _floorTaken,
@@ -179,7 +179,7 @@ namespace AThousandDawns.Prototype
 
             // 판
             Silver = s.silver;
-            Tracking = s.tracking;
+            _noise = s.tracking; // 예전 저장은 추적도라 소란으로 들어와도 다음 방에서 졸개 몇 명이면 끝이에요
             _floor = s.floor;
             _region = s.region;
             Player.UltimateStage = Mathf.Max(0, _region - 1);
