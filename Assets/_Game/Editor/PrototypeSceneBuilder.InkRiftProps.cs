@@ -85,23 +85,21 @@ namespace AThousandDawns.EditorTools
             // 마나 수정
             var mana = new GameObject("Rift Mana Crystal (마나 수정)").transform;
             RiftBase(mana, 0.7f);
-            var rng = new System.Random(5);
-            float R(float a, float b) => a + (float)rng.NextDouble() * (b - a);
-            for (int k = 0; k < 7; k++)
+            // 플레이 테스트 3차: 상자를 엮은 수정이 허접했어요 → VARCO 모델 ManaCrystal (룬 새긴 검은 돌 받침 위 청보라 수정 무리, 높이 1.5). 없으면 예전 상자 수정
+            if (VarcoProp(mana, "ManaCrystal", Vector3.zero, 0f) == null)
             {
-                float h = k == 0 ? 1.3f : R(0.45f, 1.0f);
-                float a = k * 51f, r = k == 0 ? 0f : R(0.18f, 0.36f);
-                var foot = new Vector3(Mathf.Cos(a * Mathf.Deg2Rad) * r, 0f, Mathf.Sin(a * Mathf.Deg2Rad) * r);
-                var tilt = Quaternion.Euler(k == 0 ? 0f : R(-28f, 28f), R(0f, 90f), k == 0 ? 0f : R(-28f, 28f));
-                float w = h * 0.22f;
-                var mat = k % 3 == 1 ? crystalPale : crystal;
-                Block(mana, "Crystal", PrimitiveType.Cube, foot + tilt * new Vector3(0f, h * 0.42f, 0f), new Vector3(w, h * 0.84f, w), tilt * Quaternion.Euler(0f, 45f, 0f), mat);
-                Block(mana, "Tip", PrimitiveType.Cube, foot + tilt * new Vector3(0f, h * 0.86f, 0f), new Vector3(w * 0.72f, w * 0.72f, w * 0.72f), tilt * Quaternion.Euler(45f, 45f, 0f), mat);
+                var rng = new System.Random(5);
+                float R(float a, float b) => a + (float)rng.NextDouble() * (b - a);
+                for (int k = 0; k < 7; k++)
+                {
+                    float h = k == 0 ? 1.3f : R(0.45f, 1.0f);
+                    float a = k * 51f, r = k == 0 ? 0f : R(0.18f, 0.36f);
+                    var foot = new Vector3(Mathf.Cos(a * Mathf.Deg2Rad) * r, 0f, Mathf.Sin(a * Mathf.Deg2Rad) * r);
+                    var tilt = Quaternion.Euler(k == 0 ? 0f : R(-28f, 28f), R(0f, 90f), k == 0 ? 0f : R(-28f, 28f));
+                    float w = h * 0.22f;
+                    Block(mana, "Crystal", PrimitiveType.Cube, foot + tilt * new Vector3(0f, h * 0.42f, 0f), new Vector3(w, h * 0.84f, w), tilt * Quaternion.Euler(0f, 45f, 0f), k % 3 == 1 ? crystalPale : crystal);
+                }
             }
-            Block(mana, "Inner Glow", PrimitiveType.Quad, new Vector3(0f, 0.65f, 0f), new Vector3(0.5f, 1.1f, 1f), Quaternion.identity, rift);
-            Block(mana, "Inner Glow Cross", PrimitiveType.Quad, new Vector3(0f, 0.65f, 0f), new Vector3(0.5f, 1.1f, 1f), Quaternion.Euler(0f, 90f, 0f), rift);
-            for (int k = 0; k < 3; k++)
-                Rock(mana, "Base Rock", new Vector3((k - 1) * 0.3f, 0f, (k % 2) * 0.25f - 0.12f), 0.16f, k, k * 70f, runestone, false);
 
             return (SaveFeature(rampart.gameObject, "Feature_RiftRampart"), SaveFeature(knight.gameObject, "Feature_RiftKnight"),
                     SaveFeature(rune.gameObject, "Feature_RiftRunePillar"), SaveFeature(mana.gameObject, "Feature_RiftManaCrystal"));

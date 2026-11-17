@@ -94,37 +94,13 @@ namespace AThousandDawns.EditorTools
             for (int i = -3; i <= 3; i++)
                 for (int j = -2; j <= 2; j++)
                     Block(chapel, "Floor Tile", PrimitiveType.Cube, new Vector3(i * 0.4f, 0.03f, j * 0.4f + 0.1f), new Vector3(0.4f, 0.04f, 0.4f), Quaternion.identity, ((i + j) % 2 + 2) % 2 == 0 ? marble : marbleDark);
-            Block(chapel, "Dais Low", PrimitiveType.Cube, new Vector3(0f, 0.11f, 0.42f), new Vector3(2f, 0.12f, 0.95f), Quaternion.identity, marble);
-            Block(chapel, "Dais High", PrimitiveType.Cube, new Vector3(0f, 0.22f, 0.52f), new Vector3(1.6f, 0.12f, 0.7f), Quaternion.identity, marble);
-            // 제단
-            Block(chapel, "Altar", PrimitiveType.Cube, new Vector3(0f, 0.65f, 0.5f), new Vector3(1.25f, 0.74f, 0.5f), Quaternion.identity, marble);
-            Block(chapel, "Altar Top", PrimitiveType.Cube, new Vector3(0f, 1.05f, 0.5f), new Vector3(1.42f, 0.07f, 0.62f), Quaternion.identity, marble);
-            Block(chapel, "Altar Gold Edge", PrimitiveType.Cube, new Vector3(0f, 1.0f, 0.18f), new Vector3(1.44f, 0.03f, 0.02f), Quaternion.identity, gold);
-            foreach (float x in new[] { -0.42f, 0.42f })   // 앞면 금테 판
+            // 축복 제단 (플레이 테스트 3차: 상자 제단이 허접했어요 → VARCO 모델 BlessingAltar: 흰 대리석 단 위 금테 제단·금 촛대·성배·성서, 높이 1.9)
+            //   없으면 예전 상자 제단으로
+            if (VarcoProp(chapel, "BlessingAltar", new Vector3(0f, 0.05f, 0.45f), 180f) == null)
             {
-                Block(chapel, "Altar Panel", PrimitiveType.Cube, new Vector3(x, 0.62f, 0.245f), new Vector3(0.3f, 0.5f, 0.01f), Quaternion.identity, gold);
-                Block(chapel, "Altar Panel Inset", PrimitiveType.Cube, new Vector3(x, 0.62f, 0.24f), new Vector3(0.24f, 0.44f, 0.01f), Quaternion.identity, marble);
-            }
-            Block(chapel, "Altar Cloth", PrimitiveType.Cube, new Vector3(0f, 0.8f, 0.235f), new Vector3(0.42f, 0.5f, 0.012f), Quaternion.identity, crimson);
-            Block(chapel, "Altar Cloth Top", PrimitiveType.Cube, new Vector3(0f, 1.09f, 0.5f), new Vector3(0.44f, 0.012f, 0.64f), Quaternion.identity, crimson);
-            Block(chapel, "Cloth Cross V", PrimitiveType.Cube, new Vector3(0f, 0.82f, 0.228f), new Vector3(0.05f, 0.26f, 0.01f), Quaternion.identity, gold);
-            Block(chapel, "Cloth Cross H", PrimitiveType.Cube, new Vector3(0f, 0.87f, 0.228f), new Vector3(0.17f, 0.05f, 0.01f), Quaternion.identity, gold);
-            Block(chapel, "Cloth Fringe", PrimitiveType.Cube, new Vector3(0f, 0.56f, 0.235f), new Vector3(0.42f, 0.03f, 0.015f), Quaternion.identity, gold);
-            // 제단 위 금 십자가와 세 갈래 촛대
-            Block(chapel, "Cross Base", PrimitiveType.Cube, new Vector3(0f, 1.14f, 0.6f), new Vector3(0.18f, 0.08f, 0.12f), Quaternion.identity, gold);
-            Block(chapel, "Cross V", PrimitiveType.Cube, new Vector3(0f, 1.46f, 0.6f), new Vector3(0.06f, 0.6f, 0.05f), Quaternion.identity, gold);
-            Block(chapel, "Cross H", PrimitiveType.Cube, new Vector3(0f, 1.58f, 0.6f), new Vector3(0.3f, 0.06f, 0.05f), Quaternion.identity, gold);
-            foreach (float x in new[] { -0.5f, 0.5f })
-            {
-                Block(chapel, "Candelabrum Foot", PrimitiveType.Cylinder, new Vector3(x, 1.11f, 0.5f), new Vector3(0.14f, 0.02f, 0.14f), Quaternion.identity, gold);
-                Block(chapel, "Candelabrum Stem", PrimitiveType.Cylinder, new Vector3(x, 1.27f, 0.5f), new Vector3(0.035f, 0.16f, 0.035f), Quaternion.identity, gold);
-                Block(chapel, "Candelabrum Arm", PrimitiveType.Cube, new Vector3(x, 1.4f, 0.5f), new Vector3(0.3f, 0.025f, 0.025f), Quaternion.identity, gold);
-                foreach (float dx in new[] { -0.14f, 0f, 0.14f })
-                {
-                    float top = dx == 0f ? 1.5f : 1.44f;
-                    Block(chapel, "Candle", PrimitiveType.Cylinder, new Vector3(x + dx, top, 0.5f), new Vector3(0.04f, 0.06f, 0.04f), Quaternion.identity, wax);
-                    FlameCardsWith(chapel, new Vector3(x + dx, top + 0.07f, 0.5f), 0.12f, 2, flame);
-                }
+                Block(chapel, "Dais Low", PrimitiveType.Cube, new Vector3(0f, 0.11f, 0.42f), new Vector3(2f, 0.12f, 0.95f), Quaternion.identity, marble);
+                Block(chapel, "Altar", PrimitiveType.Cube, new Vector3(0f, 0.65f, 0.5f), new Vector3(1.25f, 0.74f, 0.5f), Quaternion.identity, marble);
+                Block(chapel, "Altar Top", PrimitiveType.Cube, new Vector3(0f, 1.05f, 0.5f), new Vector3(1.42f, 0.07f, 0.62f), Quaternion.identity, marble);
             }
             // 뒤쪽 뾰족 아치 창 둘: 기둥 사이 색유리 칸 (오른쪽 창은 깨져 위 칸들이 비었어요)
             foreach (float cx in new[] { -0.55f, 0.55f })
