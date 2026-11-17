@@ -388,7 +388,7 @@ namespace AThousandDawns.Prototype
                         {
                             AddNoise(deep);
                             Player.Level.GrantPending();
-                            return "깨달음을 얻었어요. 경맥도(E)에서 혈자리를 열 수 있어요.";
+                            return $"깨달음을 얻었어요. {AThousandDawns.Player.PlayerItems.ScreenName}(E)에서 혈자리를 열 수 있어요.";
                         },
                     });
                     v.Choices.Add(Pass("지나간다"));

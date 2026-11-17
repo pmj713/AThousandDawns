@@ -124,7 +124,7 @@ namespace AThousandDawns.Prototype
             if (_arena != null && _arena.IsChoosing) return;
             if (InCombat)
             {
-                Notice("전투 중에는 경맥도를 열 수 없어요");
+                Notice($"전투 중에는 {PlayerItems.ScreenName}을 열 수 없어요");
                 return;
             }
             IsOpen = true;
@@ -173,7 +173,7 @@ namespace AThousandDawns.Prototype
             if (_run != null && (_run.IsPaused || _run.IsShowingResult || _run.IsShopping || _run.IsInEvent)) return;
             if (_arena != null && _arena.IsChoosing) return;
             float pulse = 0.55f + 0.45f * Mathf.Sin(Time.unscaledTime * 5f); // 깜빡깜빡
-            string text = $"경맥도를 열어 혈자리를 고르세요 · {KeyHint.Key(AThousandDawns.Core.Bind.Meridian)}";
+            string text = $"{PlayerItems.ScreenName}을 열어 혈자리를 고르세요 · {KeyHint.Key(AThousandDawns.Core.Bind.Meridian)}";
             var rect = new Rect(0f, UiScale.Height * 0.76f, UiScale.Width, 48f * K);
             var old = GUI.color;
             GUI.color = new Color(1f, 0.85f, 0.4f, pulse);
@@ -831,6 +831,7 @@ namespace AThousandDawns.Prototype
             {
                 int step = AThousandDawns.Core.Pad.LeftShoulder ? 2 : 1; // 기혈 → 통혈 → 한혈 → (없음)
                 _acupoint = (Acupoint)(((int)_acupoint + step) % 4);
+                if (board.EquipMode && _acupoint == Acupoint.Tonghyeol) _acupoint = (Acupoint)(((int)_acupoint + step) % 4); // 장비 칸엔 통혈이 없어요 (기가 흐르지 않아서)
                 return true;
             }
             if (AThousandDawns.Core.Pad.Back && (_dragged != null || _acupoint != Acupoint.None || _moveFrom.HasValue))

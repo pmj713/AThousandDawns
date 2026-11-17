@@ -21,7 +21,7 @@ namespace AThousandDawns.Core
         public static readonly string[] Names =
         {
             "위로 이동", "아래로 이동", "왼쪽 이동", "오른쪽 이동",
-            "평타", "초식", "대시", "절초", "금창약", "상호작용", "경맥도",
+            "평타", "초식", "대시", "절초", "금창약", "상호작용", "장비창",
         };
 
         public static int Count => Defaults.Length;

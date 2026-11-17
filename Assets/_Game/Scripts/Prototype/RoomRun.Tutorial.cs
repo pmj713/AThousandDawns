@@ -98,7 +98,7 @@ namespace AThousandDawns.Prototype
                     if (d != null && d.grade == ItemGrade.Common && !Player.Items.Has(d.id) && (pick == null || d.maxQi < pick.maxQi || (d.maxQi == pick.maxQi && d.minQi < pick.minQi))) pick = d;
             if (pick == null) return false;
             Player.Items.Add(pick);
-            SetHint($"첫 기물 · {pick.name} · {KeyName(Bind.Meridian)} 경맥도를 열어요", () => _meridianOpenedOnce);
+            SetHint($"첫 기물 · {pick.name} · {KeyName(Bind.Meridian)} {AThousandDawns.Player.PlayerItems.ScreenName}을 열어요", () => _meridianOpenedOnce);
             _tutorialStep = 5;
             return true;
         }
@@ -152,10 +152,10 @@ namespace AThousandDawns.Prototype
                 {
                     if (!item.OnBoard) continue;
                     var state = PlayerItems.StateOf(item);
-                    if (state == QiState.Lacking) Notify("qi_lacking", "기 부족 (회색): 단전 가까이 옮기면 깨어나요");
+                    if (state == QiState.Lacking) Notify("qi_lacking", AThousandDawns.Player.PlayerItems.EquipMode ? "기 부족 (회색): 기가 높은 칸이나 공력 · 기혈로 깨어나요" : "기 부족 (회색): 단전 가까이 옮기면 깨어나요");
                     else if (state == QiState.Deviated) Notify("qi_deviated", "주화입마 (붉은색): 강해지지만 부작용이 생겨요");
                 }
-            if (Player.Level != null && Player.Level.Pending > 0) Notify("level_up", "개혈 대기: 싸움이 끝나면 경맥도(E)에서 혈자리를 열어요");
+            if (Player.Level != null && Player.Level.Pending > 0) Notify("level_up", $"개혈 대기: 싸움이 끝나면 {AThousandDawns.Player.PlayerItems.ScreenName}(E)에서 혈자리를 열어요");
             if (Player.UltimateReady && _phase != Phase.Village) Notify("ultimate", $"기세가 가득 찼어요 · {KeyName(Bind.Ultimate)} 절초");
         }
 
@@ -218,7 +218,7 @@ namespace AThousandDawns.Prototype
             else if (InTutorialFloor && _tutorialStep == 5)
             {
                 _tutorialStep = 6;
-                SetHint("단전에서 멀수록 칸의 기가 줄어요 · 기물은 기 구간 안에 있어야 힘을 써요 (운기)", () => _meridian != null && !_meridian.IsOpen);
+                SetHint(AThousandDawns.Player.PlayerItems.EquipMode ? "칸마다 기가 달라요 · 기물은 기 구간 안에 있어야 힘을 써요 (운기)" : "단전에서 멀수록 칸의 기가 줄어요 · 기물은 기 구간 안에 있어야 힘을 써요 (운기)", () => _meridian != null && !_meridian.IsOpen);
             }
         }
 

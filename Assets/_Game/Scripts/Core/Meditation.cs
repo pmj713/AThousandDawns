@@ -11,6 +11,8 @@ namespace AThousandDawns.Core
         {
             public string Name, Theme, PerPoint;
             public string[] Milestones; // 5 · 10 · 20
+            public string[] EquipMilestones; // 장비 칸 방식일 때 다른 단계 (null이면 Milestones)
+            public string[] MilestonesNow => EquipMilestones != null && AThousandDawns.Player.PlayerItems.EquipMode ? EquipMilestones : Milestones;
             public bool[] Ready;
         }
 
@@ -23,7 +25,8 @@ namespace AThousandDawns.Core
             new ArtInfo { Name = "강(剛)", Theme = "생존", PerPoint = "최대 체력 +2",
                 Milestones = new[] { "강인함 +3", "전투 방을 비울 때마다 체력 4% 회복", "한 판에 한 번 기사회생 (체력 40%)" }, Ready = new[] { true, true, true } },
             new ArtInfo { Name = "맥(脈)", Theme = "경맥", PerPoint = "수련치 +2%",
-                Milestones = new[] { "시작 시 혈자리 1개", "시작 시 부품 1개 고르기", "단전 2개로 시작, 대신 공력 −1" }, Ready = new[] { true, true, true } },
+                Milestones = new[] { "시작 시 혈자리 1개", "시작 시 부품 1개 고르기", "단전 2개로 시작, 대신 공력 −1" },
+                EquipMilestones = new[] { "시작 시 혈자리 1개", "시작 시 혈자리 1개 더", "공력 +1로 시작 (모든 칸 기 +1), 대신 최대 체력 −10%" }, Ready = new[] { true, true, true } },
             new ArtInfo { Name = "오(悟)", Theme = "탐험", PerPoint = "행운 +1 (기물 등급)",
                 Milestones = new[] { "기연 감지 조건 공력 4 → 3", "갈림길 선택지 +1", "고수 처치 후 3가지 중 2가지" }, Ready = new[] { true, true, true } },
             new ArtInfo { Name = "은(隱)", Theme = "잠행·경제", PerPoint = "은자 획득 +2%",

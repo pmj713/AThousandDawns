@@ -161,7 +161,7 @@ namespace AThousandDawns.Prototype
                     Debug.Log($"[시험] 비급: {PlayerController.SkillLabel(p.Skill)} · 지금 초식 {p.SkillName}");
                 }
                 if (keyboard.oKey.wasPressedThisFrame && director != null && director.Player != null && director.Player.Items != null) CycleForge(director.Player.Items, keyboard.shiftKey.isPressed ? 1 : 0); // 시험용: 무기 홈
-                if (keyboard.pKey.wasPressedThisFrame && director != null && director.Player != null && director.Player.Items != null) // 시험용: 부품 셋
+                if (keyboard.pKey.wasPressedThisFrame && director != null && director.Player != null && director.Player.Items != null && !director.Player.Items.Board.EquipMode) // 시험용: 부품 셋 (경맥도에서만)
                 {
                     director.Player.Items.AddPart(PartKind.Tongmaek);
                     director.Player.Items.AddPart(PartKind.Jeomhyeol);

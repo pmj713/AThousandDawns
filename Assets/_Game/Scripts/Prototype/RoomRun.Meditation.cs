@@ -38,6 +38,13 @@ namespace AThousandDawns.Prototype
 
             _roomHeal = On(MArt.Iron, 1) ? G("meditation.iron_room_heal", 0.04f) : 0f;
             if (On(MArt.Meridian, 0)) Player.Level.GrantPending();       // 시작 혈자리
+            bool equip = Player.Items != null && Player.Items.Board.EquipMode;
+            if (equip && On(MArt.Meridian, 1)) Player.Level.GrantPending(); // 장비 칸: 혈자리 1개 더 (부품 고르기 대신)
+            if (equip && On(MArt.Meridian, 2)) // 장비 칸: 공력 +1 (모든 칸 기 +1), 대신 최대 체력 −10% (단전 둘 대신)
+            {
+                Player.Gongryeok += Mathf.RoundToInt(G("meditation.meridian_equip_power", 1f));
+                Player.CutMaxHealth(G("meditation.meridian_equip_health_cut", 0.1f));
+            }
             _startPartPick = On(MArt.Meridian, 1) && _unlockedParts.Count > 0 && (Player.Items == null || !Player.Items.Board.EquipMode); // 1층에서 부품 고르기
             if (On(MArt.Meridian, 2) && Player.Items != null && !Player.Items.Board.EquipMode)             // 단전 2개로 시작, 대신 공력 −1 (장비 칸엔 단전이 없어요)
             {

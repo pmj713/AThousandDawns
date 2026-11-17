@@ -87,7 +87,7 @@ namespace AThousandDawns.Prototype
 
             // 경맥도 축소판 (실제 배치 그대로)
             y += 10f;
-            GUI.Label(new Rect(x, y, w, 26f), "<color=#cfcfcf>경맥도</color>", _itemSmall);
+            GUI.Label(new Rect(x, y, w, 26f), $"<color=#cfcfcf>{PlayerItems.ScreenName}</color>", _itemSmall);
             y += 30f;
             if (items == null) return;
             var board = items.Board;
@@ -123,7 +123,7 @@ namespace AThousandDawns.Prototype
                 if (label.Length > 0) GUI.Label(rect, $"<size=11>{label}</size>", _statusLabel);
             }
             y += board.Height * (cell + 6f) + 6f;
-            GUI.Label(new Rect(x, y, w, 24f), "<size=13><color=#9a9a9a>금 테두리 단전 · 초록 운기 · 회색 기 부족 · 빨강 주화입마 · 파랑 부품</color></size>", _itemSmall);
+            GUI.Label(new Rect(x, y, w, 24f), board.EquipMode ? "<size=13><color=#9a9a9a>초록 운기 · 회색 기 부족 · 빨강 주화입마</color></size>" : "<size=13><color=#9a9a9a>금 테두리 단전 · 초록 운기 · 회색 기 부족 · 빨강 주화입마 · 파랑 부품</color></size>", _itemSmall);
         }
 
         // 오른쪽: 기록 → 회귀의 기억 (한 줄씩 차오름)

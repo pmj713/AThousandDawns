@@ -48,6 +48,7 @@ namespace AThousandDawns.Player
         // 장비 칸 방식 (경맥도 대신, 시트 equip.enabled). 테스트는 ModeOverride로 고를 수 있어요 (0 경맥도 · 1 장비 칸)
         public static int ModeOverride = -1;
         public static bool EquipMode => ModeOverride >= 0 ? ModeOverride == 1 : GameConfig.GetOptional("equip.enabled", 1f) > 0.5f;
+        public static string ScreenName => EquipMode ? "장비창" : "경맥도"; // 화면 · 안내에 쓰는 이름
 
         public IReadOnlyList<OwnedItem> Items => _items;
         readonly List<OwnedPart> _parts = new List<OwnedPart>();
@@ -166,6 +167,17 @@ namespace AThousandDawns.Player
             _items.Add(item);
             Recount();
             return item;
+        }
+
+        // 회귀록 경맥 가지 (장비 칸): 한옥 = 모든 기물 최대 기 +1 · 점혈 = 이계 기물 기 +1 (RoomRun.ApplyBook)
+        public int BookMaxQiBonus { get; private set; }
+        public int BookOtherworldQi { get; private set; }
+
+        public void SetBookBonuses(int maxQi, int otherworldQi)
+        {
+            BookMaxQiBonus = maxQi;
+            BookOtherworldQi = otherworldQi;
+            Recount();
         }
 
         // 흡성: 이번 지역 동안 모든 기물의 최대 기 −1 (이질적인 기운)
@@ -465,8 +477,8 @@ namespace AThousandDawns.Player
             foreach (var item in _items)
             {
                 item.Qi = item.OnBoard ? _board.QiAt(item.Cell) : 0;
-                if (item.OnBoard && item.Def.otherworld) item.Qi += _otherworldQi; // 이계 기물: 끼운 혈자리의 기를 뒤틀어 올려요 (세지만 주화입마에 쉽게)
-                item.MaxQiBonus = (item.OnBoard ? _board.MaxQiBonusAt(item.Cell) : 0) + GlobalMaxQiBonus;
+                if (item.OnBoard && item.Def.otherworld) item.Qi += _otherworldQi + BookOtherworldQi; // 이계 기물: 끼운 혈자리의 기를 뒤틀어 올려요 (세지만 주화입마에 쉽게)
+                item.MaxQiBonus = (item.OnBoard ? _board.MaxQiBonusAt(item.Cell) : 0) + GlobalMaxQiBonus + BookMaxQiBonus;
                 if (!item.OnBoard) continue;
                 var state = StateOf(item);
                 _qiCounts[(int)state]++;

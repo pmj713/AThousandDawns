@@ -164,7 +164,7 @@ namespace AThousandDawns.Prototype
                 items.SetForgeSlot(1, s.forge1 >= 0 ? (Keyword?)s.forge1 : null);
                 items.SetGlobalMaxQiBonus(s.globalMaxQi);
                 items.DanjeonMoves = s.danjeonMoves;
-                items.StartDanjeons = s.startDanjeons;
+                items.StartDanjeons = items.Board.EquipMode ? 0 : s.startDanjeons; // 옛 경맥도 저장을 장비 칸으로 불러도 단전 놓기에 막히지 않게
             }
             Player.Gongryeok = s.gongryeok;
             Player.LearnSkill((SkillKind)s.skill);

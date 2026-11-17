@@ -241,7 +241,7 @@ namespace AThousandDawns.Prototype
             }
             else
             {
-                GUI.Label(new Rect(panel.x + 20, y, panel.width - 40, 90), node.Effect, _small);
+                GUI.Label(new Rect(panel.x + 20, y, panel.width - 40, 90), node.EffectNow, _small);
                 y += 96;
             }
             if (bloomed)
@@ -311,7 +311,7 @@ namespace AThousandDawns.Prototype
                     var r = new Rect(mx + s * mw, row.y + 14, mw - 12, 92);
                     // 도달한 단계는 붉은 먹이 스민 한지, 준비 중은 회색, 아직은 옅은 한지
                     AThousandDawns.Fx.InkMeridianArt.PaperPanel(r, reached ? (ready ? new Color(0.95f, 0.72f, 0.66f, 0.95f) : new Color(0.78f, 0.75f, 0.72f, 0.9f)) : new Color(0.97f, 0.94f, 0.87f, 0.85f));
-                    string text = $"<b>{Meditation.Steps[s]}</b>  {info.Milestones[s]}" + (ready ? "" : "\n<color=#7a6a6a>준비 중</color>");
+                    string text = $"<b>{Meditation.Steps[s]}</b>  {info.MilestonesNow[s]}" + (ready ? "" : "\n<color=#7a6a6a>준비 중</color>");
                     GUI.Label(new Rect(r.x + 10, r.y + 6, r.width - 20, r.height - 12), text, _small);
                 }
                 y += 132;

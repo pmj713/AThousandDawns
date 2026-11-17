@@ -278,9 +278,9 @@ namespace AThousandDawns.Prototype
             GUILayout.BeginArea(new Rect(UiScale.Width - width - 16f, 16f, width, 64f + Mathf.Max(1, count) * 21f + (bag > 0 ? 24f : 0f)), GUI.skin.box);
             string pending = arena != null && arena.PendingOffers > 0 && !arena.IsChoosing ? $" · 고르기 {arena.PendingOffers}개 남음" : "";
             string bagText = !items.HasBag ? "주머니 없음" : items.BagCapacity < 0 ? $"주머니 {bag}" : $"주머니 {bag}/{items.BagCapacity}";
-            GUILayout.Label($"기물 {count}개 (경맥도 {count - bag} · {bagText}){pending}", _label);
+            GUILayout.Label($"기물 {count}개 ({PlayerItems.ScreenName} {count - bag} · {bagText}){pending}", _label);
             if (count == 0) GUILayout.Label(run != null ? "기물 길의 보상 방에서 3개 중 하나를 골라요 (I: 바로 고르기)" : "무리를 다 쓰러뜨리면 3개 중 하나를 골라요 (I: 바로 고르기)", _itemLine);
-            if (bag > 0) GUILayout.Label("<color=#ffd27a>주머니의 기물은 효과가 없어요 · E로 경맥도에 놓기</color>", _itemSmall);
+            if (bag > 0) GUILayout.Label($"<color=#ffd27a>주머니의 기물은 효과가 없어요 · E로 {PlayerItems.ScreenName}에 끼우기</color>", _itemSmall);
             foreach (var item in items.Items)
             {
                 var def = item.Def;
@@ -438,7 +438,7 @@ namespace AThousandDawns.Prototype
             for (int i = 0; i < items.Count; i++)
             {
                 var it = items[i];
-                string where = it.OnBoard ? "경맥도" : "주머니";
+                string where = it.OnBoard ? PlayerItems.ScreenName : "주머니";
                 string key = i < 9 ? $"[{i + 1}]  " : "";
                 string text = $"<size=13>{key}</size><b>{it.Def.name}</b>  {Colored(it.Def.keyword)} · {GradeColored(it.Def.grade)} · {where}\n<size=13>은자 <color=#ffd27a>+{RoomRun.SellPrice(it.Def)}</color></size>";
                 if (GUI.Button(new Rect(0, i * (rowH + 6f), w, rowH), text, _cardLeftSmall))
@@ -557,7 +557,7 @@ namespace AThousandDawns.Prototype
             GUI.color = old;
 
             var items = player.Items;
-            string why = items.HasBag ? $"경맥도도 주머니({items.BagCapacity}칸)도 가득해요" : "경맥도가 가득하고 주머니가 없어요 (회귀록에서 열어요)";
+            string why = items.HasBag ? $"{PlayerItems.ScreenName}도 주머니({items.BagCapacity}칸)도 가득해요" : $"{PlayerItems.ScreenName}이 가득하고 주머니가 없어요 (회귀록에서 열어요)";
             float w = 760f, rowH = 40f;
             float x = (UiScale.Width - w) * 0.5f, y = UiScale.Height * 0.12f;
             GUI.Label(new Rect(0, y, UiScale.Width, 44f), $"새 기물: {pending.name}  {Colored(pending.keyword)} · {GradeColored(pending.grade)}", _big);
@@ -566,7 +566,7 @@ namespace AThousandDawns.Prototype
             for (int i = 0; i < items.Items.Count; i++)
             {
                 var it = items.Items[i];
-                string where = it.OnBoard ? $"경맥도 ({it.Cell.x + 1},{it.Cell.y + 1})" : "주머니";
+                string where = it.OnBoard ? (items.Board.EquipMode ? AThousandDawns.Items.EquipSlots.Label(AThousandDawns.Items.EquipSlots.Kinds[it.Cell.x]) : $"경맥도 ({it.Cell.x + 1},{it.Cell.y + 1})") : "주머니";
                 string text = $"<size=13>[{(i < 9 ? (i + 1).ToString() : "-")}]</size>  버리기 · <b>{it.Def.name}</b>  {Colored(it.Def.keyword)} · {GradeColored(it.Def.grade)} · {where}";
                 if (GUI.Button(new Rect(x, row, w, rowH), text, _cardLeftSmall)) arena.Discard(i);
                 if (i == arena.DiscardCursor) PadMark(new Rect(x, row, w, rowH));

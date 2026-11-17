@@ -9,6 +9,8 @@ namespace AThousandDawns.Core
     public sealed class BookNode
     {
         public string Id, Name, Branch, Prereq, Condition, Effect;
+        public string EquipEffect; // 장비 칸 방식일 때 효과 (null이면 Effect). 경맥 가지(통맥 · 점혈 · 한옥)는 장비 칸에선 부품 대신 이걸 줘요
+        public string EffectNow => EquipEffect != null && AThousandDawns.Player.PlayerItems.EquipMode ? EquipEffect : Effect;
         public int DefaultCost;
         public bool Ready;
     }
@@ -20,14 +22,14 @@ namespace AThousandDawns.Core
         public static readonly BookNode[] Nodes =
         {
             // 주머니 (뿌리 바로 위)
-            new BookNode { Id = "bag", Name = "주머니", Branch = "주머니", Prereq = Root, DefaultCost = 30, Ready = true, Effect = "경맥도에 놓지 못한 기물을 넣어 두는 주머니 4칸. 없으면 꽉 찼을 때 하나를 버려야 받아요." },
+            new BookNode { Id = "bag", Name = "주머니", Branch = "주머니", Prereq = Root, DefaultCost = 30, Ready = true, Effect = "장비 칸에 끼우지 못한 기물을 넣어 두는 주머니 4칸. 없으면 꽉 찼을 때 하나를 버려야 받아요." },
             new BookNode { Id = "bag_plus1", Name = "주머니 확장 (1차)", Branch = "주머니", Prereq = "bag", DefaultCost = 90, Ready = true, Effect = "주머니 +2칸 (6칸)" },
             new BookNode { Id = "bag_plus2", Name = "주머니 확장 (2차)", Branch = "주머니", Prereq = "bag_plus1", DefaultCost = 160, Ready = true, Effect = "주머니 +2칸 (8칸)" },
 
             // 경맥 → 무기
-            new BookNode { Id = "tongmaek", Name = "통맥", Branch = "경맥", Prereq = Root, DefaultCost = 40, Ready = true, Effect = "부품 통맥: 기가 이 칸을 지날 때 줄지 않아요 (기를 멀리 보냄). 갈림길 부품 길·객잔에서 얻어요." },
-            new BookNode { Id = "jeomhyeol", Name = "점혈", Branch = "경맥", Prereq = "tongmaek", DefaultCost = 70, Ready = true, Effect = "부품 점혈: 기가 이 칸을 지나가지 못해요 (넘치는 기를 막음)." },
-            new BookNode { Id = "hanok", Name = "한옥", Branch = "경맥", Prereq = "jeomhyeol", DefaultCost = 110, Ready = true, Effect = "부품 한옥: 붙어 있는 기물의 최대 기 +2 (주화입마를 견딤)." },
+            new BookNode { Id = "tongmaek", Name = "통맥", Branch = "경맥", Prereq = Root, DefaultCost = 40, Ready = true, Effect = "부품 통맥: 기가 이 칸을 지날 때 줄지 않아요 (기를 멀리 보냄). 갈림길 부품 길·객잔에서 얻어요.", EquipEffect = "판을 시작할 때 혈자리 1개를 바로 열 수 있어요 (개혈)." },
+            new BookNode { Id = "jeomhyeol", Name = "점혈", Branch = "경맥", Prereq = "tongmaek", DefaultCost = 70, Ready = true, Effect = "부품 점혈: 기가 이 칸을 지나가지 못해요 (넘치는 기를 막음).", EquipEffect = "이계 기물이 끼운 칸의 기를 1 더 뒤틀어 올려요 (혼종 세트가 세지지만 주화입마에 쉽게)." },
+            new BookNode { Id = "hanok", Name = "한옥", Branch = "경맥", Prereq = "jeomhyeol", DefaultCost = 110, Ready = true, Effect = "부품 한옥: 붙어 있는 기물의 최대 기 +2 (주화입마를 견딤).", EquipEffect = "모든 기물의 최대 기 +1 (주화입마를 견뎌요)." },
             new BookNode { Id = "forge", Name = "대장간", Branch = "무기", Prereq = "hanok", DefaultCost = 140, Ready = true, Effect = "갈림길에 대장간 길이 생겨요: 기물을 녹여 주 키워드를 무기 홈(2개)에 넣어요. 홈마다 키워드 +1, 같은 키워드 둘이면 강화판." },
             new BookNode { Id = "flying_dagger", Name = "비도", Branch = "무기", Prereq = "forge", DefaultCost = 270, Ready = true, Effect = "두 번째 무기 비도: 마을 무기 거치대에서 골라요. 멀리서 던지고, 초식 회수로 꽂힌 비도를 거둬들여요." },
 

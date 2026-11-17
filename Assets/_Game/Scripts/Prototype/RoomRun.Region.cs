@@ -110,6 +110,7 @@ namespace AThousandDawns.Prototype
             if (!_regionAdvancePending || OffersOpen || (Player.Items != null && Player.Items.Pending != null)) return;
             _regionAdvancePending = false;
             _region++;
+            if (Player.Items != null && Player.Items.GlobalMaxQiBonus < 0) Player.Items.SetGlobalMaxQiBonus(0); // 흡성: "이번 지역 동안" 최대 기 −1이 다음 지역에서 풀려요
             Player.UltimateStage = Mathf.Max(0, _region - 1); // 절초 경지: 폐사찰 보스를 넘으면 중단전, 장강 보스를 넘으면 상단전 (무기 시트 52행)
             _masterDone = false;
             _masterChoiceShown = false;

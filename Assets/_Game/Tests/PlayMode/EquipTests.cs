@@ -94,6 +94,23 @@ namespace AThousandDawns.Tests
 
         delegate ItemDefinition Def3(string id, EquipSlot slot);
 
+        // 회귀록 경맥 가지는 장비 칸에선 부품 대신: 통맥 = 시작 혈자리 +1 · 점혈 = 이계 기물 기 +1 · 한옥 = 모든 기물 최대 기 +1
+        [UnityTest]
+        public IEnumerator 회귀록_경맥_가지는_장비_칸에선_혈자리_이계_기_최대_기()
+        {
+            var meta = MetaSave.Load();
+            meta.bloomed.AddRange(new[] { "tongmaek", "jeomhyeol", "hanok" });
+            meta.Save();
+            yield return Load();
+            Assert.GreaterOrEqual(_player.Level.Pending, 1, "통맥: 시작 혈자리");
+            Assert.AreEqual(1, _items.BookOtherworldQi, "점혈");
+            Assert.AreEqual(1, _items.BookMaxQiBonus, "한옥");
+            StringAssert.Contains("혈자리", AThousandDawns.Core.RegressionBook.Find("tongmaek").EffectNow);
+            Assert.AreEqual("장비창", PlayerItems.ScreenName);
+            var hat = _items.Add(Def("t_hat2", EquipSlot.Head, 1, 4));
+            Assert.AreEqual(1, hat.MaxQiBonus, "한옥: 최대 기 +1");
+        }
+
         [UnityTest]
         public IEnumerator 칸의_기는_기본_기와_공력_기혈_이계_뒤틀림()
         {

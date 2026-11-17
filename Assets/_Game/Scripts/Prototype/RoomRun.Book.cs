@@ -19,6 +19,11 @@ namespace AThousandDawns.Prototype
             for (int i = RegressionBook.StartPotions(meta); i > 0; i--) Player.AddPotion();
             _innStockBonus = RegressionBook.InnStockBonus(meta);
             _unlockedParts = RegressionBook.UnlockedParts(meta);
+            if (Player.Items != null && Player.Items.Board.EquipMode) // 장비 칸: 경맥 가지는 부품 대신 (통맥 개혈 · 점혈 이계 기 · 한옥 최대 기)
+            {
+                if (RegressionBook.Bloomed(meta, "tongmaek")) Player.Level.GrantPending();
+                Player.Items.SetBookBonuses(RegressionBook.Bloomed(meta, "hanok") ? 1 : 0, RegressionBook.Bloomed(meta, "jeomhyeol") ? 1 : 0);
+            }
             _forgeUnlocked = RegressionBook.ForgeUnlocked(meta);
             AThousandDawns.Items.ItemDatabase.UnlockedPacks = RegressionBook.ItemPacks(meta); // 새 기물 묶음
             Player.SetWeapon(meta.weapon == 1 && RegressionBook.DaggerUnlocked(meta) ? AThousandDawns.Player.WeaponKind.Dagger : AThousandDawns.Player.WeaponKind.Sword); // 마을 무기 거치대
