@@ -341,7 +341,9 @@ namespace AThousandDawns.Art
                 if (brain is OgreBrain) OgreBrain.Enraged += OnOgreEnraged;
                 if (brain is IronFistBrain) IronFistBrain.FarLeaped += OnFarLeaped;
                 if (brain is DeathKnightBrain) DeathKnightBrain.SpectralRide += OnSpectralRide;
-                if (brain is DarkElfBrain) DarkElfBrain.Emerged += OnEmerged;
+                if (brain is DarkElfBrain) { DarkElfBrain.Emerged += OnEmerged; DarkElfBrain.Vanished += OnVanished; DarkElfBrain.DanceCut += OnDanceCut; }
+                if (brain is IronFistBrain) IronFistBrain.Grabbed += OnGrabbed;
+                if (brain is DeathKnightBrain) DeathKnightBrain.Raise += OnKnightRaise;
             }
             _modelRestPos = animator.transform.localPosition;
             if (brain is WerewolfBrain) { _werewolf = true; WerewolfBrain.Enraged += OnEnraged; }
@@ -405,6 +407,7 @@ namespace AThousandDawns.Art
             if (_brain == null || _animator == null || _animator.runtimeAnimatorController == null) return;
             TickOverlay();
             if (_leaping) TickLeap();
+            TickPreLeap();
             if (_arcing) TickArc();
             if (_emergeFade) TickEmerge();
             if (Time.time < _holdUntil) return;   // 한 번 트는 동작(스켈레톤 다시 일어남·보스 견제·도약) 동안은 그 동작만
@@ -849,6 +852,10 @@ namespace AThousandDawns.Art
             _arcFrom = from - to;
             _arcFrom.y = 0f;
             _arcHeight = Mathf.Clamp(_arcFrom.magnitude * 0.3f, 1.2f, 3.5f);
+            if (_preY < 0f) { _arcFrom = Vector3.up * _preY; _arcHeight = 0f; }            // 어둠 걸음: 새 자리 땅속에서 곧게 솟아올라요
+            else if (_preY > 0f) { _arcFrom += Vector3.up * _preY; _arcHeight = 0.6f; }    // 예고 동안 뛰어오른 높이에서 내려앉아요
+            _preY = 0f;
+            _preActive = false;
             _arcStart = Time.time;
             _arcing = true;
             TickArc();
@@ -860,6 +867,72 @@ namespace AThousandDawns.Art
             if (k >= 1f) { _arcing = false; _animator.transform.localPosition = _modelRestPos; return; }
             var offset = Vector3.Lerp(_arcFrom, Vector3.zero, k) + Vector3.up * (4f * k * (1f - k) * _arcHeight);
             _animator.transform.position = transform.TransformPoint(_modelRestPos) + offset;
+        }
+
+        // 예고 동안의 위치: 어둠 걸음은 땅속으로 가라앉고(옛 자리), 점프 덮치기·땅울림 도약은 0.3초 웅크린 뒤 위로 뛰어올라 떠 있어요.
+        //   판정 순간 게임이 새 자리로 옮기며 FarLeaped를 보내면 위 OnFarLeaped가 그 높이에서 이어받아요. 신호가 안 오면(기절 등) 제자리로
+        bool _preActive;
+        float _preStart, _preY;
+
+        void TickPreLeap()
+        {
+            string attack = _brain.AttackName;
+            bool sink = attack == "어둠 걸음", jump = attack == "점프 덮치기" || attack == "땅울림 도약";
+            bool windup = (sink || jump) && _brain.AttackPhase == EnemyAttackTimeline.Phase.Windup && !_brain.IsDead;
+            if (windup)
+            {
+                if (!_preActive) { _preActive = true; _preStart = Time.time; }
+                float t = Time.time - _preStart;
+                float scale = Mathf.Max(0.5f, _modelScale.y);
+                _preY = sink ? -Mathf.Min(1.9f * scale, Mathf.Max(0f, t - 0.15f) * 2.4f * scale)
+                             : t < 0.3f ? 0f : (attack == "땅울림 도약" ? 1.4f : 1.8f) * scale * (1f - Mathf.Exp(-(t - 0.3f) * 4f));
+                _animator.transform.position = transform.TransformPoint(_modelRestPos) + Vector3.up * _preY;
+            }
+            else if (_preActive && !_arcing && _brain.AttackPhase != EnemyAttackTimeline.Phase.Active)
+            {
+                _preActive = false;
+                _preY = 0f;
+                _animator.transform.localPosition = _modelRestPos;
+            }
+        }
+
+        // 잡아 던지기: 붙잡힌 순간 들어 올려 내던지는 뒷부분부터
+        void OnGrabbed(IronFistBrain boss, Vector3 at, Vector3 dir)
+        {
+            if (boss != _brain || !_animator.HasState(0, Animator.StringToHash("GrabThrow"))) return;
+            _animator.Play("GrabThrow", 0, 0.3f);
+            _holdUntil = Time.time + 0.7f;
+        }
+
+        // 데스나이트 죽은 자의 부름 (2페이즈): 대검을 높이 들어 부르는 손짓
+        void OnKnightRaise(DeathKnightBrain knight)
+        {
+            if (knight == _brain) PlayHeld("RideCall", 1.2f);
+        }
+
+        // 다크 엘프 쌍검 난무: 베기 신호마다 그쪽 칼이 나가는 자세로 맞춰요 (left = 왼 칼)
+        void OnDanceCut(DarkElfBrain elf, Vector3 at, Vector3 dir, bool left)
+        {
+            if (elf != _brain || !_animator.HasState(0, Animator.StringToHash("Dance5"))) return;
+            _animator.Play("Dance5", 0, left ? 0.15f : 0.26f);
+            _holdUntil = Time.time + 0.2f;
+        }
+
+        // 다크 엘프 그림자 숨기: 게임이 몸을 곧장 감추니, 그 자리에 지금 자세의 잔상을 남겨 먹으로 흩어지게 해요
+        void OnVanished(DarkElfBrain elf, Vector3 at)
+        {
+            if (elf != _brain) return;
+            foreach (var sr in _animator.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                if (!sr.enabled) continue;
+                var mesh = new Mesh();
+                sr.BakeMesh(mesh, true);
+                var go = new GameObject("Shadow Afterimage");
+                go.transform.SetPositionAndRotation(sr.transform.position, sr.transform.rotation);
+                go.AddComponent<MeshFilter>().sharedMesh = mesh;
+                go.AddComponent<MeshRenderer>().sharedMaterials = sr.sharedMaterials;
+                go.AddComponent<InkAfterimage>();
+            }
         }
 
         // 데스나이트 망령 기병이 줄마다 지나가는 동안: 대검을 들어 겨눈 자세를 이어 버텨요
@@ -966,6 +1039,10 @@ namespace AThousandDawns.Art
                 IronFistBrain.FarLeaped -= OnFarLeaped;
                 DeathKnightBrain.SpectralRide -= OnSpectralRide;
                 DarkElfBrain.Emerged -= OnEmerged;
+                DarkElfBrain.Vanished -= OnVanished;
+                DarkElfBrain.DanceCut -= OnDanceCut;
+                IronFistBrain.Grabbed -= OnGrabbed;
+                DeathKnightBrain.Raise -= OnKnightRaise;
             }
         }
     }
@@ -1206,6 +1283,35 @@ namespace AThousandDawns.Art
             float melt = Mathf.Clamp01((_t - 0.8f) / 1.2f);
             transform.position = _startPos + Vector3.down * 0.25f * melt;
             if (melt >= 1f) Destroy(gameObject);
+        }
+    }
+}
+
+namespace AThousandDawns.Art
+{
+    // 잔상: 구운 메시가 0.45초 동안 발밑부터 먹으로 흩어지며 사라져요 (InkCharacter _Dissolve)
+    public class InkAfterimage : MonoBehaviour
+    {
+        static readonly int DissolveId = Shader.PropertyToID("_Dissolve");
+        MaterialPropertyBlock _block;
+        Renderer _renderer;
+        float _t;
+
+        void Awake() { _renderer = GetComponent<Renderer>(); _block = new MaterialPropertyBlock(); }
+
+        void Update()
+        {
+            _t += Time.deltaTime;
+            float k = Mathf.Clamp01(_t / 0.45f);
+            _renderer.GetPropertyBlock(_block);
+            _block.SetFloat(DissolveId, k);
+            _renderer.SetPropertyBlock(_block);
+            if (k >= 1f)
+            {
+                var mf = GetComponent<MeshFilter>();
+                if (mf != null && mf.sharedMesh != null) Destroy(mf.sharedMesh);
+                Destroy(gameObject);
+            }
         }
     }
 }
