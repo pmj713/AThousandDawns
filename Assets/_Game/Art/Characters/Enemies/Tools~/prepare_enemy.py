@@ -2917,12 +2917,13 @@ if UNIQUE and ("playeranim" in EXTRAS or "float" in EXTRAS):
                 arm("Right", sr + Vector((0.1, -1, -0.35)).normalized() * REACH, Vector((-0.5, 0.2, -1)))
                 arm("Left", sl + Vector((0.3, 0.15, -0.3)), Vector((1, 0.3, -0.3)))
         elif UNIQUE == "pounce":   # 늑대인간: 네 발 짐승처럼 낮게 엎드렸다가 앞으로 덮쳐 두 팔 발톱을 펴고 고개를 내밀어 물어뜯어요
-            if stage == "p_low":
-                lower_hips(-0.5, {"Left": FEET["Left"] + Vector((0, 0.05, 0)), "Right": FEET["Right"] + Vector((0, 0.15, 0))}, dy=0.05)
-                bend("Spine", XA, 50); bend("Neck", XA, -35)
+            if stage in ("p_low", "p_low_b"):
+                breath = 0.04 if stage == "p_low_b" else 0.0
+                lower_hips(-0.5 - breath, {"Left": FEET["Left"] + Vector((0, 0.05, 0)), "Right": FEET["Right"] + Vector((0, 0.15, 0))}, dy=0.05)
+                bend("Spine", XA, 50 + breath * 60); bend("Neck", XA, -35)
                 for s, sx in (("Left", 1), ("Right", -1)):
                     sh = pb[f"{s}Arm"].head.copy()
-                    arm(s, sh + Vector((sx * 0.15, -0.35, -0.55)), Vector((sx, 0.3, -0.5)))   # 두 손을 땅에 짚어요
+                    arm(s, sh + Vector((sx * 0.15, -0.35, -0.55 + breath)), Vector((sx, 0.3, -0.5)))   # 두 손을 땅에 짚어요
             elif stage == "p_leap":
                 feet = {s: FEET[s] + Vector((0, 0.25, 0.3)) for s in FEET}
                 lower_hips(0.1, feet, dy=-0.35); bend("Spine", XA, 38); bend("Neck", XA, -30)
@@ -2970,6 +2971,8 @@ if UNIQUE and ("playeranim" in EXTRAS or "float" in EXTRAS):
         replace_action("Attack", [(0, "f_gather"), (5, "f_wind"), (9, "f_throw"), (16, "f_throw"), (25, "rest")], unique_pose)
     elif UNIQUE == "pounce":
         replace_action("Attack", [(0, "p_low"), (4, "p_leap"), (8, "p_bite"), (16, "p_bite"), (26, "idle")], unique_pose)
+        # 공격 준비(Ready, 예고 동안): 팔을 옆으로 벌린 짐승 자세가 어색했어요 → 덮치기 첫 자세처럼 두 손을 땅에 짚고 낮게 엎드려 숨을 몰아쉬어요
+        replace_action("Ready", [(0, "p_low"), (5, "p_low_b"), (10, "p_low")], unique_pose)
     elif UNIQUE == "greatsword":
         replace_action("Punch2", [(0, "wind"), (4, "sweep"), (8, "raise"), (13, "chop"), (17, "chop"), (24, "idle")], unique_pose)
         replace_action("Quake", [(0, "idle"), (14, "raise"), (19, "raise"), (24, "plant"), (34, "plant"), (44, "idle")], unique_pose)
