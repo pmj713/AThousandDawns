@@ -6402,9 +6402,9 @@ MonoBehaviour:
     unit: cell/s
     note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uC774\uB3D9\uC18D\uB3C4"
   - key: darkelf.recovery
-    value: 0.6
+    value: 0.9
     unit: s
-    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uD328\uD134 \uBE48\uD2C8"
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uD328\uD134 \uBE48\uD2C8 (2\uD398\uC774\uC988\uC5D0 \uACF5\uACA9\uC774 \uB108\uBB34 \uC7A6\uB358 \uAC83)"
   - key: darkelf.slash_windup
     value: 0.45
     unit: s
@@ -6474,9 +6474,9 @@ MonoBehaviour:
     unit: 
     note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC \uD761\uD608 (\uC5C6\uC74C \xB7 \uD608\uC601\uAC80\uB9C8\uC640 \uB2E4\uB978 \uC810)"
   - key: darkelf.p2_windup_ratio
-    value: 0.8
+    value: 1
     unit: 
-    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC 2\uD398\uC774\uC988 \uC608\uACE0 \uC2DC\uAC04 \uBC30\uC728"
+    note: "\uB2E4\uD06C \uC5D8\uD504 \uAC80\uC0AC 2\uD398\uC774\uC988 \uC608\uACE0 \uC2DC\uAC04 \uBC30\uC728 (2\uD398\uC774\uC988\uC5D0\uB3C4 \uBE68\uB77C\uC9C0\uC9C0 \uC54A\uC544\uC694 \xB7 \uC794\uC0C1\uB9CC \uD558\uB098 \uB354)"
   - key: deathknight.hp
     value: 1900
     unit: 
@@ -6869,3 +6869,11 @@ MonoBehaviour:
     value: 1
     unit: "\uBA85"
     note: "\uC5C5\uBCF4 3\uB2E8\uACC4: \uC2F8\uC6B0\uB294 \uBC29\uB9C8\uB2E4 \uCCAB \uC6E8\uC774\uBE0C\uC5D0 \uADF8 \uC9C0\uC5ED \uC878\uAC1C +"
+  - key: offer.forfeit_silver
+    value: 30
+    unit: "\uC740\uC790"
+    note: "\uAE30\uBB3C \uACE0\uB974\uAE30 \uD3EC\uAE30: \uACE0\uB974\uC9C0 \uC54A\uB294 \uB300\uC2E0 \uBC1B\uB294 \uC740\uC790"
+  - key: equip.qi_damp_max
+    value: 4
+    unit: 
+    note: "\uC7A5\uBE44\uCC3D \uAE30 \uC870\uC808: \uBAA8\uB4E0 \uCE78\uC758 \uAE30\uB97C \uCD5C\uB300 \uC774\uB9CC\uD07C \uB0AE\uCD9C \uC218 \uC788\uC5B4\uC694"

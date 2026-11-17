@@ -37,7 +37,7 @@ namespace AThousandDawns.Prototype
                     int wraiths = Price("event.alms_wraiths", 2f);
                     v.Choices.Add(new EventChoice
                     {
-                        Label = $"시주한다 · 은자 {alms} · 이번 층 받는 피해 −{guard:0%}",
+                        Label = $"시주한다 · 은자 −{alms} · 이번 층 받는 피해 −{guard:0%}",
                         Locked = Silver < alms ? "은자가 모자라요" : null,
                         Act = () =>
                         {

@@ -53,7 +53,7 @@ namespace AThousandDawns.Prototype
                     int sneak = Price("event.toll_sneak_tracking", 3f);
                     v.Choices.Add(new EventChoice
                     {
-                        Label = $"통행세를 낸다 · 은자 {toll}",
+                        Label = $"통행세를 낸다 · 은자 −{toll}",
                         Locked = Silver < toll ? "은자가 모자라요" : null,
                         Act = () => { Silver -= toll; return "수적들이 길을 비켜 줘요."; },
                     });
@@ -77,7 +77,7 @@ namespace AThousandDawns.Prototype
                     int fare = Price("event.ferry_silver", 60f);
                     v.Choices.Add(new EventChoice
                     {
-                        Label = $"뱃삯을 낸다 · 은자 {fare} · 다음 층 지도가 처음부터 다 보여요",
+                        Label = $"뱃삯을 낸다 · 은자 −{fare} · 다음 층 지도가 처음부터 다 보여요",
                         Locked = Silver < fare ? "은자가 모자라요" : _ferry ? "이미 물길을 들었어요" : null,
                         Act = () =>
                         {

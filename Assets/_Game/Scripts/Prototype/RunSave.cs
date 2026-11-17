@@ -65,7 +65,7 @@ namespace AThousandDawns.Prototype
         public List<Item> items = new List<Item>();
         public List<Part> parts = new List<Part>();
         public int forge0 = -1, forge1 = -1;
-        public int globalMaxQi, danjeonMoves, startDanjeons = 1;
+        public int globalMaxQi, danjeonMoves, startDanjeons = 1, qiDamp; // qiDamp: 장비 칸 기 조절
 
         // 테스트는 MetaSave.PathOverride 옆에 둬요 (진짜 저장을 건드리지 않게)
         public static string FilePath => MetaSave.PathOverride != null ? MetaSave.PathOverride + ".run.json" : Path.Combine(Application.persistentDataPath, "run.json");

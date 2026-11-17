@@ -87,10 +87,30 @@ namespace AThousandDawns.Prototype
 
         Action _afterEvent; // 창을 닫은 뒤 (고수 선택 → 다음 갈림길)
 
+        // Esc로 접어 둔 이벤트: 그 방에서 상호작용하면 같은 창 그대로 다시 (선택지 · 진열이 바뀌지 않게)
+        FloorRoom _heldEventRoom;
+        EventView _heldEvent;
+        EventView _roomEventView; // 지금 연 이벤트 방의 첫 창 (Esc로 접을 수 있는 건 이것뿐 · 고르기 다음 단계 창은 아니에요)
+
         void OpenEvent(FloorRoom room, string id)
         {
-            Notify("event", "이벤트 방: 고르는 대로 결과가 달라요 · 대가 없는 선택지도 늘 있어요");
-            OpenEventView(BuildEvent(room, id), null);
+            Notify("event", "이벤트 방: 고르는 대로 결과가 달라요 · 대가 없는 선택지도 늘 있어요 · Esc로 접었다가 다시 볼 수 있어요");
+            var view = room != null && room == _heldEventRoom && _heldEvent != null && _heldEvent.Result == null ? _heldEvent : BuildEvent(room, id);
+            _heldEventRoom = null; // 접어 둔 것을 다시 열었으면 비워요 (Esc로 다시 접으면 또 담겨요)
+            _heldEvent = null;
+            _roomEventView = view;
+            OpenEventView(view, null);
+        }
+
+        // 이벤트 방 가운데 (소품 자리)에서 접어 둔 이벤트를 다시 열 수 있어요
+        public bool NearEvent => _phase == Phase.Floor && !_fighting && !IsInEvent && _room != null && _room.Kind == FloorRoomKind.Event && !_room.Cleared
+            && !string.IsNullOrEmpty(_room.EventId) && Flat(Player.transform.position - Combat.center).magnitude < GameConfig.GetOptional("event.reopen_radius", 3f);
+
+        bool TickEventReopen()
+        {
+            if (!NearEvent || !AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Interact)) return false;
+            OpenEvent(_room, _room.EventId);
+            return true;
         }
 
         void OpenEventView(EventView view, Action after)
@@ -129,6 +149,14 @@ namespace AThousandDawns.Prototype
             }
             // 게임패드: 위아래로 고르고 (잠긴 선택지는 건너뛰어요) A로 골라요
             var view = CurrentEvent;
+            if (view == _roomEventView && _room != null && _room.Kind == FloorRoomKind.Event && (AThousandDawns.Core.Pad.Back || (keyboard != null && keyboard.escapeKey.wasPressedThisFrame))) // Esc: 고르지 않고 접어 둬요 (방에서 상호작용으로 다시)
+            {
+                _heldEventRoom = _room;
+                _heldEvent = view;
+                CloseEvent();
+                ShowBanner($"{view.Title} · 가운데에서 {KeyName(AThousandDawns.Core.Bind.Interact)}로 다시 볼 수 있어요");
+                return;
+            }
             view.Cursor = AThousandDawns.Core.Pad.Step(view.Cursor, view.Choices.Count, false, i => view.Choices[i].Locked != null);
             if (AThousandDawns.Core.Pad.Confirm && view.Cursor < view.Choices.Count && view.Choices[view.Cursor].Locked == null)
             {
@@ -177,13 +205,13 @@ namespace AThousandDawns.Prototype
                     int potionPrice = Price("price.doctor_potion", 50f), needlePrice = Price("price.doctor_needle", 40f);
                     v.Choices.Add(new EventChoice
                     {
-                        Label = $"금창약을 산다 · 은자 {potionPrice}",
+                        Label = $"금창약을 산다 · 은자 −{potionPrice}",
                         Locked = Silver < potionPrice ? "은자가 모자라요" : Player.Potions >= Player.PotionMax ? $"금창약은 {Player.PotionMax}개까지" : null,
                         Act = () => { Silver -= potionPrice; Player.AddPotion(); return "금창약 1개를 샀어요."; },
                     });
                     v.Choices.Add(new EventChoice
                     {
-                        Label = $"침을 맞는다 · 은자 {needlePrice} · 체력 {GameConfig.Get("event.needle_heal", 0.25f):0%} 회복",
+                        Label = $"침을 맞는다 · 은자 −{needlePrice} · 체력 {GameConfig.Get("event.needle_heal", 0.25f):0%} 회복",
                         Locked = Silver < needlePrice ? "은자가 모자라요" : null,
                         Act = () => { Silver -= needlePrice; Player.Heal(Player.MaxHealth * GameConfig.Get("event.needle_heal", 0.25f)); return "침을 맞고 기혈이 돌아요."; },
                     });
@@ -193,7 +221,7 @@ namespace AThousandDawns.Prototype
                 case "pharmacy":
                     v.Title = "버려진 약방";
                     v.Text = "먼지 쌓인 약장에 이름표가 떨어진 약병들이 있다.";
-                    v.Choices.Add(new EventChoice { Label = "아무 병이나 집는다 · 금창약 / 원기단 (이번 층 공력 +1) / 독약", Act = RandomBottle });
+                    v.Choices.Add(new EventChoice { Label = "아무 병이나 집는다 · 금창약 / 원기단 (혈자리 하나) / 독약", Act = RandomBottle });
                     v.Choices.Add(new EventChoice
                     {
                         Label = $"샅샅이 뒤진다 · 소란 +{Price("event.search_tracking", 1f)} (다음 싸우는 방에 졸개) · 금창약 1개",
@@ -211,7 +239,7 @@ namespace AThousandDawns.Prototype
                     v.Text = "주막 구석에서 사내가 투전 패를 섞고 있다.";
                     v.Choices.Add(new EventChoice
                     {
-                        Label = $"은자를 건다 · 은자 {stake} (절반 확률로 두 배)",
+                        Label = $"은자를 건다 · 은자 −{stake} (절반 확률로 두 배로 돌려받아요)",
                         Locked = Silver < stake ? "은자가 모자라요" : null,
                         Act = () => _rng.NextDouble() < GameConfig.Get("event.gamble_win", 0.5f)
                             ? Win(stake) : Lose(stake),
@@ -225,7 +253,7 @@ namespace AThousandDawns.Prototype
                     int power = Price("event.gamble_power", 4f);
                     v.Choices.Add(new EventChoice
                     {
-                        Label = $"🔒 속임수를 꿰뚫는다 (공력 {power} 이상) · 은자 {stake}을 걸고 확실히 이김",
+                        Label = $"🔒 속임수를 꿰뚫는다 (공력 {power} 이상) · 은자 −{stake}를 걸고 확실히 이겨요 (두 배로 돌려받아요)",
                         Locked = Player.Gongryeok < power ? $"공력 {power} 이상 (지금 {Player.Gongryeok})" : Silver < stake ? "은자가 모자라요" : null,
                         Act = () => Win(stake),
                     });
@@ -260,7 +288,7 @@ namespace AThousandDawns.Prototype
                     int incense = Price("price.shrine_incense", 20f);
                     v.Choices.Add(new EventChoice
                     {
-                        Label = $"향을 피운다 · 은자 {incense} · 이번 지역 동안 무작위 축복",
+                        Label = $"향을 피운다 · 은자 −{incense} · 이번 지역 동안 무작위 축복",
                         Locked = Silver < incense ? "은자가 모자라요" : null,
                         Act = () =>
                         {
@@ -324,7 +352,7 @@ namespace AThousandDawns.Prototype
                     int fee = Price("price.smith_fee", 60f);
                     v.Choices.Add(new EventChoice
                     {
-                        Label = $"기물을 맡긴다 · 삯 {fee} · 반반: 등급 한 단계 위 / 망가져 사라짐",
+                        Label = $"기물을 맡긴다 · 은자 −{fee} · 반반: 등급 한 단계 위 / 망가져 사라짐",
                         Locked = Silver < fee ? "은자가 모자라요" : SmithCandidates().Count == 0 ? "맡길 기물이 없어요 (전설은 더 못 올려요)" : null,
                         Act = () => { OpenSmithPick(fee); return null; },
                     });
@@ -417,17 +445,16 @@ namespace AThousandDawns.Prototype
             return $"졌어요. 은자 −{stake}";
         }
 
-        // 아무 병: 60% 금창약 / 25% 원기단 (이번 층 동안 공력 +1) / 15% 독약 (체력 −15%)
+        // 아무 병: 60% 금창약 / 25% 원기단 (혈자리 하나) / 15% 독약 (체력 −15%)
         string RandomBottle()
         {
             double r = _rng.NextDouble();
             float potion = GameConfig.Get("event.bottle_potion", 0.6f), pill = GameConfig.Get("event.bottle_pill", 0.25f);
             if (r < potion) return Player.AddPotion() ? "금창약이었어요." : "금창약이었지만 더 들 수 없어 두고 왔어요.";
-            if (r < potion + pill)
+            if (r < potion + pill) // 원기단: 공력 대신 혈자리 (공력이 너무 자주 올라 기물이 넘치던 것)
             {
-                _floorPower++;
-                Player.Gongryeok += 1;
-                return "원기단이었어요. 이번 층 동안 공력 +1";
+                Player.Level.GrantPending();
+                return "원기단이었어요. 혈자리를 하나 열 수 있어요 (개혈 대기 +1)";
             }
             float poison = Player.MaxHealth * GameConfig.Get("event.poison_damage", 0.15f);
             Player.TakeEventDamage(poison);

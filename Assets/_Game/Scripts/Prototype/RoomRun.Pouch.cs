@@ -73,14 +73,41 @@ namespace AThousandDawns.Prototype
         // 주머니 열기 → 기물 고르기 (테스트에서도 불러요)
         public void OpenPouch()
         {
-            if (_room == null || !_room.Pouch) return;
-            _room.Pouch = false;
+            if (_room == null || !_room.Pouch || _pouchAwaiting) return;
             if (_pouch != null) PouchOpened?.Invoke(_pouch.transform.position); // 이펙트 신호 (아트: InkPouchFx)
-            PlacePouch(null);
             _room.Cleared = true;
             Sfx.Play(SfxId.Coin);
+            // 기물 주머니: 고르거나 포기할 때까지 주머니가 그대로 남아요 (Esc로 접으면 상호작용으로 같은 기물을 다시)
+            bool itemPouch = !InTutorialFloor && _path.Reward == RewardKind.Item;
+            if (itemPouch) { _pouchAwaiting = true; _pouchRoom = _room; }
+            else
+            {
+                _room.Pouch = false;
+                PlacePouch(null);
+            }
             ShowBanner(GrantRoomReward());
             MarkSave();
+        }
+
+        bool _pouchAwaiting; // 기물 주머니를 열었지만 아직 고르지 않았어요
+        FloorRoom _pouchRoom;
+
+        void OnOfferResolved()
+        {
+            if (!_pouchAwaiting) return;
+            _pouchAwaiting = false;
+            if (_pouchRoom != null) _pouchRoom.Pouch = false;
+            if (_room == _pouchRoom) PlacePouch(null);
+            _pouchRoom = null;
+            MarkSave();
+        }
+
+        // 기물 포기: 고르지 않는 대신 은자
+        void OnOfferForfeited(int silver)
+        {
+            int got = BoostSilver(silver);
+            Silver += got;
+            ShowBanner($"기물을 포기했어요 · 은자 +{got}");
         }
 
         // 보상 방 보상 (주머니를 열 때). 배너 글을 돌려줘요
@@ -106,7 +133,7 @@ namespace AThousandDawns.Prototype
         }
 
         // 상호작용 안내 (보상 종류마다)
-        public string PouchPrompt => InTutorialFloor ? "기물 주머니 열기" : _path.Reward switch
+        public string PouchPrompt => _pouchAwaiting ? "기물 주머니 다시 열기 (같은 기물)" : InTutorialFloor ? "기물 주머니 열기" : _path.Reward switch
         {
             RewardKind.Item => "기물 주머니 열기",
             RewardKind.Forge => "대장간 화로 쓰기",

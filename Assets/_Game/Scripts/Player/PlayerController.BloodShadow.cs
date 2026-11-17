@@ -83,6 +83,7 @@ namespace AThousandDawns.Player
             hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
             int count = HitLine(from, to, BS("skill_bloodshadow.width", 1.2f), hit, HitTag.Skill);
             Gauge = Mathf.Min(GaugeCap, Gauge + count * _gaugeSkill * GaugeGainMultiplier);
+            ShadowChain(count, hit, _firstHit);
         }
 
         void ShadowCircle(Vector3 at, float radius, float ratio)
@@ -91,14 +92,27 @@ namespace AThousandDawns.Player
             var hit = PlayerHit(_skillDamage * ratio);
             hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
             int hits = 0;
+            Damageable first = null;
             foreach (var e in Damageable.All())
             {
                 if (e == null || e.IsDead || !e.Targetable) continue;
                 if ((Flatten(e.transform.position) - Flatten(at)).magnitude > radius + e.BodyRadius) continue;
                 HitTarget(e, hit, HitTag.Skill);
+                if (first == null) first = e;
                 hits++;
             }
             Gauge = Mathf.Min(GaugeCap, Gauge + hits * _gaugeSkill * 0.5f * GaugeGainMultiplier);
+            ShadowChain(hits, hit, first);
+        }
+
+        // 다른 초식처럼 뇌정 2단계부터 적중하면 연쇄 번개 (쌓인 감전이 방전으로 터져요)
+        void ShadowChain(int count, HitDamageInput hit, Damageable first)
+        {
+            int thunder = _keywords.Count(Keyword.Noejeong);
+            if (count <= 0 || thunder < 2 || first == null || first.IsDead) return;
+            float trigger = DamageFormula.BeforeToughness(hit);
+            Lightning.Chain(first, first.transform.position + Vector3.up, trigger, ChainRatio(thunder), _chainTargets, _chainRange, DischargePerStack(thunder));
+            StrikeAfterSkillChain(first, trigger, thunder);
         }
     }
 }

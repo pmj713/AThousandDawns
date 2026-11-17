@@ -338,12 +338,14 @@ namespace AThousandDawns.Prototype
             {
                 OfferCursor = AThousandDawns.Core.Pad.Step(OfferCursor, Offer.Count, true); // 게임패드: 좌우 · A 고르기 · B 넘기기
                 if (AThousandDawns.Core.Pad.Confirm && Offer.Count > 0) { Choose(OfferCursor); return true; }
-                if (AThousandDawns.Core.Pad.Back) { CloseOffer(); return true; }
+                if (AThousandDawns.Core.Pad.Back) { HoldOffer(); return true; }
+                if (AThousandDawns.Core.Pad.North) { Forfeit(); return true; } // 패드 Y: 포기 (보상)
                 if (keyboard == null) return true;
                 if (keyboard.digit1Key.wasPressedThisFrame) Choose(0);
                 else if (keyboard.digit2Key.wasPressedThisFrame) Choose(1);
                 else if (keyboard.digit3Key.wasPressedThisFrame) Choose(2);
-                else if (keyboard.escapeKey.wasPressedThisFrame) CloseOffer();
+                else if (keyboard.digit4Key.wasPressedThisFrame) Forfeit();
+                else if (keyboard.escapeKey.wasPressedThisFrame) HoldOffer(); // Esc: 넘기지 않고 접어 둬요 (상호작용으로 같은 기물을 다시)
                 return true;
             }
 
@@ -378,6 +380,42 @@ namespace AThousandDawns.Prototype
             director.Player.Items.Add(_offer[index]);
             Sfx.Play(SfxId.UiConfirm);
             CloseOffer();
+            OfferResolved?.Invoke();
+        }
+
+        // 접어 둔 기물 고르기 (Esc): 같은 기물 그대로 상호작용으로 다시 열어요. 고르거나 포기할 때까지 남아요
+        readonly Queue<List<ItemDefinition>> _held = new Queue<List<ItemDefinition>>();
+        public bool HasHeldOffer => _held.Count > 0;
+        public static event System.Action OfferResolved;  // 기물을 고르거나 포기했어요 (주머니를 치워요)
+        public static event System.Action<int> Forfeited; // 포기: 보상 은자 (RoomRun이 받아요)
+
+        public void HoldOffer()
+        {
+            if (!IsChoosing) return;
+            _held.Enqueue(_offer);
+            CloseOffer();
+        }
+
+        public void ReopenHeldOffer()
+        {
+            if (IsChoosing || _held.Count == 0 || director == null || director.Player == null) return;
+            _offer = _held.Dequeue();
+            _pendingOffers++;
+            OfferCursor = 0;
+            Time.timeScale = 0f;
+            director.Player.enabled = false;
+        }
+
+        // 기물 포기: 고르지 않는 대신 은자 (offer.forfeit_silver)
+        public int ForfeitSilver => Mathf.RoundToInt(GameConfig.GetOptional("offer.forfeit_silver", 30f));
+
+        public void Forfeit()
+        {
+            if (!IsChoosing) return;
+            int silver = ForfeitSilver;
+            CloseOffer();
+            Forfeited?.Invoke(silver);
+            OfferResolved?.Invoke();
         }
 
         public void CloseOffer()

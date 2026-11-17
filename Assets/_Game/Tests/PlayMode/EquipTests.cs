@@ -111,6 +111,32 @@ namespace AThousandDawns.Tests
             Assert.AreEqual(1, hat.MaxQiBonus, "한옥: 최대 기 +1");
         }
 
+        // 개혈은 같은 칸에 몇 번이든 (기혈 · 한혈 섞어서) · 키워드는 끼운 기물 수 · 기 조절은 모든 칸의 기를 낮춰요
+        [UnityTest]
+        public IEnumerator 개혈_중복과_키워드는_끼운_수와_기_조절()
+        {
+            yield return Load();
+            var top = _items.Add(Def("t_top3", EquipSlot.Top, 1, 20));
+            var bottom = _items.Add(Def("t_bottom3", EquipSlot.Bottom, 1, 20));
+            Assert.AreEqual(2, _player.Keywords.Count(Keyword.Ganggi), "기 상태와 상관없이 끼운 기물 하나에 1개");
+
+            int qi = top.Qi;
+            Assert.IsTrue(_items.OpenAcupoint(top.Cell, Acupoint.Gihyeol));
+            Assert.IsTrue(_items.OpenAcupoint(top.Cell, Acupoint.Gihyeol), "같은 칸에 기혈 한 번 더");
+            Assert.IsTrue(_items.OpenAcupoint(top.Cell, Acupoint.Hanhyeol), "한혈도 섞어서");
+            Assert.AreEqual(qi + 2 * _items.Board.GihyeolQi, top.Qi, "기혈 둘");
+            Assert.AreEqual(_items.Board.HanhyeolMaxQi, top.MaxQiBonus, "한혈 하나");
+            Assert.IsFalse(_items.OpenAcupoint(top.Cell, Acupoint.Tonghyeol), "통혈은 장비 칸에 없어요");
+
+            int before = bottom.Qi;
+            _items.SetQiDamp(2);
+            Assert.AreEqual(Mathf.Max(0, before - 2), bottom.Qi, "기 조절: 모든 칸 −2");
+            _player.Gongryeok += 1;
+            Assert.AreEqual(Mathf.Max(0, before - 1), bottom.Qi, "공력이 올라도 조절은 그대로");
+            _items.SetQiDamp(0);
+            Assert.AreEqual(before + 1, bottom.Qi);
+        }
+
         [UnityTest]
         public IEnumerator 칸의_기는_기본_기와_공력_기혈_이계_뒤틀림()
         {

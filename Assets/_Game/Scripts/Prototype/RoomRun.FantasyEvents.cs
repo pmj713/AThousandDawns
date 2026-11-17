@@ -11,7 +11,7 @@ namespace AThousandDawns.Prototype
     // 판타지 이벤트 4종 (차원 겹침): 어느 지역에서나 무협 이벤트 사이에 섞여요. 깊이 갈수록 자주 (fantasy_event.chance.r0~r3).
     //   이계 대장간: 은자를 내면 기물 하나를 같은 키워드의 이계 기물로 바꿔 줘요 (혼종 세트 맞추기).
     //   무너진 성당 제단: 은자를 바치면 축복 (이번 층 받는 피해 −) 아니면 저주 (+). 기도만 하면 체력 조금.
-    //   마나 샘: 마시면 체력 회복, 몸에 부으면 이번 층 공력 +1 (둘 중 하나).
+    //   마나 샘: 마시면 체력 회복, 몸에 부으면 혈자리 하나 (둘 중 하나).
     //   봉인된 마검: 뽑으면 이계 정예(오크) + 스켈레톤 둘과 싸워 이기면 희귀 이상 기물 고르기. 다시 봉인하면 수련치.
     // 판타지 적이 꺼져 있으면(RoomBudget.FantasyOn) 나오지 않아요 (예전 테스트의 난수 흐름이 그대로).
     public sealed partial class RoomRun
@@ -59,7 +59,7 @@ namespace AThousandDawns.Prototype
                     int fee = Price("price.forge_fee", 80f);
                     v.Choices.Add(new EventChoice
                     {
-                        Label = $"기물을 맡긴다 · 은자 {fee} · 같은 키워드의 이계 기물로 바뀌어요 (혼종 세트)",
+                        Label = $"기물을 맡긴다 · 은자 −{fee} · 같은 키워드의 이계 기물로 바뀌어요 (혼종 세트)",
                         Locked = Silver < fee ? "은자가 모자라요" : ForgeCandidates().Count == 0 ? "벼릴 수 있는 기물이 없어요" : null,
                         Act = () => { OpenForgePick(fee); return null; },
                     });
@@ -77,7 +77,7 @@ namespace AThousandDawns.Prototype
                     float pray = GameConfig.GetOptional("event.chapel_pray_heal", 0.15f);
                     v.Choices.Add(new EventChoice
                     {
-                        Label = $"은자 {offer}를 바친다 · {chance:0%}: 축복 (이번 층 받는 피해 −{bless:0%}) / 저주 (+{curse:0%})",
+                        Label = $"제물을 바친다 · 은자 −{offer} · {chance:0%}: 축복 (이번 층 받는 피해 −{bless:0%}) / 저주 (+{curse:0%})",
                         Locked = Silver < offer ? "은자가 모자라요" : null,
                         Act = () =>
                         {
@@ -122,13 +122,12 @@ namespace AThousandDawns.Prototype
                     });
                     v.Choices.Add(new EventChoice
                     {
-                        Label = $"몸에 붓는다 · 이번 층 공력 +{power}",
+                        Label = "몸에 붓는다 · 혈자리 하나를 바로 열 수 있어요 (개혈)",
                         Act = () =>
                         {
-                            Player.Gongryeok += power;
-                            _floorPower += power;
+                            Player.Level.GrantPending(); // 공력 대신 혈자리 (공력이 너무 자주 올라 기물이 넘치던 것)
                             FxAtPlayer("spring");
-                            return $"마나가 경맥을 타고 돌아요. 이번 층 공력 +{power}";
+                            return $"마나가 경맥을 타고 돌아요. 혈자리를 하나 열 수 있어요 ({PlayerItems.ScreenName}에서)";
                         },
                     });
                     v.Choices.Add(Pass("지나간다"));

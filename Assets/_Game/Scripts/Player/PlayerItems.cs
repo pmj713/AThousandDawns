@@ -331,8 +331,20 @@ namespace AThousandDawns.Player
         // 공력 (모든 단전의 출력). PlayerController가 공력이 바뀔 때마다 알려 줘요.
         public void SetPower(int power)
         {
-            _board.Power = power;
+            _rawPower = power;
+            _board.Power = power - QiDamp;
             Recount();
+        }
+
+        // 기 조절 (장비 칸): 공력이 너무 올라 기물이 주화입마로 넘칠 때, 모든 칸의 기를 스스로 낮춰요 (공력의 피해 배율은 그대로)
+        int _rawPower;
+        public int QiDamp { get; private set; }
+        public int MaxQiDamp => Mathf.RoundToInt(GameConfig.GetOptional("equip.qi_damp_max", 4f));
+
+        public void SetQiDamp(int damp)
+        {
+            QiDamp = Mathf.Clamp(damp, 0, MaxQiDamp);
+            SetPower(_rawPower);
         }
 
         // 판을 시작할 때 고르는 단전 수 (영혼수련 맥 20이면 2)
@@ -482,8 +494,9 @@ namespace AThousandDawns.Player
                 if (!item.OnBoard) continue;
                 var state = StateOf(item);
                 _qiCounts[(int)state]++;
-                _keywordCounts[(int)item.Def.keyword] += state == QiState.Lacking ? 0 : state == QiState.Circulating ? 1 : 2;
-                if (item.Def.otherworld && state != QiState.Lacking) _otherworldCounts[(int)item.Def.keyword]++;
+                // 장비 칸: 키워드는 끼운 기물 수만큼 (기 상태와 상관없이 1개씩). 경맥도: 기 부족 0 · 운기 1 · 주화입마 2
+                _keywordCounts[(int)item.Def.keyword] += _board.EquipMode ? 1 : state == QiState.Lacking ? 0 : state == QiState.Circulating ? 1 : 2;
+                if (item.Def.otherworld && (_board.EquipMode || state != QiState.Lacking)) _otherworldCounts[(int)item.Def.keyword]++;
             }
             for (int k = 0; k < _hybridLevels.Length; k++)
             {

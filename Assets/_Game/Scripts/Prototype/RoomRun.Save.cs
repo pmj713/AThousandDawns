@@ -112,12 +112,13 @@ namespace AThousandDawns.Prototype
                 s.boardWidth = board.Width;
                 s.boardHeight = board.Height;
                 foreach (var d in board.Danjeons) s.danjeons.Add(new RunSave.Point { x = d.x, y = d.y });
-                foreach (var kv in board.Acupoints) s.acupoints.Add(new RunSave.Point { x = kv.Key.x, y = kv.Key.y, kind = (int)kv.Value });
+                foreach (var (cell, kind) in board.OpenedAcupoints()) s.acupoints.Add(new RunSave.Point { x = cell.x, y = cell.y, kind = (int)kind }); // 장비 칸은 겹친 수만큼
                 foreach (var it in items.Items) s.items.Add(new RunSave.Item { id = it.Def.id, onBoard = it.OnBoard, x = it.Cell.x, y = it.Cell.y, purified = it.Purified });
                 foreach (var p in items.Parts) s.parts.Add(new RunSave.Part { kind = (int)p.Kind, onBoard = p.OnBoard, x = p.Cell.x, y = p.Cell.y });
                 s.forge0 = items.ForgeSlot(0).HasValue ? (int)items.ForgeSlot(0).Value : -1;
                 s.forge1 = items.ForgeSlot(1).HasValue ? (int)items.ForgeSlot(1).Value : -1;
                 s.globalMaxQi = items.GlobalMaxQiBonus;
+                s.qiDamp = items.QiDamp;
                 s.danjeonMoves = items.DanjeonMoves;
                 s.startDanjeons = items.StartDanjeons;
             }
@@ -163,6 +164,7 @@ namespace AThousandDawns.Prototype
                 items.SetForgeSlot(0, s.forge0 >= 0 ? (Keyword?)s.forge0 : null);
                 items.SetForgeSlot(1, s.forge1 >= 0 ? (Keyword?)s.forge1 : null);
                 items.SetGlobalMaxQiBonus(s.globalMaxQi);
+                items.SetQiDamp(s.qiDamp);
                 items.DanjeonMoves = s.danjeonMoves;
                 items.StartDanjeons = items.Board.EquipMode ? 0 : s.startDanjeons; // 옛 경맥도 저장을 장비 칸으로 불러도 단전 놓기에 막히지 않게
             }

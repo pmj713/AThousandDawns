@@ -96,10 +96,39 @@ namespace AThousandDawns.Player
 
         public Acupoint AcupointAt(Vector2Int cell) => _acupoints.TryGetValue(cell, out var kind) ? kind : Acupoint.None;
 
-        // 혈자리를 열어요. 한 칸에 하나만.
+        // 장비 칸: 같은 칸에 기혈 · 한혈을 몇 번이든 (섞어도) 열 수 있어요. 겹친 수만큼 기 · 최대 기가 올라요
+        readonly Dictionary<Vector2Int, int> _gihyeolStacks = new Dictionary<Vector2Int, int>();
+        readonly Dictionary<Vector2Int, int> _hanhyeolStacks = new Dictionary<Vector2Int, int>();
+
+        public int AcupointStacks(Vector2Int cell, Acupoint kind)
+        {
+            if (!EquipMode) return AcupointAt(cell) == kind ? 1 : 0;
+            var map = kind == Acupoint.Gihyeol ? _gihyeolStacks : kind == Acupoint.Hanhyeol ? _hanhyeolStacks : null;
+            return map != null && map.TryGetValue(cell, out int n) ? n : 0;
+        }
+
+        // 저장용: 연 혈자리를 하나씩 (장비 칸은 겹친 수만큼 같은 칸이 여러 번)
+        public IEnumerable<(Vector2Int cell, Acupoint kind)> OpenedAcupoints()
+        {
+            if (!EquipMode) { foreach (var kv in _acupoints) yield return (kv.Key, kv.Value); yield break; }
+            foreach (var kv in _gihyeolStacks) for (int i = 0; i < kv.Value; i++) yield return (kv.Key, Acupoint.Gihyeol);
+            foreach (var kv in _hanhyeolStacks) for (int i = 0; i < kv.Value; i++) yield return (kv.Key, Acupoint.Hanhyeol);
+        }
+
+        // 혈자리를 열어요. 경맥도는 한 칸에 하나만, 장비 칸은 기혈 · 한혈을 겹쳐서
         public bool OpenAcupoint(Vector2Int cell, Acupoint kind)
         {
-            if (kind == Acupoint.None || !Contains(cell) || _acupoints.ContainsKey(cell)) return false;
+            if (kind == Acupoint.None || !Contains(cell)) return false;
+            if (EquipMode)
+            {
+                if (kind == Acupoint.Tonghyeol) return false; // 장비 칸엔 기가 흐르지 않아요
+                var map = kind == Acupoint.Gihyeol ? _gihyeolStacks : _hanhyeolStacks;
+                map[cell] = (map.TryGetValue(cell, out int n) ? n : 0) + 1;
+                if (!_acupoints.ContainsKey(cell)) _acupoints[cell] = kind; // 그림 · 예전 저장용 (처음 연 것)
+                _dirty = true;
+                return true;
+            }
+            if (_acupoints.ContainsKey(cell)) return false;
             _acupoints[cell] = kind;
             _dirty = true;
             return true;
@@ -126,7 +155,7 @@ namespace AThousandDawns.Player
 
         public int MaxQiBonusAt(Vector2Int cell)
         {
-            int bonus = AcupointAt(cell) == Acupoint.Hanhyeol ? HanhyeolMaxQi : 0;
+            int bonus = AcupointStacks(cell, Acupoint.Hanhyeol) * HanhyeolMaxQi;
             foreach (var step in Steps)
                 if (PartAt(cell + step) == PartKind.Hanok) bonus += HanokMaxQi; // 한옥이 붙어 있으면
             return bonus;
@@ -135,7 +164,7 @@ namespace AThousandDawns.Player
         public int QiAt(Vector2Int cell)
         {
             if (!Contains(cell)) return 0;
-            if (EquipMode) return Mathf.Max(0, _slotQi[cell.x] + Power - PowerBase + (AcupointAt(cell) == Acupoint.Gihyeol ? GihyeolQi : 0));
+            if (EquipMode) return Mathf.Max(0, _slotQi[cell.x] + Power - PowerBase + AcupointStacks(cell, Acupoint.Gihyeol) * GihyeolQi);
             Refresh();
             int qi = AcupointAt(cell) == Acupoint.Gihyeol ? GihyeolQi : 0;
             int index = cell.y * Width + cell.x;

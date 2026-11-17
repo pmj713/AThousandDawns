@@ -165,6 +165,10 @@ namespace AThousandDawns.Prototype
                 KeyHint.Draw(prompt, $"벽에 금이 가 있어요 · {interact} 벽을 부수기", _big, _big.fontSize);
             if (run != null && run.NearPouch)
                 KeyHint.Draw(prompt, $"{interact} {run.PouchPrompt}", _big, _big.fontSize);
+            if (run != null && run.NearEvent)
+                KeyHint.Draw(prompt, $"{interact} 이벤트 다시 보기", _big, _big.fontSize);
+            if (run != null && arena != null && arena.HasHeldOffer && !arena.IsChoosing && !run.NearPouch)
+                KeyHint.Draw(prompt, $"받지 않은 기물이 있어요 · {interact} 다시 열기", _big, _big.fontSize);
 
             if (player != null && player.IsDead && run == null) // 판 구조 씬은 결과 화면이 대신 떠요
                 GUI.Label(new Rect(0, UiScale.Height * 0.4f, UiScale.Width, 60), "쓰러졌어요 · F5 키로 다시 시작", _big);
@@ -401,7 +405,7 @@ namespace AThousandDawns.Prototype
                 string price = s.Sold ? "<color=#9a9a9a>팔림</color>" : run.Silver < s.Price ? $"<color=#ff6a5a>{s.Price}</color>" : $"<color=#ffd27a>{s.Price}</color>";
                 string body = s.Kind switch
                 {
-                    InnShop.SlotKind.Item => $"<b>{s.Item.name}</b>  {Colored(s.Item.keyword)} · {GradeColored(s.Item.grade)} · 기 {s.Item.minQi}–{s.Item.maxQi}\n<size=13>{s.Item.effectText}</size>",
+                    InnShop.SlotKind.Item => $"<b>{s.Item.name}</b>  {Colored(s.Item.keyword)} · {GradeColored(s.Item.grade)} · {ShopSlot(s.Item)}기 {s.Item.minQi}–{s.Item.maxQi}\n<size=13>{s.Item.effectText}</size>",
                     InnShop.SlotKind.Potion => $"<b>금창약</b>  최대 체력 40% 회복 (R 누르고 있기)\n<size=13>지금 {player.Potions}/{player.PotionMax}개</size>",
                     InnShop.SlotKind.Part => $"<b>부품 {PlayerItems.PartLabel(s.Part)}</b>\n<size=13>경맥도 칸에 놓는 부품 (E · 부품 줄)</size>",
                     InnShop.SlotKind.Scroll => $"<b>비급 {PlayerController.SkillLabel(s.Skill)}</b>  우클릭 초식이 바뀌어요 (지금 {player.SkillName})\n<size=13>{PlayerController.SkillText(s.Skill)}</size>",
@@ -585,7 +589,36 @@ namespace AThousandDawns.Prototype
             bool equip = player != null && player.Items != null && player.Items.Board.EquipMode;
             if (!equip) return $"기 {def.minQi}–{def.maxQi} · 경맥도 빈 칸에 놓여요 (가득 차면 주머니)";
             string slot = def.slot == AThousandDawns.Items.EquipSlot.None ? "아무 부위" : AThousandDawns.Items.EquipSlots.Label(def.slot);
-            return $"{slot}에 끼워요 · 기 {def.minQi}–{def.maxQi} (칸이 차 있으면 주머니)";
+            return $"{slot}에 끼워요 · 기 {def.minQi}–{def.maxQi}\n{SlotState(def)}";
+        }
+
+        // 객잔 진열: 부위 (비었는지)
+        string ShopSlot(ItemDefinition def)
+        {
+            if (player == null || player.Items == null || !player.Items.Board.EquipMode) return "";
+            string slot = def.slot == AThousandDawns.Items.EquipSlot.None ? "아무 부위" : AThousandDawns.Items.EquipSlots.Label(def.slot);
+            bool empty = false;
+            for (int x = 0; x < AThousandDawns.Items.EquipSlots.Count; x++)
+                if (AThousandDawns.Items.EquipSlots.Fits(x, def.slot) && player.Items.At(new Vector2Int(x, 0)) == null) empty = true;
+            return empty ? $"<color=#8fe08f>{slot} (빔)</color> · " : $"{slot} · ";
+        }
+
+        // 그 부위 칸에 지금 무엇이 끼워져 있는지 (비었으면 바로 끼워져요, 차 있으면 주머니로)
+        string SlotState(ItemDefinition def)
+        {
+            var items = player != null ? player.Items : null;
+            if (items == null || !items.Board.EquipMode) return "";
+            var names = new System.Collections.Generic.List<string>();
+            bool empty = false;
+            for (int x = 0; x < AThousandDawns.Items.EquipSlots.Count; x++)
+            {
+                if (!AThousandDawns.Items.EquipSlots.Fits(x, def.slot)) continue;
+                var worn = items.At(new Vector2Int(x, 0));
+                if (worn == null) empty = true;
+                else names.Add(worn.Def.name);
+            }
+            if (empty) return "<color=#8fe08f>지금 이 부위가 비어 있어요 → 바로 끼워져요</color>";
+            return names.Count > 0 ? $"<color=#ffb36a>지금 낀 것: {string.Join(" · ", names)} (주머니로 들어가요)</color>" : "";
         }
 
         void DrawOffer()
@@ -602,7 +635,7 @@ namespace AThousandDawns.Prototype
             const float cardW = 320f, cardH = 360f, gap = 20f, icon = 96f;
             float total = offer.Count * cardW + (offer.Count - 1) * gap;
             float x = (UiScale.Width - total) * 0.5f, y = (UiScale.Height - cardH) * 0.5f;
-            GUI.Label(new Rect(0, y - 56f, UiScale.Width, 40f), "기물 고르기 · 1 2 3 또는 클릭 · Esc 넘기기 (패드: 좌우 · A · B)", _big);
+            GUI.Label(new Rect(0, y - 56f, UiScale.Width, 40f), $"기물 고르기 · 1 2 3 또는 클릭 · 4 포기 (은자 +{arena.ForfeitSilver}) · Esc 접어 두기 (패드: 좌우 · A · Y 포기 · B 접기)", _big);
             for (int i = 0; i < offer.Count; i++)
             {
                 var def = offer[i];
@@ -621,6 +654,8 @@ namespace AThousandDawns.Prototype
                 InkScrollCard.End();
             }
             if (arena.OfferCursor < offer.Count) PadMark(new Rect(x + arena.OfferCursor * (cardW + gap), y, cardW, cardH)); // 게임패드로 고른 카드
+            // 포기: 고르지 않는 대신 은자
+            if (GUI.Button(new Rect((UiScale.Width - 360f) * 0.5f, y + cardH + 24f, 360f, 48f), $"[4] 포기 · 은자 +{arena.ForfeitSilver}", _card)) arena.Forfeit();
         }
 
         static string KeyName(AThousandDawns.Core.Bind bind) => AThousandDawns.Core.KeyBindings.Label(bind); // 설정에서 바꾼 키 이름

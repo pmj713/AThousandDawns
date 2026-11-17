@@ -114,7 +114,7 @@ namespace AThousandDawns.Tests
             _run.GiveSilver(200);
             RoomRun.ChapelOverride = 1;
             _run.OpenEventForTest("chapel");
-            Assert.IsTrue(_run.ChooseEvent(Index("은자")));
+            Assert.IsTrue(_run.ChooseEvent(Index("제물을 바친다")));
             _run.CloseEvent();
             Assert.AreEqual(before - bless, _player.RunTakenIncrease, 0.001f, "축복");
 
@@ -123,20 +123,21 @@ namespace AThousandDawns.Tests
             _run.GiveSilver(200);
             RoomRun.ChapelOverride = 0;
             _run.OpenEventForTest("chapel");
-            Assert.IsTrue(_run.ChooseEvent(Index("은자")));
+            Assert.IsTrue(_run.ChooseEvent(Index("제물을 바친다")));
             _run.CloseEvent();
             Assert.AreEqual(before + curse, _player.RunTakenIncrease, 0.001f, "저주");
         }
 
         [UnityTest]
-        public IEnumerator 마나_샘은_회복_아니면_이번_층_공력()
+        public IEnumerator 마나_샘은_회복_아니면_혈자리()
         {
             yield return Load();
-            int power = _player.Gongryeok;
+            int pending = _player.Level.Pending, power = _player.Gongryeok;
             _run.OpenEventForTest("mana_spring");
             Assert.IsTrue(_run.ChooseEvent(Index("몸에 붓는다")));
             _run.CloseEvent();
-            Assert.AreEqual(power + 1, _player.Gongryeok, "공력 +1");
+            Assert.AreEqual(pending + 1, _player.Level.Pending, "혈자리 하나 (공력 대신)");
+            Assert.AreEqual(power, _player.Gongryeok, "공력은 그대로");
 
             yield return Load();
             _player.TryReceiveHit(_player.MaxHealth * 0.6f, _player.transform.position + Vector3.forward, 0f, null);

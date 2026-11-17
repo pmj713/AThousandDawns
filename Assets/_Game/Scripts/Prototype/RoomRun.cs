@@ -126,6 +126,8 @@ namespace AThousandDawns.Prototype
             PlaceJars(null);
             PlacePouch(null);
             ApplyBook();
+            PrototypeArena.Forfeited += OnOfferForfeited;
+            PrototypeArena.OfferResolved += OnOfferResolved;
             bool resume = ResumeRun;
             ResumeRun = false;
             if (PrototypeArena.AutoSpawn)
@@ -179,6 +181,7 @@ namespace AThousandDawns.Prototype
                 return;
             }
 
+            if (arena.HasHeldOffer && !arena.IsChoosing && AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Interact)) { arena.ReopenHeldOffer(); return; } // 접어 둔 기물 고르기 (같은 기물 그대로)
             TickRegionAdvance(); // 보스 보상을 고른 뒤 다음 지역으로
             switch (_phase)
             {
@@ -391,6 +394,7 @@ namespace AThousandDawns.Prototype
             if (OffersOpen) return; // 기물을 고른 뒤에 움직여요
             var keyboard = Keyboard.current;
             if (TickPouch()) return; // 기물 주머니 열기
+            if (TickEventReopen()) return; // 접어 둔 이벤트 다시 보기
             if (TickCrack(keyboard)) return; // 금 간 벽 부수기 (기연 방)
             if (AtGate && AThousandDawns.Core.KeyBindings.Pressed(AThousandDawns.Core.Bind.Interact))
             {
@@ -877,6 +881,8 @@ namespace AThousandDawns.Prototype
 
         void OnDestroy()
         {
+            PrototypeArena.Forfeited -= OnOfferForfeited;
+            PrototypeArena.OfferResolved -= OnOfferResolved;
             if (IsForking || IsShopping || IsInEvent) Time.timeScale = 1f;
             AThousandDawns.Combat.Damageable.AnyDied -= OnAnyDied;
             AThousandDawns.Items.ItemDatabase.UnlockedPacks = 2; // 시험장에선 다 나오게

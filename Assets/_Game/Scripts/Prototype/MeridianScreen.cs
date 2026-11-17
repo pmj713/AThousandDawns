@@ -278,7 +278,7 @@ namespace AThousandDawns.Prototype
                 string name = AThousandDawns.Items.EquipSlots.Label(AThousandDawns.Items.EquipSlots.Kinds[i]);
                 var labelRect = new Rect(rect.x - 30f * K, rect.yMax, rect.width + 60f * K, 18f * K);
                 AThousandDawns.Fx.InkMeridianArt.LabelPlate(labelRect); // 한지 위라 밝은 글자 뒤에 짙은 먹 띠
-                GUI.Label(labelRect, open ? $"{name} · {AThousandDawns.Items.EquipSlots.Acupoints[i]}" : $"<color=#8a8a8a>{name} (보스 격파로 열림)</color>", _tag);
+                GUI.Label(labelRect, open ? $"{name} · {AThousandDawns.Items.EquipSlots.Acupoints[i]}{StackText(board, cell)}" : $"<color=#8a8a8a>{name} (보스 격파로 열림)</color>", _tag);
                 if (PadActive && cell == PadCell) _padRect = rect;
             }
         }
@@ -288,14 +288,19 @@ namespace AThousandDawns.Prototype
             var board = items.Board;
             if (board.EquipMode)
             {
+                var its = Player.Items;
                 GUI.Label(new Rect(area.x, area.y, area.width, 28f * K),
-                    $"장비 · 공력 {board.Power}   (E 닫기 · 끌어서 끼우기 · 오른쪽 클릭 주머니)", _small);
-                GUI.Label(new Rect(area.x, area.y + 26f * K, area.width - 220f * K, 30f * K),
-                    "칸의 기 = 혈자리 기본 기 + 공력 (+ 기혈). 기물은 제 부위에만 끼워요. <color=#c9a0ff>이계 기물</color>은 혈자리의 기를 뒤틀어 기 +2 (세지만 주화입마에 쉽게).", _small);
-                var minusE = new Rect(area.xMax - 210f * K, area.y + 26f * K, 100f * K, 26f * K);
-                var plusE = new Rect(area.xMax - 104f * K, area.y + 26f * K, 100f * K, 26f * K);
-                if (GUI.Button(minusE, "공력 − (시험)", _button)) Player.Gongryeok -= 1;
-                if (GUI.Button(plusE, "공력 + (시험)", _button)) Player.Gongryeok += 1;
+                    $"장비 · 공력 {Player.Gongryeok}{(its.QiDamp > 0 ? $" · <color=#9fd4ff>기 조절 −{its.QiDamp}</color>" : "")}   (E 닫기 · 끌어서 끼우기 · 오른쪽 클릭 주머니)", _small);
+                GUI.Label(new Rect(area.x, area.y + 26f * K, area.width - 330f * K, 30f * K),
+                    "칸의 기 = 혈자리 기본 기 + 공력 − 기 조절 (+ 기혈). 기물은 제 부위에만 끼워요. <color=#c9a0ff>이계 기물</color>은 혈자리의 기를 뒤틀어 기 +2.", _small);
+                // 기 조절: 공력이 올라 기물이 주화입마로 넘치면 모든 칸의 기를 낮춰요 (공력의 피해 배율은 그대로)
+                var minusE = new Rect(area.xMax - 320f * K, area.y + 26f * K, 150f * K, 26f * K);
+                var plusE = new Rect(area.xMax - 164f * K, area.y + 26f * K, 160f * K, 26f * K);
+                GUI.enabled = its.QiDamp < its.MaxQiDamp;
+                if (GUI.Button(minusE, "기 낮추기 (모든 칸 −1)", _button)) its.SetQiDamp(its.QiDamp + 1);
+                GUI.enabled = its.QiDamp > 0;
+                if (GUI.Button(plusE, "기 되돌리기 (+1)", _button)) its.SetQiDamp(its.QiDamp - 1);
+                GUI.enabled = true;
                 return;
             }
             GUI.Label(new Rect(area.x, area.y, area.width, 28f * K),
@@ -470,6 +475,43 @@ namespace AThousandDawns.Prototype
                 y += rowH;
             }
             DrawHybridRows(area, ref y, rowH, mouse);
+            DrawForgeRows(area, ref y, rowH, mouse); // 대장간 무기 홈 (강화 효과는 마우스를 올리면)
+        }
+
+        // 대장간: 무기 홈에 새긴 키워드 (홈마다 키워드 +1, 같은 키워드 둘이면 강화판). 마우스를 올리면 효과
+        string _hoveredForgeText;
+        Rect _hoveredForgeRect;
+
+        void DrawForgeRows(Rect area, ref float y, float rowH, Vector2 mouse)
+        {
+            _hoveredForgeText = null;
+            var items = Player.Items;
+            if (items == null) return;
+            bool any = false;
+            for (int i = 0; i < PlayerItems.ForgeSlotCount; i++) any |= items.ForgeSlot(i).HasValue;
+            if (!any || y + 26f * K > area.yMax) return;
+            GUI.Label(new Rect(area.x + 8f * K, y + 4f * K, area.width - 16f * K, 22f * K), "<color=#ffb36a><b>대장간 무기 홈</b></color>", _small);
+            y += 28f * K;
+            for (int i = 0; i < PlayerItems.ForgeSlotCount; i++)
+            {
+                if (y + rowH > area.yMax) return;
+                var k = items.ForgeSlot(i);
+                var row = new Rect(area.x + 6f * K, y, area.width - 12f * K, rowH - 4f * K);
+                if (k.HasValue)
+                {
+                    bool strong = items.ForgeLevel(k.Value) >= 2;
+                    if (row.Contains(mouse))
+                    {
+                        Fill(row, new Color(1f, 1f, 1f, 0.08f));
+                        _hoveredForgeText = $"<b><color=#ffb36a>무기 홈 {i + 1}</color></b>  {Colored(k.Value)}{(strong ? " <color=#ffd27a>강화판</color>" : "")} · 키워드 +1\n{RoomRun.ForgeEffect(k.Value, strong, Player.UsesDagger)}";
+                        _hoveredForgeRect = row;
+                    }
+                    ItemIcons.Draw(new Rect(row.x + 2f * K, row.y + 4f * K, row.height - 8f * K, row.height - 8f * K), ItemIcons.Get(k.Value));
+                    GUI.Label(new Rect(row.x + row.height, row.y + 6f * K, row.width - row.height, row.height), $"홈 {i + 1} · {Colored(k.Value)}{(strong ? "  <color=#ffd27a><b>강화판</b></color>" : "")}", _small);
+                }
+                else GUI.Label(new Rect(row.x + row.height, row.y + 6f * K, row.width - row.height, row.height), $"<color=#8a8a8a>홈 {i + 1} · 빈 홈</color>", _small);
+                y += rowH;
+            }
         }
 
         // 이계 세트 (혼종 키워드): 이계 기물이 하나라도 있는 키워드만. 2개 · 3개에서 단계, 마우스를 올리면 효과
@@ -517,6 +559,11 @@ namespace AThousandDawns.Prototype
                 var dd = _dragged.Def;
                 DrawTooltipBox(PadActive ? new Vector2(_padRect.xMax + 12f * K, _padRect.y) : new Vector2(mouse.x + 60f * K, mouse.y + 30f * K),
                     $"<b>{dd.name}</b>  이 칸 기 {qi} → {PreviewLabel(dd, qi, bonus, Preview(dd, qi, bonus))}\n{ScaledEffect(dd, qi, bonus)}");
+                return;
+            }
+            if (_hoveredForgeText != null)
+            {
+                DrawTooltipBox(new Vector2(_hoveredForgeRect.xMax + 12f * K, _hoveredForgeRect.y), _hoveredForgeText);
                 return;
             }
             if (_hoveredHybrid is Keyword h && Player.Items != null)
@@ -674,7 +721,7 @@ namespace AThousandDawns.Prototype
                     : _acupoint == Acupoint.Tonghyeol ? "기가 이 칸을 지날 때 줄지 않아요. 단전에서 이 칸을 거쳐 가는 칸들의 기가 올라요. 기물도 놓을 수 있어요."
                     : $"이 칸에 놓인 기물의 최대 기가 {items.Board.HanhyeolMaxQi} 올라요 (주화입마가 덜 되고, 레벨도 그만큼 더 올라요).";
                 string cellText = _hoveredCell.HasValue
-                    ? items.Board.AcupointAt(_hoveredCell.Value) != Acupoint.None ? "  <color=#ff8a7a>이 칸에는 이미 혈자리가 있어요</color>" : $"  (이 칸의 기 {items.Board.QiAt(_hoveredCell.Value)})"
+                    ? !items.Board.EquipMode && items.Board.AcupointAt(_hoveredCell.Value) != Acupoint.None ? "  <color=#ff8a7a>이 칸에는 이미 혈자리가 있어요</color>" : $"  (이 칸의 기 {items.Board.QiAt(_hoveredCell.Value)})"
                     : "";
                 GUI.Label(new Rect(area.x + 10f * K, area.y + 8f * K, area.width - 20f * K, area.height - 16f * K),
                     $"<b>{AcupointName(_acupoint)}</b> · {what}{cellText}\n한 칸에 혈자리는 하나만 열 수 있어요. 한 번 열면 바꿀 수 없어요. 다시 누르면 고르기를 취소해요.", _detail);
@@ -685,7 +732,7 @@ namespace AThousandDawns.Prototype
             {
                 GUI.Label(new Rect(area.x + 10f * K, area.y + 8f * K, area.width - 20f * K, area.height - 16f * K),
                     "기물에 마우스를 올리면 효과가 보여요. 기물을 들고 칸 위에 올리면 그 칸에서의 상태가 보여요.\n" +
-                    "기 부족: 효과 없음 · 운기: 효과, 키워드 1 · 주화입마: 효과 ×1.5와 부작용, 키워드 2. 레벨 = (기와 최대 기 중 작은 값) − 최소 기 + 1", _detail);
+                    (PlayerItems.EquipMode ? "키워드는 끼운 기물 하나에 1개씩 · 기 부족: 효과 없음 · 운기: 효과 · 주화입마: 효과 ×1.5와 부작용. " : "기 부족: 효과 없음 · 운기: 효과, 키워드 1 · 주화입마: 효과 ×1.5와 부작용, 키워드 2. ") + "레벨 = (기와 최대 기 중 작은 값) − 최소 기 + 1", _detail);
                 return;
             }
 
@@ -777,7 +824,7 @@ namespace AThousandDawns.Prototype
             if (_acupoint != Acupoint.None)
             {
                 if (button != 0) return;
-                if (board.AcupointAt(cell) != Acupoint.None) Notice("한 칸에 혈자리는 하나만 열 수 있어요");
+                if (!board.EquipMode && board.AcupointAt(cell) != Acupoint.None) Notice("한 칸에 혈자리는 하나만 열 수 있어요"); // 장비 칸은 겹쳐 열 수 있어요
                 else if (items.OpenAcupoint(cell, _acupoint) && Player.Level.ConsumePending()) _acupoint = Acupoint.None;
                 return;
             }
@@ -904,6 +951,14 @@ namespace AThousandDawns.Prototype
         string SlotTag(ItemDefinition def) =>
             Player == null || Player.Items == null || !Player.Items.Board.EquipMode || def == null ? ""
             : $" · {AThousandDawns.Items.EquipSlots.Label(def.slot)}{(def.otherworld ? " · <color=#c9a0ff>이계</color>" : "")}";
+
+        // 장비 칸 이름표 뒤: 연 혈자리 수 (기혈 ×2 · 한혈 ×1처럼)
+        static string StackText(MeridianBoard board, Vector2Int cell)
+        {
+            int gi = board.AcupointStacks(cell, Acupoint.Gihyeol), han = board.AcupointStacks(cell, Acupoint.Hanhyeol);
+            if (gi == 0 && han == 0) return "";
+            return " · " + (gi > 0 ? $"<color=#ffd27a>기혈×{gi}</color>" : "") + (gi > 0 && han > 0 ? " " : "") + (han > 0 ? $"<color=#a7c8ff>한혈×{han}</color>" : "");
+        }
 
         static string AcupointName(Acupoint point) => point == Acupoint.Gihyeol ? "기혈" : point == Acupoint.Tonghyeol ? "통혈" : "한혈";
 

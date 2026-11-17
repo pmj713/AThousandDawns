@@ -1596,7 +1596,7 @@ darkelf.hp,850,,다크 엘프 검사 체력 (판타지 고수 · 지역 배율�
 darkelf.atk,13,,다크 엘프 검사 공격,판타지 고수·보스 추가
 darkelf.toughness,0,,다크 엘프 검사 강인함,판타지 고수·보스 추가
 darkelf.move_speed,4.5,cell/s,다크 엘프 검사 이동속도,판타지 고수·보스 추가
-darkelf.recovery,0.6,s,다크 엘프 검사 패턴 빈틈,판타지 고수·보스 추가
+darkelf.recovery,0.9,s,다크 엘프 검사 패턴 빈틈 (2페이즈에 공격이 너무 잦던 것),판타지 고수·보스 추가
 darkelf.slash_windup,0.45,s,다크 엘프 검사 혈영 베기 예고,판타지 고수·보스 추가
 darkelf.slash_radius,2.6,cell,다크 엘프 검사 혈영 베기 반경,판타지 고수·보스 추가
 darkelf.slash_angle,120,deg,다크 엘프 검사 혈영 베기 각도,판타지 고수·보스 추가
@@ -1614,7 +1614,7 @@ darkelf.blink_behind,1.5,cell,다크 엘프 검사 혈영보: 플레이어 뒤 �
 darkelf.echo_delay,0.5,s,다크 엘프 검사 잔상이 다시 베기까지 (2페이즈는 0.5 · 1.0초 두 번),판타지 고수·보스 추가
 darkelf.echo_ratio,0.6,,다크 엘프 검사 잔상 피해 배율,판타지 고수·보스 추가
 darkelf.lifesteal,0%,,다크 엘프 검사 흡혈 (없음 · 혈영검마와 다른 점),판타지 고수·보스 추가
-darkelf.p2_windup_ratio,80%,,다크 엘프 검사 2페이즈 예고 시간 배율,판타지 고수·보스 추가
+darkelf.p2_windup_ratio,100%,,다크 엘프 검사 2페이즈 예고 시간 배율 (2페이즈에도 빨라지지 않아요 · 잔상만 하나 더),판타지 고수·보스 추가
 deathknight.hp,1900,,데스나이트 (hp),판타지 고수·보스 추가
 deathknight.atk,25,,데스나이트 (atk),판타지 고수·보스 추가
 deathknight.toughness,5,,데스나이트 (toughness),판타지 고수·보스 추가
@@ -1713,3 +1713,5 @@ elite.frenzy_max,3,,분노 정예: 최대 겹 수,판타지 정예 특성
 elite.frenzy_attack,15%,,분노 한 겹마다 공격 증가,판타지 정예 특성
 elite.frenzy_speed,10%,,분노 한 겹마다 이동 증가,판타지 정예 특성
 karma.extra_enemies,1,명,업보 3단계: 싸우는 방마다 첫 웨이브에 그 지역 졸개 +,추적자 제거 (업보 3단계 대신)
+offer.forfeit_silver,30,은자,기물 고르기 포기: 고르지 않는 대신 받는 은자,플레이테스트 2차
+equip.qi_damp_max,4,,장비창 기 조절: 모든 칸의 기를 최대 이만큼 낮출 수 있어요,플레이테스트 2차

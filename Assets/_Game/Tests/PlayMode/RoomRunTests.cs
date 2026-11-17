@@ -134,10 +134,11 @@ namespace AThousandDawns.Tests
                 Assert.IsTrue(reward.Pouch, "기물 길 보상 방: 가운데 반짝이는 주머니");
                 Assert.IsFalse(_arena.IsChoosing, "바로 고르기 창이 뜨지 않아요");
                 _run.OpenPouch();
-                Assert.IsFalse(reward.Pouch);
+                Assert.IsTrue(reward.Pouch, "고를 때까지 주머니는 남아요 (Esc로 접으면 다시)");
                 yield return WaitUntil(() => _arena.IsChoosing, 2f);
                 Assert.IsTrue(_arena.IsChoosing, "주머니를 열면 기물 3개 중 하나");
                 _arena.Choose(0);
+                Assert.IsFalse(reward.Pouch, "고르면 주머니가 사라져요");
             }
             Assert.AreEqual(1, _player.Items.Items.Count);
 
