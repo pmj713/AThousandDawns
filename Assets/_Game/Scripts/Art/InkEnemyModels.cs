@@ -584,6 +584,12 @@ namespace AThousandDawns.Art
             else _staggerTime = 0f;
             // 적의 앞(+Z) 기준으로 뒤로 젖혀요 (X축 −회전이 위를 뒤로 보내요). 발밑이 원점이라 발을 축으로 젖혀져요
             _animator.transform.localRotation = Quaternion.AngleAxis(-tilt, Vector3.right) * _modelRest * Quaternion.Euler(0f, -_whirlAngle, 0f);
+            if (_squash > 0f)   // 슬라임 피격: 납작하게 퍼졌다가 통 돌아와요
+            {
+                _squash -= Time.deltaTime;
+                float k = _squash > 0f ? Mathf.Sin(Mathf.PI * (1f - _squash / 0.25f)) : 0f;
+                _animator.transform.localScale = Vector3.Scale(_squashBase, new Vector3(1f + 0.28f * k, 1f - 0.32f * k, 1f + 0.28f * k));
+            }
             Vector3 d = transform.position - _lastPos;
             d.y = 0f;
             _lastPos = transform.position;
@@ -609,6 +615,39 @@ namespace AThousandDawns.Art
             if (_brain.IsDead) { MakeCorpse(); return; }
             if (!body.LastHitReacts) return;            // 화상·번개 같은 파생 피해는 움찔하지 않아요
             if (!_brain.IsStunned) _flinchTimer = flinchTime;   // 경직이면 Update가 비틀거리게 해요
+            HitFlavor();
+        }
+
+        // 판타지 적 피격 맛: 스켈레톤은 뼛조각 둘, 가고일은 돌 조각 셋이 튀고, 슬라임은 말랑하게 찌그러졌다 돌아와요
+        static readonly Color BoneColor = new Color(0.92f, 0.88f, 0.76f), StoneColor = new Color(0.55f, 0.55f, 0.56f), SlimeColor = new Color(0.45f, 0.85f, 0.4f);
+        Renderer _bodyRenderer;
+        float _squash;
+        Vector3 _squashBase;
+
+        Renderer BodyRenderer()
+        {
+            if (_bodyRenderer == null && _animator != null)
+                foreach (var r in _animator.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                    if (!r.name.Contains("_Weapon_") && !r.name.Contains("_Prop_")) { _bodyRenderer = r; break; }
+            return _bodyRenderer;
+        }
+
+        void HitFlavor()
+        {
+            var kind = _brain.Kind;
+            if (kind != EnemyKind.Skeleton && kind != EnemyKind.Gargoyle && kind != EnemyKind.Slime) return;
+            var body = BodyRenderer();
+            if (body == null) return;
+            var b = body.bounds;
+            if (kind == EnemyKind.Slime)
+            {
+                if (_squash <= 0f) _squashBase = _animator.transform.localScale;
+                _squash = 0.25f;
+                return;
+            }
+            bool bone = kind == EnemyKind.Skeleton;
+            InkDebris.Burst(b.center + Vector3.up * b.extents.y * 0.2f, transform.position.y, bone ? InkDebris.Shape.Bone : InkDebris.Shape.Stone,
+                bone ? BoneColor : StoneColor, body.sharedMaterial, bone ? 2 : 3, b.size.y * 0.045f, 3.5f, 1.6f, 0.9f);
         }
 
         // 쓰러짐: 모델을 적에게서 떼어 시체로 남겨요 (적 오브젝트는 곧 지워져요).
@@ -639,6 +678,7 @@ namespace AThousandDawns.Art
                 Play("Defeat", 0.15f);
             }
             var c = corpse.AddComponent<InkCorpse>();
+            if ((style == InkCorpse.Style.Fall || style == InkCorpse.Style.Sink) && FantasyCorpse(c, corpse.transform)) { enabled = false; return; }
             bool varied = style == InkCorpse.Style.Fall && !beast && !forward && _brain.Kind != EnemyKind.Lantern && _brain.Kind != EnemyKind.Wraith;
             if (varied) VariedFall(c, corpse.transform);
             else c.Init(_animator, beast ? Vector3.forward : Vector3.right,
@@ -649,8 +689,49 @@ namespace AThousandDawns.Art
         // 사람형 적이 쓰러지는 갈래 (매번 같지 않게). 넘어가는 쪽은 플레이어(다른 적에게 쓰러졌으면 그 적) 반대쪽이 기준이에요
         //  - 크게 맞음(마지막 한 방이 최대 체력의 1/4 이상): 맞은 반대쪽으로 미끄러지며 날아가듯 넘어가요
         //  - 그 밖엔 무작위로: 뒤로 넘어가기 · 앞으로 고꾸라지기(맞은 쪽으로) · 무릎부터 주저앉았다 앞으로 · 옆으로 돌며 쓰러지기
+        // 판타지 적 고유 쓰러짐: 스켈레톤은 뼈가 무너져 쌓이며 뼛조각이 흩어지고, 가고일은 돌로 굳어 금이 가다 산산이 부서지고,
+        //   슬라임은 납작하게 퍼지며 녹아 꺼지고, 하피·임프는 날갯짓을 멈추고 몸을 비틀며 앞으로 곤두박질쳐요. 오크·늑대인간은 무릎부터 꺾여 앞으로 쓰러져요
+        bool FantasyCorpse(InkCorpse c, Transform t)
+        {
+            var body = BodyRenderer();
+            var kind = _brain.Kind;
+            switch (kind)
+            {
+                case EnemyKind.Skeleton:
+                    c.Init(_animator, Vector3.right, 0f, InkCorpse.Style.Collapse);
+                    break;
+                case EnemyKind.Gargoyle:
+                    c.Init(_animator, Vector3.right, 0f, InkCorpse.Style.Petrify);
+                    break;
+                case EnemyKind.Slime:
+                    c.Init(_animator, Vector3.right, 0f, InkCorpse.Style.Melt);
+                    break;
+                case EnemyKind.Harpy:
+                case EnemyKind.Imp:
+                {
+                    foreach (var w in _animator.GetComponentsInChildren<InkImpWings>(true)) w.enabled = false;   // 날갯짓이 멈춰요
+                    if (s_player == null) s_player = FindFirstObjectByType<AThousandDawns.Player.PlayerController>();
+                    var away = s_player != null ? t.position - s_player.transform.position : -t.forward;
+                    away.y = 0f;
+                    away = away.sqrMagnitude > 1e-4f ? away.normalized : -t.forward;
+                    var axis = Quaternion.Inverse(t.rotation) * Vector3.Cross(Vector3.up, away);
+                    float twist = UnityEngine.Random.value < 0.5f ? 110f : -110f;
+                    c.Init(_animator, axis, 96f, InkCorpse.Style.Fall, away * 0.7f + Vector3.down * 0.2f * _modelScale.y, twist: twist);
+                    break;
+                }
+                case EnemyKind.Orc:
+                case EnemyKind.Werewolf:
+                    VariedFall(c, t, 70);   // 무릎부터 털썩 주저앉았다 앞으로
+                    break;
+                default:
+                    return false;
+            }
+            if (body != null) c.SetDebris(body.sharedMaterial, body.bounds);
+            return true;
+        }
+
         static AThousandDawns.Player.PlayerController s_player;
-        void VariedFall(InkCorpse corpse, Transform t)
+        void VariedFall(InkCorpse corpse, Transform t, int forcePick = -1)
         {
             if (s_player == null) s_player = FindFirstObjectByType<AThousandDawns.Player.PlayerController>();
             // 다른 진영 적에게 쓰러졌으면 그 적 반대쪽으로 (적끼리 싸움)
@@ -659,8 +740,8 @@ namespace AThousandDawns.Art
             away.y = 0f;
             away = away.sqrMagnitude > 1e-4f ? away.normalized : -t.forward;
             float max = _body != null ? _body.MaxHealth : 1f;
-            bool heavy = max > 0f && _lastHit >= max * 0.25f;
-            int pick = UnityEngine.Random.Range(0, 100);
+            bool heavy = forcePick < 0 && max > 0f && _lastHit >= max * 0.25f;
+            int pick = forcePick >= 0 ? forcePick : UnityEngine.Random.Range(0, 100);
             // 위를 dir 쪽으로 넘기는 회전축 (월드 기준을 시체 기준으로 바꿔 넘겨요)
             Vector3 Axis(Vector3 dir) => Quaternion.Inverse(t.rotation) * Vector3.Cross(Vector3.up, dir);
             if (heavy)
@@ -798,7 +879,16 @@ namespace AThousandDawns.Art
     //   Sink(수귀): 선 채로 물 밑으로 꺼지듯 빠르게 가라앉아요
     public class InkCorpse : MonoBehaviour
     {
-        public enum Style { Fall, Swell, Sink, Kneel, Dissolve }
+        public enum Style { Fall, Swell, Sink, Kneel, Dissolve, Collapse, Petrify, Melt }
+        //   Collapse(스켈레톤): 뼈가 무너지는 동작(Reassemble 앞부분)으로 주저앉아 쌓이며 뼛조각이 사방으로 흩어지고, 무기를 떨군 채 잠시 뒤 가라앉아요
+        //   Petrify(가고일): 돌 자세(Stone)로 웅크리며 잿빛으로 굳고 금이 번지다가 산산이 부서져 돌 조각만 흩어져요
+        //   Melt(슬라임): 납작하게 퍼지며 출렁이다 녹아 바닥으로 꺼지고, 방울이 튀어요
+        Material _debrisMat;
+        Bounds _debrisBounds;
+        bool _burst;
+        static readonly int CrackId = Shader.PropertyToID("_CrackColor"), AuraId = Shader.PropertyToID("_AuraColor"), TintId = Shader.PropertyToID("_BaseColor");
+
+        public void SetDebris(Material mat, Bounds bounds) { _debrisMat = mat; _debrisBounds = bounds; }
         //   Dissolve(보스): Kneel처럼 마지막 자세로 무너져 무기를 떨군 뒤, 잠시 있다가 발밑부터 먹으로 흩어져 사라져요 (InkCharacter _Dissolve)
         const float DissolveHold = 1.8f, DissolveTime = 1.6f;
         static readonly int DissolveId = Shader.PropertyToID("_Dissolve");
@@ -840,6 +930,12 @@ namespace AThousandDawns.Art
                 _animator.speed = style == Style.Fall ? (crumple ? 0f : 0.3f) : style == Style.Kneel || style == Style.Dissolve ? 1f : 0f;   // 넘어가는 동안 굳어 가요 (마지막 동작은 끝까지, 주저앉기는 웅크린 자세 그대로)
             }
             if ((style == Style.Kneel || style == Style.Dissolve) && _animator != null) DropWeapon();
+            if (_animator != null && (style == Style.Collapse || style == Style.Petrify))
+            {
+                string state = style == Style.Collapse ? "Reassemble" : "Stone";
+                if (_animator.HasState(0, Animator.StringToHash(state))) { _animator.speed = 1f; _animator.Play(state, 0, 0f); }
+                if (style == Style.Collapse) DropWeapon();
+            }
         }
 
         // 손의 무기를 그 자세 그대로 떼어 내 바닥으로 떨어뜨려요 (스킨 메시를 지금 모양으로 구워서)
@@ -872,6 +968,7 @@ namespace AThousandDawns.Art
         void Update()
         {
             _t += Time.deltaTime;
+            if (_style == Style.Collapse || _style == Style.Petrify || _style == Style.Melt) { TickFantasy(); return; }
             if (_style == Style.Dissolve)
             {
                 if (_dropped != null)   // 무기가 기울며 툭 떨어져 바닥에 누워요
@@ -945,6 +1042,74 @@ namespace AThousandDawns.Art
             float sink = Mathf.Clamp01((ft - FallTime - LieTime) / SinkTime);
             transform.position = _startPos + _slide * slide + Vector3.down * SinkDepth * sink * sink;
             if (sink >= 1f) Destroy(gameObject);
+        }
+
+        void TickFantasy()
+        {
+            if (_dropped != null)   // 떨군 무기가 기울며 바닥에 누워요
+            {
+                float k = Mathf.Clamp01(_t / 0.35f);
+                _dropped.position = _dropFrom + Vector3.down * _dropDown * k * k;
+                _dropped.rotation = Quaternion.Slerp(_dropRot, Quaternion.Euler(0f, _dropRot.eulerAngles.y, 0f) * Quaternion.Euler(0f, 0f, 90f), k);
+            }
+            var b = _debrisBounds;
+            float size = Mathf.Max(0.3f, b.size.y);
+            if (_style == Style.Collapse)
+            {
+                if (_animator != null && _t >= 0.3f) _animator.speed = 0f;   // 뼈 무더기 자세에서 멈춰요
+                if (!_burst && _t >= 0.12f)
+                {
+                    _burst = true;
+                    InkDebris.Burst(b.center, _startPos.y, InkDebris.Shape.Bone, new Color(0.92f, 0.88f, 0.76f), _debrisMat, 9, size * 0.06f, 4f, 2.6f, 2.2f);
+                }
+                float sink = Mathf.Clamp01((_t - 0.3f - LieTime - 0.4f) / SinkTime);
+                transform.position = _startPos + Vector3.down * SinkDepth * sink * sink;
+                if (sink >= 1f) Destroy(gameObject);
+                return;
+            }
+            if (_style == Style.Petrify)
+            {
+                float k = Mathf.Clamp01(_t / 0.7f);   // 잿빛으로 굳으며 금이 번져요
+                if (_dissolveRenderers == null) { _dissolveRenderers = GetComponentsInChildren<Renderer>(true); _dissolveBlock = new MaterialPropertyBlock(); }
+                if (!_burst)
+                {
+                    foreach (var r in _dissolveRenderers)
+                    {
+                        if (r == null) continue;
+                        r.GetPropertyBlock(_dissolveBlock);
+                        // 채색 셰이더엔 채도가 없어서: 몸을 밝혀 옅은 돌빛으로, 가장자리는 잿빛, 금은 밝은 돌빛 둘레에 짙은 선
+                        _dissolveBlock.SetColor(CrackId, new Color(0.85f, 0.84f, 0.82f, k));
+                        _dissolveBlock.SetColor(AuraId, new Color(0.78f, 0.78f, 0.8f, 0.9f * k));
+                        _dissolveBlock.SetColor(TintId, Color.Lerp(Color.white, new Color(1.6f, 1.6f, 1.65f), k));
+                        r.SetPropertyBlock(_dissolveBlock);
+                    }
+                    if (_animator != null && _t >= 0.35f) _animator.speed = 0f;
+                    // 부서지기 직전 부르르 떨어요
+                    float shake = _t > 0.55f ? 0.03f : 0f;
+                    transform.position = _startPos + new Vector3(Mathf.Sin(_t * 80f), 0f, Mathf.Cos(_t * 67f)) * shake;
+                }
+                if (!_burst && _t >= 0.85f)
+                {
+                    _burst = true;
+                    foreach (var r in _dissolveRenderers) if (r != null) r.enabled = false;
+                    InkDebris.Burst(b.center, _startPos.y, InkDebris.Shape.Stone, new Color(0.55f, 0.55f, 0.56f), _debrisMat, 14, size * 0.08f, 5f, 3.2f, 2.2f);
+                    InkDebris.Burst(b.center + Vector3.up * b.extents.y * 0.3f, _startPos.y, InkDebris.Shape.Stone, new Color(0.42f, 0.42f, 0.44f), _debrisMat, 8, size * 0.05f, 3f, 4f, 1.6f);
+                }
+                if (_t >= 1f) Destroy(gameObject);
+                return;
+            }
+            // Melt: 납작하게 퍼지며 출렁이다 녹아 꺼져요
+            float m = Mathf.Clamp01(_t / 0.8f);
+            float wob = Mathf.Sin(_t * 18f) * 0.08f * (1f - m);
+            transform.localScale = Vector3.Scale(_startScale, new Vector3(1f + 0.7f * m + wob, Mathf.Lerp(1f, 0.12f, m * m) - wob, 1f + 0.7f * m + wob));
+            if (!_burst && _t >= 0.05f)
+            {
+                _burst = true;
+                InkDebris.Burst(b.center, _startPos.y, InkDebris.Shape.Drop, new Color(0.45f, 0.85f, 0.4f), _debrisMat, 7, size * 0.12f, 3f, 2.2f, 1.2f);
+            }
+            float melt = Mathf.Clamp01((_t - 0.8f) / 1.2f);
+            transform.position = _startPos + Vector3.down * 0.25f * melt;
+            if (melt >= 1f) Destroy(gameObject);
         }
     }
 }
