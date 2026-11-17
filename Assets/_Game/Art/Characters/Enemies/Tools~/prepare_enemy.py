@@ -2715,6 +2715,8 @@ if VILLAGER and "playeranim" in EXTRAS:
 #   wingslam(가고일): 두 팔을 머리 위로 모아 들었다가 앞 땅을 함께 내려치기
 #   twin(다크 엘프 쌍검): 월광 베기 = 두 칼을 엇갈려 X자로 · 그림자 질주 = 몸을 낮게 틀었다 돌며 찌르기 · 그림자 걸음 = 좌우 칼 번갈아 베기
 #   greatsword(데스나이트): 룬검 2연격 = 크게 감아 가로베기 → 두 손으로 치켜들어 내려베기 · 저주 내려찍기 = 두 손으로 들었다가 땅에 꽂기
+#   volley(고블린 궁수 ShootBow): 웅크려 활을 옆으로 눕혀 가슴께로 짧게 당겨 쏘기 · roll(고블린 단검잡이): 굴러 파고들어 위로 찔러 올리기
+#   staffslam(고블린 주술사 Raise): 지팡이를 치켜들어 흔들다 땅에 쾅 · fireball(임프): 두 손에 불덩이를 모아 위에서 내던지기 · pounce(늑대인간): 엎드렸다 덮쳐 물어뜯기
 UNIQUE = next((w.split("=")[1] for w in WEAPONS if w.startswith("unique=")), None)
 
 
@@ -2848,6 +2850,91 @@ if UNIQUE and ("playeranim" in EXTRAS or "float" in EXTRAS):
                 else:
                     arm("Left", sl + Vector((-0.6, -0.7, 0.0)).normalized() * REACH, Vector((1, 0.3, -0.3)))
                     arm("Right", sr + Vector((-0.3, 0.25, -0.35)), Vector((-1, 0.3, -0.3))); point_blade(Vector((-0.3, 1, 0)), wrist_bend=80)
+        elif UNIQUE == "volley":   # 고블린 궁수: 낮게 웅크려 활을 옆으로 눕혀 들고, 가슴께로 짧게 당겨 쏘고 뒤로 튕겨요
+            crouch = {"Left": FEET["Left"] + Vector((0.05, -0.25, 0)), "Right": FEET["Right"] + Vector((-0.05, 0.15, 0))}
+            lower_hips(-0.28 if stage != "a_flick" else -0.2, crouch, dy=0.02 if stage != "a_flick" else 0.1)
+            bend("Spine", XA, 22); bend("Spine", UP, 18)
+            sl, sr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+            bow = sl + Vector((-0.2, -1, -0.25)).normalized() * REACH
+            arm("Left", bow, Vector((0.4, 0, -1)))
+            fa = (pb["LeftHand"].head - pb["LeftForeArm"].head).normalized()
+            bend("LeftHand", fa, 75)                                                     # 활을 옆으로 눕혀요
+            nock = bow + Vector((-0.02, 0.16, 0.02))
+            chest = sr + Vector((0.18, -0.25, -0.08))                                    # 가슴께까지만 짧게
+            flick = chest + Vector((-0.1, 0.12, 0.05))
+            arm("Right", {"a_nock": nock, "a_draw": chest, "a_flick": flick}[stage], Vector((-0.5, 0.7, 0.1)))
+        elif UNIQUE == "roll":   # 고블린 단검잡이: 웅크렸다 앞으로 몸을 말아 굴러 파고들고, 일어서며 위로 찔러 올리고 뒤로 뛰어 빠져요
+            if stage == "r_crouch":
+                lower_hips(-0.32, {"Left": FEET["Left"] + Vector((0, -0.2, 0)), "Right": FEET["Right"] + Vector((0, 0.15, 0))}, dy=0.08)
+                bend("Spine", XA, 28)
+                sr = pb["RightArm"].head.copy()
+                arm("Right", sr + Vector((-0.1, 0.15, -0.4)), Vector((-1, 0.3, -0.3))); point_blade(Vector((0, -1, 0.2)), wrist_bend=80)
+                free_left_back()
+            elif stage == "r_roll":   # 몸을 둥글게 말아 앞으로 굴러요 (엉덩이가 앞으로 낮게)
+                lower_hips(-0.55, {"Left": FEET["Left"] + Vector((0, -0.45, 0.15)), "Right": FEET["Right"] + Vector((0, -0.35, 0.2))}, dy=-0.4)
+                bend("Spine", XA, 70); bend("Neck", XA, 40)
+                for s, sx in (("Left", 1), ("Right", -1)):
+                    sh = pb[f"{s}Arm"].head.copy()
+                    arm(s, sh + Vector((-sx * 0.1, -0.25, -0.3)), Vector((sx, 0.3, -0.5)))
+                point_blade(Vector((0, -0.3, -1)), wrist_bend=80)
+            elif stage == "r_up":   # 일어서며 아래에서 위로 찔러 올려요
+                lower_hips(-0.18, {"Left": FEET["Left"] + Vector((0, -0.6, 0)), "Right": FEET["Right"] + Vector((0, -0.2, 0))}, dy=-0.5)
+                bend("Spine", XA, -8)
+                sr = pb["RightArm"].head.copy()
+                arm("Right", sr + Vector((0.05, -0.7, 0.45)).normalized() * REACH, Vector((-1, 0.3, -0.5))); point_blade(Vector((0, -0.5, 1)), wrist_bend=80)
+                free_left_back()
+            else:   # r_hop: 뒤로 뛰어 빠져요
+                lower_hips(-0.1, {"Left": FEET["Left"] + Vector((0, 0.2, 0)), "Right": FEET["Right"] + Vector((0, 0.35, 0))}, dy=0.3)
+                sr = pb["RightArm"].head.copy()
+                arm("Right", sr + Vector((-0.15, -0.3, -0.35)), Vector((-1, 0.3, -0.3))); point_blade(Vector((0, -1, 0.3)), wrist_bend=80)
+                free_left_back()
+        elif UNIQUE == "staffslam":   # 고블린 주술사: 해골 지팡이를 두 손으로 치켜들어 흔들며 외치다가 땅에 쾅 찍어요
+            if stage in ("s_lift", "s_shake"):
+                lower_hips(-0.06, FEET, dy=0.06); bend("Spine", XA, -16); bend("Neck", XA, -22)
+                shake = 0.06 if stage == "s_shake" else 0.0
+                grip = (pb["LeftArm"].head + pb["RightArm"].head) / 2 + Vector((shake, -0.1, 0.62))
+                arm("Right", grip + Vector((-0.05, 0, 0)), Vector((-1, 0.3, 0)))
+                point_blade(Vector((shake * 3, -0.1, 1)), wrist_bend=90)
+                arm("Left", grip + Vector((0.08, 0, -0.12)), Vector((1, 0.3, 0)))
+            else:   # s_slam: 무릎을 굽혀 지팡이 밑동을 발 앞 땅에 꽂아요
+                lower_hips(-0.32, {"Left": FEET["Left"] + Vector((0, -0.25, 0)), "Right": FEET["Right"]}, dy=-0.1); bend("Spine", XA, 26)
+                grip = (pb["LeftArm"].head + pb["RightArm"].head) / 2 + Vector((-0.05, -0.45, -0.2))
+                arm("Right", grip, Vector((-1, 0.3, 0)))
+                point_blade(Vector((0, -0.15, 1)), wrist_bend=90)
+                arm("Left", grip + Vector((0.08, 0, 0.15)), Vector((1, 0.3, 0)))
+        elif UNIQUE == "fireball":   # 임프: 가슴 앞 두 손에 불덩이를 모았다가, 오른손을 어깨 뒤로 감아 위에서 내던져요
+            if stage == "rest":
+                float_idle(0.0); return
+            float_base(0.04, lean=-6 if stage == "f_wind" else 18)
+            sl, sr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+            if stage == "f_gather":
+                arm("Right", sr + Vector((0.18, -0.32, -0.12)), Vector((-0.6, 0.5, -0.5)))
+                arm("Left", sl + Vector((-0.18, -0.32, -0.12)), Vector((0.6, 0.5, -0.5)))
+            elif stage == "f_wind":
+                arm("Right", sr + Vector((-0.1, 0.3, 0.42)), Vector((-0.6, 0.4, 0.3)))     # 어깨 뒤로 감아요
+                arm("Left", sl + Vector((0.05, -0.5, 0.1)), Vector((1, 0, -0.5)))         # 왼손으로 겨눠요
+            else:   # f_throw
+                arm("Right", sr + Vector((0.1, -1, -0.35)).normalized() * REACH, Vector((-0.5, 0.2, -1)))
+                arm("Left", sl + Vector((0.3, 0.15, -0.3)), Vector((1, 0.3, -0.3)))
+        elif UNIQUE == "pounce":   # 늑대인간: 네 발 짐승처럼 낮게 엎드렸다가 앞으로 덮쳐 두 팔 발톱을 펴고 고개를 내밀어 물어뜯어요
+            if stage == "p_low":
+                lower_hips(-0.5, {"Left": FEET["Left"] + Vector((0, 0.05, 0)), "Right": FEET["Right"] + Vector((0, 0.15, 0))}, dy=0.05)
+                bend("Spine", XA, 50); bend("Neck", XA, -35)
+                for s, sx in (("Left", 1), ("Right", -1)):
+                    sh = pb[f"{s}Arm"].head.copy()
+                    arm(s, sh + Vector((sx * 0.15, -0.35, -0.55)), Vector((sx, 0.3, -0.5)))   # 두 손을 땅에 짚어요
+            elif stage == "p_leap":
+                feet = {s: FEET[s] + Vector((0, 0.25, 0.3)) for s in FEET}
+                lower_hips(0.1, feet, dy=-0.35); bend("Spine", XA, 38); bend("Neck", XA, -30)
+                for s, sx in (("Left", 1), ("Right", -1)):
+                    sh = pb[f"{s}Arm"].head.copy()
+                    arm(s, sh + Vector((sx * 0.35, -0.8, 0.15)), Vector((sx, 0.3, 0)))         # 발톱을 앞으로 활짝
+            else:   # p_bite: 내려앉아 끌어안듯 할퀴며 고개를 내밀어 물어요
+                lower_hips(-0.35, {"Left": FEET["Left"] + Vector((0, -0.45, 0)), "Right": FEET["Right"] + Vector((0, -0.1, 0))}, dy=-0.45)
+                bend("Spine", XA, 34); bend("Neck", XA, 10)
+                for s, sx in (("Left", 1), ("Right", -1)):
+                    sh = pb[f"{s}Arm"].head.copy()
+                    arm(s, sh + Vector((-sx * 0.2, -0.75, -0.3)), Vector((sx, 0.3, -0.5)))
         elif UNIQUE == "greatsword":
             if stage == "chop":   # 두 손으로 앞 아래로 크게 내려베요
                 feet = {"Left": FEET["Left"] + Vector((0, -0.35, 0)), "Right": FEET["Right"] + Vector((0, 0.15, 0))}
@@ -2873,6 +2960,16 @@ if UNIQUE and ("playeranim" in EXTRAS or "float" in EXTRAS):
         replace_action("Slash", [(0, "x_load"), (4, "x_cut"), (12, "x_cut"), (22, "idle")], unique_pose)
         replace_action("Lunge", [(0, "spin_load"), (3, "spin_cut"), (12, "spin_cut"), (22, "idle")], unique_pose)
         replace_action("ShadowRush", [(0, "x_load"), (3, "r_hit"), (7, "l_hit"), (11, "r_hit"), (18, "r_hit"), (28, "idle")], unique_pose)
+    elif UNIQUE == "volley":
+        replace_action("ShootBow", [(0, "a_nock"), (4, "a_nock"), (19, "a_draw"), (21, "a_draw"), (23, "a_flick"), (30, "a_flick")], unique_pose)
+    elif UNIQUE == "roll":
+        replace_action("Attack", [(0, "r_crouch"), (3, "r_roll"), (7, "r_up"), (12, "r_up"), (17, "r_hop"), (21, "r_hop"), (29, "idle")], unique_pose)
+    elif UNIQUE == "staffslam":
+        replace_action("Raise", [(0, "idle"), (8, "s_lift"), (16, "s_shake"), (22, "s_lift"), (28, "s_shake"), (32, "s_slam"), (40, "s_slam"), (45, "idle")], unique_pose)
+    elif UNIQUE == "fireball":
+        replace_action("Attack", [(0, "f_gather"), (5, "f_wind"), (9, "f_throw"), (16, "f_throw"), (25, "rest")], unique_pose)
+    elif UNIQUE == "pounce":
+        replace_action("Attack", [(0, "p_low"), (4, "p_leap"), (8, "p_bite"), (16, "p_bite"), (26, "idle")], unique_pose)
     elif UNIQUE == "greatsword":
         replace_action("Punch2", [(0, "wind"), (4, "sweep"), (8, "raise"), (13, "chop"), (17, "chop"), (24, "idle")], unique_pose)
         replace_action("Quake", [(0, "idle"), (14, "raise"), (19, "raise"), (24, "plant"), (34, "plant"), (44, "idle")], unique_pose)
