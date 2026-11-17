@@ -164,7 +164,7 @@ namespace AThousandDawns.EditorTools
                 new MoveSpec { attack = "돌진", state = "Charge", clips = new[] { "ChargeRun" }, mode = MoveMode.Run, speed = 1.4f, after = "Slam", ready = "ChargeReady" },
                 new MoveSpec { state = "Slam", clips = new[] { "Slam" }, mode = MoveMode.Run },   // 양손 내려찍기, 끝 자세로 멈춰 있다가 빈틈이 끝나면 대기로
                 // 회전베기(2페이즈): 두 팔을 벌리고 칼끝을 바깥으로 뻗은 자세(Whirl)로 판정 동안 모델째 빙글빙글 (힐윈드처럼)
-                new MoveSpec { attack = "회전베기", state = "Spin", clips = new[] { "Whirl" }, mode = MoveMode.Whirl },
+                new MoveSpec { state = "BambooChop", clips = new[] { "BambooChop" }, mode = MoveMode.Play },   // 패턴 개편: 회전베기는 없어졌어요. 2페이즈 불타는 대나무(신호 BambooFall) 손짓
             },
             // 폐사찰 — 망령: 혼불은 기본 Attack(손을 당겼다 내밀기). 석상 나한: 합장한 채 낮게 숙였다가 들이받으며 돌진
             ["Arhat"] = new[]
@@ -211,7 +211,7 @@ namespace AThousandDawns.EditorTools
             ["Takrang"] = new[]
             {
                 new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },   // 최후: 마지막 자세로 무너진 뒤 먹으로 흩어져요 (InkCorpse.Style.Dissolve)
-                new MoveSpec { attack = "베기", state = "Slash", clips = new[] { "Slash" } },
+                new MoveSpec { attack = "물살 찌르기", state = "PushThrust", clips = new[] { "PushThrust" } },   // 패턴 개편: 앞으로 밀며 찌르기 (예전 "베기")
                 new MoveSpec { attack = "물결 베기", state = "WaveCut", clips = new[] { "WaveCut" } },
                 new MoveSpec { attack = "탁류 보법", state = "Glide", clips = new[] { "Glide" } },
                 new MoveSpec { state = "WhirlEnd", clips = new[] { "WhirlEnd" } },
@@ -223,10 +223,10 @@ namespace AThousandDawns.EditorTools
             {
                 new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },   // 최후: 마지막 자세로 무너진 뒤 먹으로 흩어져요 (InkCorpse.Style.Dissolve)
                 new MoveSpec { attack = "유성추 휘두르기", state = "MeteorSwing", clips = new[] { "MeteorSwing" } },
-                new MoveSpec { attack = "유성추 내려찍기", state = "MeteorSlam", clips = new[] { "MeteorSlam" } },
+                new MoveSpec { attack = "닻 충격파", state = "MeteorSlam", clips = new[] { "MeteorSlam" } },   // 패턴 개편: 유성추를 땅에 박아요 (예전 "유성추 내려찍기")
                 new MoveSpec { attack = "사슬 당기기", state = "ChainThrow", clips = new[] { "ChainThrow" } },
                 new MoveSpec { attack = "수하 부르기", state = "Command", clips = new[] { "Command" }, mode = MoveMode.Play },
-                new MoveSpec { attack = "물기둥", state = "Stomp", clips = new[] { "Stomp" } },
+                new MoveSpec { attack = "물기둥 줄", state = "ChainPoint", clips = new[] { "ChainPoint" } },   // 패턴 개편: 왼팔로 앞을 가리켜 물기둥 줄 (예전 "물기둥" 땅 구르기)
                 new MoveSpec { state = "Roar", clips = new[] { "Roar" } },
             },
             // 천마총 — 마교도: 곡도를 치켜들었다 내려베기 (광폭이어도 같은 베기, 광폭에 들면 InkEnemyAnimator가 Frenzy를 한 번 틀고 몸을 붉게)
@@ -252,22 +252,21 @@ namespace AThousandDawns.EditorTools
             // 스켈레톤: 베기는 기본 Attack. 뼈가 무너졌다가 1.5초 끝에 다시 맞춰져 일어나요 (InkEnemyAnimator가 SkeletonBrain.Reassembling을 보고)
             ["Skeleton"] = new[] { new MoveSpec { state = "Reassemble", clips = new[] { "Reassemble" }, mode = MoveMode.Play, seconds = 1.5f } },
             // 고블린 족장 (판타지 고수, 철권 마웅과 같은 규칙): 철퇴 2연타 · 내려찍기 · 돌진. 2페이즈 전환(함성)은 Roar (InkEnemyAnimator가 IsTransitioning을 보고)
+            //   패턴 개편: 철퇴 휘돌리기(220° 크게 한 번) · 점프 덮치기(멀 때 뛰어 내려찍기) · 덫 던지기(신호 TrapThrown → 흩뿌리는 손짓) · 함성은 Roar
             ["GoblinChief"] = new[]
             {
                 new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },
-                new MoveSpec { attack = "철퇴 2연타", state = "Jab", clips = new[] { "Punch2" } },
-                new MoveSpec { attack = "철퇴 내려찍기", state = "Quake", clips = new[] { "Quake" }, mode = MoveMode.Play },
-                new MoveSpec { state = "ShoulderReady", clips = new[] { "ShoulderReady" }, mode = MoveMode.Run },
-                new MoveSpec { attack = "돌진", state = "Charge", clips = new[] { "ShoulderRun" }, mode = MoveMode.Run, speed = 1.6f, ready = "ShoulderReady" },
+                new MoveSpec { attack = "철퇴 휘돌리기", state = "MaceSpin", clips = new[] { "MaceSpin" } },
+                new MoveSpec { attack = "점프 덮치기", state = "JumpSmash", clips = new[] { "JumpSmash" } },
+                new MoveSpec { state = "TrapThrow", clips = new[] { "TrapThrow" }, mode = MoveMode.Play },
             },
-            // 오우거 (판타지 보스): 몽둥이 2연타 · 땅 내려치기 · 분노 돌진 (머리를 숙이고). 페이즈 전환은 가슴을 치며 포효(Roar). 바위 던지기는 Volley(Throw)
+            // 오우거 (판타지 보스, 패턴 개편): 몽둥이 내려찍기(머리 위에서 한 번 무겁게) · 땅울림 도약(크게 뛰어 착지) · 바위 던지기(Volley) · 분노(신호 Enraged → 포효)
             ["Ogre"] = new[]
             {
                 new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },
-                new MoveSpec { attack = "몽둥이 2연타", state = "Jab", clips = new[] { "Punch2" } },
-                new MoveSpec { attack = "땅 내려치기", state = "Quake", clips = new[] { "Quake" }, mode = MoveMode.Play },
-                new MoveSpec { state = "ShoulderReady", clips = new[] { "ShoulderReady" }, mode = MoveMode.Run },
-                new MoveSpec { attack = "분노 돌진", state = "Charge", clips = new[] { "ShoulderRun" }, mode = MoveMode.Run, speed = 1.4f, ready = "ShoulderReady" },
+                new MoveSpec { attack = "몽둥이 내려찍기", state = "OverheadSmash", clips = new[] { "OverheadSmash" } },
+                new MoveSpec { attack = "땅울림 도약", state = "BigLeap", clips = new[] { "BigLeap" } },
+                new MoveSpec { state = "Roar", clips = new[] { "Roar" }, mode = MoveMode.Play },
             },
             // 천마 근위: 평소 공격은 기본 Attack(방패 세운 채 베기) · 반격: 0.3초 안에 빠르게 되받아 베기
             ["DemonGuard"] = new[] { new MoveSpec { attack = "반격", state = "Counter", clips = new[] { "Attack" }, mode = MoveMode.Play, seconds = 0.5f } },
@@ -288,21 +287,23 @@ namespace AThousandDawns.EditorTools
                 new MoveSpec { state = "Stone", clips = new[] { "Stone" }, mode = MoveMode.Run },
                 new MoveSpec { state = "Unstone", clips = new[] { "Unstone" }, mode = MoveMode.Play, seconds = 0.7f },
             },
+            // 다크 엘프 (패턴 개편, 혈영검마와 분리): 쌍검 난무(좌우 번갈아, 판정 시작부터 이어 베기) · 그림자 숨기(낮게 웅크림) → 그림자 기습(옆에서 올려베기) · 독 단검(왼손 투척)
             ["DarkElf"] = new[]
             {
                 new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },
-                new MoveSpec { attack = "월광 베기", state = "Slash", clips = new[] { "Slash" } },
-                new MoveSpec { attack = "그림자 질주", state = "Lunge", clips = new[] { "Lunge" } },
-                new MoveSpec { attack = "그림자 걸음", state = "ShadowRush", clips = new[] { "ShadowRush" } },
+                new MoveSpec { attack = "쌍검 난무", state = "Dance5", clips = new[] { "Dance5" } },
+                new MoveSpec { attack = "그림자 숨기", state = "Hide", clips = new[] { "Ambush" } },
+                new MoveSpec { attack = "그림자 기습", state = "Ambush", clips = new[] { "Ambush" } },
+                new MoveSpec { attack = "독 단검", state = "DaggerThrow", clips = new[] { "DaggerThrow" } },
             },
-            // 데스나이트 (판타지 보스, 철권 계열): 룬검 2연격 · 저주 내려찍기 · 망령마 돌격. 저주 검기는 CurseWave 신호, 죽은 자의 부름(2페이즈 전환)은 Summon (InkEnemyAnimator)
+            // 데스나이트 (패턴 개편): 대검 올려베기(올려 → 내려, 판정 시작부터 이어 베기) · 어둠 걸음(예고 동안 웅크려 가라앉았다 솟아오르며 베기)
+            //   망령 기병 돌격은 신호 CurseWave → 대검을 들어 부르는 손짓(RideCall). 죽은 자의 부름(2페이즈 전환)은 Summon (InkEnemyAnimator)
             ["DeathKnight"] = new[]
             {
                 new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },
-                new MoveSpec { attack = "룬검 2연격", state = "Jab", clips = new[] { "Punch2" } },
-                new MoveSpec { attack = "저주 내려찍기", state = "Quake", clips = new[] { "Quake" }, mode = MoveMode.Play },
-                new MoveSpec { state = "ShoulderReady", clips = new[] { "ShoulderReady" }, mode = MoveMode.Run },
-                new MoveSpec { attack = "망령마 돌격", state = "Charge", clips = new[] { "ShoulderRun" }, mode = MoveMode.Run, speed = 1.4f, ready = "ShoulderReady" },
+                new MoveSpec { attack = "대검 올려베기", state = "UpDownCut", clips = new[] { "UpDownCut" } },
+                new MoveSpec { attack = "어둠 걸음", state = "DarkWalk", clips = new[] { "DarkRise" } },
+                new MoveSpec { state = "RideCall", clips = new[] { "RideCall" }, mode = MoveMode.Play },
                 new MoveSpec { state = "CurseWave", clips = new[] { "CurseWave" }, mode = MoveMode.Play, seconds = 0.9f },
                 new MoveSpec { state = "Summon", clips = new[] { "Summon" }, mode = MoveMode.Play, seconds = 2f },   // 2페이즈 전환 (IsTransitioning) 동안: 검을 땅에 꽂아요
             },
@@ -312,24 +313,23 @@ namespace AThousandDawns.EditorTools
                 new MoveSpec { attack = "혈영 베기", state = "Slash", clips = new[] { "Slash" } },
                 new MoveSpec { attack = "혈선", state = "Lunge", clips = new[] { "Lunge" } },
                 new MoveSpec { attack = "혈영보", state = "ShadowRush", clips = new[] { "ShadowRush" } },
+                new MoveSpec { attack = "혈조", state = "BloodSpike", clips = new[] { "BloodSpike" }, mode = MoveMode.Play },   // 패턴 개편: 검을 땅에 꽂아 핏빛 가시 줄 (예고부터 그대로 재생)
             },
             // 천마 (최종 보스, 장검): 천마일검(단정한 일검) · 천마군림(2페이즈부터 크게 휘두르기) · 십자 검기(연속 베기) · 마기 장판(땅 찍기)
             //   · 마기 손아귀(왼손을 뻗었다 끌어당기기) · 흡인(두 팔 펼쳐 3초 버티다 터뜨리기) · 검비(같은 자세로 검이 떨어지는 동안).
             //   페이즈 전환엔 Ascend, 페이즈별 몸 텍스처는 InkEnemyAnimator가 바꿔요
             ["HeavenlyDemon"] = new[]
             {
-                new MoveSpec { attack = "천마일검", state = "Slash1", clips = new[] { "Slash1" } },
+                new MoveSpec { attack = "발도 일섬", state = "Iaido", clips = new[] { "Iaido" } },   // 패턴 개편: 칼집 자세로 웅크렸다 길게 뽑아 베기 (예전 "천마일검")
                 new MoveSpec { attack = "마검 천마군림", state = "DemonSweep", clips = new[] { "DemonSweep" } },   // 3페이즈 (기존 천마군림 베기)
                 new MoveSpec { attack = "십자 검기", state = "CrossCut", clips = new[] { "Combo" } },
                 new MoveSpec { attack = "마기 장판", state = "MiasmaChop", clips = new[] { "Chop" } },
-                new MoveSpec { attack = "마기 손아귀", state = "Grip", clips = new[] { "Grip" } },
-                new MoveSpec { attack = "마력 흡인", state = "Pull", clips = new[] { "Drain" }, mode = MoveMode.Play, seconds = 3.0f },   // 두 손을 앞으로 뻗어 빨아들여요
+                new MoveSpec { attack = "마기 포박", state = "OrbThrow", clips = new[] { "OrbThrow" } },   // 패턴 개편: 왼손에 구슬을 받쳐 들었다 밀어 던지기 (예전 "마기 손아귀")
                 new MoveSpec { attack = "마검비", state = "SwordRain", clips = new[] { "SwordSky" }, mode = MoveMode.Play, seconds = 2.5f },   // 검을 하늘로
                 // 2페이즈 마법: 한 손을 들어 시전 (예고 동안 첫 자세에서 멈췄다가 판정 순간 내뻗어요)
-                new MoveSpec { attack = "화염구 비", state = "Meteor", clips = new[] { "CastOne" } },
+                new MoveSpec { attack = "유성", state = "Meteor", clips = new[] { "Meteor" } },   // 패턴 개편: 손을 하늘로 높이 들어요 (예전 "화염구 비")
                 new MoveSpec { attack = "마법진", state = "Rune", clips = new[] { "CastOne" } },
-                // 순간이동 검격: 흐려지는 동안(InkEnemyAnimator) 베기 자세로 멈췄다가, 플레이어 등 뒤에 나타나 베어요
-                new MoveSpec { attack = "순간이동 검격", state = "Blink", clips = new[] { "Slash1" } },
+                new MoveSpec { attack = "차원 베기", state = "RiftCut", clips = new[] { "RiftCut" } },   // 패턴 개편: 허공을 세 번 찢어요 (예전 "순간이동 검격")
                 // 3페이즈 마검 천멸: 예고 1초 동안 검을 높이 들어 모았다가 내리꽂아요
                 new MoveSpec { attack = "마검 천멸", state = "Cleave", clips = new[] { "Cleave" } },
                 new MoveSpec { state = "Ascend", clips = new[] { "Ascend" } },
@@ -344,17 +344,17 @@ namespace AThousandDawns.EditorTools
                 new MoveSpec { attack = "염불", state = "Chant", clips = new[] { "Chant" }, mode = MoveMode.Loop },
                 new MoveSpec { attack = "피의 비", state = "Rain", clips = new[] { "Rain" }, mode = MoveMode.Loop },
                 new MoveSpec { attack = "팔 휘두르기", state = "Arms", clips = new[] { "Arms" } },
-                new MoveSpec { attack = "혈수", state = "Grab", clips = new[] { "Grab" } },   // 예고부터 오른팔을 앞으로 쭉 뻗고 손바닥을 펴요, 판정 뒤 움켜쥐고 끌어당겨요 (손바닥 소용돌이는 아트2의 InkBloodBuddhaFx)
+                new MoveSpec { attack = "혈해", state = "BloodSea", clips = new[] { "BloodSea" }, mode = MoveMode.Play },   // 패턴 개편: 합장하다 두 손바닥을 펴 아래로 (예고부터 그대로 재생, 예전 "혈수")
             },
             // 파계승 혜광 (폐사찰 고수): 선장 휘두르기 · 금강불괴(예고 3초 동안 버티는 자세 → 선장을 내리꽂아요) · 염주 던지기
             ["Hyegwang"] = new[]
             {
                 new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },   // 최후: 마지막 자세로 무너진 뒤 먹으로 흩어져요 (InkCorpse.Style.Dissolve)
-                new MoveSpec { attack = "선장 휘두르기", state = "StaffSweep", clips = new[] { "StaffSweep" } },
+                new MoveSpec { attack = "선장 휘두르기", state = "StaffSpin", clips = new[] { "StaffSpin" } },   // 패턴 개편: 제자리에서 몸째 한 바퀴
                 new MoveSpec { attack = "금강불괴", state = "Vajra", clips = new[] { "Vajra" } },
                 new MoveSpec { attack = "염주", state = "Beads", clips = new[] { "Beads" } },
                 // 축지: 예고 0.4초 동안 선장을 뒤로 감아 겨누고 있다가 순식간에 다가가며 휘둘러요 (선장 휘두르기 동작)
-                new MoveSpec { attack = "축지", state = "Rush", clips = new[] { "StaffSweep" } },
+                new MoveSpec { attack = "축지", state = "Rush", clips = new[] { "StaffSpin" } },   // 축지 끝도 같은 회전
             },
             // 등불 귀신: 귀화 예고 동안 떨며 부풀었다가 터져요
             // 등불 귀신: 이제 터지지 않고 플레이어 둘레를 떠돌며 도깨비불 장판을 남겨요 (공격 동작 없이 떠도는 동작 그대로). 귀화(점화)는 옛 패턴
@@ -374,7 +374,7 @@ namespace AThousandDawns.EditorTools
             {
                 new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },   // 최후: 마지막 자세로 무너진 뒤 먹으로 흩어져요 (InkCorpse.Style.Dissolve)
                 // 고유 동작 (Generic): 내려베기 → 되받아 가로베기 → 찌르기 / 좌우 번갈아 가로베기 4번 / 머리 위에서 내려베기
-                new MoveSpec { attack = "쾌검 3연격", state = "Combo", clips = new[] { "Combo" } },
+                new MoveSpec { attack = "쾌검 3연격", state = "Thrust3", clips = new[] { "Thrust3" } },   // 패턴 개편: 앞으로 곧게 세 번 찌르기 (판정 시작부터 이어서)
                 new MoveSpec { attack = "죽림섬", state = "Flash", clips = new[] { "Flash" } },
                 new MoveSpec { attack = "대나무 베기", state = "Chop", clips = new[] { "Chop" } },
             },
@@ -383,7 +383,8 @@ namespace AThousandDawns.EditorTools
             {
                 new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },   // 최후: 마지막 자세로 무너진 뒤 먹으로 흩어져요 (InkCorpse.Style.Dissolve)
                 new MoveSpec { attack = "주먹 2연타", state = "Jab", clips = new[] { "Punch2" } },
-                new MoveSpec { attack = "붕산권", state = "Quake", clips = new[] { "Quake" }, mode = MoveMode.Play },
+                new MoveSpec { attack = "잡아 던지기", state = "GrabThrow", clips = new[] { "GrabThrow" }, mode = MoveMode.Play },   // 패턴 개편: 붙잡아 들어 내던져요 (예전 "붕산권")
+                new MoveSpec { state = "FistWave", clips = new[] { "FistWave" }, mode = MoveMode.Play },   // 권풍 (신호 FistWave)
                 new MoveSpec { state = "ShoulderReady", clips = new[] { "ShoulderReady" }, mode = MoveMode.Run },
                 new MoveSpec { attack = "돌진", state = "Charge", clips = new[] { "ShoulderRun" }, mode = MoveMode.Run, speed = 1.6f, ready = "ShoulderReady" },   // 어깨를 앞세워 들이받으며 달려요
             },
