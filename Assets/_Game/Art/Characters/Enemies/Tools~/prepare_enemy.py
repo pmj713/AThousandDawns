@@ -1278,14 +1278,16 @@ if "shouldercharge" in EXTRAS:
     TWIST = 0 if "prayer" in EXTRAS else 30
     charge_arms = (lambda: prayer_arms(0.05)) if "prayer" in EXTRAS else (lambda: fists_up())   # 석상 나한: 합장한 채 들이받아요
     def fists_up():
-        for s, inward in (("Left", -0.15), ("Right", 0.15)):
-            sh = pb[f"{s}Arm"].head.copy()
-            arm(s, sh + Vector((inward, -0.22, 0.12)), Vector((-inward * 4, 0.3, -1)))
+        # 플레이 테스트 3차: 두 손을 머리 위로 든 듯 어색했어요 → 앞선 오른팔은 팔꿈치를 앞으로 접어 가슴 앞을 막고, 왼 주먹은 허리께로 당겨요
+        sl, sr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+        arm("Right", sr + Vector((0.18, -0.3, -0.18)), Vector((-0.3, -1, -0.4)))
+        arm("Left", sl + Vector((-0.05, -0.05, -0.38)), Vector((1, 0.4, -0.3)))
 
     def shoulder_ready(_):
-        lower_hips(-0.28, FEET, dy=0.06)
-        bend("Spine", Vector((1, 0, 0)), 28)
-        bend("Spine", UP, TWIST)                                            # 오른 어깨를 앞으로 (나한은 정면으로)
+        lower_hips(-0.32, {"Left": FEET["Left"] + Vector((0, 0.15, 0)), "Right": FEET["Right"] + Vector((0, -0.25, 0))} if "prayer" not in EXTRAS else FEET, dy=0.02)
+        bend("Spine", Vector((1, 0, 0)), 28 if "prayer" in EXTRAS else 42)
+        if "prayer" not in EXTRAS: bend("Spine1", Vector((1, 0, 0)), 12); bend("Neck", Vector((1, 0, 0)), -25)   # 고개는 들어 앞을 봐요
+        bend("Spine", UP, TWIST * (1 if "prayer" in EXTRAS else 1.4))                                            # 오른 어깨를 앞으로 (나한은 정면으로)
         charge_arms()
     make_action("ShoulderReady", [(0, None), (10, None)], shoulder_ready)
     rig.animation_data.action = None
@@ -1301,8 +1303,9 @@ if "shouldercharge" in EXTRAS:
             else:
                 feet[s] = base + (Vector((0, -0.1, 0.4)) if s != lead else Vector((0, 0.15, 0.0)))
         lower_hips(-0.2 if phase in (0, 2) else -0.1, feet, dy=-0.05)
-        bend("Spine", Vector((1, 0, 0)), 32)
-        bend("Spine", UP, TWIST + (5 if lead == "Left" else -5))
+        bend("Spine", Vector((1, 0, 0)), 32 if "prayer" in EXTRAS else 45)
+        if "prayer" not in EXTRAS: bend("Spine1", Vector((1, 0, 0)), 12); bend("Neck", Vector((1, 0, 0)), -28)
+        bend("Spine", UP, TWIST * (1 if "prayer" in EXTRAS else 1.4) + (5 if lead == "Left" else -5))
         charge_arms()
     make_action("ShoulderRun", [(0, 0), (4, 1), (8, 2), (12, 3), (16, 0)], shoulder_run)
     rig.animation_data.action = None
@@ -2077,20 +2080,24 @@ if "dragonmoves" in EXTRAS:
             dragon_idle(0.0); return
         sl = pb["LeftArm"].head.copy()
         left_guard = lambda: arm("Left", sl + Vector((0.25, -0.3, -0.3)), Vector((1, 0.3, -0.5)))
+        # 유성추 휘두르기 (플레이 테스트 3차: 머리 뒤에서 내려치는 모양이라 앞 부채꼴 140° 판정과 안 맞았어요)
+        #   → 오른쪽 뒤로 허리째 감았다가, 허리 높이에서 사슬을 수평으로 뻗어 오른쪽 → 정면 → 왼쪽으로 크게 휩쓸어요
         if stage == "swing_load":
-            lower_hips(-0.18, FEET, dy=0.08)
-            bend("Spine", UP, -40); bend("Spine1", UP, -20)
-            hold(Vector((-0.12, 0.2, 0.55)), Vector((-0.35, 0.6, 0.7)))                     # 철구를 머리 뒤 위로 치켜 감아요
+            lower_hips(-0.2, FEET, dy=0.06)
+            bend("Spine", UP, -50); bend("Spine1", UP, -20)
+            hold(Vector((-0.45, 0.25, -0.1)), Vector((-0.8, 0.6, -0.05)))                     # 철구를 오른쪽 뒤로 감아요
             left_guard()
-        elif stage in ("swing_hit", "swing_follow"):
-            follow = stage == "swing_follow"
+        elif stage in ("swing_r", "swing_c", "swing_l", "swing_follow"):
+            twist, off, want = {
+                "swing_r": (-25, Vector((-0.5, -0.35, -0.12)), Vector((-0.85, -0.5, -0.02))),   # 오른쪽 앞
+                "swing_c": (5, Vector((-0.1, -0.6, -0.12)), Vector((0.0, -1, -0.02))),          # 정면
+                "swing_l": (40, Vector((0.35, -0.5, -0.12)), Vector((0.85, -0.5, -0.02))),      # 왼쪽 앞
+                "swing_follow": (55, Vector((0.45, -0.3, -0.18)), Vector((0.9, 0.1, -0.1))),   # 왼쪽까지 돌아 나가요
+            }[stage]
             feet = {"Left": FEET["Left"] + Vector((0, -0.4, 0)), "Right": FEET["Right"]}
             lower_hips(-0.26, feet, dy=-0.15)
-            bend("Spine", UP, 10 + (45 if follow else 0)); bend("Spine1", UP, 5 + (20 if follow else 0))
-            if follow:
-                hold(Vector((0.45, -0.45, -0.12)), Vector((0.85, -0.5, -0.05)))            # 앞을 가로질러 왼쪽까지 휩쓸어요
-            else:
-                hold(Vector((-0.2, -0.55, -0.08)), Vector((-0.35, -1, -0.02)))             # 어깨높이로 앞을 향해 사슬이 뻗어요
+            bend("Spine", UP, twist * 0.7); bend("Spine1", UP, twist * 0.3)
+            hold(off, want)
             left_guard()
         elif stage == "slam_up":
             lower_hips(-0.06, FEET, dy=0.06)
@@ -2150,7 +2157,7 @@ if "dragonmoves" in EXTRAS:
         bpy.data.actions.remove(old_idle)
     make_action("Idle", [(f, f / 60) for f in range(0, 61, 6)], dragon_idle)
 
-    make_action("MeteorSwing", [(0, "swing_load"), (4, "swing_hit"), (8, "swing_follow"), (16, "swing_follow"), (28, "idle")], dragon_pose)
+    make_action("MeteorSwing", [(0, "swing_load"), (3, "swing_r"), (5, "swing_c"), (7, "swing_l"), (10, "swing_follow"), (18, "swing_follow"), (28, "idle")], dragon_pose)
     make_action("MeteorSlam", [(0, "slam_up"), (4, "slam_down"), (14, "slam_down"), (26, "idle")], dragon_pose)
     make_action("ChainThrow", [(0, "chain_load"), (3, "chain_throw"), (10, "chain_throw"), (15, "chain_pull"), (22, "chain_pull"), (32, "idle")], dragon_pose)
     make_action("Command", [(0, "idle"), (6, "command"), (18, "command"), (24, "idle")], dragon_pose)

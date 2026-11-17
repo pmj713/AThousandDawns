@@ -371,19 +371,23 @@ namespace AThousandDawns.EditorTools
             RoofMesh(gate, "Roof", new Vector3(0f, 3.55f, 0f), new Vector3(5f, 0.7f, 1.3f), true, roofX);
         }
 
-        // 무기 거치대: 붉은 칠 나무 틀·짙은 뒤판에 검 한 자루와 비도 셋, 금빛 장식과 붉은 술 (플레이 테스트: 잘 안 보였어요 → 1.5배, 밝은 강철·금빛 장식)
+        // 무기 거치대: 마을 나무 틀·짙은 뒤판에 검 한 자루와 비도 셋, 놋쇠 장식과 짙은 붉은 술 (플레이 테스트: 잘 안 보였어요 → 1.3배, 뒤판으로 칼을 도드라지게)
         static void BuildWeaponRack(Transform deco, Vector3 foot, Material wood, Material iron)
         {
-            wood = FantasyLook(GetInkMaterial("Ink_Rack_Lacquer", "#B0402A", 1f));
-            iron = FantasyLook(GetInkMaterial("Ink_Rack_Steel", "#DCE4F0", 1f));
-            iron.SetColor("_AuraColor", new Color(0.75f, 0.9f, 1f, 0.6f));   // 칼날 가장자리가 은은히 빛나요
-            var gold = FantasyLook(GetInkMaterial("Ink_Rack_Gold", "#F0C040", 1f));
-            var tassel = FantasyLook(GetInkMaterial("Ink_Rack_Tassel", "#E02828", 1f));
-            var dark = FantasyLook(GetInkMaterial("Ink_Rack_Grip", "#3A2418", 1f));
+            // 플레이 테스트 3차: 붉은 칠·금빛이 다른 마을 소품(결 있는 나무·돌)과 겉돌았어요 → 틀은 마을 나무 그대로, 칼은 맑은 강철, 장식은 놋쇠·짙은 붉은 술로 차분하게
+            var steel = GetInkTriplanar("Ink3D_RackSteel", "Tex_Stone", 0.6f, 1f);
+            steel.SetColor("_BaseColor", new Color(0.62f, 0.66f, 0.72f, 1f));
+            EditorUtility.SetDirty(steel);
+            iron = steel;
+            var gold = GetInkMaterial("Ink_Rack_Brass", "#B08A3A", 1f);
+            var tassel = GetInkMaterial("Ink_Rack_TasselDark", "#8E2A22", 1f);
+            var dark = GetInkTriplanar("Ink3D_RackBoard", "Tex_Wood", 1f, 1f);
+            dark.SetColor("_BaseColor", new Color(0.3f, 0.24f, 0.2f, 1f));
+            EditorUtility.SetDirty(dark);
             var rack = new GameObject("Weapon Rack (무기 거치대)").transform;
             rack.SetParent(deco, false);
             rack.position = foot;
-            rack.localScale = Vector3.one * 1.5f;
+            rack.localScale = Vector3.one * 1.3f;
             for (int s = -1; s <= 1; s += 2)
             {
                 Block(rack, "Upright", PrimitiveType.Cube, new Vector3(s * 0.75f, 0.7f, 0f), new Vector3(0.13f, 1.4f, 0.13f), Quaternion.identity, wood);

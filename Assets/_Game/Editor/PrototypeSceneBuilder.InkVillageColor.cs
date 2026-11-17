@@ -1,4 +1,5 @@
 using AThousandDawns.Prototype;
+using UnityEditor;
 using UnityEngine;
 
 namespace AThousandDawns.EditorTools
@@ -9,6 +10,19 @@ namespace AThousandDawns.EditorTools
     //   · 어귀 안쪽과 사당 앞 꽃 화분. 모두 보기용이라 충돌체는 장식 규칙(AddDecorColliders)에 맡겨요 (낮은 것은 안 막아요)
     public static partial class PrototypeSceneBuilder
     {
+        // 텃밭 작물 하나: 입체 덤불 덩어리(밑동이 원점)를 작게
+        static int s_crop;
+        static void Crop(Transform root, string name, Vector3 foot, Vector3 size, Material mat)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(root, false);
+            go.transform.position = foot;
+            go.transform.rotation = Quaternion.Euler(0f, (s_crop * 67) % 360, 0f);
+            go.transform.localScale = size;
+            go.AddComponent<MeshFilter>().sharedMesh = BushMesh(s_crop++ % 3);
+            go.AddComponent<MeshRenderer>().sharedMaterial = mat;
+        }
+
         static void DressVillageColor(Transform deco, Vector3 c, GameObject village, Material stoneMat, Material woodMat)
         {
             // 마을 바닥: 판 바닥과 같은 흙 그림에 따뜻한 황토빛
@@ -20,12 +34,22 @@ namespace AThousandDawns.EditorTools
             var rope = GetInkMaterial("Ink_River_Rope", "#A88F62", 0.45f);
             var lanternRed = GetInkMaterial("Ink_Village_LanternRed", "#D8352A", 1f);
             var lanternGold = GetInkMaterial("Ink_Village_LanternGold", "#F2B43A", 1f);
-            var soil = GetInkMaterial("Ink_Village_Soil", "#5A3A24", 1f);
-            var cabbage = GetInkMaterial("Ink_Village_Cabbage", "#6FAE3E", 1f);
-            var pepper = GetInkMaterial("Ink_Village_Pepper", "#D8352A", 1f);
+            // 텃밭은 다른 마을 소품(결 있는 나무·돌 구조물 셰이더)과 같은 그림풍으로 (플레이 테스트 3차: 매끈한 초록 공이 겉돌았어요)
+            //   두둑은 마당 흙 그림을 짙게 · 배추·고춧대는 대나무 잎과 같은 잎 그림을 입힌 울퉁불퉁한 덤불 덩어리 (배추는 옅은 연두로)
+            var soil = GetInkTriplanar("Ink3D_VillageSoil", "Floor_Ground", 1.2f, 1f);
+            soil.SetColor("_BaseColor", new Color(0.36f, 0.28f, 0.22f, 1f));
+            EditorUtility.SetDirty(soil);
+            LeafPaintTexture();
+            var cabbage = StalkStyle(GetInkTriplanar("Ink3D_Cabbage", "Tex_LeafPaint", 0.4f, 1f), 0.45f, 1f);
+            cabbage.SetColor("_BaseColor", new Color(0.46f, 0.48f, 0.36f, 1f));   // 흙빛 마당에 맞게 차분한 배추색
+            EditorUtility.SetDirty(cabbage);
+            var pepperLeaf = StalkStyle(GetInkTriplanar("Ink3D_PepperLeaf", "Tex_LeafPaint", 0.4f, 1f), 0.45f, 1f);
+            pepperLeaf.SetColor("_BaseColor", new Color(0.36f, 0.4f, 0.28f, 1f));
+            EditorUtility.SetDirty(pepperLeaf);
+            var pepper = GetInkMaterial("Ink_Village_Pepper", "#B02A1E", 1f);
             var pot = GetInkMaterial("Ink_Village_Pot", "#B5603A", 1f);
             var petals = new[] { GetInkMaterial("Ink_Village_FlowerPink", "#F07AA0", 1f), GetInkMaterial("Ink_Village_FlowerYellow", "#F5C842", 1f), GetInkMaterial("Ink_Village_FlowerWhite", "#F4EEE0", 1f) };
-            var leaf = cabbage;
+            var leaf = pepperLeaf;
             var root = new GameObject("Village Color (마을 채색)").transform;
             root.SetParent(deco, false);
             var rng = new System.Random(17);
@@ -81,11 +105,11 @@ namespace AThousandDawns.EditorTools
                     var p = rc + new Vector3(-1.35f + k * 0.54f, 0.12f, R(-0.05f, 0.05f));
                     if (row == 1)
                     {
-                        Block(root, "Pepper Plant", PrimitiveType.Sphere, p + Vector3.up * 0.1f, new Vector3(0.22f, 0.2f, 0.22f), Quaternion.identity, leaf);
+                        Crop(root, "Pepper Plant", p, new Vector3(0.26f, 0.3f, 0.26f), leaf);
                         Block(root, "Pepper", PrimitiveType.Capsule, p + new Vector3(0.06f, 0.12f, -0.08f), new Vector3(0.04f, 0.06f, 0.04f), Quaternion.Euler(0f, 0f, 20f), pepper);
                     }
                     else
-                        Block(root, "Cabbage", PrimitiveType.Sphere, p + Vector3.up * 0.08f, new Vector3(0.3f, 0.2f, 0.3f), Quaternion.Euler(0f, R(0f, 90f), 0f), cabbage);
+                        Crop(root, "Cabbage", p, new Vector3(0.36f, 0.26f, 0.36f), cabbage);
                 }
             }
 

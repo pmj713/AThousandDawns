@@ -36,6 +36,7 @@ Shader "AThousandDawns/InkTriplanar"
         _StreakScale ("Streak Scale", Float) = 6
         _PatchLight ("Patch Light (군데군데 옅은 얼룩)", Range(0, 1)) = 0
         _PatchScale ("Patch Scale", Float) = 0.8
+        _ShadowReceive ("Receive Shadows (얇은 잎은 0: 그림자 경계가 카메라 따라 번쩍여요)", Range(0, 1)) = 1
     }
 
     SubShader
@@ -73,6 +74,7 @@ Shader "AThousandDawns/InkTriplanar"
             float _StreakScale;
             half _PatchLight;
             float _PatchScale;
+            half _ShadowReceive;
         CBUFFER_END
 
             // 지역 색 양 (InkColorZones가 전역으로 정해요): 0 = 재질 채도 그대로(수묵), 1 = 원래 색 전부
@@ -169,7 +171,7 @@ Shader "AThousandDawns/InkTriplanar"
                 half3 tex = SampleTriplanar(input.positionWS, n);
                 half3 albedo = tex * 1.9 * _BaseColor.rgb;
                 float ndl = dot(n, light.direction);
-                float lightAmt = smoothstep(-0.1, 0.25, ndl) * lerp(0.4, 1.0, light.shadowAttenuation);
+                float lightAmt = smoothstep(-0.1, 0.25, ndl) * lerp(0.4, 1.0, lerp(1.0, light.shadowAttenuation, _ShadowReceive));
                 half3 lightCol = lerp(half3(1, 1, 1), light.color, 0.5);
                 half3 color = albedo * lerp(half3(0.6, 0.62, 0.76), lightCol * 1.05, lightAmt);
                 color += albedo * SampleSH(n) * 0.25;
