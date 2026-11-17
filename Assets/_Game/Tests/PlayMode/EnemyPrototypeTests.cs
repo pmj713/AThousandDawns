@@ -160,7 +160,7 @@ namespace AThousandDawns.Tests
             Assert.Less(boar.transform.position.z, _player.transform.position.z + 0.5f, "플레이어를 뚫고 지나가요");
         }
 
-        // 결투장에 들어가면 녹림왕이 깨어나 입구가 막히고, 체력 50% 아래로 떨어지면 1.5초 뒤 2페이즈 + 불타는 죽림.
+        // 결투장에 들어가면 녹림왕이 깨어나 입구가 막히고, 체력 50% 아래로 떨어지면 1.5초 뒤 2페이즈 + 불타는 대나무.
         [UnityTest]
         public IEnumerator 녹림왕_결투장_입구가_막히고_2페이즈로_넘어감()
         {
@@ -183,7 +183,26 @@ namespace AThousandDawns.Tests
             Assert.IsFalse(boss.Damageable.Targetable, "전환 중엔 무적");
             yield return WaitUntil(() => boss.Phase == 2, 3f);
             Assert.AreEqual(2, boss.Phase);
-            Assert.IsNotNull(boss.Grove, "2페이즈에 불타는 죽림");
+            Assert.IsNull(boss.Grove, "불타는 죽림 띠는 없어요");
+
+            // 불타는 대나무: 공격과 따로, 플레이어 근처에 3그루가 나란히 쓰러져요 (예고 → 판정 → 잠시 불길)
+            int falls = 0;
+            NokrimBrain.BambooFall += OnFall;
+            try
+            {
+                yield return WaitUntil(() => { _player.Heal(9999f); return boss.BambooDropped >= 3; }, 4f);
+                Assert.AreEqual(3, boss.BambooDropped, "한 번에 3그루");
+                Assert.AreEqual(3, falls, "아트 신호도 그루마다");
+                Assert.AreEqual(3, boss.BambooBurning, "예고 중");
+                yield return WaitUntil(() => { _player.Heal(9999f); return boss.BambooBurning == 0; }, 6f);
+                Assert.AreEqual(0, boss.BambooBurning, "쓰러지고 불길이 꺼지면 사라져요");
+            }
+            finally
+            {
+                NokrimBrain.BambooFall -= OnFall;
+            }
+
+            void OnFall(NokrimBrain b, Vector3 center, Vector3 dir, float length, float width, float fall) => falls++;
         }
     }
 }

@@ -129,6 +129,8 @@ namespace AThousandDawns.Enemies
 
         // 휘두르기 궤적 (아트 채색 호): 고수 · 보스의 부채꼴 근접 판정이 나는 순간 한 번 (철룡 · 혈불 · 천마는 제 Fx 신호를 써요)
         public static event System.Action<EnemyBrain, Vector3, Vector3, float, float> Swung; // 누가, 어디서, 방향, 반경, 각도
+        public static event System.Action<EnemyBrain, Vector3, Vector3, float, float> Thrust; // 찌르기 (아트): 누가, 어디서, 방향, 길이, 폭
+        protected void Thrusted(float length, float width) => Thrust?.Invoke(this, transform.position, AimDirection, length, width);
 
         protected bool SwingHit(Vector3 from, Vector3 dir, float radius, float angle)
         {

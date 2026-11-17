@@ -239,23 +239,20 @@ nokrim.summon_recovery,0.5,s,부하 부르기 빈틈,몬스터!E99
 nokrim.summon_count,3,,부르는 산적 졸개 수 (몬스터 H99 설명),
 nokrim.summon_interval,20,s,"부하 부르기 간격, 깨어난 뒤부터 셈 (몬스터 H99 설명)",
 nokrim.summon_max_per_phase,2,,페이즈마다 최대 부하 부르기 (몬스터 H99 설명),
-nokrim.fire_windup,2,s,불타는 죽림 예고,몬스터!D100
-nokrim.fire_band,2,cell,바깥 불길 폭 (몬스터 H100 설명),
-nokrim.fire_shrink_interval,20,s,안전한 곳이 좁아지는 간격 (몬스터 H100 설명),
-nokrim.fire_shrink_step,1,cell,한 번에 가로·세로 좁아지는 칸 (몬스터 H100 설명),
-nokrim.fire_min_width,10,cell,안전한 곳 최소 가로 (몬스터 H100 설명),
-nokrim.fire_min_depth,6,cell,안전한 곳 최소 세로 (몬스터 H100 설명),
-nokrim.fire_tick,0.5,s,불길 안에서 화상 1중첩 간격 (몬스터 H100 설명),
-nokrim.spin_windup,0.8,s,회전베기 3연속 예고,몬스터!D101
-nokrim.spin_recovery,1.5,s,회전베기 3연속 빈틈,몬스터!E101
-nokrim.spin_ratio,0.6,,회전베기 한 번 피해 배율,몬스터!F101
-nokrim.spin_radius,2.5,cell,회전베기 원 반경 (몬스터 H101 설명),
-nokrim.spin_count,3,,회전베기 횟수 (몬스터 H101 설명),
-nokrim.spin_interval,0.65,s,"회전베기 간격, 피격 무적 0.6초보다 길게 (몬스터 H101 설명)",
-nokrim.spin_move_speed,2.5,cell/s,돌면서 다가오는 속도 (몬스터 H101 설명),
 nokrim.p2_sweep_windup,0.6,s,2페이즈 휘두르기 예고,몬스터!D102
 nokrim.p2_sweep_recovery,0.8,s,2페이즈 휘두르기 빈틈,몬스터!E102
 nokrim.p2_slam_recovery,1.2,s,2페이즈 내려찍기 빈틈 (몬스터 H102 설명),
+nokrim.p2_bamboo_interval,6,s,불타는 대나무 간격 (2페이즈),보스 패턴 개편
+nokrim.p2_bamboo_first,1,s,2페이즈 시작 뒤 첫 대나무까지,보스 패턴 개편
+nokrim.p2_bamboo_count,3,,한 번에 쓰러지는 그루 수,보스 패턴 개편
+nokrim.p2_bamboo_length,14,cell,결투장이 없을 때 대나무 길이,보스 패턴 개편
+nokrim.p2_bamboo_width,1.2,cell,대나무 폭,보스 패턴 개편
+nokrim.p2_bamboo_gap,3.5,cell,나란한 대나무 사이,보스 패턴 개편
+nokrim.p2_bamboo_fall,1.2,s,쓰러지기까지 예고,보스 패턴 개편
+nokrim.p2_bamboo_ratio,1,,쓰러질 때 피해 배율,보스 패턴 개편
+nokrim.p2_bamboo_fire,2,s,불길이 남는 시간,보스 패턴 개편
+nokrim.p2_bamboo_fire_ratio,0.2,,불길 한 틱 피해 배율,보스 패턴 개편
+nokrim.p2_bamboo_fire_tick,0.5,s,불길 피해 간격,보스 패턴 개편
 burn.stage4_bonus,50%,,#열양 4단계: 화상 피해 증가,상태이상!C23
 burn.stage6_extra_stacks,2,,#열양 6단계: 화상 최대 중첩 +2,상태이상!C24
 slow.stage4_bonus,30%,,#빙백 4단계: 둔화 효과 증가,상태이상!C42
@@ -467,8 +464,6 @@ qingzhu.decision_pause,0.4,s,패턴 사이 쉬는 시간 (녹림왕과 같게 �
 qingzhu.combo_windup,0.5,s,쾌검 3연격 예고,몬스터!D103
 qingzhu.combo_recovery,0.8,s,쾌검 3연격 빈틈,몬스터!E103
 qingzhu.combo_ratio,0.6,,쾌검 3연격 피해 배율 (1번당),몬스터!F103
-qingzhu.combo_radius,2,cell,쾌검 부채꼴 반경,몬스터!H103 설명
-qingzhu.combo_angle,90,deg,쾌검 부채꼴 각도,몬스터!H103 설명
 qingzhu.combo_gap,0.3,s,쾌검 3연격 간격,몬스터!H103 설명
 qingzhu.p2_combo_gap,0.25,s,2페이즈 쾌검 간격,몬스터!H106 설명
 qingzhu.combo_lunge,0.8,cell,쾌검 한 번에 전진,몬스터!H103 설명
@@ -488,6 +483,8 @@ qingzhu.bamboo_width,1,cell,대나무 베기 폭,몬스터!H105 설명
 qingzhu.bamboo_interval,10,s,대나무 베기 간격,몬스터!H105 설명
 qingzhu.bamboo_life,6,s,쓰러진 대나무가 벽으로 남는 시간,몬스터!H105 설명
 qingzhu.bamboo_spread,25,deg,2페이즈 대나무 두 그루 사이 반각 (임시),
+qingzhu.combo_width,0.9,cell,쾌검 3연격 찌르기 폭,보스 패턴 개편
+qingzhu.combo_length,2.6,cell,쾌검 3연격 찌르기 길이 (몸 앞),보스 패턴 개편
 skill_flash.ratio,50%,,비급 죽림섬: 1번 베기 피해 (회선참 피해 비율 임시),
 skill_flash.count,3,,비급 죽림섬: 순간이동 베기 횟수,기획 대화 (죽림섬: 3번)
 skill_flash.gap,0.25,s,비급 죽림섬: 베기 간격 (청죽객과 같게),몬스터!H104 설명
@@ -510,13 +507,6 @@ ironfist.jab_radius,1.5,cell,주먹 부채꼴 반경,몬스터!H107 설명
 ironfist.jab_angle,70,deg,주먹 부채꼴 각도,몬스터!H107 설명
 ironfist.jab_gap,0.35,s,주먹 2연타 간격,몬스터!H107 설명
 ironfist.jab_lunge,0.5,cell,주먹 한 번에 전진,몬스터!H107 설명
-ironfist.quake_windup,0.8,s,붕산권 예고,몬스터!D108
-ironfist.quake_recovery,1,s,붕산권 빈틈,몬스터!E108
-ironfist.quake_ratio,1.2,,붕산권 피해 배율,몬스터!F108
-ironfist.quake_radius,3,cell,붕산권 충격파 반경,몬스터!H108 설명
-ironfist.quake_knockback,2,cell,붕산권 넉백,몬스터!H108 설명
-ironfist.quake_interval,7,s,붕산권 간격,몬스터!H108 설명
-ironfist.p2_quake_gap,0.6,s,2페이즈 붕산권 2연속 간격 (임시),
 ironfist.charge_windup,0.8,s,돌진 예고,몬스터!D109
 ironfist.charge_ratio,1,,돌진 피해 배율,몬스터!F109
 ironfist.charge_speed,13,cell/s,돌진 속도,몬스터!H109 설명
@@ -525,9 +515,21 @@ ironfist.charge_knockback,1.5,cell,돌진 넉백 (임시),
 ironfist.charge_max,16,cell,돌진 최대 거리 (벽이 없을 때 임시),
 ironfist.wall_stun,2.5,s,돌진이 벽에 부딪혔을 때 기절,몬스터!E109
 ironfist.p2_wall_stun,1.5,s,2페이즈 벽 기절,몬스터!H110 설명
-ironfist.rock_ratio,0.8,,2페이즈 낙석 피해 배율,몬스터!F110
-ironfist.rock_radius,1,cell,낙석 예고 원 반경,몬스터!H110 설명
-ironfist.rock_fall,0.8,s,낙석 예고 시간 (임시),
+ironfist.melee_length,3.5,cell,근접 직선 길이 (기본),보스 패턴 개편
+ironfist.melee_width,1.3,cell,근접 직선 폭 (기본),보스 패턴 개편
+ironfist.grab_windup,0.6,s,잡아 던지기 예고 (2페이즈 ×0.7),보스 패턴 개편
+ironfist.grab_recovery,0.9,s,잡아 던지기 빈틈,보스 패턴 개편
+ironfist.grab_ratio,1,,잡아 던지기 피해 배율,보스 패턴 개편
+ironfist.grab_radius,1.6,cell,잡아 던지기 부채꼴 반경,보스 패턴 개편
+ironfist.grab_angle,80,deg,잡아 던지기 부채꼴 각도,보스 패턴 개편
+ironfist.grab_throw,4,cell,잡혀서 내던져지는 거리,보스 패턴 개편
+ironfist.grab_interval,7,s,잡아 던지기 간격,보스 패턴 개편
+ironfist.grab_range,2,cell,이 거리 안이면 잡아 던지기,보스 패턴 개편
+ironfist.wave_interval,5,s,권풍 간격 (중간 거리),보스 패턴 개편
+ironfist.wave_speed,7,cell/s,권풍 속도 (크고 느림),보스 패턴 개편
+ironfist.wave_radius,0.9,cell,권풍 크기,보스 패턴 개편
+ironfist.wave_ratio,0.8,,권풍 피해 배율,보스 패턴 개편
+ironfist.wave_range,12,cell,권풍 사거리,보스 패턴 개편
 skill_quake.ratio,100%,,비급 붕산권: 피해 (회선참 피해 비율 임시),
 skill_quake.radius,3,cell,비급 붕산권: 충격파 반경 (고수와 같게),몬스터!H108 설명
 skill_quake.knockback,2,cell,비급 붕산권: 밀어내는 거리 (고수와 같게),몬스터!H108 설명
@@ -751,8 +753,6 @@ hyegwang.toughness,0,,파계승 혜광 강인함,몬스터!H63
 hyegwang.move_speed,3.5,cell/s,파계승 혜광 이동속도,
 hyegwang.sweep_windup,0.5,s,혜광 선장 휘두르기 예고,
 hyegwang.sweep_ratio,1,,혜광 선장 휘두르기 피해 배율,
-hyegwang.sweep_radius,3,cell,혜광 선장 휘두르기 반경,
-hyegwang.sweep_angle,150,deg,혜광 선장 휘두르기 각도,
 hyegwang.vajra_time,1.8,s,혜광 금강불괴 시간 (받는 피해 1 · 끝에 충격파),
 hyegwang.vajra_ratio,1.2,,혜광 금강불괴 끝 충격파 피해 배율,
 hyegwang.vajra_radius,3.5,cell,혜광 금강불괴 충격파 반경,
@@ -807,8 +807,6 @@ skill_palm.ratio,130%,,금강장: 피해 (회선참 피해 대비),2지역 기�
 skill_palm.knockback,1.5,칸,금강장: 맞은 적을 밀어내는 거리 (보스·고수는 안 밀림),2지역 기획 (혜광 비급)
 skill_palm.shield,5%,,금강장: 하나라도 맞히면 보호막 (최대 체력 비율),2지역 기획 (혜광 비급)
 skill_palm.shield_duration,8,초,금강장: 보호막 유지 시간,2지역 기획 (혜광 비급)
-hyegwang.sweep_lunge,2,cell,혜광 선장 휘두르기: 내디디는 거리,
-hyegwang.sweep_lunge_time,0.15,s,혜광 선장 휘두르기: 내디디는 시간,
 hyegwang.p2_bead_windup_ratio,60%,,혜광 2페이즈 염주 예고 시간 배율,
 hyegwang.p2_vajra_time,1,s,혜광 2페이즈 금강불괴 시간 (끝에 충격파),
 hyegwang.p2_vajra_grow,0.4,cell,혜광 2페이즈 금강불괴 강화: 버티는 동안 맞을 때마다 충격파 반경 +,
@@ -820,16 +818,18 @@ hyegwang.rush_windup,0.4,s,혜광 축지 예고,
 hyegwang.rush_time,0.2,s,혜광 축지: 다가가는 시간 (끝에 선장 휘두르기 판정),
 hyegwang.rush_stop,1.5,cell,혜광 축지: 플레이어 앞 멈추는 거리,
 hyegwang.rush_max,10,cell,혜광 축지 최대 거리,
+hyegwang.sweep_radius_spin,2.6,cell,선장 휘두르기 · 축지 끝 회전 반경 (360°),보스 패턴 개편
+hyegwang.sweep_knockback,0.5,cell,선장 회전 넉백,보스 패턴 개편
 bloodbuddha.p2_palm_hits,3,,혈불 2페이즈 손바닥 연타 횟수 (플레이어 자리를 따라감),
 bloodbuddha.p2_palm_gap,0.4,s,혈불 2페이즈 손바닥 연타 간격,
-bloodbuddha.grab_far,6,cell,혈불 혈수: 플레이어가 이보다 멀리,
-bloodbuddha.grab_delay,2,s,혈불 혈수: 멀리 있는 시간이 이만큼이면,
-bloodbuddha.grab_windup,0.6,s,혈불 혈수 예고 (직선),
-bloodbuddha.grab_range,10,cell,혈불 혈수 길이,
-bloodbuddha.grab_width,1.4,cell,혈불 혈수 폭,
-bloodbuddha.grab_ratio,0.6,,혈불 혈수 피해 배율 (맞으면 끌려와 바로 팔 휘두르기),
-bloodbuddha.grab_stop,2,cell,혈불 혈수: 끌려와 멈추는 거리,
-bloodbuddha.grab_recovery,0.3,s,혈불 혈수 뒤 팔 휘두르기까지,
+bloodbuddha.p2_pool_interval,12,s,혈해 간격 (2페이즈 들어설 때 절반부터),보스 패턴 개편
+bloodbuddha.p2_pool_windup,0.8,s,혈해 예고,보스 패턴 개편
+bloodbuddha.p2_pool_recovery,0.6,s,혈해 빈틈,보스 패턴 개편
+bloodbuddha.p2_pool_radius,3,cell,혈해 반경,보스 패턴 개편
+bloodbuddha.p2_pool_life,6,s,혈해가 남는 시간,보스 패턴 개편
+bloodbuddha.p2_pool_heal,1%,,혈불이 안에 있을 때 초당 회복 (최대 체력 비율),보스 패턴 개편
+bloodbuddha.p2_pool_ratio,0.2,,플레이어가 안에 있을 때 피해 배율,보스 패턴 개편
+bloodbuddha.p2_pool_tick,0.5,s,혈해 피해 간격,보스 패턴 개편
 knife.scroll_flash_ratio,35%,,비도 + 죽림섬 비도 순간이동: 한 번 베기 피해 (초식 피해 대비),비도 비급 (비도 초식)
 knife.scroll_quake_radius,5,칸,비도 + 붕산권 비도 솟구치기: 솟구치는 비도 범위,비도 비급 (비도 초식)
 knife.scroll_quake_ratio,35%,,비도 솟구치기: 솟구친 비도 하나당 피해 (초식 피해 대비),비도 비급 (비도 초식)
@@ -954,8 +954,6 @@ takrang.toughness,0,,탁랑객 강인함,몬스터!H65
 takrang.move_speed,3.8,cell/s,탁랑객 이동속도,
 takrang.recovery,0.6,s,탁랑객 패턴 빈틈,
 takrang.slash_windup,0.5,s,탁랑객 베기 예고,
-takrang.slash_radius,2.5,cell,탁랑객 베기 반경,
-takrang.slash_angle,120,deg,탁랑객 베기 각도,
 takrang.slash_ratio,1,,탁랑객 베기 피해 배율,
 takrang.wave_windup,0.7,s,탁랑객 물결 베기 예고,
 takrang.wave_count,3,,탁랑객 물결 베기 갈래 수,
@@ -980,6 +978,9 @@ takrang.whirl_pull,2.5,cell/s,탁랑객 소용돌이 끌어당기는 속도 (대
 takrang.whirl_burst,1.8,cell,탁랑객 소용돌이 끝 폭발 반경,
 takrang.whirl_ratio,1.2,,탁랑객 소용돌이 폭발 피해 배율,
 takrang.p2_windup_ratio,80%,,탁랑객 2페이즈 예고 시간 배율,
+takrang.thrust_width,1,cell,물살 찌르기 폭,보스 패턴 개편
+takrang.thrust_length,3,cell,물살 찌르기 길이 (몸 앞),보스 패턴 개편
+takrang.thrust_push,2,cell,물살 찌르기에 맞으면 밀려나는 거리,보스 패턴 개편
 skill_takrang.ratio,120%,,탁랑참 (탁랑객 비급): 파도 검기 피해 (회선참 대비),
 skill_takrang.length,7,칸,탁랑참: 파도 검기 길이,
 skill_takrang.width,1.4,칸,탁랑참: 파도 검기 폭,
@@ -1014,9 +1015,6 @@ irondragon.swing_radius,6,cell,철룡 유성추 휘두르기 반경 (사슬 길�
 irondragon.swing_angle,140,deg,철룡 유성추 휘두르기 각도,
 irondragon.swing_ratio,1,,철룡 유성추 휘두르기 피해 배율,
 irondragon.swing_knockback,2,cell,철룡 유성추 휘두르기 넉백,
-irondragon.slam_windup,1,s,철룡 유성추 내려찍기 예고 (플레이어 자리 원),
-irondragon.slam_radius,2,cell,철룡 유성추 내려찍기 반경,
-irondragon.slam_ratio,1.2,,철룡 유성추 내려찍기 피해 배율,
 irondragon.hook_far,7,cell,철룡 사슬 당기기: 플레이어가 이보다 멀리,
 irondragon.hook_delay,2,s,철룡 사슬 당기기: 멀리 있는 시간이 이만큼이면,
 irondragon.hook_windup,0.7,s,철룡 사슬 당기기 예고 (직선),
@@ -1025,18 +1023,25 @@ irondragon.hook_width,1.2,cell,철룡 사슬 당기기 폭,
 irondragon.hook_ratio,0.6,,철룡 사슬 당기기 피해 배율 (맞으면 끌려와 바로 휘두르기),
 irondragon.hook_stop,2.5,cell,철룡 사슬 당기기: 끌려와 멈추는 거리,
 irondragon.summon_interval,15,s,철룡 수하 부르기 간격 (깃발수 하나 + 수적 졸개 둘 · 깃발수가 없을 때),
-irondragon.p2_slam_hits,3,,철룡 2페이즈 연속 내려찍기 횟수 (플레이어를 따라감),
-irondragon.p2_slam_gap,0.5,s,철룡 2페이즈 연속 내려찍기 간격,
 irondragon.p2_geyser_interval,9,s,철룡 2페이즈 물기둥 간격,
 irondragon.p2_geyser_windup,0.6,s,철룡 물기둥 예고 (몸 둘레),
-irondragon.p2_geyser_count,5,,철룡 물기둥 수,
-irondragon.p2_geyser_gap,0.4,s,철룡 물기둥 간격,
 irondragon.p2_geyser_fall,0.8,s,철룡 물기둥 바닥 예고 시간,
-irondragon.p2_geyser_radius,1.3,cell,철룡 물기둥 반경,
 irondragon.p2_geyser_ratio,0.7,,철룡 물기둥 피해 배율,
 irondragon.p2_water_count,3,,철룡 2페이즈 물길 수 (배가 부서지며 생김),
 irondragon.p2_water_radius,2.5,cell,철룡 물길 반경,
 irondragon.p2_water_slow,30%,,철룡 물길 안 이동속도 감소,
+irondragon.ring_windup,0.9,s,닻 충격파 예고,보스 패턴 개편
+irondragon.ring_speed,5,cell/s,고리가 퍼지는 속도,보스 패턴 개편
+irondragon.ring_width,0.8,cell,고리 두께,보스 패턴 개편
+irondragon.ring_max,10,cell,고리 최대 반경,보스 패턴 개편
+irondragon.ring_gap,0.6,s,고리 사이 시간,보스 패턴 개편
+irondragon.ring_ratio,0.7,,고리 피해 배율,보스 패턴 개편
+irondragon.ring_count,3,,1페이즈 고리 수,보스 패턴 개편
+irondragon.p2_ring_count,4,,2페이즈 고리 수,보스 패턴 개편
+irondragon.geyser_count,7,,물기둥 줄 물기둥 수,보스 패턴 개편
+irondragon.geyser_radius,1.1,cell,물기둥 반경,보스 패턴 개편
+irondragon.geyser_step,0.18,s,물기둥이 차례로 솟는 간격,보스 패턴 개편
+irondragon.geyser_spacing,1.5,cell,물기둥 사이 거리,보스 패턴 개편
 event.wreck_tracking,2,,장강 난파선 뒤지기: 소란 +,3지역 기획 (장강 이벤트)
 event.toll_silver,100,은자,장강 수적 통행세: 내는 은자,3지역 기획 (장강 이벤트)
 event.toll_reward,150,은자,장강 수적 통행세 거절 전투: 이기면 은자 +,3지역 기획 (장강 이벤트)
@@ -1234,31 +1239,28 @@ goblinchief.transition_time,1.5,s,고블린 족장 (transition_time),차원 겹�
 goblinchief.phase2_hp_ratio,50%,,고블린 족장 (phase2_hp_ratio),차원 겹침 개편
 goblinchief.max_repeat,2,,고블린 족장 (max_repeat),차원 겹침 개편
 goblinchief.jab_windup,0.5,s,고블린 족장 (jab_windup),차원 겹침 개편
-goblinchief.jab_recovery,0.7,s,고블린 족장 (jab_recovery),차원 겹침 개편
-goblinchief.jab_ratio,0.7,,고블린 족장 (jab_ratio),차원 겹침 개편
-goblinchief.jab_radius,1.5,cell,고블린 족장 (jab_radius),차원 겹침 개편
-goblinchief.jab_angle,70,deg,고블린 족장 (jab_angle),차원 겹침 개편
+goblinchief.jab_recovery,0.8,s,고블린 족장 (jab_recovery),차원 겹침 개편
+goblinchief.jab_ratio,0.9,,고블린 족장 (jab_ratio),차원 겹침 개편
+goblinchief.jab_radius,2.2,cell,고블린 족장 (jab_radius),차원 겹침 개편
+goblinchief.jab_angle,220,deg,고블린 족장 (jab_angle),차원 겹침 개편
 goblinchief.jab_gap,0.35,s,고블린 족장 (jab_gap),차원 겹침 개편
 goblinchief.jab_lunge,0.5,cell,고블린 족장 (jab_lunge),차원 겹침 개편
-goblinchief.quake_windup,0.8,s,고블린 족장 (quake_windup),차원 겹침 개편
-goblinchief.quake_recovery,1,s,고블린 족장 (quake_recovery),차원 겹침 개편
-goblinchief.quake_ratio,1.2,,고블린 족장 (quake_ratio),차원 겹침 개편
-goblinchief.quake_radius,3,cell,고블린 족장 (quake_radius),차원 겹침 개편
-goblinchief.quake_knockback,2,cell,고블린 족장 (quake_knockback),차원 겹침 개편
-goblinchief.quake_interval,7,s,고블린 족장 (quake_interval),차원 겹침 개편
-goblinchief.p2_quake_gap,0.6,s,고블린 족장 (p2_quake_gap),차원 겹침 개편
-goblinchief.charge_windup,0.8,s,고블린 족장 (charge_windup),차원 겹침 개편
-goblinchief.charge_ratio,1,,고블린 족장 (charge_ratio),차원 겹침 개편
-goblinchief.charge_speed,13,cell/s,고블린 족장 (charge_speed),차원 겹침 개편
-goblinchief.charge_width,1.2,cell,고블린 족장 (charge_width),차원 겹침 개편
-goblinchief.charge_knockback,1.5,cell,고블린 족장 (charge_knockback),차원 겹침 개편
-goblinchief.charge_max,16,cell,고블린 족장 (charge_max),차원 겹침 개편
-goblinchief.wall_stun,2.5,s,고블린 족장 (wall_stun),차원 겹침 개편
-goblinchief.p2_wall_stun,1.5,s,고블린 족장 (p2_wall_stun),차원 겹침 개편
-goblinchief.rock_ratio,0.8,,고블린 족장 (rock_ratio),차원 겹침 개편
-goblinchief.rock_radius,1,cell,고블린 족장 (rock_radius),차원 겹침 개편
-goblinchief.rock_fall,0.8,s,고블린 족장 (rock_fall),차원 겹침 개편
 goblinchief.summon_count,3,,고블린 족장 함성: 2페이즈에 불러 모으는 고블린 수,차원 겹침 개편
+goblinchief.sweep_knockback,2.5,cell,철퇴 휘돌리기 넉백,보스 패턴 개편
+goblinchief.leap_windup,0.9,s,점프 덮치기 예고,보스 패턴 개편
+goblinchief.leap_radius,2,cell,점프 덮치기 반경,보스 패턴 개편
+goblinchief.leap_ratio,1,,점프 덮치기 피해 배율,보스 패턴 개편
+goblinchief.leap_recovery,1,s,점프 덮치기 빈틈,보스 패턴 개편
+goblinchief.leap_interval,6,s,점프 덮치기 간격,보스 패턴 개편
+goblinchief.leap_knockback,1.5,cell,점프 덮치기 넉백,보스 패턴 개편
+goblinchief.trap_interval,6,s,덫 던지기 간격 (중간 거리),보스 패턴 개편
+goblinchief.trap_count,3,,덫 수,보스 패턴 개편
+goblinchief.trap_radius,0.9,cell,덫 반경,보스 패턴 개편
+goblinchief.trap_life,6,s,덫이 남는 시간,보스 패턴 개편
+goblinchief.trap_slow,80%,,덫을 밟으면 이동속도 감소,보스 패턴 개편
+goblinchief.trap_slow_time,1.2,s,덫 둔화 시간,보스 패턴 개편
+goblinchief.trap_ratio,0.3,,덫 피해 배율 (틱),보스 패턴 개편
+goblinchief.trap_spread,2,cell,플레이어 둘레 덫 거리,보스 패턴 개편
 ogre.hp,1800,,오우거 (hp),차원 겹침 개편
 ogre.atk,24,,오우거 (atk),차원 겹침 개편
 ogre.toughness,5,,오우거 (toughness),차원 겹침 개편
@@ -1269,33 +1271,27 @@ ogre.decision_pause,0.4,s,오우거 (decision_pause),차원 겹침 개편
 ogre.transition_time,1.5,s,오우거 (transition_time),차원 겹침 개편
 ogre.phase2_hp_ratio,50%,,오우거 (phase2_hp_ratio),차원 겹침 개편
 ogre.max_repeat,2,,오우거 (max_repeat),차원 겹침 개편
-ogre.jab_windup,0.5,s,오우거 (jab_windup),차원 겹침 개편
-ogre.jab_recovery,0.7,s,오우거 (jab_recovery),차원 겹침 개편
-ogre.jab_ratio,0.7,,오우거 (jab_ratio),차원 겹침 개편
+ogre.jab_windup,0.7,s,오우거 (jab_windup),차원 겹침 개편
+ogre.jab_recovery,1,s,오우거 (jab_recovery),차원 겹침 개편
+ogre.jab_ratio,1.3,,오우거 (jab_ratio),차원 겹침 개편
 ogre.jab_radius,1.5,cell,오우거 (jab_radius),차원 겹침 개편
 ogre.jab_angle,70,deg,오우거 (jab_angle),차원 겹침 개편
 ogre.jab_gap,0.35,s,오우거 (jab_gap),차원 겹침 개편
-ogre.jab_lunge,0.5,cell,오우거 (jab_lunge),차원 겹침 개편
-ogre.quake_windup,0.8,s,오우거 (quake_windup),차원 겹침 개편
-ogre.quake_recovery,1,s,오우거 (quake_recovery),차원 겹침 개편
-ogre.quake_ratio,1.2,,오우거 (quake_ratio),차원 겹침 개편
-ogre.quake_radius,3.5,cell,오우거 (quake_radius),차원 겹침 개편
-ogre.quake_knockback,2,cell,오우거 (quake_knockback),차원 겹침 개편
-ogre.quake_interval,7,s,오우거 (quake_interval),차원 겹침 개편
-ogre.p2_quake_gap,0.6,s,오우거 (p2_quake_gap),차원 겹침 개편
-ogre.charge_windup,0.8,s,오우거 (charge_windup),차원 겹침 개편
-ogre.charge_ratio,1,,오우거 (charge_ratio),차원 겹침 개편
-ogre.charge_speed,13,cell/s,오우거 (charge_speed),차원 겹침 개편
-ogre.charge_width,2,cell,오우거 (charge_width),차원 겹침 개편
-ogre.charge_knockback,1.5,cell,오우거 (charge_knockback),차원 겹침 개편
-ogre.charge_max,16,cell,오우거 (charge_max),차원 겹침 개편
-ogre.wall_stun,2.5,s,오우거 (wall_stun),차원 겹침 개편
-ogre.p2_wall_stun,1.5,s,오우거 (p2_wall_stun),차원 겹침 개편
 ogre.rock_ratio,0.8,,오우거 (rock_ratio),차원 겹침 개편
 ogre.rock_radius,1.3,cell,오우거 (rock_radius),차원 겹침 개편
 ogre.rock_fall,0.8,s,오우거 (rock_fall),차원 겹침 개편
 ogre.throw_interval,6,s,오우거 바위 던지기 간격 (중간 거리),차원 겹침 개편
-boss_kit.enabled,1,,"보스 공통 견제기 · 이동기 (0이면 끔)",차원 겹침 개편
+ogre.melee_length,4,cell,몽둥이 내려찍기 길이,보스 패턴 개편
+ogre.melee_width,1.4,cell,몽둥이 내려찍기 폭,보스 패턴 개편
+ogre.leap_windup,1,s,땅울림 도약 예고,보스 패턴 개편
+ogre.leap_radius,3,cell,땅울림 도약 충격파 반경,보스 패턴 개편
+ogre.leap_ratio,1.2,,땅울림 도약 피해 배율,보스 패턴 개편
+ogre.leap_recovery,1.2,s,땅울림 도약 빈틈,보스 패턴 개편
+ogre.leap_interval,7,s,땅울림 도약 간격,보스 패턴 개편
+ogre.leap_knockback,2,cell,땅울림 도약 넉백,보스 패턴 개편
+ogre.rage_speed,1.3,,분노 (2페이즈) 이동 배율,보스 패턴 개편
+ogre.rage_windup,0.8,,분노 (2페이즈) 예고 배율,보스 패턴 개편
+boss_kit.enabled,0,,"보스 공통 견제기 · 이동기 (0이면 끔 · 보스마다 고유 패턴으로 바꿔 꺼 둠)",차원 겹침 개편
 boss_kit.far_distance,6,cell,원거리 견제기: 이보다 멀리 있으면,차원 겹침 개편
 boss_kit.far_time,2.5,s,원거리 견제기: 멀리 있는 시간이 이만큼 넘으면,차원 겹침 개편
 boss_kit.volley_cooldown,8,s,원거리 견제기 간격,차원 겹침 개편
@@ -1420,6 +1416,15 @@ bloodshadow.echo_delay,0.5,s,혈영검마 잔상이 다시 베기까지 (2페이
 bloodshadow.echo_ratio,0.6,,혈영검마 잔상 피해 배율,
 bloodshadow.lifesteal,30%,,혈영검마 흡혈: 맞힌 공격력의 이만큼 회복,
 bloodshadow.p2_windup_ratio,80%,,혈영검마 2페이즈 예고 시간 배율,
+bloodshadow.spike_min,4,cell,혈조를 쓰는 최소 거리,보스 패턴 개편
+bloodshadow.spike_max,10,cell,혈조를 쓰는 최대 거리,보스 패턴 개편
+bloodshadow.spike_interval,7,s,혈조 간격,보스 패턴 개편
+bloodshadow.spike_windup,0.7,s,혈조 예고 (2페이즈 ×0.8),보스 패턴 개편
+bloodshadow.spike_length,9,cell,혈조 가시 줄 길이,보스 패턴 개편
+bloodshadow.spike_width,1,cell,혈조 가시 줄 폭,보스 패턴 개편
+bloodshadow.spike_speed,12,cell/s,가시가 솟아 나가는 속도,보스 패턴 개편
+bloodshadow.spike_ratio,0.8,,혈조 피해 배율,보스 패턴 개편
+bloodshadow.spike_step,1,cell,가시 한 자리 간격,보스 패턴 개편
 skill_bloodshadow.length,4,칸,혈영참 (혈영검마 비급): 돌진 거리,
 skill_bloodshadow.ratio,80%,,혈영참: 돌진 베기 피해 (회선참 대비),
 skill_bloodshadow.width,1.2,칸,혈영참: 베는 폭,
@@ -1440,7 +1445,6 @@ heavenlydemon.phase3_hp_ratio,33%,,천마 3페이즈 (마검 해체대법) 체�
 heavenlydemon.transition_time,2,s,천마 페이즈 전환 (무적),
 heavenlydemon.slash_windup,0.6,s,천마일검 예고,
 heavenlydemon.slash_radius,3,cell,천마일검 반경,
-heavenlydemon.slash_angle,140,deg,천마일검 각도,
 heavenlydemon.p2_slash_angle,220,deg,마검 천마군림 각도 (3페이즈),
 heavenlydemon.slash_ratio,1,,천마일검 피해 배율,
 heavenlydemon.cross_windup,0.8,s,천마 십자 검기 예고,
@@ -1455,21 +1459,6 @@ heavenlydemon.miasma_ratio,0.3,,천마 마기 장판 피해 배율 (0.5초마다
 heavenlydemon.miasma_slow,20%,,천마 마기 장판 안 이동속도 감소,
 heavenlydemon.grasp_far,6,cell,천마 마기 손아귀: 플레이어가 이보다 멀리,
 heavenlydemon.grasp_delay,2,s,천마 마기 손아귀: 멀리 있는 시간이 이만큼이면,
-heavenlydemon.grasp_windup,0.7,s,천마 마기 손아귀 예고 (직선),
-heavenlydemon.grasp_range,10,cell,천마 마기 손아귀 길이,
-heavenlydemon.grasp_width,1.2,cell,천마 마기 손아귀 폭,
-heavenlydemon.grasp_ratio,0.6,,천마 마기 손아귀 피해 배율 (끌려와 바로 일검),
-heavenlydemon.grasp_stop,2,cell,천마 마기 손아귀: 끌려와 멈추는 거리,
-heavenlydemon.p2_phantom_side,3,cell,마검 천마군림 환영: 플레이어 양옆 거리,
-heavenlydemon.p2_phantom_delay,0.5,s,마검 천마군림 환영이 베기까지,
-heavenlydemon.p2_phantom_ratio,0.6,,마검 천마군림 환영 피해 배율,
-heavenlydemon.p2_pull_interval,12,s,천마 마력 흡인 간격 (2페이즈부터),
-heavenlydemon.p2_pull_windup,1,s,천마 흡인 예고,
-heavenlydemon.p2_pull_time,2,s,천마 흡인: 끌어당기는 시간,
-heavenlydemon.p2_pull_radius,6,cell,천마 흡인 범위,
-heavenlydemon.p2_pull_speed,2.5,cell/s,천마 흡인 속도 (대시면 안 끌림),
-heavenlydemon.p2_pull_burst,2,cell,천마 흡인 끝 폭발 반경,
-heavenlydemon.p2_pull_ratio,1.2,,천마 흡인 폭발 피해 배율,
 heavenlydemon.p3_rain_interval,8,s,천마 마검비 간격 (3페이즈),
 heavenlydemon.p3_rain_windup,1,s,천마 검비 예고,
 heavenlydemon.p3_rain_time,1.5,s,천마 검비 시간,
@@ -1485,17 +1474,6 @@ heavenlydemon.p3_safe_ratio,0.2,,해체대법: 마기 속 피해 배율 (0.5초�
 heavenlydemon.p3_safe_tick,0.5,s,해체대법: 마기 속 피해 간격,
 heavenlydemon.p2_meteor_interval,9,s,마검사 천마 화염구 비 간격 (2페이즈부터),마검사 천마 개편
 heavenlydemon.p2_meteor_windup,0.8,s,화염구 비 예고,마검사 천마 개편
-heavenlydemon.p2_meteor_time,1.2,s,화염구 비: 화염구가 떨어지는 시간,마검사 천마 개편
-heavenlydemon.p2_meteor_count,6,개,화염구 비: 화염구 수 (첫 발은 플레이어 발밑),마검사 천마 개편
-heavenlydemon.p2_meteor_fall,0.9,s,화염구 하나 예고,마검사 천마 개편
-heavenlydemon.p2_meteor_radius,1.4,cell,화염구 하나 반경,마검사 천마 개편
-heavenlydemon.p2_meteor_ratio,0.7,,화염구 피해 배율,마검사 천마 개편
-heavenlydemon.p2_meteor_spread,2.5,cell,화염구가 흩어지는 반경 (플레이어 둘레),마검사 천마 개편
-heavenlydemon.p2_blink_interval,7,s,순간이동 검격 간격 (2페이즈부터),마검사 천마 개편
-heavenlydemon.p2_blink_windup,0.5,s,순간이동 검격 예고 (사라지기까지),마검사 천마 개편
-heavenlydemon.p2_blink_behind,1.8,cell,순간이동 검격: 플레이어 등 뒤 거리,마검사 천마 개편
-heavenlydemon.p2_blink_delay,0.45,s,순간이동 검격: 나타나 베기까지 (부채꼴 예고),마검사 천마 개편
-heavenlydemon.p2_blink_ratio,0.9,,순간이동 검격 피해 배율,마검사 천마 개편
 heavenlydemon.p2_rune_interval,11,s,마법진 간격 (2페이즈만),마검사 천마 개편
 heavenlydemon.p2_rune_windup,0.8,s,마법진 예고,마검사 천마 개편
 heavenlydemon.p2_rune_radius,2.5,cell,큰 마법진 반경 (플레이어 발밑),마검사 천마 개편
@@ -1512,6 +1490,27 @@ heavenlydemon.p3_cleave_ratio,1,,마검 천멸 둘레 폭발 피해 배율,마�
 heavenlydemon.p3_cleave_wave_ratio,0.7,,마검 천멸 8방향 검기 피해 배율,마검사 천마 개편
 heavenlydemon.p3_cleave_fire_radius,1.1,cell,마검 천멸: 검기 줄 위 불길 반경 (3칸 · 6칸),마검사 천마 개편
 heavenlydemon.p3_cleave_fire_ratio,0.6,,마검 천멸 불길 피해 배율,마검사 천마 개편
+heavenlydemon.draw_windup,0.7,s,발도 일섬 예고,보스 패턴 개편
+heavenlydemon.draw_width,1,cell,발도 일섬 폭,보스 패턴 개편
+heavenlydemon.draw_length,7,cell,발도 일섬 길이,보스 패턴 개편
+heavenlydemon.draw_range,6,cell,이 거리 안이면 발도 일섬,보스 패턴 개편
+heavenlydemon.draw_ratio,1,,발도 일섬 피해 배율,보스 패턴 개편
+heavenlydemon.bind_windup,0.7,s,마기 포박 예고,보스 패턴 개편
+heavenlydemon.bind_speed,5,cell/s,포박 구슬 속도,보스 패턴 개편
+heavenlydemon.bind_radius,0.6,cell,포박 구슬 반경,보스 패턴 개편
+heavenlydemon.bind_range,12,cell,포박 구슬 사거리,보스 패턴 개편
+heavenlydemon.bind_ratio,0.5,,포박 구슬 피해 배율,보스 패턴 개편
+heavenlydemon.bind_time,1.2,s,묶이는 시간,보스 패턴 개편
+heavenlydemon.rift_interval,7,s,차원 베기 간격,보스 패턴 개편
+heavenlydemon.rift_windup,0.8,s,차원 베기 예고,보스 패턴 개편
+heavenlydemon.rift_radius,3.5,cell,균열이 열리는 플레이어 둘레 반경,보스 패턴 개편
+heavenlydemon.rift_delay,1,s,균열이 열리고 베어지기까지,보스 패턴 개편
+heavenlydemon.rift_width,1,cell,차원 베기 폭,보스 패턴 개편
+heavenlydemon.rift_ratio,0.6,,차원 베기 피해 배율 (가운데는 세 줄이 겹쳐요),보스 패턴 개편
+heavenlydemon.meteor_big_radius,3,cell,유성 반경,보스 패턴 개편
+heavenlydemon.meteor_track,1.5,s,유성 예고가 따라오는 시간,보스 패턴 개편
+heavenlydemon.meteor_lock_fall,0.6,s,멈추고 떨어지기까지,보스 패턴 개편
+heavenlydemon.meteor_big_ratio,1.4,,유성 피해 배율,보스 패턴 개편
 event.blood_pool_cut,10%,,천마총 피의 연못: 이번 판 동안 최대 체력 −,4지역 기획 (천마총 이벤트)
 event.blood_pool_grade.common,0%,,피의 연못 보상 일반 확률 (전설이 잘 나옴),4지역 기획 (천마총 이벤트)
 event.blood_pool_grade.uncommon,30%,,피의 연못 보상 고급 확률,4지역 기획 (천마총 이벤트)
@@ -1564,7 +1563,7 @@ rift.weight.crystal,2,,소품 가중치: 마나 수정 (공격하면 터짐),차
 rift.crystal_radius,2.5,cell,마나 수정 폭발 반경 (적만 맞아요),차원 겹침 맵 섞기
 rift.crystal_damage,40,,마나 수정 폭발 피해 (죽림 기준),차원 겹침 맵 섞기
 rift.crystal_region_scale,60%,,마나 수정 피해: 지역마다 더하는 배율 (천마총 ×2.8),차원 겹침 맵 섞기
-master_kit.enabled,1,,"고수 공통 견제기 · 이동기 (0이면 끔, 없는 값은 boss_kit.*)",고수 공통기
+master_kit.enabled,0,,"고수 공통 견제기 · 이동기 (0이면 끔 · 고수마다 고유 패턴으로 바꿔 꺼 둠)",고수 공통기
 master_kit.far_distance,6.5,cell,고수 원거리 견제기: 이보다 멀리 있으면,고수 공통기
 master_kit.far_time,3.5,s,고수 원거리 견제기: 멀리 있는 시간이 이만큼 넘으면,고수 공통기
 master_kit.volley_cooldown,11,s,고수 원거리 견제기 간격,고수 공통기
@@ -1597,24 +1596,37 @@ darkelf.atk,13,,다크 엘프 검사 공격,판타지 고수·보스 추가
 darkelf.toughness,0,,다크 엘프 검사 강인함,판타지 고수·보스 추가
 darkelf.move_speed,4.5,cell/s,다크 엘프 검사 이동속도,판타지 고수·보스 추가
 darkelf.recovery,0.9,s,다크 엘프 검사 패턴 빈틈 (2페이즈에 공격이 너무 잦던 것),판타지 고수·보스 추가
-darkelf.slash_windup,0.45,s,다크 엘프 검사 혈영 베기 예고,판타지 고수·보스 추가
-darkelf.slash_radius,2.6,cell,다크 엘프 검사 혈영 베기 반경,판타지 고수·보스 추가
-darkelf.slash_angle,120,deg,다크 엘프 검사 혈영 베기 각도,판타지 고수·보스 추가
-darkelf.slash_ratio,1,,다크 엘프 검사 혈영 베기 피해 배율,판타지 고수·보스 추가
-darkelf.line_windup,0.6,s,다크 엘프 검사 혈선 예고,판타지 고수·보스 추가
-darkelf.line_min,3,cell,다크 엘프 검사 혈선을 쓰는 최소 거리,판타지 고수·보스 추가
-darkelf.line_max,6,cell,다크 엘프 검사 혈선을 쓰는 최대 거리,판타지 고수·보스 추가
-darkelf.line_length,4,cell,다크 엘프 검사 혈선 돌진 거리,판타지 고수·보스 추가
-darkelf.line_width,1.2,cell,다크 엘프 검사 혈선 폭,판타지 고수·보스 추가
-darkelf.line_ratio,1,,다크 엘프 검사 혈선 피해 배율,판타지 고수·보스 추가
-darkelf.line_time,0.2,s,다크 엘프 검사 혈선 돌진 시간,판타지 고수·보스 추가
-darkelf.blink_delay,1.2,s,다크 엘프 검사 혈영보: 플레이어가 5칸 밖에 이만큼 있으면,판타지 고수·보스 추가
-darkelf.blink_windup,0.4,s,다크 엘프 검사 혈영보 예고,판타지 고수·보스 추가
-darkelf.blink_behind,1.5,cell,다크 엘프 검사 혈영보: 플레이어 뒤 거리,판타지 고수·보스 추가
-darkelf.echo_delay,0.5,s,다크 엘프 검사 잔상이 다시 베기까지 (2페이즈는 0.5 · 1.0초 두 번),판타지 고수·보스 추가
-darkelf.echo_ratio,0.6,,다크 엘프 검사 잔상 피해 배율,판타지 고수·보스 추가
-darkelf.lifesteal,0%,,다크 엘프 검사 흡혈 (없음 · 혈영검마와 다른 점),판타지 고수·보스 추가
 darkelf.p2_windup_ratio,100%,,다크 엘프 검사 2페이즈 예고 시간 배율 (2페이즈에도 빨라지지 않아요 · 잔상만 하나 더),판타지 고수·보스 추가
+darkelf.close_distance,2.6,cell,쌍검 난무를 쓰는 거리,보스 패턴 개편
+darkelf.far_delay,2,s,멀리서 버티면 (이 시간 ×2) 그림자 숨기,보스 패턴 개편
+darkelf.decision_pause,0.35,s,패턴 사이 쉬는 시간,보스 패턴 개편
+darkelf.dance_windup,0.5,s,쌍검 난무 예고,보스 패턴 개편
+darkelf.dance_hits,4,,쌍검 난무 타수,보스 패턴 개편
+darkelf.p2_dance_hits,5,,2페이즈 쌍검 난무 타수,보스 패턴 개편
+darkelf.dance_radius,2.2,cell,쌍검 부채꼴 반경,보스 패턴 개편
+darkelf.dance_angle,100,deg,쌍검 부채꼴 각도,보스 패턴 개편
+darkelf.dance_skew,25,deg,좌우로 번갈아 비트는 각도,보스 패턴 개편
+darkelf.dance_gap,0.22,s,쌍검 한 타 간격,보스 패턴 개편
+darkelf.dance_lunge,0.3,cell,한 타마다 전진,보스 패턴 개편
+darkelf.dance_ratio,0.45,,쌍검 한 타 피해 배율,보스 패턴 개편
+darkelf.dance_recovery,0.7,s,쌍검 난무 빈틈,보스 패턴 개편
+darkelf.hide_interval,9,s,그림자 숨기 간격,보스 패턴 개편
+darkelf.hide_windup,0.4,s,사라지기 전 예고,보스 패턴 개편
+darkelf.hide_time,0.8,s,사라져 있는 시간,보스 패턴 개편
+darkelf.hide_side,2,cell,플레이어 옆 나타나는 거리,보스 패턴 개편
+darkelf.ambush_windup,0.4,s,그림자 기습 예고,보스 패턴 개편
+darkelf.ambush_radius,2.4,cell,그림자 기습 부채꼴 반경,보스 패턴 개편
+darkelf.ambush_angle,120,deg,그림자 기습 부채꼴 각도,보스 패턴 개편
+darkelf.ambush_ratio,1,,그림자 기습 피해 배율,보스 패턴 개편
+darkelf.dagger_interval,4,s,독 단검 간격,보스 패턴 개편
+darkelf.dagger_windup,0.45,s,독 단검 예고,보스 패턴 개편
+darkelf.dagger_min,4,cell,이 거리 밖이면 독 단검,보스 패턴 개편
+darkelf.dagger_speed,14,cell/s,독 단검 속도,보스 패턴 개편
+darkelf.dagger_range,14,cell,독 단검 사거리,보스 패턴 개편
+darkelf.dagger_ratio,0.6,,독 단검 피해 배율,보스 패턴 개편
+darkelf.poison_time,3,s,독 지속 (맞을 때마다 새로),보스 패턴 개편
+darkelf.poison_tick,0.5,s,독 피해 간격,보스 패턴 개편
+darkelf.poison_ratio,0.08,,독 한 틱 피해 배율 (체력 1에서 멈춤),보스 패턴 개편
 deathknight.hp,1900,,데스나이트 (hp),판타지 고수·보스 추가
 deathknight.atk,25,,데스나이트 (atk),판타지 고수·보스 추가
 deathknight.toughness,5,,데스나이트 (toughness),판타지 고수·보스 추가
@@ -1627,36 +1639,27 @@ deathknight.phase2_hp_ratio,50%,,데스나이트 (phase2_hp_ratio),판타지 고
 deathknight.max_repeat,2,,데스나이트 (max_repeat),판타지 고수·보스 추가
 deathknight.jab_windup,0.5,s,데스나이트 (jab_windup),판타지 고수·보스 추가
 deathknight.jab_recovery,0.7,s,데스나이트 (jab_recovery),판타지 고수·보스 추가
-deathknight.jab_ratio,0.7,,데스나이트 (jab_ratio),판타지 고수·보스 추가
+deathknight.jab_ratio,0.8,,데스나이트 (jab_ratio),판타지 고수·보스 추가
 deathknight.jab_radius,1.5,cell,데스나이트 (jab_radius),판타지 고수·보스 추가
 deathknight.jab_angle,70,deg,데스나이트 (jab_angle),판타지 고수·보스 추가
-deathknight.jab_gap,0.35,s,데스나이트 (jab_gap),판타지 고수·보스 추가
-deathknight.jab_lunge,0.5,cell,데스나이트 (jab_lunge),판타지 고수·보스 추가
-deathknight.quake_windup,0.8,s,데스나이트 (quake_windup),판타지 고수·보스 추가
-deathknight.quake_recovery,1,s,데스나이트 (quake_recovery),판타지 고수·보스 추가
-deathknight.quake_ratio,1.2,,데스나이트 (quake_ratio),판타지 고수·보스 추가
-deathknight.quake_radius,3.2,cell,데스나이트 (quake_radius),판타지 고수·보스 추가
-deathknight.quake_knockback,2,cell,데스나이트 (quake_knockback),판타지 고수·보스 추가
-deathknight.quake_interval,7,s,데스나이트 (quake_interval),판타지 고수·보스 추가
-deathknight.p2_quake_gap,0.6,s,데스나이트 (p2_quake_gap),판타지 고수·보스 추가
-deathknight.charge_windup,0.8,s,데스나이트 (charge_windup),판타지 고수·보스 추가
-deathknight.charge_ratio,1,,데스나이트 (charge_ratio),판타지 고수·보스 추가
-deathknight.charge_speed,14,cell/s,데스나이트 (charge_speed),판타지 고수·보스 추가
-deathknight.charge_width,1.6,cell,데스나이트 (charge_width),판타지 고수·보스 추가
-deathknight.charge_knockback,1.5,cell,데스나이트 (charge_knockback),판타지 고수·보스 추가
-deathknight.charge_max,16,cell,데스나이트 (charge_max),판타지 고수·보스 추가
-deathknight.wall_stun,2.5,s,데스나이트 (wall_stun),판타지 고수·보스 추가
-deathknight.p2_wall_stun,1.5,s,데스나이트 (p2_wall_stun),판타지 고수·보스 추가
-deathknight.rock_ratio,0.8,,데스나이트 (rock_ratio),판타지 고수·보스 추가
-deathknight.rock_radius,1.3,cell,데스나이트 (rock_radius),판타지 고수·보스 추가
-deathknight.rock_fall,0.8,s,데스나이트 (rock_fall),판타지 고수·보스 추가
-deathknight.wave_interval,5,s,데스나이트 저주 검기 간격 (중간 거리),판타지 고수·보스 추가
-deathknight.wave_count,3,,데스나이트 저주 검기 수 (부채꼴),판타지 고수·보스 추가
-deathknight.wave_spread,20,deg,데스나이트 저주 검기 부채꼴 간격,판타지 고수·보스 추가
-deathknight.wave_speed,9,cell/s,데스나이트 저주 검기 속도,판타지 고수·보스 추가
-deathknight.wave_range,12,cell,데스나이트 저주 검기 사거리,판타지 고수·보스 추가
-deathknight.wave_ratio,0.6,,데스나이트 저주 검기 피해 배율,판타지 고수·보스 추가
+deathknight.jab_gap,0.45,s,데스나이트 (jab_gap),판타지 고수·보스 추가
 deathknight.summon_count,3,,데스나이트 죽은 자의 부름: 2페이즈에 일으키는 스켈레톤,판타지 고수·보스 추가
+deathknight.melee_length,3.5,cell,대검 올려베기 · 내려베기 길이,보스 패턴 개편
+deathknight.melee_width,1.2,cell,대검 베기 폭,보스 패턴 개편
+deathknight.leap_windup,0.9,s,어둠 걸음 예고,보스 패턴 개편
+deathknight.leap_radius,1.8,cell,어둠 걸음 솟아오르기 반경,보스 패턴 개편
+deathknight.leap_ratio,1,,어둠 걸음 피해 배율,보스 패턴 개편
+deathknight.leap_recovery,0.9,s,어둠 걸음 빈틈,보스 패턴 개편
+deathknight.leap_interval,6,s,어둠 걸음 간격,보스 패턴 개편
+deathknight.leap_knockback,1,cell,어둠 걸음 넉백,보스 패턴 개편
+deathknight.lane_interval,6,s,망령 기병 돌격 간격 (중간 거리),보스 패턴 개편
+deathknight.lane_count,3,,망령 기병 줄 수,보스 패턴 개편
+deathknight.lane_gap,3,cell,줄 사이 거리,보스 패턴 개편
+deathknight.lane_width,1.4,cell,줄 폭,보스 패턴 개편
+deathknight.lane_delay,1.1,s,예고 뒤 기병이 지나가기까지,보스 패턴 개편
+deathknight.lane_stagger,0.15,s,줄마다 늦게 지나가는 시간,보스 패턴 개편
+deathknight.lane_ratio,0.8,,망령 기병 피해 배율,보스 패턴 개편
+deathknight.lane_knockback,1.5,cell,망령 기병 넉백,보스 패턴 개편
 harpy.hp,20,,하피 체력,판타지 졸개 추가
 harpy.atk,7,,하피 공격,판타지 졸개 추가
 harpy.toughness,0,,하피 강인함,판타지 졸개 추가

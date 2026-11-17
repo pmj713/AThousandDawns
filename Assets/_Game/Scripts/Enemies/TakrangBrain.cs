@@ -6,7 +6,7 @@ namespace AThousandDawns.Enemies
 {
     // 탁랑객 (장강 수채 고수, 몬스터 시트 65행): 체력 1100 · 공격 18 (장강 배율 전 → 3300 · 29). 탁한 물결을 부리는 검객. 결투장은 강 위 잔교.
     // 고수 공통: 경직·넉백 없음, 빙결 1초 + 패턴 취소, 체력 50%에서 1.5초 전환 (무적), 같은 패턴은 연속 2번까지.
-    //   베기: 가까우면 (2.5칸) 예고 0.5 · 앞 부채꼴 반경 2.5칸 120° ×1.0
+    //   물살 찌르기: 가까우면 (2.5칸) 예고 0.5 · 앞 직선 (몸 앞에서 3칸, 폭 1칸) ×1.0, 맞으면 2칸 밀려나요
     //   물결 베기: 멀면 예고 0.7 · 앞으로 검기 세 갈래 (20° 간격, 8칸, 초속 9칸) ×0.8. 2페이즈는 다섯 갈래
     //   탁류 보법: 5칸 밖에 1.5초 넘게 있으면 예고 0.4 · 물 위를 미끄러지듯 플레이어 옆 1.8칸으로 돌아 들어와 (0.25초) 3칸 찌르기 ×1.1 (원거리 대응)
     //   소용돌이: 10초마다 (2페이즈 7초) 예고 1.0 · 1.5초 동안 둘레 4칸 안 플레이어를 초당 2.5칸 끌어당기고 (대시면 안 끌림), 끝에 반경 1.8칸 ×1.2
@@ -18,7 +18,7 @@ namespace AThousandDawns.Enemies
         Pattern _pattern, _lastPattern;
         int _repeat, _maxRepeat;
         float _closeDistance, _farDistance, _decisionPause, _transitionTime, _phase2Ratio, _phase2Speed;
-        float _slashWindup, _slashRadius, _slashAngle, _slashRatio;
+        float _slashWindup, _thrustWidth, _thrustLength, _thrustPush, _slashRatio;
         float _waveWindup, _waveRange, _waveSpeed, _waveRatio, _waveSpread, _waveRadius;
         int _waveCount, _waveCount2;
         float _flowDelay, _flowWindup, _flowTime, _flowSide, _flowReach, _flowRatio, _farTimer;
@@ -45,7 +45,7 @@ namespace AThousandDawns.Enemies
 
         public override string AttackName => _pattern switch
         {
-            Pattern.Slash => "베기", Pattern.Waves => "물결 베기", Pattern.Flow => "탁류 보법", Pattern.Whirl => "소용돌이", _ => null,
+            Pattern.Slash => "물살 찌르기", Pattern.Waves => "물결 베기", Pattern.Flow => "탁류 보법", Pattern.Whirl => "소용돌이", _ => null,
         };
 
         public int Phase { get; private set; } = 1;
@@ -65,8 +65,9 @@ namespace AThousandDawns.Enemies
             _phase2Speed = Tuning("p2_windup_ratio", 0.8f);
             _maxRepeat = Mathf.RoundToInt(Tuning("max_repeat", 2f));
             _slashWindup = Tuning("slash_windup", 0.5f);
-            _slashRadius = Tuning("slash_radius", 2.5f);
-            _slashAngle = Tuning("slash_angle", 120f);
+            _thrustWidth = Tuning("thrust_width", 1f);
+            _thrustLength = Tuning("thrust_length", 3f);
+            _thrustPush = Tuning("thrust_push", 2f);
             _slashRatio = Tuning("slash_ratio", 1f);
             _waveWindup = Tuning("wave_windup", 0.7f);
             _waveRange = Tuning("wave_range", 8f);
@@ -154,7 +155,7 @@ namespace AThousandDawns.Enemies
 
         protected override List<Vector2> TelegraphShape() => _pattern switch
         {
-            Pattern.Slash => TelegraphShapes.Lunge(_slashRadius, _slashAngle, 0f),
+            Pattern.Slash => TelegraphShapes.Rect(_thrustWidth, ThrustReach),
             Pattern.Waves => TelegraphShapes.Lunge(2f, _waveSpread * (WaveCount - 1) + 20f, 0f),
             Pattern.Flow => TelegraphShapes.Rect(0.8f, ToPlayer().magnitude),
             Pattern.Whirl => TelegraphShapes.Circle(_whirlRadius),
@@ -163,6 +164,9 @@ namespace AThousandDawns.Enemies
 
         int WaveCount => Phase == 1 ? _waveCount : _waveCount2;
 
+        // 물살 찌르기 길이: 몸 앞에서 thrust_length칸 (판정·예고는 몸 가운데부터 재요)
+        float ThrustReach => BodyRadius + _thrustLength;
+
         // ── 판정
 
         protected override void OnActiveStarted()
@@ -170,9 +174,10 @@ namespace AThousandDawns.Enemies
             _activeTimer = 0f;
             switch (_pattern)
             {
-                case Pattern.Slash:
-                    if (SwingHit(transform.position, AimDirection, _slashRadius, _slashAngle))
-                        Player.TryReceiveHit(AttackPower * _slashRatio, transform.position, HitKnockback, Body);
+                case Pattern.Slash: // 물살 찌르기: 앞 직선, 맞으면 뒤로 밀려나요 (Swung 대신 Thrust 신호)
+                    Thrusted(ThrustReach, _thrustWidth);
+                    if (HitShapes.InRect(transform.position, AimDirection, ThrustReach, _thrustWidth, Player.transform.position, PlayerRadius))
+                        Player.TryReceiveHit(AttackPower * _slashRatio, transform.position, _thrustPush, Body);
                     break;
                 case Pattern.Waves:
                     int n = WaveCount;

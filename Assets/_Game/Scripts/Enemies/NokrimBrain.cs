@@ -7,12 +7,22 @@ namespace AThousandDawns.Enemies
 {
     // 녹림왕 (죽림 보스, 몬스터 시트 고수·보스 패턴). 경직·넉백 없음. 거리에 따라 패턴을 고르고 같은 패턴은 연속 2번까지.
     // 1페이즈: 대도 휘두르기(가까울 때) · 돌진 → 내려찍기(멀 때) · 부하 부르기(20초마다, 부하가 다 쓰러졌을 때만, 페이즈마다 2번).
-    // 체력 50%: 1.5초 전환(무적) → 2페이즈: 불타는 죽림 + 회전베기 3연속, 휘두르기·돌진이 빨라지고 부하 부르기 없음.
+    // 체력 50%: 1.5초 전환(무적) → 2페이즈: 불타는 대나무 (6초마다 플레이어 근처에 불붙은 대나무 3그루가 나란히 쓰러지고 잠시 불이 남아요, 공격과 따로),
+    //   휘두르기·돌진이 빨라지고 부하 부르기 없음.
     public sealed class NokrimBrain : EnemyBrain, IMasterBrain // 보스 칸(PrototypeArena.Boss)은 IMasterBrain으로 다뤄요
     {
-        public override string AttackName => _pattern switch { Pattern.Sweep => "대도 휘두르기", Pattern.Charge => "돌진", Pattern.Spin => "회전베기", _ => null };
+        public override string AttackName => _pattern switch { Pattern.Sweep => "대도 휘두르기", Pattern.Charge => "돌진", _ => null };
 
-        enum Pattern { None, Sweep, Charge, Summon, Spin }
+        enum Pattern { None, Sweep, Charge, Summon }
+
+        struct Bamboo // 불타는 대나무 한 그루: 쓰러지기 전 예고 → 쓰러지며 판정 → 잠시 불길
+        {
+            public Vector3 Center, Dir;
+            public float Length, Timer, Fire, Tick;
+            public bool Fallen;
+            public Telegraph Marker;
+            public GameObject Flame;
+        }
 
         const float ProbeHeight = 0.8f;
         const float MaxChargeStep = 0.25f;
@@ -25,26 +35,28 @@ namespace AThousandDawns.Enemies
         float _slamRecovery, _slamRatio, _slamRadius;
         float _summonWindup, _summonRecovery, _summonInterval;
         int _summonCount, _summonMaxPerPhase;
-        float _spinWindup, _spinRecovery, _spinRatio, _spinRadius, _spinInterval, _spinMoveSpeed;
-        int _spinCount;
-        float _fireWindup, _fireBand, _fireShrinkInterval, _fireShrinkStep, _fireTick;
-        Vector2 _fireMinSafe;
+        float _bambooInterval, _bambooFirst, _bambooLength, _bambooWidth, _bambooGap, _bambooFall, _bambooRatio;
+        float _bambooFire, _bambooFireRatio, _bambooFireTick;
+        int _bambooCount;
 
         Vector3 _zoneCenter;
         Vector2 _zoneSize;
         bool _hasZone;
 
         Pattern _pattern, _lastPattern;
-        int _repeat, _summonsThisPhase, _spinsDone;
-        float _decisionTimer, _transitionTimer, _summonCooldown;
-        float _lungeRemaining, _traveled, _plannedLength, _spinElapsed;
+        int _repeat, _summonsThisPhase;
+        float _decisionTimer, _transitionTimer, _summonCooldown, _bambooTimer;
+        float _lungeRemaining, _traveled, _plannedLength;
         Vector3 _slamPoint; // 내려찍기 원 자리 (돌진이 끝나는 곳, 월드 좌표)
         const float FootstepLength = 2f; // 돌진 발소리 간격 (칸)
         float _nextFootstep; // 다음 발소리가 날 돌진 거리
         bool _hitPlayer;
-        readonly float[] _banTimers = new float[5]; // 패턴마다 다시 나오지 않는 남은 시간 (설련 향낭)
+        readonly float[] _banTimers = new float[4]; // 패턴마다 다시 나오지 않는 남은 시간 (설련 향낭)
         readonly List<EnemyBrain> _minions = new List<EnemyBrain>();
-        BurningGrove _grove;
+        readonly List<Bamboo> _bamboos = new List<Bamboo>();
+
+        // 불타는 대나무 신호 (아트): 가운데 · 줄기 방향 · 길이 · 폭 · 쓰러질 때까지 시간. 예고가 뜰 때 한 번.
+        public static event System.Action<NokrimBrain, Vector3, Vector3, float, float, float> BambooFall;
 
         public override EnemyKind Kind => EnemyKind.Nokrim;
         protected override string Key => "nokrim";
@@ -53,7 +65,7 @@ namespace AThousandDawns.Enemies
         protected override bool IsBoss => true;
         public override EnemyRank Rank => EnemyRank.Boss;
         protected override bool FreezeBlocked => IsTransitioning; // 페이즈 전환 연출 중에는 빙결이 안 걸림
-        protected override bool RadialTelegraph => _pattern == Pattern.Summon || _pattern == Pattern.Spin;
+        protected override bool RadialTelegraph => _pattern == Pattern.Summon;
         protected override float DeathDelay => 1f;
         protected override float TrackStopDistance => _pattern == Pattern.Charge ? _farDistance : _sweepRadius * 0.6f;
 
@@ -61,16 +73,17 @@ namespace AThousandDawns.Enemies
         {
             Pattern.Sweep => _sweepLungeTime,
             Pattern.Charge => float.PositiveInfinity, // 돌진이 끝나면 내려찍고 EndActive
-            Pattern.Spin => (_spinCount - 1) * _spinInterval + 0.05f,
             _ => 0.1f,
         };
 
         public int Phase { get; private set; } = 1;
         public bool IsTransitioning => _transitionTimer > 0f;
-        public BurningGrove Grove => _grove;
+        public BurningGrove Grove => null; // 불타는 죽림은 없어졌어요 (불타는 대나무로). HUD가 아직 읽어서 남겨 둬요
+        public int BambooDropped { get; private set; } // 지금까지 쓰러뜨린 대나무 수 (테스트용)
+        public int BambooBurning => _bamboos.Count; // 예고 중이거나 불타는 대나무 수
         float SlamRecovery => Phase == 1 ? _slamRecovery : _p2SlamRecovery;
 
-        // 결투장 (불타는 죽림의 범위, 깨어나는 조건). 안 정하면 나온 자리를 가운데로 해요.
+        // 결투장 (불타는 대나무 길이, 깨어나는 조건). 안 정하면 나온 자리를 가운데로 해요.
         public void SetZone(Vector3 center, Vector2 size)
         {
             _zoneCenter = new Vector3(center.x, 0f, center.z);
@@ -114,20 +127,17 @@ namespace AThousandDawns.Enemies
             _summonInterval = Tuning("summon_interval", 20f);
             _summonMaxPerPhase = Mathf.RoundToInt(Tuning("summon_max_per_phase", 2f));
 
-            _spinWindup = Tuning("spin_windup", 0.8f);
-            _spinRecovery = Tuning("spin_recovery", 1.5f);
-            _spinRatio = Tuning("spin_ratio", 0.6f);
-            _spinRadius = Tuning("spin_radius", 2.5f);
-            _spinCount = Mathf.Max(1, Mathf.RoundToInt(Tuning("spin_count", 3f)));
-            _spinInterval = Tuning("spin_interval", 0.65f);
-            _spinMoveSpeed = Tuning("spin_move_speed", 2.5f);
-
-            _fireWindup = Tuning("fire_windup", 2f);
-            _fireBand = Tuning("fire_band", 2f);
-            _fireShrinkInterval = Mathf.Max(1f, Tuning("fire_shrink_interval", 20f));
-            _fireShrinkStep = Tuning("fire_shrink_step", 1f);
-            _fireMinSafe = new Vector2(Tuning("fire_min_width", 10f), Tuning("fire_min_depth", 6f));
-            _fireTick = Tuning("fire_tick", 0.5f);
+            _bambooInterval = Mathf.Max(0.5f, Tuning("p2_bamboo_interval", 6f));
+            _bambooFirst = Tuning("p2_bamboo_first", 1f);
+            _bambooCount = Mathf.Max(1, Mathf.RoundToInt(Tuning("p2_bamboo_count", 3f)));
+            _bambooLength = Tuning("p2_bamboo_length", 14f);
+            _bambooWidth = Tuning("p2_bamboo_width", 1.2f);
+            _bambooGap = Tuning("p2_bamboo_gap", 3.5f);
+            _bambooFall = Mathf.Max(0.05f, Tuning("p2_bamboo_fall", 1.2f));
+            _bambooRatio = Tuning("p2_bamboo_ratio", 1f);
+            _bambooFire = Tuning("p2_bamboo_fire", 2f);
+            _bambooFireRatio = Tuning("p2_bamboo_fire_ratio", 0.2f);
+            _bambooFireTick = Mathf.Max(0.05f, Tuning("p2_bamboo_fire_tick", 0.5f));
         }
 
         protected override void OnInitialized()
@@ -174,10 +184,6 @@ namespace AThousandDawns.Enemies
                     WindupTime = _summonWindup;
                     RecoveryTime = _summonRecovery;
                     break;
-                case Pattern.Spin:
-                    WindupTime = _spinWindup;
-                    RecoveryTime = _spinRecovery;
-                    break;
             }
             return true;
         }
@@ -187,18 +193,16 @@ namespace AThousandDawns.Enemies
             if (Phase == 1 && !Banned(Pattern.Summon) && SummonReady()) return Pattern.Summon;
 
             Pattern want;
-            if (distance <= _closeDistance) want = Phase == 2 && Random.value < 0.5f ? Pattern.Spin : Pattern.Sweep;
+            if (distance <= _closeDistance) want = Pattern.Sweep;
             else if (distance >= _farDistance) want = Pattern.Charge;
             else return Pattern.None; // 중간 거리면 다가가요
 
             if (want == _lastPattern && _repeat >= _maxRepeat)
             {
                 if (want == Pattern.Charge) return Pattern.None; // 다가가서 다른 패턴으로
-                want = Phase == 2 ? (want == Pattern.Spin ? Pattern.Sweep : Pattern.Spin) : Pattern.Charge;
+                want = Pattern.Charge;
             }
-            // 봉인된 패턴이면 2페이즈 근접은 다른 근접 패턴으로, 아니면 잠시 다가가기만
-            if (Banned(want) && Phase == 2 && want != Pattern.Charge) want = want == Pattern.Spin ? Pattern.Sweep : Pattern.Spin;
-            return Banned(want) ? Pattern.None : want;
+            return Banned(want) ? Pattern.None : want; // 봉인된 패턴이면 잠시 다가가기만
         }
 
         bool SummonReady()
@@ -236,8 +240,6 @@ namespace AThousandDawns.Enemies
                 case Pattern.Charge:
                     _plannedLength = PlannedCharge();
                     return TelegraphShapes.Rect(_chargeWidth, _plannedLength + _chargeWidth * 0.5f);
-                case Pattern.Spin:
-                    return TelegraphShapes.Circle(_spinRadius);
                 default:
                     return TelegraphShapes.Circle(1.5f);
             }
@@ -286,11 +288,6 @@ namespace AThousandDawns.Enemies
                     _summonsThisPhase++;
                     _summonCooldown = _summonInterval;
                     break;
-                case Pattern.Spin:
-                    _spinElapsed = 0f;
-                    _spinsDone = 0;
-                    Spin();
-                    break;
             }
         }
 
@@ -314,15 +311,6 @@ namespace AThousandDawns.Enemies
                 case Pattern.Charge:
                     TickCharge(dt);
                     break;
-                case Pattern.Spin:
-                {
-                    // 돌면서 초당 2.5칸으로 다가와요
-                    Vector3 to = ToPlayer();
-                    if (to.magnitude > BodyRadius + PlayerRadius + 0.2f) Move(to.normalized * _spinMoveSpeed, dt);
-                    _spinElapsed += dt;
-                    while (_spinsDone < _spinCount && _spinElapsed >= _spinsDone * _spinInterval) Spin();
-                    break;
-                }
             }
         }
 
@@ -358,13 +346,6 @@ namespace AThousandDawns.Enemies
             Director.SpawnBurst(transform.position, _slamRadius, AThousandDawns.Combat.BurstKind.Slam);
             if (ToPlayer().magnitude <= _slamRadius + PlayerRadius) HitPlayer(_slamRatio);
             Attack.EndActive(SlamRecovery);
-        }
-
-        void Spin()
-        {
-            _spinsDone++;
-            Director.SpawnBurst(transform.position, _spinRadius, AThousandDawns.Combat.BurstKind.Spin);
-            if (ToPlayer().magnitude <= _spinRadius + PlayerRadius) HitPlayer(_spinRatio);
         }
 
         void CheckSweepHit()
@@ -420,6 +401,17 @@ namespace AThousandDawns.Enemies
                 _transitionTimer -= dt;
                 if (_transitionTimer <= 0f) EnterPhase2();
             }
+            if (Phase == 2 && !IsTransitioning)
+            {
+                // 불타는 대나무: 공격과 따로 도는 타이머 (빙결 중에도)
+                _bambooTimer -= dt;
+                if (_bambooTimer <= 0f)
+                {
+                    _bambooTimer = _bambooInterval;
+                    DropBamboo();
+                }
+            }
+            TickBamboo(dt);
         }
 
         void EnterPhase2()
@@ -428,16 +420,116 @@ namespace AThousandDawns.Enemies
             Body.Targetable = true;
             _decisionTimer = _decisionPause;
             _repeat = 0;
+            _bambooTimer = _bambooFirst;
+        }
+
+        // ── 불타는 대나무: 플레이어를 지나는 줄 하나 + 양옆 gap만큼 떨어진 줄, 가로 또는 세로로 나란히 쓰러져요
+
+        void DropBamboo()
+        {
+            bool across = Random.value < 0.5f; // 가로(x축)로 눕거나 세로(z축)로 눕거나
+            Vector3 dir = across ? Vector3.right : Vector3.forward;
+            Vector3 side = across ? Vector3.forward : Vector3.right;
+            float length = _hasZone ? (across ? _zoneSize.x : _zoneSize.y) : _bambooLength; // 결투장 끝에서 끝까지
+            Vector3 p = Player.transform.position;
+            // 줄기 방향으로는 결투장 가운데, 옆으로는 플레이어 자리
+            Vector3 baseCenter = across ? new Vector3(_zoneCenter.x, 0f, p.z) : new Vector3(p.x, 0f, _zoneCenter.z);
             var visuals = Director.Visuals;
-            float burnPerStack = GameConfig.Get("player_burn.damage", 2f); // 플레이어 화상 1중첩 초당 피해 (상태이상 탭, 죽림 지역 배율 1)
-            _grove = BurningGrove.Create(_zoneCenter, _zoneSize, _fireBand, _fireWindup, _fireShrinkInterval, _fireShrinkStep,
-                _fireMinSafe, _fireTick, burnPerStack, Player, visuals.telegraphFill, visuals.fire);
+            for (int i = 0; i < _bambooCount; i++)
+            {
+                int k = (i + 1) / 2 * (i % 2 == 1 ? 1 : -1); // 0, +1, -1, +2, -2 …
+                Vector3 center = baseCenter + side * (k * _bambooGap);
+                var marker = Telegraph.Create(null, visuals.telegraphBase, visuals.telegraphFill, visuals.telegraphOutline);
+                marker.Show(TelegraphShapes.Rect(_bambooWidth, length));
+                marker.SetPose(center - dir * (length * 0.5f), dir);
+                marker.SetProgress(0f);
+                _bamboos.Add(new Bamboo { Center = center, Dir = dir, Length = length, Timer = _bambooFall, Marker = marker });
+                BambooDropped++;
+                BambooFall?.Invoke(this, center, dir, length, _bambooWidth, _bambooFall);
+            }
+        }
+
+        void TickBamboo(float dt)
+        {
+            for (int i = _bamboos.Count - 1; i >= 0; i--)
+            {
+                var b = _bamboos[i];
+                if (!b.Fallen)
+                {
+                    b.Timer -= dt;
+                    if (b.Marker != null) b.Marker.SetProgress(1f - Mathf.Clamp01(b.Timer / _bambooFall));
+                    if (b.Timer <= 0f)
+                    {
+                        // 쓰러지며 한 번 맞고, 그 자리에 불이 남아요
+                        b.Fallen = true;
+                        if (b.Marker != null) Destroy(b.Marker.gameObject);
+                        b.Marker = null;
+                        if (InBamboo(b)) HitPlayer(_bambooRatio);
+                        b.Fire = _bambooFire;
+                        b.Tick = _bambooFireTick;
+                        b.Flame = MakeFlame(b);
+                    }
+                }
+                else
+                {
+                    b.Fire -= dt;
+                    b.Tick -= dt;
+                    if (b.Tick <= 0f)
+                    {
+                        b.Tick += _bambooFireTick;
+                        if (InBamboo(b)) Player.TryReceiveHit(AttackPower * _bambooFireRatio, b.Center, 0f, Body); // 불길: 넉백 없음
+                    }
+                    if (b.Fire <= 0f)
+                    {
+                        if (b.Flame != null) Destroy(b.Flame);
+                        _bamboos.RemoveAt(i);
+                        continue;
+                    }
+                }
+                _bamboos[i] = b;
+            }
+        }
+
+        bool InBamboo(Bamboo b)
+        {
+            if (Player == null || Player.IsDead) return false;
+            Vector3 rel = Player.transform.position - b.Center;
+            rel.y = 0f;
+            float along = Mathf.Abs(Vector3.Dot(rel, b.Dir));
+            float side = Mathf.Abs(Vector3.Dot(rel, new Vector3(b.Dir.z, 0f, -b.Dir.x)));
+            return along <= b.Length * 0.5f + PlayerRadius && side <= _bambooWidth * 0.5f + PlayerRadius;
+        }
+
+        // 쓰러진 자리의 불길 (임시 그림: 납작한 불 띠, 아트가 BambooFall로 덮어요)
+        GameObject MakeFlame(Bamboo b)
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.name = "Burning Bamboo (불타는 대나무)";
+            EnemyFactory.StripCollider(go);
+            go.transform.SetPositionAndRotation(new Vector3(b.Center.x, 0.02f, b.Center.z), Quaternion.LookRotation(b.Dir));
+            go.transform.localScale = new Vector3(_bambooWidth, 0.02f, b.Length);
+            var renderer = go.GetComponent<Renderer>();
+            if (Director.Visuals.fire != null) renderer.sharedMaterial = Director.Visuals.fire;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            return go;
+        }
+
+        void ClearBamboo()
+        {
+            foreach (var b in _bamboos)
+            {
+                if (b.Marker != null) Destroy(b.Marker.gameObject);
+                if (b.Flame != null) Destroy(b.Flame);
+            }
+            _bamboos.Clear();
         }
 
         protected override void OnDied()
         {
             Sfx.Play(SfxId.BossDeath);
-            if (_grove != null) Destroy(_grove.gameObject);
+            ClearBamboo();
         }
+
+        void OnDisable() => ClearBamboo(); // 방을 떠나 보스가 사라져도 불길이 남지 않게
     }
 }
