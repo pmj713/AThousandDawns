@@ -15,6 +15,7 @@ namespace AThousandDawns.EditorTools
             var paths = new[] { $"{OutsideArtFolder}/Ground_Bamboo.png", $"{OutsideArtFolder}/Ground_Temple.png", $"{OutsideArtFolder}/Ground_River.png", $"{OutsideArtFolder}/Ground_Tomb.png" }; // 죽림 · 폐사찰 · 장강 수채 · 천마총
             foreach (var p in paths) ImportAsTiledTexture(p);
             var textures = System.Array.ConvertAll(paths, p => AssetDatabase.LoadAssetAtPath<Texture2D>(p));
+            textures[0] = BambooGroundTexture();   // 죽림은 방 바닥과 같은 채색 땅 (입체 덤불·잎과 어울리게, PrototypeSceneBuilder.StylizedFoliage.cs)
 
             // 방들이 서로 멀리 떨어져 있으니 씬의 모든 것을 감싸는 범위로 (땅 높이는 바닥 재질을 쓰는 것 중 가장 낮은 윗면)
             var bounds = new Bounds();

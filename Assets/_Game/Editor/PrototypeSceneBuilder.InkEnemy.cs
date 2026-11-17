@@ -551,6 +551,11 @@ namespace AThousandDawns.EditorTools
                     m = GetInkMaterial($"Ink_{name}_{key}", "#FFFFFF", 0.6f);
                     m.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{folder}/{name}_Prop_{key}_Albedo.png"));
                     m.SetColor("_BaseColor", Color.white);
+                    // 작은 소품은 가장자리 먹·그림자·외곽선이 면을 다 덮어 검게만 보였어요 (나팔수 나팔): 채색 그대로, 테두리는 얇게
+                    FantasyLook(m);
+                    m.SetFloat("_RimInk", 0.12f);
+                    m.SetFloat("_ShadowInk", 0.25f);
+                    m.SetFloat("_OutlineWidth", 2f);
                     EditorUtility.SetDirty(m);
                 }
                 else if (r.name.Contains("_Red_")) m = red;

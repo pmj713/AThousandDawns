@@ -371,36 +371,50 @@ namespace AThousandDawns.EditorTools
             RoofMesh(gate, "Roof", new Vector3(0f, 3.55f, 0f), new Vector3(5f, 0.7f, 1.3f), true, roofX);
         }
 
-        // 무기 거치대: 나무 틀에 검 한 자루와 비도 몇 자루
+        // 무기 거치대: 붉은 칠 나무 틀·짙은 뒤판에 검 한 자루와 비도 셋, 금빛 장식과 붉은 술 (플레이 테스트: 잘 안 보였어요 → 1.5배, 밝은 강철·금빛 장식)
         static void BuildWeaponRack(Transform deco, Vector3 foot, Material wood, Material iron)
         {
+            wood = FantasyLook(GetInkMaterial("Ink_Rack_Lacquer", "#B0402A", 1f));
+            iron = FantasyLook(GetInkMaterial("Ink_Rack_Steel", "#DCE4F0", 1f));
+            iron.SetColor("_AuraColor", new Color(0.75f, 0.9f, 1f, 0.6f));   // 칼날 가장자리가 은은히 빛나요
+            var gold = FantasyLook(GetInkMaterial("Ink_Rack_Gold", "#F0C040", 1f));
+            var tassel = FantasyLook(GetInkMaterial("Ink_Rack_Tassel", "#E02828", 1f));
+            var dark = FantasyLook(GetInkMaterial("Ink_Rack_Grip", "#3A2418", 1f));
             var rack = new GameObject("Weapon Rack (무기 거치대)").transform;
             rack.SetParent(deco, false);
             rack.position = foot;
+            rack.localScale = Vector3.one * 1.5f;
             for (int s = -1; s <= 1; s += 2)
             {
-                Block(rack, "Upright", PrimitiveType.Cube, new Vector3(s * 0.75f, 0.65f, 0f), new Vector3(0.12f, 1.3f, 0.12f), Quaternion.identity, wood);
-                Block(rack, "Foot", PrimitiveType.Cube, new Vector3(s * 0.75f, 0.04f, 0f), new Vector3(0.14f, 0.08f, 0.5f), Quaternion.identity, wood);
+                Block(rack, "Upright", PrimitiveType.Cube, new Vector3(s * 0.75f, 0.7f, 0f), new Vector3(0.13f, 1.4f, 0.13f), Quaternion.identity, wood);
+                Block(rack, "Foot", PrimitiveType.Cube, new Vector3(s * 0.75f, 0.05f, 0f), new Vector3(0.16f, 0.1f, 0.55f), Quaternion.identity, wood);
+                Block(rack, "Cap", PrimitiveType.Sphere, new Vector3(s * 0.75f, 1.45f, 0f), Vector3.one * 0.13f, Quaternion.identity, gold);
+                // 기둥 위에 매단 붉은 술
+                Block(rack, "Tassel Knot", PrimitiveType.Sphere, new Vector3(s * 0.75f, 1.18f, -0.09f), Vector3.one * 0.07f, Quaternion.identity, gold);
+                Block(rack, "Tassel", PrimitiveType.Cylinder, new Vector3(s * 0.75f, 1.03f, -0.09f), new Vector3(0.06f, 0.12f, 0.06f), Quaternion.identity, tassel);
             }
-            Block(rack, "Bar_Top", PrimitiveType.Cube, new Vector3(0f, 1.2f, 0f), new Vector3(1.7f, 0.1f, 0.12f), Quaternion.identity, wood);
+            Block(rack, "Bar_Top", PrimitiveType.Cube, new Vector3(0f, 1.25f, 0f), new Vector3(1.75f, 0.11f, 0.13f), Quaternion.identity, wood);
+            Block(rack, "Bar_Top Trim", PrimitiveType.Cube, new Vector3(0f, 1.25f, -0.07f), new Vector3(1.4f, 0.04f, 0.01f), Quaternion.identity, gold);
             Block(rack, "Bar_Low", PrimitiveType.Cube, new Vector3(0f, 0.45f, 0f), new Vector3(1.6f, 0.08f, 0.1f), Quaternion.identity, wood);
-            // 검: 칼날·코등이·자루를 기울여 걸쳐요
+            Block(rack, "Board", PrimitiveType.Cube, new Vector3(0f, 0.85f, 0.08f), new Vector3(1.5f, 0.75f, 0.03f), Quaternion.identity, dark);   // 칼이 도드라지게 짙은 뒤판
+            // 검: 칼날·금빛 코등이·자루를 기울여 걸쳐요
             var sword = new GameObject("Sword").transform;
             sword.SetParent(rack, false);
             sword.localPosition = new Vector3(-0.3f, 0.1f, -0.1f);
             sword.localRotation = Quaternion.Euler(0f, 0f, 12f);
-            Block(sword, "Blade", PrimitiveType.Cube, new Vector3(0f, 0.6f, 0f), new Vector3(0.07f, 1.0f, 0.02f), Quaternion.identity, iron);
-            Block(sword, "Guard", PrimitiveType.Cube, new Vector3(0f, 1.12f, 0f), new Vector3(0.22f, 0.05f, 0.06f), Quaternion.identity, iron);
-            Block(sword, "Grip", PrimitiveType.Cube, new Vector3(0f, 1.3f, 0f), new Vector3(0.05f, 0.3f, 0.05f), Quaternion.identity, wood);
+            Block(sword, "Blade", PrimitiveType.Cube, new Vector3(0f, 0.6f, 0f), new Vector3(0.09f, 1.0f, 0.025f), Quaternion.identity, iron);
+            Block(sword, "Guard", PrimitiveType.Cube, new Vector3(0f, 1.12f, 0f), new Vector3(0.26f, 0.06f, 0.07f), Quaternion.identity, gold);
+            Block(sword, "Grip", PrimitiveType.Cube, new Vector3(0f, 1.3f, 0f), new Vector3(0.06f, 0.3f, 0.06f), Quaternion.identity, dark);
+            Block(sword, "Pommel Tassel", PrimitiveType.Cylinder, new Vector3(0.02f, 1.36f, -0.04f), new Vector3(0.05f, 0.1f, 0.05f), Quaternion.Euler(0f, 0f, -12f), tassel);
             // 비도: 짧은 칼 셋을 위 막대에 매달아요
             for (int i = 0; i < 3; i++)
             {
                 var dagger = new GameObject("Dagger").transform;
                 dagger.SetParent(rack, false);
-                dagger.localPosition = new Vector3(0.25f + i * 0.17f, 0.82f, -0.08f);
+                dagger.localPosition = new Vector3(0.25f + i * 0.17f, 0.86f, -0.08f);
                 dagger.localRotation = Quaternion.Euler(0f, 0f, 180f + (i - 1) * 6f);
-                Block(dagger, "Blade", PrimitiveType.Cube, new Vector3(0f, 0.12f, 0f), new Vector3(0.05f, 0.28f, 0.015f), Quaternion.identity, iron);
-                Block(dagger, "Ring", PrimitiveType.Cube, new Vector3(0f, -0.06f, 0f), new Vector3(0.06f, 0.1f, 0.03f), Quaternion.identity, wood);
+                Block(dagger, "Blade", PrimitiveType.Cube, new Vector3(0f, 0.12f, 0f), new Vector3(0.06f, 0.3f, 0.018f), Quaternion.identity, iron);
+                Block(dagger, "Ring", PrimitiveType.Cube, new Vector3(0f, -0.06f, 0f), new Vector3(0.07f, 0.1f, 0.03f), Quaternion.identity, gold);
             }
         }
 
