@@ -11,7 +11,9 @@ namespace AThousandDawns.Art
         [SerializeField] int fluffCount = 36;
         [SerializeField] Vector3 area = new Vector3(26f, 5f, 18f);
 
-        static readonly Color MistColor = new Color(0.5f, 0.82f, 0.95f, 0.3f);   // 맑은 물빛 안개
+        // 플레이 테스트 3차: 안개가 이상했어요 — 진한 하늘색 조각이 물웅덩이처럼 보였고, 화면 끝에서 갑자기 나타나고 사라졌어요.
+        //   → 옅은 흰 물빛으로 더 크고 엷게, 나타날 때·사라질 때 천천히 흐려져요 (가운데에서 멀수록 옅게)
+        static readonly Color MistColor = new Color(0.86f, 0.93f, 0.97f, 0.16f);   // 옅은 흰 물빛 안개
         static readonly Color FluffColor = new Color(0.97f, 0.95f, 0.88f, 0.9f);   // 갈대 솜
 
         Transform[] _mist, _fluff;
@@ -36,7 +38,7 @@ namespace AThousandDawns.Art
                 var go = new GameObject("River Mist");
                 go.transform.SetParent(transform, false);
                 go.transform.rotation = Quaternion.Euler(90f, Random.Range(0f, 360f), 0f); // 바닥에 눕혀요
-                float w = Random.Range(5f, 9f);
+                float w = Random.Range(8f, 13f);
                 go.transform.localScale = new Vector3(w, w * Random.Range(0.4f, 0.6f), 1f) / Mathf.Max(0.01f, mist.bounds.size.x);
                 var sr = go.AddComponent<SpriteRenderer>();
                 sr.sprite = mist;
@@ -88,8 +90,11 @@ namespace AThousandDawns.Art
                 var m = _mist[i];
                 m.position += _mistVel[i] * dt;
                 m.Rotate(0f, 0f, 3f * dt, Space.Self);
-                _mistSr[i].color = new Color(MistColor.r, MistColor.g, MistColor.b, MistColor.a * (0.75f + 0.25f * Mathf.Sin(time * 0.5f + i)));
-                if (Mathf.Abs(m.position.x - c.x) > area.x * 0.6f || Mathf.Abs(m.position.z - c.z) > area.z * 0.6f) Place(m, Random.Range(0.15f, 0.45f), false);
+                // 가장자리로 갈수록 옅어져서, 밖으로 나가 다시 놓일 때 갑자기 나타나거나 사라지지 않아요
+                float edge = Mathf.Max(Mathf.Abs(m.position.x - c.x) / (area.x * 0.6f), Mathf.Abs(m.position.z - c.z) / (area.z * 0.6f));
+                float fade = 1f - Mathf.SmoothStep(0.55f, 1f, edge);
+                _mistSr[i].color = new Color(MistColor.r, MistColor.g, MistColor.b, MistColor.a * fade * (0.75f + 0.25f * Mathf.Sin(time * 0.5f + i)));
+                if (edge > 1f) Place(m, Random.Range(0.15f, 0.45f), false);
             }
             for (int i = 0; i < _fluff.Length; i++)
             {

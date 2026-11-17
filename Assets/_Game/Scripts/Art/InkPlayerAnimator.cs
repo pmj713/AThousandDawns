@@ -156,11 +156,11 @@ namespace AThousandDawns.Art
             _animator.SetFloat(SpeedId, speed);
         }
 
-        // 0 = 1타(세로) · 1 = 2타(가로) · 2 = 3타(넓은 가로). 검보 조각의 4타째는 1타 동작을 다시 써요
+        // 0 = 1타(세로) · 1 = 2타(가로) · 2 = 3타(넓은 가로). 검보 조각의 4타째는 가로베기(2타 동작)로 (플레이 테스트 3차: 세로베기가 어색했어요)
         void OnSwingStarted(int index)
         {
             _animator.ResetTrigger(DashId);
-            _animator.SetInteger(ComboId, index % 3 + 1);
+            _animator.SetInteger(ComboId, index == 3 ? 2 : index % 3 + 1);
             _animator.SetTrigger(AttackId);
         }
     }

@@ -447,7 +447,10 @@ namespace AThousandDawns.Art
             if (_anchorAway > 0f)
             {
                 _anchorAway -= Time.deltaTime;
-                if (_anchorAway <= 0f || _brain.IsDead) { _anchorAway = 0f; SetPropVisible(_thrownProp, true); }
+                // 플레이 테스트 3차: 정해 둔 3.2초가 끝나도 닻이 아직 땅에 꽂혀 있으면 손에 다시 보였어요 → 꽂힌 닻(AnchorBrain 기둥)이 남아 있는 동안은 계속 감춰요
+                bool planted = _thrownProp == "_Weapon_anchor" && AnchorBrain.PostCount > 0;
+                if ((_anchorAway <= 0f && !planted) || _brain.IsDead) { _anchorAway = 0f; SetPropVisible(_thrownProp, true); }
+                else if (_anchorAway <= 0f) _anchorAway = 0.05f;
             }
             // 수귀: 붙잡아 끌고 가는 동안 뒷걸음질 (끝나면 대기로)
             if (_waterGhost != null && _waterGhost.Dragging != _dragging)

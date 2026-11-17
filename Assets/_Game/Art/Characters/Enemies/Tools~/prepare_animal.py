@@ -425,11 +425,16 @@ elif KIND == "snake":
             aim_to(n, joints[i + 1])
 
     def idle_pose(t):
-        slither(t, 0.025 * LENGTH, 0.55 * LENGTH, 0.03)                     # 숨 쉬듯 살짝
+        # 플레이 테스트 3차: 청죽사가 더는 덤불에 숨지 않아요 → 바닥에 납작 엎드린 대기 대신, 앞몸을 들어 고개를 세운 경계 자세로 좌우를 살펴요
+        slither(t, 0.025 * LENGTH, 0.55 * LENGTH, 0.03)
+        look = math.sin(2 * math.pi * t)
+        turn("Seg8", X, -16); turn("Seg9", X, -24); turn("Seg10", X, -18); turn("Seg11", X, 26)   # 앞몸을 들고 머리는 앞을 봐요
+        turn("Seg10", Z, 10 * look); turn("Seg11", Z, 8 * look)
     make_action("Idle", [(f, f / 40) for f in range(0, 41, 4)], idle_pose)
 
     def run_pose(t):
         slither(t, 0.08 * LENGTH, 0.55 * LENGTH, 0.025)                     # 크게 S자로 기어요
+        turn("Seg9", X, -12); turn("Seg10", X, -12); turn("Seg11", X, 16)  # 기어가면서도 고개를 들어요
     make_action("Run", [(f, f / 20) for f in range(0, 21, 2)], run_pose)
 
     def ready_pose(_):

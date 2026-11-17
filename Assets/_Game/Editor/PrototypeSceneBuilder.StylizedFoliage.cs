@@ -39,7 +39,11 @@ namespace AThousandDawns.EditorTools
         static Material LeafMaterial()
         {
             LeafPaintTexture();
-            return StalkStyle(GetInkTriplanar("Ink3D_BambooLeafPaint", "Tex_LeafPaint", 0.5f, 0f), 0.3f, 0f);   // 가는 잎은 외곽선 없이
+            var m = StalkStyle(GetInkTriplanar("Ink3D_BambooLeafPaint", "Tex_LeafPaint", 0.5f, 0f), 0.3f, 0f);   // 가는 잎은 외곽선 없이
+            // 플레이 테스트 3차: 그래도 움직일 때마다 깜빡였어요 — 줄기·다른 잎 그림자 경계가 카메라를 따라 얇은 잎 위를 오가요. 잎은 그림자를 받지 않아요
+            m.SetFloat("_ShadowReceive", 0f);
+            EditorUtility.SetDirty(m);
+            return m;
         }
 
         static Material BushMaterial()
