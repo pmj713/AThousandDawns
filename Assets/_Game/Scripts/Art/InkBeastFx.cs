@@ -228,8 +228,10 @@ namespace AThousandDawns.Art
                         if (s.puff <= 0f)
                         {
                             s.puff = 0.14f;
-                            Vector2 r = UnityEngine.Random.insideUnitCircle * 0.4f;
-                            InkParticles.Burst(p + new Vector3(r.x, 0.6f, r.y), 2, new Color(1f, 0.25f, 0.15f, 0.7f), new Color(0.5f, 0.05f, 0.05f, 0f), 0.4f, 0.4f, 0.8f, -1.2f);
+                            Vector2 r = UnityEngine.Random.insideUnitCircle;
+                            var c = BodyCenter(e, out float half); // 몸 한가운데 높이에서 몸통 둘레로
+                            r *= Mathf.Max(0.35f, half * 0.6f);
+                            InkParticles.Burst(c + new Vector3(r.x, UnityEngine.Random.Range(-half, half) * 0.6f, r.y), 2, new Color(1f, 0.25f, 0.15f, 0.7f), new Color(0.5f, 0.05f, 0.05f, 0f), 0.4f, 0.45f, 0.8f, -1.2f);
                         }
                     }
                 }
@@ -264,11 +266,33 @@ namespace AThousandDawns.Art
             }
         }
 
+        // 몸 한가운데 (모델 렌더러 범위로, 적마다 처음 한 번만 재요) · half = 몸 높이의 반
+        readonly Dictionary<EnemyBrain, (Vector3 offset, float half)> _centers = new Dictionary<EnemyBrain, (Vector3, float)>();
+        Vector3 BodyCenter(EnemyBrain e, out float half)
+        {
+            if (!_centers.TryGetValue(e, out var c))
+            {
+                c = (Vector3.up * e.Height * 0.5f, e.Height * 0.5f);
+                Bounds b = default;
+                bool any = false;
+                foreach (var r in e.GetComponentsInChildren<Renderer>())
+                {
+                    if (r is ParticleSystemRenderer || r is LineRenderer || r is TrailRenderer || r is SpriteRenderer) continue;
+                    if (!any) { b = r.bounds; any = true; } else b.Encapsulate(r.bounds);
+                }
+                if (any) c = (b.center - e.transform.position, Mathf.Clamp(b.extents.y, 0.4f, 2f));
+                if (_centers.Count > 64) _centers.Clear();
+                _centers[e] = c;
+            }
+            half = c.half;
+            return e.transform.position + c.offset;
+        }
+
         static void OnEnraged(WerewolfBrain w) // 포효: 붉은 김이 터져요
         {
             if (w == null) return;
             var p = w.transform.position;
-            InkParticles.Burst(p + Vector3.up * 1.2f, 22, new Color(1f, 0.4f, 0.3f, 0.9f), new Color(0.6f, 0.08f, 0.06f, 0f), 2.4f, 0.6f, 0.8f, -0.8f);
+            InkParticles.Burst(Host().BodyCenter(w, out _), 22, new Color(1f, 0.4f, 0.3f, 0.9f), new Color(0.6f, 0.08f, 0.06f, 0f), 2.4f, 0.6f, 0.8f, -0.8f);
             Host().Ring(_ring, p, 3f, 0.4f, new Color(1f, 0.2f, 0.12f, 1f), 0.03f);
         }
 
