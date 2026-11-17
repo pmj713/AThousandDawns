@@ -47,8 +47,7 @@ namespace AThousandDawns.Art
             _scan -= dt;
             if (_scan <= 0f) { _scan = 0.12f; DressPatches(); }
             TickGrove(dt);
-            for (int i = _live.Count - 1; i >= 0; i--)
-                if (!_live[i](dt)) _live.RemoveAt(i);
+            InkRoomReset.Tick(_live, dt); // 방 꾸밈이라 방을 옮겨도 지우지 않아요
         }
 
         // ── 화염 · 열화 장판

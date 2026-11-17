@@ -38,8 +38,7 @@ namespace AThousandDawns.Art
                 foreach (var root in InkRootWatch.New(_roots))
                     if (root.name == Name) Dress(root);
             }
-            for (int i = _live.Count - 1; i >= 0; i--)
-                if (!_live[i](dt)) _live.RemoveAt(i);
+            InkRoomReset.Tick(_live, dt); // 방 꾸밈이라 방을 옮겨도 지우지 않아요
         }
 
         void Dress(GameObject wall)

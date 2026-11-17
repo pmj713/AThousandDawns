@@ -103,8 +103,7 @@ namespace AThousandDawns.Art
                 if (_player == null) _player = FindAnyObjectByType<PlayerController>();
                 if (_director == null) _director = FindAnyObjectByType<EnemyDirector>();
             }
-            for (int i = _live.Count - 1; i >= 0; i--)
-                if (!_live[i](dt)) _live.RemoveAt(i);
+            InkRoomReset.Tick(_live, dt, transform); // 방을 옮기면 제 밑의 연출을 지워요
         }
 
         static Vector3 Flat(Vector3 v) { v.y = 0f; return v.sqrMagnitude > 1e-4f ? v.normalized : Vector3.forward; }

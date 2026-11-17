@@ -69,8 +69,7 @@ namespace AThousandDawns.Art
             _allyScan -= dt;
             if (_allyScan <= 0f) { _allyScan = 0.5f; ScanAllies(); }
             TickAllies(dt);
-            for (int i = _live.Count - 1; i >= 0; i--)
-                if (!_live[i](dt)) _live.RemoveAt(i);
+            InkRoomReset.Tick(_live, dt, transform); // 방을 옮기면 제 밑의 연출을 지워요
         }
 
         static bool Fantasy(EnemyBrain e) => e != null && e.Faction == EnemyFaction.Fantasy;

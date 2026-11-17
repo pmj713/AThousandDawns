@@ -72,8 +72,7 @@ namespace AThousandDawns.Art
             _scan -= dt;
             if (_scan <= 0f) { _scan = 0.1f; DressCurses(); }
             TickHaste();
-            for (int i = _live.Count - 1; i >= 0; i--)
-                if (!_live[i](dt)) _live.RemoveAt(i);
+            InkRoomReset.Tick(_live, dt, transform); // 방을 옮기면 제 밑의 연출을 지워요
         }
 
         // ── 고블린 주술사 저주 장판

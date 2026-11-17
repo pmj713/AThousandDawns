@@ -68,8 +68,7 @@ namespace AThousandDawns.Art
                 if ((s.NextCrack -= dt) <= 0f) { s.NextCrack = UnityEngine.Random.Range(1.5f, 3f); Crack(s); }
                 if (s.Boss) { TickShafts(s); WatchBoss(s); }
             }
-            for (int i = _live.Count - 1; i >= 0; i--)
-                if (!_live[i](dt)) _live.RemoveAt(i);
+            InkRoomReset.Tick(_live, dt); // 방 꾸밈이라 방을 옮겨도 지우지 않아요
         }
 
         void FindRooms()
