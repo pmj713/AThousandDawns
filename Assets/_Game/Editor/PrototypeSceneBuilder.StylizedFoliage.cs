@@ -214,17 +214,36 @@ namespace AThousandDawns.EditorTools
             return SaveFoliageMesh(key, v, n, c, t);
         }
 
-        // 죽림 바닥 (지역 0): 붉은 흙에 자갈·풀이 빽빽한 사진풍 그림이 입체 채색 덤불·잎과 겉돌았어요.
-        //   밝은 황토빛 올리브 흙 바탕에 이끼 낀 넓은 얼룩·짙은 흙 얼룩을 납작한 색 띠로 (셀 명암처럼), 마른 대나무 잎과 작은 돌을 드문드문.
-        //   이어 붙여도 이음매가 없게 격자 잡음을 감아 돌려요. 한 번 만들어 두면 그대로 써요 (지우면 다시 만들어요)
+        // 채색 땅 그림 (입체 채색 덤불·잎과 어울리게, 사진풍 흙 그림 대신): 바탕 + 넓은 얼룩(높은 곳 두 단 · 낮은 곳 한 단)을 납작한 색 띠로 (셀 명암처럼),
+        //   그 위에 가늘고 긴 조각(마른 잎·솔잎·뼛조각)과 작은 돌, 둥근 웅덩이·얼룩을 드문드문. 격자 잡음을 감아 돌려 이음매 없이 이어져요.
+        //   한 번 만들어 두면 그대로 써요 (파일을 지우면 다시 만들어요)
+        //   죽림(지역 0): 밝은 황토빛 올리브 흙 · 이끼 얼룩 · 마른 대나무 잎
+        //   폐사찰 바깥(1): 잿빛 베이지 흙 · 이끼 얼룩 · 떨어진 솔잎 · 돌 조각
+        //   장강(2): 젖은 모래 강변 · 짙은 젖은 흙 · 하늘빛 물웅덩이 · 갈대 잎 · 조약돌 (방 바닥과 바깥 땅)
+        //   천마총 바깥(3): 잿빛 자주 재 땅 · 검붉은 핏자국 얼룩 · 흰 뼛조각
         const string BambooGroundPath = "Assets/_Game/Art/Env/BurningBamboo/Floor_BambooGrove.png";
+        const string StylizedGroundFolder = "Assets/_Game/Art/Env/Outside";
 
-        static Texture2D BambooGroundTexture()
+        static Texture2D BambooGroundTexture() => StylizedGround(BambooGroundPath, 4242, "#CDB47C", "#93AE58", "#A9C46A", "#A88E5E",
+            new[] { ("#D2B460", 49, 9f, 14f, 1.8f, 2.6f), ("#A8BE5A", 21, 9f, 14f, 1.8f, 2.6f) }, 36, "#9E978A", "#C2BCAE", null);
+
+        static Texture2D TempleGroundTexture() => StylizedGround($"{StylizedGroundFolder}/Ground_TempleColor.png", 5151, "#B8AA8E", "#8FA05E", "#A3B370", "#968872",
+            new[] { ("#4F6B3A", 90, 5f, 8f, 0.9f, 1.3f), ("#7C8A55", 40, 5f, 8f, 0.9f, 1.3f) }, 55, "#8E8A82", "#B9B5AC", null);
+
+        static Texture2D RiverGroundTexture() => StylizedGround($"{StylizedGroundFolder}/Ground_RiverColor.png", 6262, "#BFB08C", "#8E8566", "#9D9575", "#A69A78",
+            new[] { ("#9AA25E", 40, 10f, 16f, 1.6f, 2.4f) }, 60, "#8C8C88", "#B8B8B2", new[] { ("#7FA9BF", 9, 16f, 30f), ("#9CC0D0", 6, 8f, 14f) });
+
+        static Texture2D TombGroundTexture() => StylizedGround($"{StylizedGroundFolder}/Ground_TombColor.png", 7373, "#5A5058", "#4A4249", "#433B42", "#6A5E64",
+            new[] { ("#D8D0C0", 45, 4f, 8f, 1.2f, 1.8f) }, 30, "#3E383C", "#6C6468", new[] { ("#6B1E1C", 10, 10f, 22f), ("#8A2A24", 6, 5f, 10f) });
+
+        static Texture2D StylizedGround(string path, int seed, string baseHex, string highHex, string highLightHex, string lowHex,
+            (string hex, int count, float lenMin, float lenMax, float widMin, float widMax)[] specks, int pebbles, string pebbleHex, string pebbleLightHex,
+            (string hex, int count, float rMin, float rMax)[] blobs)
         {
-            if (!System.IO.File.Exists(BambooGroundPath))
+            if (!System.IO.File.Exists(path))
             {
                 const int S = 512;
-                var rnd = new System.Random(4242);
+                var rnd = new System.Random(seed);
                 float R(float a, float b) => a + (float)rnd.NextDouble() * (b - a);
                 // 감아 도는 값 잡음 (칸 수가 S를 나눠야 이어져요)
                 float[] Grid(int cells) { var g = new float[cells * cells]; for (int i = 0; i < g.Length; i++) g[i] = (float)rnd.NextDouble(); return g; }
@@ -238,7 +257,7 @@ namespace AThousandDawns.EditorTools
                     return Mathf.Lerp(Mathf.Lerp(V(x0, y0), V(x0 + 1, y0), tx), Mathf.Lerp(V(x0, y0 + 1), V(x0 + 1, y0 + 1), tx), ty);
                 }
                 Color Hex(string h) { ColorUtility.TryParseHtmlString(h, out var c); return c; }
-                var baseCol = Hex("#CDB47C"); var moss = Hex("#93AE58"); var mossLight = Hex("#A9C46A"); var dirt = Hex("#A88E5E");
+                var baseCol = Hex(baseHex); var high = Hex(highHex); var highLight = Hex(highLightHex); var low = Hex(lowHex);
                 var px = new Color[S * S];
                 for (int y = 0; y < S; y++)
                     for (int x = 0; x < S; x++)
@@ -246,11 +265,11 @@ namespace AThousandDawns.EditorTools
                         float n = Sample(g1, 4, x, y) * 0.5f + Sample(g2, 8, x, y) * 0.3f + Sample(g3, 16, x, y) * 0.2f;
                         n = Mathf.Clamp01((n - 0.5f) * 2.4f + 0.5f);   // 잡음을 섞으면 가운데로 몰려요: 얼룩이 보이게 펴요
                         float fine = Sample(g4, 64, x, y);
-                        // 납작한 색 띠: 이끼(높음) · 바탕 · 짙은 흙(낮음), 경계는 좁게 부드럽게
+                        // 납작한 색 띠: 높은 곳 두 단 · 바탕 · 낮은 곳, 경계는 좁게 부드럽게
                         var c = baseCol;
-                        c = Color.Lerp(c, moss, Mathf.SmoothStep(0.56f, 0.6f, n));
-                        c = Color.Lerp(c, mossLight, Mathf.SmoothStep(0.68f, 0.71f, n));
-                        c = Color.Lerp(c, dirt, Mathf.SmoothStep(0.36f, 0.32f, n));
+                        c = Color.Lerp(c, high, Mathf.SmoothStep(0.56f, 0.6f, n));
+                        c = Color.Lerp(c, highLight, Mathf.SmoothStep(0.68f, 0.71f, n));
+                        c = Color.Lerp(c, low, Mathf.SmoothStep(0.36f, 0.32f, n));
                         c *= 0.96f + fine * 0.08f;
                         c.a = 1f;
                         px[y * S + x] = c;
@@ -269,29 +288,49 @@ namespace AThousandDawns.EditorTools
                             px[yy * S + xx] = Color.Lerp(px[yy * S + xx], col, Mathf.Clamp01((1f - d) * 4f));
                         }
                 }
-                // 마른 대나무 잎 (가늘고 긴 타원, 황토·연두) — 수는 적게
-                for (int k = 0; k < 70; k++)
-                {
-                    float cx = R(0f, S), cy = R(0f, S), rot = R(0f, Mathf.PI);
-                    var col = rnd.NextDouble() < 0.7 ? Hex("#D2B460") : Hex("#A8BE5A");
-                    Dot(cx, cy, R(9f, 14f), R(1.8f, 2.6f), rot, col);
-                }
-                // 작은 돌: 회색 동그라미 + 위쪽 밝은 점
-                for (int k = 0; k < 36; k++)
+                // 웅덩이·얼룩: 큰 둥근 덩이 두셋을 겹쳐 울퉁불퉁하게 (조각·돌보다 먼저 깔아요)
+                if (blobs != null)
+                    foreach (var (hex, count, rMin, rMax) in blobs)
+                        for (int k = 0; k < count; k++)
+                        {
+                            float cx = R(0f, S), cy = R(0f, S), r = R(rMin, rMax);
+                            for (int j = 0; j < 3; j++)
+                                Dot(cx + R(-r, r) * 0.6f, cy + R(-r, r) * 0.5f, r * R(0.7f, 1.1f), r * R(0.5f, 0.8f), R(0f, Mathf.PI), Hex(hex));
+                        }
+                // 가늘고 긴 조각 (잎·솔잎·뼛조각)
+                foreach (var (hex, count, lenMin, lenMax, widMin, widMax) in specks)
+                    for (int k = 0; k < count; k++)
+                        Dot(R(0f, S), R(0f, S), R(lenMin, lenMax), R(widMin, widMax), R(0f, Mathf.PI), Hex(hex));
+                // 작은 돌: 동그라미 + 위쪽 밝은 점
+                for (int k = 0; k < pebbles; k++)
                 {
                     float cx = R(0f, S), cy = R(0f, S), r = R(2.5f, 5f);
-                    Dot(cx, cy, r * 1.2f, r, R(0f, 3f), Hex("#9E978A"));
-                    Dot(cx - r * 0.25f, cy + r * 0.25f, r * 0.5f, r * 0.4f, 0f, Hex("#C2BCAE"));
+                    Dot(cx, cy, r * 1.2f, r, R(0f, 3f), Hex(pebbleHex));
+                    Dot(cx - r * 0.25f, cy + r * 0.25f, r * 0.5f, r * 0.4f, 0f, Hex(pebbleLightHex));
                 }
                 var tex = new Texture2D(S, S, TextureFormat.RGB24, false);
                 tex.SetPixels(px);
                 tex.Apply();
-                System.IO.File.WriteAllBytes(BambooGroundPath, tex.EncodeToPNG());
+                EnsureFolder(System.IO.Path.GetDirectoryName(path).Replace('\\', '/'));
+                System.IO.File.WriteAllBytes(path, tex.EncodeToPNG());
                 Object.DestroyImmediate(tex);
-                AssetDatabase.ImportAsset(BambooGroundPath);
+                AssetDatabase.ImportAsset(path);
             }
-            ImportAsTiledTexture(BambooGroundPath);
-            return AssetDatabase.LoadAssetAtPath<Texture2D>(BambooGroundPath);
+            ImportAsTiledTexture(path);
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        }
+
+        // 폐사찰 소나무 솔잎 층: 납작한 입체 덤불 덩어리에 짙은 청록 솔잎색 (예전 덤불 그림 카드 덩어리 대신)
+        static Material PineNeedleMaterial()
+        {
+            var m = FantasyLook(GetInkMaterial("Ink3D_PineNeedles", "#5E8C78", 1f));
+            m.SetColor("_BaseColor", new Color(0.37f, 0.55f, 0.47f, 1f));   // 덤불 초록(정점 색)에 곱해 짙은 청록 솔잎으로
+            m.SetFloat("_VertexTint", 1f);
+            m.SetFloat("_OutlineWidth", 2.5f);
+            m.SetFloat("_RimInk", 0.15f);
+            m.SetFloat("_ShadowInk", 0.35f);
+            EditorUtility.SetDirty(m);
+            return m;
         }
 
         // 정팔면체를 두 번 쪼갠 공 (삼각형 128개, 꼭짓점은 삼각형마다 따로: 방향만)

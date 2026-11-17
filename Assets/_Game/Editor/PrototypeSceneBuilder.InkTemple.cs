@@ -532,7 +532,7 @@ namespace AThousandDawns.EditorTools
 
             var look = new GameObject("Ink Region Look").AddComponent<AThousandDawns.Art.InkRegionLook>();
             look.Setup(floorMat,
-                new Texture[] { BambooGroundTexture(), AssetDatabase.LoadAssetAtPath<Texture2D>($"{TempleArtFolder}/Floor_Temple.png"), AssetDatabase.LoadAssetAtPath<Texture2D>(RiverFloor), AssetDatabase.LoadAssetAtPath<Texture2D>(TombFloor) },
+                new Texture[] { BambooGroundTexture(), AssetDatabase.LoadAssetAtPath<Texture2D>($"{TempleArtFolder}/Floor_Temple.png"), RiverGroundTexture(), AssetDatabase.LoadAssetAtPath<Texture2D>(TombFloor) },
                 new[] { bambooGroup, templeGroup, templeGroup, templeGroup },
                 new[] { new GameObject("죽림 분위기 (없음)"), air, riverAir, tombAir },
                 dressing);
@@ -641,18 +641,16 @@ namespace AThousandDawns.EditorTools
             trunk.AddComponent<MeshFilter>().sharedMesh = mesh;
             trunk.AddComponent<MeshRenderer>().sharedMaterial = woodMat;
 
-            var mat = GetFoliageBlobMaterial("Bush_B");
-            var tex = (Texture2D)mat.GetTexture("_BaseMap");
-            float aspect = tex != null ? (float)tex.width / tex.height : 1f;
+            var mat = PineNeedleMaterial();   // 입체 채색 솔잎 층 (PrototypeSceneBuilder.StylizedFoliage.cs)
             for (int k = 0; k < pads.Count; k++)
             {
                 var puff = new GameObject($"Needles_{k + 1}");
                 puff.transform.SetParent(tree, false);
                 puff.transform.localPosition = pads[k];
                 float w = k == 0 ? 1.9f : 1.5f - (k % 2) * 0.2f;
-                puff.transform.localScale = new Vector3(w, 0.45f, w * 0.85f) * 1.2f;   // 넓고 납작한 솔잎 층
+                puff.transform.localScale = new Vector3(w * 0.95f, 0.5f, w * 0.8f);   // 넓고 납작한 솔잎 층
                 puff.transform.localRotation = Quaternion.Euler(0f, k * 73f, 0f);
-                puff.AddComponent<MeshFilter>().sharedMesh = GetBushBlobMesh((seed + k) % 3, aspect);
+                puff.AddComponent<MeshFilter>().sharedMesh = BushMesh((seed + k) % 3);
                 puff.AddComponent<MeshRenderer>().sharedMaterial = mat;
             }
         }
