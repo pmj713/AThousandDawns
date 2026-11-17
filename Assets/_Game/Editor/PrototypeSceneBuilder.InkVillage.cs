@@ -331,7 +331,9 @@ namespace AThousandDawns.EditorTools
             for (int i = 0; i < xs.Length; i++)
                 Rock(cave, "Hill_Rock", new Vector3(xs[i], 0f, 1.35f + (i % 2) * 0.2f), sizes[i], i, 30f + i * 70f, stone, false);
             Rock(cave, "Hill_Top", new Vector3(0f, 1.5f, 1.6f), 2.2f, 2, 15f, stone, false);
-            Block(cave, "Mouth", PrimitiveType.Sphere, new Vector3(0f, 0.85f, 0.8f), new Vector3(1.7f, 1.8f, 0.35f), Quaternion.identity, dark);
+            // 플레이 테스트 4차: 굴 입구는 VARCO 모델(CaveEntrance: 바위 아치·돌 계단·비석·이끼·금줄, 높이 2.6). 없으면 예전 검은 타원
+            if (VarcoProp(cave, "CaveEntrance", new Vector3(0f, 0f, 0.7f), 0f, 1.3f, VillagePropFolder) == null)   // 입구가 남쪽(카메라)을 보게
+                Block(cave, "Mouth", PrimitiveType.Sphere, new Vector3(0f, 0.85f, 0.8f), new Vector3(1.7f, 1.8f, 0.35f), Quaternion.identity, dark);
             RockCluster(cave, new Vector3(-1.4f, 0f, 0.4f), 0.45f, 7, stone);
             RockCluster(cave, new Vector3(1.5f, 0f, 0.3f), 0.35f, 9, stone);
         }
@@ -387,6 +389,14 @@ namespace AThousandDawns.EditorTools
             var rack = new GameObject("Weapon Rack (무기 거치대)").transform;
             rack.SetParent(deco, false);
             rack.position = foot;
+            // 플레이 테스트 4차: VARCO 부품을 조립해요 — 빈 받침 틀(RackFrame, 높이 1.7) 앞에 검(Jian) · 창(Spear) · 도(Dao)를 세워 기대요. 부품이 없으면 예전 상자 거치대
+            if (VarcoProp(rack, "RackFrame", Vector3.zero, 90f, 1.15f, VillagePropFolder) != null)   // 틀의 넓은 면이 카메라(남쪽)를 보게
+            {
+                VarcoProp(rack, "RackSpear", new Vector3(-0.55f, 0f, -0.28f), 0f, 1.1f, VillagePropFolder)?.Rotate(0f, 0f, -7f, Space.World);
+                VarcoProp(rack, "RackJian", new Vector3(-0.02f, 0f, -0.3f), 0f, 1.25f, VillagePropFolder)?.Rotate(0f, 0f, 6f, Space.World);
+                VarcoProp(rack, "RackDao", new Vector3(0.5f, 0f, -0.3f), 0f, 1.25f, VillagePropFolder)?.Rotate(0f, 0f, -6f, Space.World);
+                return;
+            }
             rack.localScale = Vector3.one * 1.3f;
             for (int s = -1; s <= 1; s += 2)
             {

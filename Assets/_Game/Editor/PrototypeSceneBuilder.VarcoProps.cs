@@ -9,9 +9,11 @@ namespace AThousandDawns.EditorTools
     {
         const string VarcoPropFolder = "Assets/_Game/Art/Env/Rift/Models";
 
-        static Transform VarcoProp(Transform parent, string name, Vector3 localPos, float yaw, float scale = 1f)
+        const string VillagePropFolder = "Assets/_Game/Art/Env/Village/Models";   // 마을 소품 (무기 거치대 부품 · 화분 · 영혼 수련 동굴 입구)
+
+        static Transform VarcoProp(Transform parent, string name, Vector3 localPos, float yaw, float scale = 1f, string folder = VarcoPropFolder)
         {
-            string path = $"{VarcoPropFolder}/{name}.fbx";
+            string path = $"{folder}/{name}.fbx";
             if (AssetImporter.GetAtPath(path) is ModelImporter importer &&
                 (importer.materialImportMode != ModelImporterMaterialImportMode.None || importer.importAnimation || importer.animationType != ModelImporterAnimationType.None || !importer.bakeAxisConversion))
             {
@@ -24,7 +26,7 @@ namespace AThousandDawns.EditorTools
             var asset = AssetDatabase.LoadAssetAtPath<GameObject>(path);
             if (asset == null) return null;
             var mat = FantasyLook(GetInkMaterial($"Ink_Varco_{name}", "#FFFFFF", 1f));
-            mat.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{VarcoPropFolder}/{name}_Albedo.png"));
+            mat.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{folder}/{name}_Albedo.png"));
             mat.SetColor("_BaseColor", Color.white);
             mat.SetFloat("_OutlineWidth", 2.5f);
             EditorUtility.SetDirty(mat);

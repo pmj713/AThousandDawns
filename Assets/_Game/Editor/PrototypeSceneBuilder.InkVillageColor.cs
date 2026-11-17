@@ -122,6 +122,8 @@ namespace AThousandDawns.EditorTools
             for (int i = 0; i < pots.Length; i++)
             {
                 var p = pots[i];
+                // 플레이 테스트 4차: VARCO 화분(FlowerPot, 높이 0.6) — 없으면 예전 원기둥 화분
+                if (VarcoProp(root, "FlowerPot", p, i * 47f, 1f, VillagePropFolder) != null) continue;
                 Block(root, "Flower Pot", PrimitiveType.Cylinder, p + Vector3.up * 0.16f, new Vector3(0.36f, 0.16f, 0.36f), Quaternion.identity, pot);
                 Block(root, "Leaves", PrimitiveType.Sphere, p + Vector3.up * 0.36f, new Vector3(0.38f, 0.2f, 0.38f), Quaternion.identity, leaf);
                 for (int k = 0; k < 5; k++)
