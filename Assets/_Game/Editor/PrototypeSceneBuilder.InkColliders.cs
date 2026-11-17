@@ -65,6 +65,35 @@ namespace AThousandDawns.EditorTools
             return added;
         }
 
+        // 마을 소품 중 장식 규칙이 빼 버리는 것(닭장·빨랫줄은 흔들리는 닭·빨래 아래, 사당은 상호작용 건물, 장작은 낮은 통나무 조각들)에
+        //   통째로 막는 상자를 달아요 (플레이 테스트: 캐릭터가 그대로 통과했어요). 상자는 각 소품의 자기 축 기준 (Blocker 자식)
+        static void AddVillageBlockers()
+        {
+            var boxes = new Dictionary<string, (Vector3 center, Vector3 size)[]>
+            {
+                ["Chicken Coop (닭장)"] = new[] { (new Vector3(0f, 0.6f, 0.25f), new Vector3(2.3f, 1.2f, 2.4f)) },   // 닭장과 울타리 앞마당 통째
+                ["Woodpile (장작더미)"] = new[] { (new Vector3(0f, 0.45f, 0.25f), new Vector3(1.6f, 0.9f, 0.55f)), (new Vector3(1.05f, 0.35f, -0.35f), new Vector3(0.55f, 0.7f, 0.55f)) },
+                ["Laundry Line (빨랫줄)"] = new[] { (new Vector3(0f, 0.95f, 0f), new Vector3(3.6f, 1.9f, 0.3f)) },   // 기둥 사이 빨래 줄 전체
+                // 사당: 기둥·뒷벽 안쪽만 (상호작용 자리는 북동 모서리 바깥이라 옆·뒤에서 닿아요) + 옆 석등
+                ["Shrine (사당)"] = new[] { (new Vector3(0f, 0.9f, 0f), new Vector3(1.95f, 1.8f, 1.5f)), (new Vector3(1.75f, 0.6f, -1.05f), new Vector3(0.5f, 1.2f, 0.5f)) },
+            };
+            int added = 0;
+            foreach (var t in Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (!boxes.TryGetValue(t.name, out var list) || t.Find("Blocker") != null) continue;
+                var blocker = new GameObject("Blocker").transform;
+                blocker.SetParent(t, false);
+                foreach (var (center, size) in list)
+                {
+                    var box = blocker.gameObject.AddComponent<BoxCollider>();
+                    box.center = center;
+                    box.size = size;
+                    added++;
+                }
+            }
+            Debug.Log($"[채색] 마을 소품 막는 상자: {added}개");
+        }
+
         // 흔들리는 빨래·닭, 벽 너머 숲, 그리고 상호작용 자리가 있는 마을 건물·나무(객잔 마루에서 시작해요, 매화나무·사당 앞에 서야 해요)
         static readonly string[] NoColliderParts = { "Cloth", "Chicken", "Forest (3D stalks)", "Inn", "Shrine", "Plum", "Gate", "Weapon Rack", "Cave", "Border ", "Fantasy Courtyard", "Fantasy Hall" };
 

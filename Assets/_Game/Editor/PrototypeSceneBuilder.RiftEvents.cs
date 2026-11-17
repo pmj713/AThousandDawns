@@ -5,7 +5,7 @@ namespace AThousandDawns.EditorTools
 {
     // 판타지 이벤트 방 가운데 소품 (차원 겹침): RoomRun이 이벤트 방에 들어가면 Combat.center에 세워요 (천마총 이벤트 소품과 같은 방식).
     //   이계 대장간 (otherworldForgeProp): 드워프 모루·청보라 불꽃이 오르는 화로·룬 새긴 망치 · 쇠 덩이와 집게
-    //   무너진 성당 제단 (chapelAltarProp): 반쯤 무너진 고딕 아치 조각·돌 제단·깨진 스테인드글라스·촛대
+    //   무너진 성당 제단 (chapelAltarProp): 체스판 대리석 바닥·두 단 위 금테 대리석 제단과 붉은 제단보·금 십자가·세 갈래 촛대 · 뒤로 빛나는 색유리 뾰족 아치 창 둘과 장미창 · 부러진 기둥·넘어진 신도석
     //   마나 샘 (manaSpringProp): 돌로 둘러친 둥근 샘, 청보라로 빛나는 물, 둘레에 솟은 작은 수정
     //   봉인된 마검 (sealedBladeProp): 룬 원 가운데 바닥에 꽂힌 검은 서양 장검을 사방 말뚝의 사슬이 묶어요. 뽑으면 코드가 자식 "Blade"를 꺼요
     // 모두 판타지 화풍, 밑에 보랏빛 차원 흙과 균열, 지름 3칸 안쪽. 그림만이라 충돌체는 없어요.
@@ -71,34 +71,118 @@ namespace AThousandDawns.EditorTools
             Block(forge, "Tongs", PrimitiveType.Cube, new Vector3(0.2f, 0.02f, -0.6f), new Vector3(0.5f, 0.02f, 0.04f), Quaternion.Euler(0f, 30f, 0f), darkSteel);
             SaveRiftEvent(forge.gameObject, "RiftEvent_Forge", "otherworldForgeProp");
 
-            // 2) 무너진 성당 제단
+            // 2) 무너진 성당 제단 (플레이 테스트: 돌 상자 제단이 허접해 보였어요 → 성당 안쪽 성소처럼)
+            //   두 단 대리석 단 위 흰 대리석 제단(앞면 금테 판 둘)·붉은 제단보에 금 십자, 위에 금 십자가와 세 갈래 촛대 둘.
+            //   뒤로 뾰족 아치 창 둘(색유리 칸이 빛나요, 오른쪽은 깨져 위 칸이 비었어요)과 그 위 둥근 장미창, 양옆 기둥(오른쪽은 부러져 쓰러짐),
+            //   앞에는 체스판 대리석 바닥·붉은 카펫·짧은 신도석 둘(하나는 넘어짐), 바닥에 깨진 색유리. 빛 이펙트는 아트 2 몫
             var chapel = Root("RiftEvent_Chapel (무너진 성당 제단)");
-            Block(chapel, "Altar", PrimitiveType.Cube, new Vector3(0f, 0.42f, 0.25f), new Vector3(1.2f, 0.84f, 0.55f), Quaternion.identity, sandstone);
-            Block(chapel, "Altar Top", PrimitiveType.Cube, new Vector3(0f, 0.88f, 0.25f), new Vector3(1.35f, 0.08f, 0.66f), Quaternion.identity, sandstone);
-            Block(chapel, "Altar Cloth", PrimitiveType.Cube, new Vector3(0f, 0.8f, -0.03f), new Vector3(0.6f, 0.2f, 0.02f), Quaternion.identity, glass[0]);
-            foreach (float x in new[] { -0.45f, 0.45f })   // 촛대와 초
+            var marble = Fantasy("Ink_Chapel_Marble", "#EDE8DC");
+            var marbleDark = Fantasy("Ink_Chapel_MarbleDark", "#3C3A44");
+            var gold = Fantasy("Ink_Chapel_Gold", "#E8B83A");
+            var crimson = Fantasy("Ink_Chapel_Crimson", "#A4161E");
+            var pew = Fantasy("Ink_Chapel_Pew", "#6E4426");
+            Material Pane(string name, string hex)
             {
-                Block(chapel, "Candlestick", PrimitiveType.Cylinder, new Vector3(x, 1.02f, 0.25f), new Vector3(0.06f, 0.14f, 0.06f), Quaternion.identity, brass);
-                Block(chapel, "Candle", PrimitiveType.Cylinder, new Vector3(x, 1.24f, 0.25f), new Vector3(0.05f, 0.08f, 0.05f), Quaternion.identity, wax);
-                FlameCardsWith(chapel, new Vector3(x, 1.32f, 0.25f), 0.16f, 2, flame);
+                var m = Fantasy(name, hex);
+                ColorUtility.TryParseHtmlString(hex, out var c);
+                m.SetColor("_AuraColor", new Color(c.r, c.g, c.b, 0.9f));   // 색유리는 가장자리가 빛나요
+                m.SetFloat("_OutlineWidth", 1.5f);
+                return m;
             }
-            // 반쯤 무너진 고딕 아치 조각: 제단 뒤 왼쪽 기둥과 꺾인 호, 오른쪽은 부러진 밑동
-            Block(chapel, "Arch Pillar", PrimitiveType.Cube, new Vector3(-0.85f, 1.05f, 0.85f), new Vector3(0.26f, 2.1f, 0.26f), Quaternion.identity, sandstone);
-            for (int k = 0; k < 3; k++)
+            var panes = new[] { Pane("Ink_Chapel_PaneRed", "#E0362A"), Pane("Ink_Chapel_PaneBlue", "#3F6BEF"), Pane("Ink_Chapel_PaneGold", "#F2C23E"), Pane("Ink_Chapel_PaneGreen", "#3FB45A"), Pane("Ink_Chapel_PaneViolet", "#9A4FE0") };
+            // 바닥: 검고 흰 대리석 체스판 + 두 단 계단
+            for (int i = -3; i <= 3; i++)
+                for (int j = -2; j <= 2; j++)
+                    Block(chapel, "Floor Tile", PrimitiveType.Cube, new Vector3(i * 0.4f, 0.03f, j * 0.4f + 0.1f), new Vector3(0.4f, 0.04f, 0.4f), Quaternion.identity, ((i + j) % 2 + 2) % 2 == 0 ? marble : marbleDark);
+            Block(chapel, "Dais Low", PrimitiveType.Cube, new Vector3(0f, 0.11f, 0.42f), new Vector3(2f, 0.12f, 0.95f), Quaternion.identity, marble);
+            Block(chapel, "Dais High", PrimitiveType.Cube, new Vector3(0f, 0.22f, 0.52f), new Vector3(1.6f, 0.12f, 0.7f), Quaternion.identity, marble);
+            // 제단
+            Block(chapel, "Altar", PrimitiveType.Cube, new Vector3(0f, 0.65f, 0.5f), new Vector3(1.25f, 0.74f, 0.5f), Quaternion.identity, marble);
+            Block(chapel, "Altar Top", PrimitiveType.Cube, new Vector3(0f, 1.05f, 0.5f), new Vector3(1.42f, 0.07f, 0.62f), Quaternion.identity, marble);
+            Block(chapel, "Altar Gold Edge", PrimitiveType.Cube, new Vector3(0f, 1.0f, 0.18f), new Vector3(1.44f, 0.03f, 0.02f), Quaternion.identity, gold);
+            foreach (float x in new[] { -0.42f, 0.42f })   // 앞면 금테 판
             {
-                float a0 = k * 22f, a1 = (k + 1) * 22f;
-                Vector3 P(float a) => new Vector3(-0.85f + 0.85f * (1f - Mathf.Cos(a * Mathf.Deg2Rad)), 2.1f + 0.85f * Mathf.Sin(a * Mathf.Deg2Rad), 0.85f);
-                var p0 = P(a0); var p1 = P(a1); var d = p1 - p0;
-                Block(chapel, "Arch Stone", PrimitiveType.Cube, (p0 + p1) * 0.5f, new Vector3(0.24f, d.magnitude + 0.03f, 0.24f), Quaternion.FromToRotation(Vector3.up, d.normalized), sandstone);
+                Block(chapel, "Altar Panel", PrimitiveType.Cube, new Vector3(x, 0.62f, 0.245f), new Vector3(0.3f, 0.5f, 0.01f), Quaternion.identity, gold);
+                Block(chapel, "Altar Panel Inset", PrimitiveType.Cube, new Vector3(x, 0.62f, 0.24f), new Vector3(0.24f, 0.44f, 0.01f), Quaternion.identity, marble);
             }
-            Block(chapel, "Broken Pillar", PrimitiveType.Cube, new Vector3(0.85f, 0.35f, 0.85f), new Vector3(0.26f, 0.7f, 0.26f), Quaternion.Euler(0f, 0f, -5f), sandstone);
-            Rock(chapel, "Fallen Block", new Vector3(1.1f, 0f, 0.3f), 0.26f, 3, 30f, sandstone, false);
-            for (int k = 0; k < 5; k++)   // 바닥에 흩어진 깨진 스테인드글라스
+            Block(chapel, "Altar Cloth", PrimitiveType.Cube, new Vector3(0f, 0.8f, 0.235f), new Vector3(0.42f, 0.5f, 0.012f), Quaternion.identity, crimson);
+            Block(chapel, "Altar Cloth Top", PrimitiveType.Cube, new Vector3(0f, 1.09f, 0.5f), new Vector3(0.44f, 0.012f, 0.64f), Quaternion.identity, crimson);
+            Block(chapel, "Cloth Cross V", PrimitiveType.Cube, new Vector3(0f, 0.82f, 0.228f), new Vector3(0.05f, 0.26f, 0.01f), Quaternion.identity, gold);
+            Block(chapel, "Cloth Cross H", PrimitiveType.Cube, new Vector3(0f, 0.87f, 0.228f), new Vector3(0.17f, 0.05f, 0.01f), Quaternion.identity, gold);
+            Block(chapel, "Cloth Fringe", PrimitiveType.Cube, new Vector3(0f, 0.56f, 0.235f), new Vector3(0.42f, 0.03f, 0.015f), Quaternion.identity, gold);
+            // 제단 위 금 십자가와 세 갈래 촛대
+            Block(chapel, "Cross Base", PrimitiveType.Cube, new Vector3(0f, 1.14f, 0.6f), new Vector3(0.18f, 0.08f, 0.12f), Quaternion.identity, gold);
+            Block(chapel, "Cross V", PrimitiveType.Cube, new Vector3(0f, 1.46f, 0.6f), new Vector3(0.06f, 0.6f, 0.05f), Quaternion.identity, gold);
+            Block(chapel, "Cross H", PrimitiveType.Cube, new Vector3(0f, 1.58f, 0.6f), new Vector3(0.3f, 0.06f, 0.05f), Quaternion.identity, gold);
+            foreach (float x in new[] { -0.5f, 0.5f })
+            {
+                Block(chapel, "Candelabrum Foot", PrimitiveType.Cylinder, new Vector3(x, 1.11f, 0.5f), new Vector3(0.14f, 0.02f, 0.14f), Quaternion.identity, gold);
+                Block(chapel, "Candelabrum Stem", PrimitiveType.Cylinder, new Vector3(x, 1.27f, 0.5f), new Vector3(0.035f, 0.16f, 0.035f), Quaternion.identity, gold);
+                Block(chapel, "Candelabrum Arm", PrimitiveType.Cube, new Vector3(x, 1.4f, 0.5f), new Vector3(0.3f, 0.025f, 0.025f), Quaternion.identity, gold);
+                foreach (float dx in new[] { -0.14f, 0f, 0.14f })
+                {
+                    float top = dx == 0f ? 1.5f : 1.44f;
+                    Block(chapel, "Candle", PrimitiveType.Cylinder, new Vector3(x + dx, top, 0.5f), new Vector3(0.04f, 0.06f, 0.04f), Quaternion.identity, wax);
+                    FlameCardsWith(chapel, new Vector3(x + dx, top + 0.07f, 0.5f), 0.12f, 2, flame);
+                }
+            }
+            // 뒤쪽 뾰족 아치 창 둘: 기둥 사이 색유리 칸 (오른쪽 창은 깨져 위 칸들이 비었어요)
+            foreach (float cx in new[] { -0.55f, 0.55f })
+            {
+                bool broken = cx > 0f;
+                for (int s = -1; s <= 1; s += 2)
+                    Block(chapel, "Window Mullion", PrimitiveType.Cube, new Vector3(cx + s * 0.32f, 1.25f, 1.0f), new Vector3(0.1f, 2.1f, 0.14f), Quaternion.identity, marble);
+                for (int row = 0; row < 5; row++)
+                    for (int col = 0; col < 3; col++)
+                    {
+                        if (broken && row >= 3 && col != 0) continue;
+                        var at = new Vector3(cx - 0.18f + col * 0.18f, 0.55f + row * 0.3f, 1.0f);
+                        Block(chapel, "Stained Pane", PrimitiveType.Cube, at, new Vector3(0.17f, 0.29f, 0.03f), Quaternion.identity, panes[(row * 3 + col + (broken ? 2 : 0)) % panes.Length]);
+                    }
+                for (int row = 1; row < 5; row++)
+                    Block(chapel, "Lead Bar", PrimitiveType.Cube, new Vector3(cx, 0.4f + row * 0.3f, 0.985f), new Vector3(0.56f, 0.025f, 0.02f), Quaternion.identity, lead);
+                // 뾰족 아치 머리: 양쪽에서 기울어 만나는 돌 둘 (깨진 쪽은 한쪽만)
+                Block(chapel, "Arch Head", PrimitiveType.Cube, new Vector3(cx - 0.15f, 2.42f, 1.0f), new Vector3(0.1f, 0.5f, 0.14f), Quaternion.Euler(0f, 0f, -35f), marble);
+                if (!broken)
+                {
+                    Block(chapel, "Arch Head", PrimitiveType.Cube, new Vector3(cx + 0.15f, 2.42f, 1.0f), new Vector3(0.1f, 0.5f, 0.14f), Quaternion.Euler(0f, 0f, 35f), marble);
+                    Block(chapel, "Arch Pane", PrimitiveType.Cube, new Vector3(cx, 2.28f, 1.0f), new Vector3(0.3f, 0.3f, 0.03f), Quaternion.Euler(0f, 0f, 45f), panes[2]);
+                }
+            }
+            // 가운데 위 둥근 장미창: 금 가운데, 꽃잎 여덟 색유리, 대리석 테
+            var rose = new Vector3(0f, 2.75f, 1.02f);
+            Block(chapel, "Rose Rim", PrimitiveType.Cylinder, rose + new Vector3(0f, 0f, 0.02f), new Vector3(0.82f, 0.04f, 0.82f), Quaternion.Euler(90f, 0f, 0f), marble);
+            for (int k = 0; k < 8; k++)
+            {
+                float a = k * 45f;
+                var dir = Quaternion.Euler(0f, 0f, a) * Vector3.up;
+                Block(chapel, "Rose Petal", PrimitiveType.Cube, rose + dir * 0.22f - new Vector3(0f, 0f, 0.03f), new Vector3(0.14f, 0.26f, 0.02f), Quaternion.Euler(0f, 0f, a), panes[k % panes.Length]);
+            }
+            Block(chapel, "Rose Heart", PrimitiveType.Cylinder, rose - new Vector3(0f, 0f, 0.05f), new Vector3(0.14f, 0.015f, 0.14f), Quaternion.Euler(90f, 0f, 0f), panes[2]);
+            // 양옆 기둥 (주두 금테), 오른쪽은 부러져 앞으로 쓰러졌어요
+            Block(chapel, "Pillar", PrimitiveType.Cylinder, new Vector3(-1.25f, 1.3f, 0.85f), new Vector3(0.28f, 1.3f, 0.28f), Quaternion.identity, marble);
+            Block(chapel, "Pillar Capital", PrimitiveType.Cube, new Vector3(-1.25f, 2.64f, 0.85f), new Vector3(0.38f, 0.1f, 0.38f), Quaternion.identity, gold);
+            Block(chapel, "Pillar Base", PrimitiveType.Cube, new Vector3(-1.25f, 0.06f, 0.85f), new Vector3(0.38f, 0.12f, 0.38f), Quaternion.identity, marble);
+            Block(chapel, "Broken Pillar", PrimitiveType.Cylinder, new Vector3(1.25f, 0.35f, 0.85f), new Vector3(0.28f, 0.35f, 0.28f), Quaternion.identity, marble);
+            Block(chapel, "Fallen Drum", PrimitiveType.Cylinder, new Vector3(1.15f, 0.15f, -0.2f), new Vector3(0.28f, 0.45f, 0.28f), Quaternion.Euler(90f, 20f, 0f), marble);
+            Rock(chapel, "Fallen Block", new Vector3(1.35f, 0f, 0.3f), 0.2f, 3, 30f, marble, false);
+            // 앞: 붉은 카펫과 짧은 신도석 둘 (왼쪽은 넘어졌어요)
+            Block(chapel, "Carpet Trim", PrimitiveType.Cube, new Vector3(0f, 0.054f, -0.55f), new Vector3(0.66f, 0.008f, 1.12f), Quaternion.identity, gold);
+            Block(chapel, "Carpet", PrimitiveType.Cube, new Vector3(0f, 0.058f, -0.55f), new Vector3(0.58f, 0.01f, 1.1f), Quaternion.identity, crimson);
+            Block(chapel, "Pew Seat", PrimitiveType.Cube, new Vector3(0.85f, 0.3f, -0.75f), new Vector3(0.7f, 0.06f, 0.26f), Quaternion.identity, pew);
+            Block(chapel, "Pew Back", PrimitiveType.Cube, new Vector3(0.85f, 0.48f, -0.86f), new Vector3(0.7f, 0.36f, 0.05f), Quaternion.identity, pew);
+            foreach (float x in new[] { 0.55f, 1.15f }) Block(chapel, "Pew Leg", PrimitiveType.Cube, new Vector3(x, 0.15f, -0.75f), new Vector3(0.05f, 0.3f, 0.24f), Quaternion.identity, pew);
+            var fallenPew = new GameObject("Fallen Pew").transform;
+            fallenPew.SetParent(chapel, false);
+            fallenPew.localPosition = new Vector3(-0.9f, 0.13f, -0.8f);
+            fallenPew.localRotation = Quaternion.Euler(-80f, 15f, 0f);
+            Block(fallenPew, "Pew Seat", PrimitiveType.Cube, Vector3.zero, new Vector3(0.7f, 0.06f, 0.26f), Quaternion.identity, pew);
+            Block(fallenPew, "Pew Back", PrimitiveType.Cube, new Vector3(0f, 0.18f, -0.11f), new Vector3(0.7f, 0.36f, 0.05f), Quaternion.identity, pew);
+            for (int k = 0; k < 6; k++)   // 바닥에 흩어진 깨진 색유리
             {
                 var rot = Quaternion.Euler(90f - k * 6f, k * 53f, 0f);
-                var at = new Vector3(-0.9f + k * 0.42f, 0.03f + (k % 2) * 0.03f, -0.55f - (k % 3) * 0.15f);
-                Block(chapel, "Glass Shard", PrimitiveType.Cube, at, new Vector3(0.28f, 0.34f, 0.02f), rot, glass[k % glass.Length]);
-                Block(chapel, "Lead", PrimitiveType.Cube, at, new Vector3(0.3f, 0.025f, 0.03f), rot, lead);
+                var at = new Vector3(0.35f + (k % 3) * 0.25f, 0.07f + (k % 2) * 0.02f, 0.05f - (k / 3) * 0.3f);
+                Block(chapel, "Glass Shard", PrimitiveType.Cube, at, new Vector3(0.16f, 0.2f, 0.02f), rot, panes[k % panes.Length]);
             }
             SaveRiftEvent(chapel.gameObject, "RiftEvent_Chapel", "chapelAltarProp");
 

@@ -36,6 +36,7 @@ namespace AThousandDawns.EditorTools
             DressRunInk();
             ApplyColorPalette();   // 지역 색표로 소품 재질을 다시 칠해요 (PrototypeSceneBuilder.ColorPalette.cs)
             AddDecorColliders(scene);  // 길을 막는 장식에 충돌체 (PrototypeSceneBuilder.InkColliders.cs)
+            AddVillageBlockers();      // 닭장·장작더미·빨랫줄·사당을 통째로 막는 상자
             OptimizeInkScene(scene);   // 그림자·정적 배칭 (PrototypeSceneBuilder.InkPerf.cs)
             CheckScriptFiles(scene);
             EditorSceneManager.SaveScene(scene, InkRunScenePath);

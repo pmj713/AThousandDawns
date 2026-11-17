@@ -360,13 +360,12 @@ namespace AThousandDawns.EditorTools
             bush.localPosition = foot;
             bush.localRotation = Quaternion.Euler(0f, seed * 73f, 0f);
 
-            string texture = seed % 2 == 0 ? "Bush_A" : "Bush_B";
-            var mat = GetFoliageBlobMaterial(texture);
-            var tex = (Texture2D)mat.GetTexture("_BaseMap");
-            var leaves = new GameObject("Leaves (camera-facing cards)");
-            leaves.transform.SetParent(bush, false);
-            leaves.AddComponent<MeshFilter>().sharedMesh = GetBushBlobMesh(seed % 3, (float)tex.width / tex.height);
-            leaves.AddComponent<MeshRenderer>().sharedMaterial = mat;
+            // 입체 채색 덤불 (PrototypeSceneBuilder.StylizedFoliage.cs): 예전 그림 카드 덩어리와 같은 크기
+            var solid = new GameObject("Leaves (3D bush)");
+            solid.transform.SetParent(bush, false);
+            solid.transform.localScale = new Vector3(1.25f, 1f, 1.25f);
+            solid.AddComponent<MeshFilter>().sharedMesh = BushMesh(seed % 3);
+            solid.AddComponent<MeshRenderer>().sharedMaterial = BushMaterial();
             return bush;
         }
 
@@ -485,6 +484,7 @@ namespace AThousandDawns.EditorTools
         // center는 parent 기준 위치, height는 카드 세로 길이 (가로는 그림 비율대로).
         static void FoliageCards(Transform parent, string name, string textureName, Vector3 center, float height, int count, float yaw)
         {
+            if (Foliage3D(parent, name, textureName, center, height, count, yaw)) return;   // 대나무 잎·덤불은 입체 채색 (PrototypeSceneBuilder.StylizedFoliage.cs)
             var mat = GetFoliageMaterial(textureName);
             var tex = (Texture2D)mat.GetTexture("_BaseMap");
             float width = height * tex.width / tex.height;
