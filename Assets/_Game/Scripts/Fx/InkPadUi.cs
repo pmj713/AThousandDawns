@@ -152,6 +152,7 @@ namespace AThousandDawns.Fx
             _letter.normal.textColor = Color.white;
             _label = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleLeft };
             _label.normal.textColor = Color.white;
+            InkMeridianArt.LockText(_letter); InkMeridianArt.LockText(_label); // 마우스를 올려도 글자색 그대로
         }
 
         static void Load()

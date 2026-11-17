@@ -11,7 +11,7 @@ namespace AThousandDawns.Art
     // 판타지 이벤트 방 결과 이펙트 (RoomRun.FantasyEventFx: forge · bless · curse · spring · unseal) — 그림만.
     //   이벤트 창이 떠 있는 동안 (Time.timeScale 0) 온 신호는 모아 뒀다가 창이 닫혀 시간이 흐르면 재생해요.
     //   forge  (모루 자리): 청보라 불티가 망치질처럼 세 번 튀고 보랏빛 고리가 퍼져요.
-    //   bless  (플레이어): 하늘에서 금빛 빛줄기가 내려와 몸을 감싸고 금빛 티끌이 내려앉아요.
+    //   bless  (플레이어): 하늘에서 부드러운 금빛 빛기둥(넓은 겉빛 + 밝은 속빛)이 내려와 몸을 감싸고, 금빛 티끌이 천천히 내려앉아요.
     //   curse  (플레이어): 검붉은 고리가 발밑에서 조여들며 돌고 검붉은 기운이 몸에 감겨 올라요.
     //   spring (플레이어): 발밑에서 청보라 물보라가 솟고, 빛 티끌이 몸으로 스며들며 잠시 몸에 맴돌아요.
     //   unseal (검 자리): 사슬 조각이 사방으로 튀고 룬 원이 크게 번쩍 깨지며 보랏빛 폭발이 일어나요.
@@ -102,25 +102,72 @@ namespace AThousandDawns.Art
 
         // ── bless: 하늘에서 금빛 빛줄기
 
+        // (플레이테스트: 딱딱한 선이 어색) → 부드러운 금빛 빛기둥: 넓고 옅은 겉빛 + 가는 밝은 속빛이 위에서 천천히 내려와 몸을 감싸고,
+        //   금빛 티끌이 천천히 내려앉으며, 발밑 금빛 고리 · 몸에 잠깐 금빛이 맴돌다 걷혀요 (2초).
         void Bless(Vector3 at)
         {
-            var beam = Line(Gold, 1.4f);
-            InkParticles.Burst(PlayerAt(at) + Vector3.up * 3f, 24, new Color(1f, 0.95f, 0.7f, 1f), new Color(Gold.r, Gold.g, Gold.b, 0.4f), 1.2f, 0.12f, 1.2f, 1.5f); // 금빛 티끌이 내려앉아요
-            Ring(PlayerAt(at), 2.2f, 0.6f, Gold);
-            float t = 0f;
+            var glow = Glow();
+            if (glow == null) return;
+            var pivot = new GameObject("Bless Light").transform;
+            pivot.SetParent(transform, false);
+            pivot.position = PlayerAt(at);
+            pivot.gameObject.AddComponent<InkFaceCamera>();
+            var outer = Column(pivot, glow, 2.2f, new Color(1f, 0.85f, 0.45f), 8);
+            var inner = Column(pivot, glow, 0.7f, new Color(1f, 0.97f, 0.85f), 9);
+            Ring(PlayerAt(at), 2.4f, 0.8f, Gold);
+            float t = 0f, motes = 0f;
             _live.Add(dt =>
             {
-                if (beam == null) return false;
+                if (pivot == null) return false;
                 t += dt;
-                Vector3 p = PlayerAt(at);
-                float down = Mathf.Clamp01(t / 0.2f), fade = t < 0.8f ? 1f : Mathf.Clamp01(1f - (t - 0.8f) / 0.5f);
-                beam.SetPosition(0, p + Vector3.up * 9f);
-                beam.SetPosition(1, p + Vector3.up * Mathf.Lerp(9f, 0f, down));
-                beam.widthMultiplier = 1.4f * fade * (1f + 0.08f * Mathf.Sin(t * 20f));
+                pivot.position = PlayerAt(at);
+                float down = 1f - Mathf.Pow(1f - Mathf.Clamp01(t / 0.45f), 2f); // 위에서 내려와요
+                float fade = t < 1.3f ? 1f : Mathf.Clamp01(1f - (t - 1.3f) / 0.7f);
+                float breathe = 1f + 0.06f * Mathf.Sin(t * 6f);
+                Stretch(outer, glow, 2.2f * breathe, down, 0.38f * fade);
+                Stretch(inner, glow, 0.7f * breathe, down, 0.7f * fade);
+                motes -= dt;
+                if (motes <= 0f && t < 1.4f) // 금빛 티끌이 천천히 내려앉아요
+                {
+                    motes = 0.12f;
+                    Vector2 r = UnityEngine.Random.insideUnitCircle * 0.6f;
+                    InkParticles.Burst(pivot.position + new Vector3(r.x, 3.2f, r.y), 2, new Color(1f, 0.95f, 0.75f, 1f), new Color(Gold.r, Gold.g, Gold.b, 0f), 0.25f, 0.1f, 1.6f, 0.9f);
+                }
                 if (fade > 0f) return true;
-                Destroy(beam.gameObject);
+                Destroy(pivot.gameObject);
                 return false;
             });
+        }
+
+        const float ColumnHeight = 9f;
+
+        static SpriteRenderer Column(Transform pivot, Sprite glow, float width, Color color, int order)
+        {
+            var go = new GameObject("Column");
+            go.transform.SetParent(pivot, false);
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = glow;
+            sr.color = new Color(color.r, color.g, color.b, 0f);
+            sr.sortingOrder = order;
+            return sr;
+        }
+
+        // 빛기둥: 위(ColumnHeight)에서 down만큼 내려온 길이로, 아래 끝이 발밑에 닿아요
+        static void Stretch(SpriteRenderer sr, Sprite glow, float width, float down, float alpha)
+        {
+            float len = Mathf.Max(0.1f, ColumnHeight * down), unit = 1f / Mathf.Max(0.01f, glow.bounds.size.x);
+            sr.transform.localScale = new Vector3(width * unit, len * 1.25f * unit, 1f);
+            sr.transform.localPosition = Vector3.up * (ColumnHeight - len * 0.5f);
+            sr.color = new Color(sr.color.r, sr.color.g, sr.color.b, alpha);
+        }
+
+        static Sprite _glow;
+        static Sprite Glow()
+        {
+            if (_glow != null) return _glow;
+            var tex = Resources.Load<Texture2D>("FxArt/InkMist");
+            if (tex != null) _glow = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f);
+            return _glow;
         }
 
         // ── curse: 검붉은 고리가 조여들며 기운이 감겨요

@@ -158,6 +158,7 @@ namespace AThousandDawns.Fx
             _line.normal.textColor = Color.white;
             _speaker = new GUIStyle(_line) { fontSize = 20, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft };
             _hint = new GUIStyle(_line) { fontSize = 16, alignment = TextAnchor.MiddleRight };
+            InkMeridianArt.LockText(_line); InkMeridianArt.LockText(_speaker); InkMeridianArt.LockText(_hint); // 마우스를 올려도 글자색 그대로
         }
 
         static void Load()

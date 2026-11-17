@@ -202,6 +202,7 @@ namespace AThousandDawns.Fx
             _num.normal.textColor = Color.white;
             _close = new GUIStyle(GUI.skin.label) { fontSize = 34, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
             _close.normal.textColor = new Color(1f, 0.96f, 0.9f);
+            foreach (var s in new[] { _title, _text, _row, _rowLocked, _desc, _num, _close }) InkMeridianArt.LockText(s); // 마우스를 올려도 글자색 그대로
         }
 
         static void Load()
