@@ -39,6 +39,8 @@ namespace AThousandDawns.Art
         {
             EnemyBrain.Dashed -= OnDashed;
             EnemyBrain.Dashed += OnDashed;
+            EnemyBrain.QinggongMoved -= OnQinggong;
+            EnemyBrain.QinggongMoved += OnQinggong;
             EnemyBrain.Blinked -= OnBlinked;
             EnemyBrain.Blinked += OnBlinked;
             if (FindAnyObjectByType<EnemyDirector>() != null) Host();
@@ -56,6 +58,7 @@ namespace AThousandDawns.Art
         }
 
         static void OnDashed(EnemyBrain e, Vector3 from) => Host().Dash(e, from);
+        static void OnQinggong(EnemyBrain e, Vector3 from, Vector3 to) => Host().Trail(e, from, to);
         static void OnBlinked(EnemyBrain e, Vector3 from, Vector3 to) { Host().Rift(from, 0f); _host.Rift(to, 0.06f); }
 
         void OnDestroy() { if (_host == this) _host = null; }
@@ -74,65 +77,72 @@ namespace AThousandDawns.Art
                 if (!_live[i](dt)) _live.RemoveAt(i);
         }
 
-        // ── 경공 (플레이테스트 3차: 그 적의 잔상): 내달리는 0.35초 동안 0.05초마다 적의 몸 실루엣(그 순간 자세를 구운 메시)이
-        //   청록빛 반투명으로 그 자리에 남아 0.35초에 흐려져요. 출발 자리엔 청록 바람이 한 번 일어요.
+        // ── 경공 (플레이테스트 3차: 그 적의 잔상): 출발할 때 (Dashed) 그 자리에 청록 바람이 한 번 일고,
+        //   경공이 끝나는 순간 (QinggongMoved: 떠난 자리 → 실제 도착 자리, 벽 앞에서 멈춰도 실제 자리) 그 적의 몸 실루엣(도착 순간 자세를 한 번 구운 메시)이
+        //   출발부터 도착까지 고르게 여섯 장 남아요. 출발 쪽은 옅고 도착 쪽은 진하며, 출발 쪽부터 차례로 흐려져요.
 
         static Material _afterMat;
         static MaterialPropertyBlock _afterBlock;
+        const int AfterCount = 6;
 
         void Dash(EnemyBrain e, Vector3 from)
         {
             if (e == null) return;
-            if (_afterMat == null) { _afterMat = new Material(Shader.Find("Sprites/Default")) { name = "Gyeonggong Afterimage" }; _afterBlock = new MaterialPropertyBlock(); }
-            Vector3 start = new Vector3(from.x, 0.5f, from.z);
-            InkParticles.Burst(start, 12, new Color(0.7f, 1f, 0.95f, 0.8f), new Color(Teal.r, Teal.g, Teal.b, 0.4f), 2.2f, 0.25f, 0.5f, -0.2f);
-            var skins = e.GetComponentsInChildren<SkinnedMeshRenderer>();
-            var solids = e.GetComponentsInChildren<MeshFilter>();
-            float t = 0f, next = 0f;
-            _live.Add(dt =>
-            {
-                t += dt;
-                if (e == null || e.IsDead) return false;
-                next -= dt;
-                if (next <= 0f && t < 0.35f) { next = 0.05f; Afterimage(skins, solids); }
-                return t < 0.35f;
-            });
+            InkParticles.Burst(new Vector3(from.x, 0.5f, from.z), 12, new Color(0.7f, 1f, 0.95f, 0.8f), new Color(Teal.r, Teal.g, Teal.b, 0.4f), 2.2f, 0.25f, 0.5f, -0.2f);
         }
 
-        // 한 장의 잔상: 보이는 몸 메시를 그 자세 그대로 구워 청록 반투명으로 남겨요 (흐려지면 구운 메시도 지워요)
-        void Afterimage(SkinnedMeshRenderer[] skins, MeshFilter[] solids)
+        void Trail(EnemyBrain e, Vector3 from, Vector3 to)
         {
-            var holder = new GameObject("Gyeonggong Afterimage").transform;
-            holder.SetParent(transform, false);
-            var parts = new List<(MeshRenderer r, Mesh baked)>();
-            foreach (var s in skins)
+            if (e == null || e.IsDead) return;
+            if (_afterMat == null) { _afterMat = new Material(Shader.Find("Sprites/Default")) { name = "Gyeonggong Afterimage" }; _afterBlock = new MaterialPropertyBlock(); }
+            from.y = to.y = e.transform.position.y;
+            if ((to - from).sqrMagnitude < 0.04f) return;
+            // 도착 순간 자세를 한 번만 구워요 (잔상 여섯 장이 같은 메시를 같이 써요)
+            var poses = new List<(Mesh mesh, Vector3 offset, Quaternion rot, Vector3 scale, bool baked)>(); // 몸 기준 자리 (잔상은 지금 자세를 옮겨 놓은 것)
+            Vector3 body = e.transform.position;
+            foreach (var s in e.GetComponentsInChildren<SkinnedMeshRenderer>())
             {
                 if (s == null || !s.enabled || !s.gameObject.activeInHierarchy) continue;
                 var mesh = new Mesh { name = "Afterimage" };
                 s.BakeMesh(mesh, true);
-                parts.Add((Part(holder, mesh, s.transform.position, s.transform.rotation, Vector3.one), mesh));
+                poses.Add((mesh, s.transform.position - body, s.transform.rotation, Vector3.one, true)); // 구운 메시에는 크기가 들어 있어요
             }
-            foreach (var f in solids)
+            foreach (var f in e.GetComponentsInChildren<MeshFilter>())
             {
                 if (f == null || f.sharedMesh == null) continue;
                 var mr = f.GetComponent<MeshRenderer>();
                 if (mr == null || !mr.enabled || !f.gameObject.activeInHierarchy) continue;
-                parts.Add((Part(holder, f.sharedMesh, f.transform.position, f.transform.rotation, f.transform.lossyScale), null));
+                poses.Add((f.sharedMesh, f.transform.position - body, f.transform.rotation, f.transform.lossyScale, false));
             }
+            if (poses.Count == 0) return;
+            var holders = new List<(Transform t, List<MeshRenderer> parts, float delay, float strength)>();
+            for (int i = 0; i < AfterCount; i++)
+            {
+                float k = i / (float)AfterCount; // 0 = 출발, 도착 바로 앞까지
+                var holder = new GameObject("Gyeonggong Afterimage").transform;
+                holder.SetParent(transform, false);
+                var parts = new List<MeshRenderer>();
+                Vector3 at = Vector3.Lerp(from, to, k);
+                foreach (var p in poses) parts.Add(Part(holder, p.mesh, at + p.offset, p.rot, p.scale));
+                holders.Add((holder, parts, k * 0.12f, Mathf.Lerp(0.2f, 0.55f, k)));
+            }
+            InkParticles.Burst(new Vector3(to.x, 0.5f, to.z), 8, new Color(0.7f, 1f, 0.95f, 0.8f), new Color(Teal.r, Teal.g, Teal.b, 0.3f), 1.6f, 0.2f, 0.4f, -0.2f);
             float t = 0f;
+            const float life = 0.4f;
             _live.Add(dt =>
             {
                 t += dt;
-                float a = 0.45f * (1f - t / 0.35f);
-                foreach (var p in parts)
-                    if (p.r != null)
-                    {
-                        _afterBlock.SetColor("_Color", new Color(Teal.r, Teal.g, Teal.b, Mathf.Max(0f, a)));
-                        p.r.SetPropertyBlock(_afterBlock);
-                    }
-                if (t < 0.35f) return true;
-                foreach (var p in parts) if (p.baked != null) Destroy(p.baked);
-                if (holder != null) Destroy(holder.gameObject);
+                bool any = false;
+                foreach (var h in holders)
+                {
+                    float a = h.strength * (1f - Mathf.Clamp01((t - h.delay) / life)); // 출발 쪽부터 차례로 흐려져요
+                    if (a > 0f) any = true;
+                    _afterBlock.SetColor("_Color", new Color(Teal.r, Teal.g, Teal.b, Mathf.Max(0f, a)));
+                    foreach (var r in h.parts) if (r != null) r.SetPropertyBlock(_afterBlock);
+                }
+                if (any) return true;
+                foreach (var h in holders) if (h.t != null) Destroy(h.t.gameObject);
+                foreach (var p in poses) if (p.baked && p.mesh != null) Destroy(p.mesh);
                 return false;
             });
         }
