@@ -7,7 +7,7 @@
 #   - 특징: prop=<VARCO 소품.glb>@<자리> · banner(등 깃발) · scarf(붉은 목도리) · blowhorn(나팔 부는 동작, BlowHorn)
 #   - <Name>_Rigged.fbx로 내보내요 (플레이어와 같은 축 설정)
 import bpy, bmesh, sys, os, math
-from mathutils import Vector, Quaternion
+from mathutils import Vector, Quaternion, Matrix
 
 argv = sys.argv[sys.argv.index("--") + 1:]
 src, out_dir, NAME = os.path.abspath(argv[0]), os.path.abspath(argv[1]), argv[2]
@@ -3066,6 +3066,190 @@ if UNIQUE and ("playeranim" in EXTRAS or "float" in EXTRAS):
     elif UNIQUE == "greatsword":
         replace_action("Punch2", [(0, "wind"), (4, "sweep"), (8, "raise"), (13, "chop"), (17, "chop"), (24, "idle")], unique_pose)
         replace_action("Quake", [(0, "idle"), (14, "raise"), (19, "raise"), (24, "plant"), (34, "plant"), (44, "idle")], unique_pose)
+
+
+# ── 보스·고수 패턴 정리 1차 (bossv2, 무협): 새 동작을 더해요 (예전 동작은 그대로 두고, 어느 것을 쓸지는 Unity MoveSpec이 정해요)
+#   청죽객 Thrust3: 쾌검 3연격 = 허리에서 곧게 찌르기 셋 (가운데 → 위 → 낮게 파고들기), 0.3초 간격
+#   혜광 StaffSpin: 선장을 두 손으로 가로 들고 몸째 한 바퀴 휘둘러요 (엉덩이째 360° 돌아요)
+#   탁랑객 PushThrust: 물살 찌르기 = 낮게 버텼다가 왼 손바닥으로 칼자루를 밀며 앞으로 쭉 내질러요
+#   혈영검마 BloodSpike: 혈조 = 검을 거꾸로 치켜들었다가 한쪽 무릎을 꿇으며 앞 땅에 내리꽂아요
+#   녹림왕 BambooChop: 불타는 대나무 = 대도를 오른 어깨 위로 감았다가 왼 아래로 비스듬히 크게 베어 넘겨요
+#   혈불 BloodSea: 혈해 = 합장하고 버티다가 두 손바닥을 펴 아래로 내리며 발밑에 핏물을 펼쳐요
+#   철룡 ChainPoint: 물기둥 줄 = 유성추 사슬은 오른손에 늘어뜨리고, 왼팔을 곧게 뻗어 앞을 가리켜요
+#   천마 Iaido: 발도 일섬 = 왼 허리 칼집 자리에 칼을 거두고 웅크렸다가(예고) 오른쪽으로 길게 뽑아 벱니다 · OrbThrow: 마기 포박 = 왼손에 구슬을 받쳐 들었다가 앞으로 천천히 밀어 던져요
+#        RiftCut: 차원 베기 = 허공을 세 번 찢어요 (오른 위 → 가로 → 왼 아래에서 올려) · Meteor: 유성 = 몸을 젖히며 왼손을 하늘로 높이 들어요
+if "bossv2" in EXTRAS:
+    XA = Vector((1, 0, 0))
+
+    def b2_grip_both(grip, blade_dir):
+        arm("Right", grip, Vector((-1, 0.3, 0)))
+        point_blade(blade_dir, wrist_bend=90)
+        g, d = blade_now()
+        arm("Left", g - d * 0.14, Vector((1, 0.3, 0)))
+
+    def b2_left(kind):
+        sl = pb["LeftArm"].head.copy()
+        if kind == "sign":
+            arm("Left", sl + Vector((-0.12, -0.32, -0.05)), Vector((1, 0.3, -0.6)))   # 검결: 가슴 앞
+        elif kind == "back":
+            arm("Left", sl + Vector((0.3, 0.2, -0.4)), Vector((1, 0.3, -0.3)))
+        elif kind == "wide":
+            arm("Left", sl + Vector((0.55, -0.15, 0.1)), Vector((1, 0.3, 0)))
+
+    def b2_pose(stage):
+        if stage == "idle":
+            idle_end_pose(); return
+        if isinstance(stage, tuple) and stage[0] == "spin":   # 혜광: 엉덩이째 돌아요 (발까지 같이)
+            ang = stage[1]
+            hp = pb["Hips"]
+            m = Matrix.Rotation(math.radians(ang), 4, 'Z') @ hp.matrix
+            m.translation.z -= 0.12
+            hp.matrix = m
+            bpy.context.view_layer.update()
+            bend("Spine", XA, 10)
+            sl, sr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+            fwd = Matrix.Rotation(math.radians(ang), 3, 'Z') @ Vector((0, -1, 0))
+            side = Matrix.Rotation(math.radians(ang), 3, 'Z') @ Vector((1, 0, 0))
+            mid = (sl + sr) / 2 + fwd * 0.42 + Vector((0, 0, -0.05))
+            arm("Right", mid - side * 0.14, Vector((-0.3, 0.3, -1)))
+            point_blade(-side, wrist_bend=90)                                   # 선장을 가로로
+            arm("Left", mid + side * 0.14, Vector((0.3, 0.3, -1)))
+            return
+        sl, sr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+        if NAME == "Qingzhu":
+            lift, dy, step, wrist, blade, left = {
+                "t_ready": (-0.15, 0.06, 0.15, Vector((0.05, 0.25, -0.35)), Vector((0, -1, 0.05)), "sign"),
+                "t_back": (-0.18, 0.0, 0.3, Vector((0.05, 0.15, -0.3)), Vector((0, -1, 0.05)), "sign"),
+                "t_mid": (-0.22, -0.25, 0.55, Vector((0.05, -1, -0.05)), Vector((0, -1, 0)), "back"),
+                "t_high": (-0.15, -0.25, 0.55, Vector((0.05, -1, 0.35)), Vector((0, -1, 0.3)), "back"),
+                "t_low": (-0.42, -0.4, 0.75, Vector((0.05, -1, -0.3)), Vector((0, -1, -0.15)), "back"),
+            }[stage]
+            lower_hips(lift, {"Left": FEET["Left"] + Vector((0, -step, 0)), "Right": FEET["Right"] + Vector((0, step * 0.3, 0))}, dy=dy)
+            if stage == "t_low": bend("Spine", XA, 18)
+            sr = pb["RightArm"].head.copy()
+            arm("Right", sr + wrist.normalized() * (REACH if wrist.y < 0 else REACH * 0.7), Vector((-0.5, 0.3, -1)))
+            point_blade(blade, wrist_bend=80)
+            b2_left(left)
+        elif NAME == "Takrang":
+            if stage == "p_ready":
+                lower_hips(-0.32, {"Left": FEET["Left"] + Vector((0, -0.2, 0)), "Right": FEET["Right"] + Vector((0, 0.2, 0))}, dy=0.08)
+                bend("Spine", XA, 12)
+                sr = pb["RightArm"].head.copy()
+                arm("Right", sr + Vector((0.1, 0.2, -0.35)), Vector((-1, 0.3, -0.3))); point_blade(Vector((0, -1, 0)), wrist_bend=80)
+                g, d = blade_now(); arm("Left", g - d * 0.12 + Vector((0.04, 0.02, 0)), Vector((1, 0.3, -0.3)))   # 왼 손바닥을 칼자루 끝에
+            else:
+                lower_hips(-0.3, {"Left": FEET["Left"] + Vector((0, -0.65, 0)), "Right": FEET["Right"] + Vector((0, 0.25, 0))}, dy=-0.45)
+                bend("Spine", XA, 16)
+                sr = pb["RightArm"].head.copy()
+                arm("Right", sr + Vector((0.12, -1, -0.1)).normalized() * REACH, Vector((-0.5, 0, -1))); point_blade(Vector((0, -1, 0)), wrist_bend=80)
+                g, d = blade_now(); arm("Left", g - d * 0.12 + Vector((0.04, 0.02, 0)), Vector((1, 0.3, -0.3)))
+        elif NAME == "BloodShadow":
+            if stage == "raise":
+                lower_hips(-0.05, FEET, dy=0.04); bend("Spine", XA, -12)
+                b2_grip_both((sl + sr) / 2 + Vector((0, -0.12, 0.62)), Vector((0, -0.1, -1)))   # 칼끝이 아래를 향하게 거꾸로 치켜들어요
+            else:
+                hip_h = B["Hips"].head_local.z
+                lower_hips(-hip_h * 0.45, {"Left": FEET["Left"] + Vector((0, -0.25, 0)), "Right": FEET["Right"] + Vector((0, 0.45, 0.0))}, dy=-0.05)
+                bend("Spine", XA, 30); bend("Neck", XA, 15)
+                sl, sr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+                b2_grip_both((sl + sr) / 2 + Vector((0, -0.5, -0.45)), Vector((0, -0.1, -1)))
+        elif NAME == "Nokrim":
+            if stage == "c_wind":
+                lower_hips(-0.12, FEET, dy=0.05); bend("Spine", UP, -40); bend("Spine1", UP, -15)
+                sr = pb["RightArm"].head.copy()
+                arm("Right", sr + Vector((-0.25, 0.25, 0.55)), Vector((-1, 0.3, 0))); point_blade(Vector((-0.4, 0.5, 0.7)), wrist_bend=80)
+                b2_left("wide")
+            else:
+                lower_hips(-0.3, {"Left": FEET["Left"] + Vector((0, -0.35, 0)), "Right": FEET["Right"] + Vector((0, 0.1, 0))}, dy=-0.15)
+                bend("Spine", UP, 45); bend("Spine", XA, 20)
+                sr = pb["RightArm"].head.copy()
+                arm("Right", sr + Vector((0.7, -0.6, -0.5)).normalized() * REACH, Vector((-1, 0.3, -0.3))); point_blade(Vector((0.8, -0.3, -0.5)), wrist_bend=80)
+                b2_left("back")
+        elif NAME == "BloodBuddha":
+            if stage == "pray":
+                lower_hips(-0.15, FEET, dy=0.03); bend("Neck", XA, 18)
+                prayer_arms()
+            else:   # spread: 두 손바닥을 펴 아래 바깥으로 내려요
+                lower_hips(-0.3, FEET, dy=0.05); bend("Spine", XA, 14); bend("Neck", XA, 25)
+                for s, sx in (("Left", 1), ("Right", -1)):
+                    sh = pb[f"{s}Arm"].head.copy()
+                    arm(s, sh + Vector((sx * 0.55, -0.35, -0.55)), Vector((sx, 0.3, -0.3)))
+                    bend(f"{s}Hand", XA, -50)
+        elif NAME == "IronDragon":   # point
+            lower_hips(-0.12, {"Left": FEET["Left"] + Vector((0, -0.3, 0)), "Right": FEET["Right"] + Vector((0, 0.15, 0))}, dy=-0.05)
+            bend("Spine", UP, 20); bend("Spine", XA, 8)
+            sl, sr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+            arm("Left", sl + Vector((-0.1, -1, 0.05)).normalized() * REACH, Vector((1, 0, -0.5)))       # 왼팔을 곧게 뻗어 가리켜요
+            arm("Right", sr + Vector((-0.25, 0.25, -0.5)), Vector((-1, 0.3, -0.3)))
+            point_blade(Vector((0, 0.25, -1)), wrist_bend=90)                                          # 유성추 사슬은 아래로 늘어뜨려요
+        elif NAME == "HeavenlyDemon":
+            if stage == "i_ready":   # 칼을 왼 허리 칼집 자리에 거두고 낮게 웅크려요
+                lower_hips(-0.38, {"Left": FEET["Left"] + Vector((0, -0.3, 0)), "Right": FEET["Right"] + Vector((0, 0.2, 0))}, dy=0.06)
+                bend("Spine", UP, -35); bend("Spine", XA, 18)
+                sl, sr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+                hip_l = sl + Vector((-0.05, -0.05, -0.5))
+                arm("Right", hip_l + Vector((-0.08, -0.12, 0.02)), Vector((-1, 0.3, -0.5))); point_blade(Vector((0.3, 1, -0.2)), wrist_bend=80)
+                arm("Left", hip_l, Vector((1, 0.3, -0.5)))
+            elif stage == "i_cut":   # 오른쪽 앞으로 길게 뽑아 벤 끝
+                lower_hips(-0.35, {"Left": FEET["Left"] + Vector((0, -0.6, 0)), "Right": FEET["Right"] + Vector((0, 0.25, 0))}, dy=-0.4)
+                bend("Spine", UP, 45); bend("Spine", XA, 14)
+                sr = pb["RightArm"].head.copy()
+                arm("Right", sr + Vector((-0.8, -0.6, 0.0)).normalized() * REACH, Vector((-0.5, 0.3, -1))); point_blade(Vector((-1, -0.3, 0)), wrist_bend=80)
+                b2_left("back")
+            elif stage in ("o_hold", "o_throw"):
+                hold = stage == "o_hold"
+                lower_hips(-0.12, {"Left": FEET["Left"] + Vector((0, -0.1 if hold else -0.35, 0)), "Right": FEET["Right"]}, dy=0.02 if hold else -0.15)
+                bend("Spine", UP, -20 if hold else 15)
+                sl, sr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+                if hold:
+                    arm("Left", sl + Vector((-0.05, -0.35, 0.05)), Vector((1, 0.3, -0.5))); bend("LeftHand", XA, 60)   # 손바닥을 위로 받쳐 들어요
+                else:
+                    arm("Left", sl + Vector((-0.1, -1, 0.1)).normalized() * REACH, Vector((1, 0, -0.5))); bend("LeftHand", XA, -40)
+                arm("Right", sr + Vector((-0.2, 0.1, -0.5)), Vector((-1, 0.3, -0.3))); point_blade(Vector((0, 0.2, -1)), wrist_bend=80)
+            elif stage in ("r1", "r2", "r3"):
+                twist, wrist, blade = {
+                    "r1": (35, Vector((0.55, -0.7, -0.35)), Vector((0.8, -0.4, -0.6))),     # 오른 위에서 왼 아래로
+                    "r2": (-40, Vector((-0.65, -0.7, 0.05)), Vector((-1, -0.3, 0))),        # 가로로
+                    "r3": (25, Vector((0.3, -0.6, 0.7)), Vector((0.3, -0.3, 1))),           # 아래에서 위로 올려
+                }[stage]
+                lower_hips(-0.25, {"Left": FEET["Left"] + Vector((0, -0.4, 0)), "Right": FEET["Right"] + Vector((0, 0.15, 0))}, dy=-0.2)
+                bend("Spine", UP, twist * 0.6); bend("Spine1", UP, twist * 0.4)
+                sr = pb["RightArm"].head.copy()
+                arm("Right", sr + wrist.normalized() * REACH, Vector((-0.5, 0.3, -1))); point_blade(blade, wrist_bend=80)
+                b2_left("sign")
+            else:   # m_up: 유성
+                lower_hips(-0.08, FEET, dy=0.06); bend("Spine", XA, -16); bend("Neck", XA, -30)
+                sl, sr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+                arm("Left", sl + Vector((-0.05, 0.0, 1)).normalized() * REACH, Vector((1, 0.3, 0)))
+                arm("Right", sr + Vector((-0.3, 0.1, -0.5)), Vector((-1, 0.3, -0.3))); point_blade(Vector((0.2, 0.3, -1)), wrist_bend=80)
+
+    def b2(name, keys):
+        old = bpy.data.actions.get(name)
+        if old is not None:
+            bpy.data.actions.remove(old)
+        make_action(name, keys, b2_pose)
+        rig.animation_data.action = None
+        reset_pose()
+
+    if NAME == "Qingzhu":
+        b2("Thrust3", [(0, "t_ready"), (3, "t_mid"), (7, "t_back"), (12, "t_high"), (16, "t_back"), (21, "t_low"), (28, "t_low"), (36, "idle")])
+    elif NAME == "Hyegwang":
+        b2("StaffSpin", [(0, ("spin", 40)), (4, ("spin", 40)), (7, ("spin", -50)), (10, ("spin", -140)), (13, ("spin", -230)), (16, ("spin", -320)), (19, ("spin", -360)), (28, "idle")])
+    elif NAME == "Takrang":
+        b2("PushThrust", [(0, "p_ready"), (4, "p_push"), (14, "p_push"), (24, "idle")])
+    elif NAME == "BloodShadow":
+        b2("BloodSpike", [(0, "idle"), (6, "raise"), (12, "raise"), (16, "plant"), (34, "plant"), (42, "idle")])
+    elif NAME == "Nokrim":
+        b2("BambooChop", [(0, "c_wind"), (8, "c_wind"), (12, "c_cut"), (22, "c_cut"), (32, "idle")])
+    elif NAME == "BloodBuddha":
+        b2("BloodSea", [(0, "idle"), (8, "pray"), (20, "pray"), (26, "spread"), (40, "spread"), (48, "idle")])
+    elif NAME == "IronDragon":
+        b2("ChainPoint", [(0, "idle"), (6, "point"), (20, "point"), (28, "idle")])
+    elif NAME == "HeavenlyDemon":
+        b2("Iaido", [(0, "i_ready"), (10, "i_ready"), (12, "i_cut"), (22, "i_cut"), (32, "idle")])
+        b2("OrbThrow", [(0, "o_hold"), (10, "o_hold"), (16, "o_throw"), (26, "o_throw"), (34, "idle")])
+        b2("RiftCut", [(0, "r1"), (5, "r2"), (10, "r3"), (18, "r3"), (28, "idle")])
+        b2("Meteor", [(0, "idle"), (8, "m_up"), (30, "m_up"), (38, "idle")])
 
 # attackonly (Humanoid 적: 산적·방패병·살수): 대기·달리기·등장은 플레이어 동작을 그대로 옮겨 입으니, 고유 공격(Attack) 하나만 남겨요
 if "attackonly" in EXTRAS:
