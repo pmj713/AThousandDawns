@@ -262,7 +262,7 @@ namespace AThousandDawns.Fx
         {
             int fontSize = Mathf.RoundToInt(h * 0.04f);
             if (_dawnStyle == null) // 한 번만 만들어요 (글자 크기만 화면에 맞춰 바꿔요)
-                _dawnStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, normal = { textColor = Ink } };
+                _dawnStyle = InkMeridianArt.LockText(new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, normal = { textColor = Ink } }); // 마우스를 올려도 글자색 그대로
             _dawnStyle.fontSize = fontSize;
             var style = _dawnStyle;
             GUI.color = new Color(1f, 1f, 1f, _line);

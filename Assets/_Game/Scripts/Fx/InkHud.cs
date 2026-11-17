@@ -507,6 +507,7 @@ namespace AThousandDawns.Fx
             _gaugeLabel = new GUIStyle(_number) { fontSize = 15 };
             _key = new GUIStyle(GUI.skin.label) { fontSize = 14, alignment = TextAnchor.MiddleCenter };
             _key.normal.textColor = Paper;
+            InkMeridianArt.LockText(_number); InkMeridianArt.LockText(_small); InkMeridianArt.LockText(_badge); InkMeridianArt.LockText(_gaugeLabel); InkMeridianArt.LockText(_key); // 마우스를 올려도 글자색 그대로
         }
 
         // 보스·고수 체력바: 판타지 진영(차원 겹침)이면 이름 왼쪽에 작은 스테인드글라스 문장 (FantasyFx/Crest, 숨 쉬듯 은은히 빛나요). 무협 보스는 그대로.

@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 namespace AThousandDawns.Art
 {
     // 차원 겹침 적끼리 싸움 · 협력 (그림만 — 누가 누구를 노리는지는 게임 코드 EnemyBrain.Rival.cs 그대로).
-    //   적대 (RivalChanged → Rival): 노리기 시작하면 머리 위 "!"가 튀어 올랐다 사라지고 (무협 = 먹 붓 !, 판타지 = 붉은·금빛 유리 !),
+    //   적대 (RivalChanged → Rival): 노리기 시작하면 머리 위 "!"가 튀어 올랐다 사라지고 (작게, 무협 = 호박빛 · 판타지 = 연보라, 짙은 테두리),
     //     노리는 동안 그 적 쪽으로 짧은 적대선이 뻗어요 (무협 = 먹선, 판타지 = 붉은 금빛선).
     //   적끼리 피격 (RivalHit): 먹 튐과 유리 조각이 부딪치는 충돌 빛 — 먹 쪽이 무협 적 쪽을 향해요 (플레이어 타격의 먹 베기와 구분).
     //   적이 적을 쓰러뜨림 (RivalHit 뒤 맞은 적이 쓰러짐): 그 자리에 쓰러뜨린 쪽 진영 표시가 쾅 (무협 = 붉은 낙관, 판타지 = 유리 문장).
@@ -94,22 +94,29 @@ namespace AThousandDawns.Art
 
         void Bang(EnemyBrain e)
         {
-            var sprite = Fantasy(e) ? _bangGlass : _bangInk;
-            var tint = Fantasy(e) ? Color.white : new Color(1f, 0.25f, 0.15f); // 무협 !: 흰 붓 모양을 붉게
+            // (플레이테스트: 너무 크고 색이 튀어요) → 머리 위에 작게, 흰 마스크 ! 하나를 진영 색으로 + 짙은 테두리 한 겹 (밝은 바닥에서도 읽히게)
+            var sprite = _bangInk;
+            var tint = Fantasy(e) ? new Color(0.8f, 0.58f, 1f) : new Color(1f, 0.78f, 0.22f); // 판타지 연보라 · 무협 호박빛
             if (sprite == null) return;
-            var sr = Billboard(sprite, e.transform.position + Vector3.up * (Head(e) + 0.45f), 0.55f, 12);
+            var sr = Billboard(sprite, e.transform.position + Vector3.up * (Head(e) + 0.25f), 0.3f, 12);
             if (sr == null) return;
             var pivot = sr.transform.parent;
+            var rim = new GameObject("Rim").AddComponent<SpriteRenderer>();
+            rim.transform.SetParent(sr.transform, false);
+            rim.transform.localScale = Vector3.one * 1.25f;
+            rim.sprite = sprite;
+            rim.sortingOrder = 11;
             Vector3 unit = sr.transform.localScale;
             float t = 0f, head = Head(e);
             _live.Add(dt =>
             {
                 if (sr == null) return false;
                 t += dt;
-                if (e != null) pivot.position = e.transform.position + Vector3.up * (head + 0.45f + 0.25f * Mathf.Clamp01(t / 0.9f));
+                if (e != null) pivot.position = e.transform.position + Vector3.up * (head + 0.25f + 0.12f * Mathf.Clamp01(t / 0.9f));
                 float pop = t < 0.12f ? Mathf.Lerp(0.3f, 1.25f, t / 0.12f) : Mathf.Lerp(1.25f, 1f, Mathf.Clamp01((t - 0.12f) / 0.1f));
                 sr.transform.localScale = unit * pop;
                 sr.color = new Color(tint.r, tint.g, tint.b, t < 0.65f ? 1f : Mathf.Clamp01(1f - (t - 0.65f) / 0.3f));
+                rim.color = new Color(0.18f, 0.1f, 0.06f, 0.8f * sr.color.a);
                 if (t < 0.95f) return true;
                 Destroy(pivot.gameObject);
                 return false;

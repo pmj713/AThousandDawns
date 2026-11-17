@@ -98,26 +98,68 @@ namespace AThousandDawns.Art
 
         // 고블린 궁수 (판타지): 금빛 화살대 · 붉은 유리 촉 · 청록 깃 + 붉은→금빛 빛 꼬리 (수묵과 다른 또렷한 채색)
         // 임프 화염탄 (판타지): 돌아가는 작은 불덩이 + 불길 + 주홍 불꼬리. 사라질 때(맞거나 사거리 끝) 작은 불꽃이 튀어요 (InkImpBolt)
+        // (플레이테스트: 문장 그림 + 위로 솟는 불길이 어색) → 빛나는 불덩이 구슬 (흰 노란 속 + 주황 겉불이 일렁여요) + 화면을 향한 가는 불꼬리 + 드문 불티
         void BuildImpBolt(Transform visual)
         {
-            if (!_fireballLoaded) { _fireballLoaded = true; _fireball = Resources.Load<Sprite>("EliteFx/Fireball"); }
-            if (_fireball != null)
+            var glow = GlowSprite();
+            if (glow != null)
             {
                 var pivot = new GameObject("Bolt").transform;
                 pivot.SetParent(visual, false);
                 pivot.gameObject.AddComponent<InkFaceCamera>();
-                var go = new GameObject("Sprite");
-                go.transform.SetParent(pivot, false);
-                go.transform.localScale = Vector3.one * (0.5f / Mathf.Max(0.01f, _fireball.bounds.size.x));
-                go.AddComponent<SpriteRenderer>().sprite = _fireball;
+                Orb(pivot, glow, 0.75f, new Color(1f, 0.38f, 0.08f, 0.85f), 4);   // 겉불
+                Orb(pivot, glow, 0.38f, new Color(1f, 0.92f, 0.6f, 1f), 5);       // 속
+                pivot.gameObject.AddComponent<InkFlicker>();
             }
-            InkParticles.Fire(visual, Vector3.zero, 0.25f, 1.2f);
-            Trail(visual, Vector3.zero, 0.22f, 0.25f, new Color(1f, 0.5f, 0.1f, 0.9f));
+            InkParticles.Embers(visual, Vector3.zero, 0.08f, 0.6f);
+            var tail = new GameObject("Fire Tail");
+            tail.transform.SetParent(visual, false);
+            var trail = tail.AddComponent<TrailRenderer>();
+            trail.sharedMaterial = GlowMaterial();
+            trail.time = 0.18f;
+            trail.minVertexDistance = 0.04f;
+            trail.widthCurve = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(1f, 0f));
+            trail.widthMultiplier = 0.32f;
+            trail.colorGradient = new Gradient
+            {
+                colorKeys = new[] { new GradientColorKey(new Color(1f, 0.85f, 0.4f), 0f), new GradientColorKey(new Color(0.9f, 0.2f, 0.05f), 1f) },
+                alphaKeys = new[] { new GradientAlphaKey(0.9f, 0f), new GradientAlphaKey(0f, 1f) },
+            };
+            trail.alignment = LineAlignment.View; // 카메라를 향해 (바닥에 눕히면 납작해 보여요)
+            trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            trail.receiveShadows = false;
             visual.gameObject.AddComponent<InkImpBolt>();
         }
 
-        static Sprite _fireball;
-        static bool _fireballLoaded;
+        static void Orb(Transform parent, Sprite glow, float size, Color color, int order)
+        {
+            var go = new GameObject("Orb");
+            go.transform.SetParent(parent, false);
+            go.transform.localScale = Vector3.one * (size / Mathf.Max(0.01f, glow.bounds.size.x));
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = glow;
+            sr.color = color;
+            sr.sortingOrder = order;
+        }
+
+        // 부드러운 둥근 빛 (FxArt/InkMist 흰 마스크를 스프라이트로) · 꼬리용 재질 — 한 번만 만들어요
+        static Sprite _glow;
+        static Material _glowMat;
+        static Sprite GlowSprite()
+        {
+            if (_glow != null) return _glow;
+            var tex = Resources.Load<Texture2D>("FxArt/InkMist");
+            if (tex != null) _glow = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f);
+            return _glow;
+        }
+        static Material GlowMaterial()
+        {
+            if (_glowMat != null) return _glowMat;
+            _glowMat = new Material(Shader.Find("Sprites/Default")) { name = "Imp Fire Tail" };
+            var tex = Resources.Load<Texture2D>("FxArt/InkMist");
+            if (tex != null) _glowMat.mainTexture = tex;
+            return _glowMat;
+        }
 
         // 보스 부채꼴 견제 3발 (EnemyBrain.BossVolley, "Arrow"의 Owner가 그 보스): 녹림왕 대도 검풍 = 금빛 검기 초승달 · 혈불 혈장 = 핏빛 손바닥
         //   철룡 작살 = 작살 · 천마 마기탄 = 진홍 마기 덩어리 + 보랏빛 불티 · 오우거 돌팔매 = 구르는 바위. 꼬리 색도 보스마다.
@@ -420,6 +462,14 @@ namespace AThousandDawns.Art
             }
             if (t > 1.6f) Destroy(gameObject);
         }
+    }
+
+    // 불덩이 일렁임: 크기가 빠르게 들썩여요
+    public class InkFlicker : MonoBehaviour
+    {
+        float _seed;
+        void Start() => _seed = Random.Range(0f, 10f);
+        void Update() { float t = Time.time * 18f + _seed; transform.localScale = Vector3.one * (1f + 0.12f * Mathf.Sin(t) + 0.06f * Mathf.Sin(t * 2.3f)); }
     }
 
     // 그림을 화면 안에서 빙글빙글 (구르는 바위)

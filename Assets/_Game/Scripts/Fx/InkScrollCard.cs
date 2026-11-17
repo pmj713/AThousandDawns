@@ -96,7 +96,8 @@ namespace AThousandDawns.Fx
                 clipping = TextClipping.Clip,
                 padding = new RectOffset(p.left + 10, p.right + 10, p.top + 8, p.bottom + 10),
             };
-            style.normal.textColor = style.hover.textColor = style.active.textColor = style.focused.textColor = InkText;
+            style.normal.textColor = InkText;
+            InkMeridianArt.LockText(style); // hover · active · focused · on* 모두 먹색 그대로
             // 카드 두 종류(아이콘 있음·없음)를 따로 들고 있어요
             if (_style == null) { _styleFrom = from; _style = style; }
             else { _styleFrom2 = from; _style2 = style; }

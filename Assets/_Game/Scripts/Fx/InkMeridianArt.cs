@@ -85,6 +85,17 @@ namespace AThousandDawns.Fx
             style.border = new RectOffset(28, 28, 12, 12); // 번진 가장자리는 늘리지 않게
         }
 
+        // 마우스를 올리거나 누르거나 포커스가 가도 글자색이 바뀌지 않게 (플레이테스트: Unity 기본 hover 글자색이 흰색이라 글자가 하얗게 변해요).
+        // normal.textColor를 hover · active · focused · on* 상태에 그대로 복사해요. 스타일을 만든 뒤 한 번 부르면 돼요.
+        public static GUIStyle LockText(GUIStyle style)
+        {
+            if (style == null) return null;
+            var c = style.normal.textColor;
+            style.hover.textColor = style.active.textColor = style.focused.textColor = c;
+            style.onNormal.textColor = style.onHover.textColor = style.onActive.textColor = style.onFocused.textColor = c;
+            return style;
+        }
+
         static Rect Grow(Rect r, float ratio)
         {
             float dx = r.width * ratio * 0.5f, dy = r.height * ratio * 0.5f;
