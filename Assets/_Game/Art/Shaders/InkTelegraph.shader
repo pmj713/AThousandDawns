@@ -1,4 +1,5 @@
-// 적 공격 예고 (수묵 시험판). 원래 색·밝기는 그대로 두고 붓 자국 같은 농담과 종이 결만 얹어요 (읽히는 건 그대로).
+// 적 공격 예고. 원래 색·밝기는 그대로 두고 붓 자국 같은 농담과 종이 결만 얹어요 (읽히는 건 그대로).
+// 반투명 (플레이테스트 3차: 바닥이 비쳐 보이게): 투명도는 _BaseColor.a — 바탕 0.3 · 차오름 0.5 (재질).
 Shader "AThousandDawns/InkTelegraph"
 {
     Properties
@@ -9,12 +10,14 @@ Shader "AThousandDawns/InkTelegraph"
 
     SubShader
     {
-        Tags { "RenderPipeline" = "UniversalPipeline" "RenderType" = "Opaque" "Queue" = "Geometry" }
+        Tags { "RenderPipeline" = "UniversalPipeline" "RenderType" = "Transparent" "Queue" = "Transparent" }
 
         Pass
         {
             Name "Telegraph"
             Tags { "LightMode" = "UniversalForward" }
+            Blend SrcAlpha OneMinusSrcAlpha
+            ZWrite Off
 
             HLSLPROGRAM
             #pragma vertex Vert
@@ -60,7 +63,7 @@ Shader "AThousandDawns/InkTelegraph"
                 // 한 방향으로 그은 붓 자국 같은 길쭉한 농담 + 잔 종이 결
                 float stroke = Noise2(float2(p.x * 1.2 + p.y * 0.4, p.y * 6.0)) * 0.7 + Noise2(p * 9.0) * 0.3;
                 half shade = 1.0 + (stroke - 0.5) * 2.0 * _Brush;
-                return half4(_BaseColor.rgb * shade, 1.0);
+                return half4(_BaseColor.rgb * shade, _BaseColor.a);
             }
             ENDHLSL
         }

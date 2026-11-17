@@ -154,14 +154,203 @@ namespace AThousandDawns.Art
             });
         }
 
-        // ── 마나 수정 폭발: 청보라 수정 조각 + 마력 고리 두 겹
+        // ── 마나 수정 폭발 (플레이테스트 3차: 돌려쓰지 않고 판타지풍으로 새로): 마력이 한 점으로 빨려 들었다(0.12초)
+        //   청록 · 보랏빛 마력 구가 확 터지며 → 3D 수정 조각(양끝이 뾰족한 결정)이 빙글 돌며 사방으로 튀어 바닥에 떨어져 녹아 사라지고,
+        //   갈래 번개가 바깥으로 번쩍, 바닥엔 마법진이 돌며 퍼지고 마력 고리 두 겹, 청록 불빛(Light)이 번쩍, 마력 안개가 피어올라요.
+        static Mesh _shard;
+        static Material _shardMat, _arcMat;
+        static Sprite _glowSprite;
 
         void Shatter(Vector3 at, float radius)
         {
-            InkParticles.Burst(at + Vector3.up * 0.8f, 26, new Color(0.7f, 0.95f, 1f, 1f), new Color(0.6f, 0.35f, 1f, 0.8f), radius * 2.4f, 0.14f, 0.7f, 1.4f); // 수정 조각
-            InkParticles.Burst(at + Vector3.up * 0.6f, 14, new Color(0.85f, 0.7f, 1f, 0.9f), new Color(0.4f, 0.6f, 1f, 0f), radius * 1.2f, 0.45f, 0.8f, -0.4f);
-            Ring(at, radius * 2f, 0.45f, new Color(0.45f, 0.75f, 1f, 1f), 0f);
-            Ring(at, radius * 2.4f, 0.6f, new Color(0.7f, 0.4f, 1f, 0.9f), 0.08f);
+            at.y = 0f;
+            if (_shardMat == null)
+            {
+                _shardMat = new Material(Shader.Find("Sprites/Default")) { name = "Mana Shard" };
+                _arcMat = new Material(Shader.Find("Sprites/Default")) { name = "Mana Arc" };
+                var mist = Resources.Load<Texture2D>("FxArt/InkMist");
+                if (mist != null) _glowSprite = Sprite.Create(mist, new Rect(0f, 0f, mist.width, mist.height), new Vector2(0.5f, 0.5f), 100f);
+            }
+            if (_shard == null) _shard = ShardMesh();
+            Vector3 core = at + Vector3.up * 0.8f;
+            InkParticles.Burst(core, 16, new Color(0.6f, 0.9f, 1f, 0.9f), new Color(0.6f, 0.4f, 1f, 0f), radius * 0.6f, 0.2f, 0.25f, 0f, false); // 모여드는 반짝임
+            float t = 0f;
+            _live.Add(dt =>
+            {
+                t += dt;
+                if (t < 0.12f) return true;
+                Explode(at, core, radius);
+                return false;
+            });
+        }
+
+        void Explode(Vector3 at, Vector3 core, float radius)
+        {
+            // 수정 조각
+            const int count = 12;
+            for (int i = 0; i < count; i++)
+            {
+                var go = new GameObject("Mana Shard");
+                go.transform.SetParent(transform, false);
+                go.transform.position = core;
+                go.transform.rotation = UnityEngine.Random.rotation;
+                float size = UnityEngine.Random.Range(0.25f, 0.55f);
+                go.transform.localScale = Vector3.one * size;
+                go.AddComponent<MeshFilter>().sharedMesh = _shard;
+                var r = go.AddComponent<MeshRenderer>();
+                r.sharedMaterial = _shardMat;
+                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                Vector3 dir = Quaternion.Euler(0f, i * 360f / count + UnityEngine.Random.Range(-12f, 12f), 0f) * Vector3.forward;
+                Vector3 v = dir * UnityEngine.Random.Range(radius * 1.6f, radius * 2.6f) + Vector3.up * UnityEngine.Random.Range(3f, 6f);
+                Vector3 spin = UnityEngine.Random.onUnitSphere * UnityEngine.Random.Range(360f, 900f);
+                float life = UnityEngine.Random.Range(0.8f, 1.1f), st = 0f;
+                bool landed = false;
+                _live.Add(dt =>
+                {
+                    if (go == null) return false;
+                    st += dt;
+                    if (!landed)
+                    {
+                        v += Vector3.down * 16f * dt;
+                        go.transform.position += v * dt;
+                        go.transform.Rotate(spin * dt, Space.World);
+                        if (go.transform.position.y <= 0.1f)
+                        {
+                            landed = true;
+                            go.transform.position = new Vector3(go.transform.position.x, 0.1f, go.transform.position.z);
+                            InkParticles.Burst(go.transform.position, 3, new Color(0.7f, 1f, 1f, 1f), new Color(0.6f, 0.4f, 1f, 0f), 0.8f, 0.1f, 0.3f, 0.5f);
+                        }
+                    }
+                    float melt = Mathf.Clamp01((st - life * 0.6f) / (life * 0.4f)); // 바닥에서 녹아 사라져요
+                    go.transform.localScale = Vector3.one * size * (1f - melt);
+                    if (st < life) return true;
+                    Destroy(go);
+                    return false;
+                });
+            }
+            // 마력 구 번쩍
+            if (_glowSprite != null)
+            {
+                var pivot = new GameObject("Mana Flash").transform;
+                pivot.SetParent(transform, false);
+                pivot.position = core;
+                pivot.gameObject.AddComponent<InkFaceCamera>();
+                var outer = GlowChild(pivot, new Color(0.55f, 0.45f, 1f, 0.8f), 9);
+                var inner = GlowChild(pivot, new Color(0.85f, 1f, 1f, 1f), 10);
+                float unit = 1f / Mathf.Max(0.01f, _glowSprite.bounds.size.x), ft = 0f;
+                _live.Add(dt =>
+                {
+                    if (pivot == null) return false;
+                    ft += dt;
+                    float k = Mathf.Clamp01(ft / 0.35f);
+                    outer.transform.localScale = Vector3.one * unit * radius * Mathf.Lerp(1f, 3.2f, Mathf.Sqrt(k));
+                    inner.transform.localScale = Vector3.one * unit * radius * Mathf.Lerp(0.8f, 1.6f, k);
+                    outer.color = new Color(0.55f, 0.45f, 1f, 0.8f * (1f - k));
+                    inner.color = new Color(0.85f, 1f, 1f, 1f - k * k);
+                    if (k < 1f) return true;
+                    Destroy(pivot.gameObject);
+                    return false;
+                });
+            }
+            // 청록 불빛
+            var flash = new GameObject("Mana Light").AddComponent<Light>();
+            flash.transform.SetParent(transform, false);
+            flash.transform.position = core;
+            flash.type = LightType.Point;
+            flash.color = new Color(0.5f, 0.85f, 1f);
+            flash.range = radius * 5f;
+            flash.shadows = LightShadows.None;
+            float lt = 0f;
+            _live.Add(dt =>
+            {
+                if (flash == null) return false;
+                lt += dt;
+                flash.intensity = 7f * Mathf.Clamp01(1f - lt / 0.45f);
+                if (lt < 0.45f) return true;
+                Destroy(flash.gameObject);
+                return false;
+            });
+            // 갈래 번개
+            for (int i = 0; i < 6; i++)
+                Arc(core, Quaternion.Euler(UnityEngine.Random.Range(-25f, 10f), i * 60f + UnityEngine.Random.Range(-15f, 15f), 0f) * Vector3.forward, radius * UnityEngine.Random.Range(1.2f, 2f));
+            // 바닥 마법진 · 고리 · 안개 · 불티
+            RuneFlash(at, radius * 2.6f);
+            Ring(at, radius * 2f, 0.45f, new Color(0.45f, 0.85f, 1f, 1f), 0f);
+            Ring(at, radius * 2.8f, 0.6f, new Color(0.7f, 0.4f, 1f, 0.9f), 0.08f);
+            InkParticles.Burst(at + Vector3.up * 0.3f, 18, new Color(0.6f, 0.75f, 1f, 0.7f), new Color(0.45f, 0.3f, 0.9f, 0f), radius * 0.9f, 0.6f, 1.2f, -0.4f);
+            InkParticles.Burst(core, 24, new Color(0.9f, 1f, 1f, 1f), new Color(0.5f, 0.6f, 1f, 0f), radius * 3f, 0.08f, 0.45f, 0.6f);
+        }
+
+        // 번개 한 갈래: 꺾인 선이 0.18초 동안 두 번 깜빡이며 사라져요
+        void Arc(Vector3 from, Vector3 dir, float length)
+        {
+            var go = new GameObject("Mana Arc");
+            go.transform.SetParent(transform, false);
+            var lr = go.AddComponent<LineRenderer>();
+            lr.sharedMaterial = _arcMat;
+            lr.positionCount = 6;
+            lr.widthMultiplier = 0.08f;
+            lr.widthCurve = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(1f, 0.2f));
+            lr.alignment = LineAlignment.View;
+            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            Vector3 side = Vector3.Cross(dir, Vector3.up);
+            side = side.sqrMagnitude < 0.01f ? Vector3.right : side.normalized;
+            for (int p = 0; p < 6; p++)
+                lr.SetPosition(p, from + dir * (length * p / 5f) + (p == 0 ? Vector3.zero : side * UnityEngine.Random.Range(-0.3f, 0.3f) + Vector3.up * UnityEngine.Random.Range(-0.2f, 0.2f)));
+            float t = 0f;
+            _live.Add(dt =>
+            {
+                if (go == null) return false;
+                t += dt;
+                float on = (t < 0.06f || (t > 0.1f && t < 0.15f)) ? 1f : 0.25f;
+                lr.startColor = new Color(0.9f, 1f, 1f, on);
+                lr.endColor = new Color(0.55f, 0.5f, 1f, on * 0.6f);
+                if (t < 0.18f) return true;
+                Destroy(go);
+                return false;
+            });
+        }
+
+        // 바닥 마법진: 펼쳐지며 돌다가 옅어져요
+        void RuneFlash(Vector3 at, float size)
+        {
+            var sr = Flat(_rune, at, size, UnityEngine.Random.Range(0f, 360f), 0.035f, 4);
+            if (sr == null) return;
+            Vector3 unit = sr.transform.localScale;
+            float t = 0f;
+            _live.Add(dt =>
+            {
+                if (sr == null) return false;
+                t += dt;
+                float k = t / 0.8f;
+                sr.transform.localScale = unit * Mathf.Lerp(0.5f, 1.1f, Mathf.Sqrt(Mathf.Clamp01(k)));
+                sr.transform.Rotate(0f, 0f, 120f * dt, Space.Self);
+                sr.color = new Color(0.65f, 0.75f, 1f, 0.9f * (1f - k));
+                if (k < 1f) return true;
+                Destroy(sr.gameObject);
+                return false;
+            });
+        }
+
+        static SpriteRenderer GlowChild(Transform parent, Color color, int order)
+        {
+            var go = new GameObject("Glow");
+            go.transform.SetParent(parent, false);
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = _glowSprite;
+            sr.color = color;
+            sr.sortingOrder = order;
+            return sr;
+        }
+
+        // 수정 조각: 양끝이 뾰족한 육각 결정 (가운데 흰빛 → 끝 청록 · 보라)
+        static Mesh ShardMesh()
+        {
+            var b = new MeshBits();
+            Color mid = new Color(0.9f, 1f, 1f, 0.95f), tip = new Color(0.45f, 0.75f, 1f, 0.85f), tip2 = new Color(0.65f, 0.4f, 1f, 0.85f);
+            b.Cone(0f, 0.6f, 0.18f, 0f, 6, mid, tip);
+            b.Cone(0f, -0.35f, 0.18f, 0f, 6, mid, tip2);
+            return b.Build("Mana Shard");
         }
 
         void Ring(Vector3 at, float size, float life, Color color, float delay)

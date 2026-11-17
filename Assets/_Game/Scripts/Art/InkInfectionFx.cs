@@ -74,38 +74,83 @@ namespace AThousandDawns.Art
                 if (!_live[i](dt)) _live.RemoveAt(i);
         }
 
-        // ── 경공: 청록 바람 줄기
+        // ── 경공 (플레이테스트 3차: 그 적의 잔상): 내달리는 0.35초 동안 0.05초마다 적의 몸 실루엣(그 순간 자세를 구운 메시)이
+        //   청록빛 반투명으로 그 자리에 남아 0.35초에 흐려져요. 출발 자리엔 청록 바람이 한 번 일어요.
+
+        static Material _afterMat;
+        static MaterialPropertyBlock _afterBlock;
 
         void Dash(EnemyBrain e, Vector3 from)
         {
             if (e == null) return;
-            Vector3 start = new Vector3(from.x, 0.7f, from.z);
-            var lr = Line(Teal, new Color(0.85f, 1f, 1f), 0.55f);
-            var gust = Billboard(_wind, start + Vector3.up * 0.2f, 1.1f, 9);
-            InkParticles.Burst(start - Vector3.up * 0.5f, 12, new Color(0.7f, 1f, 0.95f, 0.8f), new Color(Teal.r, Teal.g, Teal.b, 0.4f), 2.2f, 0.25f, 0.5f, -0.2f);
-            float t = 0f;
-            Vector3 head = start;
+            if (_afterMat == null) { _afterMat = new Material(Shader.Find("Sprites/Default")) { name = "Gyeonggong Afterimage" }; _afterBlock = new MaterialPropertyBlock(); }
+            Vector3 start = new Vector3(from.x, 0.5f, from.z);
+            InkParticles.Burst(start, 12, new Color(0.7f, 1f, 0.95f, 0.8f), new Color(Teal.r, Teal.g, Teal.b, 0.4f), 2.2f, 0.25f, 0.5f, -0.2f);
+            var skins = e.GetComponentsInChildren<SkinnedMeshRenderer>();
+            var solids = e.GetComponentsInChildren<MeshFilter>();
+            float t = 0f, next = 0f;
             _live.Add(dt =>
             {
                 t += dt;
-                if (e != null && !e.IsDead && t < 0.35f) head = e.transform.position + Vector3.up * 0.7f; // 내달리는 동안 따라가요
-                float fade = t < 0.35f ? 1f : Mathf.Clamp01(1f - (t - 0.35f) / 0.3f);
-                if (lr != null)
-                {
-                    lr.SetPosition(0, Vector3.Lerp(start, head, Mathf.Clamp01((t - 0.2f) / 0.45f))); // 꼬리가 따라 걷혀요
-                    lr.SetPosition(1, head);
-                    lr.widthMultiplier = 0.55f * fade;
-                }
-                if (gust != null)
-                {
-                    gust.transform.localRotation = Quaternion.Euler(0f, 0f, -t * 360f);
-                    gust.color = new Color(1f, 1f, 1f, Mathf.Clamp01(1f - t / 0.5f));
-                }
-                if (t < 0.65f) return true;
-                if (lr != null) Destroy(lr.gameObject);
-                if (gust != null) Destroy(gust.transform.parent.gameObject);
+                if (e == null || e.IsDead) return false;
+                next -= dt;
+                if (next <= 0f && t < 0.35f) { next = 0.05f; Afterimage(skins, solids); }
+                return t < 0.35f;
+            });
+        }
+
+        // 한 장의 잔상: 보이는 몸 메시를 그 자세 그대로 구워 청록 반투명으로 남겨요 (흐려지면 구운 메시도 지워요)
+        void Afterimage(SkinnedMeshRenderer[] skins, MeshFilter[] solids)
+        {
+            var holder = new GameObject("Gyeonggong Afterimage").transform;
+            holder.SetParent(transform, false);
+            var parts = new List<(MeshRenderer r, Mesh baked)>();
+            foreach (var s in skins)
+            {
+                if (s == null || !s.enabled || !s.gameObject.activeInHierarchy) continue;
+                var mesh = new Mesh { name = "Afterimage" };
+                s.BakeMesh(mesh, true);
+                parts.Add((Part(holder, mesh, s.transform.position, s.transform.rotation, Vector3.one), mesh));
+            }
+            foreach (var f in solids)
+            {
+                if (f == null || f.sharedMesh == null) continue;
+                var mr = f.GetComponent<MeshRenderer>();
+                if (mr == null || !mr.enabled || !f.gameObject.activeInHierarchy) continue;
+                parts.Add((Part(holder, f.sharedMesh, f.transform.position, f.transform.rotation, f.transform.lossyScale), null));
+            }
+            float t = 0f;
+            _live.Add(dt =>
+            {
+                t += dt;
+                float a = 0.45f * (1f - t / 0.35f);
+                foreach (var p in parts)
+                    if (p.r != null)
+                    {
+                        _afterBlock.SetColor("_Color", new Color(Teal.r, Teal.g, Teal.b, Mathf.Max(0f, a)));
+                        p.r.SetPropertyBlock(_afterBlock);
+                    }
+                if (t < 0.35f) return true;
+                foreach (var p in parts) if (p.baked != null) Destroy(p.baked);
+                if (holder != null) Destroy(holder.gameObject);
                 return false;
             });
+        }
+
+        static MeshRenderer Part(Transform holder, Mesh mesh, Vector3 pos, Quaternion rot, Vector3 scale)
+        {
+            var go = new GameObject("Part");
+            go.transform.SetParent(holder, false);
+            go.transform.SetPositionAndRotation(pos, rot);
+            go.transform.localScale = scale;
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var r = go.AddComponent<MeshRenderer>();
+            var mats = new Material[Mathf.Max(1, mesh.subMeshCount)];
+            for (int i = 0; i < mats.Length; i++) mats[i] = _afterMat;
+            r.sharedMaterials = mats;
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            r.receiveShadows = false;
+            return r;
         }
 
         // ── 순간이동: 보랏빛 세로 균열이 열렸다 닫혀요

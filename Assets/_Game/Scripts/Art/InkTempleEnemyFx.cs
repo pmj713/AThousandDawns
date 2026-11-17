@@ -285,7 +285,77 @@ namespace AThousandDawns.Art
                 trail.colorGradient = g;
                 trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 trail.sortingOrder = 6;
+                SoulFlame(orb.transform);
             }
+        }
+
+        // 혼불 (플레이테스트 3차: 파란 공 대신): 하늘색 구는 렌더러만 끄고, 연둣빛 흰 넋불(일렁이는 불꽃 그림)에
+        //   검은 얼굴 그림자와 두 눈빛이 비치고, 작은 넋불 둘이 둘레를 돌아요. 꼬리도 연둣빛으로.
+        static Sprite _soulGlow;
+
+        void SoulFlame(Transform orb)
+        {
+            var source = orb.GetComponent<Renderer>();
+            if (source != null) source.enabled = false;
+            var trail = orb.GetComponent<TrailRenderer>();
+            if (trail != null)
+            {
+                var g = new Gradient();
+                g.SetKeys(new[] { new GradientColorKey(new Color(0.75f, 1f, 0.8f), 0f), new GradientColorKey(new Color(0.15f, 0.45f, 0.35f), 1f) },
+                          new[] { new GradientAlphaKey(0.8f, 0f), new GradientAlphaKey(0f, 1f) });
+                trail.colorGradient = g;
+            }
+            if (_soulGlow == null)
+            {
+                var tex = Resources.Load<Texture2D>("FxArt/InkMist");
+                if (tex != null) _soulGlow = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f);
+            }
+            var s = orb.lossyScale;
+            var pivot = new GameObject("Soul Flame").transform;
+            pivot.SetParent(orb, false);
+            pivot.localScale = new Vector3(1f / Mathf.Max(0.01f, s.x), 1f / Mathf.Max(0.01f, s.y), 1f / Mathf.Max(0.01f, s.z));
+            pivot.gameObject.AddComponent<InkFaceCamera>();
+            if (_soulGlow != null) SoulSprite(pivot, _soulGlow, Vector3.zero, 1.5f, new Color(0.55f, 1f, 0.75f, 0.45f), 5);
+            SpriteRenderer flame = _wisp != null ? SoulSprite(pivot, _wisp, new Vector3(0f, 0.25f, 0f), 1.1f, new Color(0.8f, 1f, 0.85f, 0.95f), 6) : null;
+            if (_soulGlow != null)
+            {
+                SoulSprite(pivot, _soulGlow, new Vector3(0f, -0.02f, 0f), 0.42f, new Color(0.05f, 0.12f, 0.1f, 0.75f), 7);     // 얼굴 그림자
+                SoulSprite(pivot, _soulGlow, new Vector3(-0.08f, 0.03f, 0f), 0.09f, new Color(1f, 1f, 0.9f, 1f), 8);             // 두 눈빛
+                SoulSprite(pivot, _soulGlow, new Vector3(0.08f, 0.03f, 0f), 0.09f, new Color(1f, 1f, 0.9f, 1f), 8);
+            }
+            var orbits = new Transform[2];
+            for (int i = 0; i < 2; i++)
+            {
+                orbits[i] = new GameObject("Orbit").transform;
+                orbits[i].SetParent(pivot, false);
+                if (_wisp != null) SoulSprite(orbits[i], _wisp, Vector3.zero, 0.35f, new Color(0.7f, 1f, 0.8f, 0.8f), 6);
+            }
+            float t = UnityEngine.Random.Range(0f, 5f);
+            _live.Add(dt =>
+            {
+                if (pivot == null) return false;
+                t += dt;
+                if (flame != null) flame.transform.localScale = new Vector3(1f + 0.08f * Mathf.Sin(t * 13f), 1f + 0.12f * Mathf.Sin(t * 9f + 1f), 1f) * (1.1f / Mathf.Max(0.01f, _wisp.bounds.size.y));
+                for (int i = 0; i < 2; i++)
+                {
+                    float a = t * 4f + i * Mathf.PI;
+                    orbits[i].localPosition = new Vector3(Mathf.Cos(a) * 0.45f, 0.1f + 0.1f * Mathf.Sin(a * 2f), 0f);
+                }
+                return true;
+            });
+        }
+
+        static SpriteRenderer SoulSprite(Transform parent, Sprite sprite, Vector3 local, float height, Color color, int order)
+        {
+            var go = new GameObject(sprite.name);
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = local;
+            go.transform.localScale = Vector3.one * (height / Mathf.Max(0.01f, sprite.bounds.size.y));
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = sprite;
+            sr.color = color;
+            sr.sortingOrder = order;
+            return sr;
         }
 
         // 도깨비불 장판이 생기는 순간: 푸른 빛 고리가 번쩍이며 퍼져요

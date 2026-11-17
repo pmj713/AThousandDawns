@@ -42,6 +42,8 @@ namespace AThousandDawns.Art
                     case "번개": Bolt(root); break;
                     case "잔상": Ghost(root); break;
                     case "강기": Ganggi(root); break;
+                    case "하피 깃털": Feather(root, true); break;
+                    case "버들잎 표창": Feather(root, false); break;
                 }
             }
             for (int i = _live.Count - 1; i >= 0; i--)
@@ -235,5 +237,79 @@ namespace AThousandDawns.Art
                 return false;
             });
         }
+        // ── 하피 깃털 팔찌 깃털 ("하피 깃털") · 버들잎 표창 ("버들잎 표창") (플레이테스트 3차): 초록 상자 대신 3D 깃털 · 버들잎.
+        //   날아가는 방향(+Z)으로 누운 깃털(깃대 + 양쪽 깃 + 연한 깃 끝)이 축을 따라 팔랑 돌며 날고, 뒤로 옅은 꼬리를 남겨요. 상자는 렌더러만 꺼요.
+        static Mesh _feather, _leaf;
+        static Material _vertexMat;
+
+        void Feather(GameObject bolt, bool harpy)
+        {
+            LeafAssets();
+            var source = bolt.GetComponent<Renderer>();
+            if (source != null) source.enabled = false;
+            var holder = new GameObject(harpy ? "Harpy Feather" : "Willow Leaf").transform;
+            holder.SetParent(bolt.transform, false);
+            var s = bolt.transform.lossyScale;
+            holder.localScale = new Vector3(1f / Mathf.Max(0.01f, s.x), 1f / Mathf.Max(0.01f, s.y), 1f / Mathf.Max(0.01f, s.z)) * (harpy ? 1.3f : 1f);
+            var spin = new GameObject("Spin").transform;
+            spin.SetParent(holder, false);
+            spin.gameObject.AddComponent<MeshFilter>().sharedMesh = harpy ? _feather : _leaf;
+            var r = spin.gameObject.AddComponent<MeshRenderer>();
+            r.sharedMaterial = _vertexMat;
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            var trail = holder.gameObject.AddComponent<TrailRenderer>();
+            trail.sharedMaterial = _vertexMat;
+            trail.time = 0.18f;
+            trail.widthMultiplier = 0.18f;
+            trail.widthCurve = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(1f, 0f));
+            Color tc = harpy ? new Color(0.95f, 0.75f, 0.5f) : new Color(0.6f, 0.95f, 0.45f);
+            trail.colorGradient = new Gradient
+            {
+                colorKeys = new[] { new GradientColorKey(tc, 0f), new GradientColorKey(tc, 1f) },
+                alphaKeys = new[] { new GradientAlphaKey(0.6f, 0f), new GradientAlphaKey(0f, 1f) },
+            };
+            trail.alignment = LineAlignment.View;
+            trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            float t = UnityEngine.Random.Range(0f, 6f);
+            _live.Add(dt =>
+            {
+                if (spin == null) return false;
+                t += dt;
+                spin.localRotation = Quaternion.Euler(0f, 0f, t * (harpy ? 540f : 720f)) * Quaternion.Euler(Mathf.Sin(t * 14f) * 8f, 0f, 0f); // 축을 따라 팔랑
+                return true;
+            });
+        }
+
+        // 깃털 (앞 +Z로 0.75): 깃대 + 양쪽 깃 (붉은 갈색 → 끝은 크림색) / 버들잎 (앞 +Z로 0.55, 초록 · 가운데 잎맥)
+        static void LeafAssets()
+        {
+            if (_vertexMat == null) _vertexMat = new Material(Shader.Find("Sprites/Default")) { name = "Feather Leaf" };
+            if (_feather != null) return;
+            var f = new MeshBits();
+            Color rust = new Color(0.62f, 0.25f, 0.12f), bronze = new Color(0.85f, 0.5f, 0.25f), cream = new Color(1f, 0.92f, 0.78f), quill = new Color(0.95f, 0.88f, 0.75f);
+            f.Box(new Vector3(0f, 0f, 0f), new Vector3(0.02f, 0.02f, 0.8f), quill, quill);
+            const int n = 6;
+            for (int i = 0; i < n; i++)
+            {
+                float z0 = -0.3f + i * 0.11f, z1 = z0 + 0.11f;
+                float w0 = Mathf.Sin(Mathf.PI * (i / (float)n * 0.85f + 0.12f)) * 0.13f, w1 = Mathf.Sin(Mathf.PI * ((i + 1) / (float)n * 0.85f + 0.12f)) * 0.13f;
+                Color c0 = Color.Lerp(rust, i < n - 2 ? bronze : cream, i / (float)n), c1 = Color.Lerp(rust, i < n - 3 ? bronze : cream, (i + 1) / (float)n);
+                foreach (float side in new[] { 1f, -1f })
+                    f.Quad(new Vector3(0f, 0f, z0), new Vector3(side * w0, 0.02f, z0 - 0.04f), new Vector3(side * w1, 0.02f, z1 - 0.04f), new Vector3(0f, 0f, z1), c0, c0 * 0.85f, c1 * 0.85f, c1);
+            }
+            _feather = f.Build("Harpy Feather");
+            var l = new MeshBits();
+            Color leaf = new Color(0.45f, 0.85f, 0.3f), leafDark = new Color(0.2f, 0.55f, 0.15f), vein = new Color(0.85f, 1f, 0.6f);
+            l.Box(Vector3.zero, new Vector3(0.012f, 0.012f, 0.56f), vein, vein);
+            for (int i = 0; i < 4; i++)
+            {
+                float z0 = -0.28f + i * 0.14f, z1 = z0 + 0.14f;
+                float w0 = Mathf.Sin(Mathf.PI * i / 4f) * 0.07f, w1 = Mathf.Sin(Mathf.PI * (i + 1) / 4f) * 0.07f;
+                foreach (float side in new[] { 1f, -1f })
+                    l.Quad(new Vector3(0f, 0f, z0), new Vector3(side * w0, 0.01f, z0), new Vector3(side * w1, 0.01f, z1), new Vector3(0f, 0f, z1), leaf, leafDark, leafDark, leaf);
+            }
+            _leaf = l.Build("Willow Leaf");
+        }
+
     }
 }
