@@ -315,7 +315,7 @@ namespace AThousandDawns.Art
             _dressed.RemoveWhere(f => f == null);
             foreach (var fire in FindObjectsByType<GhostFire>(FindObjectsSortMode.None))
             {
-                if (!_dressed.Add(fire) || fire.name == "마기 장판" || InkFantasyFx.IsCurse(fire)) continue; // 이름은 처음 볼 때 한 번만 · 천마 마기 장판은 InkHeavenlyDemonFx가 검붉게
+                if (!_dressed.Add(fire) || fire.name == "마기 장판" || fire.name == "덫" || InkFantasyFx.IsCurse(fire)) continue; // 이름은 처음 볼 때 한 번만 · 천마 마기 장판은 InkHeavenlyDemonFx가 검붉게 · 족장 덫은 InkBossPatternFx가 톱니 원으로
                 var source = fire.GetComponent<Renderer>();
                 if (source != null) source.enabled = false; // 불투명한 하늘색 원판은 숨기고 (흐려지는 값은 그 재질 알파를 읽어요)
                 float radius = fire.transform.localScale.x * 0.5f;

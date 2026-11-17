@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using AThousandDawns.Enemies;
 using AThousandDawns.Player;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace AThousandDawns.Art
 {
@@ -63,6 +64,8 @@ namespace AThousandDawns.Art
             OgreBrain.Enraged += OnOgreEnraged;
             DeathKnightBrain.SpectralRide -= OnRide;
             DeathKnightBrain.SpectralRide += OnRide;
+            DeathKnightBrain.CurseWave -= OnCurseWave;
+            DeathKnightBrain.CurseWave += OnCurseWave;
             DarkElfBrain.Vanished -= OnVanished;
             DarkElfBrain.Vanished += OnVanished;
             DarkElfBrain.Emerged -= OnEmerged;
@@ -249,16 +252,42 @@ namespace AThousandDawns.Art
             var light = PointLight(pivot, new Color(1f, 0.55f, 0.2f), length * 0.6f, 0f);
             light.transform.localPosition = new Vector3(0f, length * 0.5f, 0f);
             float t = 0f, burn = 2f;
-            bool landed = false;
+            bool landed = false, hidden = false;
+            SpriteRenderer strip = null;
+            Transform ground = null;
+            float stripUnit = _glow != null ? 1f / Mathf.Max(0.01f, _glow.bounds.size.x) : 1f;
             _live.Add(dt =>
             {
-                if (pivot == null) return false;
+                if (pivot == null)
+                {
+                    if (strip != null) Destroy(strip.gameObject);
+                    if (ground != null) Destroy(ground.gameObject);
+                    return false;
+                }
                 t += dt;
                 float k = Mathf.Clamp01(t / Mathf.Max(0.1f, fall));
                 pivot.rotation = Quaternion.AngleAxis(12f + 78f * k * k * k, axis); // 천천히 기울다 확 쓰러져요
+                if (landed && !hidden && t - fall < 0.5f) hidden = HideRoot("Burning Bamboo (불타는 대나무)", center, 1f); // 임시 불 띠는 렌더러만 꺼요
+                if (strip != null) // 판정 폭(width) 그대로 바닥 불길 띠
+                {
+                    float fade = 1f - Mathf.Clamp01((t - fall - burn) / 0.4f);
+                    strip.color = new Color(1f, 0.45f, 0.1f, (0.6f + 0.12f * Mathf.Sin(t * 13f)) * fade);
+                }
                 if (!landed && k >= 1f)
                 {
                     landed = true;
+                    if (_glow != null)
+                    {
+                        strip = FlatSprite(_glow, center, 1f, Yaw(dir), 0.04f, 3, new Color(1f, 0.45f, 0.1f, 0.6f));
+                        strip.transform.localScale = new Vector3(width * 1.2f * stripUnit, length * 1.08f * stripUnit, 1f);
+                    }
+                    ground = new GameObject("Bamboo Ground Fire").transform;
+                    ground.SetParent(transform, false);
+                    ground.SetPositionAndRotation(center, Quaternion.LookRotation(dir));
+                    var flames = InkParticles.Fire(ground, Vector3.zero, 0.35f, 1f);
+                    InkParticles.EmitBox(flames, Vector3.zero, new Vector3(width, 0.1f, length), 0.9f);
+                    InkParticles.SetRate(flames, length * width * 4f);
+                    Destroy(ground.gameObject, burn + 0.2f);
                     InkParticles.SetRate(fire, length * 7f);
                     for (int i = 0; i < 4; i++)
                         InkParticles.Burst(hinge + dir * (length * (i + 0.5f) / 4f) + Vector3.up * 0.3f, 10, new Color(1f, 0.85f, 0.4f, 1f), new Color(1f, 0.3f, 0.05f, 0.5f), 3f, 0.25f, 0.6f, -0.5f);
@@ -272,7 +301,12 @@ namespace AThousandDawns.Art
                     if (c >= 1f && fire != null) { InkParticles.SetRate(fire, 0f); }
                     float sink = Mathf.Clamp01((t - fall - burn) / 0.6f);
                     pivot.position = hinge + Vector3.down * (sink * d * 2.5f);
-                    if (sink >= 1f) { Destroy(pivot.gameObject); return false; }
+                    if (sink >= 1f)
+                    {
+                        Destroy(pivot.gameObject);
+                        if (strip != null) Destroy(strip.gameObject);
+                        return false;
+                    }
                 }
                 return true;
             });
@@ -289,6 +323,7 @@ namespace AThousandDawns.Art
         {
             if (_glow == null) return;
             at.y = 0f;
+            HideRoot("혈해", at, 1f); // 임시 붉은 원판은 렌더러만 꺼요 (오브젝트·이름은 테스트용으로 남겨요)
             var pool = FlatSprite(_glow, at, radius * 2.4f, 0f, 0.035f, 3, new Color(0.55f, 0.02f, 0.05f, 0f));
             var shine = FlatSprite(_glow, at + new Vector3(-0.2f, 0f, 0.25f) * radius, radius * 1.1f, 0f, 0.04f, 4, new Color(1f, 0.35f, 0.35f, 0f));
             var rim = _ring != null ? FlatSprite(_ring, at, radius * 2.05f, 0f, 0.045f, 4, new Color(0.35f, 0f, 0.03f, 0f)) : null;
@@ -346,6 +381,7 @@ namespace AThousandDawns.Art
         void WaveRing(Vector3 at, float max, float width, float time)
         {
             at.y = 0f;
+            HideRoot("충격파", at, 1f); // 임시 LineRenderer 고리는 렌더러만 꺼요 (판정 고리와 같은 반경 · 두께로 아래 고리가 대신 퍼져요)
             var outer = Circle(at, 0.08f, Mathf.Max(0.2f, width), new Color(0.35f, 0.7f, 1f, 0.85f));
             var inner = Circle(at, 0.1f, Mathf.Max(0.08f, width * 0.3f), new Color(0.9f, 0.97f, 1f, 1f));
             float t = 0f, life = Mathf.Max(0.1f, time), spray = 0f;
@@ -384,7 +420,7 @@ namespace AThousandDawns.Art
                 case HeavenlyDemonBrain.FxKind.RiftCut: Host().Cut(c.At, c.To, c.Radius, new Color(Violet.r, Violet.g, Violet.b, 0.9f), new Color(0.95f, 0.85f, 1f, 1f)); break;
                 case HeavenlyDemonBrain.FxKind.Bind: Host().BindOrb(c.Target, c.Radius, c.Time); break;
                 case HeavenlyDemonBrain.FxKind.Bound: Host().Chains(c.Target, c.Time); break;
-                case HeavenlyDemonBrain.FxKind.RiftOpen: Host().RiftOpen(c.At, c.Time); break;
+                case HeavenlyDemonBrain.FxKind.RiftOpen: { var h = Host(); h.RiftOpen(c.At, c.Time); h.QueueRift(c.At, c.Radius, c.Time); break; }
                 case HeavenlyDemonBrain.FxKind.MeteorTrack: Host().MeteorShadow(c.Target, c.At, c.Radius, c.Time); break;
             }
         }
@@ -675,11 +711,32 @@ namespace AThousandDawns.Art
                 }
                 jaws[j] = jaw;
             }
+            // 덫 장판 (GhostFire "덫"): 하늘색 원판 대신 판정 반경 그대로 녹슨 톱니 원
+            GhostFire zone = null;
+            float best = 1f;
+            foreach (var f in FindObjectsByType<GhostFire>()) // 덫이 떨어질 때 한 번만 찾아요
+            {
+                float d = (new Vector3(f.transform.position.x, 0f, f.transform.position.z) - at).sqrMagnitude;
+                if (d < best && f.name == "덫") { best = d; zone = f; }
+            }
+            float radius = zone != null ? zone.transform.localScale.x * 0.5f : 0.9f;
+            if (zone != null) { var source = zone.GetComponent<Renderer>(); if (source != null) source.enabled = false; }
+            var saw = SawRing(at, radius);
+            var floor = _glow != null ? FlatSprite(_glow, at, radius * 2.2f, 0f, 0.035f, 3, new Color(0.45f, 0.12f, 0.05f, 0.45f)) : null;
+            bool tracked = zone != null;
             float t = 0f, close = -1f, life = 6f;
             _live.Add(dt =>
             {
                 if (root == null) return false;
                 t += dt;
+                if (tracked && zone == null && t < life) life = t; // 장판이 먼저 끝나면 같이 걷혀요
+                if (saw != null) saw.transform.rotation = Quaternion.Euler(90f, t * 25f, 0f);
+                if (t >= life && saw != null)
+                {
+                    Destroy(saw.gameObject);
+                    if (floor != null) Destroy(floor.gameObject);
+                    saw = null;
+                }
                 float drop = Mathf.Clamp01(t / 0.25f);
                 root.position = at + Vector3.up * (1.5f * (1f - drop * drop));
                 if (t >= 0.25f && t - dt < 0.25f) InkParticles.Burst(at + Vector3.up * 0.1f, 8, new Color(0.7f, 0.6f, 0.45f, 0.9f), new Color(0.5f, 0.4f, 0.3f, 0f), 1.2f, 0.25f, 0.5f, 0f);
@@ -687,7 +744,7 @@ namespace AThousandDawns.Art
                 {
                     Vector3 d = _player.transform.position - at;
                     d.y = 0f;
-                    if (d.sqrMagnitude < 0.9f * 0.9f)
+                    if (d.sqrMagnitude < radius * radius)
                     {
                         close = 0f;
                         InkParticles.Burst(at + Vector3.up * 0.4f, 12, new Color(1f, 0.95f, 0.7f, 1f), new Color(0.6f, 0.6f, 0.6f, 0f), 3f, 0.08f, 0.3f, 1f);
@@ -858,6 +915,135 @@ namespace AThousandDawns.Art
             Vector3 side = new Vector3(dir.z, 0f, -dir.x) * (left ? -1f : 1f);
             Host();
             InkParticles.Burst(at + dir * 1.2f + side * 0.5f + Vector3.up * 0.9f, 10, new Color(0.65f, 1f, 0.35f, 1f), new Color(0.25f, 0.7f, 0.1f, 0.4f), 2.4f, 0.14f, 0.55f, 2.5f);
+        }
+
+        // ── 예고 흐름 화살표 (곧 이 줄을 따라 지나가요)
+        //   데스나이트 망령 기병 줄: CurseWave 순간 새로 뜬 띠 예고(Telegraph, 방향 = 달리는 방향) 셋마다, 예고가 사라질 때까지
+        //   천마 차원 베기: RiftOpen 셋의 가운데(= 플레이어 자리)를 지나 맞은편까지, 균열이 벌어지는 동안
+
+        readonly HashSet<Telegraph> _flowed = new HashSet<Telegraph>();
+        readonly List<(Vector3 at, float radius, float time)> _rifts = new List<(Vector3, float, float)>();
+        int _riftFrame = -1;
+
+        static void OnCurseWave(DeathKnightBrain k, Vector3 dir)
+        {
+            if (k == null) return;
+            var h = Host();
+            dir = Flat(dir);
+            h._flowed.RemoveWhere(m => m == null);
+            foreach (var m in FindObjectsByType<Telegraph>()) // 예고가 뜰 때 한 번만 찾아요
+            {
+                if (m == null || !m.IsVisible || h._flowed.Contains(m) || Vector3.Dot(m.transform.forward, dir) < 0.98f) continue;
+                var filter = m.GetComponentInChildren<MeshFilter>();
+                if (filter == null || filter.sharedMesh == null) continue;
+                var b = filter.sharedMesh.bounds;
+                h._flowed.Add(m);
+                var marker = m;
+                h.FlowArrows(() => marker != null && marker.IsVisible, m.transform.position, dir, b.max.z, b.size.x, Teal, 4f);
+            }
+        }
+
+        void QueueRift(Vector3 at, float radius, float time)
+        {
+            if (_riftFrame != Time.frameCount) { _rifts.Clear(); _riftFrame = Time.frameCount; }
+            at.y = 0f;
+            _rifts.Add((at, radius, time));
+            if (_rifts.Count < 3) return;
+            Vector3 center = Vector3.zero;
+            foreach (var r in _rifts) center += r.at;
+            center /= _rifts.Count;
+            foreach (var r in _rifts)
+            {
+                Vector3 dir = Flat(center - r.at);
+                float length = Vector3.Distance(center, r.at) * 2f;
+                float t = 0f, life = r.time;
+                FlowArrows(() => (t += Time.deltaTime) < life, r.at, dir, length, 1f, Violet, life + 0.1f);
+            }
+            _rifts.Clear();
+        }
+
+        // 띠 위로 갈매기(>) 무늬가 달리는 방향으로 흘러가요. 앞쪽 끝은 진하게, 뒤쪽은 옅게.
+        void FlowArrows(Func<bool> alive, Vector3 from, Vector3 dir, float length, float width, Color color, float maxLife)
+        {
+            from.y = 0f;
+            Vector3 side = new Vector3(dir.z, 0f, -dir.x);
+            int count = Mathf.Clamp(Mathf.RoundToInt(length / 2.2f), 2, 14);
+            float gap = length / count, half = Mathf.Clamp(width * 0.35f, 0.25f, 0.6f);
+            var arrows = new List<LineRenderer>();
+            for (int i = 0; i < count; i++)
+            {
+                var lr = Line(new Color(color.r, color.g, color.b, 0f), 0.16f, 3);
+                lr.numCapVertices = 0;
+                lr.numCornerVertices = 2;
+                arrows.Add(lr);
+            }
+            float t = 0f;
+            _live.Add(dt =>
+            {
+                t += dt;
+                bool on = t < maxLife && alive();
+                float fade = on ? Mathf.Clamp01(t / 0.15f) : 0f;
+                float shift = (t * 4.5f) % gap; // 초당 4.5칸으로 흘러요
+                for (int i = 0; i < arrows.Count; i++)
+                {
+                    var lr = arrows[i];
+                    if (lr == null) continue;
+                    float along = i * gap + shift;
+                    Vector3 tip = from + dir * along + Vector3.up * 0.1f;
+                    lr.SetPosition(0, tip - dir * half + side * half);
+                    lr.SetPosition(1, tip);
+                    lr.SetPosition(2, tip - dir * half - side * half);
+                    float edge = Mathf.Clamp01(along / 0.6f) * Mathf.Clamp01((length - along) / 0.6f);
+                    float a = (0.35f + 0.6f * (along / length)) * edge * fade;
+                    lr.startColor = lr.endColor = new Color(color.r, color.g, color.b, a);
+                }
+                if (on) return true;
+                foreach (var lr in arrows) if (lr != null) Destroy(lr.gameObject);
+                return false;
+            });
+        }
+
+        // 녹슨 톱니 원 (덫 장판 둘레): 바깥 톱니 지그재그 + 안쪽 쇠테
+        LineRenderer SawRing(Vector3 at, float radius)
+        {
+            const int teeth = 18;
+            var lr = Line(new Color(0.55f, 0.5f, 0.48f, 0.95f), 0.09f, teeth * 2);
+            lr.useWorldSpace = false;
+            lr.loop = true;
+            lr.numCapVertices = 0;
+            lr.transform.position = new Vector3(at.x, 0.05f, at.z);
+            for (int i = 0; i < teeth * 2; i++)
+            {
+                float a = i * Mathf.PI / teeth;
+                float r = i % 2 == 0 ? radius : radius * 0.82f;
+                lr.SetPosition(i, new Vector3(Mathf.Cos(a) * r, Mathf.Sin(a) * r, 0f));
+            }
+            var rim = Line(new Color(0.6f, 0.2f, 0.08f, 0.9f), 0.07f, 32);
+            rim.useWorldSpace = false;
+            rim.loop = true;
+            rim.transform.SetParent(lr.transform, false);
+            rim.transform.localRotation = Quaternion.identity;
+            for (int i = 0; i < 32; i++)
+            {
+                float a = i * Mathf.PI * 2f / 32f;
+                rim.SetPosition(i, new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * radius * 0.74f);
+            }
+            return lr;
+        }
+
+        // 게임 코드의 임시 그림(씬 루트 오브젝트)을 이름으로 찾아 렌더러만 꺼요 — 신호가 올 때 한 번만 훑어요
+        static bool HideRoot(string name, Vector3 near, float within)
+        {
+            bool found = false;
+            near.y = 0f;
+            foreach (var go in SceneManager.GetActiveScene().GetRootGameObjects())
+            {
+                Vector3 p = go.transform.position;
+                p.y = 0f;
+                if ((p - near).sqrMagnitude > within * within || go.name != name) continue;
+                foreach (var r in go.GetComponentsInChildren<Renderer>()) if (r.enabled) { r.enabled = false; found = true; }
+            }
+            return found;
         }
 
         // ── 도움
