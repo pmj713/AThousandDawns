@@ -339,6 +339,9 @@ namespace AThousandDawns.Art
                 if (brain is IronFistBrain) IronFistBrain.FistWave += OnFistWave;
                 if (brain is GoblinChiefBrain) GoblinChiefBrain.TrapThrown += OnTrapThrown;
                 if (brain is OgreBrain) OgreBrain.Enraged += OnOgreEnraged;
+                if (brain is IronFistBrain) IronFistBrain.FarLeaped += OnFarLeaped;
+                if (brain is DeathKnightBrain) DeathKnightBrain.SpectralRide += OnSpectralRide;
+                if (brain is DarkElfBrain) DarkElfBrain.Emerged += OnEmerged;
             }
             _modelRestPos = animator.transform.localPosition;
             if (brain is WerewolfBrain) { _werewolf = true; WerewolfBrain.Enraged += OnEnraged; }
@@ -402,6 +405,8 @@ namespace AThousandDawns.Art
             if (_brain == null || _animator == null || _animator.runtimeAnimatorController == null) return;
             TickOverlay();
             if (_leaping) TickLeap();
+            if (_arcing) TickArc();
+            if (_emergeFade) TickEmerge();
             if (Time.time < _holdUntil) return;   // 한 번 트는 동작(스켈레톤 다시 일어남·보스 견제·도약) 동안은 그 동작만
             // 방패병: 대시 공격으로 방패가 부서지면 방패 소품을 감춰요
             if (_shieldBrain != null && !_shieldHidden && _shieldBrain.ShieldBroken)
@@ -831,6 +836,57 @@ namespace AThousandDawns.Art
             PlayHeld("TrapThrow", 0.8f);
         }
 
+        // 먼 거리 도약 (철권 계열: 철권 마웅·고블린 족장·오우거·데스나이트): 게임은 착지 순간 순간이동해요.
+        //   모델만 떠난 자리에서 포물선을 그리며 날아와 내려앉게 보여요 (0.3초, 거리만큼 높이)
+        const float ArcTime = 0.3f;
+        bool _arcing;
+        float _arcStart, _arcHeight;
+        Vector3 _arcFrom;
+
+        void OnFarLeaped(IronFistBrain boss, Vector3 from, Vector3 to)
+        {
+            if (boss != _brain) return;
+            _arcFrom = from - to;
+            _arcFrom.y = 0f;
+            _arcHeight = Mathf.Clamp(_arcFrom.magnitude * 0.3f, 1.2f, 3.5f);
+            _arcStart = Time.time;
+            _arcing = true;
+            TickArc();
+        }
+
+        void TickArc()
+        {
+            float k = Mathf.Clamp01((Time.time - _arcStart) / ArcTime);
+            if (k >= 1f) { _arcing = false; _animator.transform.localPosition = _modelRestPos; return; }
+            var offset = Vector3.Lerp(_arcFrom, Vector3.zero, k) + Vector3.up * (4f * k * (1f - k) * _arcHeight);
+            _animator.transform.position = transform.TransformPoint(_modelRestPos) + offset;
+        }
+
+        // 데스나이트 망령 기병이 줄마다 지나가는 동안: 대검을 들어 겨눈 자세를 이어 버텨요
+        void OnSpectralRide(DeathKnightBrain knight, Vector3 from, Vector3 to)
+        {
+            if (knight == _brain && Time.time < _holdUntil + 0.2f) _holdUntil = Mathf.Max(_holdUntil, Time.time + 0.5f);
+        }
+
+        // 다크 엘프 그림자 기습: 옆에 나타나는 순간 몸이 흐릿했다가 또렷해져요 (사라질 땐 게임이 몸을 통째로 감춰요)
+        bool _emergeFade;
+
+        void OnEmerged(DarkElfBrain elf, Vector3 at)
+        {
+            if (elf != _brain) return;
+            _fadeUsed = true;
+            _fade = 0.75f;
+            _emergeFade = true;
+            ApplyOverlay();
+        }
+
+        void TickEmerge()
+        {
+            _fade = Mathf.MoveTowards(_fade, 0f, Time.deltaTime * 2.5f);
+            ApplyOverlay();
+            if (_fade <= 0f) _emergeFade = false;
+        }
+
         // 오우거 분노 (2페이즈): 가슴을 치며 포효
         void OnOgreEnraged(OgreBrain ogre)
         {
@@ -907,6 +963,9 @@ namespace AThousandDawns.Art
                 IronFistBrain.FistWave -= OnFistWave;
                 GoblinChiefBrain.TrapThrown -= OnTrapThrown;
                 OgreBrain.Enraged -= OnOgreEnraged;
+                IronFistBrain.FarLeaped -= OnFarLeaped;
+                DeathKnightBrain.SpectralRide -= OnSpectralRide;
+                DarkElfBrain.Emerged -= OnEmerged;
             }
         }
     }
