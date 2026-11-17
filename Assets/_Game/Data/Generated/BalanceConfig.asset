@@ -794,13 +794,13 @@ MonoBehaviour:
     unit: cell/s
     note: "\uCCAD\uC8FD\uC0AC \uC774\uB3D9"
   - key: snake.attack_range
-    value: 3
+    value: 3.9
     unit: cell
-    note: "\uCCAD\uC8FD\uC0AC \uB6F0\uC5B4\uB4E4\uAE30 \uAC70\uB9AC (\uD480\uC232\uC774 \uC5C6\uC744 \uB54C \uC2DC\uC791 \uAC70\uB9AC)"
+    note: "\uCCAD\uC8FD\uC0AC \uB6F0\uC5B4\uB4E4\uAE30 \uC2DC\uC791 \uAC70\uB9AC (\uC228\uC9C0 \uC54A\uACE0 \uB4DC\uB7EC\uB098 \uC788\uC5B4\uC694 \xB7 3\uC5D0\uC11C \uB298\uB9BC)"
   - key: snake.lunge
-    value: 3
+    value: 3.9
     unit: cell
-    note: "\uCCAD\uC8FD\uC0AC \uB6F0\uC5B4\uB4DC\uB294 \uAC70\uB9AC"
+    note: "\uCCAD\uC8FD\uC0AC \uB6F0\uC5B4\uB4DC\uB294 \uAC70\uB9AC (3\uC5D0\uC11C \uB298\uB9BC)"
   - key: snake.windup
     value: 0.4
     unit: s
@@ -813,10 +813,6 @@ MonoBehaviour:
     value: 3
     unit: s
     note: "\uCCAD\uC8FD\uC0AC \uACF5\uACA9 \uAC04\uACA9"
-  - key: snake.ambush_distance
-    value: 2.5
-    unit: cell
-    note: "\uD480\uC232\uC5D0\uC11C \uB6F0\uC5B4\uB098\uC624\uB294 \uAC70\uB9AC (\uBAAC\uC2A4\uD130 K81 \uC124\uBA85)"
   - key: snake.slow_ratio
     value: 0.25
     unit: 
@@ -825,10 +821,6 @@ MonoBehaviour:
     value: 2
     unit: s
     note: "\uB454\uD654 \uC2DC\uAC04 (\uBAAC\uC2A4\uD130 K81 \uC124\uBA85)"
-  - key: snake.relocate_time
-    value: 2
-    unit: s
-    note: "\uACF5\uACA9 \uB4A4 \uB2E4\uB978 \uD480\uC232\uC73C\uB85C \uC62E\uAE30\uB294 \uC2DC\uAC04 (\uBAAC\uC2A4\uD130 K81 \uC124\uBA85)"
   - key: snake.leap_time
     value: 0.2
     unit: s
@@ -1376,7 +1368,7 @@ MonoBehaviour:
   - key: room.snake_max
     value: 2
     unit: 
-    note: "\uBC29\uB9C8\uB2E4 \uCD5C\uB300 \uCCAD\uC8FD\uC0AC (\uD480\uC232 \uC218\uC5D0 \uB9DE\uCDA4 \uC784\uC2DC)"
+    note: "\uBC29\uB9C8\uB2E4 \uCD5C\uB300 \uCCAD\uC8FD\uC0AC (\uC784\uC2DC)"
   - key: room_cost.grunt
     value: 1
     unit: "\uC810"
@@ -4142,7 +4134,7 @@ MonoBehaviour:
     unit: s
     note: "\uB2FB \uCDA9\uACA9\uD30C \uC608\uACE0"
   - key: irondragon.ring_speed
-    value: 5
+    value: 4
     unit: cell/s
     note: "\uACE0\uB9AC\uAC00 \uD37C\uC9C0\uB294 \uC18D\uB3C4"
   - key: irondragon.ring_width
@@ -4154,7 +4146,7 @@ MonoBehaviour:
     unit: cell
     note: "\uACE0\uB9AC \uCD5C\uB300 \uBC18\uACBD"
   - key: irondragon.ring_gap
-    value: 0.6
+    value: 0.9
     unit: s
     note: "\uACE0\uB9AC \uC0AC\uC774 \uC2DC\uAC04"
   - key: irondragon.ring_ratio
@@ -4593,6 +4585,10 @@ MonoBehaviour:
     value: 1.5
     unit: s
     note: "\uACE0\uBE14\uB9B0 \uC8FC\uC220\uC0AC \uC800\uC8FC \uC7A5\uD310 \uB454\uD654 \uC2DC\uAC04"
+  - key: goblinshaman.curse_delay
+    value: 0.9
+    unit: s
+    note: "\uACE0\uBE14\uB9B0 \uC8FC\uC220\uC0AC \uC800\uC8FC \uC7A5\uD310 \uC608\uACE0 \uC2DC\uAC04"
   - key: room_cost.slime
     value: 2
     unit: 
@@ -6657,6 +6653,22 @@ MonoBehaviour:
     value: 1.5
     unit: cell
     note: "\uB9DD\uB839 \uAE30\uBCD1 \uB109\uBC31"
+  - key: deathknight.lane_max_range
+    value: 12
+    unit: cell
+    note: "\uC774 \uAC70\uB9AC \uC548\uC774\uBA74 \uAC00\uAE4C\uC774\uC11C\uB3C4 \uB9DD\uB839 \uAE30\uBCD1 \uB3CC\uACA9"
+  - key: deathknight.p2_lane_interval
+    value: 7
+    unit: s
+    note: "2\uD398\uC774\uC988 \uB9DD\uB839 \uAE30\uBCD1 X\uC790 \uAC04\uACA9"
+  - key: deathknight.p2_lane_tilt
+    value: 45
+    unit: deg
+    note: "2\uD398\uC774\uC988 \uB450 \uBB36\uC74C\uC774 \uAE30\uC6B8\uC5B4\uC9C0\uB294 \uAC01\uB3C4 (X\uC790)"
+  - key: deathknight.p2_lane_delay
+    value: 0.3
+    unit: s
+    note: "\uB9DE\uC740\uD3B8 \uBB36\uC74C\uC774 \uB2A6\uAC8C \uC9C0\uB098\uAC00\uB294 \uC2DC\uAC04"
   - key: harpy.hp
     value: 20
     unit: 

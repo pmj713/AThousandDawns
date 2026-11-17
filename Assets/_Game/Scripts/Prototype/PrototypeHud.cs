@@ -232,17 +232,11 @@ namespace AThousandDawns.Prototype
                 foreach (var e in director.Enemies)
                 {
                     if (e == null || e.Damageable == null) continue;
-                    bool lurking = e.IsHidden && e.Kind == EnemyKind.Snake; // 풀숲에 숨은 청죽사: 체력바만 흐리게 (남은 적을 찾을 수 있게)
-                    if (!e.Damageable.Targetable && !lurking) continue; // 숨은 수귀 · 은신한 살수는 안 보여요
+                    if (!e.Damageable.Targetable) continue; // 숨은 수귀 · 은신한 살수는 안 보여요
                     Vector3 sp = _camera.WorldToScreenPoint(e.transform.position + Vector3.up * (e.Height + 0.4f));
                     var g = UiScale.FromScreen(sp);
                     if (sp.z <= 0f) continue;
                     var dmg = e.Damageable;
-                    if (lurking)
-                    {
-                        DrawBar(new Rect(g.x - 25, g.y, 50, 6), dmg.MaxHealth > 0f ? dmg.Health / dmg.MaxHealth : 0f, EnemyHealthColor, 0.45f);
-                        continue;
-                    }
                     var bars = AThousandDawns.Core.GameSettings.Current.enemyBars; // 설정: 적 체력바
                     if (bars == AThousandDawns.Core.GameSettings.EnemyBars.Always || (bars == AThousandDawns.Core.GameSettings.EnemyBars.Damaged && dmg.Health < dmg.MaxHealth))
                         DrawBar(new Rect(g.x - 25, g.y, 50, 6), dmg.MaxHealth > 0f ? dmg.Health / dmg.MaxHealth : 0f, EnemyHealthColor);

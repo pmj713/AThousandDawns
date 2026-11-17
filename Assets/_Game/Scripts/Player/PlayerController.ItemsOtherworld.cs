@@ -5,7 +5,7 @@ using UnityEngine;
 namespace AThousandDawns.Player
 {
     // 이계 기물 30종 (차원 겹침) + 대시 쪽으로 바꾼 무협 짚신 · 흑풍 망토: 무협 기물처럼 조건과 발동이 있는 효과 (data_items v1~v4).
-    //   경공: 고블린 가죽장화 (대시 회복) · 엘프 가죽 바지 (대시 거리, 대시 후 공격 속도) · 바람 정령 망토 (대시로 벰) · 엘프 깃털 귀걸이 (대시 무적) · 하피 깃털 팔찌 (대시할 때 깃털)
+    //   경공: 고블린 가죽장화 (대시 회복) · 엘프 가죽 바지 (대시 거리, 대시 후 공격 속도) · 바람 정령 망토 (대시로 벰) · 엘프 깃털 귀걸이 (대시 무적) · 하피 깃털 팔찌 (대시가 끝나면 깃털)
     //   빙백: 슬라임 팔찌 (맞으면 잠시 받는 피해 −) · 마법사 고깔모자 (초식 쿨타임 −) · 얼음 정령 목걸이 (둔화된 적 피해 +) · 서리 마법사 로브 (맞으면 둘레 둔화) · 빙결 수정 장화 (대시 길에 서리)
     //   뇌정: 룬 귀걸이 (감전된 적 피해 +) · 폭풍 서클릿 (초식 적중 감전) · 뇌전 룬 허리띠 (처치 연쇄 번개) · 폭풍 정령 팔찌 (3타 낙뢰) · 번개 장화 (대시로 감전)
     //   금강: 드워프 강철 허리띠 (보호막 동안 방어 +) · 미스릴 사슬 갑옷 (받는 피해 −) · 성기사 투구 (방마다 보호막) · 드워프 강철 각반 (경직 · 넉백 −) · 성기사 성표 (위기에 회복)
@@ -85,15 +85,15 @@ namespace AThousandDawns.Player
             }
         }
 
-        void OtherworldDashStart()
+        void OtherworldDashFeathers()
         {
-            int feathers = C("harpy_feather_bracelet", 2); // 하피 깃털 팔찌: 대시할 때 앞으로 깃털
+            int feathers = C("harpy_feather_bracelet", 2); // 하피 깃털 팔찌: 대시가 끝나 도착한 자리에서 앞으로 깃털
             if (!Has("harpy_feather_bracelet") || feathers <= 0) return;
             float damage = BaseDamage * V("harpy_feather_bracelet", 1);
             for (int i = 0; i < feathers; i++)
             {
                 Vector3 dir = Quaternion.Euler(0f, (i - (feathers - 1) * 0.5f) * 14f, 0f) * _dashDirection;
-                GanggiBolt.Fire(transform.position + Vector3.up, dir, _ganggiSpeed, _ganggiRange * 0.7f, 0.35f, damage, 0, dart: true);
+                GanggiBolt.Fire(transform.position + Vector3.up, dir, _ganggiSpeed, _ganggiRange * 0.7f, 0.35f, damage, 0, dart: true, label: "하피 깃털");
             }
         }
 

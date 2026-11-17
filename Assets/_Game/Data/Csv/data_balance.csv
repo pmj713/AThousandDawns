@@ -194,15 +194,13 @@ snake.hp,30,,청죽사 체력 (죽림),몬스터!B29
 snake.atk,6,,청죽사 공격,몬스터!C29
 snake.toughness,0,,청죽사 강인함,몬스터!D29
 snake.move_speed,4,cell/s,청죽사 이동,몬스터!C81
-snake.attack_range,3,cell,청죽사 뛰어들기 거리 (풀숲이 없을 때 시작 거리),몬스터!D81
-snake.lunge,3,cell,청죽사 뛰어드는 거리,몬스터!E81
+snake.attack_range,3.9,cell,청죽사 뛰어들기 시작 거리 (숨지 않고 드러나 있어요 · 3에서 늘림),몬스터!D81
+snake.lunge,3.9,cell,청죽사 뛰어드는 거리 (3에서 늘림),몬스터!E81
 snake.windup,0.4,s,청죽사 예고,몬스터!F81
 snake.recovery,1,s,청죽사 빈틈,몬스터!G81
 snake.attack_interval,3,s,청죽사 공격 간격,몬스터!H81
-snake.ambush_distance,2.5,cell,풀숲에서 뛰어나오는 거리 (몬스터 K81 설명),
 snake.slow_ratio,0.25,,물리면 이동속도 감소 (몬스터 K81 설명),
 snake.slow_duration,2,s,둔화 시간 (몬스터 K81 설명),
-snake.relocate_time,2,s,공격 뒤 다른 풀숲으로 옮기는 시간 (몬스터 K81 설명),
 snake.leap_time,0.2,s,뛰어드는 데 걸리는 시간 (임시),
 snake.bite_reach,0.3,cell,몸 바깥으로 무는 거리 (임시),
 enemy.wake_radius,7,cell,시험판 넓은 맵: 이 거리 안에 오거나 맞으면 깨어남 (임시),
@@ -339,7 +337,7 @@ room.waves_max,3,,방마다 웨이브 수 상한,
 room.spawn_warning,0.8,s,적이 나오기 전 바닥 예고 원 (임시),
 room.spawn_min_distance,5,cell,플레이어에게서 이 거리 밖에서 나옴 (임시),
 room.horn_max,1,,방마다 최대 나팔수 (임시),
-room.snake_max,2,,방마다 최대 청죽사 (풀숲 수에 맞춤 임시),
+room.snake_max,2,,방마다 최대 청죽사 (임시),
 room_cost.grunt,1,점,산적 졸개 난이도 점수 (임시: 방당 5마리 ≈ 6~8점),
 room_cost.boar,2,점,멧돼지 난이도 점수 (임시),
 room_cost.archer,2,점,궁수 난이도 점수 (임시),
@@ -1031,10 +1029,10 @@ irondragon.p2_water_count,3,,철룡 2페이즈 물길 수 (배가 부서지며 �
 irondragon.p2_water_radius,2.5,cell,철룡 물길 반경,
 irondragon.p2_water_slow,30%,,철룡 물길 안 이동속도 감소,
 irondragon.ring_windup,0.9,s,닻 충격파 예고,보스 패턴 개편
-irondragon.ring_speed,5,cell/s,고리가 퍼지는 속도,보스 패턴 개편
+irondragon.ring_speed,4,cell/s,고리가 퍼지는 속도,보스 패턴 개편
 irondragon.ring_width,0.8,cell,고리 두께,보스 패턴 개편
 irondragon.ring_max,10,cell,고리 최대 반경,보스 패턴 개편
-irondragon.ring_gap,0.6,s,고리 사이 시간,보스 패턴 개편
+irondragon.ring_gap,0.9,s,고리 사이 시간,보스 패턴 개편
 irondragon.ring_ratio,0.7,,고리 피해 배율,보스 패턴 개편
 irondragon.ring_count,3,,1페이즈 고리 수,보스 패턴 개편
 irondragon.p2_ring_count,4,,2페이즈 고리 수,보스 패턴 개편
@@ -1144,6 +1142,7 @@ goblinshaman.curse_life,4,s,고블린 주술사 저주 장판 시간,차원 겹�
 goblinshaman.curse_ratio,50%,,고블린 주술사 저주 장판 피해 (공격 대비),차원 겹침 개편
 goblinshaman.curse_slow,30%,,고블린 주술사 저주 장판 둔화,차원 겹침 개편
 goblinshaman.curse_slow_time,1.5,s,고블린 주술사 저주 장판 둔화 시간,차원 겹침 개편
+goblinshaman.curse_delay,0.9,s,고블린 주술사 저주 장판 예고 시간,플레이테스트 3차
 room_cost.slime,2,,방 예산 점수: 슬라임,차원 겹침 개편
 room_cost.goblin,2,,방 예산 점수: 고블린 (둘이 한 무리),차원 겹침 개편
 room_cost.goblinarcher,2,,방 예산 점수: 고블린 궁수,차원 겹침 개편
@@ -1660,6 +1659,10 @@ deathknight.lane_delay,1.1,s,예고 뒤 기병이 지나가기까지,보스 패�
 deathknight.lane_stagger,0.15,s,줄마다 늦게 지나가는 시간,보스 패턴 개편
 deathknight.lane_ratio,0.8,,망령 기병 피해 배율,보스 패턴 개편
 deathknight.lane_knockback,1.5,cell,망령 기병 넉백,보스 패턴 개편
+deathknight.lane_max_range,12,cell,이 거리 안이면 가까이서도 망령 기병 돌격,플레이테스트 3차
+deathknight.p2_lane_interval,7,s,2페이즈 망령 기병 X자 간격,플레이테스트 3차
+deathknight.p2_lane_tilt,45,deg,2페이즈 두 묶음이 기울어지는 각도 (X자),플레이테스트 3차
+deathknight.p2_lane_delay,0.3,s,맞은편 묶음이 늦게 지나가는 시간,플레이테스트 3차
 harpy.hp,20,,하피 체력,판타지 졸개 추가
 harpy.atk,7,,하피 공격,판타지 졸개 추가
 harpy.toughness,0,,하피 강인함,판타지 졸개 추가

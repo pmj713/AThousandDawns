@@ -1062,6 +1062,11 @@ namespace AThousandDawns.Art
         static readonly int CrackId = Shader.PropertyToID("_CrackColor"), AuraId = Shader.PropertyToID("_AuraColor"), TintId = Shader.PropertyToID("_BaseColor");
 
         public void SetDebris(Material mat, Bounds bounds) { _debrisMat = mat; _debrisBounds = bounds; }
+
+        // 방을 옮기면 (방은 같은 자리를 다시 써요) 앞 방 시체가 새 방에서 쓰러지지 않게 바로 치워요
+        void OnEnable() => EnemyDirector.RoomReset += OnRoomReset;
+        void OnDisable() => EnemyDirector.RoomReset -= OnRoomReset;
+        void OnRoomReset() => Destroy(gameObject);
         //   Dissolve(보스): Kneel처럼 마지막 자세로 무너져 무기를 떨군 뒤, 잠시 있다가 발밑부터 먹으로 흩어져 사라져요 (InkCharacter _Dissolve)
         const float DissolveHold = 1.8f, DissolveTime = 1.6f;
         static readonly int DissolveId = Shader.PropertyToID("_Dissolve");

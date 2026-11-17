@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using AThousandDawns.Core;
+using AThousandDawns.Enemies;
 using UnityEngine;
 
 namespace AThousandDawns.Prototype
@@ -51,6 +52,7 @@ namespace AThousandDawns.Prototype
             }
             _features.Clear();
             RoomLayout = -1;
+            ShowBushes(_region != 0); // 죽림엔 풀숲을 두지 않아요 (청죽사가 숨지 않아요). 다른 지역은 소나무 · 갈대 · 가시 덤불 꾸밈
             if (room != null && room.HasFight && room.FixedWaves == null && (_region >= 1 || _floor >= 2)) // 죽림은 2층부터 (1층 · 입문 죽림은 그대로)
             {
                 var rng = new System.Random(Seed ^ (room.Cell.x * 92837111) ^ (room.Cell.y * 689287499) ^ (_floor * 283923481) ^ _region);
@@ -65,6 +67,15 @@ namespace AThousandDawns.Prototype
                 if (_region == 3 && RoomLayout > 1) Notify("tomb_layout", "천마총: 마기 기둥은 때마다 둘레에 마기를 뿜고, 혈지 위의 적은 회복해요 · 끌어내서 싸워요");
             }
             LayoutChanged?.Invoke(this);
+        }
+
+        AmbushBush[] _bushes; // 방 풀숲 (꺼진 것까지, 처음 한 번만 찾아요)
+
+        void ShowBushes(bool on)
+        {
+            _bushes ??= FindObjectsByType<AmbushBush>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (var b in _bushes)
+                if (b != null && b.gameObject.activeSelf != on) b.gameObject.SetActive(on);
         }
 
         // ── 폐사찰 (방 20×12, 가운데 기준 자리). 고정 대나무 기둥: (±5.5, ±3) · (±7, ±3.5) · (±3.5, ±3)
