@@ -735,29 +735,30 @@ namespace AThousandDawns.Prototype
         void EnsureStyles()
         {
             if (_label != null) return;
-            _label = new GUIStyle(GUI.skin.label) { fontSize = 16, richText = true }; UiStyle.Steady(_label);
+            _label = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Small, richText = true }; UiStyle.Steady(_label);
             _label.normal.textColor = Color.white; UiStyle.Steady(_label);
             _wrapLabel = new GUIStyle(_label) { wordWrap = true }; UiStyle.Steady(_wrapLabel);
-            _popup = new GUIStyle(GUI.skin.label) { fontSize = 22, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_popup);
-            _dummy = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_dummy);
+            _popup = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Body, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_popup);
+            _dummy = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Tiny, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_dummy);
             _dummy.normal.textColor = Color.black; UiStyle.Steady(_dummy);
-            _big = new GUIStyle(GUI.skin.label) { fontSize = 32, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_big);
+            _big = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Heading, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_big);
             _big.normal.textColor = _big.hover.textColor = _big.active.textColor = Color.white; UiStyle.Steady(_big); // 마우스를 올려도 색이 그대로
-            _bossLabel = new GUIStyle(GUI.skin.label) { fontSize = 18, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_bossLabel);
+            _bossLabel = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Small, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_bossLabel);
             _bossLabel.normal.textColor = Color.white; UiStyle.Steady(_bossLabel);
-            _popupSmall = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_popupSmall);
-            _popupBig = new GUIStyle(GUI.skin.label) { fontSize = 32, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_popupBig);
-            _statusLabel = new GUIStyle(GUI.skin.label) { fontSize = 13, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_statusLabel);
-            _hintLabel = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.MiddleCenter, richText = true }; UiStyle.Steady(_hintLabel);
+            _popupSmall = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Tiny, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_popupSmall);
+            _popupBig = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Heading, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_popupBig);
+            _statusLabel = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Tiny, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_statusLabel);
+            _hintLabel = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Label, alignment = TextAnchor.MiddleCenter, richText = true }; UiStyle.Steady(_hintLabel);
             _statusLabel.normal.textColor = SlowDot; UiStyle.Steady(_statusLabel);
-            _card = new GUIStyle(GUI.skin.button) { fontSize = 15, wordWrap = true, richText = true, alignment = TextAnchor.UpperLeft, padding = new RectOffset(14, 14, 12, 12) }; UiStyle.Steady(_card);
+            _card = new GUIStyle(GUI.skin.button) { fontSize = AThousandDawns.Fx.InkUi.Tiny, wordWrap = true, richText = true, alignment = TextAnchor.UpperLeft, padding = new RectOffset(14, 14, 12, 12) }; UiStyle.Steady(_card);
             _card.normal.textColor = _card.hover.textColor = Color.white; UiStyle.Steady(_card);
+            AThousandDawns.Fx.InkMeridianArt.Restyle(_card); // UI 규칙: 모든 카드 · 줄 버튼이 같은 남빛 붓 버튼 (마우스 = 주홍, 글자 한지색)
             // 기물 아이콘 자리를 비운 카드 (위 · 왼쪽)
             _cardTop = new GUIStyle(_card) { padding = new RectOffset(14, 14, 112, 12) }; UiStyle.Steady(_cardTop);
             _cardLeft = new GUIStyle(_card) { padding = new RectOffset(72, 14, 12, 12) }; UiStyle.Steady(_cardLeft);
             _cardLeftSmall = new GUIStyle(_card) { padding = new RectOffset(54, 14, 10, 10) }; UiStyle.Steady(_cardLeftSmall);
-            _itemLine = new GUIStyle(_label) { fontSize = 15, richText = true, wordWrap = true }; UiStyle.Steady(_itemLine);
-            _itemSmall = new GUIStyle(_label) { fontSize = 14, richText = true, wordWrap = false, margin = new RectOffset(4, 4, 0, 0), padding = new RectOffset(0, 0, 1, 1) }; UiStyle.Steady(_itemSmall);
+            _itemLine = new GUIStyle(_label) { fontSize = AThousandDawns.Fx.InkUi.Tiny, richText = true, wordWrap = true }; UiStyle.Steady(_itemLine);
+            _itemSmall = new GUIStyle(_label) { fontSize = AThousandDawns.Fx.InkUi.Tiny, richText = true, wordWrap = false, margin = new RectOffset(4, 4, 0, 0), padding = new RectOffset(0, 0, 1, 1) }; UiStyle.Steady(_itemSmall);
         }
     }
 }

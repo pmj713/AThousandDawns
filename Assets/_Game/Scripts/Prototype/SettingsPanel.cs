@@ -271,19 +271,19 @@ namespace AThousandDawns.Prototype
         void EnsureStyles()
         {
             if (_label != null) return;
-            Color text = new Color(0.94f, 0.91f, 0.85f), faint = new Color(0.65f, 0.62f, 0.58f), accent = new Color(0.9f, 0.55f, 0.45f);
+            Color text = AThousandDawns.Fx.InkUi.PaperText, faint = AThousandDawns.Fx.InkUi.MutedOnDark, accent = AThousandDawns.Fx.InkUi.AccentOnDark; // UI 규칙 (짙은 바탕 위 글자색)
             GUIStyle Make(int size, TextAnchor anchor, Color color, FontStyle style = FontStyle.Normal)
             {
                 var s = new GUIStyle(GUI.skin.label) { fontSize = size, alignment = anchor, fontStyle = style, richText = true };
                 s.normal.textColor = s.hover.textColor = s.active.textColor = color; UiStyle.Steady(s);
                 return s;
             }
-            _title = Make(30, TextAnchor.MiddleLeft, text, FontStyle.Bold);
-            _section = Make(18, TextAnchor.MiddleLeft, accent, FontStyle.Bold);
-            _label = Make(20, TextAnchor.MiddleLeft, text);
-            _value = Make(20, TextAnchor.MiddleCenter, text, FontStyle.Bold);
-            _hint = Make(16, TextAnchor.MiddleLeft, faint);
-            _arrow = new GUIStyle(GUI.skin.button) { fontSize = 18 }; UiStyle.Steady(_arrow);
+            _title = Make(AThousandDawns.Fx.InkUi.Heading, TextAnchor.MiddleLeft, text, FontStyle.Bold);
+            _section = Make(AThousandDawns.Fx.InkUi.Small, TextAnchor.MiddleLeft, accent, FontStyle.Bold);
+            _label = Make(AThousandDawns.Fx.InkUi.Label, TextAnchor.MiddleLeft, text);
+            _value = Make(AThousandDawns.Fx.InkUi.Label, TextAnchor.MiddleCenter, text, FontStyle.Bold);
+            _hint = Make(AThousandDawns.Fx.InkUi.Small, TextAnchor.MiddleLeft, faint);
+            _arrow = new GUIStyle(GUI.skin.button) { fontSize = AThousandDawns.Fx.InkUi.Small }; UiStyle.Steady(_arrow); AThousandDawns.Fx.InkMeridianArt.Restyle(_arrow); // UI 규칙: 남빛 붓 버튼
         }
     }
 }

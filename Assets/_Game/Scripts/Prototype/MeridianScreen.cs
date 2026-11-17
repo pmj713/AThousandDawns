@@ -1012,18 +1012,18 @@ namespace AThousandDawns.Prototype
         void EnsureStyles()
         {
             if (_title != null) return;
-            _title = new GUIStyle(GUI.skin.label) { fontSize = 20, fontStyle = FontStyle.Bold, richText = true }; UiStyle.Steady(_title);
+            _title = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Label, fontStyle = FontStyle.Bold, richText = true }; UiStyle.Steady(_title);
             _title.normal.textColor = Color.white; UiStyle.Steady(_title);
-            _small = new GUIStyle(GUI.skin.label) { fontSize = 18, richText = true, wordWrap = true }; UiStyle.Steady(_small);
+            _small = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Small, richText = true, wordWrap = true }; UiStyle.Steady(_small);
             _small.normal.textColor = Color.white; UiStyle.Steady(_small);
-            _cellName = new GUIStyle(_small) { alignment = TextAnchor.MiddleCenter, fontSize = 18 }; UiStyle.Steady(_cellName);
-            _bagButton = new GUIStyle(GUI.skin.button) { fontSize = 18, richText = true, alignment = TextAnchor.MiddleLeft, padding = new RectOffset(11, 11, 6, 6) }; UiStyle.Steady(_bagButton);
+            _cellName = new GUIStyle(_small) { alignment = TextAnchor.MiddleCenter, fontSize = AThousandDawns.Fx.InkUi.Small }; UiStyle.Steady(_cellName);
+            _bagButton = new GUIStyle(GUI.skin.button) { fontSize = AThousandDawns.Fx.InkUi.Small, richText = true, alignment = TextAnchor.MiddleLeft, padding = new RectOffset(11, 11, 6, 6) }; UiStyle.Steady(_bagButton);
             _bagButton.normal.textColor = _bagButton.hover.textColor = Color.white; UiStyle.Steady(_bagButton);
-            _noticeStyle = new GUIStyle(GUI.skin.label) { fontSize = 30, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_noticeStyle);
+            _noticeStyle = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Heading, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_noticeStyle);
             _noticeStyle.normal.textColor = new Color(1f, 0.85f, 0.5f); UiStyle.Steady(_noticeStyle);
-            _detail = new GUIStyle(_small) { fontSize = 19 }; UiStyle.Steady(_detail);
-            _tag = new GUIStyle(_small) { alignment = TextAnchor.UpperRight, fontSize = 16, wordWrap = false }; UiStyle.Steady(_tag);
-            _button = new GUIStyle(GUI.skin.button) { fontSize = 17, richText = true }; UiStyle.Steady(_button);
+            _detail = new GUIStyle(_small) { fontSize = AThousandDawns.Fx.InkUi.Label }; UiStyle.Steady(_detail);
+            _tag = new GUIStyle(_small) { alignment = TextAnchor.UpperRight, fontSize = AThousandDawns.Fx.InkUi.Small, wordWrap = false }; UiStyle.Steady(_tag);
+            _button = new GUIStyle(GUI.skin.button) { fontSize = AThousandDawns.Fx.InkUi.Small, richText = true }; UiStyle.Steady(_button);
             AThousandDawns.Fx.InkMeridianArt.Restyle(_bagButton); // 먹 붓 획 바탕
             AThousandDawns.Fx.InkMeridianArt.Restyle(_button);
         }

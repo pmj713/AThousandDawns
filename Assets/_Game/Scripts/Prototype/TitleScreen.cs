@@ -24,8 +24,8 @@ namespace AThousandDawns.Prototype
         public enum Item { Continue, Settings, Records, Credits, Quit }
 
         static readonly Color Paper = new Color32(0xEF, 0xE6, 0xD2, 0xFF); // 색감 시트 마을 바탕
-        static readonly Color Ink = new Color32(0x2B, 0x28, 0x25, 0xFF);
-        static readonly Color Faint = new Color32(0x8A, 0x82, 0x78, 0xFF);
+        static readonly Color Ink = AThousandDawns.Fx.InkUi.Ink; // UI 규칙 (InkUi)
+        static readonly Color Faint = AThousandDawns.Fx.InkUi.Muted;
         static readonly Color Seal = new Color32(0xC8, 0x46, 0x3C, 0xFF);   // 매화 홍 (낙관)
 
         // 프롤로그 (차원 겹침 설정). 그림은 장마다 TitleArt/Prologue_1~4.
@@ -346,15 +346,15 @@ namespace AThousandDawns.Prototype
         {
             if (_menu != null) return;
             _titleBig = new GUIStyle(GUI.skin.label) { fontSize = 120, alignment = TextAnchor.MiddleCenter, normal = { textColor = Ink } }; UiStyle.Steady(_titleBig);
-            _titleSmall = new GUIStyle(GUI.skin.label) { fontSize = 30, alignment = TextAnchor.MiddleCenter, normal = { textColor = Faint } }; UiStyle.Steady(_titleSmall);
-            _sealText = new GUIStyle(GUI.skin.label) { fontSize = 40, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, normal = { textColor = Paper } }; UiStyle.Steady(_sealText);
-            _menu = new GUIStyle(GUI.skin.label) { fontSize = 34, alignment = TextAnchor.MiddleLeft, normal = { textColor = Faint } }; UiStyle.Steady(_menu);
+            _titleSmall = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Heading, alignment = TextAnchor.MiddleCenter, normal = { textColor = Faint } }; UiStyle.Steady(_titleSmall);
+            _sealText = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Title, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, normal = { textColor = Paper } }; UiStyle.Steady(_sealText);
+            _menu = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Heading, alignment = TextAnchor.MiddleLeft, normal = { textColor = Faint } }; UiStyle.Steady(_menu);
             _menuOn = new GUIStyle(_menu) { fontStyle = FontStyle.Bold, normal = { textColor = Ink } }; UiStyle.Steady(_menuOn);
-            _info = new GUIStyle(GUI.skin.label) { fontSize = 22, alignment = TextAnchor.MiddleLeft, normal = { textColor = Ink } }; UiStyle.Steady(_info);
+            _info = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Body, alignment = TextAnchor.MiddleLeft, normal = { textColor = Ink } }; UiStyle.Steady(_info);
             _subtitle = new GUIStyle(_info) { alignment = TextAnchor.MiddleCenter }; UiStyle.Steady(_subtitle);
-            _hint = new GUIStyle(GUI.skin.label) { fontSize = 18, alignment = TextAnchor.MiddleLeft, normal = { textColor = Faint } }; UiStyle.Steady(_hint);
-            _small = new GUIStyle(GUI.skin.label) { fontSize = 18, alignment = TextAnchor.MiddleCenter, normal = { textColor = Faint } }; UiStyle.Steady(_small);
-            _body = new GUIStyle(GUI.skin.label) { fontSize = 34, alignment = TextAnchor.MiddleCenter, wordWrap = true, richText = true, normal = { textColor = Ink } }; UiStyle.Steady(_body);
+            _hint = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Small, alignment = TextAnchor.MiddleLeft, normal = { textColor = Faint } }; UiStyle.Steady(_hint);
+            _small = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Small, alignment = TextAnchor.MiddleCenter, normal = { textColor = Faint } }; UiStyle.Steady(_small);
+            _body = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Heading, alignment = TextAnchor.MiddleCenter, wordWrap = true, richText = true, normal = { textColor = Ink } }; UiStyle.Steady(_body);
             // 마우스를 올리거나 누를 때도 같은 색 (기본 스킨은 흰색으로 바뀌어 한지 바탕에서 안 보여요)
             foreach (var s in new[] { _titleBig, _titleSmall, _subtitle, _hint, _menu, _menuOn, _info, _small, _body, _sealText })
                 s.hover.textColor = s.active.textColor = s.focused.textColor = s.onNormal.textColor = s.onHover.textColor = s.normal.textColor;

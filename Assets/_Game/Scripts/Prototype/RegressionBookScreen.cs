@@ -13,7 +13,7 @@ namespace AThousandDawns.Prototype
     public sealed class RegressionBookScreen : MonoBehaviour
     {
         static readonly Color Paper = new Color(0.97f, 0.9f, 0.9f);            // 연분홍 한지
-        static readonly Color Ink = new Color(0.16f, 0.1f, 0.1f);
+        static readonly Color Ink = AThousandDawns.Fx.InkUi.Ink; // UI 규칙 (InkUi)
         static readonly Color Branch = new Color(0.16f, 0.12f, 0.12f);          // 매화 가지 (열린 길): 짙은 먹
         static readonly Color BranchDim = new Color(0.55f, 0.48f, 0.48f, 0.55f); // 아직 닫힌 길: 옅은 먹
         static readonly Color Bud = new Color(0.86f, 0.3f, 0.42f);              // 피울 수 있는 꽃봉오리
@@ -487,15 +487,15 @@ namespace AThousandDawns.Prototype
         void EnsureStyles()
         {
             if (_title != null) return;
-            _title = new GUIStyle(GUI.skin.label) { fontSize = 32, alignment = TextAnchor.MiddleLeft, richText = true }; UiStyle.Steady(_title);
+            _title = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Heading, alignment = TextAnchor.MiddleLeft, richText = true }; UiStyle.Steady(_title);
             _title.normal.textColor = Ink; UiStyle.Steady(_title);
-            _label = new GUIStyle(GUI.skin.label) { fontSize = 22, richText = true, wordWrap = true }; UiStyle.Steady(_label); // 한지 위에서도 읽히게 (4차 플레이 테스트)
+            _label = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Body, richText = true, wordWrap = true }; UiStyle.Steady(_label); // 한지 위에서도 읽히게 (4차 플레이 테스트)
             _label.normal.textColor = Ink; UiStyle.Steady(_label);
-            _small = new GUIStyle(GUI.skin.label) { fontSize = 19, richText = true, wordWrap = true }; UiStyle.Steady(_small);
+            _small = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Label, richText = true, wordWrap = true }; UiStyle.Steady(_small);
             _small.normal.textColor = new Color(0.14f, 0.11f, 0.1f); UiStyle.Steady(_small); // 짙은 먹 (옅은 갈색은 한지 결에 묻혀요)
-            _node = new GUIStyle(GUI.skin.label) { fontSize = 17, alignment = TextAnchor.UpperCenter, richText = true }; UiStyle.Steady(_node);
+            _node = new GUIStyle(GUI.skin.label) { fontSize = AThousandDawns.Fx.InkUi.Small, alignment = TextAnchor.UpperCenter, richText = true }; UiStyle.Steady(_node);
             _node.normal.textColor = Ink; UiStyle.Steady(_node);
-            _button = new GUIStyle(GUI.skin.button) { fontSize = 22 }; UiStyle.Steady(_button);
+            _button = new GUIStyle(GUI.skin.button) { fontSize = AThousandDawns.Fx.InkUi.Body }; UiStyle.Steady(_button);
             AThousandDawns.Fx.InkMeridianArt.Restyle(_button); // 먹 붓 획 버튼 (한지색 글자, 누르면 붉은 먹)
         }
     }

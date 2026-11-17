@@ -96,7 +96,7 @@ namespace AThousandDawns.Prototype
             if (GUI.Button(new Rect(area.x + 30f, area.y + 20f, 180f, 44f), "무공 요결", Tab == 0 ? _tabOn : _tab)) Tab = 0;
             if (GUI.Button(new Rect(area.x + 230f, area.y + 20f, 320f, 44f), $"기물 도감 {SeenCount}/{_items.Count}", Tab == 1 ? _tabOn : _tab)) Tab = 1;
             if (GUI.Button(new Rect(area.x + 570f, area.y + 20f, 220f, 44f), "회귀 기록", Tab == 2 ? _tabOn : _tab)) Tab = 2;
-            bool close = GUI.Button(new Rect(area.xMax - 130f, area.y + 22f, 100f, 40f), "닫기");
+            bool close = GUI.Button(new Rect(area.xMax - 130f, area.y + 22f, 100f, 40f), "닫기", AThousandDawns.Fx.InkUi.ButtonStyle(AThousandDawns.Fx.InkUi.Label)); // UI 규칙: 남빛 붓 버튼
 
             var listArea = new Rect(area.x + 30f, area.y + 80f, 300f, area.height - 140f);
             var text = new Rect(listArea.xMax + 30f, area.y + 80f, area.xMax - listArea.xMax - 60f, area.height - 140f);
@@ -282,7 +282,7 @@ namespace AThousandDawns.Prototype
         void EnsureStyles()
         {
             if (_item != null) return;
-            Color text = new Color(0.94f, 0.91f, 0.85f), faint = new Color(0.65f, 0.62f, 0.58f), accent = new Color(0.9f, 0.55f, 0.45f);
+            Color text = AThousandDawns.Fx.InkUi.PaperText, faint = AThousandDawns.Fx.InkUi.MutedOnDark, accent = AThousandDawns.Fx.InkUi.AccentOnDark; // UI 규칙 (짙은 바탕 위 글자색)
             GUIStyle Make(GUIStyle from, int size, TextAnchor anchor, Color color, FontStyle style = FontStyle.Normal, bool wrap = false)
             {
                 var s = new GUIStyle(from) { fontSize = size, alignment = anchor, fontStyle = style, richText = true, wordWrap = wrap };
@@ -290,14 +290,14 @@ namespace AThousandDawns.Prototype
                 s.normal.background = s.hover.background = s.active.background = null;
                 return s;
             }
-            _title = Make(GUI.skin.label, 28, TextAnchor.MiddleLeft, text, FontStyle.Bold);
-            _tab = Make(GUI.skin.button, 26, TextAnchor.MiddleLeft, faint, FontStyle.Bold);
-            _tabOn = Make(GUI.skin.button, 28, TextAnchor.MiddleLeft, text, FontStyle.Bold);
-            _group = Make(GUI.skin.label, 17, TextAnchor.MiddleLeft, accent, FontStyle.Bold);
-            _item = Make(GUI.skin.button, 19, TextAnchor.MiddleLeft, faint);
-            _itemOn = Make(GUI.skin.button, 19, TextAnchor.MiddleLeft, text, FontStyle.Bold);
-            _body = Make(GUI.skin.label, 21, TextAnchor.UpperLeft, text, FontStyle.Normal, true);
-            _hint = Make(GUI.skin.label, 15, TextAnchor.MiddleLeft, faint);
+            _title = Make(GUI.skin.label, AThousandDawns.Fx.InkUi.Heading, TextAnchor.MiddleLeft, text, FontStyle.Bold);
+            _tab = Make(GUI.skin.button, AThousandDawns.Fx.InkUi.Body, TextAnchor.MiddleLeft, faint, FontStyle.Bold);
+            _tabOn = Make(GUI.skin.button, AThousandDawns.Fx.InkUi.Heading, TextAnchor.MiddleLeft, text, FontStyle.Bold);
+            _group = Make(GUI.skin.label, AThousandDawns.Fx.InkUi.Small, TextAnchor.MiddleLeft, accent, FontStyle.Bold);
+            _item = Make(GUI.skin.button, AThousandDawns.Fx.InkUi.Label, TextAnchor.MiddleLeft, faint);
+            _itemOn = Make(GUI.skin.button, AThousandDawns.Fx.InkUi.Label, TextAnchor.MiddleLeft, text, FontStyle.Bold);
+            _body = Make(GUI.skin.label, AThousandDawns.Fx.InkUi.Label, TextAnchor.UpperLeft, text, FontStyle.Normal, true);
+            _hint = Make(GUI.skin.label, AThousandDawns.Fx.InkUi.Tiny, TextAnchor.MiddleLeft, faint);
         }
     }
 }

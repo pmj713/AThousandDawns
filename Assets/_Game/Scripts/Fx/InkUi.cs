@@ -24,6 +24,9 @@ namespace AThousandDawns.Fx
         public static readonly Color Cobalt = new Color(0.2f, 0.45f, 0.95f);
         public static readonly Color Good = new Color(0.25f, 0.7f, 0.35f);
         public static readonly Color Bad = new Color(0.85f, 0.12f, 0.15f);
+        // 짙은 바탕(HUD · 어두운 창) 위 글자: 본문 PaperText · 흐림 MutedOnDark · 강조 AccentOnDark
+        public static readonly Color MutedOnDark = new Color(0.65f, 0.62f, 0.58f);
+        public static readonly Color AccentOnDark = new Color(1f, 0.55f, 0.42f);
 
         static readonly Dictionary<(int, Color, TextAnchor, bool, bool), GUIStyle> Styles = new Dictionary<(int, Color, TextAnchor, bool, bool), GUIStyle>();
         static readonly Dictionary<int, GUIStyle> Buttons = new Dictionary<int, GUIStyle>();
@@ -55,6 +58,9 @@ namespace AThousandDawns.Fx
         public static void Window(Rect rect) => InkMeridianArt.PaperPanel(rect);
         public static void Window(Rect rect, Color fill) => InkMeridianArt.PaperPanel(rect, fill);
         public static void Panel(Rect rect) => InkMeridianArt.Panel(rect);
+
+        // 자유 크기를 6단계 중 가장 가까운 것으로 (예전 화면 숫자를 옮길 때)
+        public static int Snap(int size) => size <= 15 ? Tiny : size <= 18 ? Small : size <= 21 ? Label : size <= 26 ? Body : size <= 36 ? Heading : size <= 60 ? Title : size;
 
         // 마우스를 올리거나 누르거나 포커스가 가도 글자색이 바뀌지 않게 (Unity 기본 hover 글자색은 흰색이에요).
         // 처음 부를 때 기본 스킨(button · label · toggle · box)도 같이 고정해요 — 스타일 없이 그리는 GUI.Button(rect, text)도요.
