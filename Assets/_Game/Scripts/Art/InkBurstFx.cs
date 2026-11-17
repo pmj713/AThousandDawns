@@ -12,7 +12,7 @@ namespace AThousandDawns.Art
     //   Gunpowder 화약: 주황 불덩이가 확 부풀고 검은 연기 · 불티 · 그을린 자국
     //   BloodGlob 핏덩이: 핏물이 바닥에 철퍽 번지고 핏방울이 튀어요 / BloodDeath 혈폭자 죽음: 더 크게 + 붉은 피 안개
     //   Fireball 차원 감염 정예 화염구: 주홍 불길이 사방으로 터지고 불꽃 고리 두 겹 + 그을음 (예고·떨어지는 불덩이는 InkFantasyFx)
-    //   Rune 마검사 천마 마법진: 보라·청색 빛기둥이 솟고 룬 불티 + 보랏빛 고리
+    //   Rune 마검사 천마 마법진: 위로 치솟는 보라·청색 마력 불티 기둥 + 불빛 번쩍 룬 불티 + 보랏빛 고리
     //   Slam 내려찍기 · Quake 진각: 땅이 갈라진 고리 + 흙먼지 + 돌 부스러기 (진각은 더 넓고 누런 흙빛, 진각은 둘레에서 바윗돌이 솟았다 가라앉아요)
     //   Spin 회전베기: 먹 소용돌이 원이 빠르게 돌며 퍼지고 흙먼지가 둥글게
     //   Vajra 금강: 금빛 고리 두 겹이 퍼지고 금빛 반짝이 / Gangi 강기: 쪽빛 기운 고리와 푸른 빛 입자
@@ -78,9 +78,12 @@ namespace AThousandDawns.Art
                     Ring(_ring, at, r * 2.6f, 0.35f, new Color(1f, 0.55f, 0.12f, 1f), 0.3f, 300f);
                     Ring(_ring, at, r * 3.2f, 0.5f, new Color(1f, 0.8f, 0.3f, 0.8f), 0.2f, -200f, 0.08f);
                     Ground(_scorch, at, r * 2.4f, 2.5f, new Color(1f, 0.75f, 0.6f, 1f), 0.9f);
+                    Flash(at + Vector3.up, new Color(1f, 0.55f, 0.2f), r * 4f, 6f, 0.45f); // 불빛 번쩍
                     break;
                 case BurstKind.Rune: // 마검사 천마 마법진: 원이 다 차면 보라·청색 빛기둥이 솟고 룬 불티가 흩어져요
-                    Pillar(at, r);
+                    InkParticles.Burst(at + Vector3.up * 0.3f, 46, new Color(0.9f, 0.9f, 1f, 1f), new Color(0.55f, 0.35f, 1f, 0f), r * 0.8f, 0.18f, 0.9f, -9f); // 빛기둥: 그림 대신 위로 치솟는 마력 불티 (2차 플레이테스트)
+                    InkParticles.Burst(at + Vector3.up * 0.3f, 20, new Color(0.6f, 0.8f, 1f, 0.9f), new Color(0.7f, 0.4f, 1f, 0f), r * 0.4f, 0.5f, 1.1f, -6f);
+                    Flash(at + Vector3.up * 1.5f, new Color(0.6f, 0.45f, 1f), r * 4f, 6f, 0.5f);
                     InkParticles.Burst(at + Vector3.up * 0.6f, 30, new Color(0.85f, 0.8f, 1f, 1f), new Color(0.35f, 0.6f, 1f, 0.5f), r * 2f, 0.12f, 0.8f, -1.2f);
                     Ring(_ring, at, r * 2.6f, 0.4f, new Color(0.65f, 0.35f, 1f, 1f), 0.3f, 260f);
                     break;
@@ -160,6 +163,29 @@ namespace AThousandDawns.Art
         }
 
         // 퍼지는 고리 (spin: 초당 회전, delay: 늦게 시작)
+        // 잠깐 번쩍이는 불빛 (Light, life초 동안 꺼져요)
+        void Flash(Vector3 at, Color color, float range, float intensity, float life)
+        {
+            var light = new GameObject("Flash").AddComponent<Light>();
+            light.transform.SetParent(transform, false);
+            light.transform.position = at;
+            light.type = LightType.Point;
+            light.color = color;
+            light.range = range;
+            light.intensity = intensity;
+            light.shadows = LightShadows.None;
+            float t = 0f;
+            _live.Add(dt =>
+            {
+                if (light == null) return false;
+                t += dt;
+                light.intensity = intensity * Mathf.Clamp01(1f - t / life);
+                if (t < life) return true;
+                Destroy(light.gameObject);
+                return false;
+            });
+        }
+
         // 마법진 빛기둥 (HeavenlyDemonFx/RunePillar): 바닥에서 위로 확 솟았다가 가늘어지며 사라져요
         void Pillar(Vector3 at, float r)
         {

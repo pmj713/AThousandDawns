@@ -397,80 +397,134 @@ namespace AThousandDawns.Art
 
         // ── 마검사 천마 2·3페이즈 (무공 → 마법 → 마검 융합)
 
-        // 화염구 비 (Mark Fireball): 하늘에서 불덩이가 불티를 끌며 떨어지고, 예고 원 둘레에 주홍 불꽃 고리가 차올라요. 터지는 불길은 InkBurstFx(Fireball).
+        // 화염구 비 (Mark Fireball, 플레이테스트 2차: 납작한 그림 대신 빛 · 파티클): 하늘에서 빛나는 불덩이(흰 금빛 속 + 주황 겉불)가
+        //   불길과 불티를 끌며 떨어지고, 주황 불빛(Light)이 바닥을 점점 밝혀요. 예고 원 둘레에는 불티가 차오르며 솟아요. 터지는 불길은 InkBurstFx(Fireball).
         void FallingFireball(Vector3 at, float fall, float radius)
         {
             at.y = 0f;
-            var sr = Upright(_fireball, at, 1f, 9);
-            var ring = Flat(_ring, at, radius * 2.1f, UnityEngine.Random.Range(0f, 360f), 0.05f, 5);
-            if (sr == null) return;
-            var pivot = sr.transform.parent;
-            InkParticles.Embers(pivot, Vector3.zero, 0.3f, 2f);
+            var glow = GlowSprite();
+            var root = new GameObject("Falling Fireball").transform;
+            root.SetParent(transform, false);
             Vector3 sky = at + new Vector3(1.2f, 8f, -1.2f);
-            float t = 0f, life = Mathf.Max(0.1f, fall);
+            root.position = sky;
+            var pivot = new GameObject("Orb").transform;
+            pivot.SetParent(root, false);
+            pivot.gameObject.AddComponent<InkFaceCamera>();
+            if (glow != null)
+            {
+                GlowOrb(pivot, glow, 1.6f, new Color(1f, 0.35f, 0.06f, 0.75f), 9);
+                GlowOrb(pivot, glow, 0.8f, new Color(1f, 0.92f, 0.6f, 1f), 10);
+            }
+            InkParticles.Fire(root, Vector3.zero, 0.5f, 1.6f);
+            InkParticles.Embers(root, Vector3.zero, 0.3f, 2.5f);
+            var light = PointLight(root, new Color(1f, 0.55f, 0.2f), radius * 3f, 0.5f);
+            float t = 0f, life = Mathf.Max(0.1f, fall), spark = 0f;
             _live.Add(dt =>
             {
                 t += dt;
                 float k = Mathf.Clamp01(t / life);
-                if (pivot != null)
+                if (root != null)
                 {
-                    pivot.position = Vector3.Lerp(sky, at + Vector3.up * 0.3f, k * k);
-                    sr.transform.localRotation = Quaternion.Euler(0f, 0f, t * 420f);
-                    sr.color = new Color(1f, 1f, 1f, Mathf.Clamp01(t / 0.15f));
+                    root.position = Vector3.Lerp(sky, at + Vector3.up * 0.4f, k * k);
+                    pivot.localScale = Vector3.one * (1f + 0.12f * Mathf.Sin(t * 22f));
+                    if (light != null) light.intensity = Mathf.Lerp(0.5f, 4f, k);
                 }
-                if (ring != null)
+                spark -= dt;
+                if (spark <= 0f && k < 1f) // 예고 원 둘레 불티가 차올라요
                 {
-                    ring.transform.Rotate(0f, 0f, 150f * dt, Space.Self);
-                    ring.color = new Color(Flame.r, Flame.g, Flame.b, 0.3f + 0.6f * k);
+                    spark = 0.08f;
+                    float a = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
+                    var p = at + new Vector3(Mathf.Cos(a), 0.1f, Mathf.Sin(a)) * radius;
+                    InkParticles.Burst(p, 2, new Color(1f, 0.85f, 0.4f, 1f), new Color(Flame.r, Flame.g, Flame.b, 0f), 0.3f, 0.12f, 0.5f + 0.5f * k, -1.6f);
                 }
                 if (k < 1f) return true;
-                if (pivot != null) Destroy(pivot.gameObject);
-                if (ring != null) Destroy(ring.gameObject);
+                if (root != null) Destroy(root.gameObject);
+                LightFlash(at + Vector3.up, new Color(1f, 0.55f, 0.2f), radius * 4f, 6f, 0.4f);
                 return false;
             });
         }
 
-        // 마법진 (Mark Rune): 보라·청색 룬 원이 돌며 차올라요 (터지기 직전엔 빨리 돌고 밝아져요). 기둥은 InkBurstFx(Rune).
+        // 마법진 (Mark Rune): 바닥에 옅은 룬 원은 위치 안내로만 남기고, 그 위로 보라·청색 빛이 차오르는 입체 연출이 주인공이에요.
+        //   둘레를 따라 룬 불티가 점점 빨리 솟고, 가운데 빛 웅덩이가 부풀며, 보라 불빛(Light)이 점점 세져요. 기둥은 InkBurstFx(Rune).
         void RuneCircle(Vector3 at, float time, float radius)
         {
+            at.y = 0f;
             var sr = Flat(_rune, at, radius * 2.2f, UnityEngine.Random.Range(0f, 360f), 0.045f, 5);
-            if (sr == null) return;
-            Vector3 unit = sr.transform.localScale;
-            float t = 0f, life = Mathf.Max(0.2f, time);
+            var glow = GlowSprite();
+            var pool = glow != null ? Flat(glow, at, radius * 2.6f, 0f, 0.05f, 4) : null;
+            var holder = new GameObject("Rune Light").transform;
+            holder.SetParent(transform, false);
+            holder.position = at + Vector3.up * 0.6f;
+            var light = PointLight(holder, new Color(0.6f, 0.4f, 1f), radius * 2.5f, 0f);
+            Vector3 unit = sr != null ? sr.transform.localScale : Vector3.one, poolUnit = pool != null ? pool.transform.localScale : Vector3.one;
+            float t = 0f, life = Mathf.Max(0.2f, time), spark = 0f;
             _live.Add(dt =>
             {
-                if (sr == null) return false;
                 t += dt;
                 float k = Mathf.Clamp01(t / life);
-                sr.transform.Rotate(0f, 0f, Mathf.Lerp(30f, 260f, k * k) * dt, Space.Self);
-                sr.transform.localScale = unit * Mathf.Lerp(0.55f, 1f, Mathf.Sqrt(Mathf.Clamp01(t / 0.35f)));
-                float a = t <= life ? 0.4f + 0.6f * k : 1f - (t - life) / 0.3f;
-                sr.color = new Color(1f, 1f, 1f, Mathf.Clamp01(a));
+                float end = t <= life ? 1f : Mathf.Clamp01(1f - (t - life) / 0.3f);
+                if (sr != null)
+                {
+                    sr.transform.Rotate(0f, 0f, Mathf.Lerp(30f, 220f, k * k) * dt, Space.Self);
+                    sr.transform.localScale = unit * Mathf.Lerp(0.6f, 1f, Mathf.Sqrt(Mathf.Clamp01(t / 0.35f)));
+                    sr.color = new Color(1f, 1f, 1f, (0.25f + 0.35f * k) * end);
+                }
+                if (pool != null)
+                {
+                    pool.transform.localScale = poolUnit * Mathf.Lerp(0.3f, 1f, k);
+                    pool.color = new Color(0.55f, 0.45f, 1f, (0.15f + 0.45f * k) * end);
+                }
+                if (light != null) light.intensity = Mathf.Lerp(0.2f, 3f, k * k) * end;
+                spark -= dt;
+                if (spark <= 0f && t < life) // 둘레를 따라 룬 불티가 점점 빨리 솟아요
+                {
+                    spark = Mathf.Lerp(0.12f, 0.03f, k);
+                    float a = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
+                    var p = at + new Vector3(Mathf.Cos(a), 0.1f, Mathf.Sin(a)) * radius * UnityEngine.Random.Range(0.85f, 1f);
+                    InkParticles.Burst(p, 2, new Color(0.8f, 0.85f, 1f, 1f), new Color(MagicViolet.r, MagicViolet.g, MagicViolet.b, 0f), 0.4f, 0.12f, 0.7f, -2.2f);
+                }
                 if (t < life + 0.3f) return true;
-                Destroy(sr.gameObject);
+                if (sr != null) Destroy(sr.gameObject);
+                if (pool != null) Destroy(pool.gameObject);
+                if (holder != null) Destroy(holder.gameObject);
                 return false;
             });
         }
 
-        // 순간이동 (Blink): 떠난 자리·나타난 자리에 보랏빛 마력 균열이 확 열렸다 닫혀요
+        // 순간이동 (Blink): 세로로 갈라진 보랏빛 마력 틈 — 빛 줄기(겉 보라 + 속 흰빛)가 위아래로 확 벌어졌다 닫히고, 불티가 사방으로 · 불빛 번쩍
         void Rift(Vector3 at, float delay)
         {
-            var sr = Upright(_rift, new Vector3(at.x, 0f, at.z), 1.3f, 9, bottom: true);
-            if (sr == null) return;
-            Vector3 unit = sr.transform.localScale;
-            sr.transform.localScale = new Vector3(0f, unit.y, unit.z);
+            at.y = 0f;
+            var glow = GlowSprite();
+            if (glow == null) return;
+            var pivot = new GameObject("Mana Rift").transform;
+            pivot.SetParent(transform, false);
+            pivot.position = at + Vector3.up * 1.1f;
+            pivot.gameObject.AddComponent<InkFaceCamera>();
+            var outer = GlowOrb(pivot, glow, 1f, new Color(MagicViolet.r, MagicViolet.g, MagicViolet.b, 0f), 9);
+            var inner = GlowOrb(pivot, glow, 1f, new Color(0.95f, 0.9f, 1f, 0f), 10);
+            float unit = 1f / Mathf.Max(0.01f, glow.bounds.size.x);
             float t = -delay;
             bool burst = false;
             _live.Add(dt =>
             {
-                if (sr == null) return false;
+                if (pivot == null) return false;
                 t += dt;
                 if (t < 0f) return true;
-                if (!burst) { burst = true; InkParticles.Burst(at + Vector3.up, 16, new Color(0.9f, 0.7f, 1f, 1f), new Color(MagicViolet.r, MagicViolet.g, MagicViolet.b, 0.5f), 2.6f, 0.12f, 0.5f, 0.3f); }
-                float open = t < 0.12f ? t / 0.12f : t < 0.35f ? 1f : Mathf.Clamp01(1f - (t - 0.35f) / 0.25f);
-                sr.transform.localScale = new Vector3(unit.x * open, unit.y * (0.8f + 0.2f * open), unit.z);
+                if (!burst)
+                {
+                    burst = true;
+                    InkParticles.Burst(at + Vector3.up * 1.1f, 22, new Color(0.9f, 0.75f, 1f, 1f), new Color(MagicViolet.r, MagicViolet.g, MagicViolet.b, 0.5f), 3f, 0.12f, 0.5f, 0.3f);
+                    LightFlash(at + Vector3.up * 1.1f, MagicViolet, 6f, 4f, 0.45f);
+                }
+                float open = t < 0.1f ? t / 0.1f : t < 0.3f ? 1f : Mathf.Clamp01(1f - (t - 0.3f) / 0.25f); // 벌어졌다 · 잠깐 · 닫혀요
+                float jitter = 1f + 0.12f * Mathf.Sin(t * 50f);
+                outer.transform.localScale = new Vector3(0.9f * open * jitter, 3.2f * (0.6f + 0.4f * open), 1f) * unit;
+                inner.transform.localScale = new Vector3(0.3f * open, 2.6f * (0.6f + 0.4f * open), 1f) * unit;
+                outer.color = new Color(MagicViolet.r, MagicViolet.g, MagicViolet.b, 0.8f * open);
+                inner.color = new Color(0.95f, 0.9f, 1f, open);
                 if (t < 0.6f) return true;
-                Destroy(sr.transform.parent.gameObject);
+                Destroy(pivot.gameObject);
                 return false;
             });
         }
@@ -506,27 +560,111 @@ namespace AThousandDawns.Art
             }
         }
 
-        // 마검 천멸 (Cleave): 천마 둘레로 마기와 화염이 섞여 터져요 (8방향 검기는 Cross, 검기 줄 위 불길은 FireSword Mark)
+        // 마검 천멸 (Cleave): 마기와 화염이 섞인 입체 폭발 — 불길 · 마기 연기 · 불티가 사방으로, 바닥을 휩쓰는 불꽃 고리 둘, 큰 불빛 번쩍
+        //   (8방향 검기는 Cross, 검기 줄 위 불길은 FireSword Mark)
         void Cleave(Vector3 at, float radius)
         {
-            Burst(at, radius, 12);
-            InkParticles.Burst(at + Vector3.up * 0.8f, 40, new Color(1f, 0.85f, 0.4f, 1f), new Color(Flame.r, Flame.g, Flame.b, 0.7f), radius * 2.4f, 0.35f, 0.7f, -0.6f);
-            InkParticles.Burst(at + Vector3.up * 1.2f, 20, new Color(Dark.r, Dark.g, Dark.b, 0.9f), new Color(MagicViolet.r, MagicViolet.g, MagicViolet.b, 0.4f), radius * 1.4f, 0.6f, 1f, -0.4f);
+            at.y = 0f;
+            InkParticles.Burst(at + Vector3.up * 0.8f, 48, new Color(1f, 0.85f, 0.4f, 1f), new Color(Flame.r, Flame.g, Flame.b, 0.7f), radius * 2.6f, 0.35f, 0.7f, -0.6f);
+            InkParticles.Burst(at + Vector3.up * 1.2f, 26, new Color(Dark.r, Dark.g, Dark.b, 0.9f), new Color(MagicViolet.r, MagicViolet.g, MagicViolet.b, 0.4f), radius * 1.5f, 0.7f, 1.1f, -0.4f);
+            InkParticles.Burst(at + Vector3.up * 0.3f, 30, new Color(1f, 0.9f, 0.5f, 1f), new Color(1f, 0.3f, 0.05f, 1f), radius * 4f, 0.1f, 0.8f, 1.2f);
+            FlatRing(at, radius * 2.4f, 0.4f, Flame);
+            FlatRing(at, radius * 1.8f, 0.55f, new Color(0.85f, 0.15f, 0.35f));
+            LightFlash(at + Vector3.up, new Color(1f, 0.45f, 0.25f), radius * 3.5f, 7f, 0.6f);
         }
 
-        // 페이즈 전환: 2페이즈(마법) = 보라·청색 마력 폭발 + 룬 원 번쩍, 3페이즈(마검) = 마기와 화염이 섞인 폭발
+        // 페이즈 전환: 2페이즈(마법) = 보라·청색 마력이 터지며 위로 솟고 불빛 번쩍, 3페이즈(마검) = 마기와 화염이 섞여 터져요
         void PhaseBurst(Vector3 at, int phase)
         {
+            at.y = 0f;
             if (phase == 2)
             {
-                InkParticles.Burst(at + Vector3.up, 46, new Color(0.85f, 0.75f, 1f, 1f), new Color(MagicBlue.r, MagicBlue.g, MagicBlue.b, 0.5f), 6f, 0.3f, 0.9f, 0.2f);
-                RuneCircle(at, 0.6f, 4f);
+                InkParticles.Burst(at + Vector3.up, 50, new Color(0.85f, 0.75f, 1f, 1f), new Color(MagicBlue.r, MagicBlue.g, MagicBlue.b, 0.5f), 6f, 0.3f, 0.9f, 0.2f);
+                InkParticles.Burst(at + Vector3.up * 0.3f, 30, new Color(0.7f, 0.85f, 1f, 1f), new Color(MagicViolet.r, MagicViolet.g, MagicViolet.b, 0f), 1.2f, 0.15f, 1.2f, -3f); // 위로 솟는 마력
+                FlatRing(at, 8f, 0.6f, MagicViolet);
+                LightFlash(at + Vector3.up * 1.5f, MagicViolet, 12f, 6f, 0.8f);
             }
             else if (phase >= 3)
             {
-                InkParticles.Burst(at + Vector3.up, 40, new Color(1f, 0.8f, 0.35f, 1f), new Color(Flame.r, Flame.g, Flame.b, 0.6f), 6f, 0.4f, 0.9f, -0.5f);
-                InkParticles.Burst(at + Vector3.up * 1.4f, 24, new Color(MagicViolet.r, MagicViolet.g, MagicViolet.b, 0.9f), new Color(Dark.r, Dark.g, Dark.b, 0.4f), 4f, 0.6f, 1.1f, -0.3f);
+                InkParticles.Burst(at + Vector3.up, 44, new Color(1f, 0.8f, 0.35f, 1f), new Color(Flame.r, Flame.g, Flame.b, 0.6f), 6f, 0.4f, 0.9f, -0.5f);
+                InkParticles.Burst(at + Vector3.up * 1.4f, 26, new Color(MagicViolet.r, MagicViolet.g, MagicViolet.b, 0.9f), new Color(Dark.r, Dark.g, Dark.b, 0.4f), 4f, 0.6f, 1.1f, -0.3f);
+                FlatRing(at, 8f, 0.6f, Flame);
+                LightFlash(at + Vector3.up * 1.5f, new Color(1f, 0.4f, 0.3f), 12f, 6f, 0.8f);
             }
+        }
+
+        // ── 빛 · 입체감 도움 (2차 플레이테스트)
+
+        static Sprite _glowSprite;
+        static Sprite GlowSprite()
+        {
+            if (_glowSprite != null) return _glowSprite;
+            var tex = Resources.Load<Texture2D>("FxArt/InkMist");
+            if (tex != null) _glowSprite = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f);
+            return _glowSprite;
+        }
+
+        static SpriteRenderer GlowOrb(Transform parent, Sprite glow, float size, Color color, int order)
+        {
+            var go = new GameObject("Glow");
+            go.transform.SetParent(parent, false);
+            go.transform.localScale = Vector3.one * (size / Mathf.Max(0.01f, glow.bounds.size.x));
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = glow;
+            sr.color = color;
+            sr.sortingOrder = order;
+            return sr;
+        }
+
+        static Light PointLight(Transform parent, Color color, float range, float intensity)
+        {
+            var light = new GameObject("Light").AddComponent<Light>();
+            light.transform.SetParent(parent, false);
+            light.type = LightType.Point;
+            light.color = color;
+            light.range = range;
+            light.intensity = intensity;
+            light.shadows = LightShadows.None;
+            return light;
+        }
+
+        // 잠깐 번쩍이는 불빛 (life초 동안 꺼져요)
+        void LightFlash(Vector3 at, Color color, float range, float intensity, float life)
+        {
+            var holder = new GameObject("Flash").transform;
+            holder.SetParent(transform, false);
+            holder.position = at;
+            var light = PointLight(holder, color, range, intensity);
+            float t = 0f;
+            _live.Add(dt =>
+            {
+                if (holder == null) return false;
+                t += dt;
+                light.intensity = intensity * Mathf.Clamp01(1f - t / life);
+                if (t < life) return true;
+                Destroy(holder.gameObject);
+                return false;
+            });
+        }
+
+        // 바닥을 휩쓰는 불꽃 고리 (부드러운 빛 고리가 퍼지며 사라져요)
+        void FlatRing(Vector3 at, float size, float life, Color color)
+        {
+            var sr = Flat(_ring, at, size, UnityEngine.Random.Range(0f, 360f), 0.05f, 5);
+            if (sr == null) return;
+            Vector3 unit = sr.transform.localScale;
+            float t = 0f;
+            _live.Add(dt =>
+            {
+                if (sr == null) return false;
+                t += dt;
+                float k = t / life;
+                sr.transform.localScale = unit * Mathf.Lerp(0.3f, 1.2f, Mathf.Sqrt(Mathf.Clamp01(k)));
+                sr.color = new Color(color.r, color.g, color.b, 0.9f * (1f - k * k));
+                if (k < 1f) return true;
+                Destroy(sr.gameObject);
+                return false;
+            });
         }
 
         // ── 흡인: 둘레에서 먹선이 소용돌이치며 빨려 들어요
