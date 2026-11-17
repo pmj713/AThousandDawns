@@ -183,7 +183,7 @@ namespace AThousandDawns.Enemies
             _meteorRadius = Tuning("meteor_big_radius", 3f);
             _meteorTrack = Tuning("meteor_track", 1.5f);
             _meteorFall = Tuning("meteor_lock_fall", 0.6f);
-            _meteorRatio = Tuning("meteor_big_ratio", 1.4f);
+            _meteorRatio = Tuning("meteor_big_ratio", 1.2f);
             _riftInterval = Tuning("rift_interval", 7f);
             _riftWindup = Tuning("rift_windup", 0.8f);
             _riftRadius = Tuning("rift_radius", 3.5f);

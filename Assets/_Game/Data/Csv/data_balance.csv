@@ -1240,7 +1240,7 @@ goblinchief.phase2_hp_ratio,50%,,고블린 족장 (phase2_hp_ratio),차원 겹�
 goblinchief.max_repeat,2,,고블린 족장 (max_repeat),차원 겹침 개편
 goblinchief.jab_windup,0.5,s,고블린 족장 (jab_windup),차원 겹침 개편
 goblinchief.jab_recovery,0.8,s,고블린 족장 (jab_recovery),차원 겹침 개편
-goblinchief.jab_ratio,0.9,,고블린 족장 (jab_ratio),차원 겹침 개편
+goblinchief.jab_ratio,1.1,,고블린 족장 (jab_ratio),차원 겹침 개편
 goblinchief.jab_radius,2.2,cell,고블린 족장 (jab_radius),차원 겹침 개편
 goblinchief.jab_angle,220,deg,고블린 족장 (jab_angle),차원 겹침 개편
 goblinchief.jab_gap,0.35,s,고블린 족장 (jab_gap),차원 겹침 개편
@@ -1273,7 +1273,7 @@ ogre.phase2_hp_ratio,50%,,오우거 (phase2_hp_ratio),차원 겹침 개편
 ogre.max_repeat,2,,오우거 (max_repeat),차원 겹침 개편
 ogre.jab_windup,0.7,s,오우거 (jab_windup),차원 겹침 개편
 ogre.jab_recovery,1,s,오우거 (jab_recovery),차원 겹침 개편
-ogre.jab_ratio,1.3,,오우거 (jab_ratio),차원 겹침 개편
+ogre.jab_ratio,1,,오우거 (jab_ratio),차원 겹침 개편
 ogre.jab_radius,1.5,cell,오우거 (jab_radius),차원 겹침 개편
 ogre.jab_angle,70,deg,오우거 (jab_angle),차원 겹침 개편
 ogre.jab_gap,0.35,s,오우거 (jab_gap),차원 겹침 개편
@@ -1510,7 +1510,7 @@ heavenlydemon.rift_ratio,0.6,,차원 베기 피해 배율 (가운데는 세 줄�
 heavenlydemon.meteor_big_radius,3,cell,유성 반경,보스 패턴 개편
 heavenlydemon.meteor_track,1.5,s,유성 예고가 따라오는 시간,보스 패턴 개편
 heavenlydemon.meteor_lock_fall,0.6,s,멈추고 떨어지기까지,보스 패턴 개편
-heavenlydemon.meteor_big_ratio,1.4,,유성 피해 배율,보스 패턴 개편
+heavenlydemon.meteor_big_ratio,1.2,,유성 피해 배율,보스 패턴 개편
 event.blood_pool_cut,10%,,천마총 피의 연못: 이번 판 동안 최대 체력 −,4지역 기획 (천마총 이벤트)
 event.blood_pool_grade.common,0%,,피의 연못 보상 일반 확률 (전설이 잘 나옴),4지역 기획 (천마총 이벤트)
 event.blood_pool_grade.uncommon,30%,,피의 연못 보상 고급 확률,4지역 기획 (천마총 이벤트)
@@ -1608,7 +1608,7 @@ darkelf.dance_angle,100,deg,쌍검 부채꼴 각도,보스 패턴 개편
 darkelf.dance_skew,25,deg,좌우로 번갈아 비트는 각도,보스 패턴 개편
 darkelf.dance_gap,0.22,s,쌍검 한 타 간격,보스 패턴 개편
 darkelf.dance_lunge,0.3,cell,한 타마다 전진,보스 패턴 개편
-darkelf.dance_ratio,0.45,,쌍검 한 타 피해 배율,보스 패턴 개편
+darkelf.dance_ratio,0.55,,쌍검 한 타 피해 배율,보스 패턴 개편
 darkelf.dance_recovery,0.7,s,쌍검 난무 빈틈,보스 패턴 개편
 darkelf.hide_interval,9,s,그림자 숨기 간격,보스 패턴 개편
 darkelf.hide_windup,0.4,s,사라지기 전 예고,보스 패턴 개편

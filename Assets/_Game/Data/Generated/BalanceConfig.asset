@@ -4978,7 +4978,7 @@ MonoBehaviour:
     unit: s
     note: "\uACE0\uBE14\uB9B0 \uC871\uC7A5 (jab_recovery)"
   - key: goblinchief.jab_ratio
-    value: 0.9
+    value: 1.1
     unit: 
     note: "\uACE0\uBE14\uB9B0 \uC871\uC7A5 (jab_ratio)"
   - key: goblinchief.jab_radius
@@ -5110,7 +5110,7 @@ MonoBehaviour:
     unit: s
     note: "\uC624\uC6B0\uAC70 (jab_recovery)"
   - key: ogre.jab_ratio
-    value: 1.3
+    value: 1
     unit: 
     note: "\uC624\uC6B0\uAC70 (jab_ratio)"
   - key: ogre.jab_radius
@@ -6042,9 +6042,9 @@ MonoBehaviour:
     unit: cell
     note: "\uCC28\uC6D0 \uBCA0\uAE30 \uD3ED"
   - key: heavenlydemon.rift_ratio
-    value: 0.9
+    value: 0.6
     unit: 
-    note: "\uCC28\uC6D0 \uBCA0\uAE30 \uD53C\uD574 \uBC30\uC728"
+    note: "\uCC28\uC6D0 \uBCA0\uAE30 \uD53C\uD574 \uBC30\uC728 (\uAC00\uC6B4\uB370\uB294 \uC138 \uC904\uC774 \uACB9\uCCD0\uC694)"
   - key: heavenlydemon.meteor_big_radius
     value: 3
     unit: cell
@@ -6058,7 +6058,7 @@ MonoBehaviour:
     unit: s
     note: "\uBA48\uCD94\uACE0 \uB5A8\uC5B4\uC9C0\uAE30\uAE4C\uC9C0"
   - key: heavenlydemon.meteor_big_ratio
-    value: 1.4
+    value: 1.2
     unit: 
     note: "\uC720\uC131 \uD53C\uD574 \uBC30\uC728"
   - key: event.blood_pool_cut
@@ -6450,7 +6450,7 @@ MonoBehaviour:
     unit: cell
     note: "\uD55C \uD0C0\uB9C8\uB2E4 \uC804\uC9C4"
   - key: darkelf.dance_ratio
-    value: 0.45
+    value: 0.55
     unit: 
     note: "\uC30D\uAC80 \uD55C \uD0C0 \uD53C\uD574 \uBC30\uC728"
   - key: darkelf.dance_recovery

@@ -179,9 +179,8 @@ namespace AThousandDawns.Enemies
             else { TryMidRange(); return false; } // 중간 거리면 다가가며 저마다의 원거리 수 (권풍 · 바위 · 망령 기병 · 덫)
             if (next == _lastPattern && _repeat >= _maxRepeat)
             {
-                if (next == Pattern.Charge || next == Pattern.Leap) return false;
                 if (next == Pattern.Quake) next = Pattern.Jab;
-                else return false; // 근접만 연속이면 한 번 쉬어요
+                else return Rest(); // 같은 수만 연속이면 한 번 쉬어요 (쉰 뒤엔 다시 셀 수 있게)
             }
 
             _repeat = next == _lastPattern ? _repeat + 1 : 1;
@@ -204,6 +203,14 @@ namespace AThousandDawns.Enemies
                     break;
             }
             return true;
+        }
+
+        bool Rest()
+        {
+            _repeat = 0;
+            _lastPattern = Pattern.None;
+            _decisionTimer = _decisionPause * 2f;
+            return false;
         }
 
         // 2페이즈 예고 배율 (오우거 분노처럼 이어받는 쪽이 바꿔요)

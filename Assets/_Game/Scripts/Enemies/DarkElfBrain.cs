@@ -73,7 +73,7 @@ namespace AThousandDawns.Enemies
             _danceSkew = Tuning("dance_skew", 25f);
             _danceGap = Tuning("dance_gap", 0.22f);
             _danceLunge = Tuning("dance_lunge", 0.3f);
-            _danceRatio = Tuning("dance_ratio", 0.45f);
+            _danceRatio = Tuning("dance_ratio", 0.55f);
             _danceRecovery = Tuning("dance_recovery", 0.7f);
             _hideInterval = Tuning("hide_interval", 9f);
             _hideWindup = Tuning("hide_windup", 0.4f);
@@ -124,7 +124,7 @@ namespace AThousandDawns.Enemies
             else return false; // 다가가요
             if (next == Pattern.Dance && _lastPattern == Pattern.Dance && _repeat >= _maxRepeat)
             {
-                if (_hideTimer > _hideInterval * 0.5f) return false; // 한 번 쉬어요
+                if (_hideTimer > _hideInterval * 0.5f) { _repeat = 0; _lastPattern = Pattern.None; _decisionTimer = _decisionPause * 2f; return false; } // 한 번 쉬어요 (쉰 뒤엔 다시)
                 next = Pattern.Hide;
             }
             _repeat = next == _lastPattern ? _repeat + 1 : 1;

@@ -125,6 +125,9 @@ namespace AThousandDawns.Tests
             yield return Fight(EnemyKind.HeavenlyDemon, 3, 6, 4f, 300f, "보스");
             foreach (var (k, r) in masters) yield return Fight(k, r, 0, 4f, 120f, "고수");
             yield return Fight(EnemyKind.BloodShadow, 3, 6, 4f, 180f, "고수");
+            // 판타지 (차원 겹침): 고수는 고수 자리 아무 지역 (혜광 r1과 비교) · 보스는 r0~r2 (혈불 r1 · 철룡 r2와 비교)
+            foreach (var (k, r) in new[] { (EnemyKind.GoblinChief, 1), (EnemyKind.DarkElf, 1) }) yield return Fight(k, r, 0, 4f, 120f, "고수");
+            foreach (var (k, r) in new[] { (EnemyKind.Ogre, 1), (EnemyKind.DeathKnight, 2) }) yield return Fight(k, r, 0, 4f, 240f, "보스");
         }
 
         // 방 하나 전체: 그 지역 2층 싸우는 방을 방 구성마다 (실제 웨이브 · 정예 · 엄폐물 · 물 · 혈지 그대로).
@@ -472,7 +475,8 @@ namespace AThousandDawns.Tests
         [Timeout(1800000)]
         public IEnumerator 조정_확인() // 최근에 고친 적만 다시 재요 (그때그때 바꿔 써요)
         {
-            yield return Fight(EnemyKind.BloodBomber, 3, 0, 3f, 15f, "일반", false);
+            foreach (var (k, r) in new[] { (EnemyKind.GoblinChief, 1), (EnemyKind.DarkElf, 1) }) yield return Fight(k, r, 0, 4f, 120f, "고수");
+            foreach (var (k, r) in new[] { (EnemyKind.Ogre, 1) }) yield return Fight(k, r, 0, 4f, 240f, "보스");
         }
 
         [UnityTest]
