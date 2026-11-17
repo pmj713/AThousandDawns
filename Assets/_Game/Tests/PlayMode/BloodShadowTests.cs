@@ -112,7 +112,7 @@ namespace AThousandDawns.Tests
                 player.Heal(9999f);
                 blinked |= master.AttackName == "혈영보";
                 return blinked && Vector3.Distance(master.transform.position, player.transform.position) < 3f;
-            }, 8f);
+            }, 12f); // 혈조가 먼저 나오고, 혈조 쿨 동안 멀리 버티면 혈영보
             Assert.IsTrue(blinked, "멀리 있으면 혈영보");
             Assert.Less(Vector3.Distance(master.transform.position, player.transform.position), 3f, "뒤로 순간이동해 붙어요");
         }
@@ -124,7 +124,7 @@ namespace AThousandDawns.Tests
             yield return LoadCombat();
             var director = Object.FindFirstObjectByType<EnemyDirector>();
             var player = Object.FindFirstObjectByType<PlayerController>();
-            var master = (BloodShadowBrain)director.Spawn(EnemyKind.BloodShadow, player.transform.position + new Vector3(0f, 0f, 7f));
+            var master = (BloodShadowBrain)director.Spawn(EnemyKind.BloodShadow, player.transform.position + new Vector3(0f, 0f, 6f)); // 깨어나는 거리 (7칸) 안, 혈조 거리 (4~10칸) 안
 
             int starts = 0, spikes = 0;
             void OnCue(BloodShadowBrain b, BloodShadowBrain.FxCue c)
@@ -137,9 +137,16 @@ namespace AThousandDawns.Tests
             try
             {
                 bool named = false;
+                var cc = player.GetComponent<CharacterController>();
                 yield return WaitUntil(() =>
                 {
                     named |= master.AttackName == "혈조";
+                    if (master.AttackName == null) // 고르기 전까지는 6.5칸을 지켜요 (걸어와 붙으면 혈영 베기라서)
+                    {
+                        cc.enabled = false;
+                        player.transform.position = master.transform.position + new Vector3(0f, 0f, -6.5f);
+                        cc.enabled = true;
+                    }
                     return starts > 0;
                 }, 4f);
                 Assert.IsTrue(named, "먼 거리 대응은 혈조");

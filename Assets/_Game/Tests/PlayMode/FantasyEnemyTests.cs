@@ -520,16 +520,19 @@ namespace AThousandDawns.Tests
             IronFistBrain.FarLeaped += onLeap;
             Time.timeScale = 2f;
             var cc = player.GetComponent<CharacterController>();
-            float end = Time.time + 25f, farFrom = Time.time + 8f;
+            float end = Time.time + 25f, farFrom = Time.time + 8f, nextJump = farFrom;
+            Vector3 home = player.transform.position;
             while (Time.time < end && !(names.Count > 0 && (kind == EnemyKind.IronFist ? grabbed : leapt)))
             {
                 player.Heal(9999f);
                 if (boss.AttackName != null) names.Add(boss.AttackName);
-                if (Time.time > farFrom) // 처음엔 붙어 있다가 나중엔 멀어져요 (먼 거리 수)
+                if (Time.time > nextJump && boss.AttackPhase == EnemyAttackTimeline.Phase.Ready) // 처음엔 붙어 있다가 나중엔 멀리 떨어져요 (먼 거리 수, 벽 구석에 몰리지 않게 옮겨요)
                 {
-                    Vector3 away = player.transform.position - boss.transform.position;
-                    away.y = 0f;
-                    if (away.magnitude < 7f && away.sqrMagnitude > 1e-4f) cc.Move(away.normalized * 7f * Time.deltaTime);
+                    nextJump = Time.time + 3f;
+                    Vector3 side = boss.transform.position.z > home.z ? Vector3.back : Vector3.forward;
+                    cc.enabled = false;
+                    player.transform.position = director.FindFreeSpot(boss.transform.position + side * 8f, 0.5f);
+                    cc.enabled = true;
                 }
                 yield return null;
             }
@@ -573,6 +576,8 @@ namespace AThousandDawns.Tests
             bool leapt = false, volley = false;
             System.Action<EnemyBrain, Vector3, Vector3> onLeap = (e, a, b) => leapt |= e == boss;
             System.Action<EnemyBrain, Vector3> onVolley = (e, d) => volley |= e == boss;
+            System.Action<IronFistBrain, Vector3, Vector3> onOwnLeap = (e, a, b) => { leapt |= e == boss; volley |= e == boss; }; // 오우거는 이제 제 땅울림 도약이 먼 거리 대답이에요 (보스 공통기는 시트에서 꺼짐)
+            IronFistBrain.FarLeaped += onOwnLeap;
             EnemyBrain.BossLeapStarted += onLeap;
             EnemyBrain.BossVolley += onVolley;
             Time.timeScale = 2f;
@@ -589,6 +594,7 @@ namespace AThousandDawns.Tests
                 yield return null;
             }
             EnemyBrain.BossLeapStarted -= onLeap;
+            IronFistBrain.FarLeaped -= onOwnLeap;
             EnemyBrain.BossVolley -= onVolley;
             EnemyBrain.BossKitOverride = 0;
             Assert.IsTrue(leapt, "멀면 도약해 와요");

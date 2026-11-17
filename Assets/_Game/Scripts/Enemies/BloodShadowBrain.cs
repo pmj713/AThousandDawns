@@ -141,9 +141,9 @@ namespace AThousandDawns.Enemies
         {
             if (IsTransitioning || _decisionTimer > 0f) return false;
             Pattern next;
-            if (_farTimer >= _blinkDelay) next = Pattern.Blink;
+            if (UsesSpikes && _spikeCooldown <= 0f && distance >= _spikeMin && distance <= _spikeMax) next = Pattern.Spike; // 먼 거리 대응은 혈조가 먼저, 쿨이면 혈영보
+            else if (_farTimer >= _blinkDelay) next = Pattern.Blink;
             else if (distance <= _closeDistance) next = Pattern.Slash;
-            else if (UsesSpikes && _spikeCooldown <= 0f && distance >= _spikeMin && distance <= _spikeMax) next = Pattern.Spike;
             else if (distance >= _lineMin && distance <= _lineMax) next = Pattern.Line;
             else return false; // 다가가요
             if (next == _lastPattern && _repeat >= _maxRepeat && next != Pattern.Blink && next != Pattern.Spike)

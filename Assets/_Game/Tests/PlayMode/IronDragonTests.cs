@@ -112,7 +112,7 @@ namespace AThousandDawns.Tests
                 Assert.AreEqual(3, maxActive, "1페이즈는 고리 3개가 함께 퍼져요");
                 Assert.IsTrue(hurt, "고리 띠에 걸리면 맞아요");
                 Assert.AreEqual(0, slams, "유성추 내려찍기는 없어졌어요");
-                Assert.Less(Vector3.Distance(new Vector3(ringAt.x, 0f, ringAt.z), new Vector3(boss.transform.position.x, 0f, boss.transform.position.z)), 1f, "고리는 철룡 자리에서 퍼져요");
+                Assert.Less(Vector3.Distance(new Vector3(ringAt.x, 0f, ringAt.z), new Vector3(boss.transform.position.x, 0f, boss.transform.position.z)), 2f, "고리는 철룡 자리 (닻을 꽂은 앞) 에서 퍼져요");
             }
             finally
             {
