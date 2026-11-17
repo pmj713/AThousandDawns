@@ -26,7 +26,18 @@ namespace AThousandDawns.Player
         float OtherworldDashIframe => V("elf_feather_earring", 1);
         float OtherworldReduction => V("mithril_chainmail", 1) + (_slimeTimer > 0f ? V("slime_bracelet", 2) : 0f);
         float OtherworldDefense => _shields.Any ? V("dwarf_belt", 1) : 0f;
-        float OtherworldSkillCooldownCut => V("wizard_hat", 1);
+        float OtherworldSkillCooldownCut => 0f; // 마법사 고깔모자는 이제 둔화 · 빙결된 적을 맞힐 때 돌려받아요 (WizardHatRefund)
+        bool _wizardRefunded;
+
+        // 마법사 고깔모자 (빙백): 초식이 둔화 · 빙결된 적을 맞히면 그 초식 쿨타임의 v1만큼 돌려받아요 (초식 한 번에 한 번)
+        void WizardHatRefund(Damageable target, HitTag tag)
+        {
+            if (tag != HitTag.Skill || _wizardRefunded || !Has("wizard_hat")) return;
+            var s = StatusEffects.For(target);
+            if (s == null || (s.SlowStacks <= 0 && !s.IsFrozen)) return;
+            _wizardRefunded = true;
+            _skillCooldownLeft -= SkillCooldown * V("wizard_hat", 1);
+        }
         float OtherworldStaggerCut => Mathf.Clamp01(V("dwarf_greaves", 1));
 
         void TickOtherworldItems(float dt)

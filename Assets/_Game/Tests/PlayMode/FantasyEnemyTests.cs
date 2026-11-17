@@ -343,8 +343,10 @@ namespace AThousandDawns.Tests
             yield return Load();
             var player = Object.FindFirstObjectByType<PlayerController>();
             float before = player.SkillCooldown;
-            player.Items.Add(GameConfig.Items.Find("wizard_hat"));
-            Assert.Less(player.SkillCooldown, before, "마법사 고깔모자: 초식 쿨타임 −");
+            var hat = GameConfig.Items.Find("wizard_hat");
+            player.Items.Add(hat);
+            Assert.AreEqual(before, player.SkillCooldown, 0.0001f, "마법사 고깔모자 (빙백): 늘 줄이지 않고 둔화 · 빙결된 적을 맞힐 때 돌려받아요");
+            Assert.AreEqual(Keyword.Bingbaek, hat.keyword);
             float attack = player.AttackIncreaseTotal;
             player.Items.Add(GameConfig.Items.Find("knight_helm"));
             Assert.AreEqual(attack, player.AttackIncreaseTotal, 0.0001f, "기사 투구는 모든 피해가 아니라 정예 · 고수 · 보스에게만");

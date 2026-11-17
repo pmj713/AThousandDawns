@@ -3014,7 +3014,7 @@ MonoBehaviour:
     unit: cell/s
     note: "\uD30C\uACC4\uC2B9 \uD61C\uAD11 \uC774\uB3D9\uC18D\uB3C4"
   - key: hyegwang.sweep_windup
-    value: 0.5
+    value: 0.6
     unit: s
     note: "\uD61C\uAD11 \uC120\uC7A5 \uD718\uB450\uB974\uAE30 \uC608\uACE0"
   - key: hyegwang.sweep_ratio
@@ -3284,11 +3284,15 @@ MonoBehaviour:
   - key: hyegwang.sweep_radius_spin
     value: 2.6
     unit: cell
-    note: "\uC120\uC7A5 \uD718\uB450\uB974\uAE30 \xB7 \uCD95\uC9C0 \uB05D \uD68C\uC804 \uBC18\uACBD (360\xB0)"
+    note: "\uC120\uC7A5 \uD718\uB450\uB974\uAE30 \xB7 \uCD95\uC9C0 \uB05D \uBD80\uCC44\uAF34 \uBC18\uACBD"
   - key: hyegwang.sweep_knockback
     value: 0.5
     unit: cell
     note: "\uC120\uC7A5 \uD68C\uC804 \uB109\uBC31"
+  - key: hyegwang.sweep_angle
+    value: 150
+    unit: deg
+    note: "\uC120\uC7A5 \uD718\uB450\uB974\uAE30 \uBD80\uCC44\uAF34 \uAC01\uB3C4 (\uC55E\uCABD\uB9CC)"
   - key: bloodbuddha.p2_palm_hits
     value: 3
     unit: 

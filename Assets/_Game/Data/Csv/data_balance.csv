@@ -749,7 +749,7 @@ hyegwang.hp,1100,,파계승 혜광 체력 (폐사찰 ×1.8 = 1980),몬스터!D63
 hyegwang.atk,18,,파계승 혜광 공격 (×1.3 = 23),몬스터!F63
 hyegwang.toughness,0,,파계승 혜광 강인함,몬스터!H63
 hyegwang.move_speed,3.5,cell/s,파계승 혜광 이동속도,
-hyegwang.sweep_windup,0.5,s,혜광 선장 휘두르기 예고,
+hyegwang.sweep_windup,0.6,s,혜광 선장 휘두르기 예고,
 hyegwang.sweep_ratio,1,,혜광 선장 휘두르기 피해 배율,
 hyegwang.vajra_time,1.8,s,혜광 금강불괴 시간 (받는 피해 1 · 끝에 충격파),
 hyegwang.vajra_ratio,1.2,,혜광 금강불괴 끝 충격파 피해 배율,
@@ -816,8 +816,9 @@ hyegwang.rush_windup,0.4,s,혜광 축지 예고,
 hyegwang.rush_time,0.2,s,혜광 축지: 다가가는 시간 (끝에 선장 휘두르기 판정),
 hyegwang.rush_stop,1.5,cell,혜광 축지: 플레이어 앞 멈추는 거리,
 hyegwang.rush_max,10,cell,혜광 축지 최대 거리,
-hyegwang.sweep_radius_spin,2.6,cell,선장 휘두르기 · 축지 끝 회전 반경 (360°),보스 패턴 개편
+hyegwang.sweep_radius_spin,2.6,cell,선장 휘두르기 · 축지 끝 부채꼴 반경,보스 패턴 개편
 hyegwang.sweep_knockback,0.5,cell,선장 회전 넉백,보스 패턴 개편
+hyegwang.sweep_angle,150,deg,선장 휘두르기 부채꼴 각도 (앞쪽만),플레이테스트 4차
 bloodbuddha.p2_palm_hits,3,,혈불 2페이즈 손바닥 연타 횟수 (플레이어 자리를 따라감),
 bloodbuddha.p2_palm_gap,0.4,s,혈불 2페이즈 손바닥 연타 간격,
 bloodbuddha.p2_pool_interval,12,s,혈해 간격 (2페이즈 들어설 때 절반부터),보스 패턴 개편

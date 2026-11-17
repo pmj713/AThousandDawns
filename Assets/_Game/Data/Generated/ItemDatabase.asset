@@ -1616,7 +1616,7 @@ MonoBehaviour:
     aux: 
     minQi: 2
     maxQi: 4
-    v1: 0.12
+    v1: 0.25
     v2: 0
     v3: 0
     v4: 0
@@ -1626,7 +1626,7 @@ MonoBehaviour:
     v4Scales: 0
     side: move_speed
     sideValue: 0.1
-    effectText: "\uCD08\uC2DD \uCFE8\uD0C0\uC784 -12%"
+    effectText: "\uCD08\uC2DD\uC774 \uB454\uD654\xB7\uBE59\uACB0\uB41C \uC801\uC744 \uB9DE\uD788\uBA74 \uADF8 \uCD08\uC2DD \uCFE8\uD0C0\uC784 25%\uB97C \uB3CC\uB824\uBC1B\uC544\uC694 (\uCD08\uC2DD \uD55C \uBC88\uC5D0 \uD55C \uBC88)"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
     slot: 1
     otherworld: 1

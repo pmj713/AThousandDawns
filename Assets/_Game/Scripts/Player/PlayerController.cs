@@ -485,6 +485,7 @@ namespace AThousandDawns.Player
         {
             _sinceSkillPress = float.PositiveInfinity;
             _skillCooldownLeft = SkillCooldown;
+            _wizardRefunded = false;
             _skillElapsed = 0f;
             _skillHitDone = false;
             _combo.Cancel();
@@ -811,6 +812,7 @@ namespace AThousandDawns.Player
             if (target.IsDead) _swingKills++;
             ApplyItemsOnHit(target, tag);
             ApplyKeywordsOnHit(target, tag);
+            WizardHatRefund(target, tag); // 마법사 고깔모자
             ApplyForgeOnHit(target, hit, tag); // 대장간 열양·빙백·뇌정
             if (_firstHit == null) _firstHit = target;
         }
