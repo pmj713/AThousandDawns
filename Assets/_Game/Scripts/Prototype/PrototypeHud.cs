@@ -174,39 +174,34 @@ namespace AThousandDawns.Prototype
                 GUI.Label(new Rect(0, UiScale.Height * 0.4f, UiScale.Width, 60), "쓰러졌어요 · F5 키로 다시 시작", _big);
 
             // 녹림왕이 깨어나면 화면 아래쪽 가운데에 큰 체력바 (왼쪽 위 도움말과 겹치지 않게)
-            EnemyBrain master = null; // 고수 (판 구조 결투장이든 샌드박스 - = 키든)
+            // 보스·고수 체력바 (플레이테스트 5차: 보스도 고수 인터페이스라 같은 자리에 두 줄이 겹쳤어요 → 보스는 보스 줄 하나만,
+            //   보스 아닌 고수가 같이 있으면 그 위 한 칸). 한 줄 = 왼쪽 이름 · 오른쪽 페이즈와 상태 / 아래 체력바 · 바 위 가운데 체력 숫자
+            var boss = arena != null ? arena.Boss : null;
+            bool bossShown = boss != null && !boss.IsDead && boss.IsAwake && boss.Damageable != null;
+            EnemyBrain master = null; // 고수 (판 구조 결투장이든 샌드박스 - = 키든) — 보스는 빼요
             if (director != null)
                 foreach (var e in director.Enemies)
-                    if (e is IMasterBrain && !e.IsDead)
+                    if (e is IMasterBrain && !e.IsDead && e != boss)
                     {
                         master = e;
                         break;
                     }
             var masterInfo = master as IMasterBrain;
-            if (master != null && masterInfo != null && master.IsAwake && master.Damageable != null)
+            if (bossShown)
             {
-                float width = Mathf.Min(560f, UiScale.Width - 40f);
-                var area = new Rect((UiScale.Width - width) * 0.5f, UiScale.Height - 64f, width, 18f);
-                string state = masterInfo.IsTransitioning ? " · 전환 중 (무적)" : master.Statuses != null && master.Statuses.IsFrozen ? " · 빙결"
-                    : master is IronFistBrain fist && fist.IsWallStunned ? " · 기절!" : "";
-                GUI.Label(new Rect(area.x, area.y, area.width, 24f), $"고수 {master.DisplayName} · {masterInfo.Phase}페이즈{state}   {master.Damageable.Health:0}/{master.Damageable.MaxHealth:0}", _bossLabel);
-                AThousandDawns.Fx.InkHud.FactionCrest(area, master); // 판타지 고수: 이름 왼쪽 스테인드글라스 문장
-                DrawBar(new Rect(area.x, area.y + 26f, area.width, 12f), master.Damageable.Health / Mathf.Max(1f, master.Damageable.MaxHealth), HealthColor);
-            }
-            var boss = arena != null ? arena.Boss : null;
-            if (boss != null && !boss.IsDead && boss.IsAwake && boss.Damageable != null)
-            {
-                float width = Mathf.Min(560f, UiScale.Width - 40f);
-                var area = new Rect((UiScale.Width - width) * 0.5f, UiScale.Height - 64f, width, 18f);
                 var bossInfo = arena.BossInfo;
                 bool transitioning = bossInfo != null && bossInfo.IsTransitioning;
-                string state = transitioning ? " · 전환 중 (무적)" : boss is NokrimBrain nokrim && nokrim.Grove != null && nokrim.Grove.IsBurning ? " · 불타는 죽림" : "";
+                string state = transitioning ? "전환 중 (무적)" : boss is NokrimBrain nokrim && nokrim.Grove != null && nokrim.Grove.IsBurning ? "불타는 죽림" : "";
                 var bossStatus = boss.Statuses;
-                if (bossStatus != null && bossStatus.IsFrozen) state += " · 빙결";
-                else if (bossStatus != null && bossStatus.FreezeImmunityLeft > 0f) state += $" · 서리 {bossStatus.FreezeImmunityLeft:0}초";
-                GUI.Label(new Rect(area.x, area.y, area.width, 24f), $"{boss.DisplayName} · {(bossInfo != null ? bossInfo.Phase : 1)}페이즈{state}   {boss.Damageable.Health:0}/{boss.Damageable.MaxHealth:0}", _bossLabel);
-                AThousandDawns.Fx.InkHud.FactionCrest(area, boss); // 판타지 보스: 이름 왼쪽 스테인드글라스 문장
-                DrawBar(new Rect(area.x, area.y + 26f, area.width, 12f), boss.Damageable.Health / Mathf.Max(1f, boss.Damageable.MaxHealth), HealthColor);
+                if (bossStatus != null && bossStatus.IsFrozen) state = Join(state, "빙결");
+                else if (bossStatus != null && bossStatus.FreezeImmunityLeft > 0f) state = Join(state, $"서리 {bossStatus.FreezeImmunityLeft:0}초");
+                BossBar(UiScale.Height - 70f, boss, boss.DisplayName, bossInfo != null ? bossInfo.Phase : 1, state);
+            }
+            if (master != null && masterInfo != null && master.IsAwake && master.Damageable != null)
+            {
+                string state = masterInfo.IsTransitioning ? "전환 중 (무적)" : master.Statuses != null && master.Statuses.IsFrozen ? "빙결"
+                    : master is IronFistBrain fist && fist.IsWallStunned ? "기절!" : "";
+                BossBar(UiScale.Height - (bossShown ? 130f : 70f), master, $"고수 {master.DisplayName}", masterInfo.Phase, state);
             }
 
             if (_camera == null) return;
@@ -714,6 +709,24 @@ namespace AThousandDawns.Prototype
                 GUI.DrawTexture(new Rect(x + i * (size + gap), y, size, size), Texture2D.whiteTexture);
             }
             GUI.color = old;
+        }
+
+        static string Join(string a, string b) => string.IsNullOrEmpty(a) ? b : $"{a} · {b}";
+
+        // 보스·고수 체력바 한 칸 (y = 이름 줄 위): 왼쪽 이름 (굵게) · 오른쪽 페이즈와 상태 (작게, 상태는 주홍) / 바로 아래 체력바, 바 가운데에 체력 숫자.
+        //   판타지 진영이면 이름 왼쪽에 문장 (InkHud.FactionCrest). 글자 크기 · 색은 InkUi 규칙.
+        void BossBar(float y, EnemyBrain e, string name, int phase, string state)
+        {
+            float width = Mathf.Min(560f, UiScale.Width - 40f);
+            var area = new Rect((UiScale.Width - width) * 0.5f, y, width, 26f);
+            GUI.Label(area, name, AThousandDawns.Fx.InkUi.Text(AThousandDawns.Fx.InkUi.Body, AThousandDawns.Fx.InkUi.PaperText, TextAnchor.MiddleLeft, true));
+            string right = string.IsNullOrEmpty(state) ? $"{phase}페이즈" : $"{phase}페이즈 · <color=#FF8C6B>{state}</color>";
+            GUI.Label(area, right, AThousandDawns.Fx.InkUi.Text(AThousandDawns.Fx.InkUi.Small, AThousandDawns.Fx.InkUi.MutedOnDark, TextAnchor.MiddleRight));
+            AThousandDawns.Fx.InkHud.FactionCrest(area, e);
+            var bar = new Rect(area.x, area.yMax + 2f, area.width, 16f);
+            DrawBar(bar, e.Damageable.Health / Mathf.Max(1f, e.Damageable.MaxHealth), HealthColor);
+            GUI.Label(new Rect(bar.x, bar.y - 1f, bar.width, bar.height + 2f), $"{e.Damageable.Health:0} / {e.Damageable.MaxHealth:0}",
+                AThousandDawns.Fx.InkUi.Text(AThousandDawns.Fx.InkUi.Tiny, AThousandDawns.Fx.InkUi.PaperText, TextAnchor.MiddleCenter, true));
         }
 
         static void DrawBar(Rect rect, float ratio, Color fill, float alpha = 1f)

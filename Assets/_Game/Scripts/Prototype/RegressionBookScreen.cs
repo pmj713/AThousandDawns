@@ -277,44 +277,55 @@ namespace AThousandDawns.Prototype
         public void ShowMeditation(bool on) => _meditation = on && MeditationOpen;
 
         // 영혼수련: 심법마다 − / + 와 단계 (5·10·20). 바꾸면 바로 저장, 다음 판부터 적용.
+        //   (플레이테스트 5차: 더 간단하고 작게) 가운데 한 장의 한지 창(1240 폭)에 심법 여섯 줄 (줄 높이 68):
+        //   왼쪽 이름·주제 + 포인트당 / 가운데 − 포인트 + / 오른쪽 단계 셋은 작은 칸 (닿은 단계만 붉은 먹, 준비 중은 회색). 글자 · 버튼은 InkUi 규칙.
         void DrawMeditation()
         {
             int total = Meditation.TotalPoints(_meta), spent = Meditation.Spent(_meta);
             AThousandDawns.Fx.InkMeridianArt.PaperBackdrop(UiScale.Width, UiScale.Height); // 한지 결 + 귀퉁이 먹 번짐
-            if (MeditationOpen && GUI.Button(new Rect(UiScale.Width - 360, 50, 300, 50), "회귀록 (M)", _button)) _meditation = false; // 한지 위에 다시 (덮였으니)
-            GUI.Label(new Rect(60, 40, 900, 50), "영혼수련", _title);
-            GUI.Label(new Rect(60, 100, 1100, 30), $"심득 <b>{total - spent}</b> 남음 / {total}  ·  회귀록 영혼수련·심득 봉우리로 늘어요 · 언제든 다시 나눌 수 있어요", _label);
-            if (GUI.Button(new Rect(60, 140, 200, 40), "모두 되돌리기", _button))
+            const float rowH = 68f, gap = 8f, w = 1240f;
+            float h = 112f + Meditation.Arts.Length * (rowH + gap) + 16f;
+            var win = new Rect((UiScale.Width - w) * 0.5f, (UiScale.Height - h) * 0.5f, w, h);
+            AThousandDawns.Fx.InkUi.Window(win);
+            var ink = AThousandDawns.Fx.InkUi.Ink;
+            GUI.Label(new Rect(win.x + 32, win.y + 20, 400, 44), "영혼수련", AThousandDawns.Fx.InkUi.Text(AThousandDawns.Fx.InkUi.Heading, ink, TextAnchor.MiddleLeft, true));
+            GUI.Label(new Rect(win.x + 32, win.y + 64, 700, 28), $"심득 <b>{total - spent}</b> / {total} 남음 · 언제든 다시 나눌 수 있어요", AThousandDawns.Fx.InkUi.Text(AThousandDawns.Fx.InkUi.Small, AThousandDawns.Fx.InkUi.SubInk));
+            if (AThousandDawns.Fx.InkUi.Button(new Rect(win.xMax - 392, win.y + 26, 170, 44), "모두 되돌리기", AThousandDawns.Fx.InkUi.Label))
             {
                 Meditation.Reset(_meta);
                 _meta.Save();
             }
-            float y = 200;
+            if (MeditationOpen && AThousandDawns.Fx.InkUi.Button(new Rect(win.xMax - 210, win.y + 26, 178, 44), "회귀록 (M)", AThousandDawns.Fx.InkUi.Label)) _meditation = false;
+            var nameStyle = AThousandDawns.Fx.InkUi.Text(AThousandDawns.Fx.InkUi.Body, ink, TextAnchor.MiddleLeft);
+            var perStyle = AThousandDawns.Fx.InkUi.Text(AThousandDawns.Fx.InkUi.Tiny, AThousandDawns.Fx.InkUi.Muted, TextAnchor.MiddleLeft);
+            var pointStyle = AThousandDawns.Fx.InkUi.Text(AThousandDawns.Fx.InkUi.Heading, ink, TextAnchor.MiddleCenter, true);
+            var stepStyle = AThousandDawns.Fx.InkUi.Text(AThousandDawns.Fx.InkUi.Tiny, ink, TextAnchor.MiddleLeft, false, true);
+            float y = win.y + 112f;
             for (int i = 0; i < Meditation.Arts.Length; i++)
             {
                 var art = (Meditation.Art)i;
                 var info = Meditation.Arts[i];
                 int p = Meditation.Points(_meta, art);
-                var row = new Rect(60, y, UiScale.Width - 120, 120);
-                AThousandDawns.Fx.InkMeridianArt.PaperPanel(row); // 한지 판 + 먹 붓 테두리
-                if (PadActive && i == PadRow) AThousandDawns.Fx.InkPadUi.Frame(row, 4f); // 게임패드로 고른 심법: 먹 붓 테두리
-                GUI.Label(new Rect(row.x + 20, row.y + 10, 260, 40), $"<b>{info.Name}</b> {info.Theme}", _title);
-                GUI.Label(new Rect(row.x + 20, row.y + 60, 300, 30), $"포인트당 {info.PerPoint}", _small);
-                if (GUI.Button(new Rect(row.x + 330, row.y + 30, 56, 56), "−", _button) && Meditation.Add(_meta, art, -1)) _meta.Save();
-                GUI.Label(new Rect(row.x + 392, row.y + 30, 70, 56), $"<b>{p}</b>", _title);
-                if (GUI.Button(new Rect(row.x + 460, row.y + 30, 56, 56), "+", _button) && Meditation.Add(_meta, art, 1)) _meta.Save();
-                float mx = row.x + 560, mw = (row.xMax - mx - 20) / 3f;
+                var row = new Rect(win.x + 24, y, win.width - 48, rowH);
+                if (PadActive && i == PadRow) AThousandDawns.Fx.InkPadUi.Frame(row, 3f); // 게임패드로 고른 심법: 먹 붓 테두리
+                GUI.Label(new Rect(row.x + 8, row.y + 4, 250, 34), $"<b>{info.Name}</b> {info.Theme}", nameStyle);
+                GUI.Label(new Rect(row.x + 8, row.y + 38, 250, 24), $"포인트당 {info.PerPoint}", perStyle);
+                float bx = row.x + 268;
+                if (AThousandDawns.Fx.InkUi.Button(new Rect(bx, row.y + 12, 44, 44), "−", AThousandDawns.Fx.InkUi.Body) && Meditation.Add(_meta, art, -1)) _meta.Save();
+                GUI.Label(new Rect(bx + 46, row.y + 12, 56, 44), p.ToString(), pointStyle);
+                if (AThousandDawns.Fx.InkUi.Button(new Rect(bx + 104, row.y + 12, 44, 44), "+", AThousandDawns.Fx.InkUi.Body) && Meditation.Add(_meta, art, 1)) _meta.Save();
+                float mx = bx + 170, mw = (row.xMax - mx) / 3f;
                 for (int s = 0; s < 3; s++)
                 {
                     bool reached = Meditation.Reached(_meta, art, s);
                     bool ready = info.Ready[s];
-                    var r = new Rect(mx + s * mw, row.y + 14, mw - 12, 92);
-                    // 도달한 단계는 붉은 먹이 스민 한지, 준비 중은 회색, 아직은 옅은 한지
-                    AThousandDawns.Fx.InkMeridianArt.PaperPanel(r, reached ? (ready ? new Color(0.95f, 0.72f, 0.66f, 0.95f) : new Color(0.78f, 0.75f, 0.72f, 0.9f)) : new Color(0.97f, 0.94f, 0.87f, 0.85f));
-                    string text = $"<b>{Meditation.Steps[s]}</b>  {info.MilestonesNow[s]}" + (ready ? "" : "\n<color=#7a6a6a>준비 중</color>");
-                    GUI.Label(new Rect(r.x + 10, r.y + 6, r.width - 20, r.height - 12), text, _small);
+                    var r = new Rect(mx + s * mw, row.y + 4, mw - 8, rowH - 8);
+                    // 닿은 단계는 붉은 먹이 스민 칸, 준비 중은 회색, 아직은 옅은 칸
+                    AThousandDawns.Fx.InkMeridianArt.PaperPanel(r, reached ? (ready ? new Color(0.95f, 0.72f, 0.66f, 0.95f) : new Color(0.78f, 0.75f, 0.72f, 0.9f)) : new Color(0.97f, 0.94f, 0.87f, 0.6f));
+                    string text = $"<b>{Meditation.Steps[s]}</b>  {info.MilestonesNow[s]}" + (ready ? "" : " <color=#7a6a6a>(준비 중)</color>");
+                    GUI.Label(new Rect(r.x + 10, r.y + 2, r.width - 20, r.height - 4), text, stepStyle);
                 }
-                y += 132;
+                y += rowH + gap;
             }
             if (PadActive) AThousandDawns.Fx.InkPadUi.Hints(UiScale.Width * 0.5f, UiScale.Height - 60f, 34f, ("↑↓", "고르기"), ("←→", "− +"), ("X", "되돌리기"), ("Y", "회귀록"), ("B", "닫기")); // 붉은 낙관 안내
         }
