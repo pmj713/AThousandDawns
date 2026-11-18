@@ -733,14 +733,20 @@ namespace AThousandDawns.Art
 
         // ── 고블린 족장 덫
 
-        static void OnTrap(GoblinChiefBrain chief, Vector3 at) => Host().Trap(at);
+        // (플레이테스트 8차: 덫은 던진 뒤 예고 원이 0.7초 차오르고 나서 GhostFire "덫"이 생겨요)
+        //   던지는 순간(TrapThrown) 족장 손에서 쇠덫이 빙글 돌며 포물선으로 날아가 0.7초 뒤 떨어질 자리에 내려앉고,
+        //   그때 생긴 "덫" 장판을 찾아 하늘색 원판을 끄고 톱니 원을 깔아요 (장판이 끝나면 같이 걷혀요).
+        const float TrapFlight = 0.7f;
 
-        void Trap(Vector3 at)
+        static void OnTrap(GoblinChiefBrain chief, Vector3 at) => Host().Trap(chief != null ? chief.transform.position : at, at);
+
+        void Trap(Vector3 from, Vector3 at)
         {
             at.y = 0f;
+            Vector3 start = new Vector3(from.x, 1.6f, from.z);
             var root = new GameObject("Goblin Trap").transform;
             root.SetParent(transform, false);
-            root.position = at + Vector3.up * 1.5f;
+            root.position = start;
             var metal = new Color(0.42f, 0.42f, 0.48f);
             var tooth = new Color(0.8f, 0.8f, 0.85f);
             Solid(root, PrimitiveType.Cylinder, new Vector3(0f, 0.03f, 0f), new Vector3(0.5f, 0.03f, 0.5f), Quaternion.identity, new Color(0.25f, 0.22f, 0.2f));
@@ -761,24 +767,53 @@ namespace AThousandDawns.Art
                 }
                 jaws[j] = jaw;
             }
-            // 덫 장판 (GhostFire "덫"): 하늘색 원판 대신 판정 반경 그대로 녹슨 톱니 원
+            // 덫 장판 (GhostFire "덫"): 내려앉을 무렵 생겨요 — 0.1초마다 찾다가 찾으면 하늘색 원판을 끄고 판정 반경 그대로 녹슨 톱니 원
             GhostFire zone = null;
-            float best = 1f;
-            foreach (var f in FindObjectsByType<GhostFire>()) // 덫이 떨어질 때 한 번만 찾아요
-            {
-                float d = (new Vector3(f.transform.position.x, 0f, f.transform.position.z) - at).sqrMagnitude;
-                if (d < best && f.name == "덫") { best = d; zone = f; }
-            }
-            float radius = zone != null ? zone.transform.localScale.x * 0.5f : 0.9f;
-            if (zone != null) { var source = zone.GetComponent<Renderer>(); if (source != null) source.enabled = false; }
-            var saw = SawRing(at, radius);
-            var floor = _glow != null ? FlatSprite(_glow, at, radius * 2.2f, 0f, 0.035f, 3, new Color(0.45f, 0.12f, 0.05f, 0.45f)) : null;
-            bool tracked = zone != null;
-            float t = 0f, close = -1f, life = 6f;
+            LineRenderer saw = null;
+            SpriteRenderer floor = null;
+            float radius = 0.9f, look = 0f;
+            bool tracked = false, settled = false;
+            float t = 0f, close = -1f, life = TrapFlight + 6f;
             _live.Add(dt =>
             {
                 if (root == null) return false;
                 t += dt;
+                if (t < TrapFlight) // 포물선으로 빙글 돌며 날아가요
+                {
+                    float k = t / TrapFlight;
+                    root.position = Vector3.Lerp(start, at, k) + Vector3.up * (2.2f * 4f * k * (1f - k));
+                    root.rotation = Quaternion.Euler(k * 540f, 0f, 0f);
+                    return true;
+                }
+                if (!settled)
+                {
+                    settled = true;
+                    root.SetPositionAndRotation(at, Quaternion.identity);
+                    InkParticles.Burst(at + Vector3.up * 0.1f, 8, new Color(0.7f, 0.6f, 0.45f, 0.9f), new Color(0.5f, 0.4f, 0.3f, 0f), 1.2f, 0.25f, 0.5f, 0f);
+                }
+                look -= dt;
+                if (saw == null && !tracked && look <= 0f && t < TrapFlight + 0.8f) // 장판이 생길 때까지 0.1초마다 찾아요
+                {
+                    look = 0.1f;
+                    float best = 1f;
+                    foreach (var f in FindObjectsByType<GhostFire>())
+                    {
+                        float d = (new Vector3(f.transform.position.x, 0f, f.transform.position.z) - at).sqrMagnitude;
+                        if (d < best && f.name == "덫") { best = d; zone = f; }
+                    }
+                    if (zone != null)
+                    {
+                        tracked = true;
+                        radius = zone.transform.localScale.x * 0.5f;
+                        var source = zone.GetComponent<Renderer>();
+                        if (source != null) source.enabled = false;
+                    }
+                }
+                if (saw == null && (tracked || t >= TrapFlight + 0.8f) && t < life)
+                {
+                    saw = SawRing(at, radius);
+                    floor = _glow != null ? FlatSprite(_glow, at, radius * 2.2f, 0f, 0.035f, 3, new Color(0.45f, 0.12f, 0.05f, 0.45f)) : null;
+                }
                 if (tracked && zone == null && t < life) life = t; // 장판이 먼저 끝나면 같이 걷혀요
                 if (saw != null) saw.transform.rotation = Quaternion.Euler(90f, t * 25f, 0f);
                 if (t >= life && saw != null)
@@ -787,10 +822,7 @@ namespace AThousandDawns.Art
                     if (floor != null) Destroy(floor.gameObject);
                     saw = null;
                 }
-                float drop = Mathf.Clamp01(t / 0.25f);
-                root.position = at + Vector3.up * (1.5f * (1f - drop * drop));
-                if (t >= 0.25f && t - dt < 0.25f) InkParticles.Burst(at + Vector3.up * 0.1f, 8, new Color(0.7f, 0.6f, 0.45f, 0.9f), new Color(0.5f, 0.4f, 0.3f, 0f), 1.2f, 0.25f, 0.5f, 0f);
-                if (close < 0f && t > 0.3f && _player != null)
+                if (close < 0f && saw != null && _player != null)
                 {
                     Vector3 d = _player.transform.position - at;
                     d.y = 0f;
