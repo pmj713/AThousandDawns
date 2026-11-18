@@ -153,12 +153,12 @@ namespace AThousandDawns.Prototype
             GUI.depth = -10;
             Fill(new Rect(0, 0, UiScale.Width, UiScale.Height), Paper); // 한지 (불투명: 뒤의 결과 화면이 비치지 않게)
 
-            if (MeditationOpen && GUI.Button(new Rect(UiScale.Width - 360, 50, 300, 50), _meditation ? "회귀록 (M)" : "영혼수련 (M)", _button)) _meditation = !_meditation;
-            if (_meditation)
+            if (_meditation) // 영혼수련은 제 창 안에 "회귀록 (M)" 버튼이 있어요 (뒤에 이 버튼이 파란 네모로 비쳤어요, 플레이테스트 6차)
             {
                 DrawMeditation();
                 return;
             }
+            if (MeditationOpen && GUI.Button(new Rect(UiScale.Width - 360, 50, 300, 50), "영혼수련 (M)", _button)) _meditation = true;
             GUI.Label(new Rect(60, 40, 900, 50), "회귀록", _title);
             GUI.Label(new Rect(60, 100, 900, 30), $"가진 회귀의 기억 <b>{_meta.memory}</b>   ·   {_meta.runs}번 회귀했어요", _label);
             GUI.Label(new Rect(60, 132, 900, 26), "봉우리를 누르고, 개화를 눌러 피워요 · B·Esc 닫기", _small);

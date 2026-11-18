@@ -26,14 +26,25 @@ namespace AThousandDawns.Prototype
             EnsureStyles();
             var r = run.Result;
             var old = GUI.color;
-            GUI.color = new Color(0f, 0f, 0f, 0.86f);
+            // (플레이테스트 6차: 게임풍) 짙은 남빛 밤 + 가운데 위 제목 (쓰러짐 = 주홍 · 돌파 = 금빛, 그 밑 붉은 붓 획) · 판은 남빛 먹 패널 · 글자는 InkUi 규칙
+            var nav = AThousandDawns.Fx.InkUi.Navy;
+            GUI.color = new Color(nav.r * 0.5f, nav.g * 0.5f, nav.b * 0.6f, 0.94f);
             GUI.DrawTexture(new Rect(0, 0, UiScale.Width, UiScale.Height), Texture2D.whiteTexture);
             GUI.color = old;
 
             float cx = UiScale.Width * 0.5f;
-            GUI.Label(new Rect(0, 50f, UiScale.Width, 50f), r.Victory ? "끝까지 돌파했어요" : "쓰러졌어요 · 그날 아침으로 회귀해요", _big);
-            GUI.Label(new Rect(0, 104f, UiScale.Width, 30f),
-                $"<color=#cfcfcf>제{r.Runs}회 회귀 · {r.Where} · 플레이 시간 {RunRecord.Clock(r.PlaySeconds)}</color>", _bossLabel);
+            if (_resultStroke == null) _resultStroke = Resources.Load<Texture2D>("HudArt/HpStroke");
+            if (_resultStroke != null)
+            {
+                GUI.color = r.Victory ? new Color(1f, 0.78f, 0.25f, 0.55f) : new Color(0.85f, 0.12f, 0.1f, 0.6f);
+                GUI.DrawTexture(new Rect(cx - 360f, 76f, 720f, 46f), _resultStroke, ScaleMode.StretchToFill);
+                GUI.color = old;
+            }
+            GUI.Label(new Rect(0, 34f, UiScale.Width, 64f), r.Victory ? "끝까지 돌파했어요" : "쓰러졌어요",
+                AThousandDawns.Fx.InkUi.Text(AThousandDawns.Fx.InkUi.Title, r.Victory ? AThousandDawns.Fx.InkUi.Gold : AThousandDawns.Fx.InkUi.PaperText, TextAnchor.MiddleCenter, true));
+            GUI.Label(new Rect(0, 124f, UiScale.Width, 30f),
+                $"{(r.Victory ? "" : "그날 아침으로 회귀해요 · ")}제{r.Runs}회 회귀 · {r.Where} · 플레이 시간 {RunRecord.Clock(r.PlaySeconds)}",
+                AThousandDawns.Fx.InkUi.Text(AThousandDawns.Fx.InkUi.Label, AThousandDawns.Fx.InkUi.MutedOnDark, TextAnchor.MiddleCenter));
 
             DrawResultBuild(new Rect(cx - 880f, 170f, 800f, 760f));
             float elapsed = Time.unscaledTime - r.ShownAt;
@@ -47,7 +58,7 @@ namespace AThousandDawns.Prototype
             if (p == null) return;
             Panel(area);
             float x = area.x + 24f, y = area.y + 18f, w = area.width - 48f;
-            GUI.Label(new Rect(x, y, w, 34f), "<b>이번 생의 빌드</b>", _itemLine);
+            GUI.Label(new Rect(x, y, w, 38f), "이번 생의 빌드", SectionTitle);
             y += 44f;
 
             var items = p.Items;
@@ -131,7 +142,7 @@ namespace AThousandDawns.Prototype
         {
             Panel(area);
             float x = area.x + 24f, y = area.y + 18f, w = area.width - 48f;
-            GUI.Label(new Rect(x, y, w, 34f), "<b>기록 → 회귀의 기억</b>", _itemLine);
+            GUI.Label(new Rect(x, y, w, 38f), "기록 → 회귀의 기억", SectionTitle);
             y += 46f;
 
             int shown = 0;
@@ -175,8 +186,9 @@ namespace AThousandDawns.Prototype
             bool done = elapsed >= (CountLines(r) + 0.5f) * ResultLineDelay;
             int total = done ? r.Memory : Mathf.RoundToInt(memory);
             float by = area.yMax - 120f;
-            GUI.Label(new Rect(x, by, w, 40f), $"<b>회귀의 기억 +{total}</b>   <color=#cfcfcf>(가진 기억 {(done ? r.StoredMemory : r.StoredMemory - r.Memory + total)})</color>", _big);
-            GUI.Label(new Rect(x, by + 56f, w, 30f), "<color=#cfcfcf>B 회귀록 · Enter · F5 다시 회귀</color>", _bossLabel);
+            GUI.Label(new Rect(x, by, w, 44f), $"회귀의 기억 +{total}   <size={AThousandDawns.Fx.InkUi.Label}><color=#A69E94>(가진 기억 {(done ? r.StoredMemory : r.StoredMemory - r.Memory + total)})</color></size>",
+                AThousandDawns.Fx.InkUi.Text(AThousandDawns.Fx.InkUi.Heading, AThousandDawns.Fx.InkUi.Gold, TextAnchor.MiddleLeft, true));
+            GUI.Label(new Rect(x, by + 56f, w, 30f), "B 회귀록 · Enter · F5 다시 회귀", AThousandDawns.Fx.InkUi.Text(AThousandDawns.Fx.InkUi.Small, AThousandDawns.Fx.InkUi.MutedOnDark));
         }
 
         static int CountLines(RoomRun.ResultView r)
@@ -192,12 +204,9 @@ namespace AThousandDawns.Prototype
             y += 34f;
         }
 
-        static void Panel(Rect area)
-        {
-            var old = GUI.color;
-            GUI.color = new Color(1f, 1f, 1f, 0.05f);
-            GUI.DrawTexture(area, Texture2D.whiteTexture);
-            GUI.color = old;
-        }
+        // 결과 판: 남빛 먹 패널 (InkUi.Panel) · 칸 제목은 금빛 Heading
+        static void Panel(Rect area) => AThousandDawns.Fx.InkUi.Panel(area);
+        static GUIStyle SectionTitle => AThousandDawns.Fx.InkUi.Text(AThousandDawns.Fx.InkUi.Heading, AThousandDawns.Fx.InkUi.Gold, TextAnchor.MiddleLeft, true);
+        static Texture2D _resultStroke;
     }
 }

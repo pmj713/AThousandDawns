@@ -62,6 +62,19 @@ namespace AThousandDawns.Fx
         // 자유 크기를 6단계 중 가장 가까운 것으로 (예전 화면 숫자를 옮길 때)
         public static int Snap(int size) => size <= 15 ? Tiny : size <= 18 ? Small : size <= 21 ? Label : size <= 26 ? Body : size <= 36 ? Heading : size <= 60 ? Title : size;
 
+        // 게임 글자체 (플레이테스트 6차): 고운바탕 Gowun Batang (SIL 오픈 폰트 라이선스 1.1, Art/UI/Fonts/OFL.txt) — 붓맛이 도는 부드러운 바탕체.
+        //   Resources/Fonts/GowunBatang-Regular (굵게는 같은 이름의 Bold를 Unity가 찾아 써요).
+        static Font _font;
+        static bool _fontLoaded;
+        public static Font GameFont
+        {
+            get
+            {
+                if (!_fontLoaded) { _fontLoaded = true; _font = Resources.Load<Font>("Fonts/GowunBatang-Regular"); }
+                return _font;
+            }
+        }
+
         // 마우스를 올리거나 누르거나 포커스가 가도 글자색이 바뀌지 않게 (Unity 기본 hover 글자색은 흰색이에요).
         // 처음 부를 때 기본 스킨(button · label · toggle · box)도 같이 고정해요 — 스타일 없이 그리는 GUI.Button(rect, text)도요.
         public static GUIStyle Steady(GUIStyle s)
@@ -69,6 +82,8 @@ namespace AThousandDawns.Fx
             if (!_skinDone && GUI.skin != null)
             {
                 _skinDone = true;
+                var font = GameFont; // 게임 글자체 (고운바탕): 기본 스킨에 한 번 — 글꼴을 따로 안 정한 모든 IMGUI 글자가 이걸 써요
+                if (font != null) GUI.skin.font = font;
                 InkMeridianArt.LockText(GUI.skin.button);
                 InkMeridianArt.LockText(GUI.skin.label);
                 InkMeridianArt.LockText(GUI.skin.toggle);

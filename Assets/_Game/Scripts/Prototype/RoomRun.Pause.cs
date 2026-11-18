@@ -30,7 +30,7 @@ namespace AThousandDawns.Prototype
         bool OverlayOpen()
         {
             if (_meridian == null) _meridian = FindFirstObjectByType<MeridianScreen>();
-            return IsShopping || IsInEvent || OffersOpen || IsShowingResult || (_book != null && _book.IsOpen)
+            return IsShopping || IsInEvent || OffersOpen || IsShowingResult || RackOpen || (_book != null && _book.IsOpen)
                 || (_meridian != null && _meridian.IsOpen) || (Player != null && Player.Items != null && Player.Items.Pending != null);
         }
 

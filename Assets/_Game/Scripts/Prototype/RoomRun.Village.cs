@@ -58,6 +58,11 @@ namespace AThousandDawns.Prototype
         void TickVillage()
         {
             var keyboard = Keyboard.current;
+            if (RackOpen)
+            {
+                TickRack(keyboard);
+                return;
+            }
             if (_villageBookOpen)
             {
                 if (_book == null || !_book.IsOpen) CloseVillageBook(); // 회귀록 화면에서 Esc로 닫혔어요
@@ -86,7 +91,7 @@ namespace AThousandDawns.Prototype
             VillageSpot.Tree => $"{KeyName(Bind.Interact)} 매화나무 · 회귀록",
             VillageSpot.Cave => RegressionBook.Bloomed(VillageMeta, "meditation") ? $"{KeyName(Bind.Interact)} 뒷산 동굴 · 영혼수련" : "뒷산 동굴 · 회귀록에서 영혼수련을 피우면 열려요",
             VillageSpot.Shrine => VillageMeta.finalBossKills > 0 ? $"{KeyName(Bind.Interact)} 사당 · 유품록" : "사당 · 첫 천마 격파 후 열려요 (유품록)",
-            VillageSpot.Rack => RegressionBook.DaggerUnlocked(VillageMeta) ? $"{KeyName(Bind.Interact)} 무기 거치대 · 지금 {(Player.UsesDagger ? "비도" : "검")} (바꾸기)" : $"{KeyName(Bind.Interact)} 무기 거치대",
+            VillageSpot.Rack => $"{KeyName(Bind.Interact)} 무기 거치대 · 지금 {(Player.UsesDagger ? "비도" : "검")}",
             _ => null,
         };
 
@@ -106,20 +111,8 @@ namespace AThousandDawns.Prototype
                     if (VillageMeta.finalBossKills > 0) { if (KarmaMax > 0) OpenShrineMenu(); else OpenRelicBook(); Notify("relic", "유품록: 천마를 쓰러뜨린 판에 지녔던 기물을 골라 두면 다음 판을 지니고 시작해요"); }
                     else ShowBanner("닫힌 사당 · 첫 천마 격파 후 열려요");
                     break;
-                case VillageSpot.Rack:
-                    if (!RegressionBook.DaggerUnlocked(VillageMeta))
-                    {
-                        ShowBanner("검을 들었어요 · 비도는 회귀록 무기 가지에서 열려요");
-                        break;
-                    }
-                    // 검 ↔ 비도 (다음에 회귀해도 기억해요)
-                    var meta = MetaSave.Load();
-                    meta.weapon = meta.weapon == 1 ? 0 : 1;
-                    meta.Save();
-                    _villageMeta = null;
-                    Player.SetWeapon(meta.weapon == 1 ? AThousandDawns.Player.WeaponKind.Dagger : AThousandDawns.Player.WeaponKind.Sword);
-                    ShowBanner(meta.weapon == 1 ? "비도를 들었어요 · 멀리서 던지고 우클릭 회수로 거둬들여요" : "검을 들었어요");
-                    Notify("dagger", "비도: 꽂히거나 떨어진 비도는 6초 남아요 · 우클릭 회수로 거둬들이며 다시 베요");
+                case VillageSpot.Rack: // 바로 바꾸지 않고 무기 거치대 창을 열어요 (플레이테스트 6차, RoomRun.Rack.cs)
+                    OpenRack();
                     break;
             }
         }
