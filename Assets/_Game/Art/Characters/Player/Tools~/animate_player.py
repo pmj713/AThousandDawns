@@ -759,6 +759,60 @@ for f in range(0, 41, 8):
     dagger_idle_pose(f / 40); key_all(f)
 actions.append((act, 0, 40))
 
+
+# 비도 평타 (플레이테스트 5차: 칼 베기 동작을 그대로 써서 던지는 게 안 보였어요). 칼은 오른손에 쥔 채 허리 뒤, 왼손으로 던져요.
+#   DaggerThrow1 (1타 · 10프레임): 왼손을 오른 어깨 앞으로 감았다가 손등 쪽으로 앞으로 채 던져요 (손가락이 펴지며 놓아요)
+#   DaggerThrow2 (2타 · 10프레임): 왼손을 귀 옆 위로 치켜들었다가 몸을 숙이며 앞으로 내리꽂듯 던져요
+#   DaggerThrow3 (3타 부채꼴 3발 · 15프레임): 오른쪽 뒤로 깊게 감았다가 허리째 돌며 왼팔을 수평으로 크게 쓸어 펼쳐 던져요
+#   DaggerRecall (회수 · 10프레임): 왼손바닥을 앞으로 펴 내밀었다가 주먹을 쥐며 가슴으로 홱 당겨요 (비도가 손으로 돌아와요)
+def dagger_throw_pose(twist, lean, hand_at, pole, curl, crouch=0.0):
+    dagger_idle_pose(0)
+    set_rot("Spine", (X, 5 + lean), (Z, -18 + twist * 0.6)); set_rot("Chest", (Z, -8 + twist * 0.4))
+    set_rot("Neck", (Z, -twist * 0.5))                                       # 시선은 앞에
+    if crouch:
+        set_hips_height(-0.08 - crouch)
+        bpy.context.view_layer.update()
+        _limb("LeftUpperLeg", "LeftLowerLeg", "LeftFoot", Q_FOOT["Left"] + Vector((0.02, -0.24, 0)), Vector((0, -1, 0)))
+        _limb("RightUpperLeg", "RightLowerLeg", "RightFoot", Q_FOOT["Right"] + Vector((-0.02, 0.14, 0)), Vector((0, -1, 0)))
+    bpy.context.view_layer.update()
+    hand("Left", curl)
+    l = pose["LeftUpperArm"].head.copy()
+    _limb("LeftUpperArm", "LeftLowerArm", "LeftHand", l + Vector(hand_at), Vector(pole))
+
+
+DAGGER_CLIPS = {
+    "DaggerThrow1": [(0, None),
+                     (3, (-28, 2, (-0.36, -0.16, -0.14), (1, 0.6, -0.4), 70)),        # 오른 어깨 앞으로 감기
+                     (5, (14, 6, (0.02, -0.56, -0.02), (1, 0.3, -0.6), 5)),           # 채 던지기 (놓음)
+                     (7, (20, 5, (0.22, -0.46, -0.08), (1, 0.3, -0.6), 15)),
+                     (10, None)],
+    "DaggerThrow2": [(0, None),
+                     (3, (-10, -6, (-0.04, 0.1, 0.26), (1, 0.4, 0.6), 70)),          # 귀 옆 위로 치켜들기
+                     (5, (8, 16, (-0.08, -0.56, -0.12), (1, 0.3, -0.6), 5)),          # 숙이며 내리꽂듯 던지기
+                     (7, (8, 14, (-0.04, -0.5, -0.24), (1, 0.3, -0.6), 15)),
+                     (10, None)],
+    "DaggerThrow3": [(0, None),
+                     (4, (-40, 4, (-0.42, -0.04, -0.18), (1, 0.8, -0.3), 75, 0.05)),   # 오른쪽 뒤로 깊게 감기
+                     (6, (-10, 8, (-0.16, -0.56, -0.04), (1, 0.3, -0.6), 10, 0.07)),  # 앞으로 쓸며
+                     (8, (16, 8, (0.16, -0.52, -0.04), (1, 0.3, -0.6), 0, 0.07)),     # 펼쳐 던지기
+                     (10, (30, 6, (0.4, -0.3, -0.06), (0.6, 0.6, -0.6), 0, 0.06)),
+                     (15, None)],
+    "DaggerRecall": [(0, None),
+                     (3, (6, -2, (-0.05, -0.6, 0.06), (1, 0.3, -0.6), 0)),            # 손바닥을 앞으로 펴 내밀기
+                     (6, (-6, -8, (-0.22, -0.22, -0.2), (1, 0.6, -0.6), 85)),         # 주먹 쥐며 가슴으로 당기기
+                     (8, (-4, -6, (-0.2, -0.24, -0.2), (1, 0.6, -0.6), 85)),
+                     (10, None)],
+}
+for name, keys in DAGGER_CLIPS.items():
+    act = new_action(name)
+    for f, args in keys:
+        if args is None:
+            dagger_idle_pose(0)
+        else:
+            dagger_throw_pose(*args)
+        key_all(f)
+    actions.append((act, 0, keys[-1][0]))
+
 # 등장(Spawn · 18프레임, 플레이어 동작을 옮겨 입는 사람형 적이 방에 나타날 때): 낮게 웅크려 고개 숙였다가 → 일어서며 칼을 앞으로 고쳐 잡고 → 준비 자세
 def spawn_pose(low):
     ready_pose()

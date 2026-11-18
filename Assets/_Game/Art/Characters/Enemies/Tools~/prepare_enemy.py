@@ -628,6 +628,34 @@ if "strip_shield" in set(WEAPONS):
     bm.to_mesh(body.data); bm.free()
     print("ENEMY stripped built-in shield verts", len(kill))
 
+    # 방패 뒤에 묻힌 왼 아래팔·손도 같이 잘려 나가서, 방패가 부서지면 팔꿈치 아래가 비어 보였어요 (플레이테스트 5차)
+    #   → 오른팔(위팔·아래팔·손) 면을 몸 가운데(골반) 기준으로 X를 뒤집어 왼쪽에 붙여요 (같은 텍스처 자리를 써서 옷·피부가 그대로). 남은 왼팔 점(방패를 자르다 찢긴 위팔 조각 포함)은 지워 겹치지 않게
+    vg = body.vertex_groups
+    src = {vg[n].index: (vg.get(n.replace("Right", "Left")) or vg.new(name=n.replace("Right", "Left"))).index
+           for n in [g.name for g in vg] if n == "RightArm" or n.startswith("RightForeArm") or n.startswith("RightHand")}
+    left_ids = set(src.values())
+    mid_x = B["Hips"].head_local.x
+    bm = _bm.new(); bm.from_mesh(body.data)
+    dl = bm.verts.layers.deform.verify()
+
+    def owner(v):
+        w = v[dl]
+        return max(w.items(), key=lambda kv: kv[1])[0] if len(w) else None
+    _bm.ops.delete(bm, geom=[v for v in bm.verts if owner(v) in left_ids], context='VERTS')
+    faces = [fc for fc in bm.faces if all(owner(v) in src for v in fc.verts)]
+    dup = _bm.ops.duplicate(bm, geom=faces)
+    new_verts = [e for e in dup["geom"] if isinstance(e, _bm.types.BMVert)]
+    for v in new_verts:
+        v.co.x = 2 * mid_x - v.co.x
+        w = v[dl]
+        moved = {src.get(k, k): val for k, val in w.items()}
+        w.clear()
+        for k, val in moved.items():
+            w[k] = val
+    _bm.ops.reverse_faces(bm, faces=[e for e in dup["geom"] if isinstance(e, _bm.types.BMFace)])   # 뒤집으면 면 방향도 뒤집혀요
+    bm.to_mesh(body.data); bm.free()
+    print("ENEMY rebuilt left forearm from right", len(faces), "faces", len(new_verts), "verts")
+
 head_top = max((body.matrix_world @ v.co).z for v in body.data.vertices)
 body_back = max((body.matrix_world @ v.co).y for v in body.data.vertices
                 if abs((body.matrix_world @ v.co).z - B["Spine2"].head_local.z) < 0.12)
@@ -2697,6 +2725,15 @@ if VILLAGER and "playeranim" in EXTRAS:
             arm("Left", wrist + Vector((-0.02, 0.05, 0.22)), Vector((1, 0.3, -0.5)))         # 왼손은 대 위쪽
             if HAS_BLADE:
                 point_blade(Vector((0.35 * sway, -0.55, -1)), wrist_bend=30)                # 비 끝이 바닥을 좌우로 쓸어요
+        elif VILLAGER == "shop":   # 객잔 점소이(상점 주인): 계산대 위에서 왼손으로 주판을 받치고 오른손 손가락으로 알을 튕기며, 손님 쪽으로 고개를 끄덕여요
+            tick = abs(math.sin(k * 4 * math.pi))
+            lower_hips(-0.04, FEET, dy=0.0)
+            bend("Spine", Vector((1, 0, 0)), 5 + 2 * math.sin(k * 2 * math.pi))
+            bend("Neck", Vector((1, 0, 0)), 6 + 8 * max(0.0, math.sin(k * 2 * math.pi)))   # 끄덕
+            bend("Neck", Vector((0, 0, 1)), 8 * math.sin(k * 2 * math.pi + 1.0))
+            shR = pb["RightArm"].head.copy(); shL = pb["LeftArm"].head.copy()
+            arm("Left", shL + Vector((-0.03, -0.3, -0.44)), Vector((0.5, 0.6, -0.8)))        # 주판을 받친 손
+            arm("Right", shR + Vector((0.06 + 0.04 * tick, -0.32, -0.4 + 0.04 * tick)), Vector((-0.5, 0.6, -0.8)))   # 알 튕기기
         else:  # sit
             feet = {s: FEET[s] + Vector((0, -0.38, 0)) for s in FEET}                       # 발을 앞으로 내밀고
             lower_hips(-0.5, feet, dy=0.18)                                                 # 뒤로 걸터앉아요
@@ -2708,7 +2745,7 @@ if VILLAGER and "playeranim" in EXTRAS:
     if VILLAGER == "chop":
         keys = [(0, ("up", 0)), (10, ("up", 0)), (16, ("down", 0)), (28, ("down", 0)), (40, ("up", 0))]
     else:
-        n = {"well": 40, "sweep": 48, "sit": 120}[VILLAGER]
+        n = {"well": 40, "sweep": 48, "sit": 120, "shop": 80}[VILLAGER]
         keys = [(f, ("loop", f / n)) for f in range(0, n + 1, n // 8)]
     make_action("Life", keys, villager_pose)
     rig.animation_data.action = None

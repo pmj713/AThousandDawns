@@ -11,6 +11,26 @@ namespace AThousandDawns.EditorTools
 
         const string VillagePropFolder = "Assets/_Game/Art/Env/Village/Models";   // 마을 소품 (무기 거치대 부품 · 화분 · 영혼 수련 동굴 입구)
 
+        const string RoomPropFolder = "Assets/_Game/Art/Env/Rooms/Models";   // 방 소품 (객잔 술독 · 대장간 화로)
+
+        // 비도 (플레이테스트 5차: 회색 상자 대신 VARCO 비도 — 양날 강철 날, 검은 감개 손잡이, 꼭지 고리에 붉은 술, 길이 0.55).
+        //   Resources/Models/FlyingDagger.prefab: 칼끝이 +Z, 가운데가 원점 (게임 코드가 LookRotation(날아가는 쪽)으로 돌려요). 충돌체 없음.
+        //   모델 변환은 Rift/Tools~/prepare_blade.py (칼끝 → 소품 앞, 그래서 yaw 180이면 +Z)
+        const string WeaponPropFolder = "Assets/_Game/Art/Characters/Player/Weapons";
+        const string FlyingDaggerPrefabPath = "Assets/_Game/Resources/Models/FlyingDagger.prefab";
+
+        static void BuildFlyingDaggerPrefab()
+        {
+            var root = new GameObject("FlyingDagger");
+            if (VarcoProp(root.transform, "FlyingDagger", Vector3.zero, 180f, 1f, WeaponPropFolder) is Transform model)
+            {
+                foreach (var r in model.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                EnsureFolder("Assets/_Game/Resources/Models");
+                PrefabUtility.SaveAsPrefabAsset(root, FlyingDaggerPrefabPath);
+            }
+            Object.DestroyImmediate(root);
+        }
+
         static Transform VarcoProp(Transform parent, string name, Vector3 localPos, float yaw, float scale = 1f, string folder = VarcoPropFolder)
         {
             string path = $"{folder}/{name}.fbx";

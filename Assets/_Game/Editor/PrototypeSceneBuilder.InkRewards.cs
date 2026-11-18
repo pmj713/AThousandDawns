@@ -76,6 +76,8 @@ namespace AThousandDawns.EditorTools
         static GameObject RewardForge(Material stone, Material ember, Material dark, Material wood)
         {
             var t = new GameObject("Reward Forge (대장간 화로)").transform;
+            // 플레이테스트 5차: VARCO 대장간 (돌·벽돌 화로에 달군 숯, 옆에 가죽 풀무, 앞에 모루와 망치, 높이 1.35). 없으면 예전 돌 화로
+            if (VarcoProp(t, "ForgeHearth", Vector3.zero, 200f, 1f, RoomPropFolder) != null) return t.gameObject;
             Block(t, "Bowl", PrimitiveType.Cylinder, new Vector3(0f, 0.16f, 0f), new Vector3(0.6f, 0.16f, 0.6f), Quaternion.identity, stone);
             for (int k = 0; k < 3; k++)
             {
