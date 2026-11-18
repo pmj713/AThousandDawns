@@ -3230,7 +3230,7 @@ MonoBehaviour:
     unit: 
     note: "\uD3D0\uC0AC\uCC30 \uBAA9\uC5B4 \uC18C\uB9AC \uB9E4\uBCF5: \uD30C\uACC4\uC2B9 \uC218 (\uC774\uAE30\uBA74 \uD76C\uADC0 \uAE30\uBB3C)"
   - key: skill_palm.radius
-    value: 4
+    value: 5
     unit: "\uCE78"
     note: "\uAE08\uAC15\uC7A5 (\uD61C\uAD11 \uBE44\uAE09): \uC55E\uCABD \uBD80\uCC44\uAF34 \uBC18\uACBD"
   - key: skill_palm.angle

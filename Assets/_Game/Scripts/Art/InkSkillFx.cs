@@ -266,8 +266,8 @@ namespace AThousandDawns.Art
                 }
                 if (wave != null)
                 {
-                    wave.transform.position = c.From + dir * Mathf.Lerp(reach * 0.25f, reach * 0.6f, ease) + Vector3.up * 0.05f;
-                    wave.transform.localScale = waveUnit * Mathf.Lerp(0.5f, 1.1f, ease);
+                    wave.transform.position = c.From + dir * Mathf.Lerp(reach * 0.25f, reach * 0.5f, ease) + Vector3.up * 0.05f; // 다 퍼졌을 때 앞 끝 = 판정 반경 (가운데 0.5 + 폭 절반 0.5)
+                    wave.transform.localScale = waveUnit * Mathf.Lerp(0.45f, 0.91f, ease);
                     wave.color = new Color(1f, 1f, 1f, 1f - k);
                 }
                 if (k < 1f) return true;

@@ -161,7 +161,7 @@ namespace AThousandDawns.Player
             _skillHitDone = true;
             _hitThisSwing.Clear();
             Sfx.Play(SfxId.Quake); // 전용 소리가 생기기 전까지 붕산권 소리
-            float radius = GameConfig.GetOptional("skill_palm.radius", 4f);
+            float radius = GameConfig.GetOptional("skill_palm.radius", 5f);
             float angle = GameConfig.GetOptional("skill_palm.angle", 100f);
             if (swingFlash != null) swingFlash.Show(transform.position, _facing, radius, angle, 0.2f);
             SkillFx(new SkillFxCue { Kind = SkillFxKind.PalmBlast, From = transform.position, Dir = _facing, Radius = radius, Angle = angle });
