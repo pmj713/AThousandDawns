@@ -231,16 +231,38 @@ namespace AThousandDawns.EditorTools
             var toDash = sm.AddAnyStateTransition(dash);
             toDash.hasExitTime = false; toDash.duration = 0.03f; toDash.canTransitionToSelf = true;
             toDash.AddCondition(AnimatorConditionMode.If, 0f, "Dash");
+            // 비도 평타 (플레이테스트 5차): 비도를 들었으면(DaggerHold) 칼 베기 대신 왼손으로 던지는 동작 (1타 채 던지기 · 2타 내리꽂기 · 3타 부채꼴)
+            bool daggerThrows = all.ContainsKey("DaggerThrow1") && all.ContainsKey("DaggerThrow2") && all.ContainsKey("DaggerThrow3");
+            var throws = daggerThrows ? new[] { State("DaggerThrow1", 0f), State("DaggerThrow2", 0f), State("DaggerThrow3", 0f) } : new AnimatorState[0];
             for (int i = 0; i < attacks.Length; i++)
             {
                 var t = sm.AddAnyStateTransition(attacks[i]);
                 t.hasExitTime = false; t.duration = 0.04f; t.canTransitionToSelf = false;
                 t.AddCondition(AnimatorConditionMode.If, 0f, "Attack");
                 t.AddCondition(AnimatorConditionMode.Equals, i + 1, "Combo");
+                if (!daggerThrows) continue;
+                t.AddCondition(AnimatorConditionMode.IfNot, 0f, "DaggerHold");
+                var d = sm.AddAnyStateTransition(throws[i]);
+                d.hasExitTime = false; d.duration = 0.04f; d.canTransitionToSelf = false;
+                d.AddCondition(AnimatorConditionMode.If, 0f, "Attack");
+                d.AddCondition(AnimatorConditionMode.Equals, i + 1, "Combo");
+                d.AddCondition(AnimatorConditionMode.If, 0f, "DaggerHold");
+            }
+            // 비도 회수 (비도 + 회선참 자리): 칼을 휘두르는 대신 왼손바닥을 내밀었다가 주먹 쥐며 당겨요. 시전 0.35초
+            AnimatorState recall = null;
+            if (skill != null && all.ContainsKey("DaggerRecall"))
+            {
+                recall = State("DaggerRecall", 0.35f);
+                var toRecall = sm.AddAnyStateTransition(recall);
+                toRecall.hasExitTime = false; toRecall.duration = 0.03f; toRecall.canTransitionToSelf = true;
+                toRecall.AddCondition(AnimatorConditionMode.If, 0f, "Skill");
+                toRecall.AddCondition(AnimatorConditionMode.If, 0f, "DaggerHold");
+                foreach (var t in sm.anyStateTransitions)
+                    if (t.destinationState == skill) t.AddCondition(AnimatorConditionMode.IfNot, 0f, "DaggerHold");
             }
             // 대시·공격이 끝나면: 걷기 스크립트는 공격·대시 중엔 Speed를 0으로 주다가 끝나면 움직임을 풀어요.
             // 그래서 Speed가 오르면 바로 달리기로, 아니면 동작이 끝까지 돈 뒤 대기로
-            foreach (var st in attacks.Append(dash).Append(skill).Append(quake).Append(flash).Append(palm).Append(wave).Append(dashCut).Append(hurt).Where(s => s != null))
+            foreach (var st in attacks.Concat(throws).Append(recall).Append(dash).Append(skill).Append(quake).Append(flash).Append(palm).Append(wave).Append(dashCut).Append(hurt).Where(s => s != null))
             {
                 var r = st.AddTransition(run);
                 r.hasExitTime = false; r.duration = 0.1f;

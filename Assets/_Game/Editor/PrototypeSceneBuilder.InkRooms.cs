@@ -142,12 +142,29 @@ namespace AThousandDawns.EditorTools
                 for (int s = -1; s <= 1; s += 2)
                     Block(inn, "Bench", PrimitiveType.Cube, c + new Vector3(0f, 0.22f, s * 0.8f), new Vector3(1.4f, 0.14f, 0.3f), Quaternion.identity, woodMat);
             }
-            var jarMat = GetInkMaterial("Ink_Jar", "#4A3A2E", 0.35f);
-            Vector3[] jars = { new Vector3(-5.2f, 0f, -3.9f), new Vector3(-4.5f, 0f, -4.1f), new Vector3(-5.1f, 0f, -3.1f) };
-            for (int i = 0; i < jars.Length; i++)
+            // 계산대 뒤 점소이 (플레이테스트 5차: 캡슐 대신 VARCO 상점 주인 — 두건·앞치마·허리에 주판, 계산대에 손을 얹고 알을 튕기며 끄덕여요).
+            //   모델은 Villagers/Shopkeeper (prepare_enemy.py villager=shop). 있으면 게임 구도의 캡슐은 그림만 꺼요
+            var shopkeeper = SetupVillager("Shopkeeper", 0f);
+            if (shopkeeper != null)
             {
-                float s = 0.55f + i % 2 * 0.15f;
-                Block(inn, "Jar", PrimitiveType.Sphere, InnCenter + jars[i] + Vector3.up * s * 0.6f, new Vector3(s, s * 1.2f, s), Quaternion.identity, jarMat);
+                var keeper = (GameObject)PrefabUtility.InstantiatePrefab(shopkeeper);
+                keeper.name = "Shopkeeper (점소이)";
+                keeper.transform.SetParent(inn, false);
+                keeper.transform.localPosition = InnCenter + new Vector3(-3.5f, 0f, 3.75f);
+                keeper.transform.localRotation = Quaternion.identity;   // 계산대 너머 손님(카메라) 쪽을 봐요 (모델 앞이 -Z)
+                var capsule = GameObject.Find("Room_Inn/점소이");
+                if (capsule != null && capsule.TryGetComponent<Renderer>(out var cr)) cr.enabled = false;
+            }
+            // 왼쪽 아래 구석 술독 (플레이테스트 5차: 갈색 공 셋이 뭔지 몰랐어요 → VARCO 술독 셋, 붉은 천 마개와 술 주(酒) 딱지). 없으면 예전 공 술독
+            if (VarcoProp(inn, "WineJars", InnCenter + new Vector3(-4.85f, 0f, -3.75f), 20f, 1f, RoomPropFolder) == null)
+            {
+                var jarMat = GetInkMaterial("Ink_Jar", "#4A3A2E", 0.35f);
+                Vector3[] jars = { new Vector3(-5.2f, 0f, -3.9f), new Vector3(-4.5f, 0f, -4.1f), new Vector3(-5.1f, 0f, -3.1f) };
+                for (int i = 0; i < jars.Length; i++)
+                {
+                    float s = 0.55f + i % 2 * 0.15f;
+                    Block(inn, "Jar", PrimitiveType.Sphere, InnCenter + jars[i] + Vector3.up * s * 0.6f, new Vector3(s, s * 1.2f, s), Quaternion.identity, jarMat);
+                }
             }
             for (int s = -1; s <= 1; s += 2)
                 Billboard(inn, "LanternPost_A", $"{Env2DArtFolder}/LanternPost_A.png", InnCenter + new Vector3(s * 2.4f, 0f, 5.6f), 3.2f, s > 0);
