@@ -12,7 +12,7 @@ namespace AThousandDawns.Art
     //   혈영검마 혈조 (BloodShadowBrain SpikeStart · Spike): 바닥을 타고 뻗는 핏빛 예고 선 → 자리마다 핏빛 가시가 솟았다 가라앉아요
     //   녹림왕 불타는 대나무 (NokrimBrain.BambooFall): 마디진 대나무가 불붙은 채 기울다 쓰러지고, 그 자리에서 2초 타다 숯이 되어 꺼져요
     //   혈불 혈해 (BloodBuddhaBrain Pool): 반들거리는 핏물 웅덩이 + 거품. 혈불이 안에 서 있으면 붉은 빛이 몸을 감싸며 피어올라요 (회복)
-    //   철룡 닻 충격파 (IronDragonBrain Ring): 퍼지는 물결 고리 (판정 폭 그대로) + 둘레 물보라
+    //   철룡 닻 충격파 (IronDragonBrain Ring): 물마루가 말려 올라가는 3D 파도 고리가 판정 띠를 따라 퍼지고 + 흰 물보라
     //   천마: 발도 일섬 (DrawCut) 긴 흰빛 직선 · 마기 포박 (Bind) 느린 보라 구슬 · 묶임 (Bound) 플레이어 둘레 보랏빛 사슬 고리
     //         차원 베기 (RiftOpen → RiftCut) 세로 균열 셋이 벌어지고 꿰뚫는 보랏빛 선이 번쩍 · 유성 (MeteorTrack) 큰 운석 그림자가 따라와요
     //   철권 계열 (IronFistBrain): 잡아 던지기 (Grabbed) 잡는 자리 먼지 + 내동댕이친 자리 흙먼지 고리
@@ -393,31 +393,36 @@ namespace AThousandDawns.Art
             if (c.Kind == IronDragonBrain.FxKind.Ring) Host().WaveRing(c.At, c.Radius, c.Length, c.Time);
         }
 
-        // (플레이테스트 8차: 파란 물결 고리 대신) 약간 솟아오른 흙 둔덕이 고리 모양으로 바깥으로 퍼져요 — 판정 띠 두께(width) 그대로,
-        //   반경은 판정 고리와 같이 max까지 time초. 둔덕 단면은 안쪽 밑 → 꼭대기 → 바깥 밑 (꼭대기 밝은 흙, 밑 짙은 흙), 둘레가 조금씩 울퉁불퉁.
-        //   처음 0.15초에 솟아오르고 끝 15%에 가라앉아요. 둔덕을 따라 흙먼지 · 돌가루가 튀어요. 메시는 고리마다 하나, 매 프레임 꼭짓점만 다시 놓아요.
+        // (플레이테스트 8차: 얇은 선 고리 대신 "파도가 퍼지는 걸로") 물이 솟아 말려 올라가는 3D 파도 고리가 바깥으로 퍼져요.
+        //   단면: 뒤쪽 물 → 등 → 물마루(흰 포말, 판정 띠 자리) → 바깥으로 말려 나온 입술 → 아래로 말린 끝 → 앞면 → 앞 발치.
+        //   반경은 판정 고리와 같이 max까지 time초, 처음 0.15초에 솟고 끝 15%에 가라앉아요. 물마루를 따라 흰 물보라가 튀어요.
+        //   메시는 고리마다 하나, 매 프레임 꼭짓점만 다시 놓아요 (둘레가 조금씩 출렁여요).
         const int MoundSides = 64;
-        static readonly float[] MoundOffset = { -0.5f, -0.25f, 0f, 0.25f, 0.5f };
-        static readonly float[] MoundHeight = { 0f, 0.65f, 1f, 0.6f, 0f };
+        static readonly float[] MoundOffset = { -0.75f, -0.4f, 0f, 0.3f, 0.42f, 0.28f, 0.2f };   // × 띠 두께, + = 바깥
+        static readonly float[] MoundHeight = { 0f, 0.45f, 1f, 0.96f, 0.72f, 0.3f, 0f };          // × 파도 높이
+        static readonly Color[] MoundColor =
+        {
+            new Color(0.12f, 0.38f, 0.72f, 0.55f), new Color(0.25f, 0.6f, 0.92f, 0.8f), new Color(0.95f, 0.98f, 1f, 1f),
+            new Color(0.9f, 0.97f, 1f, 1f), new Color(0.75f, 0.9f, 1f, 0.95f), new Color(0.3f, 0.65f, 0.95f, 0.85f), new Color(0.15f, 0.42f, 0.78f, 0.5f),
+        };
         static Material _moundMat;
 
         void WaveRing(Vector3 at, float max, float width, float time)
         {
             at.y = 0f;
             HideRoot("충격파", at, 1f); // 임시 LineRenderer 고리는 렌더러만 꺼요 (판정 고리와 같은 반경 · 두께로 아래 둔덕이 대신 퍼져요)
-            if (_moundMat == null) _moundMat = new Material(Shader.Find("Sprites/Default")) { name = "Earth Mound" };
+            if (_moundMat == null) _moundMat = new Material(Shader.Find("Sprites/Default")) { name = "Shock Wave" };
             width = Mathf.Max(0.3f, width);
-            float height = Mathf.Clamp(width * 0.45f, 0.2f, 0.5f);
+            float height = Mathf.Clamp(width * 1.1f, 0.5f, 1f); // 파도 높이
             int rows = MoundOffset.Length;
-            var mesh = new Mesh { name = "Earth Mound Ring" };
+            var mesh = new Mesh { name = "Shock Wave Ring" };
             var verts = new Vector3[MoundSides * rows];
             var colors = new Color[verts.Length];
             var bumps = new float[MoundSides];
-            Color low = new Color(0.33f, 0.25f, 0.16f), mid = new Color(0.52f, 0.4f, 0.26f), top = new Color(0.74f, 0.62f, 0.44f);
             for (int i = 0; i < MoundSides; i++)
             {
-                bumps[i] = 1f + 0.18f * Mathf.Sin(i * 0.9f) * Mathf.Sin(i * 0.37f + 1f);
-                for (int s = 0; s < rows; s++) colors[i * rows + s] = s == 2 ? top : (s == 1 || s == 3) ? mid : low;
+                bumps[i] = i * 0.7f; // 둘레마다 출렁이는 위상
+                for (int s = 0; s < rows; s++) colors[i * rows + s] = MoundColor[s];
             }
             var tris = new int[MoundSides * (rows - 1) * 6];
             int n = 0;
@@ -434,7 +439,7 @@ namespace AThousandDawns.Art
             mesh.vertices = verts;
             mesh.colors = colors;
             mesh.triangles = tris;
-            var go = new GameObject("Earth Wave");
+            var go = new GameObject("Shock Wave");
             go.transform.SetParent(transform, false);
             go.transform.position = at;
             go.AddComponent<MeshFilter>().sharedMesh = mesh;
@@ -457,18 +462,18 @@ namespace AThousandDawns.Art
                     for (int s = 0; s < rows; s++)
                     {
                         float rr = Mathf.Max(0f, r + MoundOffset[s] * width);
-                        verts[i * rows + s] = new Vector3(cs * rr, MoundHeight[s] * height * rise * bumps[i], sn * rr);
+                        verts[i * rows + s] = new Vector3(cs * rr, MoundHeight[s] * height * rise * (1f + 0.15f * Mathf.Sin(t * 6f + bumps[i])), sn * rr);
                     }
                 }
                 mesh.vertices = verts;
                 mesh.RecalculateBounds();
                 dust -= dt;
-                if (dust <= 0f && r > 0.5f && rise > 0.3f) // 둔덕을 따라 흙먼지 · 돌가루
+                if (dust <= 0f && r > 0.5f && rise > 0.3f) // 물마루를 따라 흰 물보라
                 {
-                    dust = 0.05f;
+                    dust = 0.03f;
                     float ang = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
-                    var p = at + new Vector3(Mathf.Cos(ang), 0f, Mathf.Sin(ang)) * r;
-                    InkParticles.Burst(p + Vector3.up * 0.15f, 3, new Color(0.62f, 0.5f, 0.34f, 0.85f), new Color(0.45f, 0.36f, 0.25f, 0f), 1.4f, 0.28f, 0.5f, 0.8f);
+                    var p = at + new Vector3(Mathf.Cos(ang), 0f, Mathf.Sin(ang)) * (r + 0.2f * width);
+                    InkParticles.Burst(p + Vector3.up * height * 0.9f, 4, new Color(0.95f, 0.99f, 1f, 1f), new Color(0.4f, 0.7f, 1f, 0f), 2f, 0.18f, 0.5f, 2.2f);
                 }
                 if (k < 1f) return true;
                 Destroy(go);
