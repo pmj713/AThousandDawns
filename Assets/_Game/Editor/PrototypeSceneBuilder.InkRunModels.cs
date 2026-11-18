@@ -16,7 +16,9 @@ namespace AThousandDawns.EditorTools
             var cord = GetInkMaterial("Ink_Pouch_Cord", "#C9A04A", 0.6f);    // 금빛 끈
             var dark = GetInkMaterial("Ink_Crack_Dark", "#141210", 0f);      // 금 속 먹빛
             props.SetupModels(GetPouchMesh(), silk, GetPouchCordMesh(), cord, GetCrackStonesMesh(), stoneMat, GetCrackDarkMesh(), dark);
-            props.SetupAnchor(GetPlantedAnchorMesh(), GetInkMaterial("Ink_Anchor_Iron", "#2E3236", 0.1f));   // 쇠닻 거한이 던져 꽂은 닻
+            // 쇠닻 거한이 던져 꽂은 닻 (플레이테스트 9차: 손에 든 VARCO 쇠닻과 같은 모델 — 비스듬히 기울여 닻가지가 묻혔어요). 모델이 없으면 예전 상자 닻
+            if (PlantedVarcoAnchor() is (Mesh varcoAnchor, Material varcoIron)) props.SetupAnchor(varcoAnchor, varcoIron);
+            else props.SetupAnchor(GetPlantedAnchorMesh(), GetInkMaterial("Ink_Anchor_Iron", "#2E3236", 0.1f));
             props.SetupRewards(BuildRewardModels(stoneMat));   // 보상 방 가운데 보상: 종류마다 다른 소품 (PrototypeSceneBuilder.InkRewards.cs)
         }
 
@@ -149,6 +151,29 @@ namespace AThousandDawns.EditorTools
 
         // 땅에 비스듬히 꽂힌 쇠닻 (밑이 바닥 y=0): 굵은 닻대·가로 닻채·위 고리, 닻가지 하나는 묻히고 하나는 비죽 솟았어요.
         // 고리에서 사슬이 늘어져 땅을 따라 끌려요
+        // VARCO 쇠닻(Art/Env/Rooms/Models/IronAnchor, 높이 1.7)을 꽂힌 모양으로 굳힌 메시: 세우고(X 90°) 비스듬히 기울여(18° · 6°) 밑을 0.3 묻어요
+        static (Mesh, Material)? PlantedVarcoAnchor()
+        {
+            var holder = new GameObject("Anchor Bake").transform;
+            var model = VarcoProp(holder, "IronAnchor", Vector3.zero, 0f, 1f, RoomPropFolder);
+            if (model == null) { Object.DestroyImmediate(holder.gameObject); return null; }
+            var mf = model.GetComponentInChildren<MeshFilter>();
+            var src = mf.sharedMesh;
+            var mat = mf.GetComponent<Renderer>().sharedMaterial;
+            var toWorld = Matrix4x4.TRS(Vector3.down * 0.3f, Quaternion.Euler(18f, 0f, 6f), Vector3.one) * mf.transform.localToWorldMatrix;
+            var mesh = new Mesh { name = "Planted Iron Anchor", indexFormat = src.indexFormat };
+            mesh.vertices = System.Array.ConvertAll(src.vertices, v => toWorld.MultiplyPoint3x4(v));
+            mesh.normals = System.Array.ConvertAll(src.normals, n => toWorld.MultiplyVector(n).normalized);
+            mesh.uv = src.uv;
+            mesh.triangles = src.triangles;
+            mesh.RecalculateBounds();
+            Object.DestroyImmediate(holder.gameObject);
+            const string path = "Assets/_Game/Art/Env/Rooms/Models/PlantedAnchor_Mesh.asset";
+            AssetDatabase.DeleteAsset(path);
+            AssetDatabase.CreateAsset(mesh, path);
+            return (mesh, mat);
+        }
+
         static Mesh GetPlantedAnchorMesh()
         {
             var verts = new List<Vector3>();

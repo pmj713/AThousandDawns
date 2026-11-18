@@ -25,6 +25,50 @@ for o in list(bpy.data.objects):
     if o != obj:
         bpy.data.objects.remove(o, do_unlink=True)
 
+if len(argv) > 5 and argv[5] == "culm":
+    # 줄기만 남겨요 (대나무 잎·잔가지가 옆으로 삐져나와 있어요, 플레이테스트 9차): 잎이 없는 가운데 40% 구간에서 줄기 축(가운데)과 굵기를 재고,
+    #   어디서든 그 축에서 굵기의 1.2배보다 먼 점은 지워요
+    import bmesh, statistics
+    vs0 = [v.co.copy() for v in obj.data.vertices]
+    lo0 = [min(v[i] for v in vs0) for i in range(3)]; hi0 = [max(v[i] for v in vs0) for i in range(3)]
+    ax0 = max(range(3), key=lambda i: hi0[i] - lo0[i]); o0 = [i for i in range(3) if i != ax0]
+    a0, a1 = lo0[ax0] + (hi0[ax0] - lo0[ax0]) * 0.3, lo0[ax0] + (hi0[ax0] - lo0[ax0]) * 0.7
+    mid = [v for v in vs0 if a0 < v[ax0] < a1]
+    cx = [statistics.median(v[i] for v in mid) for i in o0]
+    dist = lambda v: ((v[o0[0]] - cx[0]) ** 2 + (v[o0[1]] - cx[1]) ** 2) ** 0.5
+    rad = statistics.median(dist(v) for v in mid)   # 줄기 겉면까지 거리 (잎이 섞여도 가운데값은 줄기)
+    bm = bmesh.new(); bm.from_mesh(obj.data)
+    kill = [v for v in bm.verts if dist(v.co) > rad * 1.2]
+    # 잎이 몰린 끝(지운 점이 많은 쪽)은 끝 마디 너머 8%를 잘라요 — 축 가까이 붙은 잎 밑동까지 떼요
+    span0 = hi0[ax0] - lo0[ax0]
+    near_hi = sum(1 for v in kill if v.co[ax0] > (lo0[ax0] + hi0[ax0]) / 2)
+    cut_hi = near_hi > len(kill) / 2
+    kill += [v for v in bm.verts if v not in kill and ((v.co[ax0] > hi0[ax0] - span0 * 0.08) if cut_hi else (v.co[ax0] < lo0[ax0] + span0 * 0.08))]
+    bmesh.ops.delete(bm, geom=kill, context='VERTS')
+    for v in bm.verts:   # 줄기 축이 원점을 지나게
+        v.co[o0[0]] -= cx[0]; v.co[o0[1]] -= cx[1]
+    bm.to_mesh(obj.data); bm.free()
+    print("BLADE culm radius", round(rad, 3), "removed", len(kill))
+
+if len(argv) > 5 and argv[5] == "largest":
+    # 가장 큰 덩어리(줄기)만 남겨요 — 대나무 잎·잔가지처럼 따로 붙은 조각을 떼어 내고, 가운데를 줄기 축에 맞춰요 (플레이테스트 9차)
+    import bmesh
+    bm = bmesh.new(); bm.from_mesh(obj.data)
+    left, parts = set(bm.verts), []
+    while left:
+        seed = left.pop(); part = {seed}; stack = [seed]
+        while stack:
+            v = stack.pop()
+            for e in v.link_edges:
+                o = e.other_vert(v)
+                if o in left:
+                    left.discard(o); part.add(o); stack.append(o)
+        parts.append(part)
+    keep = max(parts, key=len)
+    bmesh.ops.delete(bm, geom=[v for v in bm.verts if v not in keep], context='VERTS')
+    bm.to_mesh(obj.data); bm.free()
+    print("BLADE kept largest part", len(keep), "of", len(parts), "parts")
+
 vs = [v.co.copy() for v in obj.data.vertices]
 lo = Vector((min(v[i] for v in vs) for i in range(3)))
 hi = Vector((max(v[i] for v in vs) for i in range(3)))

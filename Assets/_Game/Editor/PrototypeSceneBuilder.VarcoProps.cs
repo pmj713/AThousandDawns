@@ -41,15 +41,29 @@ namespace AThousandDawns.EditorTools
 
         // 녹림왕 2페이즈 불타는 대나무 (플레이테스트 6차: 초록 원기둥 대신 VARCO 대나무 — 마디 일곱, 위에 잎 달린 잔가지, 꺾인 밑동은 그을림).
         //   Resources/Models/BurningBamboo.prefab: 밑동이 원점, 길이 1로 +Y (InkBossPatternFx가 쓰러지는 길이만큼 통째로 키워요). 충돌체 없음.
-        //   모델 변환은 prepare_blade.py (가는 끝 = 꺾인 밑동이 소품 앞 → 세우면 아래)
+        //   모델 변환은 prepare_blade.py ... culm (9차: 잎·잔가지를 떼고 줄기 축을 원점에. 가는 위 끝이 소품 앞)
         const string BurningBambooPrefabPath = "Assets/_Game/Resources/Models/BurningBamboo.prefab";
+
+        // 데스나이트 망령 기병 (플레이테스트 9차: VARCO 유령 말 + 뿔 투구 기수 한 덩어리, 높이 2.2). Resources/Models/SpectralHorse.prefab:
+        //   앞(말 머리)이 +Z, 발이 원점, 충돌체·그림자 없음. 아트 2의 InkBossPatternFx.Ride가 코드 말 대신 쓰고 반투명 청록으로 칠해요
+        static void BuildSpectralHorsePrefab()
+        {
+            var root = new GameObject("SpectralHorse");
+            if (VarcoProp(root.transform, "SpectralHorse", Vector3.zero, 180f, 1f, RoomPropFolder) is Transform model)
+            {
+                foreach (var r in model.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                EnsureFolder("Assets/_Game/Resources/Models");
+                PrefabUtility.SaveAsPrefabAsset(root, "Assets/_Game/Resources/Models/SpectralHorse.prefab");
+            }
+            Object.DestroyImmediate(root);
+        }
 
         static void BuildBurningBambooPrefab()
         {
             var root = new GameObject("BurningBamboo");
             if (VarcoProp(root.transform, "FallenBamboo", Vector3.zero, 0f, 1f, RoomPropFolder) is Transform model)
             {
-                model.localRotation = Quaternion.Euler(-90f, 0f, 0f) * model.localRotation;   // 소품 앞(밑동)이 아래로 서요
+                model.localRotation = Quaternion.Euler(90f, 0f, 0f) * model.localRotation;   // 9차: 잎을 떼니 가는 끝(소품 앞)이 위 끝이 됐어요 → 앞을 위로 세워 꺾인 밑동이 아래
                 model.localPosition = new Vector3(0f, 0.5f, 0f);
                 foreach (var r in model.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 EnsureFolder("Assets/_Game/Resources/Models");

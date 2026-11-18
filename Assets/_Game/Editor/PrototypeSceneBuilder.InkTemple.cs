@@ -42,6 +42,14 @@ namespace AThousandDawns.EditorTools
                 StripColliders(grove);
                 bamboo.Add(forest.gameObject);
                 temple.Add(grove.gameObject);
+                // 죽림 차원 겹침 (9차): 대나무 묶음 넷 중 하나를 서양 나무로 (PrototypeSceneBuilder.BambooFantasy.cs)
+                int k = 0;
+                foreach (var cluster in forest.Cast<Transform>().ToList())
+                    if (k++ % 4 == 1 && BambooFantasyTree(forest, cluster.localPosition, seed++) is Transform tree)
+                    {
+                        StripColliders(tree);
+                        cluster.gameObject.SetActive(false);
+                    }
             }
 
             // 2) 방 안 대나무 묶음 (기둥·울타리) → 무너진 절 소품
@@ -51,8 +59,15 @@ namespace AThousandDawns.EditorTools
                 float height = group.GetComponentsInChildren<Renderer>(true).Select(r => r.bounds.max.y).DefaultIfEmpty(0f).Max();
                 var piece = TempleObstacle(group.parent, group.localPosition, height, seed++, stoneMat, roofX);
                 StripColliders(piece);
-                bamboo.Add(group.gameObject);
                 temple.Add(piece.gameObject);
+                // 죽림 차원 겹침 (9차): 둘 중 하나는 대나무 대신 중세 판타지 소품 (바꾼 대나무는 꺼 둬요)
+                if (seed % 2 == 0 && group.parent != null && group.parent.name.StartsWith("Room_Floor") && BambooFantasyProp(group.parent, group.localPosition, height, seed) is Transform odd)   // 층 방만 (보스·결투장 울타리는 대나무 그대로)
+                {
+                    StripColliders(odd);
+                    group.gameObject.SetActive(false);
+                    bamboo.Add(odd.gameObject);
+                }
+                else bamboo.Add(group.gameObject);
             }
 
             // 3) 보스 방: 녹림 산채(목책·화톳불) 대신 무너진 대웅전 앞마당.

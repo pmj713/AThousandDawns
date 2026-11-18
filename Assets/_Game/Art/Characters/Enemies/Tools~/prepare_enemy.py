@@ -379,7 +379,8 @@ for w in WEAPONS:
                     box(bm, (p0 + p1) / 2, (p1 - p0).normalized(), t, (p1 - p0).length + 0.03, 0.08, 0.08)
                 fl = pts[-1]
                 box(bm, fl - dn * 0.06 + e * s * 0.05, (e * s - dn).normalized(), t, 0.2, 0.15, 0.03)
-        make(f"{NAME}_Weapon_anchor", "RightHand", build)
+        if not any(p.endswith("@anchor") for p in argv[4].split(",")):   # VARCO 닻(prop=…@anchor)이 있으면 그걸 써요 (9차)
+            make(f"{NAME}_Weapon_anchor", "RightHand", build)
     elif w == "rattan":
         # 등패 (등패수): 왼팔 바깥에 둥글고 볼록한 등나무 방패, 가운데 쇠 배꼽 (등나무 빛 _Rattan_). 소매·몸에 묻히지 않게 팔에서 17cm 띄워요
         f = B["LeftForeArm"]
@@ -492,7 +493,7 @@ for w in WEAPONS:
         make(f"{NAME}_Weapon_bomb", "RightHand", build)
 
 # ── 알아보기 쉬운 특징: VARCO로 만든 소품(prop=파일@자리)과 직접 그린 장식(banner·scarf), 나팔 부는 동작(blowhorn)
-#    prop 자리: shield(왼팔 바깥) hat(머리 위) back(등) hand_r(오른손) horn(왼손, 나팔 부는 자세에 맞춰 입에 대요)
+#    prop 자리: shield(왼팔 바깥) hat(머리 위) back(등) hand_r(오른손) horn(왼손, 나팔 부는 자세에 맞춰 입에 대요) anchor(오른손에 쥔 쇠닻)
 PROPS = [w for w in argv[4].split(",") if w.startswith("prop=")]
 EXTRAS = set(WEAPONS)
 mw = rig.matrix_world
@@ -715,6 +716,23 @@ for spec in PROPS:
         for v in o.data.vertices:
             v.co += g
         bind(o, "RightHand", f"{NAME}_Prop_{key}", key)
+    elif mount == "anchor":   # 쇠닻 거한 (플레이테스트 9차: 상자로 엮은 닻 대신 VARCO 쇠닻). 고리를 오른손에 쥐고 닻가지가 아래로 늘어져요
+        long_to(o, 2); scale_to(o, 1.45)
+        vs_ = [v.co for v in o.data.vertices]
+        lo_, hi_ = bbox(o)
+        span = hi_.z - lo_.z
+        wide_lo = max((abs(v.x) for v in vs_ if v.z < lo_.z + span * 0.15), default=0)
+        wide_hi = max((abs(v.x) for v in vs_ if v.z > hi_.z - span * 0.15), default=0)
+        if wide_hi > wide_lo:   # 닻가지(넓은 쪽)가 아래로
+            for v in o.data.vertices:
+                v.co.z = -v.co.z; v.co.x = -v.co.x
+        lo_, hi_ = bbox(o)
+        g = grip_of("Right")
+        tilt = Matrix.Rotation(math.radians(-8), 4, 'X')   # 살짝 앞으로 늘어지게 (다리에 박히지 않게)
+        for v in o.data.vertices:
+            v.co = tilt @ (v.co - Vector((0, 0, hi_.z - 0.06))) + g   # 고리 윗부분을 손에
+        # 이름에 _Weapon_anchor를 남겨요: 던진 동안 손에서 감추는 코드(InkEnemyModels)가 이 이름을 찾아요
+        bind(o, "RightHand", f"{NAME}_Prop_{key}_Weapon_anchor", f"{key}_Weapon_anchor")
     elif mount == "horn":
         long_to(o, 1); scale_to(o, 0.6)
         horn_prop = (o, key)
@@ -3378,8 +3396,11 @@ if "bossv2" in EXTRAS and NAME in ("IronFist", "GoblinChief", "Ogre", "DeathKnig
             grip = (sl + sr) / 2 + (Vector((0, 0.15, 0.7)) if up else Vector((0, -0.65, -0.45)))
             arm("Right", grip, Vector((-1, 0.3, 0))); point_blade(Vector((0, 0.6, 0.8)) if up else Vector((0, -0.7, -0.7)), wrist_bend=90)
             g, d = blade_now(); arm("Left", g - d * 0.14, Vector((1, 0.3, 0)))
-        elif stage in ("u_low", "u_up", "u_down"):   # 데스나이트 올려베기 → 내려베기
-            if stage == "u_low":
+        elif stage in ("u_low", "u_up", "u_down", "u_raise"):   # 데스나이트 올려베기 → 내려베기 · (9차) 대검 내려베기: 머리 뒤로 치켜들었다 세로로 내려찍기
+            if stage == "u_raise":
+                lower_hips(-0.08, {"Left": FEET["Left"] + Vector((0, -0.2, 0)), "Right": FEET["Right"] + Vector((0, 0.2, 0))}, dy=0.05); bend("Spine", XA, -16)
+                grip, blade = mid + Vector((0, 0.1, 0.75)), Vector((0, 0.75, 0.65))
+            elif stage == "u_low":
                 lower_hips(-0.3, {"Left": FEET["Left"] + Vector((0, -0.25, 0)), "Right": FEET["Right"] + Vector((0, 0.15, 0))}, dy=0.03); bend("Spine", XA, 22)
                 grip, blade = mid + Vector((0.1, -0.35, -0.65)), Vector((0.1, -0.5, -1))
             elif stage == "u_up":
@@ -3461,6 +3482,7 @@ if "bossv2" in EXTRAS and NAME in ("IronFist", "GoblinChief", "Ogre", "DeathKnig
         b3("BigLeap", [(0, "j_crouch"), (10, "j_crouch"), (16, "j_air"), (22, "j_smash"), (34, "j_smash"), (42, "idle")])
     elif NAME == "DeathKnight":
         b3("UpDownCut", [(0, "u_low"), (4, "u_up"), (10, "u_up"), (14, "u_down"), (22, "u_down"), (30, "idle")])
+        b3("DownCut", [(0, "idle"), (6, "u_raise"), (13, "u_raise"), (16, "u_down"), (26, "u_down"), (34, "idle")])   # 9차: 대검 내려베기 (16프레임째 판정)
         b3("DarkSink", [(0, "idle"), (8, "d_sink"), (14, "d_sink")])
         b3("DarkRise", [(0, "d_sink"), (5, "d_rise"), (14, "d_rise"), (22, "idle")])
         b3("RideCall", [(0, "idle"), (8, "r_call"), (24, "r_call"), (32, "idle")])

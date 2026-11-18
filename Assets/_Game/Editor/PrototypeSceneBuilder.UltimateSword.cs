@@ -144,6 +144,19 @@ namespace AThousandDawns.EditorTools
             EditorUtility.SetDirty(mat);
 
             var go = new GameObject("UltimateSword");
+            // 플레이테스트 9차: VARCO 무협 검(Player/Weapons/WuxiaJian, 길이 1.8 — 손에 든 칼과 같은 검)이 있으면 그걸 자식 "UltimateSwordModel"로 (코드 검은 빼요).
+            //   좌표는 같아요: 칼끝이 원점, 칼이 +Y. 아트 2의 InkUltimateFx가 이 자식이 있으면 코드 검 대신 이 프리팹을 써요
+            if (VarcoProp(go.transform, "WuxiaJian", Vector3.zero, 0f, 1f, WeaponPropFolder) is Transform jian)
+            {
+                jian.name = "UltimateSwordModel";
+                jian.localRotation = Quaternion.Euler(-90f, 0f, 0f) * jian.localRotation;   // 소품 앞(칼끝) → 아래
+                var b = jian.GetComponentInChildren<Renderer>().bounds;
+                jian.localPosition = new Vector3(-b.center.x, -b.min.y, -b.center.z);      // 칼끝을 원점에
+                foreach (var jr in jian.GetComponentsInChildren<Renderer>()) jr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                PrefabUtility.SaveAsPrefabAsset(go, UltimateSwordPrefabPath);
+                Object.DestroyImmediate(go);
+                return;
+            }
             go.AddComponent<MeshFilter>().sharedMesh = mesh;
             var r = go.AddComponent<MeshRenderer>();
             r.sharedMaterial = mat;
