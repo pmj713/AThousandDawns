@@ -99,6 +99,8 @@ namespace AThousandDawns.EditorTools
         // 공격 예고 테두리: 흰 직선 대신 짙은 먹 붓선 (한 바퀴를 붓 한 획으로 그은 듯, 마른 붓 결)
         static Material GetInkBrushOutlineMaterial()
         {
+            var kept = AssetDatabase.LoadAssetAtPath<Material>($"{Env2DMaterialFolder}/Ink_Telegraph_Outline.mat"); // 아트가 색 · 결을 맞춰 뒀으면 그대로 (다시 만들 때 덮어쓰지 않아요)
+            if (kept != null) return kept;
             var mat = GetBrushTextureMaterial("Ink_Telegraph_Outline", $"{RunPropsArtFolder}/BrushLine.png", new Color(0.08f, 0.06f, 0.06f, 0.9f));
             mat.SetFloat("_Grain", 0.3f);
             return mat;
