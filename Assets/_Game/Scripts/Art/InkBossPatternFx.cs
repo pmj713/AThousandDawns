@@ -62,6 +62,8 @@ namespace AThousandDawns.Art
             IronFistBrain.FarLeapDescending += OnFarLeapDescending;
             GoblinChiefBrain.TrapThrown -= OnTrap;
             GoblinChiefBrain.TrapThrown += OnTrap;
+            GoblinChiefBrain.TrapLanded -= OnTrapLanded;
+            GoblinChiefBrain.TrapLanded += OnTrapLanded;
             OgreBrain.Enraged -= OnOgreEnraged;
             OgreBrain.Enraged += OnOgreEnraged;
             DeathKnightBrain.SpectralRide -= OnRide;
@@ -792,10 +794,29 @@ namespace AThousandDawns.Art
 
         // (플레이테스트 8차: 덫은 던진 뒤 예고 원이 0.7초 차오르고 나서 GhostFire "덫"이 생겨요)
         //   던지는 순간(TrapThrown) 족장 손에서 쇠덫이 빙글 돌며 포물선으로 날아가 0.7초 뒤 떨어질 자리에 내려앉고,
-        //   그때 생긴 "덫" 장판을 찾아 하늘색 원판을 끄고 톱니 원을 깔아요 (장판이 끝나면 같이 걷혀요).
+        //   덫이 깔리는 순간 (GoblinChiefBrain.TrapLanded: 자리 · 덫 장판) 그 장판의 하늘색 원판을 끄고 판정 반경에 톱니 원을 깔아요 (장판이 끝나면 같이 걷혀요).
         const float TrapFlight = 0.7f;
 
         static void OnTrap(GoblinChiefBrain chief, Vector3 at) => Host().Trap(chief != null ? chief.transform.position : at, at);
+
+        // 덫이 실제로 깔린 순간: 날아가는 쇠덫 중 그 자리에 가장 가까운 것에 장판을 넘겨요 (이름으로 찾지 않아요)
+        sealed class PendingTrap { public Vector3 At; public GhostFire Zone; }
+        readonly List<PendingTrap> _pendingTraps = new List<PendingTrap>();
+
+        static void OnTrapLanded(GoblinChiefBrain chief, Vector3 at, GhostFire zone)
+        {
+            if (zone == null) return;
+            var h = Host();
+            at.y = 0f;
+            PendingTrap best = null;
+            float bestD = 1f;
+            foreach (var p in h._pendingTraps)
+            {
+                float d = (p.At - at).sqrMagnitude;
+                if (p.Zone == null && d < bestD) { bestD = d; best = p; }
+            }
+            if (best != null) best.Zone = zone;
+        }
 
         void Trap(Vector3 from, Vector3 at)
         {
@@ -828,7 +849,9 @@ namespace AThousandDawns.Art
             GhostFire zone = null;
             LineRenderer saw = null;
             SpriteRenderer floor = null;
-            float radius = 0.9f, look = 0f;
+            float radius = 0.9f;
+            var pending = new PendingTrap { At = at };
+            _pendingTraps.Add(pending);
             bool tracked = false, settled = false;
             float t = 0f, close = -1f, life = TrapFlight + 6f;
             _live.Add(dt =>
@@ -848,24 +871,15 @@ namespace AThousandDawns.Art
                     root.SetPositionAndRotation(at, Quaternion.identity);
                     InkParticles.Burst(at + Vector3.up * 0.1f, 8, new Color(0.7f, 0.6f, 0.45f, 0.9f), new Color(0.5f, 0.4f, 0.3f, 0f), 1.2f, 0.25f, 0.5f, 0f);
                 }
-                look -= dt;
-                if (saw == null && !tracked && look <= 0f && t < TrapFlight + 0.8f) // 장판이 생길 때까지 0.1초마다 찾아요
+                if (!tracked && pending.Zone != null) // 덫이 깔린 순간 (GoblinChiefBrain.TrapLanded가 장판을 넘겨줘요)
                 {
-                    look = 0.1f;
-                    float best = 1f;
-                    foreach (var f in FindObjectsByType<GhostFire>())
-                    {
-                        float d = (new Vector3(f.transform.position.x, 0f, f.transform.position.z) - at).sqrMagnitude;
-                        if (d < best && f.name == "덫") { best = d; zone = f; }
-                    }
-                    if (zone != null)
-                    {
-                        tracked = true;
-                        radius = zone.transform.localScale.x * 0.5f;
-                        var source = zone.GetComponent<Renderer>();
-                        if (source != null) source.enabled = false;
-                    }
+                    zone = pending.Zone;
+                    tracked = true;
+                    radius = zone.transform.localScale.x * 0.5f;
+                    var source = zone.GetComponent<Renderer>(); // 하늘색 원판은 렌더러만 꺼요
+                    if (source != null) source.enabled = false;
                 }
+                if (tracked || t >= TrapFlight + 0.8f) _pendingTraps.Remove(pending); // 신호를 받았거나 기다릴 만큼 기다렸어요
                 if (saw == null && (tracked || t >= TrapFlight + 0.8f) && t < life)
                 {
                     saw = SawRing(at, radius);
