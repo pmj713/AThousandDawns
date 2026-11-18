@@ -171,12 +171,13 @@ namespace AThousandDawns.Tests
             Assert.Less(Vector3.Distance(new Vector3(at.x, 0f, at.z), new Vector3(fire.transform.position.x, 0f, fire.transform.position.z)), 0.1f);
         }
 
-        // 분열: 쓰러지면 정예가 아닌 같은 적 둘 (체력 35%), 터지는 적 · 숨는 청죽사는 분열 없음
+        // 분열: 쓰러지면 정예가 아닌 같은 적 둘 (체력 35%), 모든 적에게 붙어요
         [UnityTest]
         public IEnumerator 분열은_쓰러지면_작은_둘로_갈라짐()
         {
-            Assert.IsFalse(EnemyBrain.Allows(EnemyKind.Bomber, EliteTrait.Split), "자폭형 + 분열");
-            Assert.IsFalse(EnemyBrain.Allows(EnemyKind.Snake, EliteTrait.Split), "숨는 청죽사 + 분열");
+            Assert.IsTrue(EnemyBrain.Allows(EnemyKind.Bomber, EliteTrait.Split), "자폭형도 분열");
+            Assert.IsTrue(EnemyBrain.Allows(EnemyKind.Slime, EliteTrait.Split), "슬라임도 분열");
+            Assert.IsTrue(EnemyBrain.Allows(EnemyKind.Snake, EliteTrait.Split), "청죽사는 이제 숨지 않아 분열 돼요");
             yield return LoadScene();
             var plain = _director.Spawn(EnemyKind.Grunt, _player.transform.position + new Vector3(-4f, 0f, 6f));
             float baseHealth = plain.Damageable.MaxHealth;

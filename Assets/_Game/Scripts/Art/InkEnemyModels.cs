@@ -177,14 +177,12 @@ namespace AThousandDawns.Art
         bool _splitShown;
         int _auraTraits;
         bool _frozenShown, _statusShown;   // 빙결로 동작을 멈췄는지 · 상태 이상 기운을 보이는 중인지
-        bool _alliedShown;                 // 협력한 적 보랏빛 가장자리를 보이는 중인지
         HeavenlyDemonBrain _demon;          // 마검사 천마: 페이즈 기운 · 순간이동 흐려짐
         string _demonAttack;
         bool _blinkFade, _fadeUsed;
         float _fade;
         static readonly Color DemonViolet = new Color(0.62f, 0.3f, 1f), DemonBlue = new Color(0.3f, 0.55f, 1f), DemonFlame = new Color(1f, 0.38f, 0.1f);
         Transform _lastRival;              // 마지막으로 노린 다른 진영 적 (그 적에게 쓰러지면 그 반대쪽으로 넘어가요)
-        static readonly Color AlliedGlow = new Color(0.62f, 0.3f, 1f, 1f);   // 차원 균열과 같은 보랏빛
         MaterialPropertyBlock _overlayBlock;
         bool _overlayUsed;
 
@@ -268,17 +266,8 @@ namespace AThousandDawns.Art
                 ApplyOverlay();
                 return;
             }
-            // 협력한 적 (차원 겹침, EnemyBrain.Allied): 몸 가장자리에 은은한 보랏빛 차원 기운이 숨 쉬어요 (발밑 원·차원 끈은 아트 2의 InkRivalFx).
-            //   상태 이상보다 뒤, 정예 기운보다 앞이에요
+            // 협력한 적 (차원 겹침, EnemyBrain.Allied)은 표시 없어요 (몸 기운 · 발밑 원 · 끈 모두 정예와 헷갈려서 뺐어요)
             if (_brain.Rival != null) _lastRival = _brain.Rival.transform;
-            if (_brain.Allied && !_brain.IsDead)
-            {
-                _aura = new Color(AlliedGlow.r, AlliedGlow.g, AlliedGlow.b, 0.3f + 0.12f * Mathf.Sin(Time.time * 1.8f));
-                _alliedShown = true;
-                ApplyOverlay();
-                return;
-            }
-            if (_alliedShown) { _alliedShown = false; _aura = Color.clear; _auraTraits = -1; ApplyOverlay(); }
 
             // 특성이 둘 이상인 정예: 특성 색 기운 (특성이 늘면 다시 섞어요)
             int count = _brain.IsElite ? _brain.Traits.Count : 0;
