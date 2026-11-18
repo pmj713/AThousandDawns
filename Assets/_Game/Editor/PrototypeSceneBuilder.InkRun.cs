@@ -40,6 +40,7 @@ namespace AThousandDawns.EditorTools
             BuildUltimateSwordPrefab(); // 만검귀종 떨어지는 검 3D 모델 (Resources/Models/UltimateSword, 아트 2의 InkUltimateFx가 끼워요)
             BuildFlyingDaggerPrefab();  // 비도 3D 모델 (Resources/Models/FlyingDagger, 게임 코드 PlayerController.NewDagger가 끼워요)
             BuildBurningBambooPrefab(); // 녹림왕 불타는 대나무 3D 모델 (Resources/Models/BurningBamboo, InkBossPatternFx가 끼워요)
+            BuildSpectralHorsePrefab(); // 데스나이트 망령 기병 3D 모델 (Resources/Models/SpectralHorse, 아트 2의 InkBossPatternFx.Ride가 끼워요)
             OptimizeInkScene(scene);   // 그림자·정적 배칭 (PrototypeSceneBuilder.InkPerf.cs)
             CheckScriptFiles(scene);
             EditorSceneManager.SaveScene(scene, InkRunScenePath);

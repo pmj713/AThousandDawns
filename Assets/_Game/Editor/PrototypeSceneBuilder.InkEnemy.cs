@@ -302,6 +302,7 @@ namespace AThousandDawns.EditorTools
             {
                 new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },
                 new MoveSpec { attack = "대검 올려베기", state = "UpDownCut", clips = new[] { "UpDownCut" } },
+                new MoveSpec { attack = "대검 내려베기", state = "DownCut", clips = new[] { "DownCut" } },   // 9차: 근접 공격은 머리 뒤로 치켜들었다 세로로 내려찍기
                 new MoveSpec { attack = "어둠 걸음", state = "DarkWalk", clips = new[] { "DarkRise" } },
                 new MoveSpec { state = "RideCall", clips = new[] { "RideCall" }, mode = MoveMode.Play },
                 new MoveSpec { state = "CurseWave", clips = new[] { "CurseWave" }, mode = MoveMode.Play, seconds = 0.9f },

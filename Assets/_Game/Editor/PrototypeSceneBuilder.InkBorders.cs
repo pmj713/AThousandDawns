@@ -109,6 +109,23 @@ namespace AThousandDawns.EditorTools
                 }
             }
             Debug.Log($"[수묵 시험판] 지역별 방 테두리: 담 {walls}개");
+            HideCorridorWalls();
+        }
+
+        // 출구 통로(문 너머 2.5칸) 양옆·끝을 두른 벽돌 담과 기와 (플레이테스트 9차: 다음 곳으로 가는 출구를 담으로 막아 둔 것처럼 보였어요) → 그림만 꺼요.
+        //   충돌 상자는 그대로라 통로 밖으로 새지 않아요. 통로 바닥은 그대로 보여요
+        static void HideCorridorWalls()
+        {
+            int hidden = 0;
+            foreach (var r in Object.FindObjectsByType<Renderer>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                var t = r.transform;
+                var wall = t.name.StartsWith("Corridor_") ? t : t.parent != null && t.parent.name.StartsWith("Corridor_") ? t.parent : null;
+                if (wall == null || wall.name.EndsWith("Floor")) continue;
+                r.enabled = false;
+                hidden++;
+            }
+            Debug.Log($"[수묵 시험판] 출구 통로 담 그림 끔: {hidden}개");
         }
 
         // 폐사찰 담 (플레이테스트 6차: 통째 모델 대신 부품 이어 붙이기). VARCO 담 한 칸(TempleWallSegment: 돌 기단·바랜 주홍 회벽·양끝 검은 나무 기둥, 높이 2)을

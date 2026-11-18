@@ -172,6 +172,19 @@ namespace AThousandDawns.EditorTools
             visual.localScale = new Vector3(1f / s.x, 1f / s.y, 1f / s.z);
             visual.position = new Vector3(gate.position.x, 0f, gate.position.z);
 
+            // 플레이테스트 9차: 상자 연석 테두리 대신 VARCO 관문 (금빛 룬을 새긴 회색 돌 둘레, 푸른 수정 몇 조각, 지름 약 3 · 높이 0.4).
+            //   가운데 먹 소용돌이는 그대로 돌아요. 모델이 없으면 예전 연석
+            float vortexY = 0.04f;
+            if (VarcoProp(visual, "PortalGate", Vector3.zero, 0f, 1f, RoomPropFolder) is Transform ring)
+            {
+                var b = ring.GetComponentInChildren<Renderer>().bounds;
+                float k = 3.1f / Mathf.Max(0.01f, Mathf.Max(b.size.x, b.size.z));
+                ring.localScale = new Vector3(k, k, k);
+                b = ring.GetComponentInChildren<Renderer>().bounds;
+                ring.position += new Vector3(visual.position.x - b.center.x, -0.02f - b.min.y, visual.position.z - b.center.z);
+                vortexY = 0.3f;   // 관문 우물 바닥 위로 (안 올리면 돌 바닥에 묻혀 소용돌이가 안 보였어요)
+            }
+            else
             for (int i = 0; i < 8; i++)
             {
                 float a = i * 45f + 22.5f;
@@ -182,7 +195,7 @@ namespace AThousandDawns.EditorTools
             {
                 var spin = new GameObject("Vortex").transform;
                 spin.SetParent(visual, false);
-                spin.localPosition = Vector3.up * 0.04f;
+                spin.localPosition = Vector3.up * vortexY;
                 spin.gameObject.AddComponent<AThousandDawns.Art.InkSpin>();
                 var card = new GameObject("Card").transform;
                 card.SetParent(spin, false);

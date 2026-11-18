@@ -227,6 +227,15 @@ namespace AThousandDawns.EditorTools
             Material Recolor(Material m, string hex) { if (ColorUtility.TryParseHtmlString(hex, out var col)) { m.SetColor("_BaseColor", col); EditorUtility.SetDirty(m); } return m; }
             Material Cloth(string name, string hex, float sat) => Recolor(ink ? GetInkMaterial($"Ink_Player{name}", hex, sat) : GetMaterial($"Player{name}", hex, false), hex);
             Recolor(sword, PlayerSwordColor);
+            // 플레이테스트 9차: 손에 든 칼이 VARCO 무협 검이면(animate_player.py가 Player_Sword_Albedo.png를 꺼내요) 그 그림을 입혀요
+            if (ink && AssetDatabase.LoadAssetAtPath<Texture2D>($"{PlayerPartsFolder}/Player_Sword_Albedo.png") is Texture2D swordTex)
+            {
+                sword.SetTexture("_BaseMap", swordTex);
+                sword.SetColor("_BaseColor", Color.white);
+                FantasyLook(sword);
+                sword.SetFloat("_OutlineWidth", 1.2f);
+                EditorUtility.SetDirty(sword);
+            }
             var clothDark = Cloth("ClothDark", ClothDarkColor, 0.1f);
             var clothLight = Cloth("ClothLight", ClothLightColor, 0.1f);
             var clothRed = Cloth("ClothRed", ClothRedColor, 0.85f);

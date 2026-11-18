@@ -106,6 +106,55 @@ def build_sword():
     edge = hand_dir                                                       # 날 방향
     flat = t.cross(edge).normalized()                                     # 칼 두께 방향
     grip_c = knuckles - hand_dir * 0.02 + palm * 0.03                     # 주먹 안 가운데
+    # 플레이테스트 9차: 만검귀종 검과 같은 VARCO 무협 검(Weapons/Source~/WuxiaJian.glb)이 있으면 그걸 쥐어요.
+    #   긴 축 → 칼 축(t), 가는 끝(칼끝)이 엄지 쪽, 얇은 축 → 칼 두께(flat). 길이는 코드 칼과 같게 (꼭지 -0.13 ~ 칼끝 0.82)
+    jian = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Weapons", "Source~", "WuxiaJian.glb")
+    if os.path.isfile(jian):
+        import numpy as np
+        before = set(bpy.data.objects)
+        bpy.ops.import_scene.gltf(filepath=os.path.abspath(jian))
+        new = [o for o in bpy.data.objects if o not in before]
+        ms = [o for o in new if o.type == 'MESH']
+        bpy.ops.object.select_all(action='DESELECT')
+        for o in ms:
+            o.select_set(True)
+        bpy.context.view_layer.objects.active = ms[0]
+        if len(ms) > 1:
+            bpy.ops.object.join()
+        obj = bpy.context.view_layer.objects.active
+        bpy.ops.object.parent_clear(type='CLEAR_KEEP_TRANSFORM')
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        for o in new:
+            if o != obj and o.name in bpy.data.objects:
+                bpy.data.objects.remove(o, do_unlink=True)
+        pts = np.array([v.co[:] for v in obj.data.vertices])
+        c0 = pts.mean(axis=0)
+        _, _, vt = np.linalg.svd(pts - c0, full_matrices=False)
+        ax_long, ax_thin = Vector(vt[0].tolist()), Vector(vt[2].tolist())
+        d = (pts - c0) @ np.array(ax_long[:])
+        lo_, hi_ = d.min(), d.max()
+        r = np.linalg.norm((pts - c0) - np.outer(d, np.array(ax_long[:])), axis=1)
+        if r[d > hi_ - (hi_ - lo_) * 0.06].max() > r[d < lo_ + (hi_ - lo_) * 0.06].max():   # 굵은 끝(꼭지·술)이 + 쪽이면 뒤집어 칼끝을 +로
+            ax_long = -ax_long; d = -d; lo_, hi_ = -hi_, -lo_
+        k = 0.95 / (hi_ - lo_)
+        side = ax_long.cross(ax_thin).normalized()
+        for v, dv in zip(obj.data.vertices, d):
+            p = Vector(v.co[:]) - Vector(c0.tolist())
+            along = (dv - lo_) * k - 0.13
+            v.co = grip_c + t * along + flat * (p.dot(ax_thin) * k) + edge * (p.dot(side) * k)
+        img = next((n.image for m in obj.data.materials if m and m.use_nodes for n in m.node_tree.nodes if n.type == 'TEX_IMAGE' and n.image), None)
+        if img is not None:
+            img.filepath_raw = os.path.join(os.path.dirname(out_fbx), "Player_Sword_Albedo.png"); img.file_format = 'PNG'; img.save()
+        obj.name = "Player_Sword"
+        obj.data.name = "Player_Sword"
+        dec = obj.modifiers.new("Dec", 'DECIMATE'); dec.ratio = min(1.0, 3000 / max(1, len(obj.data.polygons)))
+        bpy.context.view_layer.objects.active = obj
+        bpy.ops.object.modifier_apply(modifier=dec.name)
+        obj.vertex_groups.new(name="RightHand").add(list(range(len(obj.data.vertices))), 1.0, 'REPLACE')
+        obj.parent = rig
+        obj.modifiers.new("Armature", 'ARMATURE').object = rig
+        print("SWORD VARCO jian", len(obj.data.polygons), "faces")
+        return obj
     bm = bmesh.new()
 
     def box(center_along, length, w, th, start=None):

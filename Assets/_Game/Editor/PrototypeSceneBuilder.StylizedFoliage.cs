@@ -42,6 +42,12 @@ namespace AThousandDawns.EditorTools
             var m = StalkStyle(GetInkTriplanar("Ink3D_BambooLeafPaint", "Tex_LeafPaint", 0.5f, 0f), 0.3f, 0f);   // 가는 잎은 외곽선 없이
             // 플레이 테스트 3차: 그래도 움직일 때마다 깜빡였어요 — 줄기·다른 잎 그림자 경계가 카메라를 따라 얇은 잎 위를 오가요. 잎은 그림자를 받지 않아요
             m.SetFloat("_ShadowReceive", 0f);
+            // 플레이테스트 9차: 잎 색이 바래고 회색 사선 얼룩이 끼었어요 — 마른 붓 결(사선 줄)·옅은 얼룩·번짐·종이 결이 월드 좌표에 칠해져서,
+            //   바람에 흔들리는 잎 위로 미끄러지며 군데군데 잎을 회색으로 바래게 했어요 → 그 넷을 끄고 잎 그림 초록만 남겨요
+            m.SetFloat("_StreakLight", 0f);
+            m.SetFloat("_PatchLight", 0f);
+            m.SetFloat("_WashNoiseStrength", 0f);
+            m.SetFloat("_PaperGrain", 0f);
             EditorUtility.SetDirty(m);
             return m;
         }
