@@ -21,12 +21,20 @@ namespace AThousandDawns.EditorTools
 
         static void BuildFlyingDaggerPrefab()
         {
-            var root = new GameObject("FlyingDagger");
-            if (VarcoProp(root.transform, "FlyingDagger", Vector3.zero, 180f, 1f, WeaponPropFolder) is Transform model)
+            BuildBladePrefab("FlyingDagger", FlyingDaggerPrefabPath);
+            // 버들잎 표창 기물 (플레이테스트 8차: VARCO 버들잎 날 — 가운데 능선, 검은 감개 손잡이, 고리에 초록 술, 길이 0.4). 비도와 같은 규칙.
+            //   아트 2의 InkRuntimeDress가 "버들잎 표창" 루트에 끼워요
+            BuildBladePrefab("WillowDart", "Assets/_Game/Resources/Models/WillowDart.prefab");
+        }
+
+        static void BuildBladePrefab(string name, string prefabPath)
+        {
+            var root = new GameObject(name);
+            if (VarcoProp(root.transform, name, Vector3.zero, 180f, 1f, WeaponPropFolder) is Transform model)
             {
                 foreach (var r in model.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 EnsureFolder("Assets/_Game/Resources/Models");
-                PrefabUtility.SaveAsPrefabAsset(root, FlyingDaggerPrefabPath);
+                PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
             }
             Object.DestroyImmediate(root);
         }

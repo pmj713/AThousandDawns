@@ -10,6 +10,8 @@ from mathutils.bvhtree import BVHTree
 
 TARGET_TRIS = 16000
 CLEARANCE = 0.006       # 몸 표면에서 최소 이만큼 띄워요
+HEM_SMOOTH_STEPS = 14   # 옷 끝(열린 가장자리) 다듬기 횟수
+LEG_WEIGHT_SMOOTH = 6   # 바지·아랫자락의 골반·다리 가중치 고르기 횟수
 WAIST_EASE = 0.035      # 허리 둘레 여유 (반지름)
 
 
@@ -314,7 +316,7 @@ def fit(rig, parts, glb):
             continue
         # 다리에서 멀리 떨어진 천(치마 자락)일수록 골반 쪽으로
         dl = min(math.hypot(v.co.x - l.x, v.co.y - l.y) for l in legs)
-        loose = max(0.0, min(1.0, (dl - 0.09) / 0.08))
+        loose = max(0.0, min(1.0, (dl - 0.15) / 0.08))   # 8차: 0.09면 통 넓은 바지까지 골반을 따라가 다리를 내디디면 앞이 찢어져 보였어요 → 바지보다 바깥 자락만
         if loose <= 0:
             continue
         side = max(0.0, min(1.0, 0.5 + v.co.x / 0.16))
@@ -325,6 +327,49 @@ def fit(rig, parts, glb):
         for nm, w in (("Hips", 1 - leg), ("LeftUpperLeg", leg * side), ("RightUpperLeg", leg * (1 - side))):
             if w > 0.001:
                 outfit.vertex_groups[nm].add([v.index], w, 'REPLACE')
+
+    # 바지·아랫자락 가중치 고르기 (플레이테스트 8차: 비도를 던지며 다리를 벌리고 골반을 틀면 바지 엉덩이·가랑이가 찢어져 보였어요).
+    #   이웃한 점이 왼다리 · 오른다리 · 골반에 딱 갈려 있어서 그 사이 면이 길게 늘어났어요. 허리 아래 점만, 골반·두 넓적다리 가중치를
+    #   이웃 점 평균 쪽으로 여러 번 섞어 다리 사이를 부드럽게 이어요 (팔·소매 가중치는 건드리지 않아요)
+    LEGW = ("Hips", "LeftUpperLeg", "RightUpperLeg")
+    gi = {nm: outfit.vertex_groups[nm].index for nm in LEGW if nm in outfit.vertex_groups}
+    nbrs = {v.index: [] for v in me.vertices}
+    for e in me.edges:
+        a_, b_ = e.vertices
+        nbrs[a_].append(b_); nbrs[b_].append(a_)
+
+    def legw(v):
+        return {nm: next((g.weight for g in v.groups if g.group == i), 0.0) for nm, i in gi.items()}
+    lower = [v.index for v in me.vertices if knee_z - 0.05 < v.co.z < waist_z - 0.04 and sum(legw(v).values()) > 0.5]
+    for _ in range(LEG_WEIGHT_SMOOTH):
+        cur = {i: legw(me.vertices[i]) for i in set(lower) | {n for i in lower for n in nbrs[i]}}
+        for i in lower:
+            ns = nbrs[i]
+            if not ns:
+                continue
+            tot = sum(cur[i].values())
+            mix = {nm: cur[i][nm] * 0.5 + 0.5 * sum(cur[n][nm] for n in ns) / len(ns) for nm in gi}
+            s = sum(mix.values()) or 1.0
+            for nm, w in mix.items():
+                outfit.vertex_groups[nm].add([i], w * tot / s, 'REPLACE')
+    print("OUTFIT smoothed leg weights verts", len(lower))
+
+    # 옷 끝 다듬기 (플레이테스트 8차: 도포 아랫단·소매 끝이 뾰족뾰족 튀어나와 지저분했어요). 가중치를 다 정한 뒤에 해요 (먼저 하면 소매 끝 점이 몸통 가중치를 받아 길게 늘어났어요)
+    #   열린 가장자리(천 끝) 점만 양옆 가장자리 점의 가운데로 조금씩 당기기를 되풀이해요 → 삐죽한 끝이 줄어들고 단이 매끈한 곡선이 돼요
+    import bmesh as _bm
+    bm = _bm.new(); bm.from_mesh(me)
+    edge_verts = [v for v in bm.verts if v.is_boundary]
+    for _ in range(HEM_SMOOTH_STEPS):
+        moved = {}
+        for v in edge_verts:
+            nb = [e.other_vert(v) for e in v.link_edges if e.is_boundary]
+            if len(nb) == 2:
+                moved[v] = v.co.lerp((nb[0].co + nb[1].co) * 0.5, 0.5)
+        for v, c in moved.items():
+            v.co = c
+    bm.to_mesh(me); bm.free()
+    print("OUTFIT smoothed hem verts", len(edge_verts))
+
 
     # 색별로 나눠 이름 붙이기
     made = []

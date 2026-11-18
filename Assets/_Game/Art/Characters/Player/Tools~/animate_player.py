@@ -768,13 +768,13 @@ actions.append((act, 0, 40))
 def dagger_throw_pose(twist, lean, hand_at, pole, curl, crouch=0.0, step=0.0):
     # 플레이테스트 7차: 윗몸만 움직이고 하체가 가만히 있어 어색했어요 → 골반을 같이 틀고, 던질 때 앞발(오른발)을 반 걸음 내디디며 무릎을 굽혀 무게를 실어요
     dagger_idle_pose(0)
-    set_rot("Hips", (Z, -twist * 0.35))                                      # 골반부터 틀어요 (+twist = 오른쪽 어깨를 뒤로 감기)
+    set_rot("Hips", (Z, -twist * 0.2))                                       # 골반부터 틀어요 (+twist = 오른쪽 어깨를 뒤로 감기). 8차: 많이 틀면 바지가 찢어져 보여 0.35 → 0.2
     set_rot("Spine", (X, 5 + lean), (Z, 18 - twist * 0.45)); set_rot("Chest", (Z, 8 - twist * 0.3))
     set_rot("Neck", (Z, twist * 0.8))                                        # 시선은 앞에
     set_hips_height(-0.08 - crouch - 0.05 * step)
     bpy.context.view_layer.update()
-    _limb("RightUpperLeg", "RightLowerLeg", "RightFoot", Q_FOOT["Right"] + Vector((-0.02, -0.24 - 0.2 * step, 0)), Vector((0, -1, 0)))   # 앞발 내딛기
-    _limb("LeftUpperLeg", "LeftLowerLeg", "LeftFoot", Q_FOOT["Left"] + Vector((0.02, 0.14 + 0.06 * step, 0)), Vector((0, -1, 0)))
+    _limb("RightUpperLeg", "RightLowerLeg", "RightFoot", Q_FOOT["Right"] + Vector((-0.02, -0.24 - 0.1 * step, 0)), Vector((0, -1, 0)))   # 앞발 내딛기 (8차: 보폭이 크면 바지가 늘어나 찢어져 보여 0.2 → 0.1)
+    _limb("LeftUpperLeg", "LeftLowerLeg", "LeftFoot", Q_FOOT["Left"] + Vector((0.02, 0.14 + 0.03 * step, 0)), Vector((0, -1, 0)))
     set_rot("LeftFoot", (X, 25 * step))                                      # 뒷발 뒤꿈치가 들려요
     bpy.context.view_layer.update()
     hand("Right", curl, curl * 0.5)
