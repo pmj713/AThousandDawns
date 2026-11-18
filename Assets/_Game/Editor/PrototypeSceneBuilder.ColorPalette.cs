@@ -101,6 +101,26 @@ namespace AThousandDawns.EditorTools
         // 단청: 절 건물 기둥은 붉은 칠(주칠), 기둥머리에 청록 띠. 돌·마을 나무와 따로 써요
         static Material s_templeLacquer, s_dancheongBand;
 
+        // 폐사찰 돌 소품(비석·돌기둥·석탑·석등·무너진 돌담 조각)과 그 지붕돌 (플레이테스트 6차: 분홍빛 도는 밝은 돌·남색 지붕돌이 차분해진 바닥·주홍 담과 겉돌았어요)
+        //   → 이끼 낀 잿빛 화강암, 지붕돌은 어두운 이끼 잿빛
+        static Material s_templeStone, s_templeCap;
+
+        static Material TempleStone()
+        {
+            if (s_templeStone == null) s_templeStone = GetInkTriplanar("Ink3D_TempleStone", "Tex_Stone", 1f, 1.5f);
+            s_templeStone.SetColor("_BaseColor", new Color(0.66f, 0.66f, 0.6f, 1f));
+            EditorUtility.SetDirty(s_templeStone);
+            return s_templeStone;
+        }
+
+        static Material TempleCapStone()
+        {
+            if (s_templeCap == null) s_templeCap = GetInkTriplanar("Ink3D_TempleCap", "Tex_Stone", 0.8f, 1.5f);
+            s_templeCap.SetColor("_BaseColor", new Color(0.42f, 0.46f, 0.42f, 1f));
+            EditorUtility.SetDirty(s_templeCap);
+            return s_templeCap;
+        }
+
         static Material TempleLacquer()
         {
             if (s_templeLacquer == null) s_templeLacquer = GetInkTriplanar("Ink3D_TempleLacquer", "Tex_Wood", 1f, 2f);

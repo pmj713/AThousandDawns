@@ -186,6 +186,12 @@ namespace AThousandDawns.EditorTools
             var group = new GameObject("Brazier (화톳불)").transform;
             group.SetParent(parent, false);
             group.position = foot;
+            // 플레이테스트 6차: VARCO 화톳불 (돌무더기 위 세 발 쇠 화로에 장작, 곁에 묶은 말뚝, 높이 1.6). 불꽃 카드는 그 위에서 흔들려요. 없으면 예전 돌 화로
+            if (VarcoProp(group, "Brazier", Vector3.zero, seed * 53f % 360f, 1f, RoomPropFolder) != null)
+            {
+                FlameCards(group.parent, foot + Vector3.up * 0.95f, 1.0f, 3, seed * 23f);
+                return;
+            }
             Rock(group, "Bowl", Vector3.zero, 0.9f, seed, seed * 37f, stoneMat, false);
             FlameCards(group.parent, foot + Vector3.up * 0.45f, 1.3f, 3, seed * 23f);
         }

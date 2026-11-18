@@ -51,6 +51,23 @@ namespace AThousandDawns.Art
             _lastPosition = transform.position;
         }
 
+        // 비도를 들면 오른손 칼(Player_Sword)을 숨겨요 (플레이테스트 6차: 비도 무기인데 칼이 그대로 보였어요). 칼은 처음 한 번만 찾아요
+        Renderer _sword;
+        bool _swordSearched, _swordShown = true;
+
+        void ShowSword(bool show)
+        {
+            if (!_swordSearched)
+            {
+                _swordSearched = true;
+                foreach (var r in _animator.GetComponentsInChildren<Renderer>(true))
+                    if (r.name == "Player_Sword") { _sword = r; break; }
+            }
+            if (_sword == null || show == _swordShown) return;
+            _swordShown = show;
+            _sword.enabled = show;
+        }
+
         void OnDestroy()
         {
             if (_combo != null) _combo.SwingStarted -= OnSwingStarted;
@@ -94,6 +111,7 @@ namespace AThousandDawns.Art
             }
             _animator.SetBool(CombatId, _combat);
             _animator.SetBool(DaggerHoldId, _player.UsesDagger);
+            ShowSword(!_player.UsesDagger);
             bool dashing = _player.IsDashing;
             if (dashing && !_wasDashing)
             {

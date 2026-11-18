@@ -39,6 +39,7 @@ namespace AThousandDawns.EditorTools
             AddVillageBlockers();      // 닭장·장작더미·빨랫줄·사당을 통째로 막는 상자
             BuildUltimateSwordPrefab(); // 만검귀종 떨어지는 검 3D 모델 (Resources/Models/UltimateSword, 아트 2의 InkUltimateFx가 끼워요)
             BuildFlyingDaggerPrefab();  // 비도 3D 모델 (Resources/Models/FlyingDagger, 게임 코드 PlayerController.NewDagger가 끼워요)
+            BuildBurningBambooPrefab(); // 녹림왕 불타는 대나무 3D 모델 (Resources/Models/BurningBamboo, InkBossPatternFx가 끼워요)
             OptimizeInkScene(scene);   // 그림자·정적 배칭 (PrototypeSceneBuilder.InkPerf.cs)
             CheckScriptFiles(scene);
             EditorSceneManager.SaveScene(scene, InkRunScenePath);

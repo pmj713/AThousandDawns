@@ -451,9 +451,13 @@ namespace AThousandDawns.EditorTools
 
         // 폐사찰 바탕: 바닥 무늬(깨진 돌판 마당) · 먼 배경(무너진 절 산수화) · 흩날리는 낙엽과 재 · 바닥에 깔린 옅은 안개.
         // InkRegionLook이 지역에 맞는 것만 켜고 바닥 재질 무늬를 바꿔요
+        // 폐사찰 방 바닥: Floor_Temple.png를 살짝 흐리게·대비 0.42·채도 45%·조금 어둡게 (Blender로 한 번 만든 그림)
+        const string TempleCalmFloor = "Assets/_Game/Art/Env/Temple/Floor_TempleCalm.png";
+
         static void DressTempleLook(Material floorMat, AThousandDawns.Art.InkRegionDressing dressing)
         {
             ImportAsTiledTexture($"{TempleArtFolder}/Floor_Temple.png");
+            ImportAsTiledTexture(TempleCalmFloor);   // 플레이테스트 6차: 방 바닥은 대비를 낮춘 판 (적·비도가 묻혔어요)
             ImportAsSprite($"{TempleArtFolder}/Source/Backdrop_Temple.png");
 
             // 먼 배경: 죽림 배경(Backdrop_Ink) 자리마다 폐사찰 배경을 같이 세우고 둘 중 하나만 켜요
@@ -532,7 +536,7 @@ namespace AThousandDawns.EditorTools
 
             var look = new GameObject("Ink Region Look").AddComponent<AThousandDawns.Art.InkRegionLook>();
             look.Setup(floorMat,
-                new Texture[] { BambooGroundTexture(), AssetDatabase.LoadAssetAtPath<Texture2D>($"{TempleArtFolder}/Floor_Temple.png"), RiverGroundTexture(), AssetDatabase.LoadAssetAtPath<Texture2D>(TombFloor) },
+                new Texture[] { BambooGroundTexture(), AssetDatabase.LoadAssetAtPath<Texture2D>(TempleCalmFloor), RiverGroundTexture(), AssetDatabase.LoadAssetAtPath<Texture2D>(TombFloor) },
                 new[] { bambooGroup, templeGroup, templeGroup, templeGroup },
                 new[] { new GameObject("죽림 분위기 (없음)"), air, riverAir, tombAir },
                 dressing);
@@ -550,6 +554,8 @@ namespace AThousandDawns.EditorTools
         // 대나무 묶음 자리의 절 소품: 키 큰 자리는 돌기둥·석탑·석등·비석을 돌아가며, 낮은 자리(카메라 쪽)는 무너진 돌담 조각
         static Transform TempleObstacle(Transform parent, Vector3 foot, float height, int seed, Material stoneMat, Material roofX)
         {
+            stoneMat = TempleStone();     // 플레이테스트 6차: 비석·돌기둥 색을 폐사찰 톤으로 (ColorPalette.cs)
+            roofX = TempleCapStone();
             var group = new GameObject("Temple Ruin").transform;
             group.SetParent(parent, false);
             group.localPosition = foot;

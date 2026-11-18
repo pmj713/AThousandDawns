@@ -241,10 +241,23 @@ namespace AThousandDawns.Art
             pivot.position = hinge;
             float d = Mathf.Clamp(width * 0.45f, 0.18f, 0.45f);
             var green = new Color(0.45f, 0.72f, 0.18f);
-            var stem = Solid(pivot, PrimitiveType.Cylinder, new Vector3(0f, length * 0.5f, 0f), new Vector3(d, length * 0.5f, d), Quaternion.identity, green);
-            var nodes = new List<Renderer> { stem };
-            for (float y = 1.4f; y < length - 0.3f && nodes.Count < 16; y += 1.4f)
-                nodes.Add(Solid(pivot, PrimitiveType.Cylinder, new Vector3(0f, y, 0f), new Vector3(d * 1.2f, 0.05f, d * 1.2f), Quaternion.identity, new Color(0.25f, 0.42f, 0.1f)));
+            Renderer stem = null;
+            var nodes = new List<Renderer>();
+            // 플레이테스트 6차: VARCO 대나무 (Resources/Models/BurningBamboo: 밑동이 원점, 길이 1로 +Y, 꺾인 밑동은 그을렸어요). 길이에 맞춰 통째로 키워요
+            var model = BambooModel != null ? Instantiate(BambooModel, pivot, false) : null;
+            if (model != null)
+            {
+                model.transform.localScale = Vector3.one * length;
+                model.GetComponentsInChildren(true, _modelRenderers);
+                foreach (var r in _modelRenderers) { r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; nodes.Add(r); }
+            }
+            else
+            {
+                stem = Solid(pivot, PrimitiveType.Cylinder, new Vector3(0f, length * 0.5f, 0f), new Vector3(d, length * 0.5f, d), Quaternion.identity, green);
+                nodes.Add(stem);
+                for (float y = 1.4f; y < length - 0.3f && nodes.Count < 16; y += 1.4f)
+                    nodes.Add(Solid(pivot, PrimitiveType.Cylinder, new Vector3(0f, y, 0f), new Vector3(d * 1.2f, 0.05f, d * 1.2f), Quaternion.identity, new Color(0.25f, 0.42f, 0.1f)));
+            }
             var fire = InkParticles.Fire(pivot, Vector3.zero, 0.5f, 1f);
             InkParticles.EmitBox(fire, new Vector3(0f, length * 0.5f, 0f), new Vector3(d * 1.5f, length, d * 1.5f), 1.2f);
             InkParticles.SetRate(fire, length * 2f);
@@ -296,7 +309,8 @@ namespace AThousandDawns.Art
                 if (landed) // 타면서 숯빛으로
                 {
                     float c = Mathf.Clamp01((t - fall) / burn);
-                    foreach (var r in nodes) if (r != null) Tint(r, Color.Lerp(r == stem ? green : new Color(0.25f, 0.42f, 0.1f), new Color(0.13f, 0.08f, 0.06f), c));
+                    if (model != null) foreach (var r in nodes) { if (r != null) TintBase(r, Color.Lerp(Color.white, new Color(0.2f, 0.13f, 0.1f), c)); }   // 모델은 그림 색에 곱해요
+                    else foreach (var r in nodes) if (r != null) Tint(r, Color.Lerp(r == stem ? green : new Color(0.25f, 0.42f, 0.1f), new Color(0.13f, 0.08f, 0.06f), c));
                     if (c >= 1f && fire != null) { InkParticles.SetRate(fire, 0f); }
                     float sink = Mathf.Clamp01((t - fall - burn) / 0.6f);
                     pivot.position = hinge + Vector3.down * (sink * d * 2.5f);
@@ -1222,6 +1236,26 @@ namespace AThousandDawns.Art
             r.receiveShadows = false;
             Tint(r, color);
             return r;
+        }
+
+        // VARCO 모델(채색 캐릭터 셰이더)은 _BaseColor가 그림 색에 곱해져요
+        static void TintBase(Renderer r, Color color)
+        {
+            r.GetPropertyBlock(_block);
+            _block.SetColor("_BaseColor", color);
+            r.SetPropertyBlock(_block);
+        }
+
+        static GameObject _bambooModel;
+        static bool _bambooLoaded;
+        static readonly List<Renderer> _modelRenderers = new List<Renderer>();
+        static GameObject BambooModel
+        {
+            get
+            {
+                if (!_bambooLoaded) { _bambooLoaded = true; _bambooModel = Resources.Load<GameObject>("Models/BurningBamboo"); }
+                return _bambooModel;
+            }
         }
 
         static void Tint(Renderer r, Color color)

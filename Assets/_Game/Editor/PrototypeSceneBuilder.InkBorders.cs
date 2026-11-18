@@ -39,7 +39,12 @@ namespace AThousandDawns.EditorTools
                     var caps = new List<Transform>();
                     foreach (Transform c in wall) if (c.name.StartsWith("RoofCap")) caps.Add(c);
                     Transform ruin;
-                    if (length >= 6f)
+                    if (TempleModularWall(wall, s, alongX, length, height, center) is Transform modular)
+                    {
+                        ruin = modular;
+                        foreach (var c in caps) Object.DestroyImmediate(c.gameObject);
+                    }
+                    else if (length >= 6f)
                     {
                         ruin = RuinWall(wall, r.sharedMaterial, roofX, roofZ, seed++, center);
                         ruin.name = $"Border 폐사찰 ({wall.name})";
@@ -104,6 +109,46 @@ namespace AThousandDawns.EditorTools
                 }
             }
             Debug.Log($"[수묵 시험판] 지역별 방 테두리: 담 {walls}개");
+        }
+
+        // 폐사찰 담 (플레이테스트 6차: 통째 모델 대신 부품 이어 붙이기). VARCO 담 한 칸(TempleWallSegment: 돌 기단·바랜 주홍 회벽·양끝 검은 나무 기둥, 높이 2)을
+        //   담 길이에 맞춰 칸 수를 정해 가로로 늘여 잇고, 그 위에 기와 한 칸(TempleRoofTile)을 칸마다 얹어요. 앞면은 방 안쪽을 봐요.
+        //   모델이 없으면 null (예전 무너진 기와 담). 충돌은 원래 상자가 맡아요
+        static Transform TempleModularWall(Transform wall, Vector3 s, bool alongX, float length, float height, Vector3 roomCenter)
+        {
+            const string Folder = "Assets/_Game/Art/Env/Temple/Models";
+            if (AssetDatabase.LoadAssetAtPath<GameObject>($"{Folder}/TempleWallSegment.fbx") == null) return null;
+            var shape = Unscaled(wall, "Border 폐사찰", s, alongX);
+            shape.parent.name = $"Border 폐사찰 ({wall.name})";
+            float inside = shape.InverseTransformPoint(roomCenter).z;
+            float yaw = inside < 0f ? 0f : 180f;   // 소품 앞(-Z)이 방 쪽으로
+            float wallH = Mathf.Max(height * 1.25f, 1.9f);   // 충돌 상자보다 조금 높게 (화면 위쪽 담이 낮아 보이지 않게)
+
+            // 모델 메시 축: X 너비 · Y 두께 · Z 높이. VARCO 담은 두께가 2m 가까운 상자로 나와서 두께를 0.45로 눌러 판 담으로 써요.
+            //   기와 한 칸은 긴 쪽이 메시 Y라 90도 돌려 담을 따라 눕히고, 길이·두께·높이를 칸에 맞춰요
+            Vector3 Size(Transform t) => t.GetComponentInChildren<MeshFilter>().sharedMesh.bounds.size;
+            var first = VarcoProp(shape, "TempleWallSegment", Vector3.zero, yaw, 1f, Folder);
+            var size = Size(first);
+            int n = Mathf.Max(1, Mathf.RoundToInt(length / (size.x * wallH / size.z)));
+            float segW = length / n;
+            Object.DestroyImmediate(first.gameObject);
+            bool roof = AssetDatabase.LoadAssetAtPath<GameObject>($"{Folder}/TempleRoofTile.fbx") != null;
+            for (int i = 0; i < n; i++)
+            {
+                float x = -length * 0.5f + segW * (i + 0.5f);
+                var seg = VarcoProp(shape, "TempleWallSegment", new Vector3(x, -height * 0.5f, 0f), yaw, 1f, Folder);
+                seg.localScale = new Vector3(segW / size.x * 1.01f, 0.45f / size.y, wallH / size.z);   // 이음매가 벌어지지 않게 1% 겹쳐요
+                float floorY = shape.TransformPoint(new Vector3(0f, -height * 0.5f, 0f)).y;
+                var segBounds = seg.GetComponentInChildren<Renderer>().bounds;
+                seg.position += Vector3.up * (floorY - 0.03f - segBounds.min.y);   // 메시 밑면이 원점이 아니라서 재서 바닥에 붙여요
+                if (!roof) continue;
+                var tile = VarcoProp(shape, "TempleRoofTile", new Vector3(x, 0f, 0f), yaw + 90f, 1f, Folder);
+                var ts = Size(tile);
+                tile.localScale = new Vector3(0.95f / ts.x, segW * 1.03f / ts.y, 0.5f / ts.z);
+                float wallTop = segBounds.max.y + (floorY - 0.03f - segBounds.min.y);
+                tile.position += Vector3.up * (wallTop - 0.12f - tile.GetComponentInChildren<Renderer>().bounds.min.y);   // 담 머리에 얹어요
+            }
+            return shape;
         }
 
         // 담(크기를 늘린 상자) 아래, 크기를 되돌린 묶음: 담 가운데가 원점이고 담 길이 방향이 +X (Z로 놓인 담이면 90도 돌려요)

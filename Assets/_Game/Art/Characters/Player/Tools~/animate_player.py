@@ -737,21 +737,20 @@ actions.append((act, 0, 40))
 
 
 # 비도 전투 대기(CombatIdleDagger): 무게를 낮추고 몸을 반쯤 튼 채, 손가락을 반쯤 펴 비도를 끼운 듯
-#   왼손은 앞으로 내밀어 비도를 겨눠요 (칼은 오른손에 쥔 채 허리 뒤로 늘어뜨려요)
+#   오른손을 앞으로 내밀어 비도를 겨누고 왼손은 검결로 가슴 앞에 (플레이테스트 6차: 비도는 오른손, 칼은 게임에서 숨겨요)
 def dagger_idle_pose(t):
     ready_pose()
     b = math.sin(t * 2 * math.pi)
-    set_rot("Spine", (X, 5 + 1.5 * b), (Z, -18)); set_rot("Chest", (Z, -8))
+    set_rot("Spine", (X, 5 + 1.5 * b), (Z, 18)); set_rot("Chest", (Z, 8))   # 오른쪽 어깨가 앞으로
     set_hips_height(-0.08 - 0.01 * b)
     bpy.context.view_layer.update()
-    _limb("LeftUpperLeg", "LeftLowerLeg", "LeftFoot", Q_FOOT["Left"] + Vector((0.02, -0.24, 0)), Vector((0, -1, 0)))
-    _limb("RightUpperLeg", "RightLowerLeg", "RightFoot", Q_FOOT["Right"] + Vector((-0.02, 0.14, 0)), Vector((0, -1, 0)))
-    hands(30, 55, GRIP_THUMB)                                                # 손가락을 반쯤 펴 비도를 끼운 듯
+    _limb("RightUpperLeg", "RightLowerLeg", "RightFoot", Q_FOOT["Right"] + Vector((-0.02, -0.24, 0)), Vector((0, -1, 0)))
+    _limb("LeftUpperLeg", "LeftLowerLeg", "LeftFoot", Q_FOOT["Left"] + Vector((0.02, 0.14, 0)), Vector((0, -1, 0)))
+    hands(45, 30, 20)                                                        # 오른손가락을 반쯤 펴 비도를 끼운 듯
     r = pose["RightUpperArm"].head.copy()
-    _limb("RightUpperArm", "RightLowerArm", "RightHand", r + Vector((-0.12, 0.12, -0.38 + 0.01 * b)), Vector((-1, 0.3, -0.4)))   # 칼은 허리 뒤로 늘어뜨려요
-    aim_sword(Vector((-0.1, 0.45, -0.88)))
+    _limb("RightUpperArm", "RightLowerArm", "RightHand", r + Vector((0.05, -0.5, -0.08 + 0.01 * b)), Vector((-1, 0.3, -0.6)))   # 앞으로 겨눠요
     l = pose["LeftUpperArm"].head.copy()
-    _limb("LeftUpperArm", "LeftLowerArm", "LeftHand", l + Vector((-0.05, -0.5, -0.08)), Vector((1, 0.3, -0.6)))   # 앞으로 겨눠요
+    _limb("LeftUpperArm", "LeftLowerArm", "LeftHand", l + Vector((-0.14, -0.3, -0.12)), Vector((1, 0.4, -0.6)))   # 검결: 가슴 앞
 
 
 act = new_action("CombatIdleDagger")
@@ -760,29 +759,30 @@ for f in range(0, 41, 8):
 actions.append((act, 0, 40))
 
 
-# 비도 평타 (플레이테스트 5차: 칼 베기 동작을 그대로 써서 던지는 게 안 보였어요). 칼은 오른손에 쥔 채 허리 뒤, 왼손으로 던져요.
-#   DaggerThrow1 (1타 · 10프레임): 왼손을 오른 어깨 앞으로 감았다가 손등 쪽으로 앞으로 채 던져요 (손가락이 펴지며 놓아요)
-#   DaggerThrow2 (2타 · 10프레임): 왼손을 귀 옆 위로 치켜들었다가 몸을 숙이며 앞으로 내리꽂듯 던져요
-#   DaggerThrow3 (3타 부채꼴 3발 · 15프레임): 오른쪽 뒤로 깊게 감았다가 허리째 돌며 왼팔을 수평으로 크게 쓸어 펼쳐 던져요
-#   DaggerRecall (회수 · 10프레임): 왼손바닥을 앞으로 펴 내밀었다가 주먹을 쥐며 가슴으로 홱 당겨요 (비도가 손으로 돌아와요)
+# 비도 평타 (플레이테스트 5차: 칼 베기 동작을 그대로 써서 던지는 게 안 보였어요). 오른손으로 던져요 (6차: 왼손 → 오른손, 칼은 게임에서 숨겨요).
+#   아래 표는 "던지는 손 기준"으로 적었어요 (X는 바깥이 +). 함수가 오른손 쪽으로 좌우를 뒤집어요
+#   DaggerThrow1 (1타 · 10프레임): 오른손을 왼 어깨 앞으로 감았다가 손등 쪽으로 앞으로 채 던져요 (손가락이 펴지며 놓아요)
+#   DaggerThrow2 (2타 · 10프레임): 오른손을 귀 옆 위로 치켜들었다가 몸을 숙이며 앞으로 내리꽂듯 던져요
+#   DaggerThrow3 (3타 부채꼴 3발 · 15프레임): 왼쪽 뒤로 깊게 감았다가 허리째 돌며 오른팔을 수평으로 크게 쓸어 펼쳐 던져요
+#   DaggerRecall (회수 · 10프레임): 오른손바닥을 앞으로 펴 내밀었다가 주먹을 쥐며 가슴으로 홱 당겨요 (비도가 손으로 돌아와요)
 def dagger_throw_pose(twist, lean, hand_at, pole, curl, crouch=0.0):
     dagger_idle_pose(0)
-    set_rot("Spine", (X, 5 + lean), (Z, -18 + twist * 0.6)); set_rot("Chest", (Z, -8 + twist * 0.4))
-    set_rot("Neck", (Z, -twist * 0.5))                                       # 시선은 앞에
+    set_rot("Spine", (X, 5 + lean), (Z, 18 - twist * 0.6)); set_rot("Chest", (Z, 8 - twist * 0.4))
+    set_rot("Neck", (Z, twist * 0.5))                                        # 시선은 앞에
     if crouch:
         set_hips_height(-0.08 - crouch)
         bpy.context.view_layer.update()
-        _limb("LeftUpperLeg", "LeftLowerLeg", "LeftFoot", Q_FOOT["Left"] + Vector((0.02, -0.24, 0)), Vector((0, -1, 0)))
-        _limb("RightUpperLeg", "RightLowerLeg", "RightFoot", Q_FOOT["Right"] + Vector((-0.02, 0.14, 0)), Vector((0, -1, 0)))
+        _limb("RightUpperLeg", "RightLowerLeg", "RightFoot", Q_FOOT["Right"] + Vector((-0.02, -0.24, 0)), Vector((0, -1, 0)))
+        _limb("LeftUpperLeg", "LeftLowerLeg", "LeftFoot", Q_FOOT["Left"] + Vector((0.02, 0.14, 0)), Vector((0, -1, 0)))
     bpy.context.view_layer.update()
-    hand("Left", curl)
-    l = pose["LeftUpperArm"].head.copy()
-    _limb("LeftUpperArm", "LeftLowerArm", "LeftHand", l + Vector(hand_at), Vector(pole))
+    hand("Right", curl, curl * 0.5)
+    r = pose["RightUpperArm"].head.copy()
+    _limb("RightUpperArm", "RightLowerArm", "RightHand", r + Vector((-hand_at[0], hand_at[1], hand_at[2])), Vector((-pole[0], pole[1], pole[2])))
 
 
 DAGGER_CLIPS = {
     "DaggerThrow1": [(0, None),
-                     (3, (-28, 2, (-0.36, -0.16, -0.14), (1, 0.6, -0.4), 70)),        # 오른 어깨 앞으로 감기
+                     (3, (-28, 2, (-0.36, -0.16, -0.14), (1, 0.6, -0.4), 70)),        # 반대쪽(왼) 어깨 앞으로 감기
                      (5, (14, 6, (0.02, -0.56, -0.02), (1, 0.3, -0.6), 5)),           # 채 던지기 (놓음)
                      (7, (20, 5, (0.22, -0.46, -0.08), (1, 0.3, -0.6), 15)),
                      (10, None)],
@@ -792,7 +792,7 @@ DAGGER_CLIPS = {
                      (7, (8, 14, (-0.04, -0.5, -0.24), (1, 0.3, -0.6), 15)),
                      (10, None)],
     "DaggerThrow3": [(0, None),
-                     (4, (-40, 4, (-0.42, -0.04, -0.18), (1, 0.8, -0.3), 75, 0.05)),   # 오른쪽 뒤로 깊게 감기
+                     (4, (-40, 4, (-0.42, -0.04, -0.18), (1, 0.8, -0.3), 75, 0.05)),   # 반대쪽(왼쪽) 뒤로 깊게 감기
                      (6, (-10, 8, (-0.16, -0.56, -0.04), (1, 0.3, -0.6), 10, 0.07)),  # 앞으로 쓸며
                      (8, (16, 8, (0.16, -0.52, -0.04), (1, 0.3, -0.6), 0, 0.07)),     # 펼쳐 던지기
                      (10, (30, 6, (0.4, -0.3, -0.06), (0.6, 0.6, -0.6), 0, 0.06)),
