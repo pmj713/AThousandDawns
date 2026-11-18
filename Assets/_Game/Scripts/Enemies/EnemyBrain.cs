@@ -277,6 +277,14 @@ namespace AThousandDawns.Enemies
             return d;
         }
 
+        // 맞히기 판정용: 노리는 적이 있어도 언제나 진짜 플레이어까지 (ToPlayer는 Rival 쪽이라, 다른 적을 들이받을 때 멀리 있는 플레이어가 맞던 것)
+        protected Vector3 ToRealPlayer()
+        {
+            Vector3 d = Player.transform.position - transform.position;
+            d.y = 0f;
+            return d;
+        }
+
         protected Vector3 Strafe(Vector3 toPlayerDir) => Vector3.Cross(Vector3.up, toPlayerDir) * StrafeSign;
 
         // 사선이 막혔을 때 쏠 자리로 옮기는 옆 방향: 옆걸음처럼 때마다 뒤집히지 않고 한쪽으로 꾸준히 (벽에 막히면 그때 뒤집어요)

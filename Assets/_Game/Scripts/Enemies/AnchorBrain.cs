@@ -159,7 +159,7 @@ namespace AThousandDawns.Enemies
 
         void CheckHit()
         {
-            if (_hitPlayer || ToPlayer().magnitude > _width * 0.5f + PlayerRadius) return;
+            if (_hitPlayer || ToRealPlayer().magnitude > _width * 0.5f + PlayerRadius) return;
             _hitPlayer = TryHitPlayer();
         }
 

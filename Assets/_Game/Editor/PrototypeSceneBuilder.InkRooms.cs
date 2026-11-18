@@ -55,6 +55,7 @@ namespace AThousandDawns.EditorTools
             DressRest(deco, stoneMat, roofX, ref seed);
 
             StripColliders(deco);
+            InnTableBlockers(deco); // 꾸밈 충돌체를 다 뺀 뒤, 객잔 탁자만 다시 막아요 (캐릭터가 통과하던 것)
         }
 
         // 녹림왕 방: 북쪽 울타리 뒤 목책, 북쪽 모서리 화톳불 둘, 대나무 숲에 숨긴 불꽃 (불타는 죽림이 붙으면 번져요)
@@ -106,13 +107,32 @@ namespace AThousandDawns.EditorTools
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
+        static readonly Vector3[] InnTables = { new Vector3(3.2f, 0f, -1.2f), new Vector3(3.4f, 0f, 2.3f), new Vector3(-3.6f, 0f, -1.6f) };
+
+        // 객잔 탁자 자리 (의자까지 덮는 보이지 않는 상자) · 술독 자리
+        static void InnTableBlockers(Transform deco)
+        {
+            var root = new GameObject("Inn Table Blockers").transform;
+            root.SetParent(deco, false);
+            foreach (var t in InnTables)
+            {
+                var go = new GameObject("Table Blocker");
+                go.transform.SetParent(root, false);
+                go.transform.localPosition = InnCenter + t + new Vector3(0f, 0.5f, 0f); // 탁자 Block과 같은 기준 (꾸밈 루트 기준)
+                go.AddComponent<BoxCollider>().size = new Vector3(1.5f, 1f, 1.9f);
+            }
+            var jars = new GameObject("Wine Jar Blocker"); // 왼쪽 아래 술독 셋 (메인 아트 VARCO, 지름 약 1.2)
+            jars.transform.SetParent(root, false);
+            jars.transform.localPosition = InnCenter + new Vector3(-4.85f, 0.5f, -3.75f);
+            jars.AddComponent<CapsuleCollider>().radius = 0.7f;
+        }
+
         // 객잔: 손님 탁자·긴 의자 셋, 구석 항아리, 입구 양옆 등불. 가운데 길(입구 → 북쪽 문)과 계산대 앞은 비워요
         static void DressInn(Transform deco, Material woodMat, Material roofX)
         {
             var inn = new GameObject("Inn (객잔)").transform;
             inn.SetParent(deco, false);
-            Vector3[] tables = { new Vector3(3.2f, 0f, -1.2f), new Vector3(3.4f, 0f, 2.3f), new Vector3(-3.6f, 0f, -1.6f) };
-            foreach (var t in tables)
+            foreach (var t in InnTables)
             {
                 var c = InnCenter + t;
                 Block(inn, "Table", PrimitiveType.Cube, c + new Vector3(0f, 0.7f, 0f), new Vector3(1.4f, 0.1f, 0.9f), Quaternion.identity, woodMat);

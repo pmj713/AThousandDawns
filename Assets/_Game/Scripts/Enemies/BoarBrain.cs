@@ -117,7 +117,7 @@ namespace AThousandDawns.Enemies
         void CheckHit()
         {
             if (_hitPlayer) return;
-            Vector3 to = ToPlayer();
+            Vector3 to = ToRealPlayer(); // 다른 적을 들이받는 중에도 플레이어는 돌진 폭 안일 때만 맞아요
             if (to.magnitude > _width * 0.5f + PlayerRadius) return;
             _hitPlayer = TryHitPlayer();
             if (_hitPlayer) OnChargeHit();

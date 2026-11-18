@@ -14,7 +14,7 @@ namespace AThousandDawns.Enemies
     //   팔 휘두르기: 가까울 때 부채꼴 반경 3.5칸 120°를 좌우로 세 번 (0.45초 간격) ×0.8
     //   피의 비: 플레이어 둘레에 핏방울 (예고 0.7초, 반경 1칸)이 0.4초 간격 6번 ×0.5 + 출혈 (플레이어 화상 1중첩)
     //   손바닥 연타: 첫 손바닥 뒤 0.4초 간격으로 두 번 더, 그때 플레이어 자리에 (서 있으면 맞아요)
-    //   혈해: 12초마다 (예고 0.8초, 그동안 멈춰 서요) 발밑에 피 웅덩이 (반경 3칸, 6초, 깐 자리에 그대로).
+    //   혈해: 12초마다 (예고 0.8초, 그동안 멈춰 서요) 예고를 시작할 때의 플레이어 자리에 피 웅덩이 (반경 3칸, 6초, 깐 자리에 그대로).
     //         혈불이 안에 서 있으면 초당 최대 체력 1% 회복, 플레이어가 안에 있으면 0.5초마다 ×0.2
     //   멀리서만 싸우면 손바닥 내려찍기가 플레이어 자리로 따라와요 (혈수는 없어졌어요 — 끌어당기기는 철룡만)
     //   목탁승 부르기는 그대로, 염불 대신 피의 비
@@ -71,6 +71,7 @@ namespace AThousandDawns.Enemies
         float _palmGap, _palmFollowTimer;
         float _decisionTimer, _transitionTimer, _chantTimer, _summonTimer, _activeTimer;
         Vector3 _zoneCenter;
+        Vector3 _poolAt;
         Vector2 _zoneSize = new Vector2(24f, 18f);   // 보스 방 크기 (BossSize)
         readonly List<Mark> _marks = new List<Mark>();
         readonly List<BloodPool> _pools = new List<BloodPool>();
@@ -204,6 +205,7 @@ namespace AThousandDawns.Enemies
                 case Pattern.Pool:
                     WindupTime = _poolWindup; RecoveryTime = _poolRecovery;
                     _poolTimer = _poolInterval;
+                    _poolAt = new Vector3(Player.transform.position.x, 0f, Player.transform.position.z); // 플레이어 자리에 깔려요
                     break;
                 case Pattern.Summon:
                     WindupTime = 0.8f; RecoveryTime = 0.5f;
@@ -225,6 +227,12 @@ namespace AThousandDawns.Enemies
         protected override void TickWindup(float dt, bool tracking)
         {
             if (_pattern == Pattern.Arms && tracking) FaceToward(ToPlayer());
+        }
+
+        protected override void UpdateTelegraph()
+        {
+            base.UpdateTelegraph();
+            if (_pattern == Pattern.Pool && Telegraph != null) Telegraph.SetPose(_poolAt, Vector3.forward); // 혈해 예고는 플레이어 자리에
         }
 
         protected override List<Vector2> TelegraphShape() => _pattern switch
@@ -323,7 +331,7 @@ namespace AThousandDawns.Enemies
 
         void CastPool()
         {
-            Vector3 at = new Vector3(transform.position.x, 0f, transform.position.z);
+            Vector3 at = _poolAt;
             var go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             go.name = "혈해";
             EnemyFactory.StripCollider(go);

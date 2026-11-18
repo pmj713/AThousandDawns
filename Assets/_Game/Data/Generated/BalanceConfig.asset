@@ -3369,6 +3369,10 @@ MonoBehaviour:
     value: 0.25
     unit: 
     note: "\uBAA9\uD0C1\uC2B9 \uAC00\uD638: \uBA3C\uC800 \uB9C9\uB294 \uD53C\uD574 (\uADF8 \uC801 \uCD5C\uB300 \uCCB4\uB825 \uBE44\uC728)"
+  - key: moktak.ward_boss_ratio
+    value: 0.05
+    unit: 
+    note: "\uBAA9\uD0C1 \uAC00\uD638\uAC00 \uBCF4\uC2A4\uC5D0\uAC8C \uAC78\uB9B4 \uB54C (\uCD5C\uB300 \uCCB4\uB825 \uBE44\uC728)"
   - key: lantern.orbit
     value: 2.5
     unit: cell

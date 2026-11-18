@@ -88,7 +88,7 @@ namespace AThousandDawns.Enemies
         {
             SetHidden(false);
             _surfaceLeft = _surfaceTime;
-            if (ToPlayer().magnitude > AttackRange + PlayerRadius) return;
+            if (ToRealPlayer().magnitude > AttackRange + PlayerRadius) return;
             if (!TryHitPlayer()) return;
             _dragLeft = _dragTime; // 붙잡아 끌고 가요 (그동안 크게 느려져서 버티기 어려워요)
             Player.ApplySlow(_dragSlow, _dragTime);

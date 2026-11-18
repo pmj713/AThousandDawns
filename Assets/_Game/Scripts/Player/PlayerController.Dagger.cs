@@ -90,18 +90,33 @@ namespace AThousandDawns.Player
             }
         }
 
+        static GameObject _daggerModel;
+        static bool _daggerModelLoaded;
+
         Dagger NewDagger(Vector3 at)
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = "비도";
-            var col = go.GetComponent<Collider>();
-            col.enabled = false; // Destroy는 프레임 끝에 지워져서, 그 사이 캐릭터가 이 충돌 상자 위로 밀려 올라가지 않게 먼저 꺼요
-            Destroy(col);
-            go.transform.position = at;
-            go.transform.localScale = new Vector3(0.08f, 0.08f, 0.5f);
-            var rend = go.GetComponent<Renderer>();
-            if (_daggerMat == null) _daggerMat = new Material(rend.sharedMaterial) { color = new Color(0.82f, 0.84f, 0.88f) };
-            rend.sharedMaterial = _daggerMat;
+            if (!_daggerModelLoaded) { _daggerModelLoaded = true; _daggerModel = Resources.Load<GameObject>("Models/FlyingDagger"); } // 메인 아트 VARCO 비도 (칼끝 +Z, 충돌체 없음)
+            GameObject go;
+            Renderer rend;
+            if (_daggerModel != null)
+            {
+                go = Instantiate(_daggerModel, at, Quaternion.identity);
+                go.name = "비도";
+                rend = go.GetComponentInChildren<Renderer>();
+            }
+            else // 모델이 없으면 예전 상자
+            {
+                go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                go.name = "비도";
+                var col = go.GetComponent<Collider>();
+                col.enabled = false; // Destroy는 프레임 끝에 지워져서, 그 사이 캐릭터가 이 충돌 상자 위로 밀려 올라가지 않게 먼저 꺼요
+                Destroy(col);
+                go.transform.position = at;
+                go.transform.localScale = new Vector3(0.08f, 0.08f, 0.5f);
+                rend = go.GetComponent<Renderer>();
+                if (_daggerMat == null) _daggerMat = new Material(rend.sharedMaterial) { color = new Color(0.82f, 0.84f, 0.88f) };
+                rend.sharedMaterial = _daggerMat;
+            }
             var d = new Dagger { Go = go, Rend = rend, Life = D("knife.lifetime", 6f) };
             _daggers.Add(d);
             return d;

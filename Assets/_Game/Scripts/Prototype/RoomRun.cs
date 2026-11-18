@@ -105,6 +105,8 @@ namespace AThousandDawns.Prototype
         int _silver;
         public InnShop Shop { get; private set; }
         public bool IsShopping { get; private set; }
+        // 플레이어를 멈춰 두는 창 (진열대 · 이벤트 · 대장간 · 갈림길 · 일시정지 · 마을 회귀록). 경맥도를 그 위에서 닫아도 계속 멈춰 있어요
+        public bool HoldsPlayer => IsShopping || IsInEvent || IsForking || IsPaused || _villageBookOpen;
         public string ShopNotice { get; private set; }
         public Vector3 InnCounter => inn.center + new Vector3(-3.5f, 0f, 2f); // 점소이 앞 (계산대 왼쪽 위, 문 가는 길은 비워 둠)
         public bool AtCounter => _phase == Phase.Inn && !IsShopping && Flat(Player.transform.position - InnCounter).magnitude <= GameConfig.Get("interact.range", 1.2f) + 0.8f;
@@ -172,12 +174,20 @@ namespace AThousandDawns.Prototype
             bool discarding = Player.Items != null && Player.Items.Pending != null; // 버릴 기물을 고르는 중 (PrototypeArena)
             if (IsShopping)
             {
-                if (!discarding) TickShopKeys();
+                if (!discarding)
+                {
+                    Player.enabled = false; // 다른 창이 닫히며 다시 켰어도 진열대에선 클릭이 평타로 나가지 않게
+                    TickShopKeys();
+                }
                 return;
             }
             if (IsInEvent)
             {
-                if (!discarding) TickEventKeys();
+                if (!discarding)
+                {
+                    Player.enabled = false; // 이벤트 · 대장간 창도 같아요
+                    TickEventKeys();
+                }
                 return;
             }
 

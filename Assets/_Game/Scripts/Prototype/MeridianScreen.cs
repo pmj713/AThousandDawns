@@ -133,13 +133,17 @@ namespace AThousandDawns.Prototype
             player.enabled = false; // 클릭이 평타로 남지 않게
         }
 
+        // 진열대 · 이벤트 · 갈림길 창이 아직 열려 있으면 그대로 멈춰 있어요
+        // (예전엔 언제나 다시 켜서, 진열대에서 E로 경맥도를 열었다 닫으면 진열대 클릭이 평타로 나갔어요)
         public void Close()
         {
             if (!IsOpen) return;
             IsOpen = false;
             _dragged = null;
-            Time.timeScale = 1f;
-            if (Player != null) Player.enabled = true;
+            if (_run == null) _run = FindFirstObjectByType<RoomRun>();
+            bool held = _run != null && _run.HoldsPlayer;
+            Time.timeScale = held ? 0f : 1f;
+            if (Player != null) Player.enabled = !held;
         }
 
         void OnDestroy()

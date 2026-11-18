@@ -195,6 +195,31 @@ namespace AThousandDawns.Tests
             Assert.AreEqual(hp, player.Health, "멀리 있는 플레이어는 그대로");
         }
 
+        // 오크가 방패수에게 돌진할 때 돌진 길 밖의 플레이어는 맞지 않아요 (돌진 판정이 노리는 적 기준이라 8칸 안의 플레이어가 맞던 것)
+        [UnityTest]
+        public IEnumerator 오크가_방패수를_들이받아도_길_밖의_플레이어는_안_맞아요()
+        {
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            Vector3 at = player.transform.position + new Vector3(0f, 0f, 8f); // 돌진 시작 거리 (8칸) 안이지만 돌진은 옆으로
+            var orc = (BoarBrain)director.Spawn(EnemyKind.Orc, at);
+            director.Spawn(EnemyKind.Shield, at + new Vector3(2.5f, 0f, 0f));
+            bool charged = false;
+            System.Action<EnemyBrain, EnemyBrain, Vector3> on = (a, b, p) => charged |= a == orc;
+            EnemyBrain.RivalHit += on;
+            float hp = player.Health;
+            Time.timeScale = 2f;
+            float end = Time.time + 12f;
+            while (Time.time < end && !charged) yield return null;
+            float until = Time.time + 2f;
+            while (Time.time < until && orc.IsCharging) yield return null; // 돌진이 끝날 때까지
+            Time.timeScale = 1f;
+            EnemyBrain.RivalHit -= on;
+            Assert.IsTrue(charged, "오크가 방패수에게 돌진해요");
+            Assert.AreEqual(hp, player.Health, "돌진 길 밖의 플레이어는 그대로");
+        }
+
         // 판타지 전용 정예 특성:마법 방벽 · 저주 · 분노는 판타지 적에게만 (차원 감염이 켜져 있을 때)
         [Test]
         public void 판타지_특성은_판타지_적에게만()

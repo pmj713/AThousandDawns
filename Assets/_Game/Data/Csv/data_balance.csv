@@ -838,6 +838,7 @@ arhat.quake_radius,1.8,cell,석상 나한: 돌진이 끝난 자리 충격파 반
 arhat.quake_ratio,0.6,,석상 나한: 충격파 피해 배율,폐사찰 적 고유 기믹
 moktak.ward_radius,7,cell,목탁승 가호: 둘레 적 범위,폐사찰 적 고유 기믹
 moktak.ward_ratio,25%,,목탁승 가호: 먼저 막는 피해 (그 적 최대 체력 비율),폐사찰 적 고유 기믹
+moktak.ward_boss_ratio,5%,,목탁 가호가 보스에게 걸릴 때 (최대 체력 비율),플레이테스트 5차
 lantern.orbit,2.5,cell,등불 귀신: 플레이어 둘레를 떠도는 거리,폐사찰 적 고유 기믹
 lantern.fire_gap,0.7,s,등불 귀신: 도깨비불 장판을 남기는 간격,폐사찰 적 고유 기믹
 lantern.fire_radius,0.9,cell,등불 귀신: 도깨비불 장판 반경,폐사찰 적 고유 기믹

@@ -64,6 +64,12 @@ namespace AThousandDawns.Player
                 var hit = Hits[i];
                 if (hit.distance <= 0f && hit.point == Vector3.zero) continue; // 시작부터 겹친 것 (바닥 등)
                 if (hit.collider.GetComponentInParent<PlayerController>() != null) continue;
+                var breakable = hit.collider.GetComponentInParent<Breakable>();
+                if (breakable != null) // 항아리는 깨고 지나가요 (비도처럼). 벽으로 보고 사라지던 것
+                {
+                    breakable.Break();
+                    continue;
+                }
                 var target = hit.collider.GetComponentInParent<Damageable>();
                 if (target == null)
                 {
@@ -81,6 +87,7 @@ namespace AThousandDawns.Player
                 if (_pierceLeft != PierceAll) _pierceLeft--;
             }
 
+            Breakable.BreakOnSegment(from, from + _direction * step, _radius); // 충돌체 없는 깨지는 물건도 (지나간 길)
             transform.position = from + _direction * step;
             _remaining -= step;
             if (_remaining <= 0f) Destroy(gameObject);

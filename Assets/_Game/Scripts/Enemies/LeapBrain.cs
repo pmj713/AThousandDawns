@@ -54,7 +54,7 @@ namespace AThousandDawns.Enemies
                 if ((flags & CollisionFlags.Sides) != 0) _leapRemaining = 0f;
             }
 
-            if (!_bit && ToPlayer().magnitude <= contact && TryHitPlayer())
+            if (!_bit && ToRealPlayer().magnitude <= contact && TryHitPlayer())
             {
                 _bit = true;
                 OnBite();

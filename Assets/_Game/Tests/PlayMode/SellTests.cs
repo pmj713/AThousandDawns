@@ -88,6 +88,34 @@ namespace AThousandDawns.Tests
             _run.CloseShop();
         }
 
+        // 진열대에서 경맥도(E)를 열었다 닫아도 진열대는 멈춘 그대로예요 (닫을 때 플레이어를 다시 켜서 진열대 좌클릭이 평타로 나가던 것)
+        [UnityTest]
+        public IEnumerator 진열대_위에서_경맥도를_닫아도_좌클릭이_평타로_안_나가요()
+        {
+            yield return Load();
+            _run.EnterInn();
+            _run.OpenShop();
+            Assert.IsFalse(_player.enabled);
+            var meridian = Object.FindFirstObjectByType<MeridianScreen>();
+            meridian.TryOpen();
+            Assert.IsTrue(meridian.IsOpen, "객잔은 싸우는 중이 아니라 열려요");
+            meridian.Close();
+            Assert.IsTrue(_run.IsShopping);
+            Assert.IsFalse(_player.enabled, "진열대가 열려 있으면 계속 멈춰 있어요");
+            Assert.AreEqual(0f, Time.timeScale);
+
+            _player.enabled = true; // 다른 창이 다시 켜도
+            yield return null;
+            Assert.IsFalse(_player.enabled, "진열대에선 다시 꺼요");
+
+            _run.CloseShop();
+            Assert.IsTrue(_player.enabled, "닫으면 다시 움직여요");
+            meridian.TryOpen();
+            meridian.Close();
+            Assert.IsTrue(_player.enabled, "창이 없으면 경맥도를 닫을 때 다시 켜요");
+            Assert.AreEqual(1f, Time.timeScale);
+        }
+
         [UnityTest]
         public IEnumerator 소문을_들으면_다음_층에_기연_방이_보임()
         {
