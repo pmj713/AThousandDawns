@@ -644,7 +644,7 @@ namespace AThousandDawns.Tests
                 Assert.IsTrue(descendedThere, "내려앉기 시작할 때 이미 그 자리에 있어요");
                 Assert.That(landAt - descendAt, Is.InRange(air * 0.5f, air + 0.2f), "내려앉기 시작 → 땅에 닿기까지 leap_air초");
             }
-            string melee = kind switch { EnemyKind.IronFist => "주먹 2연타", EnemyKind.GoblinChief => "철퇴 휘돌리기", EnemyKind.Ogre => "몽둥이 내려찍기", _ => "대검 올려베기" };
+            string melee = kind switch { EnemyKind.IronFist => "주먹 2연타", EnemyKind.GoblinChief => "철퇴 휘돌리기", EnemyKind.Ogre => "몽둥이 내려찍기", _ => "대검 내려베기" };
             Assert.IsTrue(names.Contains(melee) || names.Contains("잡아 던지기"), string.Join(",", names));
             if (kind == EnemyKind.IronFist) Assert.IsTrue(grabbed, "붙어 있으면 잡아 던지기");
             else Assert.IsTrue(leapt, "멀어지면 뛰어 와요");

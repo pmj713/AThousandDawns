@@ -643,7 +643,7 @@ knife.stick_height,1,칸,적에게 꽂힌 비도 높이 (가슴 높이. 작은 �
 knife.stick_depth,0.35,,꽂힌 비도가 몸 가운데에서 떨어진 거리 (몸 반경 대비),
 knife.dash_damage,8,,비도 대시 공격 한 발 피해,무기!C14
 knife.dash_radius,0.6,칸,비도 대시 공격이 꽂히는 거리,무기!E14 설명
-knife.ultimate_count,24,발,절초 만천화우 비도 수 (하단전),무기!B62
+knife.ultimate_count,24,발,절초 만천화우 비도 수 (하단전, 커서 쪽으로 3·3·5·5·10발 = 26발 기준 비율),무기!B62
 knife.ultimate_damage,6,,절초 만천화우 비도 한 발 피해,무기!B63
 knife.ultimate_time,3,초,절초 만천화우 비 시간 (하단전),무기!B61
 forge.knife_yeolyang_interval,1,초,비도 열양 융합: 꽂혀 있는 적에게 화상 1중첩 간격,무기!E98
@@ -1731,7 +1731,9 @@ karma.extra_enemies,1,명,업보 3단계: 싸우는 방마다 첫 웨이브에 �
 offer.forfeit_silver,30,은자,기물 고르기 포기: 고르지 않는 대신 받는 은자,플레이테스트 2차
 equip.qi_damp_max,4,,장비창 기 조절: 모든 칸의 기를 최대 이만큼 낮출 수 있어요,플레이테스트 2차
 knife.ultimate_range,10,칸,만천화우: 절초 비도 사거리 (적을 쫓지 않고 내 둘레로 곧게 날아가요),플레이테스트 7차
-knife.ultimate_spin_angle,47,°,만천화우: 한 발마다 돌아가는 각도 (바라보는 쪽에서 시작해 사방으로 고르게),플레이테스트 7차
+knife.ultimate_fan_step,6,°,만천화우: 한 묶음 안 비도 사이 각도 (커서 쪽 부채꼴),플레이테스트 8차
+knife.ultimate_fan_max,60,°,만천화우: 한 묶음 부채꼴 최대 폭,플레이테스트 8차
+knife.ultimate_volley_gap,0.2,초,만천화우: 3·3·5·5·10발 묶음 사이 간격,플레이테스트 8차
 knife.ultimate_speed_mult,2.5,배,만천화우 비도 날아가는 속도 (평타 비도 속도 × 이 값),플레이테스트 8차
 room.hidden_elixir_chance,40%,,기연 방 옥병이 영약 (공력 +1)일 확률 (아니면 원기단 · 혈자리 하나),플레이테스트 7차
 room.hidden_relic_item_chance,50%,,기연 방 유품이 기물 하나일 확률 (아니면 전낭 · 은자),플레이테스트 7차

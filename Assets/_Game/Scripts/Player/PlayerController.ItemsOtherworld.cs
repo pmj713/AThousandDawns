@@ -130,7 +130,12 @@ namespace AThousandDawns.Player
 
         void OtherworldHurt()
         {
-            if (Has("slime_bracelet")) _slimeTimer = V("slime_bracelet", 1); // 슬라임 팔찌: 맞은 뒤 잠시 말랑
+            if (Has("slime_bracelet")) // 슬라임 팔찌 (빙백): 맞은 뒤 잠시 말랑 · 차가운 점액이 튀어 바로 곁 적에게 둔화 1중첩
+            {
+                _slimeTimer = V("slime_bracelet", 1);
+                int frost = K(Keyword.Bingbaek);
+                ForEachEnemyNear(transform.position, V("slime_bracelet", 3), d => StatusEffects.For(d).AddSlow(SlowBonus(frost), frost >= 6, 1));
+            }
             if (Has("frost_robe") && _frostRobeCooldown <= 0f) // 서리 마법사 로브: 맞으면 둘레 둔화
             {
                 int frost = K(Keyword.Bingbaek);

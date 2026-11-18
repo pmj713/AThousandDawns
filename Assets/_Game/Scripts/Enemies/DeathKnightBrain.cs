@@ -5,7 +5,7 @@ using UnityEngine;
 namespace AThousandDawns.Enemies
 {
     // 데스나이트 (차원 겹침, 판타지 지역 보스): 철권 마웅 · 오우거와 같은 규칙 (보스 칸, 50%에서 2페이즈). 패턴은 겹치지 않게 저만의 것:
-    //   대검 올려베기 → 내려베기 (가까울 때): 앞 직선 두 번
+    //   대검 내려베기 (가까울 때): 대검을 머리 위로 들어 앞 직선으로 한 번 세로로 내려베요
     //   망령 기병 돌격 (거리 상관없이, 가까이서도 근접기와 섞어): deathknight.lane_interval마다 결투장을 가로지르는 줄 셋 예고 → 망령 기병이 지나가며 쳐요.
     //     2페이즈는 맞은편에서도 3갈래가 와서 X자로 엇갈려요 (p2_lane_tilt만큼 기울어진 두 묶음)
     //   어둠 걸음 (멀 때): 플레이어 곁 예고 원 → 그 자리에서 솟아오르며 베기
@@ -16,9 +16,9 @@ namespace AThousandDawns.Enemies
         protected override string Key => "deathknight";
         public override EnemyRank Rank => EnemyRank.Boss;
         protected override float DeathDelay => 1.5f;
-        protected override string JabName => "대검 올려베기";
+        protected override string JabName => "대검 내려베기";
         protected override string FarLeapName => "어둠 걸음";
-        protected override MeleeKind Melee => MeleeKind.TwinRect;
+        protected override MeleeKind Melee => MeleeKind.Overhead; // 위에서 아래로 한 번 세로베기 (플레이테스트 9차)
         protected override SpecialKind Special => SpecialKind.None;
         protected override FarKind Far => FarKind.Leap;
 

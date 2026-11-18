@@ -2592,7 +2592,7 @@ MonoBehaviour:
   - key: knife.ultimate_count
     value: 24
     unit: "\uBC1C"
-    note: "\uC808\uCD08 \uB9CC\uCC9C\uD654\uC6B0 \uBE44\uB3C4 \uC218 (\uD558\uB2E8\uC804)"
+    note: "\uC808\uCD08 \uB9CC\uCC9C\uD654\uC6B0 \uBE44\uB3C4 \uC218 (\uD558\uB2E8\uC804"
   - key: knife.ultimate_damage
     value: 6
     unit: 
@@ -6941,10 +6941,18 @@ MonoBehaviour:
     value: 10
     unit: "\uCE78"
     note: "\uB9CC\uCC9C\uD654\uC6B0: \uC808\uCD08 \uBE44\uB3C4 \uC0AC\uAC70\uB9AC (\uC801\uC744 \uCAD3\uC9C0 \uC54A\uACE0 \uB0B4 \uB458\uB808\uB85C \uACE7\uAC8C \uB0A0\uC544\uAC00\uC694)"
-  - key: knife.ultimate_spin_angle
-    value: 47
+  - key: knife.ultimate_fan_step
+    value: 6
     unit: "\xB0"
-    note: "\uB9CC\uCC9C\uD654\uC6B0: \uD55C \uBC1C\uB9C8\uB2E4 \uB3CC\uC544\uAC00\uB294 \uAC01\uB3C4 (\uBC14\uB77C\uBCF4\uB294 \uCABD\uC5D0\uC11C \uC2DC\uC791\uD574 \uC0AC\uBC29\uC73C\uB85C \uACE0\uB974\uAC8C)"
+    note: "\uB9CC\uCC9C\uD654\uC6B0: \uD55C \uBB36\uC74C \uC548 \uBE44\uB3C4 \uC0AC\uC774 \uAC01\uB3C4 (\uCEE4\uC11C \uCABD \uBD80\uCC44\uAF34)"
+  - key: knife.ultimate_fan_max
+    value: 60
+    unit: "\xB0"
+    note: "\uB9CC\uCC9C\uD654\uC6B0: \uD55C \uBB36\uC74C \uBD80\uCC44\uAF34 \uCD5C\uB300 \uD3ED"
+  - key: knife.ultimate_volley_gap
+    value: 0.2
+    unit: "\uCD08"
+    note: "\uB9CC\uCC9C\uD654\uC6B0: 3\xB73\xB75\xB75\xB710\uBC1C \uBB36\uC74C \uC0AC\uC774 \uAC04\uACA9"
   - key: knife.ultimate_speed_mult
     value: 2.5
     unit: "\uBC30"

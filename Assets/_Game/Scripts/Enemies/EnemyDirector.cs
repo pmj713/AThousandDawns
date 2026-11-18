@@ -183,6 +183,10 @@ namespace AThousandDawns.Enemies
             GhostFire.ClearAll(); // 방을 옮기면 도깨비불 장판도 사라져요
             AnchorBrain.ClearPosts(); // 쇠닻 기둥도
             BloodShamanBrain.ClearCorpses(); // 혈인이 되살릴 시체도 방마다
+            // 바닥에 남는 불 · 피 장판도 (화염 정예가 쓰러진 자리의 불길, 혈폭자 피 웅덩이, 염화 호리병 불길). 방에 들어갈 때 한 번만 찾아요
+            foreach (var f in FindObjectsByType<EnemyFirePatch>(FindObjectsSortMode.None)) Destroy(f.gameObject);
+            foreach (var b in FindObjectsByType<BloodBurst>(FindObjectsSortMode.None)) Destroy(b.gameObject);
+            foreach (var p in FindObjectsByType<AThousandDawns.Combat.FirePatch>(FindObjectsSortMode.None)) Destroy(p.gameObject);
             RoomReset?.Invoke();
         }
 

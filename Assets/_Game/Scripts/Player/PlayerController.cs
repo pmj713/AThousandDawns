@@ -62,7 +62,8 @@ namespace AThousandDawns.Player
         float _sinceDashPress = float.PositiveInfinity;
         float _sinceAttackPress = float.PositiveInfinity;
 
-        readonly Collider[] _overlap = new Collider[32];
+        // 넉넉하게: 벽가 장식 충돌체가 많은 자리에선 32칸이 차서, 그 뒤에 잡힌 적(벽에 몰린 임프 같은)이 판정에서 빠졌어요
+        readonly Collider[] _overlap = new Collider[256];
         readonly HashSet<Damageable> _hitThisSwing = new HashSet<Damageable>();
 
         public ComboTimeline Combo => _combo;

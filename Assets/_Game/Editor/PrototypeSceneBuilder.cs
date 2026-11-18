@@ -411,6 +411,7 @@ namespace AThousandDawns.EditorTools
             EnsureFolder(MaterialFolder);
             string path = $"{MaterialFolder}/{name}.mat";
             var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat != null && name.StartsWith("Telegraph_")) return mat; // 공격 예고 재질은 아트가 반투명으로 맞춰 둬요 (다시 만들 때 알파 · 패스를 덮어쓰지 않아요)
             var shader = Shader.Find(unlit ? "Universal Render Pipeline/Unlit" : "Universal Render Pipeline/Lit");
             if (mat == null)
             {

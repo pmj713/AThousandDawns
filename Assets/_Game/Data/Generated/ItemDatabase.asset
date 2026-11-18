@@ -1070,7 +1070,7 @@ MonoBehaviour:
     aux: 
     minQi: 1
     maxQi: 2
-    v1: 0.12
+    v1: 0.06
     v2: 0
     v3: 0
     v4: 0
@@ -1080,7 +1080,7 @@ MonoBehaviour:
     v4Scales: 0
     side: max_hp
     sideValue: 0.05
-    effectText: "\uB300\uC2DC \uAC70\uB9AC +12%"
+    effectText: "\uB300\uC2DC \uAC70\uB9AC +6%"
     sideText: "\uCD5C\uB300 \uCCB4\uB825 -5%"
     slot: 4
     otherworld: 0
@@ -1112,7 +1112,7 @@ MonoBehaviour:
     aux: 
     minQi: 1
     maxQi: 2
-    v1: 0.1
+    v1: 0.05
     v2: 0
     v3: 0
     v4: 0
@@ -1122,7 +1122,7 @@ MonoBehaviour:
     v4Scales: 0
     side: taken
     sideValue: 0.05
-    effectText: "\uB300\uC2DC \uAC70\uB9AC +10%"
+    effectText: "\uB300\uC2DC \uAC70\uB9AC +5%"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +5%"
     slot: 3
     otherworld: 0
@@ -1164,7 +1164,7 @@ MonoBehaviour:
     v4Scales: 0
     side: taken
     sideValue: 0.1
-    effectText: "\uB300\uC2DC \uACF5\uACA9 \uD53C\uD574 +15%. 3\uB808\uBCA8\uC774\uBA74 \uB300\uC2DC +1"
+    effectText: "\uB300\uC2DC \uACF5\uACA9 \uD53C\uD574 +15%. \uC8FC\uC785\uB41C \uAE30\uAC00 3 \uC774\uC0C1\uC774\uBA74 \uB300\uC2DC +1"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
     slot: 5
     otherworld: 0
@@ -1555,7 +1555,7 @@ MonoBehaviour:
     maxQi: 3
     v1: 1.5
     v2: 0.25
-    v3: 0
+    v3: 1.5
     v4: 0
     v1Scales: 0
     v2Scales: 1
@@ -1563,7 +1563,7 @@ MonoBehaviour:
     v4Scales: 0
     side: move_speed
     sideValue: 0.1
-    effectText: "\uB9DE\uC73C\uBA74 1.5\uCD08 \uB3D9\uC548 \uBC1B\uB294 \uD53C\uD574 -25%"
+    effectText: "\uB9DE\uC73C\uBA74 \uCC28\uAC00\uC6B4 \uC810\uC561\uC774 \uD280\uC5B4 1.5\uCE78 \uC548 \uC801\uC5D0\uAC8C \uB454\uD654 1\uC911\uCCA9, 1.5\uCD08 \uB3D9\uC548 \uBC1B\uB294 \uD53C\uD574 -25%"
     sideText: "\uC774\uB3D9\uC18D\uB3C4 -10%"
     slot: 7
     otherworld: 1
@@ -1595,7 +1595,7 @@ MonoBehaviour:
     aux: 
     minQi: 3
     maxQi: 4
-    v1: 0.15
+    v1: 0.08
     v2: 1
     v3: 0.15
     v4: 0
@@ -1605,7 +1605,7 @@ MonoBehaviour:
     v4Scales: 0
     side: taken
     sideValue: 0.1
-    effectText: "\uB300\uC2DC \uAC70\uB9AC +15%, \uB300\uC2DC \uD6C4 1\uCD08 \uB3D9\uC548 \uACF5\uACA9 \uC18D\uB3C4 +15%"
+    effectText: "\uB300\uC2DC \uAC70\uB9AC +8%, \uB300\uC2DC \uD6C4 1\uCD08 \uB3D9\uC548 \uACF5\uACA9 \uC18D\uB3C4 +15%"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
     slot: 3
     otherworld: 1

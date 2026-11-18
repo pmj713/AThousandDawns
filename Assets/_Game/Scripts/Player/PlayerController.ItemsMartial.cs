@@ -72,14 +72,14 @@ namespace AThousandDawns.Player
             }
         }
 
-        // 비연 깃털: 3레벨이면 대시 +1
+        // 비연 깃털: 주입된 기가 3 이상이면 대시 +1
         int ItemDashBonus
         {
             get
             {
                 int hybrid = Mathf.RoundToInt(Hy(Keyword.Gyeonggong, 2)); // 엘프 발걸음 2단계
                 if (_items == null || !_items.Active("swallow_feather", out var feather)) return PackDashBonus + hybrid;
-                return (PlayerItems.LevelOf(feather) >= C("swallow_feather", 2) ? C("swallow_feather", 3) : 0) + PackDashBonus + hybrid; // + 천리 신발
+                return (feather.Qi >= C("swallow_feather", 2) ? C("swallow_feather", 3) : 0) + PackDashBonus + hybrid; // + 천리 신발
             }
         }
 

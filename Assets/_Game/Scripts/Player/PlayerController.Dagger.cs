@@ -12,7 +12,7 @@ namespace AThousandDawns.Player
     //   초식 회수 (쿨타임 5초, 시전 0.3초): 방 안의 비도가 전부 돌아오며, 날아오는 비도가 몸을 지나간 적에게 1개당 초식 피해 25%.
     //     비도마다 따로 맞아요 (한 번 돌아올 때 같은 적은 비도 하나에 한 번, 한 적 최대 6개). 꽂혀 있던 비도는 그 적을 빠져나오며 맞혀요. 남은 비도가 없으면 못 써요.
     //   대시 공격: 대시가 끝나면 지나온 길(4칸)에 1칸 간격으로 4발, 반경 0.6칸 안 적 1명에게 꽂힘 (각 8, 대시 공격 1회로 셈)
-    //   절초 만천화우: 3초 동안 비도 24발 (각 6)을 적을 쫓지 않고 내 둘레 사방으로 곧게 던져요. 강인함 무시 · 공력 배율.
+    //   절초 만천화우: 3초 동안 비도 24발 (각 6)을 적을 쫓지 않고 마우스 커서 쪽으로 3 · 3 · 5 · 5 · 10발씩 다섯 번 부채꼴로 던져요. 강인함 무시 · 공력 배율.
     //     절초 비도는 최대 15개에 안 세요 (그 위로 더 남고, 평타 비도를 밀어내지도 않아요). 아래 "절초 만천화우" 참고.
     // 비도 융합 효과(무기 시트 5번 표)는 PlayerController.ForgeDagger.cs. 대장간 홈 효과가 무기마다 달라요.
     public enum WeaponKind { Sword, Dagger }
@@ -329,13 +329,16 @@ namespace AThousandDawns.Player
         }
 
         // ── 절초 만천화우
-        //   적을 쫓지 않아요. 시전 시간 동안 비도를 한 발씩 내 둘레로 곧게 던져요 (한 발마다 47°씩 돌아가며 사방으로, 사거리 10칸).
+        //   적을 쫓지 않아요. 시전 시간 동안 마우스 커서 쪽으로 다섯 번 부채꼴로 던져요: 3 · 3 · 5 · 5 · 10발 (하단전 24발 기준, 경지 · 폭우로 발 수가 늘면 같은 비율로 늘어요, 사거리 10칸).
+        //   조준점이 없으면 (패드 · 조준 = 이동 방향) 바라보는 쪽으로.
         //   맞은 적에게 꽂히고 (강인함 무시 · 공력 배율, 방패도 뚫어요), 빗나가면 바닥에 떨어져 평타 비도처럼 남아요 (회수 · 비도 초식에 써요).
         //   절초 비도는 최대 15개에 안 세서 그 위로 더 남을 수 있고, 평타 비도를 밀어내지도 않아요.
         //   진전: 폭우 (더 많이 · 더 멀리 · 한 발은 약하게) · 산화 (다 던진 뒤 꽂힌 적이 한꺼번에 터져요) · 회류 (다 던진 뒤 절초 비도가 돌아오며 길의 적을 한 번 더)
         //   상단전 마무리: 다 던진 뒤 가장 센 적에게 큰 비도 한 자루. 절초 각인은 비도가 꽂히거나 떨어질 때마다, #뇌정은 마지막 비도가 닿은 뒤 한 번.
         const float RainBloomRadius = 1.5f; // 산화: 터지는 반경
-        int _rainLeft, _rainSpawned, _rainDamage;
+        static readonly int[] RainVolleys = { 3, 3, 5, 5, 10 }; // 한 번에 던지는 비도 수 (플레이테스트 8차)
+        readonly int[] _rainVolleySizes = new int[5];
+        int _rainLeft, _rainSpawned, _rainDamage, _rainVolley;
         float _rainInterval, _rainElapsed, _rainRange, _rainFinale;
         bool _rainFinishPending;
         Vector3 _rainDir;
@@ -358,9 +361,18 @@ namespace AThousandDawns.Player
         {
             _rainHit = hit;
             _rainHit.IgnoreToughness = true;
-            _rainLeft = Mathf.Max(0, count);
+            // 하단전 24발이면 3 · 3 · 5 · 5 · 10 그대로, 발 수가 늘면 같은 비율로
+            float scale = Mathf.Max(0, count) / 24f;
+            int total = 0;
+            for (int i = 0; i < RainVolleys.Length; i++)
+            {
+                _rainVolleySizes[i] = count > 0 ? Mathf.Max(1, Mathf.RoundToInt(RainVolleys[i] * scale)) : 0;
+                total += _rainVolleySizes[i];
+            }
+            _rainLeft = total;
             _rainSpawned = 0;
-            _rainInterval = count > 0 ? duration / count : duration;
+            _rainVolley = 0;
+            _rainInterval = D("knife.ultimate_volley_gap", 0.2f); // 묶음 사이 간격 (빠르게 연달아, 시전 시간과 상관없이)
             _rainElapsed = 0f;
             _rainRange = range;
             _rainForm = form;
@@ -376,8 +388,8 @@ namespace AThousandDawns.Player
             if (_rainLeft > 0)
             {
                 _rainElapsed += dt;
-                // i번째 비도는 (i + 0.5) × 간격에 → 시전 시간 안에 고르게
-                while (_rainLeft > 0 && _rainElapsed >= (_rainSpawned + 0.5f) * _rainInterval) ThrowRainDagger();
+                // i번째 묶음은 i × 간격에 (첫 묶음은 바로) → 다섯 번
+                while (_rainLeft > 0 && _rainVolley < RainVolleys.Length && _rainElapsed >= _rainVolley * _rainInterval) ThrowRainVolley();
             }
             if (!_rainFinishPending || _rainLeft > 0) return;
             foreach (var d in _daggers) if (d.Ultimate && d.Flying) return; // 마지막 비도까지 꽂히거나 떨어지면
@@ -388,10 +400,29 @@ namespace AThousandDawns.Player
             OnSwordRainFinished(_rainDamage); // #뇌정 각인 · 뇌정 방울
         }
 
-        // 지금 내 자리에서 한 발: 시작 방향에서 한 발마다 47°씩 돌아가요
-        void ThrowRainDagger()
+        // 지금 내 자리에서 마우스 커서 쪽으로 한 묶음 (부채꼴로 고르게)
+        void ThrowRainVolley()
         {
-            var dir = Quaternion.Euler(0f, _rainSpawned * D("knife.ultimate_spin_angle", 47f), 0f) * _rainDir;
+            Vector3 aim = _facing;
+            if (_input != null && _input.TryGetAimPoint(out Vector3 point))
+            {
+                Vector3 to = point - transform.position;
+                to.y = 0f;
+                if (to.sqrMagnitude > 0.04f) aim = to.normalized;
+            }
+            int size = Mathf.Min(_rainVolleySizes[_rainVolley], _rainLeft);
+            float step = D("knife.ultimate_fan_step", 6f), fan = Mathf.Min(step * (size - 1), D("knife.ultimate_fan_max", 60f));
+            for (int i = 0; i < size; i++)
+            {
+                float angle = size > 1 ? -fan * 0.5f + fan * i / (size - 1) : 0f;
+                ThrowRainDagger(Quaternion.Euler(0f, angle, 0f) * aim, i == 0);
+            }
+            _rainVolley++;
+            if (_rainVolley >= RainVolleys.Length) _rainLeft = 0;
+        }
+
+        void ThrowRainDagger(Vector3 dir, bool sound)
+        {
             var d = NewDagger(transform.position + Vector3.up * 0.8f + dir * 0.6f);
             d.Dir = dir;
             d.Flight = _rainRange;
@@ -399,7 +430,7 @@ namespace AThousandDawns.Player
             d.Tag = HitTag.Ultimate;
             d.Ultimate = true;
             d.Go.transform.rotation = Quaternion.LookRotation(dir);
-            if (_rainSpawned % 3 == 0) Sfx.Play(SfxId.DaggerThrow); // 세 발마다 한 번 (소리가 겹치지 않게)
+            if (sound) Sfx.Play(SfxId.DaggerThrow); // 묶음마다 한 번 (소리가 겹치지 않게)
             _rainLeft--;
             _rainSpawned++;
         }
@@ -486,6 +517,7 @@ namespace AThousandDawns.Player
         // ── 비도 + 죽림섬: 비도 순간이동
         //   적에게 꽂힌 비도 자리로 가까운 것부터 차례로 순간이동해요 (0.12초 간격, 최대 6곳). 꽂힌 비도가 하나도 없을 때만 바닥에 떨어진 비도로 가요.
         //   지나간 직선 위의 적을 베고 (1번에 초식 피해 35%), 그 자리의 비도를 뽑아 손에 거둬요. 순간이동하는 동안 무적. 남은 비도는 그대로 남아요.
+        //   한 번에 8칸 (knife.scroll_flash_reach) 넘게 떨어졌거나 · 가는 길이 벽에 막혔거나 · 꽂힌 적이 숨은 비도로는 가지 않아요. 꽂힌 비도는 그 적 몸 바로 앞에 서요.
         readonly List<Dagger> _flashQueue = new List<Dagger>();
         float _daggerFlashTimer;
 
@@ -494,22 +526,65 @@ namespace AThousandDawns.Player
         void StartDaggerFlash()
         {
             _flashQueue.Clear();
-            Vector3 from = transform.position;
             var stuck = new List<Dagger>();
             var ground = new List<Dagger>();
-            foreach (var d in _daggers) if (!d.Flying && !d.Returning && !d.Vortex) (d.Stuck != null ? stuck : ground).Add(d);
-            var left = stuck.Count > 0 ? stuck : ground; // 적에게 꽂힌 비도가 먼저예요 (하나도 없을 때만 바닥 비도)
+            foreach (var d in _daggers) if (FlashReady(d)) (d.Stuck != null ? stuck : ground).Add(d);
+            QueueFlash(stuck); // 적에게 꽂힌 비도가 먼저예요
+            if (_flashQueue.Count == 0) QueueFlash(ground); // 갈 만한 꽂힌 비도가 하나도 없을 때만 바닥 비도
+            _daggerFlashTimer = 0f;
+        }
+
+        // 가까운 것부터 이어서 (한 번에 knife.scroll_flash_reach칸 넘게 떨어진 비도는 빼요: 방 건너편 적에게 꽂힌 비도로 날아가던 것)
+        void QueueFlash(List<Dagger> left)
+        {
+            Vector3 from = transform.position;
             int max = Mathf.RoundToInt(D("knife.scroll_flash_max", 6f));
-            while (left.Count > 0 && _flashQueue.Count < max) // 가까운 것부터 이어서
+            while (left.Count > 0 && _flashQueue.Count < max)
             {
-                int best = 0;
-                for (int i = 1; i < left.Count; i++)
-                    if ((Flatten(left[i].Go.transform.position) - Flatten(from)).sqrMagnitude < (Flatten(left[best].Go.transform.position) - Flatten(from)).sqrMagnitude) best = i;
+                int best = NearestFlash(left, from);
+                if (best < 0) break;
                 from = left[best].Go.transform.position;
                 _flashQueue.Add(left[best]);
                 left.RemoveAt(best);
             }
-            _daggerFlashTimer = 0f;
+        }
+
+        float FlashReach => D("knife.scroll_flash_reach", 8f);
+
+        // 순간이동할 수 있는 비도: 남아 있고, 꽂힌 적이 숨지 않았어요 (숨거나 사라졌다 다른 데서 나오는 적을 따라가지 않게)
+        static bool FlashReady(Dagger d) =>
+            d.Go != null && !d.Flying && !d.Returning && !d.Vortex && (d.Stuck == null || d.Stuck.Targetable);
+
+        // from에서 가장 가까운 비도 (reach 안). 없으면 -1
+        int NearestFlash(List<Dagger> list, Vector3 from)
+        {
+            float reach = FlashReach, bestDist = reach * reach;
+            int best = -1;
+            for (int i = 0; i < list.Count; i++)
+            {
+                float dist = (Flatten(list[i].Go.transform.position) - Flatten(from)).sqrMagnitude;
+                if (dist <= bestDist) { bestDist = dist; best = i; }
+            }
+            return best;
+        }
+
+        // 비도로 순간이동할 자리: 바닥 비도는 그 자리, 꽂힌 비도는 그 적 몸 바로 앞 (적 몸 한가운데 서지 않게).
+        // 가는 길이 벽 · 엄폐물에 막혔으면 false: 예전엔 그대로 Move해서 벽을 따라 남은 거리만큼 미끄러져 엉뚱한 곳에 섰어요
+        bool FlashSpot(Dagger d, Vector3 from, out Vector3 spot, out Vector3 dir)
+        {
+            from = Flatten(from);
+            Vector3 at = Flatten(d.Stuck != null ? d.Stuck.transform.position : d.Go.transform.position);
+            Vector3 to = at - from;
+            float dist = to.magnitude;
+            spot = from;
+            dir = dist > 1e-3f ? to / dist : _facing;
+            if (dist > FlashReach) return false;
+            float stop = d.Stuck != null ? Mathf.Max(0f, dist - (d.Stuck.BodyRadius + BodyRadius + 0.05f)) : dist;
+            if (stop < 0.05f) return true; // 이미 곁이에요
+            float free = AThousandDawns.Enemies.ObstacleProbe.Distance(from + Vector3.up * 0.5f, dir, BodyRadius * 0.9f, stop); // 적 · 나는 장애물로 안 쳐요
+            if (free < stop - 0.6f) return false;
+            spot = from + dir * Mathf.Min(stop, free); // 벽에 붙어 떨어진 비도는 벽 바로 앞까지 (베기는 1칸 너머까지 닿아요)
+            return true;
         }
 
         void TickDaggerFlash(float dt)
@@ -519,17 +594,26 @@ namespace AThousandDawns.Player
             _daggerFlashTimer -= dt;
             if (_daggerFlashTimer > 0f) return;
             _daggerFlashTimer = D("knife.scroll_flash_gap", 0.12f);
-            var d = _flashQueue[0];
-            _flashQueue.RemoveAt(0);
-            if (d.Go == null || !_daggers.Contains(d)) return;
             Vector3 from = transform.position;
-            Vector3 to = Flatten(d.Go.transform.position) - Flatten(from);
-            if (to.sqrMagnitude > 1e-4f)
+            // 순간이동할 때마다 지금 자리에서 가장 가까운 비도로 다시 골라요 (시전 때 정한 차례는 적이 움직이면 엉뚱해져요).
+            // 사라졌거나 · 꽂힌 적이 숨었거나 · 너무 멀어졌거나 · 길이 막힌 비도는 건너뛰어요 (그 비도는 그대로 남아요)
+            Dagger d = null;
+            Vector3 spot = from, dir = _facing;
+            while (d == null && _flashQueue.Count > 0)
             {
-                _controller.Move(to); // 벽에는 막혀요
-                _facing = to.normalized;
-                ApplyFacing();
+                for (int i = _flashQueue.Count - 1; i >= 0; i--)
+                    if (!_daggers.Contains(_flashQueue[i]) || !FlashReady(_flashQueue[i])) _flashQueue.RemoveAt(i);
+                int best = NearestFlash(_flashQueue, from);
+                if (best < 0) { _flashQueue.Clear(); break; }
+                var pick = _flashQueue[best];
+                _flashQueue.RemoveAt(best);
+                if (FlashSpot(pick, from, out spot, out dir)) d = pick;
             }
+            if (d == null) return;
+            Vector3 move = spot - Flatten(from);
+            if (move.sqrMagnitude > 1e-4f) _controller.Move(move); // 길은 미리 봤으니 벽을 따라 미끄러지지 않아요 (적은 서로 통과)
+            _facing = dir;
+            ApplyFacing();
             Sfx.Play(SfxId.BambooFlash);
             SkillFx(new SkillFxCue { Kind = SkillFxKind.FlashDash, From = from, To = transform.position, Dir = _facing });
             if (swingFlash != null) swingFlash.Show(transform.position, -_facing, 1.2f, 90f, 0.12f);

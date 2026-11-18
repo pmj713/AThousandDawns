@@ -193,6 +193,37 @@ namespace AThousandDawns.Tests
             Assert.Greater(player.Shields.Total, shield, "맞히면 보호막");
         }
 
+        // 플레이 테스트: 임프한테 금강장이 안 들어갔어요. 벽가처럼 둘레에 충돌체가 많으면 판정 목록(예전 32칸)이 차서, 뒤에 잡힌 적이 빠졌어요
+        [UnityTest]
+        public IEnumerator 금강장은_둘레에_충돌체가_많아도_임프를_맞힘()
+        {
+            PrototypeArena.AutoSpawn = false;
+            yield return SceneManager.LoadSceneAsync("Prototype_Combat", LoadSceneMode.Single);
+            yield return null;
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            player.LearnSkill(SkillKind.Palm);
+            Vector3 me = player.transform.position;
+            for (int i = 0; i < 80; i++) // 내 뒤쪽 머리 위에 작은 장식 조각 80개 (금강장 판정 구 안, 길은 안 막아요)
+            {
+                var box = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                box.transform.position = me + Quaternion.Euler(0f, 180f + 180f * i / 80f, 0f) * Vector3.right * (1.5f + i % 3) + Vector3.up * 2.5f;
+                box.transform.localScale = Vector3.one * 0.2f;
+            }
+            yield return null;
+            var imp = director.Spawn(EnemyKind.Imp, me + new Vector3(0f, 0f, -2.5f));
+            AThousandDawns.Combat.StatusEffects.For(imp.Damageable).TryFreeze(20f); // 물러나지 않게
+            yield return null;
+            Move(_mouse.position, (Vector2)Camera.main.WorldToScreenPoint(imp.transform.position));
+            yield return null;
+
+            Press(_mouse.rightButton);
+            yield return null;
+            Release(_mouse.rightButton);
+            yield return new WaitForSeconds(0.5f);
+            Assert.Less(imp.Damageable.Health, imp.Damageable.MaxHealth, "임프도 맞아요");
+        }
+
         [UnityTest]
         public IEnumerator 흡성은_공력_1_오르고_기물_최대_기_1_내려감()
         {

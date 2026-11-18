@@ -324,6 +324,40 @@ namespace AThousandDawns.Tests
             Assert.Less(Vector3.Distance(_player.transform.position, far.transform.position), 2.5f, "꽂힌 비도 자리 (먼 적 곁)로 순간이동");
         }
 
+        // 플레이 테스트: 적들을 베다가 엉뚱한 곳으로 순간이동했어요. 비도가 꽂힌 채 방 건너편으로 간 적 (순간이동 · 밀려남)에게는 가지 않고, 벤 적 곁에 서요
+        [UnityTest]
+        public IEnumerator 비도_죽림섬은_멀리_떨어진_적의_비도로는_가지_않음()
+        {
+            yield return LoadCombat();
+            _player.LearnSkill(SkillKind.BambooFlash);
+            Vector3 me = _player.transform.position, facing = _player.Facing;
+            var away = _director.Spawn(EnemyKind.Boar, me + facing * 3f);
+            away.Damageable.ScaleMaxHealth(10f);
+            StatusEffects.For(away.Damageable).TryFreeze(20f);
+            yield return null;
+            _player.ThrowDaggers(1, HitDamageInput.Of(1f), HitTag.Basic, 0f);
+            yield return WaitUntil(() => _player.StuckDaggers(away.Damageable) == 1, 2f);
+            var cc = away.GetComponent<CharacterController>(); // 비도가 꽂힌 채 내 뒤 12칸으로 옮겨 가요
+            cc.enabled = false;
+            away.transform.position = me - facing * 12f;
+            cc.enabled = true;
+            var near = _director.Spawn(EnemyKind.Boar, me + facing * 3f);
+            near.Damageable.ScaleMaxHealth(10f);
+            StatusEffects.For(near.Damageable).TryFreeze(20f);
+            yield return null;
+            _player.ThrowDaggers(1, HitDamageInput.Of(1f), HitTag.Basic, 0f);
+            yield return WaitUntil(() => _player.StuckDaggers(near.Damageable) == 1, 2f);
+            Assert.AreEqual(1, _player.StuckDaggers(away.Damageable), "먼 적에게도 꽂혀 있어요");
+
+            Press(Mouse.current.rightButton);
+            yield return null;
+            Release(Mouse.current.rightButton);
+            yield return WaitUntil(() => _player.StuckDaggers(near.Damageable) == 0 && !_player.IsDaggerFlashing, 2f);
+            Assert.AreEqual(0, _player.StuckDaggers(near.Damageable), "가까운 적의 비도는 뽑아 거둬요");
+            Assert.AreEqual(1, _player.StuckDaggers(away.Damageable), "너무 먼 적의 비도로는 가지 않아요");
+            Assert.Less(Vector3.Distance(_player.transform.position, near.transform.position), 2.5f, "벤 적 곁에 서요");
+        }
+
         [UnityTest]
         public IEnumerator 비도_붕산권은_둘레_비도가_솟구쳐_찌름()
         {

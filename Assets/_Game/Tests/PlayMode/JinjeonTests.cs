@@ -137,28 +137,36 @@ namespace AThousandDawns.Tests
         }
 
         [UnityTest]
-        public IEnumerator 만천화우는_사방으로_던지고_절초_비도는_15개를_넘어_남음()
+        public IEnumerator 만천화우는_커서_쪽으로_3_3_5_5_10발_던지고_절초_비도는_15개를_넘어_남음()
         {
             yield return Load(WeaponKind.Dagger, UltimateForm.None);
-            for (int i = 0; i < 15; i++) _player.ThrowDaggers(1, HitDamageInput.Of(1f), HitTag.Basic, 0f); // 평타 비도 15개 (최대)
+            Vector3 me = _player.transform.position;
+            Vector3 aim = new Vector3(1f, 0f, 0f); // 마우스 커서를 오른쪽 6칸에 둬요
+            Set(Mouse.current.position, (Vector2)Camera.main.WorldToScreenPoint(new Vector3(me.x, 0f, me.z) + aim * 6f));
+            yield return null;
             var took = new float[1];
             yield return Ultimate(took);
-            Assert.AreEqual(15 + 24, _player.DaggerCount, "절초 비도 24개는 최대 개수에 안 세고, 평타 비도도 밀어내지 않아요");
+            Assert.AreEqual(3 + 3 + 5 + 5 + 10, _player.DaggerCount, "하단전은 3 · 3 · 5 · 5 · 10발");
 
-            // 적을 쫓지 않고 내 둘레 사방으로 날아가 떨어져요
-            var quarters = new bool[4];
-            Vector3 me = _player.transform.position;
+            // 적을 쫓지 않고 커서 쪽 부채꼴로 날아가 떨어져요
+            int count = 0;
             foreach (var t in Object.FindObjectsByType<Transform>(FindObjectsSortMode.None))
             {
                 if (t.name != "비도") continue;
                 Vector3 off = t.position - me;
-                quarters[(off.x >= 0f ? 0 : 1) + (off.z >= 0f ? 0 : 2)] = true;
+                off.y = 0f;
+                Assert.Greater(Vector3.Dot(off.normalized, aim), 0.8f, "커서 쪽 부채꼴 (±36° 안)");
+                count++;
             }
-            for (int q = 0; q < 4; q++) Assert.IsTrue(quarters[q], $"사방으로 ({q}번째 방향)");
+            Assert.AreEqual(26, count);
+
+            for (int i = 0; i < 15; i++) _player.ThrowDaggers(1, HitDamageInput.Of(1f), HitTag.Basic, 0f); // 평타 비도 15개 (최대)
+            yield return new WaitForSeconds(1f);
+            Assert.AreEqual(26 + 15, _player.DaggerCount, "절초 비도는 최대 개수에 안 세고, 평타 비도도 밀어내지 않아요");
 
             _player.UltimateStage = 1;
             yield return Ultimate(took);
-            Assert.GreaterOrEqual(took[0], 4.5f, "중단전은 5초 동안 던져요");
+            Assert.Less(took[0], 2f, "묶음 다섯을 빠르게 연달아 던져요 (0.2초 간격)");
         }
 
         [UnityTest]
@@ -193,6 +201,9 @@ namespace AThousandDawns.Tests
         public IEnumerator 산화와_회류는_만천화우보다_세다()
         {
             yield return Load(WeaponKind.Dagger, UltimateForm.None);
+            Vector3 at = _player.transform.position + new Vector3(3f, 0f, 0f);
+            Set(Mouse.current.position, (Vector2)Camera.main.WorldToScreenPoint(new Vector3(at.x, 0f, at.z))); // 커서를 적 위에 (만천화우는 커서 쪽으로 던져요)
+            yield return null;
             var plain = Spawn(new Vector3(3f, 0f, 0f));
             var took = new float[1];
             yield return Ultimate(took);
@@ -206,7 +217,7 @@ namespace AThousandDawns.Tests
                 var target = Spawn(new Vector3(3f, 0f, 0f));
                 yield return Ultimate(took);
                 Assert.Greater(Lost(target), 0f, $"{form}");
-                if (form != UltimateForm.Storm) Assert.GreaterOrEqual(Lost(target), normal, $"{form}: 한 적만 있어도 약해지진 않아요"); // 사방으로 퍼져서 한 적에 꽂히는 수가 판마다 달라요 (같을 수도)
+                if (form != UltimateForm.Storm) Assert.Greater(Lost(target), normal, $"{form}: 한 적만 있으면 더 세요");
                 target.ApplyHit(999999);
             }
         }
