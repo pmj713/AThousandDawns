@@ -1,3 +1,4 @@
+using UnityEditor;
 using UnityEngine;
 
 namespace AThousandDawns.EditorTools
@@ -11,6 +12,36 @@ namespace AThousandDawns.EditorTools
     // 모델은 발밑이 원점, 크기는 작은 방 기준 — InkRoomFeatures가 상자 크기에 맞춰 늘려요
     public static partial class PrototypeSceneBuilder
     {
+        const string RiftPatchPath = "Assets/_Game/Art/Env/Rift/RiftPatch.png";
+
+        // VARCO 모델을 너비에 맞춰요 (메시 축: X 너비 · Y 두께 · Z 높이). 두께가 상자처럼 두껍게 나오면 maxDepth로 눌러요
+        static void FitWidth(Transform model, float width, float maxDepth)
+        {
+            var size = model.GetComponentInChildren<MeshFilter>().sharedMesh.bounds.size;
+            float k = width / Mathf.Max(0.01f, size.x);
+            model.localScale = new Vector3(k, Mathf.Min(k, maxDepth / Mathf.Max(0.01f, size.y)), k);
+            var b = model.GetComponentInChildren<Renderer>().bounds;
+            model.position += new Vector3(model.parent.position.x - b.center.x, model.parent.position.y - b.min.y, model.parent.position.z - b.center.z);   // 발밑·가운데를 원점에
+        }
+
+        static Sprite RiftPatchSprite()
+        {
+            if (!(AssetImporter.GetAtPath(RiftPatchPath) is TextureImporter importer)) return null;
+            if (importer.textureType != TextureImporterType.Sprite || importer.spritePivot != new Vector2(0.5f, 0.5f))
+            {
+                importer.textureType = TextureImporterType.Sprite;
+                importer.spriteImportMode = SpriteImportMode.Single;
+                var settings = new TextureImporterSettings();
+                importer.ReadTextureSettings(settings);
+                settings.spriteAlignment = (int)SpriteAlignment.Center;
+                settings.spriteMeshType = SpriteMeshType.FullRect;
+                importer.SetTextureSettings(settings);
+                importer.alphaIsTransparency = true;
+                importer.SaveAndReimport();
+            }
+            return AssetDatabase.LoadAssetAtPath<Sprite>(RiftPatchPath);
+        }
+
         static (GameObject rampart, GameObject knight, GameObject rune, GameObject crystal) BuildRiftProps()
         {
             var rift = GetShaderMaterial("Ink_Rift", "AThousandDawns/InkRift");
@@ -24,8 +55,24 @@ namespace AThousandDawns.EditorTools
             var crystalPale = Fantasy("Ink_Rift_CrystalPale", "#A9B4FF");
 
             // 밑동: 보랏빛 흙 판 + 갈라진 빛 금 둘
+            //   플레이테스트 7차: 납작한 보라 원기둥이 어색했어요 → 셀 풍 얼룩 그림 한 장(Art/Env/Rift/RiftPatch.png: 들쭉날쭉한 또렷한 가장자리,
+            //   안쪽 짙은 보랏빛 흙 · 바깥 테 흐린 연보라, 가운데서 뻗은 가는 빛 금)을 바닥에 눕혀요. 그림이 없으면 예전 원판과 금
+            var patch = RiftPatchSprite();
             void RiftBase(Transform root, float radius)
             {
+                if (patch != null)
+                {
+                    var go = new GameObject("Rift Patch");
+                    go.transform.SetParent(root, false);
+                    go.transform.localPosition = new Vector3(0f, 0.015f, 0f);
+                    go.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+                    float k = radius * 2.3f / patch.bounds.size.x;
+                    go.transform.localScale = new Vector3(k, k * 0.85f, 1f);
+                    var sr = go.AddComponent<SpriteRenderer>();
+                    sr.sprite = patch;
+                    sr.sortingOrder = 2;
+                    return;
+                }
                 Block(root, "Rift Soil", PrimitiveType.Cylinder, new Vector3(0f, 0.012f, 0f), new Vector3(radius * 2f, 0.012f, radius * 1.6f), Quaternion.identity, soil);
                 GroundCrack(root, new Vector3(radius * 0.3f, 0.01f, -radius * 0.2f), 25f, radius * 1.6f, rift);
                 GroundCrack(root, new Vector3(-radius * 0.35f, 0.01f, radius * 0.25f), -40f, radius * 1.1f, rift);
@@ -34,6 +81,10 @@ namespace AThousandDawns.EditorTools
             // 무너진 성벽 조각
             var rampart = new GameObject("Rift Rampart (무너진 성벽 조각)").transform;
             RiftBase(rampart, 1.5f);
+            // 플레이테스트 7차: 상자로 엮은 차원 소품 셋을 VARCO 모델로 (사암 총안 성벽 · 기사 석상 · 룬 기둥). 없으면 예전 상자 모델
+            if (VarcoProp(rampart, "CastleRampart", Vector3.zero, 0f) is Transform wallModel) FitWidth(wallModel, 2.7f, 0.75f);
+            else
+            {
             Block(rampart, "Wall", PrimitiveType.Cube, new Vector3(-0.15f, 0.62f, 0f), new Vector3(2.1f, 1.24f, 0.6f), Quaternion.identity, sandstone);
             Block(rampart, "Broken End", PrimitiveType.Cube, new Vector3(1.0f, 0.38f, 0f), new Vector3(0.5f, 0.76f, 0.56f), Quaternion.Euler(0f, 0f, -8f), sandstone);
             for (int k = 0; k < 4; k++)   // 총안 위턱: 솟은 머리돌 넷 (부서진 쪽은 비어요)
@@ -42,10 +93,13 @@ namespace AThousandDawns.EditorTools
             for (int k = 0; k < 4; k++)   // 부서진 쪽 돌무더기
                 Rock(rampart, "Rubble", new Vector3(1.25f + (k % 2) * 0.25f, 0f, (k - 1.5f) * 0.25f), 0.18f + (k % 3) * 0.05f, k, k * 47f, sandstone, false);
             Block(rampart, "Moss", PrimitiveType.Cube, new Vector3(-0.6f, 0.08f, -0.31f), new Vector3(0.7f, 0.16f, 0.04f), Quaternion.identity, moss);
+            }
 
             // 기사 석상
             var knight = new GameObject("Rift Knight Statue (기사 석상)").transform;
             RiftBase(knight, 0.75f);
+            if (VarcoProp(knight, "KnightStatue", Vector3.zero, 0f) == null)
+            {
             Block(knight, "Plinth", PrimitiveType.Cube, new Vector3(0f, 0.2f, 0f), new Vector3(0.95f, 0.4f, 0.95f), Quaternion.identity, statueStone);
             foreach (float sx in new[] { -0.13f, 0.13f })
                 Block(knight, "Leg", PrimitiveType.Cylinder, new Vector3(sx, 0.4f + 0.42f, 0f), new Vector3(0.18f, 0.42f, 0.18f), Quaternion.identity, statueStone);
@@ -65,10 +119,13 @@ namespace AThousandDawns.EditorTools
             Block(knight, "Moss Shoulder", PrimitiveType.Cube, new Vector3(0.3f, 2.06f, 0f), new Vector3(0.2f, 0.04f, 0.24f), Quaternion.identity, moss);
             Block(knight, "Moss Plinth", PrimitiveType.Cube, new Vector3(-0.25f, 0.41f, -0.25f), new Vector3(0.4f, 0.03f, 0.3f), Quaternion.identity, moss);
             Rock(knight, "Fallen Arm", new Vector3(-0.55f, 0f, -0.35f), 0.2f, 2, 60f, statueStone, false);
+            }
 
             // 룬 기둥
             var rune = new GameObject("Rift Rune Pillar (룬 기둥)").transform;
             RiftBase(rune, 0.65f);
+            if (VarcoProp(rune, "RunePillar", Vector3.zero, 0f) == null)
+            {
             Block(rune, "Base", PrimitiveType.Cube, new Vector3(0f, 0.15f, 0f), new Vector3(0.8f, 0.3f, 0.8f), Quaternion.identity, runestone);
             // 둥근 돌기둥 (사각을 엇갈려 겹치면 별 모양이 돼 룬이 모서리에 가려졌어요)
             Block(rune, "Shaft", PrimitiveType.Cylinder, new Vector3(0f, 0.3f + 1.1f, 0f), new Vector3(0.56f, 1.1f, 0.56f), Quaternion.identity, runestone);
@@ -80,6 +137,7 @@ namespace AThousandDawns.EditorTools
                 for (int k = 0; k < 3; k++)
                     Block(rune, "Rune", PrimitiveType.Quad, face * new Vector3((k - 1) * 0.1f, 0.8f + k * 0.55f, -0.295f), new Vector3(0.24f, 0.42f, 1f),   // 균열 셰이더는 판 가운데 가는 틈만 그려서 판을 넓게
                         face * Quaternion.Euler(0f, 0f, (k - 1) * 30f + side * 15f), rift);
+            }
             }
 
             // 마나 수정
