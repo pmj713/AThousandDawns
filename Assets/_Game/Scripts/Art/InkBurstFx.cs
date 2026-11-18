@@ -57,6 +57,7 @@ namespace AThousandDawns.Art
         void Update()
         {
             float dt = Time.deltaTime;
+            HideBurstDiscs();
             InkRoomReset.Tick(_live, dt, transform); // 방을 옮기면 제 밑의 연출을 지워요
         }
 
@@ -98,7 +99,8 @@ namespace AThousandDawns.Art
                 case BurstKind.Shatter:
                     float w = kind == BurstKind.Quake ? 2.6f : kind == BurstKind.Shatter ? 2.2f : 2f;
                     var dust = kind == BurstKind.Quake ? new Color(0.62f, 0.5f, 0.32f, 0.7f) : new Color(0.45f, 0.42f, 0.38f, 0.7f);
-                    Ring(_quake, at, r * w, 0.5f, new Color(1f, 0.85f, 0.6f, 1f), 0.3f, 0f);
+                    if (kind == BurstKind.Slam) EarthWave(at, r, r * w, 0.5f); // 내려찍기 (플레이테스트 8차): 납작한 고리 대신 물결처럼 퍼지는 3D 흙 둔덕
+                    else Ring(_quake, at, r * w, 0.5f, new Color(1f, 0.85f, 0.6f, 1f), 0.3f, 0f);
                     InkParticles.Burst(at + Vector3.up * 0.15f, kind == BurstKind.Shatter ? 22 : 16, dust, new Color(dust.r, dust.g, dust.b, 0.4f), r * 1.6f, r * 0.6f, 0.9f, 0.05f, upward: true);
                     Chips(at, kind == BurstKind.Shatter ? 14 : 8, r, kind == BurstKind.Shatter ? 0.3f : 0.18f);
                     if (kind == BurstKind.Quake) Spikes(at, r); // 진각 (철권 붕산권 · 나한): 둘레에서 바윗돌이 솟았다 가라앉아요
@@ -219,6 +221,79 @@ namespace AThousandDawns.Art
 
         static Sprite _pillar;
         static bool _pillarLoaded;
+
+        // ── 내려찍기 흙 둔덕 (플레이테스트 8차: 파랗게 보이던 납작한 고리 대신): 판정 반경(from)에서 시작해 to까지 life초 동안
+        //   흙 둔덕 고리가 물결처럼 솟았다 가라앉으며 바깥으로 퍼져요 (3D, 정점 색: 꼭대기는 밝은 흙, 밑은 짙은 흙).
+        //   그 순간 EnemyDirector.SpawnBurst가 0.2초 띄우는 "Burst" 원판(주황 반투명)은 다음 프레임에 렌더러만 꺼요.
+        static Mesh _mound;
+        static Material _moundMat;
+        readonly List<Vector3> _hideBursts = new List<Vector3>();
+
+        void EarthWave(Vector3 at, float from, float to, float life)
+        {
+            if (_moundMat == null) _moundMat = new Material(Shader.Find("Sprites/Default")) { name = "Earth Wave" };
+            if (_mound == null) _mound = MoundMesh();
+            _hideBursts.Add(at);
+            var go = new GameObject("Earth Wave");
+            go.transform.SetParent(transform, false);
+            go.transform.position = at;
+            go.transform.rotation = Quaternion.Euler(0f, UnityEngine.Random.Range(0f, 360f), 0f);
+            go.AddComponent<MeshFilter>().sharedMesh = _mound;
+            var mr = go.AddComponent<MeshRenderer>();
+            mr.sharedMaterial = _moundMat;
+            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            mr.receiveShadows = false;
+            float t = 0f, height = Mathf.Clamp(from * 0.22f, 0.25f, 0.6f);
+            _live.Add(dt =>
+            {
+                if (go == null) return false;
+                t += dt;
+                float k = Mathf.Clamp01(t / life);
+                float r = Mathf.Lerp(from, to, 1f - (1f - k) * (1f - k)); // 처음엔 빠르게, 끝에서 느리게 퍼져요
+                float rise = k < 0.2f ? k / 0.2f : 1f - (k - 0.2f) / 0.8f;   // 확 솟았다가 퍼지며 가라앉아요
+                go.transform.localScale = new Vector3(r, Mathf.Max(0.001f, height * rise), r);
+                if (k < 1f) return true;
+                Destroy(go);
+                return false;
+            });
+        }
+
+        // SpawnBurst 원판은 Burst 신호 뒤에 켜져서, 다음 프레임에 그 자리 "Burst" 루트를 한 번 찾아 렌더러를 꺼요 (내려찍기 순간에만)
+        void HideBurstDiscs()
+        {
+            if (_hideBursts.Count == 0) return;
+            foreach (var root in UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects())
+            {
+                Vector3 p = root.transform.position;
+                bool near = false;
+                foreach (var at in _hideBursts) if ((new Vector3(p.x, 0f, p.z) - at).sqrMagnitude < 0.25f) { near = true; break; }
+                if (!near || root.name != "Burst") continue;
+                foreach (var r in root.GetComponentsInChildren<Renderer>()) r.enabled = false;
+            }
+            _hideBursts.Clear();
+        }
+
+        // 흙 둔덕 고리 (반지름 1 둘레, 폭 ±0.28, 높이 1): 안쪽 밑 → 꼭대기 → 바깥 밑 단면을 36칸 돌려요
+        static Mesh MoundMesh()
+        {
+            var b = new MeshBits();
+            const int n = 36;
+            Color low = new Color(0.33f, 0.25f, 0.16f, 1f), mid = new Color(0.52f, 0.4f, 0.26f, 1f), top = new Color(0.72f, 0.6f, 0.42f, 1f);
+            float[] rad = { 0.72f, 0.88f, 1f, 1.12f, 1.28f };
+            float[] hgt = { 0f, 0.65f, 1f, 0.6f, 0f };
+            Color[] col = { low, mid, top, mid, low };
+            for (int i = 0; i < n; i++)
+            {
+                float a0 = i * Mathf.PI * 2f / n, a1 = (i + 1) * Mathf.PI * 2f / n;
+                float j0 = 1f + 0.08f * Mathf.Sin(a0 * 5f), j1 = 1f + 0.08f * Mathf.Sin(a1 * 5f); // 둔덕 높이가 조금씩 울퉁불퉁
+                for (int s = 0; s < rad.Length - 1; s++)
+                {
+                    Vector3 P(float a, int k, float j) => new Vector3(Mathf.Cos(a) * rad[k], hgt[k] * j, Mathf.Sin(a) * rad[k]);
+                    b.Quad(P(a0, s, j0), P(a0, s + 1, j0), P(a1, s + 1, j1), P(a1, s, j1), col[s], col[s + 1], col[s + 1], col[s]);
+                }
+            }
+            return b.Build("Earth Mound");
+        }
 
         void Ring(Sprite sprite, Vector3 at, float size, float life, Color color, float height, float spin, float delay = 0f)
         {
