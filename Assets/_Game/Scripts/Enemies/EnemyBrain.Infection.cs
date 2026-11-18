@@ -60,6 +60,8 @@ namespace AThousandDawns.Enemies
                 {
                     _dashLeft = 0f;
                     QinggongMoved?.Invoke(this, _dashFrom, transform.position);
+                    Vector3 back = ToPlayer(); // 내달린 뒤엔 노리던 쪽 (플레이어나 다른 진영 적)을 다시 봐요 (옆으로 내달린 방향 그대로 등 돌리고 휘두르던 것)
+                    if (back.sqrMagnitude > 1e-4f) FaceToward(back);
                 }
                 return;
             }
@@ -115,9 +117,10 @@ namespace AThousandDawns.Enemies
                     Vector3 dir = dist > 1e-3f ? to / dist : Facing;
                     // 멀면 플레이어 옆으로, 붙어 있으면 플레이어 등 뒤로 넘어가요
                     Vector3 side = dist >= 4f ? Quaternion.Euler(0f, Random.Range(0, 2) == 0 ? 90f : -90f, 0f) * dir : dir;
-                    Vector3 at = Director.FindFreeSpot(Player.transform.position + side * GameConfig.GetOptional("elite.blink_distance", 2.5f), 0.5f);
+                    Vector3 target = transform.position + to; // 노리는 쪽 (다른 진영 적을 노리면 그 적)
+                    Vector3 at = Director.FindFreeSpot(target + side * GameConfig.GetOptional("elite.blink_distance", 2.5f), 0.5f);
                     Teleport(at);
-                    FaceToward(Player.transform.position - at);
+                    FaceToward(target - at);
                     Blinked?.Invoke(this, from, at);
                     break;
             }

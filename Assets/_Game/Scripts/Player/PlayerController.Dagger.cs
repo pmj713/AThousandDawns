@@ -7,10 +7,10 @@ namespace AThousandDawns.Player
 {
     // 비도 (두 번째 무기, 무기 시트 1~3번 표 · 조작 시트 31~33행). 회귀록 비도 봉우리를 피우면 마을 무기 거치대에서 골라요.
     //   평타: 1·2타 비도 1발 (초당 18칸, 사거리 8칸, 8) · 3타째 15° 간격 부채꼴 3발 (각 8)
-    //   남는 비도: 적에게 맞으면 꽂혀 함께 움직이고, 빗나가거나 막히면 바닥에 떨어져요. 6초 뒤 사라짐 (마지막 1.5초 깜빡임), 최대 15개 (넘으면 오래된 것부터)
+    //   남는 비도: 적에게 맞으면 몸에 박혀 함께 움직이고, 빗나가거나 막히면 바닥에 떨어져요. 6초 뒤 사라짐 (마지막 1.5초 깜빡임), 최대 15개 (넘으면 오래된 것부터)
     //     꽂힌 적이 죽으면 그 자리에 떨어지고, 방을 옮기면 전부 사라져요.
-    //   초식 회수 (쿨타임 5초, 시전 0.3초): 방 안의 비도가 전부 돌아오며, 꽂힌 적과 돌아오는 길의 적에게 1개당 초식 피해 25%.
-    //     같은 적에게 꽂힌 비도는 한 번의 피해로 합쳐요 (한 적 최대 6개). 남은 비도가 없으면 못 써요.
+    //   초식 회수 (쿨타임 5초, 시전 0.3초): 방 안의 비도가 전부 돌아오며, 날아오는 비도가 몸을 지나간 적에게 1개당 초식 피해 25%.
+    //     비도마다 따로 맞아요 (한 번 돌아올 때 같은 적은 비도 하나에 한 번, 한 적 최대 6개). 꽂혀 있던 비도는 그 적을 빠져나오며 맞혀요. 남은 비도가 없으면 못 써요.
     //   대시 공격: 대시가 끝나면 지나온 길(4칸)에 1칸 간격으로 4발, 반경 0.6칸 안 적 1명에게 꽂힘 (각 8, 대시 공격 1회로 셈)
     //   절초 만천화우: 3초 동안 비도 24발 (각 6), 강인함 무시 · 공력 배율
     // 비도 융합 효과(무기 시트 5번 표)는 PlayerController.ForgeDagger.cs. 대장간 홈 효과가 무기마다 달라요.
@@ -25,16 +25,18 @@ namespace AThousandDawns.Player
             public Vector3 Dir;
             public float Flight;      // 남은 사거리 (0 이하면 땅에)
             public Damageable Stuck;
-            public Vector3 Offset;
+            public Vector3 Offset;    // 꽂힌 적 기준 자리 (적이 돌면 같이 돌아요)
+            public Quaternion StuckRot; // 꽂힌 적 기준 방향
             public float Life;        // 땅에 떨어지거나 꽂힌 뒤 남은 시간
             public HitDamageInput Hit;
             public HitTag Tag;
             public float Gauge;
-            public bool Returning;    // 회수: 나에게 날아오는 중 (피해는 회수한 순간에 들어가요)
+            public bool Returning;    // 나에게 날아오는 중
+            public bool Recall;       // 회수로 돌아오는 중: 지나가는 적에게 회수 피해 (Hit · HitSet을 다시 써요)
             public int Pierced;       // 강기: 뚫고 지나간 적 수
             public bool Vortex;       // 비도 탁랑참: 탁류 소용돌이 속을 도는 중
             public float Angle;       // 소용돌이 속 자리
-            public HashSet<Damageable> HitSet; // 이미 뚫고 지나간 적 (다시 맞지 않게)
+            public HashSet<Damageable> HitSet; // 이미 뚫고 지나간 적 · 회수로 돌아오며 맞힌 적 (다시 맞지 않게)
             public bool Flying => Flight > 0f;
         }
 
@@ -80,7 +82,7 @@ namespace AThousandDawns.Player
             {
                 float angle = (i - (count - 1) * 0.5f) * spread;
                 var dir = Quaternion.Euler(0f, angle, 0f) * _facing;
-                var d = NewDagger(transform.position + Vector3.up * 0.8f + dir * 0.6f);
+                var d = NewDagger(transform.position + Vector3.up * 0.8f + dir * 0.6f + new Vector3(_facing.z, 0f, -_facing.x) * 0.25f); // 오른손 쪽에서 (던지는 손)
                 d.Dir = dir;
                 d.Flight = D("knife.range", 8f);
                 d.Hit = hit;
@@ -153,7 +155,11 @@ namespace AThousandDawns.Player
                     // 적이 죽거나 (자폭처럼) 바로 사라지면 그 자리 바닥에 떨어져요
                     if (d.Stuck == null) Drop(d, d.Go.transform.position);
                     else if (d.Stuck.IsDead) Drop(d, d.Stuck.transform.position);
-                    else d.Go.transform.position = d.Stuck.transform.position + d.Offset;
+                    else
+                    {
+                        var body = d.Stuck.transform;
+                        d.Go.transform.SetPositionAndRotation(body.position + body.rotation * d.Offset, body.rotation * d.StuckRot);
+                    }
                 }
                 d.Life -= dt;
                 if (d.Rend != null) d.Rend.enabled = d.Life > blink || Mathf.Repeat(d.Life, 0.25f) > 0.12f; // 마지막 1.5초 깜빡임
@@ -222,17 +228,54 @@ namespace AThousandDawns.Player
             Vector3 pos = d.Go.transform.position;
             Vector3 to = target - pos;
             float step = D("knife.return_speed", 30f) * dt;
-            if (to.magnitude <= Mathf.Max(step, 0.4f)) return true;
-            d.Go.transform.position = pos + to.normalized * step;
-            d.Go.transform.rotation = Quaternion.LookRotation(to);
+            bool arrived = to.magnitude <= Mathf.Max(step, 0.4f);
+            Vector3 next = arrived ? target : pos + to.normalized * step;
+            if (d.Recall) RecallHits(d, pos, next); // 이번에 지나간 길의 적
+            if (arrived) return true;
+            d.Go.transform.position = next;
+            if (to.sqrMagnitude > 1e-6f) d.Go.transform.rotation = Quaternion.LookRotation(to);
             return false;
         }
 
+        // 회수로 돌아오는 비도가 from → to를 지나며 몸에 닿은 적에게 회수 피해 (비도 하나에 적마다 한 번)
+        void RecallHits(Dagger d, Vector3 from, Vector3 to)
+        {
+            float pathRadius = D("knife.recall_path_radius", 0.6f);
+            int maxPer = Mathf.RoundToInt(D("knife.recall_max_per_target", 6f));
+            Breakable.BreakOnSegment(from, to, pathRadius); // 항아리도 깨요
+            Damageable.CopyAll(_targets);
+            foreach (var e in _targets)
+            {
+                if (e == null || e.IsDead || !e.Targetable || d.HitSet.Contains(e)) continue;
+                if (DistanceToSegment(e.transform.position, from, to) > pathRadius + e.BodyRadius) continue;
+                d.HitSet.Add(e);
+                int n = _recallCounts.TryGetValue(e, out int c) ? c : 0;
+                if (n >= maxPer) continue; // 한 번 회수에 한 적 최대 6개
+                _recallCounts[e] = n + 1;
+                HitTarget(e, d.Hit, HitTag.Skill);
+                if (n == 0) Gauge = Mathf.Min(GaugeCap, Gauge + _gaugeSkill * GaugeGainMultiplier); // 게이지는 예전처럼 맞힌 적마다 한 번
+            }
+        }
+
+        // 적 몸에 박혀요: 충돌체 가장자리가 아니라 몸 가운데 가까이, 가슴 높이에 날아온 쪽에서 칼끝을 안으로 박아요
         void Stick(Dagger d, Damageable target)
         {
             d.Flight = 0f;
             d.Stuck = target;
-            d.Offset = d.Go.transform.position - target.transform.position;
+            var body = target.transform;
+            Vector3 pos = d.Go.transform.position;
+            Vector3 dir = Flatten(d.Dir);
+            if (dir.sqrMagnitude < 1e-4f) dir = Flatten(body.position - pos); // 대시 공격: 떨어진 자리에서 적 쪽으로
+            dir = dir.sqrMagnitude > 1e-4f ? dir.normalized : _facing;
+            float height = D("knife.stick_height", 1f);
+            if (target.TryGetComponent(out CharacterController cc)) // 작은 적은 몸 높이에 맞춰요 (꽂힐 때 한 번만)
+                height = Mathf.Min(height, (cc.center.y + cc.height * 0.5f) * body.lossyScale.y * 0.65f);
+            Vector3 at = body.position - dir * (target.BodyRadius * D("knife.stick_depth", 0.35f)) + Vector3.up * height; // 손잡이는 날아온 쪽으로 나와요
+            var rot = Quaternion.LookRotation(dir + Vector3.down * 0.15f); // 칼끝이 몸 안쪽 (살짝 아래)
+            d.Go.transform.SetPositionAndRotation(at, rot);
+            var inv = Quaternion.Inverse(body.rotation);
+            d.Offset = inv * (at - body.position);
+            d.StuckRot = inv * rot;
             d.Life = D("knife.lifetime", 6f);
         }
 
@@ -500,36 +543,15 @@ namespace AThousandDawns.Player
 
         public bool CanRecall => DaggerCount > 0;
 
-        // 방 안의 비도가 전부 돌아와요. 맞힌 적 수
+        readonly Dictionary<Damageable, int> _recallCounts = new Dictionary<Damageable, int>(); // 이번 회수에 적마다 맞은 비도 수
+
+        // 방 안의 비도가 전부 돌아와요. 돌아오는 비도 수 (피해는 날아오는 비도가 적을 지나갈 때 비도마다 들어가요)
         public int RecallDaggers()
         {
             Sfx.Play(SfxId.DaggerRecall);
-            float per = _skillDamage * D("knife.recall_ratio", 0.25f);
-            int maxPer = Mathf.RoundToInt(D("knife.recall_max_per_target", 6f));
-            float pathRadius = D("knife.recall_path_radius", 0.6f);
-            var counts = new Dictionary<Damageable, int>();
-            Vector3 me = transform.position;
-            foreach (var d in _daggers)
-            {
-                if (d.Flying || d.Returning) continue;
-                if (d.Stuck != null && !d.Stuck.IsDead) Add(d.Stuck);
-                // 돌아오는 길의 적
-                Vector3 from = d.Go.transform.position;
-                Breakable.BreakOnSegment(from, me, pathRadius);
-                foreach (var e in Damageable.All())
-                {
-                    if (e == d.Stuck || e.IsDead || !e.Targetable) continue;
-                    if (DistanceToSegment(e.transform.position, from, me) <= pathRadius + e.BodyRadius) Add(e);
-                }
-            }
-            int hits = 0;
-            foreach (var kv in counts)
-            {
-                var hit = PlayerHit(per * Mathf.Min(kv.Value, maxPer)); // 같은 적에게는 한 번으로 합쳐요
-                hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
-                HitTarget(kv.Key, hit, HitTag.Skill);
-                hits++;
-            }
+            var hit = PlayerHit(_skillDamage * D("knife.recall_ratio", 0.25f)); // 비도 1개 피해
+            hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
+            _recallCounts.Clear();
             var stuckTargets = new List<Damageable>(); int returning = 0;
             foreach (var d in _daggers)
             {
@@ -543,13 +565,13 @@ namespace AThousandDawns.Player
             {
                 if (d.Flying || d.Returning) continue;
                 d.Returning = true;
+                d.Recall = true;
+                d.Hit = hit;
+                (d.HitSet ??= new HashSet<Damageable>()).Clear(); // 꽂혀 있던 적도 몸 안에서 빠져나오며 한 번 맞아요
                 d.Stuck = null;
                 if (d.Rend != null) d.Rend.enabled = true;
             }
-            Gauge = Mathf.Min(GaugeCap, Gauge + hits * _gaugeSkill * GaugeGainMultiplier);
-            return hits;
-
-            void Add(Damageable e) => counts[e] = counts.TryGetValue(e, out int n) ? n + 1 : 1;
+            return returning;
         }
 
         // ── 대시 공격: 지나온 길에 1칸 간격으로 떨어뜨려요

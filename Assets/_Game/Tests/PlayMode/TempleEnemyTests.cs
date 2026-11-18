@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using AThousandDawns.Combat;
+using AThousandDawns.Core;
 using AThousandDawns.Enemies;
 using AThousandDawns.Player;
 using AThousandDawns.Prototype;
@@ -90,7 +91,6 @@ namespace AThousandDawns.Tests
             var arhat = (ArhatBrain)Spawn(EnemyKind.Arhat, 5f);
             yield return new WaitForSeconds(1f);
             Assert.IsTrue(arhat.IsDormant, "멀리 있으면 석상");
-            Assert.IsFalse(arhat.Damageable.Targetable, "석상은 맞힐 수 없어요");
 
             var cc = _player.GetComponent<CharacterController>();
             cc.enabled = false;
@@ -103,6 +103,44 @@ namespace AThousandDawns.Tests
             Assert.Less(_player.Health, hp, "돌진에 맞았어요");
             yield return new WaitForSeconds(0.5f);
             Assert.IsTrue(_player.IsStunned, "맞은 뒤 0.5초가 지나도 아직 기절 (0.8초)");
+        }
+
+        [UnityTest]
+        public IEnumerator 석상_나한은_멀리서도_공격받으면_깨어남()
+        {
+            yield return Load();
+            var arhat = (ArhatBrain)Spawn(EnemyKind.Arhat, 6f);
+            yield return new WaitForSeconds(0.5f);
+            Assert.IsTrue(arhat.IsDormant, "멀리 있으면 석상");
+            Assert.IsTrue(arhat.Damageable.Targetable, "석상이어도 맞힐 수 있어요");
+            arhat.Damageable.ApplyHit(1);
+            Assert.IsFalse(arhat.IsDormant, "맞으면 깨어나요");
+        }
+
+        [UnityTest]
+        public IEnumerator 망령_혼불은_잠깐만_꺾이고_그다음엔_곧게_날아감()
+        {
+            yield return Load();
+            var owner = Spawn(EnemyKind.Wraith, 8f); // 혼불 주인 (쓰러지면 혼불도 꺼져요)
+            Vector3 start = _player.transform.position + Vector3.right * 10f;
+            start.y = 1f;
+            var go = new GameObject("혼불 테스트");
+            go.transform.position = start;
+            float homeTime = GameConfig.GetOptional("wraith.orb_home_time", 1.5f);
+            go.AddComponent<WraithOrb>().Launch(_player, Vector3.forward, GameConfig.GetOptional("wraith.orb_speed", 4f), GameConfig.GetOptional("wraith.orb_turn", 40f),
+                GameConfig.GetOptional("wraith.orb_life", 4f), 0.35f, 1f, owner.Damageable, homeTime, GameConfig.GetOptional("wraith.orb_home_stop", 2f));
+            yield return new WaitForSeconds(homeTime + 0.2f);
+            Assert.IsTrue(go != null, "아직 날고 있어요");
+            Vector3 a = go.transform.position;
+            yield return new WaitForSeconds(0.4f);
+            Vector3 b = go.transform.position;
+            yield return new WaitForSeconds(0.4f);
+            Vector3 c = go.transform.position;
+            Vector3 d1 = b - a, d2 = c - b;
+            d1.y = d2.y = 0f;
+            Assert.Greater(Vector3.Angle(Vector3.forward, d1), 10f, "처음엔 플레이어 쪽으로 꺾여요");
+            Assert.Less(Vector3.Angle(d1, d2), 1f, "꺾는 시간이 지나면 곧게 날아요 (옆으로 대시하면 피해요)");
+            Object.Destroy(go);
         }
 
         [UnityTest]

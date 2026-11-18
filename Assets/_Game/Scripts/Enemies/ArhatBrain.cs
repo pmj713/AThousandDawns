@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace AThousandDawns.Enemies
 {
-    // 석상 나한 (폐사찰, 몬스터 시트 42행): 방에 석상처럼 서 있다가 (맞힐 수 없고 몸이 잿빛) 3칸 안으로 다가오면 깨어나요.
+    // 석상 나한 (폐사찰, 몬스터 시트 42행): 방에 석상처럼 서 있다가 (몸이 잿빛) 3칸 안으로 다가오거나 공격받으면 깨어나요.
     // 깨어나면 멧돼지처럼 예고 뒤 직선 돌진. 느리고 짧지만 맞으면 기절 (0.8초). 돌진이 끝난 자리에 반경 1.8칸 충격파 ×0.6.
     // 벽에 부딪히면 멧돼지처럼 멈춰 서요 (그 자리에도 충격파). 돌진 중엔 경직이 없어요.
     public sealed class ArhatBrain : BoarBrain
@@ -25,20 +25,12 @@ namespace AThousandDawns.Enemies
             _quakeRatio = Tuning("quake_ratio", 0.6f);
         }
 
-        // 석상: 맞힐 수 없어요 (장식처럼 보여요)
-        protected override void OnInitialized()
-        {
-            Body.Targetable = false;
-            Body.SetTint(Stone);
-        }
+        // 석상: 잿빛으로 굳어 있어요. 맞힐 수는 있고, 맞으면 바로 깨어나요 (EnemyBrain.OnDamaged → Wake)
+        protected override void OnInitialized() => Body.SetTint(Stone);
 
         protected override bool ShouldWake() => ToPlayer().magnitude <= _wake;
 
-        protected override void OnWoke()
-        {
-            Body.Targetable = true;
-            Body.SetTint(null);
-        }
+        protected override void OnWoke() => Body.SetTint(null);
 
         protected override void OnChargeHit() => Player.Stagger(_stun);
 

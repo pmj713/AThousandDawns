@@ -15,7 +15,7 @@ using Object = UnityEngine.Object;
 
 namespace AThousandDawns.Tests
 {
-    // 비도: 던지면 꽂히거나 떨어지고, 회수로 거둬들이며 꽂힌 적에게 한 번에 피해. 마을 무기 거치대에서 바꿔요.
+    // 비도: 던지면 몸에 박히거나 떨어지고, 회수로 거둬들이며 돌아오는 비도가 지나간 적에게 비도마다 피해. 마을 무기 거치대에서 바꿔요.
     public class DaggerTests : InputTestFixture
     {
         PlayerController _player;
@@ -58,13 +58,14 @@ namespace AThousandDawns.Tests
         }
 
         [UnityTest]
-        public IEnumerator 던지면_꽂히고_회수하면_한_번에_피해()
+        public IEnumerator 던지면_꽂히고_회수하면_돌아오는_비도마다_피해()
         {
             yield return LoadCombat();
             Assert.AreEqual("회수 (비도 0)", _player.SkillName, "비도를 들면 기본 초식은 회수");
             Assert.IsFalse(_player.CanRecall, "남은 비도가 없으면 회수 못 써요");
             var boar = _director.Spawn(EnemyKind.Boar, _player.transform.position + _player.Facing * 3f);
             var target = boar.Damageable;
+            target.ScaleMaxHealth(10f); // 회수 피해에 죽지 않게
             yield return null;
             float hp = target.Health;
 
@@ -76,9 +77,66 @@ namespace AThousandDawns.Tests
             Assert.IsTrue(_player.CanRecall);
 
             float before = target.Health;
-            Assert.AreEqual(1, _player.RecallDaggers(), "같은 적은 한 번으로 합쳐요");
-            Assert.Less(target.Health, before, "회수 피해");
+            Assert.AreEqual(3, _player.RecallDaggers(), "돌아오는 비도 수");
+            Assert.AreEqual(before, target.Health, "회수한 순간엔 피해가 없어요");
             Assert.AreEqual(0, _player.DaggerCount, "전부 돌아와요");
+            yield return null; // 다음 프레임에 몸에서 빠져나오며 맞혀요
+            yield return null;
+            float afterOne = target.Health;
+            Assert.Less(afterOne, before, "돌아오는 비도에 맞아요");
+            yield return WaitUntil(() => GameObject.Find("비도") == null, 2f);
+            Assert.AreEqual(afterOne, target.Health, 1e-3f, "비도 하나는 한 번 돌아올 때 같은 적을 한 번만 맞혀요");
+        }
+
+        [UnityTest]
+        public IEnumerator 회수_피해는_비도가_적을_지나갈_때_들어감()
+        {
+            yield return LoadCombat();
+            _player.ThrowDaggers(1, HitDamageInput.Of(8f), HitTag.Basic, 0f); // 앞에 적이 없어 사거리 끝 (8칸)에 떨어져요
+            yield return WaitUntil(() => _player.DaggerCount == 1, 2f);
+            var dagger = GameObject.Find("비도");
+            Assert.IsNotNull(dagger);
+            var boar = _director.Spawn(EnemyKind.Boar, _player.transform.position + _player.Facing * 4f); // 돌아오는 길 가운데
+            var target = boar.Damageable;
+            target.ScaleMaxHealth(10f);
+            var cc = boar.GetComponent<CharacterController>();
+            yield return null;
+            float hp = target.Health;
+            _player.RecallDaggers();
+            Assert.AreEqual(hp, target.Health, "회수한 순간엔 피해가 없어요");
+            Vector3 hold = _player.transform.position + _player.Facing * 4f;
+            float end = Time.time + 1f;
+            while (Time.time < end && GameObject.Find("비도") != null) // 멧돼지가 길에서 벗어나지 않게 붙잡아 둬요
+            {
+                if (cc != null) cc.enabled = false;
+                boar.transform.position = hold;
+                if (cc != null) cc.enabled = true;
+                yield return null;
+            }
+            Assert.Less(target.Health, hp, "돌아오는 비도가 지나가며 맞혀요");
+        }
+
+        [UnityTest]
+        public IEnumerator 꽂힌_비도는_충돌체_가장자리가_아니라_몸에_박힘()
+        {
+            yield return LoadCombat();
+            var boar = _director.Spawn(EnemyKind.Boar, _player.transform.position + _player.Facing * 3f);
+            var target = boar.Damageable;
+            yield return null;
+            _player.ThrowDaggers(1, HitDamageInput.Of(1f), HitTag.Basic, 0f);
+            yield return WaitUntil(() => _player.StuckDaggers(target) == 1, 2f);
+            Assert.AreEqual(1, _player.StuckDaggers(target));
+            yield return null;
+            var dagger = GameObject.Find("비도");
+            Vector3 flat = dagger.transform.position - boar.transform.position;
+            flat.y = 0f;
+            Assert.Less(flat.magnitude, target.BodyRadius * 0.6f, "몸 가운데 가까이 박혀요");
+            float y = dagger.transform.position.y - boar.transform.position.y;
+            Assert.Greater(y, 0.2f, "바닥이 아니라 몸에");
+            Assert.LessOrEqual(y, 1.1f, "몸 위로 뜨지 않아요");
+            Vector3 tip = dagger.transform.forward;
+            tip.y = 0f;
+            Assert.Greater(Vector3.Dot(tip.normalized, -flat.normalized), 0.5f, "칼끝이 몸 안쪽을 향해요 (적이 돌아도 같이 돌아요)");
         }
 
         [UnityTest]
@@ -167,6 +225,9 @@ namespace AThousandDawns.Tests
             Assert.IsTrue(run.InVillage);
             Assert.IsFalse(player.UsesDagger, "처음엔 검");
             run.UseSpot(RoomRun.VillageSpot.Rack);
+            Assert.IsTrue(run.RackOpen, "거치대 창이 떠요 (바로 바뀌지 않아요)");
+            Assert.IsFalse(player.UsesDagger, "아직 검");
+            run.EquipWeapon(true); // 비도 그림 밑 장착 버튼
             Assert.IsTrue(player.UsesDagger, "비도로 바꿨어요");
             Assert.AreEqual(1, MetaSave.Load().weapon, "기억해요");
 

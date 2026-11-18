@@ -328,7 +328,7 @@ namespace AThousandDawns.Art
                 if (brain is IronFistBrain) IronFistBrain.FistWave += OnFistWave;
                 if (brain is GoblinChiefBrain) GoblinChiefBrain.TrapThrown += OnTrapThrown;
                 if (brain is OgreBrain) OgreBrain.Enraged += OnOgreEnraged;
-                if (brain is IronFistBrain) IronFistBrain.FarLeaped += OnFarLeaped;
+                if (brain is IronFistBrain) IronFistBrain.FarLeapDescending += OnFarLeaped;
                 if (brain is DeathKnightBrain) DeathKnightBrain.SpectralRide += OnSpectralRide;
                 if (brain is DarkElfBrain) { DarkElfBrain.Emerged += OnEmerged; DarkElfBrain.Vanished += OnVanished; DarkElfBrain.DanceCut += OnDanceCut; }
                 if (brain is IronFistBrain) IronFistBrain.Grabbed += OnGrabbed;
@@ -830,16 +830,18 @@ namespace AThousandDawns.Art
             PlayHeld("TrapThrow", 0.8f);
         }
 
-        // 먼 거리 도약 (철권 계열: 철권 마웅·고블린 족장·오우거·데스나이트): 게임은 착지 순간 순간이동해요.
-        //   모델만 떠난 자리에서 포물선을 그리며 날아와 내려앉게 보여요 (0.3초, 거리만큼 높이)
+        // 먼 거리 도약 (철권 계열: 철권 마웅·고블린 족장·오우거·데스나이트): 게임은 땅에 닿기 조금 전(FarLeapDescending) 순간이동해요.
+        //   모델만 떠난 자리에서 포물선을 그리며 날아와, 신호가 알려 준 시간 끝(= 판정 · 내려찍는 소리)에 땅에 닿아요 (거리만큼 높이)
         const float ArcTime = 0.3f;
-        bool _arcing;
-        float _arcStart, _arcHeight;
+        bool _arcing, _leapSent;
+        float _arcStart, _arcHeight, _arcTime = ArcTime;
         Vector3 _arcFrom;
 
-        void OnFarLeaped(IronFistBrain boss, Vector3 from, Vector3 to)
+        void OnFarLeaped(IronFistBrain boss, Vector3 from, Vector3 to, float untilLanding)
         {
             if (boss != _brain) return;
+            _arcTime = untilLanding > 0.02f ? untilLanding : ArcTime;
+            _leapSent = true; // 남은 예고 동안 웅크림·뛰어오름을 다시 시작하지 않아요
             _arcFrom = from - to;
             _arcFrom.y = 0f;
             _arcHeight = Mathf.Clamp(_arcFrom.magnitude * 0.3f, 1.2f, 3.5f);
@@ -854,22 +856,23 @@ namespace AThousandDawns.Art
 
         void TickArc()
         {
-            float k = Mathf.Clamp01((Time.time - _arcStart) / ArcTime);
+            float k = Mathf.Clamp01((Time.time - _arcStart) / _arcTime);
             if (k >= 1f) { _arcing = false; _animator.transform.localPosition = _modelRestPos; return; }
             var offset = Vector3.Lerp(_arcFrom, Vector3.zero, k) + Vector3.up * (4f * k * (1f - k) * _arcHeight);
             _animator.transform.position = transform.TransformPoint(_modelRestPos) + offset;
         }
 
         // 예고 동안의 위치: 어둠 걸음은 땅속으로 가라앉고(옛 자리), 점프 덮치기·땅울림 도약은 0.3초 웅크린 뒤 위로 뛰어올라 떠 있어요.
-        //   판정 순간 게임이 새 자리로 옮기며 FarLeaped를 보내면 위 OnFarLeaped가 그 높이에서 이어받아요. 신호가 안 오면(기절 등) 제자리로
+        //   땅에 닿기 직전 게임이 새 자리로 옮기며 FarLeapDescending을 보내면 위 OnFarLeaped가 그 높이에서 이어받아요. 신호가 안 오면(기절 등) 제자리로
         bool _preActive;
         float _preStart, _preY;
 
         void TickPreLeap()
         {
+            if (_leapSent && _brain.AttackPhase != EnemyAttackTimeline.Phase.Windup) _leapSent = false;
             string attack = _brain.AttackName;
             bool sink = attack == "어둠 걸음", jump = attack == "점프 덮치기" || attack == "땅울림 도약";
-            bool windup = (sink || jump) && _brain.AttackPhase == EnemyAttackTimeline.Phase.Windup && !_brain.IsDead;
+            bool windup = (sink || jump) && _brain.AttackPhase == EnemyAttackTimeline.Phase.Windup && !_brain.IsDead && !_leapSent;
             if (windup)
             {
                 if (!_preActive) { _preActive = true; _preStart = Time.time; }
@@ -1027,7 +1030,7 @@ namespace AThousandDawns.Art
                 IronFistBrain.FistWave -= OnFistWave;
                 GoblinChiefBrain.TrapThrown -= OnTrapThrown;
                 OgreBrain.Enraged -= OnOgreEnraged;
-                IronFistBrain.FarLeaped -= OnFarLeaped;
+                IronFistBrain.FarLeapDescending -= OnFarLeaped;
                 DeathKnightBrain.SpectralRide -= OnSpectralRide;
                 DarkElfBrain.Emerged -= OnEmerged;
                 DarkElfBrain.Vanished -= OnVanished;

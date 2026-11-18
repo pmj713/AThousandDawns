@@ -2573,6 +2573,14 @@ MonoBehaviour:
     value: 0.6
     unit: "\uCE78"
     note: "\uD68C\uC218: \uB3CC\uC544\uC624\uB294 \uAE38\uC5D0 \uB9DE\uB294 \uAC70\uB9AC (\uC784\uC2DC)"
+  - key: knife.stick_height
+    value: 1
+    unit: "\uCE78"
+    note: "\uC801\uC5D0\uAC8C \uAF42\uD78C \uBE44\uB3C4 \uB192\uC774 (\uAC00\uC2B4 \uB192\uC774. \uC791\uC740 \uC801\uC740 \uBAB8 \uB192\uC774\uC758 65%\uAE4C\uC9C0 \uB0AE\uC544\uC838\uC694)"
+  - key: knife.stick_depth
+    value: 0.35
+    unit: 
+    note: "\uAF42\uD78C \uBE44\uB3C4\uAC00 \uBAB8 \uAC00\uC6B4\uB370\uC5D0\uC11C \uB5A8\uC5B4\uC9C4 \uAC70\uB9AC (\uBAB8 \uBC18\uACBD \uB300\uBE44)"
   - key: knife.dash_damage
     value: 8
     unit: 
@@ -2802,13 +2810,21 @@ MonoBehaviour:
     unit: cell/s
     note: "\uD63C\uBD88 \uC18D\uB3C4 (\uBCBD \uD1B5\uACFC)"
   - key: wraith.orb_turn
-    value: 90
+    value: 40
     unit: deg/s
-    note: "\uD63C\uBD88\uC774 \uAEBE\uC774\uB294 \uBE60\uB974\uAE30"
+    note: "\uD63C\uBD88\uC774 \uAEBE\uC774\uB294 \uBE60\uB974\uAE30 (90\uC5D0\uC11C \uB0AE\uCDA4 \xB7 \uC606\uC73C\uB85C \uB300\uC2DC\uD558\uBA74 \uD53C\uD574\uC694)"
   - key: wraith.orb_life
     value: 4
     unit: s
     note: "\uD63C\uBD88\uC774 \uC0AC\uB77C\uC9C0\uAE30\uAE4C\uC9C0"
+  - key: wraith.orb_home_time
+    value: 1.5
+    unit: s
+    note: "\uD63C\uBD88\uC774 \uD50C\uB808\uC774\uC5B4 \uCABD\uC73C\uB85C \uAEBE\uB294 \uC2DC\uAC04 (\uC9C0\uB098\uBA74 \uACE7\uAC8C \uB0A0\uC544\uC694)"
+  - key: wraith.orb_home_stop
+    value: 2
+    unit: cell
+    note: "\uD63C\uBD88\uC774 \uC774 \uAC70\uB9AC \uC548\uC5D0 \uB4E4\uBA74 \uB354\uB294 \uAEBE\uC9C0 \uC54A\uC544\uC694"
   - key: arhat.hp
     value: 112
     unit: 
@@ -3352,7 +3368,7 @@ MonoBehaviour:
   - key: arhat.statue_wake
     value: 3
     unit: cell
-    note: "\uC11D\uC0C1 \uB098\uD55C: \uC11D\uC0C1\uC73C\uB85C \uC11C \uC788\uB2E4\uAC00 \uC774 \uAC70\uB9AC \uC548\uC774\uBA74 \uAE68\uC5B4\uB0A8 (\uADF8\uC804\uC5D4 \uB9DE\uD790 \uC218 \uC5C6\uC74C)"
+    note: "\uC11D\uC0C1 \uB098\uD55C: \uC11D\uC0C1\uC73C\uB85C \uC11C \uC788\uB2E4\uAC00 \uC774 \uAC70\uB9AC \uC548\uC774\uBA74 \uAE68\uC5B4\uB0A8 (\uADF8\uC804\uC5D0\uB3C4 \uB9DE\uD790 \uC218 \uC788\uACE0"
   - key: arhat.quake_radius
     value: 1.8
     unit: cell
@@ -5033,6 +5049,10 @@ MonoBehaviour:
     value: 1.5
     unit: cell
     note: "\uC810\uD504 \uB36E\uCE58\uAE30 \uB109\uBC31"
+  - key: goblinchief.leap_air
+    value: 0.3
+    unit: s
+    note: "\uC810\uD504 \uB36E\uCE58\uAE30: \uD310\uC815 \uC774\uB9CC\uD07C \uC804\uC5D0 \uB0B4\uB824\uC549\uC744 \uC790\uB9AC\uB85C \uC62E\uACA8 \uBAB8\uC774 \uB0B4\uB824\uC640\uC694 (\uB545\uC5D0 \uB2FF\uB294 \uC21C\uAC04 = \uD310\uC815 \xB7 \uC18C\uB9AC)"
   - key: goblinchief.trap_interval
     value: 6
     unit: s
@@ -5177,6 +5197,10 @@ MonoBehaviour:
     value: 2
     unit: cell
     note: "\uB545\uC6B8\uB9BC \uB3C4\uC57D \uB109\uBC31"
+  - key: ogre.leap_air
+    value: 0.3
+    unit: s
+    note: "\uB545\uC6B8\uB9BC \uB3C4\uC57D: \uD310\uC815 \uC774\uB9CC\uD07C \uC804\uC5D0 \uB0B4\uB824\uC549\uC744 \uC790\uB9AC\uB85C \uC62E\uACA8 \uBAB8\uC774 \uB0B4\uB824\uC640\uC694 (\uB545\uC5D0 \uB2FF\uB294 \uC21C\uAC04 = \uD310\uC815 \xB7 \uC18C\uB9AC)"
   - key: ogre.rage_speed
     value: 1.3
     unit: 
@@ -6629,6 +6653,10 @@ MonoBehaviour:
     value: 1
     unit: cell
     note: "\uC5B4\uB460 \uAC78\uC74C \uB109\uBC31"
+  - key: deathknight.leap_air
+    value: 0.3
+    unit: s
+    note: "\uC5B4\uB460 \uAC78\uC74C: \uD310\uC815 \uC774\uB9CC\uD07C \uC804\uC5D0 \uB0B4\uB824\uC549\uC744 \uC790\uB9AC\uB85C \uC62E\uACA8 \uBAB8\uC774 \uB0B4\uB824\uC640\uC694 (\uB545\uC5D0 \uB2FF\uB294 \uC21C\uAC04 = \uD310\uC815 \xB7 \uC18C\uB9AC)"
   - key: deathknight.lane_interval
     value: 6
     unit: s

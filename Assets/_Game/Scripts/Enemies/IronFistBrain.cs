@@ -48,12 +48,12 @@ namespace AThousandDawns.Enemies
         float _meleeLength, _meleeWidth;
         float _grabWindup, _grabRecovery, _grabRatio, _grabRadius, _grabAngle, _grabThrow, _grabInterval, _grabRange;
         float _chargeWindup, _chargeRatio, _chargeSpeed, _chargeWidth, _chargeKnockback, _chargeMax, _stun, _p2Stun;
-        float _leapWindup, _leapRadius, _leapRatio, _leapRecovery, _leapInterval, _leapTimer;
+        float _leapWindup, _leapRadius, _leapRatio, _leapRecovery, _leapInterval, _leapTimer, _leapAir;
         float _waveInterval, _waveTimer, _waveSpeed, _waveRadius, _waveRatio, _waveRange;
         float _rockRatio, _rockRadius, _rockFall;
         float _decisionTimer, _transitionTimer, _grabTimer, _activeTimer, _lungeLeft, _traveled, _plannedLength;
-        bool _hitPlayer;
-        Vector3 _leapTo;
+        bool _hitPlayer, _leapDescending;
+        Vector3 _leapTo, _leapFrom;
         Vector3 _zoneCenter;
         Vector2 _zoneSize;
         bool _hasZone;
@@ -63,7 +63,8 @@ namespace AThousandDawns.Enemies
 
         public static event System.Action<IronFistBrain, Vector3, Vector3> Grabbed;  // 잡아 던짐 (보스, 잡은 자리, 던진 방향)
         public static event System.Action<IronFistBrain, Vector3> FistWave;         // 권풍을 쏨 (보스, 방향)
-        public static event System.Action<IronFistBrain, Vector3, Vector3> FarLeaped; // 먼 거리 도약 (보스, 떠난 자리, 내려앉은 자리)
+        public static event System.Action<IronFistBrain, Vector3, Vector3> FarLeaped; // 먼 거리 도약이 땅에 닿음 = 판정·소리 (보스, 떠난 자리, 내려앉은 자리)
+        public static event System.Action<IronFistBrain, Vector3, Vector3, float> FarLeapDescending; // 내려앉기 시작 (보스, 떠난 자리, 내려앉을 자리, 땅에 닿기까지 초) (아트: 이 시간 동안 내려와 판정 순간 땅에 닿아요)
 
         public override EnemyKind Kind => EnemyKind.IronFist;
         protected override string Key => "ironfist";
@@ -134,6 +135,7 @@ namespace AThousandDawns.Enemies
             _leapRatio = Tuning("leap_ratio", 1f);
             _leapRecovery = Tuning("leap_recovery", 1f);
             _leapInterval = Tuning("leap_interval", 6f);
+            _leapAir = Tuning("leap_air", 0.3f);
             _waveInterval = Tuning("wave_interval", 5f);
             _waveSpeed = Tuning("wave_speed", 7f);
             _waveRadius = Tuning("wave_radius", 0.9f);
@@ -198,6 +200,7 @@ namespace AThousandDawns.Enemies
                 case Pattern.Leap:
                     WindupTime = _leapWindup * p2; RecoveryTime = _leapRecovery;
                     _leapTimer = _leapInterval;
+                    _leapDescending = false;
                     _leapTo = Director.FindFreeSpot(Player.transform.position, BodyRadius + PlayerRadius + 0.2f);
                     _leapTo = Clamp(_leapTo);
                     break;
@@ -352,16 +355,32 @@ namespace AThousandDawns.Enemies
             Grabbed?.Invoke(this, Player.transform.position, AimDirection);
         }
 
+        // 먼 거리 도약은 예고가 leap_air초 남았을 때 내려앉을 자리로 몸을 옮겨요 (아트는 그동안 공중에서 내려와요).
+        //   그래야 몸이 땅에 닿는 순간 = 판정 · 내려찍는 소리 · 흙먼지가 한꺼번에 나요 (예전엔 소리가 먼저 나고 몸이 0.3초 뒤에 닿았어요)
+        protected override void TickWindup(float dt, bool tracking)
+        {
+            base.TickWindup(dt, tracking);
+            if (_pattern == Pattern.Leap && !_leapDescending && Attack.WindupLeft <= _leapAir) BeginLeapDescent(Attack.WindupLeft);
+        }
+
+        void BeginLeapDescent(float untilLanding)
+        {
+            _leapDescending = true;
+            _leapFrom = transform.position;
+            Teleport(_leapTo);
+            FarLeapDescending?.Invoke(this, _leapFrom, _leapTo, untilLanding / Mathf.Max(0.1f, Status.SpeedMultiplier)); // 둔화면 실제 시간으로는 더 길어요
+        }
+
         // 먼 거리 도약: 내려앉을 자리 예고 원 → 그 자리로 옮겨 내려찍기 (족장 덮치기 · 오우거 땅울림 · 데스나이트 어둠 걸음)
         void LandLeap()
         {
-            Vector3 from = transform.position;
-            Teleport(_leapTo);
-            Director.SpawnBurst(_leapTo, _leapRadius, BurstKind.Quake);
+            if (!_leapDescending) BeginLeapDescent(_leapAir); // 예고가 너무 짧아 미리 못 옮겼으면 지금 (아트는 예전처럼 잠깐 뒤에 닿아요)
+            _leapDescending = false;
+            Director.SpawnBurst(_leapTo, _leapRadius, BurstKind.Quake); // 내려찍는 소리도 여기서 (EnemyDirector.SpawnBurst → Sfx Explosion)
             Vector3 d = Player.transform.position - _leapTo;
             d.y = 0f;
             if (d.magnitude <= _leapRadius + PlayerRadius) HitPlayer(_leapRatio, Tuning("leap_knockback", 1.5f));
-            FarLeaped?.Invoke(this, from, _leapTo);
+            FarLeaped?.Invoke(this, _leapFrom, _leapTo);
             OnFarLeapLanded(_leapTo);
         }
 

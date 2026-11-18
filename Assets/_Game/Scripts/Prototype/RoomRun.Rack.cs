@@ -39,7 +39,7 @@ namespace AThousandDawns.Prototype
         }
 
         // 검 ↔ 비도 (다음에 회귀해도 기억해요)
-        void EquipWeapon(bool dagger)
+        public void EquipWeapon(bool dagger)
         {
             var meta = MetaSave.Load();
             meta.weapon = dagger ? 1 : 0;

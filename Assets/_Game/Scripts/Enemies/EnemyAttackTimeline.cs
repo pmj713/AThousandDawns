@@ -26,6 +26,9 @@ namespace AThousandDawns.Enemies
             _ => 1f,
         };
 
+        // 예고가 끝나 판정이 나기까지 남은 시간 (멈춰 늦춰지는 시간은 빼고)
+        public float WindupLeft => Current == Phase.Windup ? Math.Max(0f, _windup - _elapsed) : 0f;
+
         public event Action ActiveStarted;
         public event Action Finished;
 

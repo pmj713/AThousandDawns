@@ -17,6 +17,7 @@ namespace AThousandDawns.Enemies
 
         float _reassemble;
         public bool IsReassembling => _reassemble > 0f;
+        protected override bool IsAnchored => IsReassembling; // 다시 맞춰지는 동안은 밀리거나 끌려가지도 않아요
 
         protected override void OnInitialized()
         {
@@ -29,7 +30,7 @@ namespace AThousandDawns.Enemies
             _reassemble = Tuning("reassemble_time", 1.5f);
             if (Attack.IsAttacking) CancelAttack();
             Body.Targetable = false; // 무너진 동안은 맞지 않아요
-            HoldStill(_reassemble);
+            HoldStill(_reassemble); // 무너뜨린 그 타격의 경직이 이걸 짧게 덮지 않아요 (EnemyBrain.HoldStill은 더 긴 쪽)
             Reassembling?.Invoke(this);
         }
 

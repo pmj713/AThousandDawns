@@ -109,7 +109,7 @@ namespace AThousandDawns.EditorTools
 
         static readonly Vector3[] InnTables = { new Vector3(3.2f, 0f, -1.2f), new Vector3(3.4f, 0f, 2.3f), new Vector3(-3.6f, 0f, -1.6f) };
 
-        // 객잔 탁자 자리 (의자까지 덮는 보이지 않는 상자) · 술독 자리
+        // 객잔 탁자 자리 (의자까지 덮는 보이지 않는 상자) · 술독 자리 · 녹림왕 방 화톳불
         static void InnTableBlockers(Transform deco)
         {
             var root = new GameObject("Inn Table Blockers").transform;
@@ -125,6 +125,14 @@ namespace AThousandDawns.EditorTools
             jars.transform.SetParent(root, false);
             jars.transform.localPosition = InnCenter + new Vector3(-4.85f, 0.5f, -3.75f);
             jars.AddComponent<CapsuleCollider>().radius = 0.7f;
+            float hx = BossSize.x * 0.5f, hz = BossSize.y * 0.5f; // 녹림왕 방 북쪽 모서리 화톳불 둘 (VARCO 화로, 지름 약 1.3)
+            for (int s = -1; s <= 1; s += 2)
+            {
+                var brazier = new GameObject("Brazier Blocker");
+                brazier.transform.SetParent(root, false);
+                brazier.transform.position = BossCenter + new Vector3(s * (hx - 0.9f), 0.8f, hz - 0.9f);
+                brazier.AddComponent<CapsuleCollider>().radius = 0.7f;
+            }
         }
 
         // 객잔: 손님 탁자·긴 의자 셋, 구석 항아리, 입구 양옆 등불. 가운데 길(입구 → 북쪽 문)과 계산대 앞은 비워요

@@ -156,6 +156,34 @@ namespace AThousandDawns.Tests
             Assert.IsTrue(skeleton.IsDead, "두 번째엔 쓰러져요");
         }
 
+        // 다시 맞춰지는 동안은 무너뜨린 타격의 경직이 끝나도 걷지 않고, 밀려나지도 않아요
+        [UnityTest]
+        public IEnumerator 스켈레톤은_다시_맞춰지는_동안_제자리()
+        {
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var skeleton = (SkeletonBrain)director.Spawn(EnemyKind.Skeleton, player.transform.position + new Vector3(0f, 0f, 3f));
+            yield return null;
+            skeleton.Damageable.ApplyHit(99999); // 경직을 일으키는 보통 타격
+            Assert.IsTrue(skeleton.IsReassembling);
+            Vector3 at = skeleton.transform.position;
+            skeleton.Displace(new Vector3(1f, 0f, 0f));
+            var cc = player.GetComponent<CharacterController>();
+            cc.enabled = false;
+            player.transform.position = at + new Vector3(2.5f, 0f, 0f); // 옆으로 옮겨서, 움직이면 돌아서 다가오게
+            cc.enabled = true;
+            float until = Time.realtimeSinceStartup + 4f;
+            while (skeleton.IsReassembling && Time.realtimeSinceStartup < until)
+            {
+                Vector3 moved = skeleton.transform.position - at;
+                moved.y = 0f;
+                Assert.Less(moved.magnitude, 0.05f, "다시 맞춰지는 동안은 움직이지 않아요");
+                yield return null;
+            }
+            Assert.IsFalse(skeleton.IsReassembling, "다시 맞춰져요");
+        }
+
         [UnityTest]
         public IEnumerator 고블린_족장과_오우거가_오류_없이_싸움([Values(EnemyKind.GoblinChief, EnemyKind.Ogre, EnemyKind.DarkElf, EnemyKind.DeathKnight)] EnemyKind kind)
         {
@@ -572,9 +600,20 @@ namespace AThousandDawns.Tests
             var names = new System.Collections.Generic.HashSet<string>();
             bool grabbed = false, leapt = false;
             System.Action<IronFistBrain, Vector3, Vector3> onGrab = (b, a, d) => grabbed |= b == boss;
-            System.Action<IronFistBrain, Vector3, Vector3> onLeap = (b, a, c) => leapt |= b == boss;
+            float descendAt = -1f, landAt = -1f;
+            bool descendedThere = false;
+            System.Action<IronFistBrain, Vector3, Vector3> onLeap = (b, a, c) => { if (b == boss && !leapt) landAt = Time.time; leapt |= b == boss; };
+            System.Action<IronFistBrain, Vector3, Vector3, float> onDescend = (b, a, c, t) =>
+            {
+                if (b != boss || leapt) return;
+                descendAt = Time.time;
+                Vector3 off = b.transform.position - c;
+                off.y = 0f;
+                descendedThere = off.magnitude < 0.05f;
+            };
             IronFistBrain.Grabbed += onGrab;
             IronFistBrain.FarLeaped += onLeap;
+            IronFistBrain.FarLeapDescending += onDescend;
             Time.timeScale = 2f;
             var cc = player.GetComponent<CharacterController>();
             float end = Time.time + 25f, farFrom = Time.time + 8f, nextJump = farFrom;
@@ -595,7 +634,16 @@ namespace AThousandDawns.Tests
             }
             IronFistBrain.Grabbed -= onGrab;
             IronFistBrain.FarLeaped -= onLeap;
+            IronFistBrain.FarLeapDescending -= onDescend;
             Time.timeScale = 1f;
+            if (kind != EnemyKind.IronFist && leapt)
+            {
+                // 몸은 판정 leap_air초 전에 내려앉을 자리로 옮겨 내려오고, 땅에 닿는 순간(FarLeaped) 판정 · 소리가 나요
+                float air = GameConfig.GetOptional($"{kind.ToString().ToLowerInvariant()}.leap_air", 0.3f);
+                Assert.Greater(descendAt, 0f, "내려앉기 신호가 먼저 와요");
+                Assert.IsTrue(descendedThere, "내려앉기 시작할 때 이미 그 자리에 있어요");
+                Assert.That(landAt - descendAt, Is.InRange(air * 0.5f, air + 0.2f), "내려앉기 시작 → 땅에 닿기까지 leap_air초");
+            }
             string melee = kind switch { EnemyKind.IronFist => "주먹 2연타", EnemyKind.GoblinChief => "철퇴 휘돌리기", EnemyKind.Ogre => "몽둥이 내려찍기", _ => "대검 올려베기" };
             Assert.IsTrue(names.Contains(melee) || names.Contains("잡아 던지기"), string.Join(",", names));
             if (kind == EnemyKind.IronFist) Assert.IsTrue(grabbed, "붙어 있으면 잡아 던지기");

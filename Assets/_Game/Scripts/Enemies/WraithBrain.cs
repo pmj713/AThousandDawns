@@ -7,11 +7,12 @@ namespace AThousandDawns.Enemies
 {
     // 망령 (폐사찰, 몬스터 시트 41행 "벽 통과 유도 구체"): 5~7칸을 두고 떠돌다가, 예고 뒤 혼불 하나를 쏴요.
     // 혼불은 느리게 플레이어 쪽으로 꺾이며 벽을 지나와요. 닿으면 사라지고, 대시(무적)로 닿아도 맞지 않고 사라져요.
+    // 꺾는 힘은 약해요: 처음 wraith.orb_home_time초 동안만, wraith.orb_home_stop칸 안에 들면 곧게 날아 옆으로 대시하면 피해요.
     public sealed class WraithBrain : EnemyBrain
     {
         const float ShotHeight = 1f;
 
-        float _keepMin, _keepMax, _orbSpeed, _orbTurn, _orbLife, _orbRadius;
+        float _keepMin, _keepMax, _orbSpeed, _orbTurn, _orbLife, _orbRadius, _orbHomeTime, _orbHomeStop;
 
         public override EnemyKind Kind => EnemyKind.Wraith;
         protected override string Key => "wraith";
@@ -25,9 +26,11 @@ namespace AThousandDawns.Enemies
             _keepMin = Tuning("keep_min", 5f);
             _keepMax = Tuning("keep_max", 7f);
             _orbSpeed = Tuning("orb_speed", 4f);
-            _orbTurn = Tuning("orb_turn", 90f);
+            _orbTurn = Tuning("orb_turn", 40f);
             _orbLife = Tuning("orb_life", 4f);
             _orbRadius = Tuning("orb_radius", 0.35f);
+            _orbHomeTime = Tuning("orb_home_time", 1.5f);
+            _orbHomeStop = Tuning("orb_home_stop", 2f);
         }
 
         protected override bool WantsToAttack(float distance) => distance <= AttackRange; // 벽 너머로도 쏴요
@@ -58,21 +61,22 @@ namespace AThousandDawns.Enemies
             var renderer = go.GetComponent<Renderer>();
             renderer.material.color = new Color(0.65f, 0.85f, 1f);
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            go.AddComponent<WraithOrb>().Launch(Player, Facing, _orbSpeed, _orbTurn, _orbLife, _orbRadius, AttackPower, Body);
+            go.AddComponent<WraithOrb>().Launch(Player, Facing, _orbSpeed, _orbTurn, _orbLife, _orbRadius, AttackPower, Body, _orbHomeTime, _orbHomeStop);
         }
 
         protected override void TickActive(float dt) { }
     }
 
     // 망령의 혼불: 플레이어 쪽으로 초당 turn도씩 꺾이며 날아가요. 벽은 그냥 지나가요.
+    // 꺾는 건 처음 homeTime초 동안만이고, homeStop칸 안에 한 번 들면 그때부터 곧게 날아요.
     public sealed class WraithOrb : MonoBehaviour
     {
         PlayerController _target;
         Vector3 _direction;
-        float _speed, _turn, _life, _radius, _attack;
+        float _speed, _turn, _life, _radius, _attack, _homeTime, _homeStop;
         Damageable _owner;
 
-        public void Launch(PlayerController target, Vector3 direction, float speed, float turnDegrees, float life, float radius, float attack, Damageable owner)
+        public void Launch(PlayerController target, Vector3 direction, float speed, float turnDegrees, float life, float radius, float attack, Damageable owner, float homeTime = 1.5f, float homeStop = 2f)
         {
             _target = target;
             _direction = new Vector3(direction.x, 0f, direction.z).normalized;
@@ -82,6 +86,8 @@ namespace AThousandDawns.Enemies
             _radius = radius;
             _attack = attack;
             _owner = owner;
+            _homeTime = homeTime;
+            _homeStop = homeStop;
         }
 
         void Update()
@@ -94,11 +100,14 @@ namespace AThousandDawns.Enemies
             }
             Vector3 to = _target.transform.position - transform.position;
             to.y = 0f;
-            if (to.sqrMagnitude > 1e-4f)
+            float distance = to.magnitude;
+            _homeTime -= Time.deltaTime;
+            if (distance <= _homeStop) _homeTime = 0f; // 가까이 오면 그때부터 곧게 날아요 (옆으로 대시하면 비껴가요)
+            if (_homeTime > 0f && distance > 1e-2f)
                 _direction = Vector3.RotateTowards(_direction, to.normalized, _turn * Mathf.Deg2Rad * Time.deltaTime, 0f);
             transform.position += _direction * (_speed * Time.deltaTime);
 
-            if (to.magnitude <= _radius + _target.BodyRadius)
+            if (distance <= _radius + _target.BodyRadius)
             {
                 _target.TryReceiveHit(_attack, transform.position, -1f, _owner); // 대시 무적이면 안 맞고 사라져요
                 Destroy(gameObject);

@@ -331,10 +331,13 @@ namespace AThousandDawns.Enemies
             if (_visual != null) _visual.gameObject.SetActive(!hidden);
         }
 
-        // 기물이 적을 밀거나 끌어요 (금강저 넉백, 잔영 가면). 보스·숨은 적·빙결된 적은 그대로예요. 벽에는 막혀요.
+        // 제자리에 묶여 밀리지도 않을 때 (스켈레톤이 다시 맞춰지는 동안)
+        protected virtual bool IsAnchored => false;
+
+        // 기물이 적을 밀거나 끌어요 (금강저 넉백, 잔영 가면). 보스·숨은 적·빙결된 적·묶인 적은 그대로예요. 벽에는 막혀요.
         public void Displace(Vector3 offset)
         {
-            if (!_initialized || _dead || IsBoss || IsHidden || Status.IsFrozen) return;
+            if (!_initialized || _dead || IsBoss || IsHidden || Status.IsFrozen || IsAnchored) return;
             offset.y = 0f;
             Controller.Move(offset);
         }
@@ -497,7 +500,7 @@ namespace AThousandDawns.Enemies
             if (InterruptibleWindup && !IsIronShirt && Attack.Current == EnemyAttackTimeline.Phase.Windup)
             {
                 CancelAttack();
-                _stunTimer = _reaction.Hitstun;
+                HoldStill(_reaction.Hitstun);
                 OnAttackInterrupted();
                 OnHitTaken();
                 return;
@@ -506,7 +509,7 @@ namespace AThousandDawns.Enemies
             switch (_reaction.OnHit(Attack.Current, SuperArmor || IsIronShirt)) // 철포삼: 경직·늦춰짐 없음
             {
                 case HitResponse.Stun:
-                    _stunTimer = _reaction.Hitstun;
+                    HoldStill(_reaction.Hitstun); // 더 긴 멈춤(스켈레톤 다시 맞춰지기 · 보스 도약)을 짧은 경직으로 덮지 않아요
                     break;
                 case HitResponse.DelayWindup:
                     Attack.Delay(_reaction.WindupDelay);
