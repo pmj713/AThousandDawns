@@ -239,6 +239,8 @@ namespace AThousandDawns.Art
         // ── 하피 깃털 팔찌 깃털 ("하피 깃털") · 버들잎 표창 ("버들잎 표창") (플레이테스트 3차): 초록 상자 대신 3D 깃털 · 버들잎.
         //   날아가는 방향(+Z)으로 누운 깃털(깃대 + 양쪽 깃 + 연한 깃 끝)이 축을 따라 팔랑 돌며 날고, 뒤로 옅은 꼬리를 남겨요. 상자는 렌더러만 꺼요.
         static Mesh _feather, _leaf;
+        static GameObject _dartModel; // Resources/Models/WillowDart (메인 아트, 없으면 코드 버들잎)
+        static bool _dartLoaded;
         static Material _vertexMat;
 
         void Feather(GameObject bolt, bool harpy)
@@ -252,10 +254,23 @@ namespace AThousandDawns.Art
             holder.localScale = new Vector3(1f / Mathf.Max(0.01f, s.x), 1f / Mathf.Max(0.01f, s.y), 1f / Mathf.Max(0.01f, s.z)) * (harpy ? 1.3f : 1f);
             var spin = new GameObject("Spin").transform;
             spin.SetParent(holder, false);
-            spin.gameObject.AddComponent<MeshFilter>().sharedMesh = harpy ? _feather : _leaf;
-            var r = spin.gameObject.AddComponent<MeshRenderer>();
-            r.sharedMaterial = _vertexMat;
-            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            if (!_dartLoaded) { _dartLoaded = true; _dartModel = Resources.Load<GameObject>("Models/WillowDart"); }
+            if (!harpy && _dartModel != null) // 버들잎 표창: 메인 아트 VARCO 모델 (칼끝 +Z, 가운데가 원점, 길이 0.4)을 버들잎 크기(0.56)로
+            {
+                var model = Instantiate(_dartModel, spin, false).transform;
+                model.localPosition = Vector3.zero;
+                model.localRotation = Quaternion.identity;
+                model.localScale = Vector3.one * 1.4f;
+                foreach (var c in model.GetComponentsInChildren<Collider>()) Destroy(c);
+                foreach (var mr in model.GetComponentsInChildren<Renderer>()) mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+            else
+            {
+                spin.gameObject.AddComponent<MeshFilter>().sharedMesh = harpy ? _feather : _leaf;
+                var r = spin.gameObject.AddComponent<MeshRenderer>();
+                r.sharedMaterial = _vertexMat;
+                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
             var trail = holder.gameObject.AddComponent<TrailRenderer>();
             trail.sharedMaterial = _vertexMat;
             trail.time = 0.18f;
