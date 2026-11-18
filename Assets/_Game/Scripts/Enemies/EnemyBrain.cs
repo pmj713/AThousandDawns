@@ -90,6 +90,7 @@ namespace AThousandDawns.Enemies
             RecoveryTime = GameConfig.GetOptional($"{Key}.recovery", 0f);
             AttackInterval = GameConfig.GetOptional($"{Key}.attack_interval", 2f);
             TrackMoveRatio = GameConfig.Get("enemy.track_move_ratio", 0.5f);
+            ReadSteerTuning();
             ReadTuning();
 
             Body.Configure(Tuning("hp", 30f), Tuning("toughness", 0f), GameConfig.GetOptional($"{Key}.defense", 0f), Controller.radius, flashRenderer);
@@ -353,60 +354,119 @@ namespace AThousandDawns.Enemies
         }
 
         // 다른 적과 겹치지 않게 살짝 밀어내면서 움직여요. 벽에 막히면 옆걸음 방향을 바꿔요.
+        // 다가오기 · 옆걸음 · 예고 중 따라오기는 모두 여기서 장애물을 돌아가요 (돌진 · 전진 베기 · 넉백은 MoveRaw라 곧장).
         protected CollisionFlags Move(Vector3 velocity, float dt)
         {
             velocity += Separation() * MoveSpeed;
             velocity.y = 0f;
-            velocity = Steer(velocity, dt);
+            velocity = SteerAround(velocity, dt);
             var flags = Controller.Move(velocity * dt);
             if ((flags & CollisionFlags.Sides) != 0) StrafeSign = -StrafeSign;
             return flags;
         }
 
-        // 앞이 막혔으면 돌아가요 (폐사찰 석불 · 무너진 담, 천마총 관 같은 엄폐물 뒤의 플레이어를 향해 벽에 비비지 않게).
-        // 가려던 쪽으로 lookAhead칸 안에 장애물이 있으면 ±45° · ±90° 중 트인 쪽으로 틀고, 한 번 고른 쪽은 잠깐 유지해요 (좌우로 떨지 않게).
+        // 앞이 막혔으면 돌아가요 (기둥 · 석불 · 바위 · 엄폐물 · 탁자에 비비거나 걸려 서지 않게).
+        // 가려던 쪽으로 steer_lookahead칸 안에 장애물이 있으면 ±25° · ±50° · ±75° · ±100° 중 가려던 쪽에 가장 가까운 트인 방향으로 틀어요.
+        // 한 번 고른 쪽은 steer_hold초 유지하고 (좌우로 떨지 않게), 그쪽이 다 막혔으면 반대쪽으로 바꿔요 (벽 모서리에 갇히지 않게).
+        // 검사는 steer_interval초마다 한 번이고, 그 사이엔 고른 각도를 그대로 써요. 플레이어 · 적은 장애물로 치지 않아요 (ObstacleProbe).
         float _avoidSign, _avoidTimer, _flankSign = 1f;
-        static readonly float[] DetourAngles = { 45f, 90f, 135f }; // 매 프레임 새로 만들지 않게
+        float _steerAngle, _steerTimer, _steerLook = 1.8f, _steerHold = 0.5f, _steerInterval = 0.12f;
+        Vector3 _steerFor;
+        static readonly float[] DetourAngles = { 25f, 50f, 75f, 100f }; // 매 프레임 새로 만들지 않게
         static int _flankCounter;
 
         public bool IsDetouring => _avoidTimer > 0f; // 테스트용
         public bool IsFlanking { get; private set; } // 엄폐물 너머 플레이어를 못 봐서 정해진 쪽으로 돌아오는 중 (적마다 번갈아 왼쪽 · 오른쪽)
 
-        Vector3 Steer(Vector3 velocity, float dt)
+        void ReadSteerTuning()
+        {
+            _steerLook = GameConfig.GetOptional("enemy.steer_lookahead", 1.8f);
+            _steerHold = GameConfig.GetOptional("enemy.steer_hold", 0.5f);
+            _steerInterval = GameConfig.GetOptional("enemy.steer_interval", 0.12f);
+        }
+
+        // 가려는 속도를 장애물을 피하는 쪽으로 틀어요 (빠르기는 그대로).
+        protected Vector3 SteerAround(Vector3 velocity, float dt)
         {
             if (_avoidTimer > 0f) _avoidTimer -= dt;
+            if (_steerTimer > 0f) _steerTimer -= dt;
+            velocity.y = 0f;
             float speed = velocity.magnitude;
             if (speed < 0.05f) return velocity;
             Vector3 dir = velocity / speed;
-            float look = Mathf.Min(GameConfig.GetOptional("enemy.avoid_look", 1.2f), ToPlayer().magnitude - 0.3f); // 플레이어 너머의 벽은 보지 않아요 (벽에 붙은 플레이어에게도 다가가게)
-            if (look < 0.15f) return velocity;
+            if (_steerTimer <= 0f || Vector3.Dot(dir, _steerFor) < 0.87f) // 가려는 쪽이 30° 넘게 바뀌면 바로 다시 봐요
+            {
+                _steerFor = dir;
+                _steerTimer = _steerInterval;
+                _steerAngle = PickDetour(dir);
+            }
+            return _steerAngle == 0f ? velocity : Quaternion.Euler(0f, _steerAngle, 0f) * dir * speed;
+        }
+
+        // 틀 각도 (0이면 곧장). 오른쪽이 +예요.
+        float PickDetour(Vector3 dir)
+        {
+            Vector3 toPlayer = ToPlayer();
+            float far = toPlayer.magnitude;
+            float look = Mathf.Min(_steerLook, far - 0.3f); // 플레이어 너머의 벽은 보지 않아요 (벽에 붙은 플레이어에게도 다가가게)
+            if (look < 0.15f) return 0f;
             float radius = Controller != null ? Controller.radius * 0.9f : 0.35f;
             Vector3 origin = transform.position + Vector3.up * 0.5f;
-            if (ObstacleProbe.Distance(origin, dir, radius, look) >= look)
+            if (ObstacleProbe.Distance(origin, dir, radius, look) >= look) // 앞이 트였으면 (플레이어가 바로 보이면) 곧장
             {
                 if (_avoidTimer <= 0f) IsFlanking = false;
-                return velocity;
+                return 0f;
             }
-            if (_avoidTimer <= 0f || _avoidSign == 0f) // 새로 막혔으면: 플레이어가 엄폐물 뒤면 정해진 쪽 (둘이면 양쪽으로 갈라져요), 아니면 더 트인 쪽
+
+            bool held = _avoidTimer > 0f && _avoidSign != 0f;
+            if (!held) // 새로 막혔으면: 플레이어가 엄폐물 뒤면 정해진 쪽 (둘이면 양쪽으로 갈라져요), 아니면 더 트인 쪽
             {
-                Vector3 toPlayer = ToPlayer();
-                float far = toPlayer.magnitude;
                 IsFlanking = far > 0.5f && ObstacleProbe.Distance(origin, toPlayer / far, radius, far) < far - 0.3f;
+                if (IsFlanking) _avoidSign = _flankSign;
+                else
+                {
+                    float left = ObstacleProbe.Distance(origin, Quaternion.Euler(0f, -60f, 0f) * dir, radius, look * 2f);
+                    float right = ObstacleProbe.Distance(origin, Quaternion.Euler(0f, 60f, 0f) * dir, radius, look * 2f);
+                    _avoidSign = right >= left ? 1f : -1f;
+                }
             }
-            if (IsFlanking && (_avoidTimer <= 0f || _avoidSign == 0f)) _avoidSign = _flankSign;
-            else if (_avoidTimer <= 0f || _avoidSign == 0f)
+            _avoidTimer = _steerHold;
+
+            // 새로 고를 땐 작은 각도부터 양쪽을 번갈아 봐요 (같으면 고른 쪽). 유지 중이면 고른 쪽을 다 보고, 다 막혔을 때만 반대쪽으로 바꿔요.
+            float sign = _avoidSign, best = -1f, bestAngle = 90f * sign;
+            for (int i = 0; i < DetourAngles.Length; i++)
             {
-                float left = ObstacleProbe.Distance(origin, Quaternion.Euler(0f, -60f, 0f) * dir, radius, look * 2f);
-                float right = ObstacleProbe.Distance(origin, Quaternion.Euler(0f, 60f, 0f) * dir, radius, look * 2f);
-                _avoidSign = right >= left ? 1f : -1f;
+                float a = DetourAngles[i] * sign;
+                if (DetourClear(origin, dir, radius, look, a, ref best, ref bestAngle)) return a;
+                if (!held && DetourClear(origin, dir, radius, look, -a, ref best, ref bestAngle))
+                {
+                    _avoidSign = -sign;
+                    return -a;
+                }
             }
-            _avoidTimer = GameConfig.GetOptional("enemy.avoid_hold", 0.6f);
-            foreach (float angle in DetourAngles)
+            if (held)
+                for (int i = 0; i < DetourAngles.Length; i++)
+                {
+                    float a = -DetourAngles[i] * sign;
+                    if (!DetourClear(origin, dir, radius, look, a, ref best, ref bestAngle)) continue;
+                    _avoidSign = -sign;
+                    return a;
+                }
+            if (bestAngle * _avoidSign < 0f) _avoidSign = -_avoidSign;
+            return bestAngle; // 다 막혔으면 가장 멀리까지 트인 쪽으로
+        }
+
+        // 이 각도로 look칸이 트였나요. 막혔으면 가장 멀리까지 트인 각도를 기억해요.
+        static bool DetourClear(Vector3 origin, Vector3 dir, float radius, float look, float angle, ref float best, ref float bestAngle)
+        {
+            float free = ObstacleProbe.Distance(origin, Quaternion.Euler(0f, angle, 0f) * dir, radius, look);
+            if (free >= look) return true;
+            if (free > best)
             {
-                Vector3 turned = Quaternion.Euler(0f, angle * _avoidSign, 0f) * dir;
-                if (ObstacleProbe.Distance(origin, turned, radius, look) >= look) return turned * speed;
+                best = free;
+                bestAngle = angle;
             }
-            return Quaternion.Euler(0f, 90f * _avoidSign, 0f) * dir * speed; // 다 막혔으면 옆으로
+            return false;
         }
 
         // 분리 없이 그대로 움직여요 (돌진·전진 베기).

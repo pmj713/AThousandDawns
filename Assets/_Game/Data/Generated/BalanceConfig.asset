@@ -2810,7 +2810,7 @@ MonoBehaviour:
     unit: cell/s
     note: "\uD63C\uBD88 \uC18D\uB3C4 (\uBCBD \uD1B5\uACFC)"
   - key: wraith.orb_turn
-    value: 40
+    value: 55
     unit: deg/s
     note: "\uD63C\uBD88\uC774 \uAEBE\uC774\uB294 \uBE60\uB974\uAE30 (90\uC5D0\uC11C \uB0AE\uCDA4 \xB7 \uC606\uC73C\uB85C \uB300\uC2DC\uD558\uBA74 \uD53C\uD574\uC694)"
   - key: wraith.orb_life
@@ -5089,6 +5089,10 @@ MonoBehaviour:
     value: 2
     unit: cell
     note: "\uD50C\uB808\uC774\uC5B4 \uB458\uB808 \uB36B \uAC70\uB9AC"
+  - key: goblinchief.trap_fall
+    value: 0.7
+    unit: s
+    note: "\uB36B\uC774 \uB5A8\uC5B4\uC9C8 \uC790\uB9AC \uC608\uACE0 \uC6D0\uC774 \uCC28\uC624\uB974\uB294 \uC2DC\uAC04"
   - key: ogre.hp
     value: 1800
     unit: 
@@ -6209,14 +6213,6 @@ MonoBehaviour:
     value: 12
     unit: 
     note: "\uCC9C\uB9C8\uCD1D \uB9C8\uAE30 \uAE30\uB465: \uBD84\uCD9C \uD53C\uD574 (\uC9C0\uC5ED \uACF5\uACA9 \uBC30\uC728 \xB7 \uC5C5\uBCF4\uB97C \uACF1\uD568 \u2192 24)"
-  - key: enemy.avoid_look
-    value: 1.2
-    unit: cell
-    note: "\uC801 \uAE38\uCC3E\uAE30: \uAC00\uB824\uB294 \uCABD\uC73C\uB85C \uC774\uB9CC\uD07C \uC548\uC5D0 \uC7A5\uC560\uBB3C\uC774 \uC788\uC73C\uBA74 \uB3CC\uC544\uAC00\uC694"
-  - key: enemy.avoid_hold
-    value: 0.6
-    unit: s
-    note: "\uC801 \uAE38\uCC3E\uAE30: \uD55C \uBC88 \uACE0\uB978 \uC6B0\uD68C \uBC29\uD5A5\uC744 \uC720\uC9C0\uD558\uB294 \uC2DC\uAC04"
   - key: bamboo.stream_current
     value: 0.6
     unit: cell/s
@@ -6949,6 +6945,10 @@ MonoBehaviour:
     value: 47
     unit: "\xB0"
     note: "\uB9CC\uCC9C\uD654\uC6B0: \uD55C \uBC1C\uB9C8\uB2E4 \uB3CC\uC544\uAC00\uB294 \uAC01\uB3C4 (\uBC14\uB77C\uBCF4\uB294 \uCABD\uC5D0\uC11C \uC2DC\uC791\uD574 \uC0AC\uBC29\uC73C\uB85C \uACE0\uB974\uAC8C)"
+  - key: knife.ultimate_speed_mult
+    value: 2.5
+    unit: "\uBC30"
+    note: "\uB9CC\uCC9C\uD654\uC6B0 \uBE44\uB3C4 \uB0A0\uC544\uAC00\uB294 \uC18D\uB3C4 (\uD3C9\uD0C0 \uBE44\uB3C4 \uC18D\uB3C4 \xD7 \uC774 \uAC12)"
   - key: room.hidden_elixir_chance
     value: 0.4
     unit: 
@@ -6961,3 +6961,15 @@ MonoBehaviour:
     value: 80
     unit: "\uC740\uC790"
     note: "\uAE30\uC5F0 \uBC29 \uB178\uACE0\uC218\uC758 \uC804\uB0AD: \uC740\uC790 +"
+  - key: enemy.steer_lookahead
+    value: 1.8
+    unit: cell
+    note: "\uC801 \uAE38\uCC3E\uAE30: \uAC00\uB824\uB294 \uCABD\uC73C\uB85C \uC774\uB9CC\uD07C \uC548\uC5D0 \uC7A5\uC560\uBB3C\uC774 \uC788\uC73C\uBA74 \xB125\xB0 \xB7 \xB150\xB0 \xB7 \xB175\xB0 \xB7 \xB1100\xB0 \uC911 \uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uD2B8\uC778 \uCABD\uC73C\uB85C \uB3CC\uC544\uAC00\uC694 (\uAE30\uB465 \xB7 \uC11D\uBD88 \xB7 \uBC14\uC704 \xB7 \uC5C4\uD3D0\uBB3C \xB7 \uD0C1\uC790)"
+  - key: enemy.steer_hold
+    value: 0.5
+    unit: s
+    note: "\uC801 \uAE38\uCC3E\uAE30: \uD55C \uBC88 \uACE0\uB978 \uC6B0\uD68C \uCABD (\uC67C\uCABD \xB7 \uC624\uB978\uCABD)\uC744 \uC720\uC9C0\uD558\uB294 \uC2DC\uAC04 (\uADF8\uCABD\uC774 \uB2E4 \uB9C9\uD788\uBA74 \uBC14\uB85C \uBC18\uB300\uCABD)"
+  - key: enemy.steer_interval
+    value: 0.12
+    unit: s
+    note: "\uC801 \uAE38\uCC3E\uAE30: \uC7A5\uC560\uBB3C \uAC80\uC0AC \uAC04\uACA9 (\uADF8 \uC0AC\uC774\uC5D4 \uACE0\uB978 \uBC29\uD5A5 \uADF8\uB300\uB85C)"

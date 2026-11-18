@@ -1185,7 +1185,7 @@ MonoBehaviour:
     v4Scales: 0
     side: dash_recharge
     sideValue: 0.15
-    effectText: "\uB300\uC2DC\uD560 \uB54C \uC55E\uC73C\uB85C \uD45C\uCC3D 1\uAC1C \uBC1C\uC0AC (\uD53C\uD574 +20%)"
+    effectText: "\uB300\uC2DC\uAC00 \uB05D\uB098\uBA74 \uB3C4\uCC29\uD55C \uC790\uB9AC\uC5D0\uC11C \uC55E\uC73C\uB85C \uD45C\uCC3D 1\uAC1C \uBC1C\uC0AC (\uD53C\uD574 +20%)"
     sideText: "\uB300\uC2DC \uD68C\uBCF5 -15%"
     slot: 9
     otherworld: 0

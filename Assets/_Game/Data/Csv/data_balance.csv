@@ -698,7 +698,7 @@ wraith.windup,0.9,s,망령 혼불 예고,
 wraith.recovery,0.4,s,망령 빈틈,
 wraith.attack_interval,3,s,망령 공격 간격,
 wraith.orb_speed,4,cell/s,혼불 속도 (벽 통과),
-wraith.orb_turn,40,deg/s,혼불이 꺾이는 빠르기 (90에서 낮춤 · 옆으로 대시하면 피해요),
+wraith.orb_turn,55,deg/s,혼불이 꺾이는 빠르기 (90에서 낮춤 · 옆으로 대시하면 피해요),
 wraith.orb_life,4,s,혼불이 사라지기까지,
 wraith.orb_home_time,1.5,s,혼불이 플레이어 쪽으로 꺾는 시간 (지나면 곧게 날아요),
 wraith.orb_home_stop,2,cell,혼불이 이 거리 안에 들면 더는 꺾지 않아요,
@@ -1268,6 +1268,7 @@ goblinchief.trap_slow,80%,,덫을 밟으면 이동속도 감소,보스 패턴 �
 goblinchief.trap_slow_time,1.2,s,덫 둔화 시간,보스 패턴 개편
 goblinchief.trap_ratio,0.3,,덫 피해 배율 (틱),보스 패턴 개편
 goblinchief.trap_spread,2,cell,플레이어 둘레 덫 거리,보스 패턴 개편
+goblinchief.trap_fall,0.7,s,덫이 떨어질 자리 예고 원이 차오르는 시간,플레이테스트 8차
 ogre.hp,1800,,오우거 (hp),차원 겹침 개편
 ogre.atk,24,,오우거 (atk),차원 겹침 개편
 ogre.toughness,5,,오우거 (toughness),차원 겹침 개편
@@ -1548,8 +1549,6 @@ tomb.miasma_interval,6,s,천마총 마기 기둥: 분출 간격,천마총 방 �
 tomb.miasma_fuse,1,s,천마총 마기 기둥: 분출 예고 (바닥 원),천마총 방 구성 기획
 tomb.miasma_radius,2.5,cell,천마총 마기 기둥: 분출 반경,천마총 방 구성 기획
 tomb.miasma_damage,12,,천마총 마기 기둥: 분출 피해 (지역 공격 배율 · 업보를 곱함 → 24),천마총 방 구성 기획
-enemy.avoid_look,1.2,cell,적 길찾기: 가려는 쪽으로 이만큼 안에 장애물이 있으면 돌아가요,적 길찾기 기획
-enemy.avoid_hold,0.6,s,적 길찾기: 한 번 고른 우회 방향을 유지하는 시간,적 길찾기 기획
 bamboo.stream_current,0.6,cell/s,죽림 개울 (2층부터): 물살 쪽으로 미는 속도 (느려지는 정도는 river.water_slow),죽림 방 구성 기획
 room.size_weight.s,45%,,방 크기: 작은 방 (20×12) 확률,방 크기 기획
 room.size_weight.m,35%,,방 크기: 중간 방 (26×16) 확률,방 크기 기획
@@ -1733,6 +1732,10 @@ offer.forfeit_silver,30,은자,기물 고르기 포기: 고르지 않는 대신 
 equip.qi_damp_max,4,,장비창 기 조절: 모든 칸의 기를 최대 이만큼 낮출 수 있어요,플레이테스트 2차
 knife.ultimate_range,10,칸,만천화우: 절초 비도 사거리 (적을 쫓지 않고 내 둘레로 곧게 날아가요),플레이테스트 7차
 knife.ultimate_spin_angle,47,°,만천화우: 한 발마다 돌아가는 각도 (바라보는 쪽에서 시작해 사방으로 고르게),플레이테스트 7차
+knife.ultimate_speed_mult,2.5,배,만천화우 비도 날아가는 속도 (평타 비도 속도 × 이 값),플레이테스트 8차
 room.hidden_elixir_chance,40%,,기연 방 옥병이 영약 (공력 +1)일 확률 (아니면 원기단 · 혈자리 하나),플레이테스트 7차
 room.hidden_relic_item_chance,50%,,기연 방 유품이 기물 하나일 확률 (아니면 전낭 · 은자),플레이테스트 7차
 room.hidden_silver,80,은자,기연 방 노고수의 전낭: 은자 +,플레이테스트 7차
+enemy.steer_lookahead,1.8,cell,적 길찾기: 가려는 쪽으로 이만큼 안에 장애물이 있으면 ±25° · ±50° · ±75° · ±100° 중 가장 가까운 트인 쪽으로 돌아가요 (기둥 · 석불 · 바위 · 엄폐물 · 탁자),플레이테스트 8차
+enemy.steer_hold,0.5,s,적 길찾기: 한 번 고른 우회 쪽 (왼쪽 · 오른쪽)을 유지하는 시간 (그쪽이 다 막히면 바로 반대쪽),플레이테스트 8차
+enemy.steer_interval,0.12,s,적 길찾기: 장애물 검사 간격 (그 사이엔 고른 방향 그대로),플레이테스트 8차

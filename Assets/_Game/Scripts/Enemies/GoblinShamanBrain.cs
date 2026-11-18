@@ -27,6 +27,7 @@ namespace AThousandDawns.Enemies
             _curseDelay = Mathf.Max(0f, Tuning("curse_delay", 0.9f));
         }
 
+        protected override bool WaveBurst => false; // 주문 끝엔 조용히, 장판이 깔리는 순간 소리 (플레이테스트 8차)
         protected override bool WantsToAttack(float distance) => true; // 공격 간격마다 늘 주문 (도울 적이 없어도 저주는 깔아요)
 
         protected override void OnActiveStarted()
@@ -56,6 +57,7 @@ namespace AThousandDawns.Enemies
                 }
                 if (marker != null) Destroy(marker.gameObject);
                 _curses.RemoveAt(i);
+                Director.SpawnBurst(at, _curseRadius * 0.6f); // 장판이 깔리는 순간 소리
                 if (Player != null) GhostFire.Create(at, _curseRadius, _curseLife, AttackPower * _curseRatio, _curseSlow, _curseSlowTime, Player, Body);
             }
         }

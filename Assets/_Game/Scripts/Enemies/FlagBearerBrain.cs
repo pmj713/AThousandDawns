@@ -28,9 +28,11 @@ namespace AThousandDawns.Enemies
             return false;
         }
 
+        protected virtual bool WaveBurst => true; // 고블린 주술사는 장판이 깔릴 때 소리를 내요
+
         protected override void OnActiveStarted()
         {
-            Director.SpawnBurst(transform.position, 1.5f); // 깃발을 휘둘러요
+            if (WaveBurst) Director.SpawnBurst(transform.position, 1.5f); // 깃발을 휘둘러요 (소리도 같이)
             foreach (var e in Director.Enemies)
                 if (NeedsCommand(e)) e.Hasten(_ratio, _duration);
         }

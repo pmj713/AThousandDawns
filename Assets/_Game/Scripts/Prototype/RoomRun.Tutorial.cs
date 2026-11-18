@@ -155,7 +155,7 @@ namespace AThousandDawns.Prototype
                     if (state == QiState.Lacking) Notify("qi_lacking", AThousandDawns.Player.PlayerItems.EquipMode ? "기 부족 (회색): 기가 높은 칸이나 공력 · 기혈로 깨어나요" : "기 부족 (회색): 단전 가까이 옮기면 깨어나요");
                     else if (state == QiState.Deviated) Notify("qi_deviated", "주화입마 (붉은색): 강해지지만 부작용이 생겨요");
                 }
-            if (Player.Level != null && Player.Level.Pending > 0) Notify("level_up", $"개혈 대기: 싸움이 끝나면 {AThousandDawns.Player.PlayerItems.ScreenName}(E)에서 혈자리를 열어요");
+            if (Player.Level != null && Player.Level.Pending > 0 && _phase != Phase.Village && (Player.Level.Level > 1 || Player.Level.Xp > 0)) Notify("level_up", $"개혈 대기: 싸움이 끝나면 {AThousandDawns.Player.PlayerItems.ScreenName}(E)에서 혈자리를 열어요");
             if (Player.UltimateReady && _phase != Phase.Village) Notify("ultimate", $"기세가 가득 찼어요 · {KeyName(Bind.Ultimate)} 절초");
         }
 

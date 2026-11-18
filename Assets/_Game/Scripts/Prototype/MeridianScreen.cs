@@ -182,7 +182,7 @@ namespace AThousandDawns.Prototype
             if (player == null || player.IsDead || player.Level == null || player.Level.Pending <= 0) return;
             if (_run == null && !_runLooked) { _runLooked = true; _run = FindFirstObjectByType<RoomRun>(); } // 한 번만 찾아요
             if (_run != null && (_run.IsPaused || _run.IsShowingResult || _run.IsShopping || _run.IsInEvent || _run.InVillage)) return; // 마을에선 고를 판이 없어요
-            if (!AnyEquipped(player.Items)) return; // 시작 혈자리 (통맥 · 영혼 수련)는 첫 기물을 끼운 뒤에 알려요
+            if (!AnyEquipped(player.Items) || (player.Level.Level <= 1 && player.Level.Xp <= 0)) return; // 시작 혈자리 (통맥 · 영혼 수련)는 첫 적을 잡아 수련치가 생기고 기물을 끼운 뒤에 알려요
             if (_arena != null && _arena.IsChoosing) return;
             float pulse = 0.55f + 0.45f * Mathf.Sin(Time.unscaledTime * 5f); // 깜빡깜빡
             string text = $"{PlayerItems.ScreenName}을 열어 혈자리를 고르세요 · {KeyHint.Key(AThousandDawns.Core.Bind.Meridian)}";

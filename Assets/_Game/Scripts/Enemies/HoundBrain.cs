@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace AThousandDawns.Enemies
 {
-    // 들개: 빠르게 플레이어 옆·뒤로 돌아 들어와 2칸 뛰어들어 물고, 옆으로 1.5칸 빠져요. 착지 순간 0.5초가 빈틈.
+    // 들개: 빠르게 플레이어 옆·뒤로 돌아 들어와 2칸 뛰어들어 물고 그 자리에 서요 (옆으로 빠지던 건 뺐어요). 착지 순간 0.5초가 빈틈.
     // 2~3마리가 같이 나와요.
     public class HoundBrain : LeapBrain // 고블린 단검꾼 · 하피 · 늑대인간이 이어받아요
     {
@@ -46,11 +46,7 @@ namespace AThousandDawns.Enemies
             Move(velocity, dt);
         }
 
-        protected override void OnLeapFinished()
-        {
-            _hopDirection = Vector3.Cross(Vector3.up, AimDirection) * (Random.value < 0.5f ? -1f : 1f);
-            _hopRemaining = _hopDistance;
-        }
+        protected override void OnLeapFinished() => Attack.EndActive(); // 물고 나서 옆으로 비켜나지 않고 그 자리에서 빈틈 (플레이테스트 8차)
 
         protected override void TickAfterLeap(float dt)
         {

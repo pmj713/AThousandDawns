@@ -191,18 +191,6 @@ namespace AThousandDawns.Player
         {
             _dashTouched.Clear();
 
-            // 버들잎 표창: 대시할 때 앞으로 표창
-            int darts = C("willow_dart", 2);
-            if (Has("willow_dart"))
-            {
-                float damage = BaseDamage * (1f + V("willow_dart", 1));
-                for (int i = 0; i < darts; i++)
-                {
-                    Vector3 dir = Quaternion.Euler(0f, (i - (darts - 1) * 0.5f) * 10f, 0f) * _dashDirection;
-                    GanggiBolt.Fire(transform.position + Vector3.up, dir, _ganggiSpeed, _ganggiRange, 0.4f, damage, 0, dart: true);
-                }
-            }
-
             // 잔영 가면: 대시를 시작한 자리에 잔상 (0개면 사라질 때 터짐)
             if (Has("afterimage_mask"))
             {
@@ -230,11 +218,25 @@ namespace AThousandDawns.Player
             }
         }
 
+        // 버들잎 표창: 대시가 끝나 도착한 자리에서 앞으로 표창 (플레이테스트 8차, 하피 깃털처럼)
+        void WillowDarts()
+        {
+            int darts = C("willow_dart", 2);
+            if (!Has("willow_dart")) return;
+            float damage = BaseDamage * (1f + V("willow_dart", 1));
+            for (int i = 0; i < darts; i++)
+            {
+                Vector3 dir = Quaternion.Euler(0f, (i - (darts - 1) * 0.5f) * 10f, 0f) * _dashDirection;
+                GanggiBolt.Fire(transform.position + Vector3.up, dir, _ganggiSpeed, _ganggiRange, 0.4f, damage, 0, dart: true);
+            }
+        }
+
         void OnDashEndedForItems()
         {
             if (Deviated("wind_knot")) _windKnotTimer = V("wind_knot", 2); // 바람 매듭 주화입마: 대시 후 공격 속도
             OtherworldDashEnd(); // 엘프 가죽 바지 · 마검사 장화 · 빙결 수정 장화
             OtherworldDashFeathers(); // 하피 깃털 팔찌 (도착한 뒤에 날아가요)
+            WillowDarts(); // 버들잎 표창 (도착한 뒤에 날아가요)
             if (Has("black_wind_cloak"))
             {
                 _cloakTimer = V("black_wind_cloak", 2); // 흑풍 망토: 대시 후 공격 속도

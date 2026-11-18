@@ -131,6 +131,7 @@ namespace AThousandDawns.Player
         void TickDaggers(float dt)
         {
             float speed = D("knife.speed", 18f);
+            float ultimateSpeed = speed * D("knife.ultimate_speed_mult", 2.5f); // 만천화우 비도는 훨씬 빨라요
             float blink = D("knife.blink", 1.5f);
             for (int i = _daggers.Count - 1; i >= 0; i--)
             {
@@ -145,7 +146,7 @@ namespace AThousandDawns.Player
                 if (d.Flying)
                 {
                     // 한 프레임에 많이 가도 사이의 적·항아리를 건너뛰지 않게 0.25칸씩 나눠 판정해요
-                    float move = Mathf.Min(speed * dt, d.Flight);
+                    float move = Mathf.Min((d.Ultimate ? ultimateSpeed : speed) * dt, d.Flight);
                     while (move > 1e-4f && d.Flying)
                     {
                         float part = Mathf.Min(move, 0.25f);

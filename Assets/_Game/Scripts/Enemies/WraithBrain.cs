@@ -26,7 +26,7 @@ namespace AThousandDawns.Enemies
             _keepMin = Tuning("keep_min", 5f);
             _keepMax = Tuning("keep_max", 7f);
             _orbSpeed = Tuning("orb_speed", 4f);
-            _orbTurn = Tuning("orb_turn", 40f);
+            _orbTurn = Tuning("orb_turn", 55f);
             _orbLife = Tuning("orb_life", 4f);
             _orbRadius = Tuning("orb_radius", 0.35f);
             _orbHomeTime = Tuning("orb_home_time", 1.5f);
