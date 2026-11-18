@@ -15,7 +15,7 @@ using Object = UnityEngine.Object;
 
 namespace AThousandDawns.Tests
 {
-    // 기연 방: 공력으로 감지, 금 간 벽을 부숴 열고, 영약이나 비급.
+    // 기연 방: 공력으로 감지, 금 간 벽을 부숴 열고, 옥병 (영약 · 원기단) · 낡은 책 · 유품 (기물 · 은자) 가운데 하나.
     public class HiddenRoomTests : InputTestFixture
     {
         string _savePath;
@@ -74,7 +74,7 @@ namespace AThousandDawns.Tests
         }
 
         [UnityTest]
-        public IEnumerator 벽을_부수면_열리고_영약으로_공력_1()
+        public IEnumerator 벽을_부수면_열리고_옥병_책_유품_중_하나()
         {
             yield return Load(null);
             var run = Object.FindFirstObjectByType<RoomRun>();
@@ -96,17 +96,37 @@ namespace AThousandDawns.Tests
             Assert.IsTrue(hidden.Found);
             Assert.AreEqual(memoryBefore + 1, run.Record.HiddenRooms, "기연 방 발견을 세요");
 
-            int power = player.Gongryeok;
+            int power = player.Gongryeok, pending = player.Level.Pending;
             run.Enter(hidden, FloorMap.Opposite(dir));
             Assert.IsTrue(run.IsInEvent);
             Assert.AreEqual("hidden", run.CurrentEvent.Id);
+            Assert.AreEqual(3, run.CurrentEvent.Choices.Count, "옥병 · 낡은 책 · 유품");
+            bool elixir = run.CurrentEvent.Choices[0].Label.Contains("공력 +1"); // 옥병: 영약 (공력) 아니면 원기단 (혈자리)
+            StringAssert.Contains("수련치", run.CurrentEvent.Choices[1].Label);
+            Assert.IsTrue(run.CurrentEvent.Choices[2].Label.Contains("기물") || run.CurrentEvent.Choices[2].Label.Contains("은자"), "유품: 기물이나 은자");
             run.ChooseEvent(0);
             run.CloseEvent();
-            Assert.AreEqual(power + 1, player.Gongryeok);
+            if (elixir) Assert.AreEqual(power + 1, player.Gongryeok);
+            else
+            {
+                Assert.AreEqual(power, player.Gongryeok, "원기단은 공력 대신");
+                Assert.AreEqual(pending + 1, player.Level.Pending, "혈자리 하나");
+            }
             Assert.IsTrue(hidden.Cleared);
             run.Enter(host, dir);
             run.Enter(hidden, FloorMap.Opposite(dir));
             Assert.IsFalse(run.IsInEvent, "한 번만");
+
+            // 옥병 · 유품에 든 것은 방마다 달라요 (늘 공력만이 아니에요)
+            var rng = new System.Random(5);
+            var seen = new System.Collections.Generic.HashSet<RoomRun.HiddenReward>();
+            for (int i = 0; i < 200; i++)
+            {
+                var (bottle, relic) = RoomRun.RollHiddenRewards(rng);
+                seen.Add(bottle);
+                seen.Add(relic);
+            }
+            Assert.AreEqual(4, seen.Count, "영약 · 원기단 · 기물 · 은자가 모두 나와요");
         }
         [UnityTest]
         public IEnumerator 아주_드물게_진전_검결()
@@ -128,10 +148,10 @@ namespace AThousandDawns.Tests
             if (run.IsInEvent) run.CloseEvent();
             run.BreakCrack();
             run.Enter(hidden, FloorMap.Opposite(dir));
-            Assert.AreEqual(3, run.CurrentEvent.Choices.Count, "영약 · 비급 · 진전");
-            StringAssert.Contains("진전", run.CurrentEvent.Choices[2].Label);
+            Assert.AreEqual(4, run.CurrentEvent.Choices.Count, "옥병 · 낡은 책 · 유품 · 진전");
+            StringAssert.Contains("진전", run.CurrentEvent.Choices[3].Label);
             Assert.AreEqual(AThousandDawns.Combat.UltimateForm.None, player.UltimateForm);
-            run.ChooseEvent(2);
+            run.ChooseEvent(3);
             run.CloseEvent();
             Assert.AreNotEqual(AThousandDawns.Combat.UltimateForm.None, player.UltimateForm);
             Assert.IsFalse(AThousandDawns.Combat.UltimateForms.ForDagger(player.UltimateForm), "검이면 검 진전");

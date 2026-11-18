@@ -137,18 +137,28 @@ namespace AThousandDawns.Tests
         }
 
         [UnityTest]
-        public IEnumerator 중단전_만천화우는_범위_밖_적도_쫓아감()
+        public IEnumerator 만천화우는_사방으로_던지고_절초_비도는_15개를_넘어_남음()
         {
             yield return Load(WeaponKind.Dagger, UltimateForm.None);
+            for (int i = 0; i < 15; i++) _player.ThrowDaggers(1, HitDamageInput.Of(1f), HitTag.Basic, 0f); // 평타 비도 15개 (최대)
             var took = new float[1];
-            var far = Spawn(new Vector3(0f, 0f, 9f)); // 절초 범위 (세로 12칸, 가운데에서 6칸) 밖
             yield return Ultimate(took);
-            Assert.AreEqual(0f, Lost(far), "하단전은 범위 안만");
+            Assert.AreEqual(15 + 24, _player.DaggerCount, "절초 비도 24개는 최대 개수에 안 세고, 평타 비도도 밀어내지 않아요");
+
+            // 적을 쫓지 않고 내 둘레 사방으로 날아가 떨어져요
+            var quarters = new bool[4];
+            Vector3 me = _player.transform.position;
+            foreach (var t in Object.FindObjectsByType<Transform>(FindObjectsSortMode.None))
+            {
+                if (t.name != "비도") continue;
+                Vector3 off = t.position - me;
+                quarters[(off.x >= 0f ? 0 : 1) + (off.z >= 0f ? 0 : 2)] = true;
+            }
+            for (int q = 0; q < 4; q++) Assert.IsTrue(quarters[q], $"사방으로 ({q}번째 방향)");
 
             _player.UltimateStage = 1;
             yield return Ultimate(took);
-            Assert.Greater(Lost(far), 0f, "중단전은 범위 밖도");
-            Assert.GreaterOrEqual(took[0], 4.5f, "5초 동안 내려요");
+            Assert.GreaterOrEqual(took[0], 4.5f, "중단전은 5초 동안 던져요");
         }
 
         [UnityTest]

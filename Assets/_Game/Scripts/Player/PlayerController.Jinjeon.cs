@@ -26,25 +26,31 @@ namespace AThousandDawns.Player
         void BeginUltimateRain(HitDamageInput hit)
         {
             var form = ActiveUltimateForm;
-            // 경지 (무기 시트 51~66행): 하단전 → 중단전 (검 12자루 + 검흔 · 비도 40발 5초, 범위 밖도 쫓아감) → 상단전 (검 16 · 비도 50 + 마무리 100)
+            // 경지 (무기 시트 51~66행): 하단전 → 중단전 (검 12자루 + 검흔 · 비도 40발 5초) → 상단전 (검 16 · 비도 50 + 마무리 100)
             int stage = Mathf.Clamp(UltimateStage, 0, 2);
-            int count = UsesDagger ? Mathf.RoundToInt(D(StageKey("knife.ultimate_count", stage), stage == 0 ? 24f : stage == 1 ? 40f : 50f))
-                : stage == 0 ? _ultimateSwordCount : Mathf.RoundToInt(J(StageKey("ultimate.sword_count", stage), stage == 1 ? 12f : 16f));
-            float time = UsesDagger ? D(StageKey("knife.ultimate_time", stage), stage == 0 ? 3f : 5f) : _ultimateCastTime;
-            Vector2 area = UsesDagger && stage >= 1 ? new Vector2(999f, 999f) : _ultimateArea; // 중단전 비도: 방 어디든 쫓아가요
-            swordRain.ScarRatio = !UsesDagger && stage >= 1 ? J("ultimate.scar_ratio", 0.25f) : 0f; // 검흔: 0.5초마다 한 자루의 25% × 4번 (한 적에 한 번)
-            swordRain.FinaleRatio = stage >= 2 ? J("ultimate.finale_damage", 100f) / Mathf.Max(1f, UsesDagger ? D("knife.ultimate_damage", 6f) : J("ultimate.sword_damage", 18f)) : 0f;
-            switch (form)
+            if (UsesDagger) // 만천화우: 진짜 비도를 내 둘레로 던져요 (PlayerController.Dagger.cs)
             {
-                case UltimateForm.OneSword: // 큰 검 한 자루 = 원래 검 모두 × 배율
-                    hit.SpecialMultiplier *= count * J("jinjeon.one_sword_ratio", 1.2f);
-                    count = 1;
-                    break;
-                case UltimateForm.Storm: // 더 많이, 더 넓게, 한 발은 약하게
-                    count = Mathf.RoundToInt(count * J("jinjeon.storm_count", 1.5f));
+                int knives = Mathf.RoundToInt(D(StageKey("knife.ultimate_count", stage), stage == 0 ? 24f : stage == 1 ? 40f : 50f));
+                float range = D("knife.ultimate_range", 10f);
+                if (form == UltimateForm.Storm) // 폭우: 더 많이, 더 멀리, 한 발은 약하게
+                {
+                    knives = Mathf.RoundToInt(knives * J("jinjeon.storm_count", 1.5f));
                     hit.SpecialMultiplier *= J("jinjeon.storm_damage", 0.7f);
-                    area *= J("jinjeon.storm_area", 1.3f);
-                    break;
+                    range *= J("jinjeon.storm_area", 1.3f);
+                }
+                float finale = stage >= 2 ? J("ultimate.finale_damage", 100f) / Mathf.Max(1f, D("knife.ultimate_damage", 6f)) : 0f;
+                BeginDaggerRain(hit, knives, D(StageKey("knife.ultimate_time", stage), stage == 0 ? 3f : 5f), range, form, finale);
+                return;
+            }
+            int count = stage == 0 ? _ultimateSwordCount : Mathf.RoundToInt(J(StageKey("ultimate.sword_count", stage), stage == 1 ? 12f : 16f));
+            float time = _ultimateCastTime;
+            Vector2 area = _ultimateArea;
+            swordRain.ScarRatio = stage >= 1 ? J("ultimate.scar_ratio", 0.25f) : 0f; // 검흔: 0.5초마다 한 자루의 25% × 4번 (한 적에 한 번)
+            swordRain.FinaleRatio = stage >= 2 ? J("ultimate.finale_damage", 100f) / Mathf.Max(1f, J("ultimate.sword_damage", 18f)) : 0f;
+            if (form == UltimateForm.OneSword) // 큰 검 한 자루 = 원래 검 모두 × 배율
+            {
+                hit.SpecialMultiplier *= count * J("jinjeon.one_sword_ratio", 1.2f);
+                count = 1;
             }
             swordRain.Form = form;
             swordRain.Owner = transform;
@@ -54,8 +60,6 @@ namespace AThousandDawns.Player
             swordRain.OrbitInterval = J("jinjeon.formation_interval", 0.3f);
             swordRain.EchoDelay = J("jinjeon.echo_delay", 1f);
             swordRain.EchoRatio = J("jinjeon.echo_ratio", 0.6f);
-            swordRain.BloomRatio = J("jinjeon.bloom_ratio", 0.5f);
-            swordRain.BackflowSpeed = J("jinjeon.backflow_speed", 20f);
             swordRain.Begin(transform.position, area, count, time, _ultimateFallTime, hit, _rules);
         }
 

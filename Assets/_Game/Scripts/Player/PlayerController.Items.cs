@@ -146,7 +146,7 @@ namespace AThousandDawns.Player
             switch (tag)
             {
                 case HitTag.Basic:
-                    // 평타 1·2타 확률: 불씨 반지 화상 · 서리 고리 둔화 · 벽조목 빗 감전
+                    // 평타 1·2타 확률: 불씨 팔찌 화상 · 서리 고리 둔화 · 벽조목 빗 감전
                     if (Roll(V("ember_ring", 1))) status.AddBurn(BurnPerStackDps(fire), BurnExtra(fire));
                     if (Roll(V("frost_ring", 1))) status.AddSlow(SlowBonus(frost), frost >= 6);
                     if (Roll(V("lightningwood_comb", 1))) status.AddShock();

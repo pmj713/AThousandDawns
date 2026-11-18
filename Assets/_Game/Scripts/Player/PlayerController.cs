@@ -95,7 +95,7 @@ namespace AThousandDawns.Player
 
         public bool IsCastingSkill => _skillElapsed >= 0f;
         public bool IsCastingUltimate => _ultimateTimer > 0f;
-        public bool UltimateRaining => swordRain != null && swordRain.IsRaining; // 만천화우는 시전 뒤에도 3초 동안 내려요
+        public bool UltimateRaining => (swordRain != null && swordRain.IsRaining) || DaggerRaining; // 만천화우는 시전 뒤에도 3초 동안 던져요
         public bool UltimateReady => Gauge >= _gaugeMax;
         public Vector3 Facing => _facing;
 
@@ -465,9 +465,7 @@ namespace AThousandDawns.Player
             hit.GongryeokMultiplier = DamageFormula.GongryeokMultiplier(Gongryeok, _rules);
             if (K(Keyword.Mado) >= 4) hit.SpecialMultiplier *= _madoImprintPower; // #마도 각인: 위력 ×1.6
             _ultimateEndPending = true;
-            swordRain.DaggerLook = UsesDagger; // 만천화우는 비도 모양
-            swordRain.DaggerDirection = _facing; // 바라보는 쪽으로 기울어 내려와요
-            BeginUltimateRain(hit); // 무기 · 진전에 맞춰 (PlayerController.Jinjeon.cs)
+            BeginUltimateRain(hit); // 무기 · 진전에 맞춰 (PlayerController.Jinjeon.cs, 만천화우는 PlayerController.Dagger.cs)
         }
 
         // 시험판용: G 키로 기세를 가득 채워요.

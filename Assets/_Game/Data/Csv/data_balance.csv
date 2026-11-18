@@ -672,7 +672,7 @@ jinjeon.echo_delay,1,초,귀원: 꽂힌 뒤 다시 터지는 시간,
 jinjeon.echo_ratio,60%,,귀원: 다시 터질 때 한 자루 피해 비율 (반경 1.2칸),
 jinjeon.storm_count,1.5,배,폭우: 비도 수 배율,
 jinjeon.storm_damage,70%,,폭우: 한 발 피해 비율,
-jinjeon.storm_area,1.3,배,폭우: 범위 배율,
+jinjeon.storm_area,1.3,배,폭우: 만천화우 비도 사거리 배율,
 jinjeon.bloom_ratio,50%,,산화: 꽂힌 비도 1개당 터지는 피해 비율 (반경 1.5칸),
 jinjeon.backflow_speed,20,칸/초,회류: 비도가 돌아오는 속도,
 fork.silver,80,은자,갈림길 은자 길 (옅음): 보상 방 전리품 더미,
@@ -791,7 +791,7 @@ ultimate.scar_ratio,25%,,중단전 검흔: 검이 꽂힌 적을 0.5초마다 4�
 ultimate.finale_damage,100,,상단전 마무리 (거대한 검 · 마무리 회수) 피해,무기!D58
 knife.ultimate_count_s1,40,발,만천화우 비도 수 (중단전),무기!C62
 knife.ultimate_count_s2,50,발,만천화우 비도 수 (상단전),무기!D62
-knife.ultimate_time_s1,5,초,만천화우 비 시간 (중단전 · 범위 밖 적도 쫓아감),무기!C61
+knife.ultimate_time_s1,5,초,만천화우 던지는 시간 (중단전),무기!C61
 knife.ultimate_time_s2,5,초,만천화우 비 시간 (상단전),무기!D61
 price.rumor,200,은자,객잔 소문 듣기: 다음 층 기연 방 (객잔마다 한 번),은자!B27
 room.hidden_xp,30,,기연 방 "낡은 책을 읽는다" 수련치 (비급 대신),
@@ -999,6 +999,7 @@ knife.vortex_radius,1.8,칸,탁류 소용돌이: 베는 범위,비도 비급 (�
 knife.vortex_tick,0.4,초,탁류 소용돌이: 베는 간격,비도 비급 (탁류 소용돌이)
 knife.vortex_ratio,6%,,탁류 소용돌이: 한 번 벨 때 비도 1개당 피해 (초식 피해 대비),비도 비급 (탁류 소용돌이)
 knife.vortex_max,12,개,탁류 소용돌이: 피해에 세는 비도 최대 수,비도 비급 (탁류 소용돌이)
+knife.vortex_max_range,9,칸,탁류 소용돌이: 마우스 커서 자리에 생기는 최대 거리 (조준점이 없으면 vortex_distance 앞쪽),플레이테스트 7차
 knife.scroll_flash_max,6,곳,비도 순간이동: 순간이동하는 비도 최대 수,비도 비급 (비도 순간이동)
 knife.scroll_flash_gap,0.12,초,비도 순간이동: 순간이동 간격,비도 비급 (비도 순간이동)
 knife.scroll_quake_center,2,칸,비도 솟구치기: 내 둘레 충격파 반경,비도 비급 (비도 솟구치기)
@@ -1038,7 +1039,7 @@ irondragon.ring_windup,0.9,s,닻 충격파 예고,보스 패턴 개편
 irondragon.ring_speed,4,cell/s,고리가 퍼지는 속도,보스 패턴 개편
 irondragon.ring_width,0.8,cell,고리 두께,보스 패턴 개편
 irondragon.ring_max,10,cell,고리 최대 반경,보스 패턴 개편
-irondragon.ring_gap,0.9,s,고리 사이 시간,보스 패턴 개편
+irondragon.ring_gap,1.4,s,고리 사이 시간,보스 패턴 개편
 irondragon.ring_ratio,0.7,,고리 피해 배율,보스 패턴 개편
 irondragon.ring_count,3,,1페이즈 고리 수,보스 패턴 개편
 irondragon.p2_ring_count,4,,2페이즈 고리 수,보스 패턴 개편
@@ -1730,3 +1731,8 @@ elite.frenzy_speed,10%,,분노 한 겹마다 이동 증가,판타지 정예 특�
 karma.extra_enemies,1,명,업보 3단계: 싸우는 방마다 첫 웨이브에 그 지역 졸개 +,추적자 제거 (업보 3단계 대신)
 offer.forfeit_silver,30,은자,기물 고르기 포기: 고르지 않는 대신 받는 은자,플레이테스트 2차
 equip.qi_damp_max,4,,장비창 기 조절: 모든 칸의 기를 최대 이만큼 낮출 수 있어요,플레이테스트 2차
+knife.ultimate_range,10,칸,만천화우: 절초 비도 사거리 (적을 쫓지 않고 내 둘레로 곧게 날아가요),플레이테스트 7차
+knife.ultimate_spin_angle,47,°,만천화우: 한 발마다 돌아가는 각도 (바라보는 쪽에서 시작해 사방으로 고르게),플레이테스트 7차
+room.hidden_elixir_chance,40%,,기연 방 옥병이 영약 (공력 +1)일 확률 (아니면 원기단 · 혈자리 하나),플레이테스트 7차
+room.hidden_relic_item_chance,50%,,기연 방 유품이 기물 하나일 확률 (아니면 전낭 · 은자),플레이테스트 7차
+room.hidden_silver,80,은자,기연 방 노고수의 전낭: 은자 +,플레이테스트 7차

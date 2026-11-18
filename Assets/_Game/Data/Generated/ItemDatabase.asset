@@ -15,7 +15,7 @@ MonoBehaviour:
   items:
   - id: ember_ring
     keyword: 0
-    name: "\uBD88\uC528 \uBC18\uC9C0"
+    name: "\uBD88\uC528 \uD314\uCC0C"
     grade: 0
     aux: 
     minQi: 1
@@ -1716,7 +1716,7 @@ MonoBehaviour:
     otherworld: 1
   - id: fire_rune_ring
     keyword: 0
-    name: "\uD654\uC5FC \uB8EC \uBC18\uC9C0"
+    name: "\uD654\uC5FC \uB8EC \uD314\uCC0C"
     grade: 1
     aux: 
     minQi: 2

@@ -9,6 +9,7 @@ namespace AThousandDawns.Enemies
         public override EnemyKind Kind => EnemyKind.Goblin;
         protected override string Key => "goblin";
         public override string AttackName => "몽둥이 휘두르기";
+        protected override bool CircleWhileWaiting => false; // 휘두른 뒤 옆으로 비켜서지 않고 그 자리에서 다시 노려요
     }
 
 }

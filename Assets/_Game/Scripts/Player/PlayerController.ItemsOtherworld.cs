@@ -9,7 +9,7 @@ namespace AThousandDawns.Player
     //   빙백: 슬라임 팔찌 (맞으면 잠시 받는 피해 −) · 마법사 고깔모자 (초식 쿨타임 −) · 얼음 정령 목걸이 (둔화된 적 피해 +) · 서리 마법사 로브 (맞으면 둘레 둔화) · 빙결 수정 장화 (대시 길에 서리)
     //   뇌정: 룬 귀걸이 (감전된 적 피해 +) · 폭풍 서클릿 (초식 적중 감전) · 뇌전 룬 허리띠 (처치 연쇄 번개) · 폭풍 정령 팔찌 (3타 낙뢰) · 번개 장화 (대시로 감전)
     //   금강: 드워프 강철 허리띠 (보호막 동안 방어 +) · 미스릴 사슬 갑옷 (받는 피해 −) · 성기사 투구 (방마다 보호막) · 드워프 강철 각반 (경직 · 넉백 −) · 성기사 성표 (위기에 회복)
-    //   열양: 용 이빨 목걸이 (화상 중인 적 피해 +) · 화염 룬 반지 (초식 적중 화상) · 샐러맨더 망토 (화상 피해 +) · 불꽃 정령 귀걸이 (평타 화상) · 불사조 깃털 장식 (화상 적 처치 회복)
+    //   열양: 용 이빨 목걸이 (화상 중인 적 피해 +) · 화염 룬 팔찌 (초식 적중 화상) · 샐러맨더 망토 (화상 피해 +) · 불꽃 정령 귀걸이 (평타 화상) · 불사조 깃털 장식 (화상 적 처치 회복)
     //   강기: 마검 술 (초식 적중 뒤 공격 속도) · 기사 건틀릿 (3타 피해 +) · 룬 검집 (공격 속도) · 기사 투구 (정예 · 고수 · 보스 피해 +) · 마검사 장화 (대시 후 첫 평타 검기)
     //   무협 짚신 (대시 거리) · 흑풍 망토 (대시 후 공격 속도)
     public sealed partial class PlayerController
@@ -84,7 +84,7 @@ namespace AThousandDawns.Player
                     break;
                 case HitTag.Skill:
                     status.AddShock(C("storm_circlet", 1));                                      // 폭풍 서클릿
-                    status.AddBurn(BurnPerStackDps(fire), BurnExtra(fire), C("fire_rune_ring", 1)); // 화염 룬 반지
+                    status.AddBurn(BurnPerStackDps(fire), BurnExtra(fire), C("fire_rune_ring", 1)); // 화염 룬 팔찌
                     if (Has("spellblade_tassel")) _spellbladeTimer = V("spellblade_tassel", 1);   // 마검 술
                     break;
             }

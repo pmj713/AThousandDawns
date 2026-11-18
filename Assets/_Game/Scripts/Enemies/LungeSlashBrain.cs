@@ -28,6 +28,7 @@ namespace AThousandDawns.Enemies
 
         // 다가오는 속도 (방패 산적은 방패를 든 동안 느려요)
         protected virtual float ApproachSpeed => MoveSpeed;
+        protected virtual bool CircleWhileWaiting => true; // 공격 간격 동안 사거리 바깥을 옆으로 돌아요 (작은 고블린은 꺼요)
 
         protected override bool WantsToAttack(float distance) => distance <= _engage;
 
@@ -45,7 +46,7 @@ namespace AThousandDawns.Enemies
             }
 
             float ring = _engage + 1f;
-            Vector3 velocity = Strafe(dir) * (ApproachSpeed * 0.5f);
+            Vector3 velocity = CircleWhileWaiting ? Strafe(dir) * (ApproachSpeed * 0.5f) : Vector3.zero;
             if (d > ring + 0.5f) velocity = dir * ApproachSpeed;
             else if (d < ring - 0.5f) velocity = -dir * (ApproachSpeed * 0.6f) + velocity * 0.5f;
             Move(velocity, dt);

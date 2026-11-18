@@ -293,6 +293,38 @@ namespace AThousandDawns.Tests
         }
 
         [UnityTest]
+        public IEnumerator 비도_죽림섬은_바닥_비도보다_적에게_꽂힌_비도로_감()
+        {
+            yield return LoadCombat();
+            _player.LearnSkill(SkillKind.BambooFlash);
+            Vector3 me = _player.transform.position, facing = _player.Facing;
+            // 가까운 바닥 비도: 꽂힌 적이 쓰러지면 그 자리 바닥에 떨어져요
+            var near = _director.Spawn(EnemyKind.Boar, me + facing * 2f);
+            StatusEffects.For(near.Damageable).TryFreeze(20f);
+            yield return null;
+            _player.ThrowDaggers(1, HitDamageInput.Of(1f), HitTag.Basic, 0f);
+            yield return WaitUntil(() => _player.StuckDaggers(near.Damageable) == 1, 2f);
+            near.Damageable.ApplyHit(999999);
+            yield return WaitUntil(() => _player.StuckDaggers(near.Damageable) == 0, 1f);
+            // 더 먼 적에게 꽂힌 비도
+            var far = _director.Spawn(EnemyKind.Boar, me + facing * 5f);
+            far.Damageable.ScaleMaxHealth(10f);
+            StatusEffects.For(far.Damageable).TryFreeze(20f);
+            yield return null;
+            _player.ThrowDaggers(1, HitDamageInput.Of(1f), HitTag.Basic, 0f);
+            yield return WaitUntil(() => _player.StuckDaggers(far.Damageable) == 1, 2f);
+            Assert.AreEqual(2, _player.DaggerCount, "바닥 1 · 꽂힘 1");
+
+            Press(Mouse.current.rightButton);
+            yield return null;
+            Release(Mouse.current.rightButton);
+            yield return WaitUntil(() => _player.StuckDaggers(far.Damageable) == 0 && !_player.IsDaggerFlashing, 2f);
+            Assert.AreEqual(0, _player.StuckDaggers(far.Damageable), "꽂힌 비도를 뽑아 거둬요");
+            Assert.AreEqual(1, _player.DaggerCount, "꽂힌 비도가 있으면 바닥 비도로는 안 가요");
+            Assert.Less(Vector3.Distance(_player.transform.position, far.transform.position), 2.5f, "꽂힌 비도 자리 (먼 적 곁)로 순간이동");
+        }
+
+        [UnityTest]
         public IEnumerator 비도_붕산권은_둘레_비도가_솟구쳐_찌름()
         {
             yield return CastWith(SkillKind.Quake, 1.5f, boar => BurstCheck(boar));
@@ -320,11 +352,16 @@ namespace AThousandDawns.Tests
             yield return WaitUntil(() => _player.StuckDaggers(boar.Damageable) == 3, 2f);
             Assert.AreEqual("탁류 소용돌이 (비도 3)", _player.SkillName);
 
+            Vector3 want = _player.transform.position + _player.Facing * 5f; // 마우스 커서를 5칸 앞에 둬요
+            want.y = 0f;
+            Set(Mouse.current.position, (Vector2)Camera.main.WorldToScreenPoint(want));
+            yield return null;
             Press(Mouse.current.rightButton);
             yield return null;
             Release(Mouse.current.rightButton);
             yield return WaitUntil(() => _player.IsVortexing, 1f);
             Assert.IsTrue(_player.IsVortexing, "소용돌이가 일어나요");
+            Assert.Less(Vector2.Distance(new Vector2(_player.VortexCenter.x, _player.VortexCenter.z), new Vector2(want.x, want.z)), 0.3f, "마우스 커서 자리가 소용돌이 가운데");
             Assert.AreEqual(0, _player.StuckDaggers(boar.Damageable), "꽂힌 비도도 빠져나가 모여요");
             float hp = boar.Damageable.Health;
             var boarCc = boar.GetComponent<CharacterController>();

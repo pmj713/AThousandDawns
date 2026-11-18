@@ -60,7 +60,7 @@ namespace AThousandDawns.Prototype
             new Entry { Id = "event", Group = "판", Title = "이벤트 방",
                 Text = "싸움 없는 막다른 방이에요. 고르는 대로 결과가 달라지고, 대가 없는 선택지도 늘 있어요.\n조건이 안 되는 선택지는 흐리게 조건만 보여요." },
             new Entry { Id = "hidden", Group = "판", Title = "기연 방",
-                Text = $"층마다 가끔 숨은 방이 생겨요. 벽에 금이 간 곳에서 {K(Bind.Interact)}로 벽을 부수면 열려요.\n공력이 높으면 지도에 희미하게 보이고, 안에서 영약이나 수련 기록을 얻어요." },
+                Text = $"층마다 가끔 숨은 방이 생겨요. 벽에 금이 간 곳에서 {K(Bind.Interact)}로 벽을 부수면 열려요.\n공력이 높으면 지도에 희미하게 보이고, 안에서 옥병 (영약이나 원기단) · 수련 기록 · 유품 (기물이나 은자) 가운데 하나를 얻어요." },
             new Entry { Id = "forge", Group = "판", Title = "대장간",
                 Text = "대장간 길의 보상 방에서 기물을 녹여 주 키워드를 무기 홈(2개)에 넣어요. 홈마다 키워드 +1이에요.\n같은 키워드를 두 홈에 넣으면 강화판이 돼요. 검과 비도는 효과가 달라요." },
             new Entry { Id = "master", Group = "판", Title = "고수",

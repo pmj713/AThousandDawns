@@ -7,12 +7,13 @@ namespace AThousandDawns.Player
 {
     // 비도 (두 번째 무기, 무기 시트 1~3번 표 · 조작 시트 31~33행). 회귀록 비도 봉우리를 피우면 마을 무기 거치대에서 골라요.
     //   평타: 1·2타 비도 1발 (초당 18칸, 사거리 8칸, 8) · 3타째 15° 간격 부채꼴 3발 (각 8)
-    //   남는 비도: 적에게 맞으면 몸에 박혀 함께 움직이고, 빗나가거나 막히면 바닥에 떨어져요. 6초 뒤 사라짐 (마지막 1.5초 깜빡임), 최대 15개 (넘으면 오래된 것부터)
+    //   남는 비도: 적에게 맞으면 몸에 박혀 함께 움직이고, 빗나가거나 막히면 바닥에 떨어져요. 6초 뒤 사라짐 (마지막 1.5초 깜빡임), 최대 15개 (넘으면 오래된 것부터, 절초 비도는 안 셈)
     //     꽂힌 적이 죽으면 그 자리에 떨어지고, 방을 옮기면 전부 사라져요.
     //   초식 회수 (쿨타임 5초, 시전 0.3초): 방 안의 비도가 전부 돌아오며, 날아오는 비도가 몸을 지나간 적에게 1개당 초식 피해 25%.
     //     비도마다 따로 맞아요 (한 번 돌아올 때 같은 적은 비도 하나에 한 번, 한 적 최대 6개). 꽂혀 있던 비도는 그 적을 빠져나오며 맞혀요. 남은 비도가 없으면 못 써요.
     //   대시 공격: 대시가 끝나면 지나온 길(4칸)에 1칸 간격으로 4발, 반경 0.6칸 안 적 1명에게 꽂힘 (각 8, 대시 공격 1회로 셈)
-    //   절초 만천화우: 3초 동안 비도 24발 (각 6), 강인함 무시 · 공력 배율
+    //   절초 만천화우: 3초 동안 비도 24발 (각 6)을 적을 쫓지 않고 내 둘레 사방으로 곧게 던져요. 강인함 무시 · 공력 배율.
+    //     절초 비도는 최대 15개에 안 세요 (그 위로 더 남고, 평타 비도를 밀어내지도 않아요). 아래 "절초 만천화우" 참고.
     // 비도 융합 효과(무기 시트 5번 표)는 PlayerController.ForgeDagger.cs. 대장간 홈 효과가 무기마다 달라요.
     public enum WeaponKind { Sword, Dagger }
 
@@ -35,6 +36,9 @@ namespace AThousandDawns.Player
             public bool Recall;       // 회수로 돌아오는 중: 지나가는 적에게 회수 피해 (Hit · HitSet을 다시 써요)
             public int Pierced;       // 강기: 뚫고 지나간 적 수
             public bool Vortex;       // 비도 탁랑참: 탁류 소용돌이 속을 도는 중
+            public bool Ultimate;     // 절초 만천화우로 생긴 비도: 최대 개수에 안 세요
+            public bool Landed;       // 절초 비도가 꽂히거나 떨어졌음 (절초 각인은 한 번만)
+            public bool Backflow;     // 회류: 절초 비도가 돌아오며 길의 적을 한 번 더 맞혀요
             public float Angle;       // 소용돌이 속 자리
             public HashSet<Damageable> HitSet; // 이미 뚫고 지나간 적 · 회수로 돌아오며 맞힌 적 (다시 맞지 않게)
             public bool Flying => Flight > 0f;
@@ -169,12 +173,20 @@ namespace AThousandDawns.Player
             TickHalo(dt);   // 비도 금강장: 비도 호신륜
             TickDaggerFlash(dt); // 비도 죽림섬: 비도 순간이동
             TickDaggerForge(dt); // 융합: 꽂힌 비도 수에 따른 화상·감전·둔화
-            // 최대 개수를 넘으면 오래된 것부터
+            TickDaggerRain(dt);  // 절초 만천화우
+            // 최대 개수를 넘으면 오래된 것부터 (절초 비도는 세지도 지우지도 않아요)
             int max = Mathf.RoundToInt(D("knife.max_count", 15f));
-            while (DaggerCount > max)
-                for (int i = 0; i < _daggers.Count; i++)
-                    if (!_daggers[i].Flying && !_daggers[i].Returning && !_daggers[i].Vortex) { RemoveDagger(i); break; }
+            int regular = 0;
+            foreach (var d in _daggers) if (IsRegularResting(d)) regular++;
+            for (int i = 0; regular > max && i < _daggers.Count;)
+            {
+                if (!IsRegularResting(_daggers[i])) { i++; continue; }
+                RemoveDagger(i);
+                regular--;
+            }
         }
+
+        static bool IsRegularResting(Dagger d) => !d.Ultimate && !d.Flying && !d.Returning && !d.Vortex;
 
         void FlyDagger(Dagger d, float step)
         {
@@ -195,6 +207,13 @@ namespace AThousandDawns.Player
             {
                 var target = _overlap[i].GetComponentInParent<Damageable>();
                 if (target == null || target.IsDead || !target.Targetable || (d.HitSet != null && d.HitSet.Contains(target))) continue;
+                if (d.Ultimate) // 만천화우: 방패도 뚫고 꽂혀요 (강인함 무시)
+                {
+                    RainStrike(target, 1f);
+                    Stick(d, target);
+                    RainLanded(d, target);
+                    return;
+                }
                 bool blocked = target.ResolveSituational(transform.position, d.Tag) < 1f; // 방패 정면: 피해가 줄고 꽂히지 않아요
                 HitTarget(target, d.Hit, d.Tag);
                 Gauge = Mathf.Min(GaugeCap, Gauge + d.Gauge * GaugeGainMultiplier);
@@ -227,10 +246,11 @@ namespace AThousandDawns.Player
             Vector3 target = transform.position + Vector3.up * 0.8f;
             Vector3 pos = d.Go.transform.position;
             Vector3 to = target - pos;
-            float step = D("knife.return_speed", 30f) * dt;
+            float step = (d.Backflow ? D("jinjeon.backflow_speed", 20f) : D("knife.return_speed", 30f)) * dt;
             bool arrived = to.magnitude <= Mathf.Max(step, 0.4f);
             Vector3 next = arrived ? target : pos + to.normalized * step;
             if (d.Recall) RecallHits(d, pos, next); // 이번에 지나간 길의 적
+            else if (d.Backflow) BackflowHits(d, pos, next);
             if (arrived) return true;
             d.Go.transform.position = next;
             if (to.sqrMagnitude > 1e-6f) d.Go.transform.rotation = Quaternion.LookRotation(to);
@@ -286,6 +306,7 @@ namespace AThousandDawns.Player
             at.y = 0.05f;
             d.Go.transform.position = at;
             d.Go.transform.rotation = Quaternion.Euler(90f, d.Go.transform.eulerAngles.y, 0f);
+            if (d.Ultimate && !d.Landed) RainLanded(d, null); // 빗나간 절초 비도도 떨어진 자리에 각인 (#열양 불길)
         }
 
         void RemoveDagger(int index)
@@ -301,11 +322,169 @@ namespace AThousandDawns.Player
             _vortexLeft = 0f;
             _haloLeft = 0f;
             _flashQueue.Clear();
+            _rainLeft = 0;
+            _rainFinishPending = false;
+            _rainBloom.Clear();
+        }
+
+        // ── 절초 만천화우
+        //   적을 쫓지 않아요. 시전 시간 동안 비도를 한 발씩 내 둘레로 곧게 던져요 (한 발마다 47°씩 돌아가며 사방으로, 사거리 10칸).
+        //   맞은 적에게 꽂히고 (강인함 무시 · 공력 배율, 방패도 뚫어요), 빗나가면 바닥에 떨어져 평타 비도처럼 남아요 (회수 · 비도 초식에 써요).
+        //   절초 비도는 최대 15개에 안 세서 그 위로 더 남을 수 있고, 평타 비도를 밀어내지도 않아요.
+        //   진전: 폭우 (더 많이 · 더 멀리 · 한 발은 약하게) · 산화 (다 던진 뒤 꽂힌 적이 한꺼번에 터져요) · 회류 (다 던진 뒤 절초 비도가 돌아오며 길의 적을 한 번 더)
+        //   상단전 마무리: 다 던진 뒤 가장 센 적에게 큰 비도 한 자루. 절초 각인은 비도가 꽂히거나 떨어질 때마다, #뇌정은 마지막 비도가 닿은 뒤 한 번.
+        const float RainBloomRadius = 1.5f; // 산화: 터지는 반경
+        int _rainLeft, _rainSpawned, _rainDamage;
+        float _rainInterval, _rainElapsed, _rainRange, _rainFinale;
+        bool _rainFinishPending;
+        Vector3 _rainDir;
+        UltimateForm _rainForm;
+        HitDamageInput _rainHit;
+        readonly Dictionary<Damageable, int> _rainBloom = new Dictionary<Damageable, int>(); // 산화: 적마다 꽂힌 절초 비도 수
+
+        // 던지는 중이거나, 던진 비도가 아직 날아가거나, 회류로 돌아오는 중
+        public bool DaggerRaining
+        {
+            get
+            {
+                if (_rainLeft > 0 || _rainFinishPending) return true;
+                foreach (var d in _daggers) if (d.Backflow) return true;
+                return false;
+            }
+        }
+
+        void BeginDaggerRain(HitDamageInput hit, int count, float duration, float range, UltimateForm form, float finaleRatio)
+        {
+            _rainHit = hit;
+            _rainHit.IgnoreToughness = true;
+            _rainLeft = Mathf.Max(0, count);
+            _rainSpawned = 0;
+            _rainInterval = count > 0 ? duration / count : duration;
+            _rainElapsed = 0f;
+            _rainRange = range;
+            _rainForm = form;
+            _rainFinale = finaleRatio;
+            _rainDamage = 0;
+            _rainDir = _facing;
+            _rainFinishPending = _rainLeft > 0;
+            _rainBloom.Clear();
+        }
+
+        void TickDaggerRain(float dt)
+        {
+            if (_rainLeft > 0)
+            {
+                _rainElapsed += dt;
+                // i번째 비도는 (i + 0.5) × 간격에 → 시전 시간 안에 고르게
+                while (_rainLeft > 0 && _rainElapsed >= (_rainSpawned + 0.5f) * _rainInterval) ThrowRainDagger();
+            }
+            if (!_rainFinishPending || _rainLeft > 0) return;
+            foreach (var d in _daggers) if (d.Ultimate && d.Flying) return; // 마지막 비도까지 꽂히거나 떨어지면
+            _rainFinishPending = false;
+            if (_rainForm == UltimateForm.Bloom) BurstRainBloom();
+            if (_rainFinale > 0f) RainFinale();
+            if (_rainForm == UltimateForm.Backflow) StartBackflow();
+            OnSwordRainFinished(_rainDamage); // #뇌정 각인 · 뇌정 방울
+        }
+
+        // 지금 내 자리에서 한 발: 시작 방향에서 한 발마다 47°씩 돌아가요
+        void ThrowRainDagger()
+        {
+            var dir = Quaternion.Euler(0f, _rainSpawned * D("knife.ultimate_spin_angle", 47f), 0f) * _rainDir;
+            var d = NewDagger(transform.position + Vector3.up * 0.8f + dir * 0.6f);
+            d.Dir = dir;
+            d.Flight = _rainRange;
+            d.Hit = _rainHit;
+            d.Tag = HitTag.Ultimate;
+            d.Ultimate = true;
+            d.Go.transform.rotation = Quaternion.LookRotation(dir);
+            if (_rainSpawned % 3 == 0) Sfx.Play(SfxId.DaggerThrow); // 세 발마다 한 번 (소리가 겹치지 않게)
+            _rainLeft--;
+            _rainSpawned++;
+        }
+
+        // 한 발 피해 × ratio (강인함 무시, 방어력 적용)
+        void RainStrike(Damageable target, float ratio)
+        {
+            if (target == null || target.IsDead || !target.Targetable) return;
+            var hit = _rainHit;
+            hit.SpecialMultiplier *= ratio;
+            hit.Toughness = target.Toughness;
+            hit.Defense = target.Defense;
+            int damage = DamageFormula.ToEnemy(hit, _rules);
+            target.ApplyHit(damage);
+            _rainDamage += damage;
+        }
+
+        // 절초 비도가 꽂히거나 (target) 떨어졌을 때 (null): 절초 각인 · 산화 셈
+        void RainLanded(Dagger d, Damageable target)
+        {
+            d.Landed = true;
+            if (target != null && _rainForm == UltimateForm.Bloom) _rainBloom[target] = _rainBloom.TryGetValue(target, out int n) ? n + 1 : 1;
+            OnSwordLanded(target, Flatten(target != null ? target.transform.position : d.Go.transform.position));
+        }
+
+        // 산화: 절초 비도가 꽂힌 적마다 (꽂힌 수 × 비율) 피해로 둘레까지 터져요
+        void BurstRainBloom()
+        {
+            float ratio = D("jinjeon.bloom_ratio", 0.5f);
+            Damageable.CopyAll(_targets);
+            foreach (var kv in _rainBloom)
+            {
+                if (kv.Key == null || kv.Key.IsDead) continue;
+                Vector3 at = Flatten(kv.Key.transform.position);
+                foreach (var e in _targets)
+                    if (e != null && (Flatten(e.transform.position) - at).magnitude <= RainBloomRadius + e.BodyRadius) RainStrike(e, ratio * kv.Value);
+            }
+            _rainBloom.Clear();
+        }
+
+        // 상단전 마무리: 가장 센 적에게 큰 비도 한 자루가 꽂혀요
+        void RainFinale()
+        {
+            Damageable best = null;
+            foreach (var e in Damageable.All())
+                if (!e.IsDead && e.Targetable && (best == null || e.Health > best.Health)) best = e;
+            if (best == null) return;
+            RainStrike(best, _rainFinale);
+            var d = NewDagger(best.transform.position + Vector3.up);
+            d.Ultimate = d.Landed = true;
+            d.Dir = Flatten(best.transform.position - transform.position);
+            Stick(d, best);
+            d.Go.transform.localScale *= 3f;
+        }
+
+        // 회류: 남은 절초 비도가 모두 나에게 돌아와요 (꽂힌 비도는 적을 빠져나오며 맞혀요)
+        void StartBackflow()
+        {
+            foreach (var d in _daggers)
+            {
+                if (!d.Ultimate || d.Flying || d.Returning || d.Vortex) continue;
+                d.Stuck = null;
+                d.Returning = true;
+                d.Backflow = true;
+                (d.HitSet ??= new HashSet<Damageable>()).Clear();
+                if (d.Rend != null) d.Rend.enabled = true;
+            }
+        }
+
+        // 회류로 돌아오는 비도가 from → to를 지나며 닿은 적을 한 번씩 맞혀요
+        void BackflowHits(Dagger d, Vector3 from, Vector3 to)
+        {
+            float radius = D("knife.recall_path_radius", 0.6f);
+            Damageable.CopyAll(_targets);
+            foreach (var e in _targets)
+            {
+                if (e == null || e.IsDead || !e.Targetable || d.HitSet.Contains(e)) continue;
+                if (DistanceToSegment(e.transform.position, from, to) > radius + e.BodyRadius) continue;
+                d.HitSet.Add(e);
+                RainStrike(e, 1f);
+            }
         }
 
         // ── 비도 + 죽림섬: 비도 순간이동
-        //   꽂히거나 떨어진 비도 자리로 가까운 것부터 차례로 순간이동해요 (0.12초 간격, 최대 6곳). 지나간 직선 위의 적을 베고 (1번에 초식 피해 35%),
-        //   그 자리의 비도를 뽑아 손에 거둬요. 순간이동하는 동안 무적. 남은 비도는 그대로 남아요.
+        //   적에게 꽂힌 비도 자리로 가까운 것부터 차례로 순간이동해요 (0.12초 간격, 최대 6곳). 꽂힌 비도가 하나도 없을 때만 바닥에 떨어진 비도로 가요.
+        //   지나간 직선 위의 적을 베고 (1번에 초식 피해 35%), 그 자리의 비도를 뽑아 손에 거둬요. 순간이동하는 동안 무적. 남은 비도는 그대로 남아요.
         readonly List<Dagger> _flashQueue = new List<Dagger>();
         float _daggerFlashTimer;
 
@@ -315,8 +494,10 @@ namespace AThousandDawns.Player
         {
             _flashQueue.Clear();
             Vector3 from = transform.position;
-            var left = new List<Dagger>();
-            foreach (var d in _daggers) if (!d.Flying && !d.Returning && !d.Vortex) left.Add(d);
+            var stuck = new List<Dagger>();
+            var ground = new List<Dagger>();
+            foreach (var d in _daggers) if (!d.Flying && !d.Returning && !d.Vortex) (d.Stuck != null ? stuck : ground).Add(d);
+            var left = stuck.Count > 0 ? stuck : ground; // 적에게 꽂힌 비도가 먼저예요 (하나도 없을 때만 바닥 비도)
             int max = Mathf.RoundToInt(D("knife.scroll_flash_max", 6f));
             while (left.Count > 0 && _flashQueue.Count < max) // 가까운 것부터 이어서
             {
@@ -472,7 +653,13 @@ namespace AThousandDawns.Player
 
         void StartVortex()
         {
-            _vortexCenter = transform.position + _facing * D("knife.vortex_distance", 4f);
+            _vortexCenter = transform.position + _facing * D("knife.vortex_distance", 4f); // 패드 · 조준점이 없을 땐 앞쪽 4칸
+            if (_input != null && _input.TryGetAimPoint(out Vector3 aim)) // 마우스 커서 자리가 소용돌이 가운데 (너무 멀면 vortex_max_range까지)
+            {
+                Vector3 to = aim - transform.position;
+                to.y = 0f;
+                _vortexCenter = transform.position + Vector3.ClampMagnitude(to, D("knife.vortex_max_range", 9f));
+            }
             _vortexCenter.y = 0.8f;
             _vortexLeft = D("knife.vortex_time", 2f);
             _vortexTick = 0f;
