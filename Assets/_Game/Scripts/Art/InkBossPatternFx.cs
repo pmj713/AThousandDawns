@@ -58,6 +58,8 @@ namespace AThousandDawns.Art
             IronFistBrain.Grabbed += OnGrabbed;
             IronFistBrain.FarLeaped -= OnFarLeaped;
             IronFistBrain.FarLeaped += OnFarLeaped;
+            IronFistBrain.FarLeapDescending -= OnFarLeapDescending;
+            IronFistBrain.FarLeapDescending += OnFarLeapDescending;
             GoblinChiefBrain.TrapThrown -= OnTrap;
             GoblinChiefBrain.TrapThrown += OnTrap;
             OgreBrain.Enraged -= OnOgreEnraged;
@@ -607,6 +609,41 @@ namespace AThousandDawns.Art
                 Vector3 p = h._player != null ? h._player.transform.position : at + Flat(dir) * 3f;
                 p.y = 0f;
                 h.Dust(p, 2.2f, Earth);
+                return false;
+            });
+        }
+
+        // 먼 거리 도약 착지 직전 (FarLeapDescending: 땅에 닿기까지 time초): 내려앉을 자리에 보스 그림자가 점점 짙고 커지며, 둘레 고리가 조여 들어요.
+        //   땅에 닿는 순간 사라지고 착지 연출(FarLeaped)이 이어요.
+        static void OnFarLeapDescending(IronFistBrain boss, Vector3 from, Vector3 to, float time)
+        {
+            if (boss == null) return;
+            Host().LandingShadow(to, Mathf.Max(2f, boss.Height * 1.2f), Mathf.Max(0.05f, time));
+        }
+
+        void LandingShadow(Vector3 at, float size, float time)
+        {
+            if (_glow == null) return;
+            at.y = 0f;
+            var shadow = FlatSprite(_glow, at, size, 0f, 0.05f, 4, new Color(0.05f, 0.03f, 0.06f, 0f));
+            var ring = _ring != null ? FlatSprite(_ring, at, size * 1.1f, 0f, 0.055f, 5, new Color(0.15f, 0.08f, 0.1f, 0f)) : null;
+            Vector3 unit = shadow.transform.localScale, ringUnit = ring != null ? ring.transform.localScale : Vector3.one;
+            float t = 0f;
+            _live.Add(dt =>
+            {
+                if (shadow == null) return false;
+                t += dt;
+                float k = Mathf.Clamp01(t / time);
+                shadow.transform.localScale = unit * Mathf.Lerp(0.45f, 1f, k);
+                shadow.color = new Color(0.05f, 0.03f, 0.06f, Mathf.Lerp(0.15f, 0.8f, k * k));
+                if (ring != null)
+                {
+                    ring.transform.localScale = ringUnit * Mathf.Lerp(1.7f, 1f, k);
+                    ring.color = new Color(0.15f, 0.08f, 0.1f, 0.7f * k);
+                }
+                if (t < time + 0.04f) return true;
+                Destroy(shadow.gameObject);
+                if (ring != null) Destroy(ring.gameObject);
                 return false;
             });
         }
