@@ -393,34 +393,86 @@ namespace AThousandDawns.Art
             if (c.Kind == IronDragonBrain.FxKind.Ring) Host().WaveRing(c.At, c.Radius, c.Length, c.Time);
         }
 
+        // (플레이테스트 8차: 파란 물결 고리 대신) 약간 솟아오른 흙 둔덕이 고리 모양으로 바깥으로 퍼져요 — 판정 띠 두께(width) 그대로,
+        //   반경은 판정 고리와 같이 max까지 time초. 둔덕 단면은 안쪽 밑 → 꼭대기 → 바깥 밑 (꼭대기 밝은 흙, 밑 짙은 흙), 둘레가 조금씩 울퉁불퉁.
+        //   처음 0.15초에 솟아오르고 끝 15%에 가라앉아요. 둔덕을 따라 흙먼지 · 돌가루가 튀어요. 메시는 고리마다 하나, 매 프레임 꼭짓점만 다시 놓아요.
+        const int MoundSides = 64;
+        static readonly float[] MoundOffset = { -0.5f, -0.25f, 0f, 0.25f, 0.5f };
+        static readonly float[] MoundHeight = { 0f, 0.65f, 1f, 0.6f, 0f };
+        static Material _moundMat;
+
         void WaveRing(Vector3 at, float max, float width, float time)
         {
             at.y = 0f;
-            HideRoot("충격파", at, 1f); // 임시 LineRenderer 고리는 렌더러만 꺼요 (판정 고리와 같은 반경 · 두께로 아래 고리가 대신 퍼져요)
-            var outer = Circle(at, 0.08f, Mathf.Max(0.2f, width), new Color(0.35f, 0.7f, 1f, 0.85f));
-            var inner = Circle(at, 0.1f, Mathf.Max(0.08f, width * 0.3f), new Color(0.9f, 0.97f, 1f, 1f));
-            float t = 0f, life = Mathf.Max(0.1f, time), spray = 0f;
+            HideRoot("충격파", at, 1f); // 임시 LineRenderer 고리는 렌더러만 꺼요 (판정 고리와 같은 반경 · 두께로 아래 둔덕이 대신 퍼져요)
+            if (_moundMat == null) _moundMat = new Material(Shader.Find("Sprites/Default")) { name = "Earth Mound" };
+            width = Mathf.Max(0.3f, width);
+            float height = Mathf.Clamp(width * 0.45f, 0.2f, 0.5f);
+            int rows = MoundOffset.Length;
+            var mesh = new Mesh { name = "Earth Mound Ring" };
+            var verts = new Vector3[MoundSides * rows];
+            var colors = new Color[verts.Length];
+            var bumps = new float[MoundSides];
+            Color low = new Color(0.33f, 0.25f, 0.16f), mid = new Color(0.52f, 0.4f, 0.26f), top = new Color(0.74f, 0.62f, 0.44f);
+            for (int i = 0; i < MoundSides; i++)
+            {
+                bumps[i] = 1f + 0.18f * Mathf.Sin(i * 0.9f) * Mathf.Sin(i * 0.37f + 1f);
+                for (int s = 0; s < rows; s++) colors[i * rows + s] = s == 2 ? top : (s == 1 || s == 3) ? mid : low;
+            }
+            var tris = new int[MoundSides * (rows - 1) * 6];
+            int n = 0;
+            for (int i = 0; i < MoundSides; i++)
+            {
+                int i1 = (i + 1) % MoundSides;
+                for (int s = 0; s < rows - 1; s++)
+                {
+                    int a = i * rows + s, b = i * rows + s + 1, c = i1 * rows + s + 1, d = i1 * rows + s;
+                    tris[n++] = a; tris[n++] = b; tris[n++] = c;
+                    tris[n++] = a; tris[n++] = c; tris[n++] = d;
+                }
+            }
+            mesh.vertices = verts;
+            mesh.colors = colors;
+            mesh.triangles = tris;
+            var go = new GameObject("Earth Wave");
+            go.transform.SetParent(transform, false);
+            go.transform.position = at;
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var mr = go.AddComponent<MeshRenderer>();
+            mr.sharedMaterial = _moundMat;
+            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            mr.receiveShadows = false;
+            float t = 0f, life = Mathf.Max(0.1f, time), dust = 0f;
             _live.Add(dt =>
             {
-                if (outer == null) return false;
+                if (go == null) { Destroy(mesh); return false; }
                 t += dt;
                 float k = Mathf.Clamp01(t / life);
                 float r = max * k;
-                SetCircle(outer, r);
-                SetCircle(inner, r);
-                float a = Mathf.Clamp01((1f - k) / 0.15f);
-                outer.startColor = outer.endColor = new Color(0.35f, 0.7f, 1f, 0.85f * a);
-                inner.startColor = inner.endColor = new Color(0.9f, 0.97f, 1f, a);
-                spray -= dt;
-                if (spray <= 0f && r > 0.5f)
+                float rise = Mathf.Clamp01(t / 0.15f) * Mathf.Clamp01((1f - k) / 0.15f);
+                for (int i = 0; i < MoundSides; i++)
                 {
-                    spray = 0.04f;
+                    float ang = i * Mathf.PI * 2f / MoundSides;
+                    float cs = Mathf.Cos(ang), sn = Mathf.Sin(ang);
+                    for (int s = 0; s < rows; s++)
+                    {
+                        float rr = Mathf.Max(0f, r + MoundOffset[s] * width);
+                        verts[i * rows + s] = new Vector3(cs * rr, MoundHeight[s] * height * rise * bumps[i], sn * rr);
+                    }
+                }
+                mesh.vertices = verts;
+                mesh.RecalculateBounds();
+                dust -= dt;
+                if (dust <= 0f && r > 0.5f && rise > 0.3f) // 둔덕을 따라 흙먼지 · 돌가루
+                {
+                    dust = 0.05f;
                     float ang = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
-                    InkParticles.Burst(at + new Vector3(Mathf.Cos(ang), 0.1f, Mathf.Sin(ang)) * r, 3, new Color(0.9f, 0.97f, 1f, 1f), new Color(0.3f, 0.6f, 1f, 0.3f), 2f, 0.16f, 0.45f, 2f);
+                    var p = at + new Vector3(Mathf.Cos(ang), 0f, Mathf.Sin(ang)) * r;
+                    InkParticles.Burst(p + Vector3.up * 0.15f, 3, new Color(0.62f, 0.5f, 0.34f, 0.85f), new Color(0.45f, 0.36f, 0.25f, 0f), 1.4f, 0.28f, 0.5f, 0.8f);
                 }
                 if (k < 1f) return true;
-                Destroy(outer.gameObject);
-                if (inner != null) Destroy(inner.gameObject);
+                Destroy(go);
+                Destroy(mesh);
                 return false;
             });
         }
@@ -1350,31 +1402,6 @@ namespace AThousandDawns.Art
             lr.receiveShadows = false;
             lr.numCapVertices = 2;
             return lr;
-        }
-
-        LineRenderer Circle(Vector3 at, float height, float width, Color color)
-        {
-            var lr = Line(color, width, 48);
-            lr.useWorldSpace = false;
-            lr.loop = true;
-            lr.transform.position = new Vector3(at.x, height, at.z);
-            lr.transform.rotation = Quaternion.identity;
-            lr.alignment = LineAlignment.TransformZ;
-            lr.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
-            SetCircle(lr, 0f);
-            return lr;
-        }
-
-        static readonly Vector3[] CirclePoints = new Vector3[48];
-        static void SetCircle(LineRenderer lr, float radius)
-        {
-            if (lr == null) return;
-            for (int i = 0; i < CirclePoints.Length; i++)
-            {
-                float a = i * Mathf.PI * 2f / CirclePoints.Length;
-                CirclePoints[i] = new Vector3(Mathf.Cos(a) * radius, Mathf.Sin(a) * radius, 0f); // 눕힌 transform 기준 (x, y) = 바닥 (x, z)
-            }
-            lr.SetPositions(CirclePoints);
         }
 
         static Light PointLight(Transform parent, Color color, float range, float intensity)
