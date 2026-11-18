@@ -202,7 +202,7 @@ namespace AThousandDawns.Art
             _flierKeys.AddRange(_fliers.Keys);
             foreach (var e in _flierKeys)
             {
-                if (e == null || e.IsDead) { _fliers.Remove(e); _hands.Remove(e); continue; }
+                if (e == null || e.IsDead) { _fliers.Remove(e); _hands.Remove(e); _trails.Remove(e); continue; }
                 var s = _fliers[e];
                 Vector3 p = e.transform.position, move = p - s.last;
                 float speed = dt > 0f ? move.magnitude / dt : 0f;
@@ -221,11 +221,14 @@ namespace AThousandDawns.Art
                 {
                     if (s.fast && !fast && e.AttackName == "발톱 베기") Claws(p, s.last - p); // 덮치고 멈추는 순간: 세 줄 발톱 자국
                     var w = e as WerewolfBrain;
-                    if (w != null && w.IsEnraged) // 광폭 (플레이테스트 3차: 몸이 아니라 손톱에서): 두 손에서 붉은 기운이 피어오르고, 휘두르면 붉은 손톱 자국 꼬리
+                    if (w != null && w.IsEnraged) // 광폭 (플레이테스트 3차: 몸이 아니라 손톱에서): 덮칠 때만 두 손에서 붉은 기운이 피어오르고 붉은 손톱 자국 꼬리
                     {
+                        // 플레이테스트 7차: 서 있거나 걸을 때도 손(몸 옆)에서 붉은 기운·꼬리가 계속 나와 몸에 박힌 것처럼 보였어요 → 빠르게 덮칠 때만
                         var hands = Hands(w);
+                        if (_trails.TryGetValue(w, out var trails))
+                            foreach (var t in trails) if (t != null) t.emitting = fast;
                         s.puff -= dt;
-                        if (s.puff <= 0f)
+                        if (fast && s.puff <= 0f)
                         {
                             s.puff = 0.07f;
                             foreach (var h in hands)
@@ -288,6 +291,7 @@ namespace AThousandDawns.Art
 
         // 늑대인간 두 손 (뼈 LeftHand · RightHand, 늑대인간마다 처음 한 번만 찾아요) — 찾을 때 손마다 붉은 손톱 꼬리(TrailRenderer)를 달아요
         readonly Dictionary<EnemyBrain, Transform[]> _hands = new Dictionary<EnemyBrain, Transform[]>();
+        readonly Dictionary<EnemyBrain, TrailRenderer[]> _trails = new Dictionary<EnemyBrain, TrailRenderer[]>();   // 덮칠 때만 켜요
         static Material _clawTrail;
 
         Transform[] Hands(EnemyBrain e)
@@ -295,6 +299,8 @@ namespace AThousandDawns.Art
             if (_hands.TryGetValue(e, out var found)) return found;
             found = new[] { Bone(e.transform, "LeftHand"), Bone(e.transform, "RightHand") };
             _hands[e] = found;
+            var made = new TrailRenderer[found.Length];
+            _trails[e] = made;
             if (_clawTrail == null) _clawTrail = new Material(Shader.Find("Sprites/Default")) { name = "Werewolf Claw Trail" };
             foreach (var h in found)
             {
@@ -302,6 +308,8 @@ namespace AThousandDawns.Art
                 var go = new GameObject("Claw Trail");
                 go.transform.SetParent(h, false);
                 var trail = go.AddComponent<TrailRenderer>();
+                made[System.Array.IndexOf(found, h)] = trail;
+                trail.emitting = false;
                 trail.sharedMaterial = _clawTrail;
                 trail.time = 0.2f;
                 trail.minVertexDistance = 0.04f;
