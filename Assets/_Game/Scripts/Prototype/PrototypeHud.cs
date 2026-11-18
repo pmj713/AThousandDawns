@@ -233,8 +233,12 @@ namespace AThousandDawns.Prototype
                     if (sp.z <= 0f) continue;
                     var dmg = e.Damageable;
                     var bars = AThousandDawns.Core.GameSettings.Current.enemyBars; // 설정: 적 체력바
-                    if (bars == AThousandDawns.Core.GameSettings.EnemyBars.Always || (bars == AThousandDawns.Core.GameSettings.EnemyBars.Damaged && dmg.Health < dmg.MaxHealth))
-                        DrawBar(new Rect(g.x - 25, g.y, 50, 6), dmg.MaxHealth > 0f ? dmg.Health / dmg.MaxHealth : 0f, EnemyHealthColor);
+                    if (bars == AThousandDawns.Core.GameSettings.EnemyBars.Always || (bars == AThousandDawns.Core.GameSettings.EnemyBars.Damaged && dmg.Health < dmg.MaxHealth) || dmg.Ward > 0) // 가호가 걸리면 늘 보여요
+                    {
+                        var enemyBar = new Rect(g.x - 25, g.y, 50, 6);
+                        DrawBar(enemyBar, dmg.MaxHealth > 0f ? dmg.Health / dmg.MaxHealth : 0f, EnemyHealthColor);
+                        DrawWard(enemyBar, dmg);
+                    }
                     if (e.IsElite || e.Rank == EnemyRank.Assassin) GUI.Label(new Rect(g.x - 90, g.y - 40, 180, 22), e.DisplayName, _statusLabel); // 정예: 이름 앞에 특성
                     DrawStatus(g.x, g.y, e.Statuses, false);
                 }
@@ -725,8 +729,25 @@ namespace AThousandDawns.Prototype
             AThousandDawns.Fx.InkHud.FactionCrest(area, e);
             var bar = new Rect(area.x, area.yMax + 2f, area.width, 16f);
             DrawBar(bar, e.Damageable.Health / Mathf.Max(1f, e.Damageable.MaxHealth), HealthColor);
+            DrawWard(bar, e.Damageable);
             GUI.Label(new Rect(bar.x, bar.y - 1f, bar.width, bar.height + 2f), $"{e.Damageable.Health:0} / {e.Damageable.MaxHealth:0}",
                 AThousandDawns.Fx.InkUi.Text(AThousandDawns.Fx.InkUi.Tiny, AThousandDawns.Fx.InkUi.PaperText, TextAnchor.MiddleCenter, true));
+        }
+
+        // 가호 (목탁승 가호 등, Damageable.Ward): 체력바 위에 하얀 코팅 (플레이테스트 5차). 길이 = 가호 / 최대 체력 × 바 폭, 왼쪽 끝에서 시작 (줄면 왼쪽으로, 늘면 오른쪽으로).
+        //   반투명 흰 막 + 위아래 가장자리 흰 선. 매 프레임 Ward만 읽어요.
+        static void DrawWard(Rect bar, AThousandDawns.Combat.Damageable d)
+        {
+            if (d == null || d.Ward <= 0 || d.MaxHealth <= 0f) return;
+            float w = bar.width * Mathf.Clamp01(d.Ward / d.MaxHealth);
+            float edge = bar.height >= 10f ? 2f : 1f;
+            var old = GUI.color;
+            GUI.color = new Color(1f, 1f, 1f, 0.55f);
+            GUI.DrawTexture(new Rect(bar.x, bar.y, w, bar.height), Texture2D.whiteTexture);
+            GUI.color = Color.white;
+            GUI.DrawTexture(new Rect(bar.x, bar.y, w, edge), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(bar.x, bar.yMax - edge, w, edge), Texture2D.whiteTexture);
+            GUI.color = old;
         }
 
         static void DrawBar(Rect rect, float ratio, Color fill, float alpha = 1f)
