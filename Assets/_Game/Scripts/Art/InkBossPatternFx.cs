@@ -1011,10 +1011,12 @@ namespace AThousandDawns.Art
             var horse = new GameObject("Spectral Rider").transform;
             horse.SetParent(transform, false);
             horse.SetPositionAndRotation(from, Quaternion.LookRotation(dir));
-            var body = GhostPart(horse, _horse, Vector3.zero, Teal, 0.55f);
-            var legs = new Transform[4];
-            var legRenderers = new Renderer[4];
-            for (int i = 0; i < 4; i++)
+            var model = HorseModel(); // 메인 아트 VARCO 유령마 (말 + 망령 기사 한 덩어리, 플레이테스트 9차). 없으면 코드 말 + 데스나이트 실루엣
+            var modelParts = model != null ? GhostModel(horse, model) : null;
+            var body = model == null ? GhostPart(horse, _horse, Vector3.zero, Teal, 0.55f) : null;
+            var legs = new Transform[model == null ? 4 : 0];
+            var legRenderers = new Renderer[legs.Length];
+            for (int i = 0; i < legs.Length; i++)
             {
                 var hip = new GameObject("Leg").transform;
                 hip.SetParent(horse, false);
@@ -1022,7 +1024,7 @@ namespace AThousandDawns.Art
                 legRenderers[i] = GhostPart(hip, _leg, Vector3.zero, Teal, 0.55f);
                 legs[i] = hip;
             }
-            var riderMesh = RiderMesh(knight);
+            var riderMesh = model == null ? RiderMesh(knight) : null;
             Renderer rider = null;
             if (riderMesh != null)
             {
@@ -1050,16 +1052,17 @@ namespace AThousandDawns.Art
                     float gallop = t * 22f;
                     horse.position = p + Vector3.up * (0.12f * Mathf.Abs(Mathf.Sin(gallop)));
                     horse.rotation = Quaternion.LookRotation(dir) * Quaternion.Euler(6f * Mathf.Sin(gallop), 0f, 0f); // 앞뒤로 들썩
-                    for (int i = 0; i < 4; i++) legs[i].localRotation = Quaternion.Euler(38f * Mathf.Sin(gallop + (i < 2 ? 0f : Mathf.PI) + (i % 2) * 0.6f), 0f, 0f);
+                    for (int i = 0; i < legs.Length; i++) legs[i].localRotation = Quaternion.Euler(38f * Mathf.Sin(gallop + (i < 2 ? 0f : Mathf.PI) + (i % 2) * 0.6f), 0f, 0f);
                     float a = Mathf.Clamp01(t / 0.08f) * Mathf.Clamp01((run - t) / 0.12f + 0.3f); // 나타났다 끝에서 흐려져요
                     var c = new Color(Teal.r, Teal.g, Teal.b, 0.55f * a);
-                    Tint(body, c);
+                    if (body != null) Tint(body, c);
+                    if (modelParts != null) foreach (var mr in modelParts) Tint(mr, c);
                     foreach (var lr in legRenderers) Tint(lr, c);
                     if (rider != null) Tint(rider, new Color(0.6f, 1f, 0.95f, 0.5f * a));
                     hoof -= dt;
                     if (hoof <= 0f && k < 1f) { hoof = 0.05f; InkParticles.Burst(p + Vector3.up * 0.1f, 3, new Color(0.7f, 1f, 0.95f, 1f), new Color(Teal.r, Teal.g, Teal.b, 0f), 1.2f, 0.22f, 0.45f, -1f); }
                     ghost -= dt;
-                    if (ghost <= 0f && k < 1f) { ghost = 0.06f; Afterimage(horse.position, horse.rotation); }
+                    if (ghost <= 0f && k < 1f) { ghost = 0.06f; Afterimage(horse.position, horse.rotation, model); }
                     if (k >= 1f)
                     {
                         InkParticles.Burst(p + Vector3.up * 1.2f, 18, new Color(0.7f, 1f, 0.95f, 1f), new Color(Teal.r, Teal.g, Teal.b, 0f), 2.5f, 0.35f, 0.6f, -0.8f); // 끝에서 흩어져요
@@ -1079,19 +1082,59 @@ namespace AThousandDawns.Art
             });
         }
 
+        // 메인 아트 VARCO 유령마 (Resources/Models/SpectralHorse: 앞 +Z, 발이 원점, 높이 2.2, 애니메이션 없음) — 처음 한 번만 불러요
+        static GameObject _horseModel;
+        static bool _horseChecked;
+        static GameObject HorseModel()
+        {
+            if (!_horseChecked) { _horseChecked = true; _horseModel = Resources.Load<GameObject>("Models/SpectralHorse"); }
+            return _horseModel;
+        }
+
+        // 모델을 parent 밑에 놓고 모든 렌더러를 반투명 청록 유령 재질로 (원래 그림(_BaseMap)은 _MainTex로 곱해요). 충돌체 · 그림자 없음
+        List<Renderer> GhostModel(Transform parent, GameObject model)
+        {
+            var go = Instantiate(model, parent, false);
+            go.transform.localPosition = Vector3.zero;
+            go.transform.localRotation = Quaternion.identity;
+            foreach (var c in go.GetComponentsInChildren<Collider>()) Destroy(c);
+            var list = new List<Renderer>();
+            foreach (var r in go.GetComponentsInChildren<Renderer>())
+            {
+                Texture tex = null;
+                var src = r.sharedMaterial;
+                if (src != null && src.HasProperty("_BaseMap")) tex = src.GetTexture("_BaseMap");
+                else if (src != null && src.HasProperty("_MainTex")) tex = src.mainTexture;
+                var mats = new Material[Mathf.Max(1, r.sharedMaterials.Length)];
+                for (int i = 0; i < mats.Length; i++) mats[i] = _ghost;
+                r.sharedMaterials = mats;
+                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                r.receiveShadows = false;
+                if (tex != null)
+                {
+                    r.GetPropertyBlock(_block);
+                    _block.SetTexture("_MainTex", tex);
+                    r.SetPropertyBlock(_block);
+                }
+                Tint(r, new Color(Teal.r, Teal.g, Teal.b, 0.55f));
+                list.Add(r);
+            }
+            return list;
+        }
+
         // 말 잔상: 몸통만 그 자리에 남아 0.3초에 흐려져요
-        void Afterimage(Vector3 at, Quaternion rot)
+        void Afterimage(Vector3 at, Quaternion rot, GameObject model)
         {
             var go = new GameObject("Rider Afterimage");
             go.transform.SetParent(transform, false);
             go.transform.SetPositionAndRotation(at, rot);
-            var r = GhostPart(go.transform, _horse, Vector3.zero, Teal, 0.3f);
+            var parts = model != null ? GhostModel(go.transform, model) : new List<Renderer> { GhostPart(go.transform, _horse, Vector3.zero, Teal, 0.3f) };
             float t = 0f;
             _live.Add(dt =>
             {
                 if (go == null) return false;
                 t += dt;
-                Tint(r, new Color(Teal.r, Teal.g, Teal.b, 0.3f * (1f - t / 0.3f)));
+                foreach (var r in parts) if (r != null) Tint(r, new Color(Teal.r, Teal.g, Teal.b, 0.3f * (1f - t / 0.3f)));
                 if (t < 0.3f) return true;
                 Destroy(go);
                 return false;

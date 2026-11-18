@@ -43,6 +43,18 @@ namespace AThousandDawns.Art
                 var r = sword.GetChild(i).GetComponent<Renderer>();
                 if (r != null) r.enabled = false;
             }
+            if (VarcoSword() != null) // 메인 아트 VARCO 무협 검 (Resources/Models/UltimateSword, 자식 "UltimateSwordModel"이 있을 때, 플레이테스트 9차): 칼끝이 원점, +Y로 약 1.8 — 상자 검과 같은 기준이라 1.4배로 그대로
+            {
+                var model = Instantiate(_varco, sword, false).transform;
+                model.name = "Ultimate Sword Model";
+                model.localPosition = Vector3.zero;
+                model.localRotation = Quaternion.identity;
+                model.localScale = Vector3.one * 1.4f;
+                foreach (var c in model.GetComponentsInChildren<Collider>()) Destroy(c);
+                foreach (var mr in model.GetComponentsInChildren<Renderer>()) mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                Glow(sword);
+                return;
+            }
             var jian = new GameObject("Ultimate Jian");
             jian.transform.SetParent(sword, false);
             jian.transform.localScale = Vector3.one * 1.4f;
@@ -58,6 +70,24 @@ namespace AThousandDawns.Art
             tr.sharedMaterial = _vertexBright;
             tr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             tassel.AddComponent<InkTasselSway>();
+            Glow(sword);
+        }
+
+        // 메인 아트 VARCO 검: 프리팹에 "UltimateSwordModel" 자식이 있을 때만 (예전 판타지 검 프리팹이면 코드 검을 써요). 처음 한 번만 봐요
+        static GameObject _varco;
+        static bool _varcoChecked;
+        static GameObject VarcoSword()
+        {
+            if (_varcoChecked) return _varco;
+            _varcoChecked = true;
+            var prefab = Resources.Load<GameObject>("Models/UltimateSword");
+            if (prefab != null && prefab.transform.Find("UltimateSwordModel") != null) _varco = prefab;
+            return _varco;
+        }
+
+        // 금빛 빛무리 (테두리) + 날을 따라 가는 금빛 꼬리
+        static void Glow(Transform sword)
+        {
             if (_glow != null) // 금빛 빛무리 (테두리)
             {
                 var halo = new GameObject("Sword Halo").transform;

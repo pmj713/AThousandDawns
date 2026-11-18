@@ -471,11 +471,34 @@ namespace AThousandDawns.Prototype
                 GUI.Label(new Rect(area.x + 8f * K, area.y + 32f * K, area.width - 16f * K, 60f * K), "<color=#9a9a9a>기물을 놓으면 키워드가 쌓여요 (2 · 4 · 6개에서 단계 효과)</color>", _small);
                 return;
             }
-            float rowH = 40f * K, y = area.y + 32f * K;
-            var mouse = Event.current.mousePosition;
-            foreach (var k in _keywordOrder)
+            // (플레이테스트 9차: 키워드가 많으면 아래 대장간 줄이 잘렸어요) 키워드 · 혼종 세트 · 대장간 줄 수를 먼저 세서
+            //   다 들어가게 줄 높이를 40 → 최소 24까지 줄이고, 그래도 넘치면 대장간 · 혼종 자리를 먼저 남겨 두고 키워드를 "+N개 더"로 접어요.
+            var items = Player.Items;
+            int hybridRows = 0, forgeRows = 0;
+            if (items != null)
             {
-                if (y + rowH > area.yMax) break;
+                if (items.Board.EquipMode)
+                    for (int i = 0; i < PlayerKeywords.KeywordCount; i++)
+                        if (HybridSets.Has((Keyword)i) && items.OtherworldCount((Keyword)i) > 0) hybridRows++;
+                bool forged = false;
+                for (int i = 0; i < PlayerItems.ForgeSlotCount; i++) forged |= items.ForgeSlot(i).HasValue;
+                if (forged) forgeRows = PlayerItems.ForgeSlotCount;
+            }
+            float top = area.y + 32f * K, titles = (hybridRows > 0 ? 28f * K : 0f) + (forgeRows > 0 ? 28f * K : 0f);
+            int rows = _keywordOrder.Count + hybridRows + forgeRows;
+            float rowH = Mathf.Clamp((area.yMax - top - titles) / Mathf.Max(1, rows), 24f * K, 40f * K), y = top;
+            float keywordBottom = area.yMax - titles - (hybridRows + forgeRows) * rowH; // 아래 줄 자리는 남겨 둬요
+            var mouse = Event.current.mousePosition;
+            for (int ki = 0; ki < _keywordOrder.Count; ki++)
+            {
+                var k = _keywordOrder[ki];
+                bool last = ki == _keywordOrder.Count - 1;
+                if (y + rowH > keywordBottom + (last ? rowH : 0f) || y + rowH > area.yMax) // 마지막 하나는 "+1개 더" 대신 그대로 그려요
+                {
+                    GUI.Label(new Rect(area.x + 8f * K, y, area.width - 16f * K, rowH), $"<color=#9a9a9a>+{_keywordOrder.Count - ki}개 더</color>", _small);
+                    y += rowH;
+                    break;
+                }
                 int count = keywords.Count(k), stage = Mathf.Min(6, count / 2 * 2);
                 var row = new Rect(area.x + 6f * K, y, area.width - 12f * K, rowH - 4f * K);
                 bool hover = row.Contains(mouse);

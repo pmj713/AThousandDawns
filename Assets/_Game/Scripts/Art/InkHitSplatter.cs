@@ -120,7 +120,8 @@ namespace AThousandDawns.Art
         {
             if (target == null || amount <= 0 || splatMaterial == null) return;
             bool isPlayer = _player != null && target.transform == _player;
-            var color = isPlayer ? playerPaint : enemyPaint;
+            if (!isPlayer) return; // 적이 맞을 때 튀던 주황 물감 (바닥 얼룩 · 방울)은 뺐어요 (플레이테스트 9차). 적 피격 반응은 InkEnemyModels (깜박임 · 파편)
+            var color = playerPaint;
             Vector3 p = target.transform.position;
             // 맞은 반대쪽: 플레이어에게서 멀어지는 쪽 (플레이어가 맞으면 무작위)
             Vector3 away = !isPlayer && _player != null ? p - _player.position : Random.insideUnitSphere;
