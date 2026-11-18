@@ -53,8 +53,8 @@ namespace AThousandDawns.Enemies
             && !(kind == EnemyKind.Rattan && trait == EliteTrait.IronShirt)
             && !(kind == EnemyKind.DemonGuard && trait == EliteTrait.IronShirt)
             && !(kind == EnemyKind.Bomber && trait == EliteTrait.Rejuvenation)
-            && InfectionAllows(kind, trait) // 차원 감염: 판타지 적은 무공 (경공), 무협 적은 마법 (화염구 · 순간이동)
-            && !(trait == EliteTrait.Split && (kind == EnemyKind.Bomber || kind == EnemyKind.BloodBomber || kind == EnemyKind.Snake || kind == EnemyKind.Slime)); // 터지는 적 · 숨는 적 · 원래 갈라지는 슬라임은 분열 없음
+            && InfectionAllows(kind, trait); // 차원 감염: 판타지 적은 무공 (경공), 무협 적은 마법 (화염구 · 순간이동)
+            // 분열은 모든 적에게 (터지는 적 · 슬라임 · 청죽사 포함)
 
         // 만들어진 바로 뒤에 불러요 (EnemyDirector.Spawn 다음)
         public void MakeElite(EliteTrait trait)

@@ -11,29 +11,21 @@ namespace AThousandDawns.Art
     //     노리는 동안 그 적 쪽으로 짧은 적대선이 뻗어요 (무협 = 먹선, 판타지 = 붉은 금빛선).
     //   적끼리 피격 (RivalHit): 먹 튐과 유리 조각이 부딪치는 충돌 빛 — 먹 쪽이 무협 적 쪽을 향해요 (플레이어 타격의 먹 베기와 구분).
     //   적이 적을 쓰러뜨림 (RivalHit 뒤 맞은 적이 쓰러짐): 그 자리에 쓰러뜨린 쪽 진영 표시가 쾅 (무협 = 붉은 낙관, 판타지 = 유리 문장).
-    //   협력 (Allied): 발밑에 반은 먹 붓 원 · 반은 스테인드글라스 원이 돌고, 가까운 다른 진영 협력 적과 보랏빛 차원 끈으로 이어져요
-    //     (끈 색은 메인 아트 차원 균열 풍경과 같아요: 가장자리 0.55·0.22·0.95, 가운데 1·0.92·1).
-    // 그림: FantasyFx (BangInk · BangGlass · Clash · Alliance · Crest), TitleArt/Seal.
+    //   협력 (Allied): 표시 없어요 (발밑 원 · 보랏빛 끈은 정예 고리와 헷갈려서 뺐어요)
+    // 그림: FantasyFx (BangInk · BangGlass · Clash · Crest), TitleArt/Seal.
     public class InkRivalFx : MonoBehaviour
     {
-        static readonly Color RiftEdge = new Color(0.55f, 0.22f, 0.95f);
-        static readonly Color RiftCore = new Color(1f, 0.92f, 1f);
-        const float CordReach = 7f;
 
         static InkRivalFx _host;
-        static Sprite _bangInk, _bangGlass, _clash, _alliance, _crest, _seal;
+        static Sprite _bangInk, _bangGlass, _clash, _crest, _seal;
         static Material _lineMat;
         static bool _loaded;
 
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
         readonly Dictionary<EnemyBrain, LineRenderer> _rivalLines = new Dictionary<EnemyBrain, LineRenderer>();
-        readonly Dictionary<EnemyBrain, SpriteRenderer> _rings = new Dictionary<EnemyBrain, SpriteRenderer>();
-        readonly Dictionary<EnemyBrain, LineRenderer> _cords = new Dictionary<EnemyBrain, LineRenderer>(); // 무협 협력 적 → 끈
-        readonly Dictionary<EnemyBrain, EnemyBrain> _cordTo = new Dictionary<EnemyBrain, EnemyBrain>();
         readonly Dictionary<EnemyBrain, float> _heads = new Dictionary<EnemyBrain, float>(); // 머리 높이 (처음 한 번만 잼)
         readonly List<EnemyBrain> _gone = new List<EnemyBrain>();
         EnemyDirector _director;
-        float _allyScan;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Init()
@@ -66,9 +58,7 @@ namespace AThousandDawns.Art
             float dt = Time.deltaTime;
             if (_director == null) _director = FindAnyObjectByType<EnemyDirector>();
             TickRivalLines();
-            _allyScan -= dt;
-            if (_allyScan <= 0f) { _allyScan = 0.5f; ScanAllies(); }
-            TickAllies(dt);
+            if (_heads.Count > 128) _heads.Clear(); // 쓰러진 적 머리 높이 정리 (다시 재면 그만)
             InkRoomReset.Tick(_live, dt, transform); // 방을 옮기면 제 밑의 연출을 지워요
         }
 
@@ -199,71 +189,6 @@ namespace AThousandDawns.Art
             });
         }
 
-        // ── 협력: 발밑 두 화풍 원 + 보랏빛 차원 끈
-
-        void ScanAllies()
-        {
-            if (_director == null || _director.Enemies == null) return;
-            if (_heads.Count > 128) _heads.Clear(); // 쓰러진 적 머리 높이 정리 (다시 재면 그만)
-            foreach (var e in _director.Enemies)
-                if (e != null && !e.IsDead && e.Allied && !_rings.ContainsKey(e))
-                    _rings[e] = Flat(_alliance, e.transform.position, 1.7f, UnityEngine.Random.Range(0f, 360f), 0.025f);
-            foreach (var e in _director.Enemies) // 무협 협력 적마다 가장 가까운 판타지 협력 적과 끈
-            {
-                if (e == null || e.IsDead || !e.Allied || Fantasy(e)) continue;
-                EnemyBrain best = null;
-                float bestD = CordReach;
-                foreach (var f in _director.Enemies)
-                {
-                    if (f == null || f.IsDead || !f.Allied || !Fantasy(f)) continue;
-                    float d = Vector3.Distance(e.transform.position, f.transform.position);
-                    if (d < bestD) { bestD = d; best = f; }
-                }
-                if (best == null) continue;
-                _cordTo[e] = best;
-                if (!_cords.ContainsKey(e)) _cords[e] = Line(RiftEdge, RiftCore, 0.08f, 12);
-            }
-        }
-
-        void TickAllies(float dt)
-        {
-            _gone.Clear();
-            foreach (var kv in _rings)
-            {
-                var e = kv.Key;
-                var sr = kv.Value;
-                bool on = e != null && !e.IsDead && e.Allied;
-                if (sr == null || (!on && sr.color.a <= 0.01f)) { if (sr != null) Destroy(sr.gameObject); _gone.Add(e); continue; }
-                if (e != null) sr.transform.position = new Vector3(e.transform.position.x, 0.025f, e.transform.position.z);
-                sr.transform.Rotate(0f, 0f, 20f * dt, Space.Self);
-                sr.color = new Color(1f, 1f, 1f, Mathf.MoveTowards(sr.color.a, on ? 0.8f : 0f, dt / 0.3f));
-            }
-            foreach (var e in _gone) _rings.Remove(e);
-
-            _gone.Clear();
-            float time = Time.time;
-            foreach (var kv in _cords)
-            {
-                var e = kv.Key;
-                var lr = kv.Value;
-                _cordTo.TryGetValue(e, out var f);
-                bool on = e != null && !e.IsDead && e.Allied && f != null && !f.IsDead && f.Allied
-                          && Vector3.Distance(e.transform.position, f.transform.position) < CordReach + 1f;
-                if (lr == null || !on) { if (lr != null) Destroy(lr.gameObject); _gone.Add(e); continue; }
-                Vector3 a = e.transform.position + Vector3.up * 0.9f, b = f.transform.position + Vector3.up * 0.9f;
-                int n = lr.positionCount;
-                for (int i = 0; i < n; i++) // 살짝 처지고 일렁이는 끈
-                {
-                    float s = i / (float)(n - 1);
-                    float sag = Mathf.Sin(s * Mathf.PI);
-                    var p = Vector3.Lerp(a, b, s) + Vector3.down * 0.25f * sag + Vector3.up * 0.08f * sag * Mathf.Sin(time * 5f + s * 9f);
-                    lr.SetPosition(i, p);
-                }
-                lr.widthMultiplier = 0.08f * (1f + 0.25f * Mathf.Sin(time * 7f));
-            }
-            foreach (var e in _gone) { _cords.Remove(e); _cordTo.Remove(e); }
-        }
-
         // ── 도움
 
         LineRenderer Line(Color edge, Color core, float width, int points)
@@ -326,7 +251,6 @@ namespace AThousandDawns.Art
             _bangInk = Resources.Load<Sprite>("FantasyFx/BangInk");
             _bangGlass = Resources.Load<Sprite>("FantasyFx/BangGlass");
             _clash = Resources.Load<Sprite>("FantasyFx/Clash");
-            _alliance = Resources.Load<Sprite>("FantasyFx/Alliance");
             _crest = Resources.Load<Sprite>("FantasyFx/Crest");
             var seal = Resources.Load<Texture2D>("TitleArt/Seal"); // 텍스처로 들어와 있어서 스프라이트로 감싸요
             if (seal != null) _seal = Sprite.Create(seal, new Rect(0f, 0f, seal.width, seal.height), new Vector2(0.5f, 0.5f), 100f);
