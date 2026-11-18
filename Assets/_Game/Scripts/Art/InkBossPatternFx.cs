@@ -12,7 +12,7 @@ namespace AThousandDawns.Art
     //   혈영검마 혈조 (BloodShadowBrain SpikeStart · Spike): 바닥을 타고 뻗는 핏빛 예고 선 → 자리마다 핏빛 가시가 솟았다 가라앉아요
     //   녹림왕 불타는 대나무 (NokrimBrain.BambooFall): 마디진 대나무가 불붙은 채 기울다 쓰러지고, 그 자리에서 2초 타다 숯이 되어 꺼져요
     //   혈불 혈해 (BloodBuddhaBrain Pool): 반들거리는 핏물 웅덩이 + 거품. 혈불이 안에 서 있으면 붉은 빛이 몸을 감싸며 피어올라요 (회복)
-    //   철룡 닻 충격파 (IronDragonBrain Ring): 퍼지는 물결 고리 (판정 폭 그대로) + 둘레 물보라
+    //   철룡 닻 충격파 (IronDragonBrain Ring): 물마루가 말려 올라가는 3D 파도 고리가 판정 띠를 따라 퍼지고 + 흰 물보라
     //   천마: 발도 일섬 (DrawCut) 긴 흰빛 직선 · 마기 포박 (Bind) 느린 보라 구슬 · 묶임 (Bound) 플레이어 둘레 보랏빛 사슬 고리
     //         차원 베기 (RiftOpen → RiftCut) 세로 균열 셋이 벌어지고 꿰뚫는 보랏빛 선이 번쩍 · 유성 (MeteorTrack) 큰 운석 그림자가 따라와요
     //   철권 계열 (IronFistBrain): 잡아 던지기 (Grabbed) 잡는 자리 먼지 + 내동댕이친 자리 흙먼지 고리
@@ -393,34 +393,91 @@ namespace AThousandDawns.Art
             if (c.Kind == IronDragonBrain.FxKind.Ring) Host().WaveRing(c.At, c.Radius, c.Length, c.Time);
         }
 
+        // (플레이테스트 8차: 얇은 선 고리 대신 "파도가 퍼지는 걸로") 물이 솟아 말려 올라가는 3D 파도 고리가 바깥으로 퍼져요.
+        //   단면: 뒤쪽 물 → 등 → 물마루(흰 포말, 판정 띠 자리) → 바깥으로 말려 나온 입술 → 아래로 말린 끝 → 앞면 → 앞 발치.
+        //   반경은 판정 고리와 같이 max까지 time초, 처음 0.15초에 솟고 끝 15%에 가라앉아요. 물마루를 따라 흰 물보라가 튀어요.
+        //   메시는 고리마다 하나, 매 프레임 꼭짓점만 다시 놓아요 (둘레가 조금씩 출렁여요).
+        const int MoundSides = 64;
+        static readonly float[] MoundOffset = { -0.75f, -0.4f, 0f, 0.3f, 0.42f, 0.28f, 0.2f };   // × 띠 두께, + = 바깥
+        static readonly float[] MoundHeight = { 0f, 0.45f, 1f, 0.96f, 0.72f, 0.3f, 0f };          // × 파도 높이
+        static readonly Color[] MoundColor =
+        {
+            new Color(0.12f, 0.38f, 0.72f, 0.55f), new Color(0.25f, 0.6f, 0.92f, 0.8f), new Color(0.95f, 0.98f, 1f, 1f),
+            new Color(0.9f, 0.97f, 1f, 1f), new Color(0.75f, 0.9f, 1f, 0.95f), new Color(0.3f, 0.65f, 0.95f, 0.85f), new Color(0.15f, 0.42f, 0.78f, 0.5f),
+        };
+        static Material _moundMat;
+
         void WaveRing(Vector3 at, float max, float width, float time)
         {
             at.y = 0f;
-            HideRoot("충격파", at, 1f); // 임시 LineRenderer 고리는 렌더러만 꺼요 (판정 고리와 같은 반경 · 두께로 아래 고리가 대신 퍼져요)
-            var outer = Circle(at, 0.08f, Mathf.Max(0.2f, width), new Color(0.35f, 0.7f, 1f, 0.85f));
-            var inner = Circle(at, 0.1f, Mathf.Max(0.08f, width * 0.3f), new Color(0.9f, 0.97f, 1f, 1f));
-            float t = 0f, life = Mathf.Max(0.1f, time), spray = 0f;
+            HideRoot("충격파", at, 1f); // 임시 LineRenderer 고리는 렌더러만 꺼요 (판정 고리와 같은 반경 · 두께로 아래 둔덕이 대신 퍼져요)
+            if (_moundMat == null) _moundMat = new Material(Shader.Find("Sprites/Default")) { name = "Shock Wave" };
+            width = Mathf.Max(0.3f, width);
+            float height = Mathf.Clamp(width * 1.1f, 0.5f, 1f); // 파도 높이
+            int rows = MoundOffset.Length;
+            var mesh = new Mesh { name = "Shock Wave Ring" };
+            var verts = new Vector3[MoundSides * rows];
+            var colors = new Color[verts.Length];
+            var bumps = new float[MoundSides];
+            for (int i = 0; i < MoundSides; i++)
+            {
+                bumps[i] = i * 0.7f; // 둘레마다 출렁이는 위상
+                for (int s = 0; s < rows; s++) colors[i * rows + s] = MoundColor[s];
+            }
+            var tris = new int[MoundSides * (rows - 1) * 6];
+            int n = 0;
+            for (int i = 0; i < MoundSides; i++)
+            {
+                int i1 = (i + 1) % MoundSides;
+                for (int s = 0; s < rows - 1; s++)
+                {
+                    int a = i * rows + s, b = i * rows + s + 1, c = i1 * rows + s + 1, d = i1 * rows + s;
+                    tris[n++] = a; tris[n++] = b; tris[n++] = c;
+                    tris[n++] = a; tris[n++] = c; tris[n++] = d;
+                }
+            }
+            mesh.vertices = verts;
+            mesh.colors = colors;
+            mesh.triangles = tris;
+            var go = new GameObject("Shock Wave");
+            go.transform.SetParent(transform, false);
+            go.transform.position = at;
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var mr = go.AddComponent<MeshRenderer>();
+            mr.sharedMaterial = _moundMat;
+            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            mr.receiveShadows = false;
+            float t = 0f, life = Mathf.Max(0.1f, time), dust = 0f;
             _live.Add(dt =>
             {
-                if (outer == null) return false;
+                if (go == null) { Destroy(mesh); return false; }
                 t += dt;
                 float k = Mathf.Clamp01(t / life);
                 float r = max * k;
-                SetCircle(outer, r);
-                SetCircle(inner, r);
-                float a = Mathf.Clamp01((1f - k) / 0.15f);
-                outer.startColor = outer.endColor = new Color(0.35f, 0.7f, 1f, 0.85f * a);
-                inner.startColor = inner.endColor = new Color(0.9f, 0.97f, 1f, a);
-                spray -= dt;
-                if (spray <= 0f && r > 0.5f)
+                float rise = Mathf.Clamp01(t / 0.15f) * Mathf.Clamp01((1f - k) / 0.15f);
+                for (int i = 0; i < MoundSides; i++)
                 {
-                    spray = 0.04f;
+                    float ang = i * Mathf.PI * 2f / MoundSides;
+                    float cs = Mathf.Cos(ang), sn = Mathf.Sin(ang);
+                    for (int s = 0; s < rows; s++)
+                    {
+                        float rr = Mathf.Max(0f, r + MoundOffset[s] * width);
+                        verts[i * rows + s] = new Vector3(cs * rr, MoundHeight[s] * height * rise * (1f + 0.15f * Mathf.Sin(t * 6f + bumps[i])), sn * rr);
+                    }
+                }
+                mesh.vertices = verts;
+                mesh.RecalculateBounds();
+                dust -= dt;
+                if (dust <= 0f && r > 0.5f && rise > 0.3f) // 물마루를 따라 흰 물보라
+                {
+                    dust = 0.03f;
                     float ang = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
-                    InkParticles.Burst(at + new Vector3(Mathf.Cos(ang), 0.1f, Mathf.Sin(ang)) * r, 3, new Color(0.9f, 0.97f, 1f, 1f), new Color(0.3f, 0.6f, 1f, 0.3f), 2f, 0.16f, 0.45f, 2f);
+                    var p = at + new Vector3(Mathf.Cos(ang), 0f, Mathf.Sin(ang)) * (r + 0.2f * width);
+                    InkParticles.Burst(p + Vector3.up * height * 0.9f, 4, new Color(0.95f, 0.99f, 1f, 1f), new Color(0.4f, 0.7f, 1f, 0f), 2f, 0.18f, 0.5f, 2.2f);
                 }
                 if (k < 1f) return true;
-                Destroy(outer.gameObject);
-                if (inner != null) Destroy(inner.gameObject);
+                Destroy(go);
+                Destroy(mesh);
                 return false;
             });
         }
@@ -733,14 +790,20 @@ namespace AThousandDawns.Art
 
         // ── 고블린 족장 덫
 
-        static void OnTrap(GoblinChiefBrain chief, Vector3 at) => Host().Trap(at);
+        // (플레이테스트 8차: 덫은 던진 뒤 예고 원이 0.7초 차오르고 나서 GhostFire "덫"이 생겨요)
+        //   던지는 순간(TrapThrown) 족장 손에서 쇠덫이 빙글 돌며 포물선으로 날아가 0.7초 뒤 떨어질 자리에 내려앉고,
+        //   그때 생긴 "덫" 장판을 찾아 하늘색 원판을 끄고 톱니 원을 깔아요 (장판이 끝나면 같이 걷혀요).
+        const float TrapFlight = 0.7f;
 
-        void Trap(Vector3 at)
+        static void OnTrap(GoblinChiefBrain chief, Vector3 at) => Host().Trap(chief != null ? chief.transform.position : at, at);
+
+        void Trap(Vector3 from, Vector3 at)
         {
             at.y = 0f;
+            Vector3 start = new Vector3(from.x, 1.6f, from.z);
             var root = new GameObject("Goblin Trap").transform;
             root.SetParent(transform, false);
-            root.position = at + Vector3.up * 1.5f;
+            root.position = start;
             var metal = new Color(0.42f, 0.42f, 0.48f);
             var tooth = new Color(0.8f, 0.8f, 0.85f);
             Solid(root, PrimitiveType.Cylinder, new Vector3(0f, 0.03f, 0f), new Vector3(0.5f, 0.03f, 0.5f), Quaternion.identity, new Color(0.25f, 0.22f, 0.2f));
@@ -761,24 +824,53 @@ namespace AThousandDawns.Art
                 }
                 jaws[j] = jaw;
             }
-            // 덫 장판 (GhostFire "덫"): 하늘색 원판 대신 판정 반경 그대로 녹슨 톱니 원
+            // 덫 장판 (GhostFire "덫"): 내려앉을 무렵 생겨요 — 0.1초마다 찾다가 찾으면 하늘색 원판을 끄고 판정 반경 그대로 녹슨 톱니 원
             GhostFire zone = null;
-            float best = 1f;
-            foreach (var f in FindObjectsByType<GhostFire>()) // 덫이 떨어질 때 한 번만 찾아요
-            {
-                float d = (new Vector3(f.transform.position.x, 0f, f.transform.position.z) - at).sqrMagnitude;
-                if (d < best && f.name == "덫") { best = d; zone = f; }
-            }
-            float radius = zone != null ? zone.transform.localScale.x * 0.5f : 0.9f;
-            if (zone != null) { var source = zone.GetComponent<Renderer>(); if (source != null) source.enabled = false; }
-            var saw = SawRing(at, radius);
-            var floor = _glow != null ? FlatSprite(_glow, at, radius * 2.2f, 0f, 0.035f, 3, new Color(0.45f, 0.12f, 0.05f, 0.45f)) : null;
-            bool tracked = zone != null;
-            float t = 0f, close = -1f, life = 6f;
+            LineRenderer saw = null;
+            SpriteRenderer floor = null;
+            float radius = 0.9f, look = 0f;
+            bool tracked = false, settled = false;
+            float t = 0f, close = -1f, life = TrapFlight + 6f;
             _live.Add(dt =>
             {
                 if (root == null) return false;
                 t += dt;
+                if (t < TrapFlight) // 포물선으로 빙글 돌며 날아가요
+                {
+                    float k = t / TrapFlight;
+                    root.position = Vector3.Lerp(start, at, k) + Vector3.up * (2.2f * 4f * k * (1f - k));
+                    root.rotation = Quaternion.Euler(k * 540f, 0f, 0f);
+                    return true;
+                }
+                if (!settled)
+                {
+                    settled = true;
+                    root.SetPositionAndRotation(at, Quaternion.identity);
+                    InkParticles.Burst(at + Vector3.up * 0.1f, 8, new Color(0.7f, 0.6f, 0.45f, 0.9f), new Color(0.5f, 0.4f, 0.3f, 0f), 1.2f, 0.25f, 0.5f, 0f);
+                }
+                look -= dt;
+                if (saw == null && !tracked && look <= 0f && t < TrapFlight + 0.8f) // 장판이 생길 때까지 0.1초마다 찾아요
+                {
+                    look = 0.1f;
+                    float best = 1f;
+                    foreach (var f in FindObjectsByType<GhostFire>())
+                    {
+                        float d = (new Vector3(f.transform.position.x, 0f, f.transform.position.z) - at).sqrMagnitude;
+                        if (d < best && f.name == "덫") { best = d; zone = f; }
+                    }
+                    if (zone != null)
+                    {
+                        tracked = true;
+                        radius = zone.transform.localScale.x * 0.5f;
+                        var source = zone.GetComponent<Renderer>();
+                        if (source != null) source.enabled = false;
+                    }
+                }
+                if (saw == null && (tracked || t >= TrapFlight + 0.8f) && t < life)
+                {
+                    saw = SawRing(at, radius);
+                    floor = _glow != null ? FlatSprite(_glow, at, radius * 2.2f, 0f, 0.035f, 3, new Color(0.45f, 0.12f, 0.05f, 0.45f)) : null;
+                }
                 if (tracked && zone == null && t < life) life = t; // 장판이 먼저 끝나면 같이 걷혀요
                 if (saw != null) saw.transform.rotation = Quaternion.Euler(90f, t * 25f, 0f);
                 if (t >= life && saw != null)
@@ -787,10 +879,7 @@ namespace AThousandDawns.Art
                     if (floor != null) Destroy(floor.gameObject);
                     saw = null;
                 }
-                float drop = Mathf.Clamp01(t / 0.25f);
-                root.position = at + Vector3.up * (1.5f * (1f - drop * drop));
-                if (t >= 0.25f && t - dt < 0.25f) InkParticles.Burst(at + Vector3.up * 0.1f, 8, new Color(0.7f, 0.6f, 0.45f, 0.9f), new Color(0.5f, 0.4f, 0.3f, 0f), 1.2f, 0.25f, 0.5f, 0f);
-                if (close < 0f && t > 0.3f && _player != null)
+                if (close < 0f && saw != null && _player != null)
                 {
                     Vector3 d = _player.transform.position - at;
                     d.y = 0f;
@@ -1318,31 +1407,6 @@ namespace AThousandDawns.Art
             lr.receiveShadows = false;
             lr.numCapVertices = 2;
             return lr;
-        }
-
-        LineRenderer Circle(Vector3 at, float height, float width, Color color)
-        {
-            var lr = Line(color, width, 48);
-            lr.useWorldSpace = false;
-            lr.loop = true;
-            lr.transform.position = new Vector3(at.x, height, at.z);
-            lr.transform.rotation = Quaternion.identity;
-            lr.alignment = LineAlignment.TransformZ;
-            lr.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
-            SetCircle(lr, 0f);
-            return lr;
-        }
-
-        static readonly Vector3[] CirclePoints = new Vector3[48];
-        static void SetCircle(LineRenderer lr, float radius)
-        {
-            if (lr == null) return;
-            for (int i = 0; i < CirclePoints.Length; i++)
-            {
-                float a = i * Mathf.PI * 2f / CirclePoints.Length;
-                CirclePoints[i] = new Vector3(Mathf.Cos(a) * radius, Mathf.Sin(a) * radius, 0f); // 눕힌 transform 기준 (x, y) = 바닥 (x, z)
-            }
-            lr.SetPositions(CirclePoints);
         }
 
         static Light PointLight(Transform parent, Color color, float range, float intensity)
