@@ -19,6 +19,7 @@ namespace AThousandDawns.Enemies
 
         public static event System.Action<GoblinChiefBrain> WarCry;               // 함성 (아트: 붉은 음파 고리)
         public static event System.Action<GoblinChiefBrain, Vector3> TrapThrown; // 덫 하나가 떨어진 자리 (아트)
+        public static event System.Action<GoblinChiefBrain, Vector3, GhostFire> TrapLanded; // 덫이 실제로 깔린 순간 (자리, 덫 장판) — 이름으로 찾지 않아도 돼요
 
         float _trapTimer = 2f;
         readonly System.Collections.Generic.List<(Vector3 at, float timer, Telegraph marker)> _falling = new System.Collections.Generic.List<(Vector3, float, Telegraph)>();
@@ -36,7 +37,9 @@ namespace AThousandDawns.Enemies
                 if (marker != null) Destroy(marker.gameObject);
                 _falling.RemoveAt(i);
                 float radius = Tuning("trap_radius", 0.9f), life = Tuning("trap_life", 6f), slow = Tuning("trap_slow", 0.8f), slowTime = Tuning("trap_slow_time", 1.2f);
-                GhostFire.Create(at, radius, life, AttackPower * Tuning("trap_ratio", 0.3f), slow, slowTime, Player, Body).name = "덫";
+                var trap = GhostFire.Create(at, radius, life, AttackPower * Tuning("trap_ratio", 0.3f), slow, slowTime, Player, Body);
+                trap.name = "덫";
+                TrapLanded?.Invoke(this, at, trap);
             }
         }
 
