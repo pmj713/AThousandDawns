@@ -803,12 +803,15 @@ namespace AThousandDawns.Art
             PlayHeld("Roar", 1f);
         }
 
-        // 고블린 주술사 아군 회복: 회복이 들어가는 순간 지팡이를 세우고 왼손을 들었다가 아군 쪽으로 펼쳐요 (Heal, 1.6초)
+        // 고블린 주술사 아군 회복: 회복이 들어가는 순간 지팡이를 세우고 왼손을 들었다가 아군 쪽으로 펼쳐요 (Heal, 1.6초).
+        //   주술 활성 시작과 같은 프레임에 와서 Raise 대신 보여요. 다친 동료마다 한 번씩 오니 이미 회복 손짓 중이면 다시 시작하지 않아요
         bool _shaman;
+        float _healUntil;
 
         void OnShamanHealed(GoblinShamanBrain shaman, EnemyBrain target)
         {
-            if (shaman != _brain) return;
+            if (shaman != _brain || Time.time < _healUntil) return;
+            _healUntil = Time.time + 1.6f;
             PlayHeld("Heal", 1.6f);
         }
 
