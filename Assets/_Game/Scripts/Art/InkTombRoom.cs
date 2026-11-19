@@ -84,12 +84,12 @@ namespace AThousandDawns.Art
                 if (sr == null || room == null) return false;
                 float t = Time.time + seed;
                 sr.transform.localScale = new Vector3(unit.x * (1f + 0.025f * Mathf.Sin(t * 1.3f)), unit.y * (1f + 0.025f * Mathf.Sin(t * 1.1f + 1f)), 1f);
-                sr.color = new Color(1f, 1f, 1f, 0.9f + 0.08f * Mathf.Sin(t * 0.9f));
+                sr.color = new Color(0.55f, 0.32f, 0.28f, 0.8f + 0.05f * Mathf.Sin(t * 0.9f)); // 짙은 적갈색으로 눌러요 (대나무 줄기 기준 통일, 천마총)
                 timer -= dt;
                 if (timer > 0f) return true;
-                timer = UnityEngine.Random.Range(1f, 2f);
+                timer = UnityEngine.Random.Range(2.5f, 4.5f); // 물결은 드물게
                 var at = center + new Vector3(UnityEngine.Random.Range(-0.35f, 0.35f) * size.x, 0f, UnityEngine.Random.Range(-0.3f, 0.3f) * size.y);
-                Ring(_ripple, at, UnityEngine.Random.Range(0.7f, 1.2f), 1.4f, new Color(0.55f, 0.06f, 0.06f, 0.6f), 0.024f, room);
+                Ring(_ripple, at, UnityEngine.Random.Range(0.6f, 1f), 1.4f, new Color(0.35f, 0.08f, 0.07f, 0.3f), 0.024f, room);
                 return true;
             });
         }
