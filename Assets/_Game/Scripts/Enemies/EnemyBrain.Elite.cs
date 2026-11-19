@@ -156,7 +156,7 @@ namespace AThousandDawns.Enemies
             {
                 Vector3 at = transform.position + side * ((i - (count - 1) * 0.5f) * 1.2f);
                 if (!Director.IsFree(at, 0.45f)) at = transform.position;
-                var child = Director.SpawnSummon(Kind, at);
+                var child = Director.SpawnSummon(Kind, at, givesXp: !NoXp); // 갈라진 적은 부모를 따라요 (보스가 부른 슬라임이 갈라져도 수련치 없음)
                 if (child == null) continue;
                 child.Body.ScaleMaxHealth(health);
                 child.IsSplitChild = true;

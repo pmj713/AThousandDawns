@@ -152,8 +152,8 @@ namespace AThousandDawns.Player
                     if (Roll(V("lightningwood_comb", 1))) status.AddShock();
                     break;
                 case HitTag.Finisher:
-                    // 평타 3타째: 잿불 단검 화상 +1중첩 (주화입마면 +2) · 매 발톱 감전 +1중첩
-                    status.AddBurn(BurnPerStackDps(fire), BurnExtra(fire), Deviated("ember_dagger") ? C("ember_dagger", 2) : C("ember_dagger", 1));
+                    // 평타 3타째: 잿불 단검 화상 +1중첩 (기를 올리면 늘고, 주화입마면 적어도 +2) · 매 발톱 감전 +1중첩 (기를 올리면 늘어요)
+                    status.AddBurn(BurnPerStackDps(fire), BurnExtra(fire), Deviated("ember_dagger") ? Mathf.Max(C("ember_dagger", 2), C("ember_dagger", 1)) : C("ember_dagger", 1));
                     status.AddShock(C("hawk_talon", 1));
                     break;
                 case HitTag.Skill:
@@ -210,8 +210,8 @@ namespace AThousandDawns.Player
             for (int i = 0; i < strikes; i++) Lightning.Strike(first, trigger, _strikeRatio, DischargePerStack(thunder));
         }
 
-        // 뇌정 방울: 절초 사용 시 연쇄 번개 +2회 (주화입마면 2배)
-        int BellChains => Has("thunder_bell") ? C("thunder_bell", 1) * (Deviated("thunder_bell") ? C("thunder_bell", 2) : 1) : 0;
+        // 뇌정 방울: 절초 사용 시 연쇄 번개 +2회 (기를 올리면 늘어요). 주화입마면 주화입마 배율 대신 글대로 2배
+        int BellChains => !Has("thunder_bell") ? 0 : Deviated("thunder_bell") ? Mathf.RoundToInt(_items.Value("thunder_bell", 1, false)) * C("thunder_bell", 2) : C("thunder_bell", 1);
 
         // ── 피격 (보호막에 다 막혀도 맞은 것)
 

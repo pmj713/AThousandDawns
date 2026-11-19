@@ -204,7 +204,7 @@ namespace AThousandDawns.Tests
             Vector3 at = _player.transform.position + new Vector3(3f, 0f, 0f);
             Set(Mouse.current.position, (Vector2)Camera.main.WorldToScreenPoint(new Vector3(at.x, 0f, at.z))); // 커서를 적 위에 (만천화우는 커서 쪽으로 던져요)
             yield return null;
-            var plain = Spawn(new Vector3(3f, 0f, 0f));
+            var plain = Spawn(new Vector3(3f, 0f, 0f), 2000f); // 커서 쪽으로 다 맞으니 쓰러지지 않게 튼튼히
             var took = new float[1];
             yield return Ultimate(took);
             float normal = Lost(plain);
@@ -214,7 +214,7 @@ namespace AThousandDawns.Tests
             foreach (var form in new[] { UltimateForm.Bloom, UltimateForm.Backflow, UltimateForm.Storm })
             {
                 _player.UltimateForm = form;
-                var target = Spawn(new Vector3(3f, 0f, 0f));
+                var target = Spawn(new Vector3(3f, 0f, 0f), 2000f);
                 yield return Ultimate(took);
                 Assert.Greater(Lost(target), 0f, $"{form}");
                 if (form != UltimateForm.Storm) Assert.Greater(Lost(target), normal, $"{form}: 한 적만 있으면 더 세요");

@@ -31,6 +31,9 @@ namespace AThousandDawns.Player
         // 깨진 보호막의 최대치 (#금강 6단계 충격파)
         public event Action<int> Broken;
 
+        // 가진 보호막이 맞아서 다 깨진 순간 (깨지는 소리는 이때 한 번만 · 시간이 다 돼 사라지면 안 불러요)
+        public event Action Depleted;
+
         // cap = 최대 체력 × 30%. 남은 자리만큼만 붙어요.
         public void Add(int amount, float duration, int cap)
         {
@@ -43,6 +46,7 @@ namespace AThousandDawns.Player
         // 보호막이 먼저 막고 남은 피해를 돌려줘요. 먼저 붙은 보호막부터 깎여요.
         public int Absorb(int damage)
         {
+            bool had = _shields.Count > 0;
             for (int i = 0; i < _shields.Count && damage > 0;)
             {
                 var s = _shields[i];
@@ -57,6 +61,7 @@ namespace AThousandDawns.Player
                 }
                 i++;
             }
+            if (had && _shields.Count == 0) Depleted?.Invoke();
             return damage;
         }
 

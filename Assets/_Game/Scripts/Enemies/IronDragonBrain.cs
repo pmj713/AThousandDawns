@@ -126,7 +126,7 @@ namespace AThousandDawns.Enemies
             _hookWidth = Tuning("hook_width", 1.2f);
             _hookRatio = Tuning("hook_ratio", 0.6f);
             _hookStop = Tuning("hook_stop", 2.5f);
-            _summonInterval = Tuning("summon_interval", 15f);
+            _summonInterval = Tuning("summon_interval", 25f);
             _geyserInterval = Tuning("p2_geyser_interval", 9f);
             _geyserWindup = Tuning("p2_geyser_windup", 0.6f);
             _geyserFall = Tuning("p2_geyser_fall", 0.8f);

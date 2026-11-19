@@ -47,6 +47,7 @@ namespace AThousandDawns.Enemies
         protected virtual float DeathDelay => 0.25f;         // 쓰러진 뒤 사라지기까지
         protected virtual bool IsBoss => false;              // 고수·보스: 둔화 효과 50%, 빙결 1초 + 면역 10초
         public virtual EnemyRank Rank => IsElite ? EnemyRank.Elite : EnemyRank.Normal; // 쓰러뜨리면 받는 수련치
+        public bool NoXp { get; set; }                       // 보스·고수가 부른 부하: 쓰러뜨려도 수련치 없음 (EnemyDirector.SpawnSummon)
         protected virtual bool FreezeBlocked => false;       // 보스 페이즈 전환 연출 중엔 빙결이 안 걸림
 
         public string DisplayName { get; private set; }

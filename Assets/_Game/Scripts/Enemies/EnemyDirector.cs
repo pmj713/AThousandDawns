@@ -78,10 +78,14 @@ namespace AThousandDawns.Enemies
         // 적이 부른 부하 (나팔수 · 혈불 · 철룡 · 녹림왕 · 혈인 부활): 판이 정한 지역 배율을 똑같이 받아요 (RoomRun이 SummonScale을 정해요)
         public System.Action<EnemyBrain> SummonScale;
 
-        public EnemyBrain SpawnSummon(EnemyKind kind, Vector3 position)
+        // 보스·고수가 부른 부하 (혈불 목탁승 · 철룡 · 녹림왕 · 고블린 족장 · 사신 기사)는 쓰러뜨려도 수련치가 없어요 (기본).
+        // 일반 적이 부른 도움 (나팔수)과 정예·슬라임 분열은 givesXp: true로 수련치를 그대로 줘요
+        public EnemyBrain SpawnSummon(EnemyKind kind, Vector3 position, bool givesXp = false)
         {
             var enemy = Spawn(kind, position);
-            if (enemy != null) SummonScale?.Invoke(enemy);
+            if (enemy == null) return null;
+            enemy.NoXp = !givesXp;
+            SummonScale?.Invoke(enemy);
             return enemy;
         }
 

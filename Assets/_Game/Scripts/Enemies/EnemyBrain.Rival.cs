@@ -23,7 +23,18 @@ namespace AThousandDawns.Enemies
         public static bool RivalryEnabled = true; // 테스트용 끄기
         float _rivalScan;
 
-        bool CanFeud => RivalryEnabled && !Allied && !IsHidden && !_dead && (Rank == EnemyRank.Normal || Rank == EnemyRank.Elite)
+        // 서로 적대하는가: 다른 진영이고 둘 다 협력하지 않았을 때 (적끼리 싸움이 꺼져 있으면 아무도 적대하지 않아요)
+        public bool HostileTo(EnemyBrain other) => other != null && HostileTo(other.Faction, other.Allied);
+
+        // 쓰러진 적처럼 몸이 없을 때 (혈인 부활): 진영과 협력 여부만으로
+        protected bool HostileTo(EnemyFaction faction, bool allied) => faction != Faction && !Allied && !allied && RivalryOn;
+
+        // 도움 (깃발수 지휘 · 고블린 주술사 광폭화 · 목탁승 가호 · 혈인 부활)은 같은 진영, 또는 적대하지 않는 (협력한) 다른 진영 적에게만 걸어요
+        public bool CanSupport(EnemyBrain other) => other != null && other != this && !other.IsDead && !HostileTo(other);
+
+        static bool RivalryOn => RivalryEnabled && GameConfig.GetOptional("fantasy.rivalry", 1f) > 0.5f;
+
+        bool CanFeud =>RivalryEnabled && !Allied && !IsHidden && !_dead && (Rank == EnemyRank.Normal || Rank == EnemyRank.Elite)
                         && GameConfig.GetOptional("fantasy.rivalry", 1f) > 0.5f;
 
         // Update에서: 0.4초마다 노릴 적을 다시 골라요

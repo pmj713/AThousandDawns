@@ -657,7 +657,7 @@ namespace AThousandDawns.Player
             OnDashStartedForDagger(); // 비도 경공 융합: 주변 비도 다시 던지기
         }
 
-        float DashDistance => _dashDistance * (1f + V("leggings", 1) + OtherworldDashDistance) * Mathf.Max(0.1f, 1f - Side("dash_distance")); // 각반 · 기물 부작용
+        float DashDistance => _dashDistance * (1f + OtherworldDashDistance) * Mathf.Max(0.1f, 1f - Side("dash_distance")); // 각반 · 기물 부작용
 
         void UpdateDash(float dt)
         {

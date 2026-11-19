@@ -149,6 +149,45 @@ namespace AThousandDawns.Tests
             }
         }
 
+        // 10차: 마기 장판 세 곳은 깔리기 전에 그 자리 · 그 반경에 바닥 예고 원이 먼저 차올라요 (miasma_warn)
+        [UnityTest]
+        public IEnumerator 마기_장판은_세_곳에_먼저_바닥_예고()
+        {
+            HeavenlyDemonBrain boss = null;
+            PlayerController player = null;
+            yield return Spawn((b, p) => { boss = b; player = p; });
+            int kitBefore = EnemyBrain.BossKitOverride;
+            EnemyBrain.BossKitOverride = 0;
+            var marks = new System.Collections.Generic.List<(Vector3 at, float time)>();
+            System.Action<HeavenlyDemonBrain, HeavenlyDemonBrain.FxCue> cue = (b, c) =>
+            {
+                if (c.Kind == HeavenlyDemonBrain.FxKind.MiasmaMark) marks.Add((c.At, Time.time));
+            };
+            HeavenlyDemonBrain.Cue += cue;
+            try
+            {
+                Time.timeScale = 2f;
+                yield return WaitUntil(() => { player.Heal(9999f); return marks.Count >= 3; }, 15f);
+                Assert.GreaterOrEqual(marks.Count, 3, "세 곳에 바닥 예고");
+                Assert.AreEqual(0, Pools().Count, "예고가 차는 동안엔 아직 장판이 없어요");
+                yield return WaitUntil(() => { player.Heal(9999f); return Pools().Count >= 3; }, 3f);
+                var pools = Pools();
+                Assert.GreaterOrEqual(pools.Count, 3, "예고가 다 차면 장판");
+                float warn = AThousandDawns.Core.GameConfig.GetOptional("heavenlydemon.miasma_warn", 0.8f);
+                Assert.GreaterOrEqual(Time.time - marks[0].time, warn - 0.05f, "miasma_warn만큼 기다려요");
+                foreach (var m in marks.GetRange(0, 3))
+                    Assert.IsTrue(pools.Exists(f => new Vector2(f.transform.position.x - m.at.x, f.transform.position.z - m.at.z).magnitude < 0.01f), "예고한 바로 그 자리에 깔려요");
+            }
+            finally
+            {
+                HeavenlyDemonBrain.Cue -= cue;
+                EnemyBrain.BossKitOverride = kitBefore;
+            }
+        }
+
+        static System.Collections.Generic.List<GhostFire> Pools() =>
+            new System.Collections.Generic.List<GhostFire>(Object.FindObjectsByType<GhostFire>(FindObjectsSortMode.None)).FindAll(f => f.name == "마기 장판");
+
         // 멀리서만 싸우면 마기 포박: 느린 구슬이 날아와 맞으면 잠깐 묶여요 (끌어당기지 않아요)
         [UnityTest]
         public IEnumerator 멀리_있으면_마기_포박으로_묶음()

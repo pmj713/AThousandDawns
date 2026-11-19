@@ -178,7 +178,7 @@ namespace AThousandDawns.Tests
             var boss = (IronDragonBrain)director.Spawn(EnemyKind.IronDragon, player.transform.position + new Vector3(0f, 0f, 4f));
             boss.SetZone(player.transform.position, new Vector2(24f, 18f));
 
-            yield return WaitUntil(() => { player.Heal(9999f); return director.Count(EnemyKind.FlagBearer) > 0; }, 12f);
+            yield return WaitUntil(() => { player.Heal(9999f); return director.Count(EnemyKind.FlagBearer) > 0; }, 20f); // 첫 부르기는 간격(25초)의 절반 뒤
             Assert.AreEqual(1, director.Count(EnemyKind.FlagBearer), "깃발수 하나");
             Assert.AreEqual(2, director.Count(EnemyKind.Pirate), "수적 졸개 둘");
 

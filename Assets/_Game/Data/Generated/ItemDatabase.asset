@@ -45,7 +45,7 @@ MonoBehaviour:
     v2: 2
     v3: 0
     v4: 0
-    v1Scales: 0
+    v1Scales: 1
     v2Scales: 0
     v3Scales: 0
     v4Scales: 0
@@ -67,7 +67,7 @@ MonoBehaviour:
     v3: 0
     v4: 0
     v1Scales: 0
-    v2Scales: 0
+    v2Scales: 1
     v3Scales: 0
     v4Scales: 0
     side: dash_recharge
@@ -108,7 +108,7 @@ MonoBehaviour:
     v2: 0
     v3: 0
     v4: 0
-    v1Scales: 0
+    v1Scales: 1
     v2Scales: 0
     v3Scales: 0
     v4Scales: 0
@@ -192,13 +192,13 @@ MonoBehaviour:
     v2: 0
     v3: 0
     v4: 0
-    v1Scales: 0
+    v1Scales: 1
     v2Scales: 0
     v3Scales: 0
     v4Scales: 0
     side: skill_cooldown
     sideValue: 0.2
-    effectText: "\uCD5C\uB300 \uC911\uCCA9\uC778 \uC801\uC5D0\uAC8C \uD654\uC0C1\uC744 \uB610 \uAC78\uBA74 \uADF8 \uC801\uB9CC \uCD5C\uB300 \uC911\uCCA9 +1 (\uCD5C\uB300 +1, \uD654\uC0C1\uC774 \uAEBC\uC9C0\uBA74 \uCC98\uC74C\uC73C\uB85C)"
+    effectText: "\uCD5C\uB300 \uC911\uCCA9\uC778 \uC801\uC5D0\uAC8C \uD654\uC0C1\uC744 \uB610 \uAC78 \uB54C\uB9C8\uB2E4 \uADF8 \uC801\uB9CC \uCD5C\uB300 \uC911\uCCA9\uC774 \uB298\uC5B4\uB098\uC694 (\uCD5C\uB300 +1, \uD654\uC0C1\uC774 \uAEBC\uC9C0\uBA74 \uCC98\uC74C\uC73C\uB85C)"
     sideText: "\uCD08\uC2DD \uCFE8\uD0C0\uC784 +20%"
     slot: 2
     otherworld: 0
@@ -255,7 +255,7 @@ MonoBehaviour:
     v2: 0
     v3: 0
     v4: 0
-    v1Scales: 0
+    v1Scales: 1
     v2Scales: 0
     v3Scales: 0
     v4Scales: 0
@@ -528,7 +528,7 @@ MonoBehaviour:
     v2: 2
     v3: 0
     v4: 0
-    v1Scales: 0
+    v1Scales: 1
     v2Scales: 0
     v3Scales: 0
     v4Scales: 0
@@ -549,7 +549,7 @@ MonoBehaviour:
     v2: 0
     v3: 0
     v4: 0
-    v1Scales: 0
+    v1Scales: 1
     v2Scales: 0
     v3Scales: 0
     v4Scales: 0
@@ -570,7 +570,7 @@ MonoBehaviour:
     v2: 1
     v3: 0
     v4: 0
-    v1Scales: 0
+    v1Scales: 1
     v2Scales: 0
     v3Scales: 0
     v4Scales: 0
@@ -591,7 +591,7 @@ MonoBehaviour:
     v2: 0.3
     v3: 0
     v4: 0
-    v1Scales: 0
+    v1Scales: 1
     v2Scales: 1
     v3Scales: 0
     v4Scales: 0
@@ -801,7 +801,7 @@ MonoBehaviour:
     v2: 0.5
     v3: 1.5
     v4: 0
-    v1Scales: 0
+    v1Scales: 1
     v2Scales: 0
     v3Scales: 0
     v4Scales: 0
@@ -990,7 +990,7 @@ MonoBehaviour:
     v2: 2
     v3: 0
     v4: 0
-    v1Scales: 0
+    v1Scales: 1
     v2Scales: 0
     v3Scales: 0
     v4Scales: 0
@@ -1070,8 +1070,8 @@ MonoBehaviour:
     aux: 
     minQi: 1
     maxQi: 2
-    v1: 0.06
-    v2: 0
+    v1: 0.15
+    v2: 1
     v3: 0
     v4: 0
     v1Scales: 1
@@ -1080,7 +1080,7 @@ MonoBehaviour:
     v4Scales: 0
     side: max_hp
     sideValue: 0.05
-    effectText: "\uB300\uC2DC \uAC70\uB9AC +6%"
+    effectText: "\uB300\uC2DC\uAC00 \uB05D\uB098\uBA74 1\uCD08 \uB3D9\uC548 \uC774\uB3D9\uC18D\uB3C4 +15%"
     sideText: "\uCD5C\uB300 \uCCB4\uB825 -5%"
     slot: 4
     otherworld: 0
@@ -1112,18 +1112,18 @@ MonoBehaviour:
     aux: 
     minQi: 1
     maxQi: 2
-    v1: 0.05
-    v2: 0
+    v1: 0.1
+    v2: 0.6
     v3: 0
     v4: 0
     v1Scales: 1
     v2Scales: 0
     v3Scales: 0
     v4Scales: 0
-    side: taken
+    side: max_hp
     sideValue: 0.05
-    effectText: "\uB300\uC2DC \uAC70\uB9AC +5%"
-    sideText: "\uBC1B\uB294 \uD53C\uD574 +5%"
+    effectText: "\uB300\uC2DC\uAC00 \uB05D\uB098\uBA74 0.6\uCD08 \uB3D9\uC548 \uBC1B\uB294 \uD53C\uD574 -10%"
+    sideText: "\uCD5C\uB300 \uCCB4\uB825 -5%"
     slot: 3
     otherworld: 0
   - id: pinwheel
@@ -1595,9 +1595,9 @@ MonoBehaviour:
     aux: 
     minQi: 3
     maxQi: 4
-    v1: 0.08
+    v1: 0.2
     v2: 1
-    v3: 0.15
+    v3: 0
     v4: 0
     v1Scales: 1
     v2Scales: 0
@@ -1605,7 +1605,7 @@ MonoBehaviour:
     v4Scales: 0
     side: taken
     sideValue: 0.1
-    effectText: "\uB300\uC2DC \uAC70\uB9AC +8%, \uB300\uC2DC \uD6C4 1\uCD08 \uB3D9\uC548 \uACF5\uACA9 \uC18D\uB3C4 +15%"
+    effectText: "\uB300\uC2DC\uAC00 \uB05D\uB098\uBA74 1\uCD08 \uB3D9\uC548 \uACF5\uACA9 \uC18D\uB3C4 +20%"
     sideText: "\uBC1B\uB294 \uD53C\uD574 +10%"
     slot: 3
     otherworld: 1
@@ -1725,7 +1725,7 @@ MonoBehaviour:
     v2: 0
     v3: 0
     v4: 0
-    v1Scales: 0
+    v1Scales: 1
     v2Scales: 0
     v3Scales: 0
     v4Scales: 0
@@ -1767,7 +1767,7 @@ MonoBehaviour:
     v2: 0
     v3: 0
     v4: 0
-    v1Scales: 0
+    v1Scales: 1
     v2Scales: 0
     v3Scales: 0
     v4Scales: 0
@@ -2019,7 +2019,7 @@ MonoBehaviour:
     v2: 0
     v3: 0
     v4: 0
-    v1Scales: 0
+    v1Scales: 1
     v2Scales: 0
     v3Scales: 0
     v4Scales: 0

@@ -5,7 +5,7 @@ namespace AThousandDawns.Enemies
 {
     // 혈인 (천마총, 몬스터 시트 54행 "쓰러진 적 부활"): 나팔수처럼 거리를 두고, 근처 (8칸)에 쓰러진 적이 있으면
     // 예고 1.2초 (맞으면 끊김) 뒤 그 적 하나를 그 자리에 체력 절반의 핏빛 모습으로 되살려요. 공격 간격 8초, 혈인 하나당 최대 3번.
-    // 되살아난 적은 다시 되살리지 않아요. 고수·보스·살수는 되살리지 않아요. 먼저 잡아야 해요.
+    // 되살아난 적은 다시 되살리지 않아요. 고수·보스·살수는 되살리지 않아요. 적대하는 다른 진영 적도 되살리지 않아요 (CanSupport). 먼저 잡아야 해요.
     public sealed class BloodShamanBrain : HornBrain
     {
         static readonly Color Blood = new Color(0.65f, 0.12f, 0.12f);
@@ -15,6 +15,8 @@ namespace AThousandDawns.Enemies
             public EnemyKind Kind;
             public Vector3 At;
             public float MaxHealth, Attack;
+            public EnemyFaction Faction;
+            public bool Allied;
         }
 
         static readonly List<Corpse> Corpses = new List<Corpse>(); // 이 방에 쓰러진 적 (방을 옮기면 비워요)
@@ -31,7 +33,7 @@ namespace AThousandDawns.Enemies
         static void Remember(EnemyBrain dead)
         {
             if (dead == null || dead.Revived || dead.Rank >= EnemyRank.Assassin || dead.Kind == EnemyKind.BloodShaman) return;
-            Corpses.Add(new Corpse { Kind = dead.Kind, At = dead.transform.position, MaxHealth = dead.Damageable.MaxHealth, Attack = dead.AttackStat });
+            Corpses.Add(new Corpse { Kind = dead.Kind, At = dead.transform.position, MaxHealth = dead.Damageable.MaxHealth, Attack = dead.AttackStat, Faction = dead.Faction, Allied = dead.Allied });
         }
 
         public static void ClearCorpses() => Corpses.Clear();
@@ -51,6 +53,7 @@ namespace AThousandDawns.Enemies
             float bestDist = _radius;
             for (int i = 0; i < Corpses.Count; i++)
             {
+                if (HostileTo(Corpses[i].Faction, Corpses[i].Allied)) continue; // 적대하는 다른 진영 적은 되살리지 않아요 (CanSupport와 같은 규칙)
                 float d = (Corpses[i].At - transform.position).magnitude;
                 if (d <= bestDist) { bestDist = d; best = i; }
             }
@@ -69,6 +72,7 @@ namespace AThousandDawns.Enemies
             var risen = Director.Spawn(c.Kind, Director.FindFreeSpot(c.At, 1f)); // 지역 배율은 쓰러진 적 수치로 맞춰요
             if (risen == null) return;
             risen.Revived = true;
+            risen.Allied = c.Allied; // 협력하던 적은 협력한 채로
             risen.Damageable.ScaleMaxHealth(c.MaxHealth * _ratio / Mathf.Max(1f, risen.Damageable.MaxHealth));
             risen.ScaleAttack(c.Attack / Mathf.Max(0.01f, risen.AttackStat));
             risen.Damageable.SetTint(Blood);

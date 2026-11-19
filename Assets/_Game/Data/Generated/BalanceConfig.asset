@@ -2810,7 +2810,7 @@ MonoBehaviour:
     unit: cell/s
     note: "\uD63C\uBD88 \uC18D\uB3C4 (\uBCBD \uD1B5\uACFC)"
   - key: wraith.orb_turn
-    value: 55
+    value: 75
     unit: deg/s
     note: "\uD63C\uBD88\uC774 \uAEBE\uC774\uB294 \uBE60\uB974\uAE30 (90\uC5D0\uC11C \uB0AE\uCDA4 \xB7 \uC606\uC73C\uB85C \uB300\uC2DC\uD558\uBA74 \uD53C\uD574\uC694)"
   - key: wraith.orb_life
@@ -4126,7 +4126,7 @@ MonoBehaviour:
     unit: cell
     note: "\uCCA0\uB8E1 \uC0AC\uC2AC \uB2F9\uAE30\uAE30: \uB04C\uB824\uC640 \uBA48\uCD94\uB294 \uAC70\uB9AC"
   - key: irondragon.summon_interval
-    value: 15
+    value: 25
     unit: s
     note: "\uCCA0\uB8E1 \uC218\uD558 \uBD80\uB974\uAE30 \uAC04\uACA9 (\uAE43\uBC1C\uC218 \uD558\uB098 + \uC218\uC801 \uC878\uAC1C \uB458 \xB7 \uAE43\uBC1C\uC218\uAC00 \uC5C6\uC744 \uB54C)"
   - key: irondragon.p2_geyser_interval
@@ -5881,6 +5881,10 @@ MonoBehaviour:
     value: 0.2
     unit: 
     note: "\uCC9C\uB9C8 \uB9C8\uAE30 \uC7A5\uD310 \uC548 \uC774\uB3D9\uC18D\uB3C4 \uAC10\uC18C"
+  - key: heavenlydemon.miasma_warn
+    value: 0.8
+    unit: s
+    note: "\uCC9C\uB9C8 \uB9C8\uAE30 \uC7A5\uD310: \uC138 \uACF3 \uBC14\uB2E5 \uC608\uACE0 \uC6D0\uC774 \uCC28\uC624\uB974\uACE0 \uC7A5\uD310\uC774 \uAE54\uB9AC\uAE30\uAE4C\uC9C0"
   - key: heavenlydemon.grasp_far
     value: 6
     unit: cell
@@ -6073,6 +6077,10 @@ MonoBehaviour:
     value: 1
     unit: s
     note: "\uADE0\uC5F4\uC774 \uC5F4\uB9AC\uACE0 \uBCA0\uC5B4\uC9C0\uAE30\uAE4C\uC9C0"
+  - key: heavenlydemon.rift_line_scale
+    value: 1.6
+    unit: 
+    note: "\uCC28\uC6D0 \uBCA0\uAE30: \uBCA0\uB294 \uC904 \uAE38\uC774 (\uADE0\uC5F4\uAE4C\uC9C0 \uAC70\uB9AC \xD7 \uC774 \uAC12)"
   - key: heavenlydemon.rift_width
     value: 1
     unit: cell
@@ -6594,9 +6602,9 @@ MonoBehaviour:
     unit: 
     note: "\uB370\uC2A4\uB098\uC774\uD2B8 (max_repeat)"
   - key: deathknight.jab_windup
-    value: 0.5
+    value: 0.53
     unit: s
-    note: "\uB370\uC2A4\uB098\uC774\uD2B8 (jab_windup)"
+    note: "\uB300\uAC80 \uB0B4\uB824\uBCA0\uAE30 \uC608\uACE0 = DownCut 16\uD504\uB808\uC784 (30fps, 0.533\uCD08)\uC5D0 \uCE7C\uC774 \uBC14\uB2E5\uC5D0 \uB2FF\uB294 \uC21C\uAC04 \uD310\uC815 (\uC608\uACE0\uBD80\uD130 \uADF8\uB300\uB85C \uC7AC\uC0DD, \uC544\uD2B8\uC640 \uD568\uAED8 \uBC14\uAFD4\uC694)"
   - key: deathknight.jab_recovery
     value: 0.7
     unit: s

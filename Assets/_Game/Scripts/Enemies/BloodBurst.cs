@@ -5,6 +5,7 @@ namespace AThousandDawns.Enemies
 {
     // 혈폭자의 핏덩이와 죽음의 폭발: 바닥 예고 원이 차오르다가 터져요. 반경 안이면 맞고, 핏덩이는 그 자리에 화상 장판을 남겨요.
     // 핏덩이는 떨어지기 전에 던진 혈폭자가 쓰러지면 터지지 않아요 (죽음의 폭발은 그대로 터져요).
+    // 피해 · 화상 장판은 예고 원이 다 차는 같은 프레임에 함께 생겨요 (핏덩이 그림은 FallTime · TimeLeft에 맞춰 떨어져요).
     public sealed class BloodBurst : MonoBehaviour
     {
         EnemyDirector _director;
@@ -14,6 +15,9 @@ namespace AThousandDawns.Enemies
         BurstKind _kind;
         public BurstKind Kind => _kind; // 아트: 핏덩이 · 죽음의 폭발 · 마기 기둥 · 화염구 예고를 다르게
         float _timer, _total, _radius, _damage, _fireLife;
+        // 아트: 핏덩이가 날아가 바닥에 닿는 순간 = 터지는 순간 (피해 · 화상 장판). 포물선은 고정값 대신 이 시간에 맞춰요
+        public float FallTime => _total;                   // 던진 순간부터 떨어지기까지 (bloodbomber.glob_fall)
+        public float TimeLeft => Mathf.Max(0f, _timer);    // 지금부터 떨어지기까지 (처음 본 프레임이 늦어도 같이 닿아요)
 
         public static int Live { get; private set; }
 
