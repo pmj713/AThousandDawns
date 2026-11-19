@@ -5,7 +5,7 @@ using AThousandDawns.Enemies;
 namespace AThousandDawns.Player
 {
     // 수련치와 레벨업 (수련치 탭, 경맥도 탭 혈자리).
-    //   적을 쓰러뜨리면 등급만큼 수련치 (일반 1 · 정예 5 · 살수 5 · 고수 15 · 보스 30).
+    //   적을 쓰러뜨리면 등급만큼 수련치 (일반 1 · 정예 5 · 살수 5 · 고수 15 · 보스 30). 보스·고수가 부른 부하는 0 (EnemyBrain.NoXp).
     //   레벨업 순간: 최대 체력 +5 (현재 체력도 같이) · 몸이 빛남. 혈자리는 개혈 대기로 쌓였다가 경맥도에서 골라요.
     public sealed partial class PlayerController
     {
@@ -30,6 +30,7 @@ namespace AThousandDawns.Player
         void GainXpFromKill(Damageable dead)
         {
             if (IsDead || !dead.TryGetComponent(out EnemyBrain enemy)) return; // 허수아비는 수련치 없음
+            if (enemy.NoXp) return; // 보스·고수가 부른 부하도 수련치 없음
             _xpCarry += _xpByRank[(int)enemy.Rank] * (1f + RunXpBonus) * (enemy.KilledByRival ? GameConfig.GetOptional("fantasy.rival_kill_xp", 0.5f) : 1f); // 다른 적이 쓰러뜨렸으면 적게
             int whole = UnityEngine.Mathf.FloorToInt(_xpCarry + 1e-4f);
             _xpCarry -= whole;

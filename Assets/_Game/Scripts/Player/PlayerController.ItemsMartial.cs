@@ -51,7 +51,7 @@ namespace AThousandDawns.Player
             + OtherworldAttackSpeed + Hy(Keyword.Ganggi, 1); // 이계 기물 · 흑풍 망토 (PlayerController.ItemsOtherworld) · 마검
 
         // 엘프 발걸음 (이동속도 기물은 대시 쪽으로 바꿨어요: PlayerController.ItemsOtherworld)
-        float ItemMoveSpeedBonus => Hy(Keyword.Gyeonggong, 1);
+        float ItemMoveSpeedBonus => Hy(Keyword.Gyeonggong, 1) + StrawMoveBonus; // + 짚신 (대시 후)
 
         // 거북 등껍질 (0개면 2배)
         float ItemToughness => V("turtle_shell", 1) * (Pure ? V("turtle_shell", 2) : 1f) + PackToughness + Hy(Keyword.Geumgang, 2); // + 철포삼 조끼
@@ -291,11 +291,11 @@ namespace AThousandDawns.Player
             }
         }
 
-        // 혈석: 적 처치 시 체력 + (주화입마면 더)
+        // 혈석: 적 처치 시 체력 + (기를 올리면 늘고, 주화입마면 적어도 v2)
         void OnEnemyDiedForMartialItems()
         {
             if (!Has("blood_stone")) return;
-            Heal(Deviated("blood_stone") ? C("blood_stone", 2) : C("blood_stone", 1));
+            Heal(Deviated("blood_stone") ? Mathf.Max(C("blood_stone", 2), C("blood_stone", 1)) : C("blood_stone", 1));
         }
 
         public void Heal(float amount)

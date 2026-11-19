@@ -44,7 +44,24 @@ namespace AThousandDawns.Tests
 
             var bell = items.Find(i => i.id == "thunder_bell");
             Assert.IsTrue(bell.IsMado);
-            Assert.IsFalse(bell.v1Scales, "횟수는 레벨·주화입마 배율을 받지 않음");
+            Assert.IsTrue(bell.v1Scales, "횟수도 기를 올리면 늘어요 (플레이테스트 10차)");
+        }
+
+        // 플레이테스트 10차: 기를 올려도 효과가 그대로인 기물이 없게. 모든 기물은 레벨마다 커지는 값 (scales)이 하나 이상, 그 값은 0이 아니에요
+        [Test]
+        public void 모든_기물은_기를_올리면_커지는_값이_있음()
+        {
+            var errors = new List<string>();
+            var items = ItemTable.Read(File.ReadAllText(SheetImporter.ItemsCsvPath), errors);
+            Assert.IsEmpty(errors, string.Join("\n", errors));
+            foreach (var d in items)
+            {
+                bool any = (d.v1Scales && d.v1 != 0f) || (d.v2Scales && d.v2 != 0f) || (d.v3Scales && d.v3 != 0f) || (d.v4Scales && d.v4 != 0f);
+                Assert.IsTrue(any, $"{d.id}: scales가 비었거나 0인 값을 가리켜요");
+            }
+            foreach (var id in new[] { "ember_dagger", "flame_fan", "fire_scale", "icicle_needle", "thunder_bell", "thundercloud_talisman", "hawk_talon", "ganggi_bead", "blood_stone", "fire_rune_ring", "storm_circlet", "lightning_boots", "thunder_drum" })
+                Assert.IsTrue(items.Find(i => i.id == id).v1Scales, $"{id}의 v1이 기를 따라 늘어요");
+            Assert.IsTrue(items.Find(i => i.id == "flint").v2Scales, "부싯돌 화상 중첩이 기를 따라 늘어요");
         }
 
         [Test]

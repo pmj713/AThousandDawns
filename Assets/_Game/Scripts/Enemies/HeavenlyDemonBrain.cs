@@ -9,11 +9,11 @@ namespace AThousandDawns.Enemies
     // 1페이즈 · 천마검
     //   발도 일섬: 6칸 안이면 예고 0.7 · 앞으로 가늘고 긴 일직선 베기 (폭 1칸, 길이 7칸) ×1.0
     //   십자 검기: 멀면 예고 0.8 · 플레이어 쪽을 향한 십자로 검기 네 갈래 (10칸, 초속 10칸) ×0.7
-    //   마기 장판: 10초마다 예고 0.8 · 플레이어 둘레 세 곳에 마기 장판 (반경 1.5칸, 5초, 안에 있으면 0.5초마다 ×0.3 · 이동 −20%)
+    //   마기 장판: 10초마다 예고 0.8 · 세 곳에 바닥 예고 원 0.8 (miasma_warn) → 그 자리에 마기 장판 (반경 1.5칸, 5초, 안에 있으면 0.5초마다 ×0.3 · 이동 −20%)
     //   마기 포박: 6칸 밖에 2초 넘게 있으면 예고 0.7 · 느린 마기 구슬 (초속 5칸, 반경 0.6칸, 12칸) ×0.5, 맞으면 1.2초 묶여요 (원거리 대응)
     // 2페이즈 · 마도 (체력 66%): 마검사 천마가 이계의 마법을 꺼내요. 무공(발도 일섬 · 십자 검기 · 마기 장판 · 포박)에 마법이 섞여요.
     //   유성: 9초마다 예고 0.8 · 큰 유성 하나 (반경 3칸)가 1.5초 동안 플레이어를 따라오다 멈추고 0.6초 뒤 떨어져요 ×1.4
-    //   차원 베기: 7초마다 예고 0.8 · 플레이어 둘레 3.5칸에 균열 셋 (삼각형), 1.0초 뒤 세 변이 베어져요 (폭 1칸, ×0.9)
+    //   차원 베기: 7초마다 예고 0.8 · 플레이어 둘레 3.5칸에 균열 셋, 1.0초 뒤 균열마다 플레이어 자리를 꿰뚫는 줄이 함께 베어져요 (균열 거리 × 1.6 길이, 폭 1칸, ×0.6)
     //   마법진: 11초마다 예고 0.8 · 플레이어 발밑 큰 마법진 (반경 2.5칸, 1.6초 뒤 ×1.0) + 둘레 4칸에 작은 마법진 넷 (반경 1.5칸, 2.0초 뒤 ×0.6)
     // 3페이즈 · 마검 해체대법 (체력 33%): 무공과 마법이 하나로. 방 가장자리부터 마기가 차올라요. 안전 반경이 11칸에서 3초마다 1칸씩 줄어 5칸까지 (밖에 있으면 0.5초마다 ×0.2).
     //   발도 일섬이 "마검 천마군림"이 돼요 (3칸 안이면 예고 0.6 · 앞 부채꼴 반경 3칸 220° ×1.0).
@@ -34,6 +34,7 @@ namespace AThousandDawns.Enemies
             public float Timer, Total, Radius, Ratio, Angle;
             public bool Sector;
             public bool Line;   // 직선 (At에서 Dir로 길이 Radius, 폭 Width)
+            public bool Pool;   // 마기 장판 예고: 다 차면 터지지 않고 그 자리에 장판이 깔려요
             public float Width;
             public float Track; // 남은 따라가기 시간 (0보다 크면 플레이어 발밑을 따라와요)
             public MarkStyle Style;
@@ -55,7 +56,7 @@ namespace AThousandDawns.Enemies
         float _slashWindup, _slashRadius, _slashAngle2, _slashRatio, _closeDistance;
         float _drawWindup, _drawWidth, _drawLength, _drawRange, _drawRatio;
         float _crossWindup, _crossRange, _crossSpeed, _crossRatio;
-        float _miasmaWindup, _miasmaInterval, _miasmaTimer, _miasmaRadius, _miasmaLife, _miasmaRatio, _miasmaSlow;
+        float _miasmaWindup, _miasmaInterval, _miasmaTimer, _miasmaRadius, _miasmaLife, _miasmaRatio, _miasmaSlow, _miasmaWarn;
         float _graspFar, _graspDelay, _farTimer;
         float _bindWindup, _bindSpeed, _bindRadius, _bindRange, _bindRatio, _bindTime;
         float _rainWindup, _rainInterval, _rainTimer, _rainFall, _rainRadius, _rainRatio, _rainTime;
@@ -107,7 +108,8 @@ namespace AThousandDawns.Enemies
         //   RiftOpen: 균열 하나 열림 (At, Radius = 둘레 반경, Time = 베기까지) · RiftCut: 변 하나 베기 (At → To, Dir, Radius = 폭)
         //   Cleave: 마검 천멸 폭발 (At, Radius) · Transition: Phase = 들어갈 페이즈
         //   Grasp · Grasped · PullBurst · Blink는 더 안 보내요 (패턴 없어짐, 아트 호환용으로 남겨 둬요)
-        public enum FxKind { Slash, Cross, Grasp, Grasped, Mark, MarkFall, PullBurst, Transition, Blink, Cleave, DrawCut, Bind, Bound, RiftOpen, RiftCut, MeteorTrack }
+        //   MiasmaMark: 마기 장판이 깔릴 자리 예고 (At, Radius, Time = 깔리기까지). 다 차면 GhostFire "마기 장판"이 생겨요
+        public enum FxKind { Slash, Cross, Grasp, Grasped, Mark, MarkFall, PullBurst, Transition, Blink, Cleave, DrawCut, Bind, Bound, RiftOpen, RiftCut, MeteorTrack, MiasmaMark }
         public struct FxCue
         {
             public FxKind Kind;
@@ -157,6 +159,7 @@ namespace AThousandDawns.Enemies
             _miasmaLife = Tuning("miasma_life", 5f);
             _miasmaRatio = Tuning("miasma_ratio", 0.3f);
             _miasmaSlow = Tuning("miasma_slow", 0.2f);
+            _miasmaWarn = Mathf.Max(0.05f, Tuning("miasma_warn", 0.8f));
             _graspFar = Tuning("grasp_far", 6f);
             _graspDelay = Tuning("grasp_delay", 2f);
             _bindWindup = Tuning("bind_windup", 0.7f);
@@ -356,11 +359,11 @@ namespace AThousandDawns.Enemies
                         AddMark(transform.position + dir * 6f, dir, 1f, _cleaveFireRadius, _cleaveFireRatio, false, 0f, MarkStyle.FireSword);
                     }
                     break;
-                case Pattern.Miasma:
+                case Pattern.Miasma: // 세 곳에 바닥 예고 원이 먼저 차오르고, 다 차면 그 자리에 마기 장판이 깔려요 (플레이테스트 10차)
                     for (int i = 0; i < 3; i++)
                     {
                         Vector3 at = Player.transform.position + Quaternion.Euler(0f, 120f * i + Random.Range(0f, 60f), 0f) * Vector3.forward * (i == 0 ? 0f : 2f);
-                        GhostFire.Create(at, _miasmaRadius, _miasmaLife, AttackPower * _miasmaRatio, _miasmaSlow, 0.6f, Player, Body).name = "마기 장판";
+                        AddPoolMark(at);
                     }
                     break;
                 case Pattern.Bind:
@@ -416,7 +419,8 @@ namespace AThousandDawns.Enemies
                 points[i] = p + Quaternion.Euler(0f, turn + 120f * i, 0f) * Vector3.forward * _riftRadius;
                 Fx(new FxCue { Kind = FxKind.RiftOpen, At = points[i], Radius = _riftRadius, Time = _riftDelay, Style = MarkStyle.Rift });
             }
-            for (int i = 0; i < 3; i++) AddLine(points[i], p - (points[i] - p), _riftDelay, _riftWidth, _riftRatio);
+            float reach = Tuning("rift_line_scale", 1.6f); // 베는 줄은 균열보다 바깥으로 더 길게 (균열 거리 × 이 값, 플레이테스트 10차)
+            for (int i = 0; i < 3; i++) AddLine(p + (points[i] - p) * reach, p - (points[i] - p) * reach, _riftDelay, _riftWidth, _riftRatio);
         }
 
         // 마기 포박: 느린 구슬이 플레이어 쪽으로 날아가요
@@ -505,6 +509,19 @@ namespace AThousandDawns.Enemies
             if (track <= 0f) Fx(new FxCue { Kind = FxKind.Mark, At = at, Dir = dir, Radius = radius, Angle = angle, Time = fall, Sector = sector, Style = style });
         }
 
+        // 마기 장판 예고: 장판이 깔릴 바로 그 자리 · 그 반경에 원이 heavenlydemon.miasma_warn초 동안 차올라요
+        void AddPoolMark(Vector3 at)
+        {
+            at.y = 0f;
+            var marker = NewMarker();
+            marker.gameObject.name = "마기 장판 예고";
+            marker.Show(TelegraphShapes.Circle(_miasmaRadius), true);
+            marker.SetPose(at, Vector3.forward);
+            marker.SetProgress(0f);
+            _marks.Add(new Mark { At = at, Dir = Vector3.forward, Timer = _miasmaWarn, Total = _miasmaWarn, Radius = _miasmaRadius, Pool = true, Marker = marker });
+            Fx(new FxCue { Kind = FxKind.MiasmaMark, At = at, Radius = _miasmaRadius, Time = _miasmaWarn });
+        }
+
         // 직선 예고: a에서 b까지 폭 width (차원 베기 변)
         void AddLine(Vector3 a, Vector3 b, float fall, float width, float ratio)
         {
@@ -545,6 +562,11 @@ namespace AThousandDawns.Enemies
                 }
                 if (m.Marker != null) Destroy(m.Marker.gameObject);
                 _marks.RemoveAt(i);
+                if (m.Pool) // 예고가 다 찼어요: 그 자리에 마기 장판
+                {
+                    GhostFire.Create(m.At, m.Radius, _miasmaLife, AttackPower * _miasmaRatio, _miasmaSlow, 0.6f, Player, Body).name = "마기 장판";
+                    continue;
+                }
                 bool hit;
                 if (m.Line)
                 {

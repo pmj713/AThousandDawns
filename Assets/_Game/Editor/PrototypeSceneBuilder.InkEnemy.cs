@@ -302,7 +302,7 @@ namespace AThousandDawns.EditorTools
             {
                 new MoveSpec { state = "Defeat", clips = new[] { "Defeat" }, mode = MoveMode.Run },
                 new MoveSpec { attack = "대검 올려베기", state = "UpDownCut", clips = new[] { "UpDownCut" } },
-                new MoveSpec { attack = "대검 내려베기", state = "DownCut", clips = new[] { "DownCut" } },   // 9차: 근접 공격은 머리 뒤로 치켜들었다 세로로 내려찍기
+                new MoveSpec { attack = "대검 내려베기", state = "DownCut", clips = new[] { "DownCut" }, mode = MoveMode.Play },   // 9차: 근접 공격은 머리 뒤로 치켜들었다 세로로 내려찍기. 10차: DownCut은 대기 자세에서 시작해 16프레임(0.533초)에 내려치니, 예고부터 그대로 재생하고 예고(deathknight.jab_windup)를 0.53초로 맞춰 칼이 닿는 순간 판정
                 new MoveSpec { attack = "어둠 걸음", state = "DarkWalk", clips = new[] { "DarkRise" } },
                 new MoveSpec { state = "RideCall", clips = new[] { "RideCall" }, mode = MoveMode.Play },
                 new MoveSpec { state = "CurseWave", clips = new[] { "CurseWave" }, mode = MoveMode.Play, seconds = 0.9f },

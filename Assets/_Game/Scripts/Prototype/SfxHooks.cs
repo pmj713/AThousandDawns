@@ -44,7 +44,7 @@ namespace AThousandDawns.Prototype
             if (_player == null || _player.Combo == null) { _player = null; return; }
             _player.Hurt += OnHurt;
             _player.Combo.SwingStarted += OnSwing;
-            if (_player.Shields != null) _player.Shields.Broken += OnShieldBroken;
+            if (_player.Shields != null) _player.Shields.Depleted += OnShieldBroken; // 보호막이 하나씩 깨질 때마다가 아니라 다 깨졌을 때 한 번
             if (_player.Level != null) _player.Level.LeveledUp += OnLeveledUp;
         }
 
@@ -53,7 +53,7 @@ namespace AThousandDawns.Prototype
             if (_player == null) return;
             _player.Hurt -= OnHurt;
             if (_player.Combo != null) _player.Combo.SwingStarted -= OnSwing;
-            if (_player.Shields != null) _player.Shields.Broken -= OnShieldBroken;
+            if (_player.Shields != null) _player.Shields.Depleted -= OnShieldBroken;
             if (_player.Level != null) _player.Level.LeveledUp -= OnLeveledUp;
             _player = null;
         }
@@ -67,7 +67,7 @@ namespace AThousandDawns.Prototype
         static void OnAnyFrozen(StatusEffects target) => Sfx.Play(SfxId.Freeze);
         static void OnSwing(int index) => Sfx.Play(SfxId.Swing, index); // 1·2·3타마다 다른 소리
         static void OnHurt(int dealt) { if (dealt > 0) Sfx.Play(SfxId.Hurt); }
-        static void OnShieldBroken(int left) => Sfx.Play(SfxId.ShieldBreak);
+        static void OnShieldBroken() => Sfx.Play(SfxId.ShieldBreak);
         static void OnLeveledUp() => Sfx.Play(SfxId.LevelUp);
     }
 }

@@ -70,6 +70,25 @@ namespace AThousandDawns.Tests
             Assert.Less(_player.Health, hp);
         }
 
+        // 10차: 핏덩이가 바닥에 닿는 순간(FallTime · TimeLeft, 아트 포물선이 따라요)에 화상 장판이 깔려요. 그 전엔 장판이 없어요
+        [UnityTest]
+        public IEnumerator 핏덩이가_떨어지는_순간_화상_장판()
+        {
+            yield return Load();
+            int before = Object.FindObjectsByType<EnemyFirePatch>(FindObjectsSortMode.None).Length;
+            var glob = BloodBurst.Create(_director, _player.transform.position + new Vector3(0f, 0f, 3f), 1.2f, 0.9f, 1f, null, 2f); // 주인 없이 (혈폭자가 따로 던지지 않게)
+            Assert.AreEqual(0.9f, glob.FallTime, 1e-4f, "떨어지기까지 = fuse");
+            Assert.AreEqual(0.9f, glob.TimeLeft, 1e-4f);
+            bool early = false;
+            while (glob != null)
+            {
+                if (glob.TimeLeft > 0.05f && Object.FindObjectsByType<EnemyFirePatch>(FindObjectsSortMode.None).Length > before) early = true;
+                yield return null;
+            }
+            Assert.IsFalse(early, "떨어지기 전엔 장판이 없어요");
+            Assert.Greater(Object.FindObjectsByType<EnemyFirePatch>(FindObjectsSortMode.None).Length, before, "떨어진 그 프레임에 장판");
+        }
+
         [UnityTest]
         public IEnumerator 떠돌이_상인을_거절하면_대사가_바뀜()
         {

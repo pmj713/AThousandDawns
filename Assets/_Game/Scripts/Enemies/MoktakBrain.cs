@@ -1,7 +1,7 @@
 namespace AThousandDawns.Enemies
 {
     // 목탁승 (폐사찰, 몬스터 시트 43행): 나팔수처럼 거리를 두고 목탁을 쳐요 (예고 1.5초, 예고 중에 맞히면 끊김).
-    // 부르는 대신 둘레 7칸 안 다른 적에게 가호 (최대 체력 25%만큼 피해를 먼저 막고 · 보스는 5%, 그동안 몸이 금빛). 가호가 없는 적이 있을 때만, 공격 간격 8초마다.
+    // 부르는 대신 둘레 7칸 안 다른 적에게 (적대하는 다른 진영 적은 빼고) 가호 (최대 체력 25%만큼 피해를 먼저 막고 · 보스는 5%, 그동안 몸이 금빛). 가호가 없는 적이 있을 때만, 공격 간격 8초마다.
     // 먼저 잡아야 하는 지원형이에요.
     public sealed class MoktakBrain : HornBrain
     {
@@ -26,8 +26,9 @@ namespace AThousandDawns.Enemies
             return false;
         }
 
+        // 적대하는 다른 진영 적에게는 가호를 걸지 않아요 (CanSupport)
         bool NeedsWard(EnemyBrain e) =>
-            e != null && e != this && !e.IsDead && e.Damageable.Ward <= 0 && (e.transform.position - transform.position).magnitude <= _radius;
+            CanSupport(e) && e.Damageable.Ward <= 0 && (e.transform.position - transform.position).magnitude <= _radius;
 
         protected override void OnActiveStarted()
         {

@@ -698,7 +698,7 @@ wraith.windup,0.9,s,망령 혼불 예고,
 wraith.recovery,0.4,s,망령 빈틈,
 wraith.attack_interval,3,s,망령 공격 간격,
 wraith.orb_speed,4,cell/s,혼불 속도 (벽 통과),
-wraith.orb_turn,55,deg/s,혼불이 꺾이는 빠르기 (90에서 낮춤 · 옆으로 대시하면 피해요),
+wraith.orb_turn,75,deg/s,혼불이 꺾이는 빠르기 (90에서 낮춤 · 옆으로 대시하면 피해요),
 wraith.orb_life,4,s,혼불이 사라지기까지,
 wraith.orb_home_time,1.5,s,혼불이 플레이어 쪽으로 꺾는 시간 (지나면 곧게 날아요),
 wraith.orb_home_stop,2,cell,혼불이 이 거리 안에 들면 더는 꺾지 않아요,
@@ -1027,7 +1027,7 @@ irondragon.hook_range,10,cell,철룡 사슬 당기기 길이,
 irondragon.hook_width,1.2,cell,철룡 사슬 당기기 폭,
 irondragon.hook_ratio,0.6,,철룡 사슬 당기기 피해 배율 (맞으면 끌려와 바로 휘두르기),
 irondragon.hook_stop,2.5,cell,철룡 사슬 당기기: 끌려와 멈추는 거리,
-irondragon.summon_interval,15,s,철룡 수하 부르기 간격 (깃발수 하나 + 수적 졸개 둘 · 깃발수가 없을 때),
+irondragon.summon_interval,25,s,철룡 수하 부르기 간격 (깃발수 하나 + 수적 졸개 둘 · 깃발수가 없을 때),
 irondragon.p2_geyser_interval,9,s,철룡 2페이즈 물기둥 간격,
 irondragon.p2_geyser_windup,0.6,s,철룡 물기둥 예고 (몸 둘레),
 irondragon.p2_geyser_fall,0.8,s,철룡 물기둥 바닥 예고 시간,
@@ -1466,6 +1466,7 @@ heavenlydemon.miasma_radius,1.5,cell,천마 마기 장판 반경 (세 곳),
 heavenlydemon.miasma_life,5,s,천마 마기 장판 시간,
 heavenlydemon.miasma_ratio,0.3,,천마 마기 장판 피해 배율 (0.5초마다),
 heavenlydemon.miasma_slow,20%,,천마 마기 장판 안 이동속도 감소,
+heavenlydemon.miasma_warn,0.8,s,천마 마기 장판: 세 곳 바닥 예고 원이 차오르고 장판이 깔리기까지,플레이테스트 10차
 heavenlydemon.grasp_far,6,cell,천마 마기 손아귀: 플레이어가 이보다 멀리,
 heavenlydemon.grasp_delay,2,s,천마 마기 손아귀: 멀리 있는 시간이 이만큼이면,
 heavenlydemon.p3_rain_interval,8,s,천마 마검비 간격 (3페이즈),
@@ -1514,6 +1515,7 @@ heavenlydemon.rift_interval,7,s,차원 베기 간격,보스 패턴 개편
 heavenlydemon.rift_windup,0.8,s,차원 베기 예고,보스 패턴 개편
 heavenlydemon.rift_radius,3.5,cell,균열이 열리는 플레이어 둘레 반경,보스 패턴 개편
 heavenlydemon.rift_delay,1,s,균열이 열리고 베어지기까지,보스 패턴 개편
+heavenlydemon.rift_line_scale,1.6,,차원 베기: 베는 줄 길이 (균열까지 거리 × 이 값),플레이테스트 10차
 heavenlydemon.rift_width,1,cell,차원 베기 폭,보스 패턴 개편
 heavenlydemon.rift_ratio,0.6,,차원 베기 피해 배율 (가운데는 세 줄이 겹쳐요),보스 패턴 개편
 heavenlydemon.meteor_big_radius,3,cell,유성 반경,보스 패턴 개편
@@ -1644,7 +1646,7 @@ deathknight.decision_pause,0.4,s,데스나이트 (decision_pause),판타지 고�
 deathknight.transition_time,1.5,s,데스나이트 (transition_time),판타지 고수·보스 추가
 deathknight.phase2_hp_ratio,50%,,데스나이트 (phase2_hp_ratio),판타지 고수·보스 추가
 deathknight.max_repeat,2,,데스나이트 (max_repeat),판타지 고수·보스 추가
-deathknight.jab_windup,0.5,s,데스나이트 (jab_windup),판타지 고수·보스 추가
+deathknight.jab_windup,0.53,s,"대검 내려베기 예고 = DownCut 16프레임 (30fps, 0.533초)에 칼이 바닥에 닿는 순간 판정 (예고부터 그대로 재생, 아트와 함께 바꿔요)",플레이테스트 10차
 deathknight.jab_recovery,0.7,s,데스나이트 (jab_recovery),판타지 고수·보스 추가
 deathknight.jab_ratio,0.8,,데스나이트 (jab_ratio),판타지 고수·보스 추가
 deathknight.jab_radius,1.5,cell,데스나이트 (jab_radius),판타지 고수·보스 추가

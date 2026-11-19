@@ -11,20 +11,21 @@ namespace AThousandDawns.Player
     //   금강: 드워프 강철 허리띠 (보호막 동안 방어 +) · 미스릴 사슬 갑옷 (받는 피해 −) · 성기사 투구 (방마다 보호막) · 드워프 강철 각반 (경직 · 넉백 −) · 성기사 성표 (위기에 회복)
     //   열양: 용 이빨 목걸이 (화상 중인 적 피해 +) · 화염 룬 팔찌 (초식 적중 화상) · 샐러맨더 망토 (화상 피해 +) · 불꽃 정령 귀걸이 (평타 화상) · 불사조 깃털 장식 (화상 적 처치 회복)
     //   강기: 마검 술 (초식 적중 뒤 공격 속도) · 기사 건틀릿 (3타 피해 +) · 룬 검집 (공격 속도) · 기사 투구 (정예 · 고수 · 보스 피해 +) · 마검사 장화 (대시 후 첫 평타 검기)
-    //   무협 짚신 (대시 거리) · 흑풍 망토 (대시 후 공격 속도)
+    //   무협 짚신 (대시 후 이동속도) · 각반 (대시 후 받는 피해 −) · 흑풍 망토 (대시 후 공격 속도)
     public sealed partial class PlayerController
     {
-        float _elvenTimer, _spellbladeTimer, _slimeTimer, _frostRobeCooldown;
+        float _elvenTimer, _spellbladeTimer, _slimeTimer, _frostRobeCooldown, _strawTimer, _leggingsTimer;
         bool _holyUsed, _spellswordReady;
 
         // ── 합에 더하는 값 (기존 합 계산이 불러요)
         float OtherworldAttackSpeed =>
-            (_elvenTimer > 0f ? V("elven_leggings", 3) : 0f) + (_spellbladeTimer > 0f ? V("spellblade_tassel", 2) : 0f)
+            (_elvenTimer > 0f ? V("elven_leggings", 1) : 0f) + (_spellbladeTimer > 0f ? V("spellblade_tassel", 2) : 0f)
             + (_cloakTimer > 0f ? V("black_wind_cloak", 1) : 0f) + V("rune_scabbard", 1);
-        float OtherworldDashDistance => V("straw_sandals", 1) + V("elven_leggings", 1);
+        float OtherworldDashDistance => 0f; // 대시 거리 기물은 없앴어요 (플레이테스트 10차: 짚신 · 각반 · 엘프 가죽 바지는 대시 뒤 효과로)
+        float StrawMoveBonus => _strawTimer > 0f ? V("straw_sandals", 1) : 0f; // 짚신: 대시 후 잠깐 이동속도
         float OtherworldDashRecharge => V("goblin_boots", 1);
         float OtherworldDashIframe => V("elf_feather_earring", 1);
-        float OtherworldReduction => V("mithril_chainmail", 1) + (_slimeTimer > 0f ? V("slime_bracelet", 2) : 0f);
+        float OtherworldReduction => V("mithril_chainmail", 1) + (_slimeTimer > 0f ? V("slime_bracelet", 2) : 0f) + (_leggingsTimer > 0f ? V("leggings", 1) : 0f); // + 각반: 대시 후 잠깐
         float OtherworldDefense => _shields.Any ? V("dwarf_belt", 1) : 0f;
         float OtherworldSkillCooldownCut => 0f; // 마법사 고깔모자는 이제 둔화 · 빙결된 적을 맞힐 때 돌려받아요 (WizardHatRefund)
         bool _wizardRefunded;
@@ -43,6 +44,8 @@ namespace AThousandDawns.Player
         void TickOtherworldItems(float dt)
         {
             if (_elvenTimer > 0f) _elvenTimer -= dt;
+            if (_strawTimer > 0f) _strawTimer -= dt;
+            if (_leggingsTimer > 0f) _leggingsTimer -= dt;
             if (_spellbladeTimer > 0f) _spellbladeTimer -= dt;
             if (_slimeTimer > 0f) _slimeTimer -= dt;
             if (_frostRobeCooldown > 0f) _frostRobeCooldown -= dt;
@@ -120,6 +123,8 @@ namespace AThousandDawns.Player
         void OtherworldDashEnd()
         {
             if (Has("elven_leggings")) _elvenTimer = V("elven_leggings", 2);
+            if (Has("straw_sandals")) _strawTimer = V("straw_sandals", 2);
+            if (Has("leggings")) _leggingsTimer = V("leggings", 2);
             if (Has("spellsword_boots")) _spellswordReady = true;
             if (Has("ice_crystal_boots")) // 빙결 수정 장화: 대시한 길에 서리
             {
