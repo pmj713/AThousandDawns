@@ -3636,24 +3636,26 @@ if "elite" in EXTRAS and "playeranim" in EXTRAS:
         rig.animation_data.action = None
         reset_pose()
 
+    # 타이밍 (InkEnemyAnimator): 기본 방식은 예고 동안 클립 첫 프레임에 멈춰 있다가 판정이 시작되면(활성) 재생해요.
+    #   그래서 첫 프레임 = 예고 자세, 몇 프레임 안에 판정 자세. 곡사·단검 던지기는 예고 동안 그대로 재생(MoveMode.Play)해 15f(0.5초 예고 끝)에 놓아요
     if NAME == "Skeleton":
-        el("ShieldShove", [(0, "idle"), (5, "s_guard"), (9, "s_guard"), (12, "s_shove"), (20, "s_shove"), (30, "idle")])
+        el("ShieldShove", [(0, "s_guard"), (3, "s_shove"), (12, "s_shove"), (22, "idle")])
     elif NAME == "Goblin":
         el("LeapReady", [(0, "crouch"), (10, "crouch")])
         el("LeapSmash", [(0, "crouch"), (4, "air"), (8, "smash"), (18, "smash"), (28, "idle")])
     elif NAME == "Gargoyle":
-        el("WingSlam", [(0, "idle"), (6, "w_rear"), (11, "w_rear"), (14, "w_slam"), (24, "w_slam"), (34, "idle")])
+        el("WingSlam", [(0, "w_rear"), (3, "w_slam"), (13, "w_slam"), (23, "idle")])
     elif NAME == "GoblinRogue":
-        el("DaggerThrow", [(0, "idle"), (6, "k_wind"), (10, "k_wind"), (13, "k_throw"), (20, "k_throw"), (28, "idle")])
+        el("DaggerThrow", [(0, "idle"), (6, "k_wind"), (12, "k_wind"), (15, "k_throw"), (22, "k_throw"), (30, "idle")])
     elif NAME == "Werewolf":
         el("ClawReady", [(0, "c_ready"), (10, "c_ready")])   # 예고 동안 (반복)
         el("Claw3", [(0, "c_rwind"), (2, "c_r"), (6, "c_lwind"), (10, "c_l"), (13, "c_rwind2"), (17, "c_r2"), (25, "c_r2"), (33, "idle")])   # 활성 시작 0.07 · 0.33 · 0.57초
     elif NAME == "GoblinArcher":
         el("LobShot", [(0, "l_nock"), (3, "l_nock"), (12, "l_draw"), (14, "l_draw"), (15, "l_flick"), (24, "l_flick")])   # 예고 0.5초 끝(15f)에 놓아요
     elif NAME == "Orc":
-        el("GroundSlam", [(0, "idle"), (7, "up"), (12, "up"), (15, "down"), (26, "down"), (36, "idle")])
+        el("GroundSlam", [(0, "up"), (3, "down"), (14, "down"), (24, "idle")])
     elif NAME == "Bomber":
-        el("Attack", [(0, "idle"), (6, "t_lift"), (12, "t_lift"), (15, "t_throw"), (22, "t_throw"), (30, "idle")])
+        el("Attack", [(0, "t_lift"), (3, "t_throw"), (12, "t_throw"), (22, "idle")])
     elif NAME == "GoblinShaman":
         el("Heal", [(0, "idle"), (6, "h_gather"), (14, "h_raise"), (24, "h_raise"), (30, "h_spread"), (40, "h_spread"), (48, "idle")])
 
