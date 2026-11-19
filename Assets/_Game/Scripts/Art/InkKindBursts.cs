@@ -11,6 +11,7 @@ namespace AThousandDawns.Art
     //   천마 근위 반격: 검붉은 충격 — 검은 고리 + 진홍 불티 + 검은 연기
     //   혈인 되살리기: 핏빛 안개 — 검붉은 안개가 솟고 핏방울이 튀어요
     //   고블린 주술사 저주 장판 착지: 연두 · 검보라 포자 — 연두 고리 + 포자가 피어올라요
+    // 고리 크기: PouchFx/Ring의 가장 진한 선은 그림 폭의 0.34배 반지름 → 폭 = 반경 × 2.9면 폭발 반경에 와요.
     // 그림: PouchFx/Ring, RiverFx/Ripple, InkParticles.
     public static class InkKindBursts
     {
@@ -38,11 +39,11 @@ namespace AThousandDawns.Art
             switch (best.Kind)
             {
                 case EnemyKind.Moktak:
-                    for (int i = 0; i < 3; i++) Pulse(_ring, at, radius * 2.4f, 0.55f, new Color(1f, 0.85f, 0.4f, 0.9f), i * 0.12f);
+                    for (int i = 0; i < 3; i++) Pulse(_ring, at, radius * 2.9f, 0.55f, new Color(1f, 0.85f, 0.4f, 0.9f), i * 0.12f);
                     InkParticles.Burst(at + Vector3.up * 0.3f, 18, new Color(1f, 0.95f, 0.7f, 1f), new Color(1f, 0.75f, 0.25f, 0f), radius * 0.8f, 0.14f, 0.9f, -1.2f);
                     break;
                 case EnemyKind.FlagBearer:
-                    Pulse(_ring, at, radius * 2.6f, 0.45f, new Color(0.95f, 0.25f, 0.18f, 0.85f), 0f);
+                    Pulse(_ring, at, radius * 2.9f, 0.45f, new Color(0.95f, 0.25f, 0.18f, 0.85f), 0f);
                     InkParticles.Burst(at + Vector3.up * 1f, 16, new Color(0.9f, 0.15f, 0.12f, 1f), new Color(0.6f, 0.08f, 0.06f, 0f), radius * 2.2f, 0.22f, 0.9f, 0.6f, false); // 천 조각
                     InkParticles.Burst(at + Vector3.up * 0.4f, 14, new Color(1f, 0.85f, 0.75f, 0.6f), new Color(1f, 0.6f, 0.5f, 0f), radius * 3f, 0.5f, 0.5f, 0f); // 바람 줄기
                     break;
@@ -51,18 +52,18 @@ namespace AThousandDawns.Art
                     InkParticles.Burst(at + Vector3.up * 0.2f, 22, new Color(0.9f, 0.97f, 1f, 1f), new Color(0.35f, 0.6f, 0.95f, 0.3f), radius * 2f, 0.2f, 0.7f, 2.5f);
                     break;
                 case EnemyKind.DemonGuard:
-                    Pulse(_ring, at, radius * 2.2f, 0.4f, new Color(0.12f, 0.02f, 0.04f, 0.9f), 0f);
-                    Pulse(_ring, at, radius * 1.6f, 0.3f, new Color(0.85f, 0.1f, 0.12f, 0.9f), 0.04f);
+                    Pulse(_ring, at, radius * 2.9f, 0.4f, new Color(0.12f, 0.02f, 0.04f, 0.9f), 0f);
+                    Pulse(_ring, at, radius * 2.1f, 0.3f, new Color(0.85f, 0.1f, 0.12f, 0.9f), 0.04f);
                     InkParticles.Burst(at + Vector3.up * 0.8f, 16, new Color(1f, 0.35f, 0.3f, 1f), new Color(0.5f, 0.02f, 0.05f, 0f), radius * 2.4f, 0.1f, 0.4f, 0.8f);
                     InkParticles.Burst(at + Vector3.up * 0.5f, 8, new Color(0.1f, 0.05f, 0.06f, 0.8f), new Color(0.2f, 0.05f, 0.05f, 0f), radius * 0.8f, 0.6f, 0.8f, -0.3f);
                     break;
                 case EnemyKind.BloodShaman:
                     InkParticles.Burst(at + Vector3.up * 0.3f, 18, new Color(0.45f, 0.04f, 0.06f, 0.85f), new Color(0.2f, 0.02f, 0.03f, 0f), radius * 1f, 0.7f, 1.1f, -0.6f);
                     InkParticles.Burst(at + Vector3.up * 0.6f, 12, new Color(0.8f, 0.08f, 0.08f, 1f), new Color(0.4f, 0.02f, 0.03f, 0f), radius * 2f, 0.12f, 0.6f, 2f);
-                    Pulse(_ring, at, radius * 2f, 0.5f, new Color(0.55f, 0.05f, 0.08f, 0.75f), 0f);
+                    Pulse(_ring, at, radius * 2.9f, 0.5f, new Color(0.55f, 0.05f, 0.08f, 0.75f), 0f);
                     break;
                 case EnemyKind.GoblinShaman:
-                    Pulse(_ring, at, radius * 2.2f, 0.5f, new Color(0.6f, 0.95f, 0.3f, 0.85f), 0f);
+                    Pulse(_ring, at, radius * 2.9f, 0.5f, new Color(0.6f, 0.95f, 0.3f, 0.85f), 0f);
                     InkParticles.Burst(at + Vector3.up * 0.2f, 20, new Color(0.7f, 1f, 0.35f, 1f), new Color(0.3f, 0.1f, 0.4f, 0f), radius * 1.2f, 0.25f, 1f, -0.8f); // 포자
                     break;
             }

@@ -22,6 +22,7 @@ namespace AThousandDawns.Art
     {
         static InkEnemyStrikeFx _host;
         static Sprite _qi, _ring, _glow, _slime;
+        static Material _trailMat;
         static bool _loaded;
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
 
@@ -59,6 +60,9 @@ namespace AThousandDawns.Art
 
         static Vector3 Flat(Vector3 v) { v.y = 0f; return v.sqrMagnitude > 1e-4f ? v.normalized : Vector3.forward; }
 
+        // PouchFx/Ring 그림의 가장 진한 선은 그림 폭의 0.34배 반지름에 있어요 → 반경 r 고리 = 폭 r × 2.9 (코드 점검: 예전 2.1배는 판정의 71%로 작게 보였어요)
+        const float RingScale = 2.9f;
+
         static Color StrikeColor(EnemyKind kind) => kind switch
         {
             EnemyKind.Shield => new Color(0.65f, 0.75f, 0.85f),     // 쇳빛
@@ -86,11 +90,11 @@ namespace AThousandDawns.Art
             {
                 case 0: h.Crescent(from + dir * length * 0.5f, dir, Mathf.Max(1f, length) * 1.7f, c); break;
                 case 1:
-                    h.Streak(from, dir, length, width, c, who.Kind == EnemyKind.Grunt ? 0.04f : 0.5f);
+                    h.Streak(from, dir, length, width, c, 0.05f); // 예고 띠와 같은 바닥 높이 (뒤쪽 가운데부터 length · 폭 width)
                     InkParticles.Burst(from + dir * length + Vector3.up * 0.15f, 10, new Color(c.r, c.g, c.b, 0.9f), new Color(0.5f, 0.45f, 0.4f, 0f), 1.6f, 0.25f, 0.5f, 0.6f);
                     break;
                 default:
-                    h.Ring(from, length * 2.1f, 0.4f, new Color(c.r, c.g, c.b, 0.85f));
+                    h.Ring(from, length * RingScale, 0.4f, new Color(c.r, c.g, c.b, 0.85f)); // 고리 그림의 진한 선이 판정 반경에 오게
                     var dust = who.Kind == EnemyKind.Gargoyle ? new Color(0.85f, 0.88f, 0.9f, 0.6f) : new Color(0.62f, 0.5f, 0.34f, 0.8f);
                     InkParticles.Burst(from + Vector3.up * 0.15f, 14, dust, new Color(dust.r, dust.g, dust.b, 0f), length * 2.2f, 0.35f, 0.55f, 0f);
                     break;
@@ -124,7 +128,7 @@ namespace AThousandDawns.Art
         }
 
         // 바닥에 누운 띠 (뒤쪽 가운데 from에서 dir로 length, 폭 width): 0.06초에 뻗고 0.35초에 옅어져요
-        void Streak(Vector3 from, Vector3 dir, float length, float width, Color color, float height)
+        void Streak(Vector3 from, Vector3 dir, float length, float width, Color color, float height, float grow = 0.06f, float fade = 0.35f)
         {
             if (_glow == null) return;
             var go = new GameObject("Strike Streak");
@@ -138,10 +142,10 @@ namespace AThousandDawns.Art
             {
                 if (go == null) return false;
                 t += dt;
-                float l = length * Mathf.Clamp01(t / 0.06f);
+                float l = length * Mathf.Clamp01(t / grow);
                 go.transform.position = new Vector3(from.x, height, from.z) + dir * (l * 0.5f);
                 go.transform.localScale = new Vector3(width * 1.3f * unit, Mathf.Max(0.05f, l) * 1.15f * unit, 1f);
-                float k = Mathf.Clamp01((t - 0.06f) / 0.35f);
+                float k = Mathf.Clamp01((t - grow) / fade);
                 sr.color = new Color(color.r, color.g, color.b, 0.85f * (1f - k * k));
                 if (k < 1f) return true;
                 Destroy(go);
@@ -181,7 +185,7 @@ namespace AThousandDawns.Art
             var h = Host();
             from.y = 0f;
             dir = Flat(dir);
-            h.Streak(from, dir, length, width, new Color(0.3f, 0.2f, 0.12f), 0.035f); // 지나간 자리 금 (어두운 흙)
+            h.Streak(from, dir, length, width, new Color(0.3f, 0.2f, 0.12f), 0.035f, length / Mathf.Max(0.1f, speed), 0.6f); // 지나간 자리 금 (어두운 흙): 충격파 앞머리와 같은 속도로 늘어나요
             float t = 0f, step = 0f, life = length / Mathf.Max(0.1f, speed);
             Vector3 side = new Vector3(dir.z, 0f, -dir.x);
             h._live.Add(dt =>
@@ -214,7 +218,7 @@ namespace AThousandDawns.Art
         {
             var h = Host();
             at.y = 0f;
-            h.Ring(at, radius * 2.4f, 0.45f, new Color(0.55f, 0.95f, 0.3f, 0.8f));
+            h.Ring(at, radius * RingScale, 0.45f, new Color(0.55f, 0.95f, 0.3f, 0.8f));
             InkParticles.Burst(at + Vector3.up * 0.2f, 14, new Color(0.7f, 1f, 0.35f, 1f), new Color(0.25f, 0.1f, 0.35f, 0f), radius * 1.3f, 0.25f, 0.9f, -0.8f);
         }
 
@@ -252,7 +256,8 @@ namespace AThousandDawns.Art
             InkParticles.Fire(visual, Vector3.zero, 0.35f, 2.5f);
             InkParticles.Embers(visual, Vector3.zero, 0.25f, 2f);
             var trail = visual.gameObject.AddComponent<TrailRenderer>();
-            trail.sharedMaterial = new Material(Shader.Find("Sprites/Default")) { name = "Firebolt Trail" };
+            if (_trailMat == null) _trailMat = new Material(Shader.Find("Sprites/Default")) { name = "Firebolt Trail" }; // 불화살마다 새 재질을 만들지 않게
+            trail.sharedMaterial = _trailMat;
             trail.time = 0.25f;
             trail.widthMultiplier = 0.45f;
             trail.widthCurve = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(1f, 0f));
@@ -331,7 +336,7 @@ namespace AThousandDawns.Art
         {
             var h = Host();
             at.y = 0f;
-            h.Ring(at, radius * 2f, 0.35f, new Color(0.7f, 0.6f, 0.4f, 0.8f));
+            h.Ring(at, radius * RingScale, 0.35f, new Color(0.7f, 0.6f, 0.4f, 0.8f));
             InkParticles.Burst(at + Vector3.up * 0.1f, 10, new Color(0.62f, 0.5f, 0.34f, 0.9f), new Color(0.45f, 0.36f, 0.25f, 0f), radius * 1.6f, 0.25f, 0.45f, 0.8f);
             if (hit) InkParticles.Burst(at + Vector3.up * 0.8f, 8, new Color(1f, 0.5f, 0.3f, 1f), new Color(0.7f, 0.1f, 0.05f, 0f), 2f, 0.1f, 0.3f, 1f);
         }
@@ -340,7 +345,7 @@ namespace AThousandDawns.Art
         {
             var h = Host();
             at.y = 0f;
-            h.Ring(at, radius * 2.4f, 0.45f, new Color(1f, 0.55f, 0.2f, 0.9f));
+            h.Ring(at, radius * RingScale, 0.45f, new Color(1f, 0.55f, 0.2f, 0.9f));
             InkParticles.Burst(at + Vector3.up * 0.5f, 22, new Color(1f, 0.85f, 0.4f, 1f), new Color(1f, 0.3f, 0.05f, 0.5f), radius * 2.4f, 0.3f, 0.6f, -0.4f);
             InkParticles.Burst(at + Vector3.up * 0.7f, 10, new Color(0.3f, 0.25f, 0.22f, 0.7f), new Color(0.2f, 0.18f, 0.16f, 0f), radius, 0.6f, 0.9f, -0.5f); // 그을음
             var flash = new GameObject("Imp Blast Light").AddComponent<Light>();
