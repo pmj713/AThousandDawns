@@ -53,9 +53,9 @@ namespace AThousandDawns.Tests
                 int doors = map.Rooms.Sum(r => Neighbors(map, r).Count) / 2;
                 Assert.AreEqual(map.Rooms.Count - 1, doors, $"시드 {seed}: 지름길 없음");
 
-                // 보상과 관문을 다 얻는 최소 경로의 전투 방 = 3 (최소 경로 방, 판구조 C5)
+                // 보상과 관문을 다 얻는 최소 경로의 전투 방 = 2 (길 위 전투 방 둘 · 보상 방은 싸움 없이 보상만)
                 var needed = new HashSet<FloorRoom>(PathTo(map, gate).Concat(PathTo(map, reward)));
-                Assert.AreEqual(3, needed.Count(r => r.HasFight), $"시드 {seed}");
+                Assert.AreEqual(2, needed.Count(r => r.HasFight), $"시드 {seed}");
                 Assert.IsFalse(needed.Any(r => r.Optional), $"시드 {seed}: 선택 방은 지나가지 않아도 돼요");
             }
         }
@@ -70,7 +70,7 @@ namespace AThousandDawns.Tests
                 Assert.IsFalse(ev.HasFight);
                 Assert.AreEqual(1, Neighbors(map, ev).Count, $"시드 {seed}: 막다른 곳");
                 Assert.AreEqual(map.Rooms.Count - 1, map.Rooms.Sum(r => Neighbors(map, r).Count) / 2, "지름길 없음");
-                Assert.AreEqual(5, map.FightsLeft(), "이벤트 방은 남은 전투 방에 안 들어가요");
+                Assert.AreEqual(4, map.FightsLeft(), "이벤트 방과 보상 방은 남은 전투 방에 안 들어가요");
             }
         }
 
@@ -113,7 +113,7 @@ namespace AThousandDawns.Tests
                 bool adjacent = r == map.Start || Neighbors(map, map.Start).Contains(r);
                 Assert.AreEqual(adjacent, r.Revealed);
             }
-            Assert.AreEqual(5, map.FightsLeft(), "길 위 전투 방 2 + 보상 방(전투 포함) 1 + 선택 방 2");
+            Assert.AreEqual(4, map.FightsLeft(), "길 위 전투 방 2 + 선택 방 2 (보상 방은 싸움 없음)");
         }
     }
 }

@@ -26,13 +26,14 @@ namespace AThousandDawns.Tests
         }
 
         [Test]
-        public void 프로젝트의_data_items_CSV에_오류가_없고_72종이_있음()
+        public void 프로젝트의_data_items_CSV에_오류가_없고_102종이_있음()
         {
             var errors = new List<string>();
             var items = ItemTable.Read(File.ReadAllText(SheetImporter.ItemsCsvPath), errors);
             Assert.IsEmpty(errors, string.Join("\n", errors));
-            Assert.AreEqual(72, items.Count, "기본 60 + 꾸러미 1·2 12");
-            for (int k = 0; k < 6; k++) Assert.AreEqual(12, items.FindAll(i => (int)i.keyword == k).Count, $"키워드 {k} 기물 수 (꾸러미마다 1개씩)");
+            Assert.AreEqual(102, items.Count, "무협 72 (기본 60 + 꾸러미 1·2 12) + 이계 30");
+            Assert.AreEqual(30, items.FindAll(i => i.otherworld).Count, "이계 기물");
+            for (int k = 0; k < 6; k++) Assert.AreEqual(17, items.FindAll(i => (int)i.keyword == k).Count, $"키워드 {k} 기물 수 (무협 12 + 이계 5)");
             foreach (var id in ItemDatabase.Pack1) Assert.IsNotNull(items.Find(i => i.id == id), id);
             foreach (var id in ItemDatabase.Pack2) Assert.IsNotNull(items.Find(i => i.id == id), id);
 
