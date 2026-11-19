@@ -77,7 +77,25 @@ namespace AThousandDawns.EditorTools
         {
             var t = new GameObject("Reward Forge (대장간 화로)").transform;
             // 플레이테스트 5차: VARCO 대장간 (돌·벽돌 화로에 달군 숯, 옆에 가죽 풀무, 앞에 모루와 망치, 높이 1.35). 없으면 예전 돌 화로
-            if (VarcoProp(t, "ForgeHearth", Vector3.zero, 200f, 1f, RoomPropFolder) != null) return t.gameObject;
+            if (VarcoProp(t, "ForgeHearth", Vector3.zero, 200f, 1f, RoomPropFolder) is Transform forge)
+            {
+                // 플레이테스트 스크린샷 9 "통일": 텍스처가 진하고 매끈해 다른 방 소품과 따로 놀았어요 → 대나무 줄기처럼 차분하게.
+                //   ForgeHearth_Calm.png = 원래 텍스처의 채도 50% · 대비 0.72 · 조금 밝게, 달군 숯(붉은·주황 밝은 곳)만 원래 색 그대로 (보상 표시).
+                //   세 단 명암, 붓결 얼룩, 가는 외곽선, 테두리 빛 약하게
+                var mat = forge.GetComponentInChildren<Renderer>().sharedMaterial;
+                var calm = AssetDatabase.LoadAssetAtPath<Texture2D>($"{RoomPropFolder}/ForgeHearth_Calm.png");
+                if (calm != null) mat.SetTexture("_BaseMap", calm);
+                mat.SetFloat("_Bands", 3f);
+                mat.SetFloat("_BandSoftness", 0.25f);
+                mat.SetFloat("_ShadowInk", 0.3f);
+                mat.SetFloat("_WashNoiseStrength", 0.12f);
+                mat.SetFloat("_PaperGrain", 0.04f);
+                mat.SetFloat("_RimInk", 0.15f);
+                mat.SetFloat("_OutlineWidth", 1.5f);
+                mat.SetFloat("_OutlineJitter", 0.25f);
+                EditorUtility.SetDirty(mat);
+                return t.gameObject;
+            }
             Block(t, "Bowl", PrimitiveType.Cylinder, new Vector3(0f, 0.16f, 0f), new Vector3(0.6f, 0.16f, 0.6f), Quaternion.identity, stone);
             for (int k = 0; k < 3; k++)
             {

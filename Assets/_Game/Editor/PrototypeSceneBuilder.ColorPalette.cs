@@ -96,7 +96,15 @@ namespace AThousandDawns.EditorTools
             }
             UnifyRegionLook(TombStalkLook, triplanar);
             UnifyRegionLook(RiverStalkLook, triplanar);
+            UnifyRegionLook(TempleStalkLook, triplanar);
         }
+
+        // 폐사찰 풀숲 (매복 풀숲 자리): 마른 가지는 회갈색 나무결, 풀잎은 바랜 올리브 잎 그림결 (덤불 덩어리 대신, InkRoomEdges.TempleShrub)
+        static readonly (string name, string tex, Color color, float outline)[] TempleStalkLook =
+        {
+            ("Ink_Temple_Shrub", "Tex_Wood", new Color(0.3f, 0.26f, 0.22f), 1f),        // 나무결이 주황이라 회갈색으로 눌러요
+            ("Ink_Temple_Weed", "Tex_LeafPaint", new Color(0.56f, 0.52f, 0.34f), 0.8f),  // 대나무 잎 그림결에 바랜 올리브
+        };
 
         // 지역 소품을 대나무 줄기 질감에 맞춰요 (플레이테스트 10차 "게임풍 통일": 기준은 대나무 줄기 — 붓결 있는 그림 질감, 세 단 명암, 가는 외곽선, 군데군데 옅은 얼룩).
         //   캐릭터 셰이더의 납작한 단색 재질을 구조물 셰이더(InkTriplanar)로 바꾸고 결 그림(돌·나무)을 입혀요. (재질 이름, 결 그림, 색, 외곽선)

@@ -150,12 +150,14 @@ namespace AThousandDawns.EditorTools
         }
 
         // 매복 풀숲 (AmbushBush, 흔들리는 Visual 밑에 단 죽림 덤불 "Bush"): 같은 자리에 지역 변형 셋을 달아 지역 꾸밈 목록에 넣어요.
-        //   폐사찰: 작은 소나무와 마른 풀 · 장강: 갈대 무더기 · 천마총: 가시 돋친 검은 마른 덤불. 흔들림은 Visual을 따라가요
+        //   폐사찰: 마른 가시덤불 · 잡초 무더기 · 소나무 묘목 (돌아가며, 대나무 줄기 질감) · 장강: 갈대 무더기 · 천마총: 가시 돋친 검은 마른 덤불. 흔들림은 Visual을 따라가요
         static void DressBushRegions(List<GameObject> bamboo, List<GameObject> temple, List<GameObject> river, List<GameObject> tomb, Material wood, ref int seed)
         {
             var reed = RiverMat("Ink_River_Reed", "#7C8452", 0.45f);
             var thorn = GetInkMaterial("Ink_Tomb_Thorn", "#2A1E1C", 0.3f);
             var blood = GetInkMaterial("Ink_Tomb_Blood", "#4E0B0A", 0.7f);
+            var shrub = GetInkMaterial("Ink_Temple_Shrub", "#5A4632", 0.4f);   // 색·질감은 TempleStalkLook (ColorPalette.cs)
+            var weed = GetInkMaterial("Ink_Temple_Weed", "#6B7040", 0.4f);
             foreach (var ambush in Object.FindObjectsByType<AThousandDawns.Enemies.AmbushBush>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
                 if (ambush.transform.childCount == 0) continue;
@@ -171,9 +173,8 @@ namespace AThousandDawns.EditorTools
                     v.localScale = clump.localScale;   // Visual의 납작한 크기를 되돌린 덤불과 같은 크기
                     return v;
                 }
-                var pine = Variant("Bush (폐사찰 소나무)");
-                PineTree(pine, Vector3.zero, 1.5f, seed, wood);
-                FoliageCards(pine, "Grass", "Bush_B", new Vector3(0.35f, 0.18f, 0.1f), 0.4f, 2, seed * 31f);
+                var pine = Variant("Bush (폐사찰 덤불)");
+                TempleShrub(pine, seed, wood, shrub, weed);
                 var reeds = Variant("Bush (장강 갈대)");
                 for (int k = 0; k < 3; k++)
                 {
@@ -196,6 +197,43 @@ namespace AThousandDawns.EditorTools
                 river.Add(reeds.gameObject);
                 tomb.Add(thorns.gameObject);
             }
+        }
+
+        // 폐사찰 풀숲 (플레이테스트 스크린샷 8 "통일"): 매끈한 덤불 덩어리 대신 가지·풀잎을 하나하나 세워 대나무 줄기처럼 붓결·세 단 명암·가는 외곽선이 보이게.
+        //   밑에 흙 원판·풀 덩어리 없이 바닥에 바로 서요. 지름 약 1.2, 높이 0.8~1.5 (예전 소나무 묘목과 비슷)
+        //   0: 마른 가시덤불 (밑동에서 사방으로 뻗은 갈색 가지 + 가시) · 1: 잡초 무더기 (길쭉한 풀잎 다발과 이삭) · 2: 소나무 묘목 + 발치 풀잎
+        static void TempleShrub(Transform t, int seed, Material wood, Material shrub, Material weed)
+        {
+            int kind = seed % 3;
+            if (kind == 0)
+                for (int k = 0; k < 14; k++)
+                {
+                    float a = k * 26f + seed * 17f;
+                    float len = 0.36f + (k * 7 % 4) * 0.06f;
+                    var rot = Quaternion.Euler(0f, a, 30f + (k % 4) * 11f);
+                    Block(t, "Branch", PrimitiveType.Capsule, rot * new Vector3(0f, len, 0f), new Vector3(0.06f, len, 0.06f), rot, shrub);
+                    Block(t, "Twig", PrimitiveType.Capsule, rot * new Vector3(0.06f, len * 1.5f, 0f), new Vector3(0.025f, 0.16f, 0.025f), rot * Quaternion.Euler(0f, 0f, -35f), shrub);
+                    Block(t, "Thorn", PrimitiveType.Cube, rot * new Vector3(0.04f, len * 1.2f, 0f), new Vector3(0.1f, 0.018f, 0.018f), rot * Quaternion.Euler(0f, 0f, 40f), shrub);
+                }
+            else if (kind == 2)
+                PineTree(t, Vector3.zero, 1.5f, seed, wood);
+            int blades = kind == 1 ? 26 : 10;
+            float reach = kind == 1 ? 0.35f : 0.5f;
+            for (int k = 0; k < blades; k++)   // 풀잎: 얇고 길쭉한 판을 바깥으로 크게 젖혀 다발로
+            {
+                float a = k * (360f / blades) + seed * 23f + (k % 3) * 9f;
+                float h = (kind == 1 ? 0.75f : 0.45f) + (k * 5 % 4) * 0.12f;
+                var rot = Quaternion.Euler(0f, a, 22f + (k % 4) * 9f);
+                var foot = Quaternion.Euler(0f, a, 0f) * new Vector3(reach * ((k % 3) * 0.3f + 0.15f), 0f, 0f);
+                Block(t, "Blade", PrimitiveType.Cube, foot + rot * new Vector3(0f, h * 0.5f, 0f), new Vector3(0.11f, h, 0.02f), rot, weed);
+            }
+            if (kind == 1)
+                for (int k = 0; k < 4; k++)   // 이삭 줄기: 가늘게 솟아 끝이 살짝 굵어요
+                {
+                    var rot = Quaternion.Euler(0f, k * 90f + seed * 11f, 10f + k * 4f);
+                    Block(t, "Stem", PrimitiveType.Cylinder, rot * new Vector3(0f, 0.45f, 0f), new Vector3(0.018f, 0.45f, 0.018f), rot, shrub);
+                    Block(t, "Seed Head", PrimitiveType.Capsule, rot * new Vector3(0f, 0.95f, 0f), new Vector3(0.05f, 0.1f, 0.05f), rot, shrub);
+                }
         }
     }
 }
