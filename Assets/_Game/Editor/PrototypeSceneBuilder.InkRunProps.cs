@@ -176,8 +176,10 @@ namespace AThousandDawns.EditorTools
 
             // 플레이테스트 9차: 상자 연석 테두리 대신 VARCO 관문 (금빛 룬을 새긴 회색 돌 둘레, 푸른 수정 몇 조각, 지름 약 3 · 높이 0.4).
             //   가운데 먹 소용돌이는 그대로 돌아요. 모델이 없으면 예전 연석
+            //   플레이테스트 10차: 사용자가 예전 연석 관문으로 되돌려 달래서 꺼 둬요 (UseVarcoGate = true면 다시 VARCO 관문)
+            const bool UseVarcoGate = false;
             float vortexY = 0.04f;
-            if (VarcoProp(visual, "PortalGate", Vector3.zero, 0f, 1f, RoomPropFolder) is Transform ring)
+            if (UseVarcoGate && VarcoProp(visual, "PortalGate", Vector3.zero, 0f, 1f, RoomPropFolder) is Transform ring)
             {
                 var b = ring.GetComponentInChildren<Renderer>().bounds;
                 float k = 3.1f / Mathf.Max(0.01f, Mathf.Max(b.size.x, b.size.z));

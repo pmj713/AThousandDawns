@@ -307,14 +307,14 @@ for w in WEAPONS:
         c = f.head_local.lerp(f.tail_local, 0.55)
         # 팔뚝에 끈으로 묶은 방패: 판이 아래팔 방향을 품고(팔을 늘어뜨리면 판도 서요), 바깥·앞쪽을 향해요
         fa = (B["LeftHand"].head_local - f.head_local).normalized()   # 팔꿈치 → 손목 (FBX 뼈 꼬리는 믿지 않아요)
-        out = Vector((1, -0.6, 0)).normalized(); out = (out - fa * out.dot(fa)).normalized()
+        out = Vector((1, -0.15, 0)).normalized(); out = (out - fa * out.dot(fa)).normalized()   # 10차: 앞(-Y)을 많이 보면 팔을 들 때 팔뚝이 방패를 뚫었어요 → 거의 바깥(+X)
 
         def build(bm, c=c, out=out, fa=fa):
             r, th = 0.32, 0.04
             u = fa; v = out.cross(u).normalized()
             ang = [k * math.pi / 8 for k in range(16)]
-            front = [bm.verts.new(c + out * (0.06 + th) + (u * math.cos(a) + v * math.sin(a)) * r) for a in ang]
-            back = [bm.verts.new(c + out * 0.06 + (u * math.cos(a) + v * math.sin(a)) * r) for a in ang]
+            front = [bm.verts.new(c + out * (0.12 + th) + (u * math.cos(a) + v * math.sin(a)) * r) for a in ang]
+            back = [bm.verts.new(c + out * 0.12 + (u * math.cos(a) + v * math.sin(a)) * r) for a in ang]   # 10차: 0.06이면 팔뚝·손이 방패를 뚫고 나왔어요
             bm.faces.new(front); bm.faces.new(list(reversed(back)))
             for k in range(16):
                 j = (k + 1) % 16
@@ -666,15 +666,16 @@ for spec in PROPS:
     key = os.path.splitext(os.path.basename(path))[0].replace("Prop_", "")
     o = import_prop(os.path.abspath(path))
     if mount == "shield":
-        align_normal(o, Vector((0, -1, 0))); scale_to(o, 0.78)
+        # 플레이테스트 10차: 방패를 아래팔 앞면(-Y)에 대면, 팔을 앞으로 드는 자세(대기·공격)에서 팔뚝이 방패 앞면을 가로질러 꽂혀 보였어요.
+        #   → 방패는 아래팔 바깥쪽(+X, 몸에서 먼 쪽)에 끈으로 묶은 것처럼, 면이 바깥(+X)을 보게 대고 팔에서 5cm 띄워요
+        align_normal(o, Vector((1, 0, 0))); scale_to(o, 0.78)
         f = B["LeftForeArm"]
         mid = f.head_local.lerp(f.tail_local, 0.5)
-        # 아래팔 앞면(몸 앞쪽 -Y)에서 2cm 띄워 방패 뒷면을 대요 (팔뚝에 박히지 않게)
         arm_pts = [body.matrix_world @ v.co for v in body.data.vertices]
-        arm_pts = [p for p in arm_pts if abs(p.x - mid.x) < 0.08 and abs(p.z - mid.z) < 0.08]
-        front = min(p.y for p in arm_pts) if arm_pts else mid.y - 0.05
+        arm_pts = [p for p in arm_pts if abs(p.y - mid.y) < 0.08 and abs(p.z - mid.z) < 0.08 and p.x > mid.x - 0.1]
+        outer = max(p.x for p in arm_pts) if arm_pts else mid.x + 0.05
         lo_, hi_ = bbox(o)
-        c = Vector((mid.x, front - 0.02 - hi_.y, mid.z - 0.02))
+        c = Vector((outer + 0.05 - lo_.x, mid.y, mid.z - 0.02))
         for v in o.data.vertices:
             v.co += c
         bind(o, "LeftForeArm", f"{NAME}_Prop_{key}", key)

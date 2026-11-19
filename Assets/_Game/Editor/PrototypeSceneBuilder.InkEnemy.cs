@@ -467,7 +467,8 @@ namespace AThousandDawns.EditorTools
             // 플레이어 동작은 Generic에 못 써요: 기본 공격은 고유 Attack(동물 덤비기) 또는 Slam(녹림왕 부하 부르기 등)
             if (generic) attackClip = new[] { "Attack", "Slam", "Chop", "Punch2", "StaffSweep" }.Select(n => clips.TryGetValue(n, out var c) ? c : null).FirstOrDefault(c => c != null);
             // Humanoid 적(산적·방패병·살수)도 모델에 고유 공격(Attack)이 있으면 플레이어 베기 대신 그걸로 (플레이 테스트: 플레이어 동작을 돌려 쓴 게 티 났어요)
-            else if (AssetDatabase.LoadAllAssetsAtPath(modelPath).OfType<AnimationClip>().FirstOrDefault(c => c.name.Split('|').Last() == "Attack") is AnimationClip ownAttack) attackClip = ownAttack;
+            //   플레이테스트 10차: "__preview__…|Attack"(가져오기 설정이 안 들어간 원본 미리보기 클립)이 먼저 잡혀 루트 회전이 안 구워진 채 재생됐어요 → 산적이 뒤돌아 휘둘렀어요. 미리보기 클립은 빼요
+            else if (AssetDatabase.LoadAllAssetsAtPath(modelPath).OfType<AnimationClip>().FirstOrDefault(c => !c.name.StartsWith("__preview__") && c.name.Split('|').Last() == "Attack") is AnimationClip ownAttack) attackClip = ownAttack;
             // 기본 공격에 고유 동작이 있으면 그걸로 (나팔수·궁수 — 예고 동안 그대로 재생해요)
             if (clips.TryGetValue("BlowHorn", out var blow)) attackClip = blow;
             else if (clips.TryGetValue("ShootBow", out var shoot)) attackClip = shoot;
