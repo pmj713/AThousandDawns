@@ -261,9 +261,9 @@ namespace AThousandDawns.EditorTools
                 new MoveSpec { state = "LeapReady", clips = new[] { "LeapReady" }, mode = MoveMode.Run },
                 new MoveSpec { attack = "뛰어 내려치기", state = "LeapSmash", clips = new[] { "LeapSmash" }, ready = "LeapReady" },
             },
-            // 고블린 단검꾼: 단검 던지기 · 고블린 궁수: 곡사 (하늘로 겨눠 높이 쏘기)
-            ["GoblinRogue"] = new[] { new MoveSpec { attack = "단검 던지기", state = "DaggerThrow", clips = new[] { "DaggerThrow" } } },
-            ["GoblinArcher"] = new[] { new MoveSpec { attack = "곡사", state = "LobShot", clips = new[] { "LobShot" } } },
+            // 고블린 단검꾼: 단검 던지기 · 고블린 궁수: 곡사 (하늘로 겨눠 높이 쏘기). 둘 다 예고(0.5초) 동안 그대로 재생해 15f에 놓아요
+            ["GoblinRogue"] = new[] { new MoveSpec { attack = "단검 던지기", state = "DaggerThrow", clips = new[] { "DaggerThrow" }, mode = MoveMode.Play } },
+            ["GoblinArcher"] = new[] { new MoveSpec { attack = "곡사", state = "LobShot", clips = new[] { "LobShot" }, mode = MoveMode.Play } },
             // 고블린 족장 (판타지 고수, 철권 마웅과 같은 규칙): 철퇴 2연타 · 내려찍기 · 돌진. 2페이즈 전환(함성)은 Roar (InkEnemyAnimator가 IsTransitioning을 보고)
             //   패턴 개편: 철퇴 휘돌리기(220° 크게 한 번) · 점프 덮치기(멀 때 뛰어 내려찍기) · 덫 던지기(신호 TrapThrown → 흩뿌리는 손짓) · 함성은 Roar
             ["GoblinChief"] = new[]
