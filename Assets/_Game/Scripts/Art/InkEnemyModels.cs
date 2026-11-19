@@ -608,6 +608,13 @@ namespace AThousandDawns.Art
             float speed = busy || Time.deltaTime <= 0f ? 0f : d.magnitude / Time.deltaTime;
             // 등장 동작은 대기로만 돌아가는 한 번짜리라, 그 사이 걸어 나오면 등장 자세로 미끄러졌어요 → 움직이기 시작하면 달리기로
             if (_oneShotUntil > Time.time && speed > 0.5f) { _oneShotUntil = 0f; _animator.CrossFadeInFixedTime(RunState, 0.15f, 0); }
+            // 플레이테스트 10차: 늑대인간이 공격 뒤 걸을 때 가끔 T포즈로 미끄러졌어요 — 공격 자세 상태(준비·덮치기)에 남은 채 이동하면
+            //   그 상태엔 달리기로 가는 길이 없어요. 공격이 끝나(Ready) 움직이는데 대기·달리기가 아니면 달리기로 돌려요
+            else if (!busy && speed > 0.5f && Time.time >= _holdUntil && !_animator.IsInTransition(0))
+            {
+                int st = _animator.GetCurrentAnimatorStateInfo(0).shortNameHash;
+                if (st != IdleState && st != RunState) _animator.CrossFadeInFixedTime(RunState, 0.15f, 0);
+            }
             _animator.SetFloat(SpeedId, speed);
         }
 

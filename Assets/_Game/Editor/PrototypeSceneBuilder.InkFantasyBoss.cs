@@ -57,6 +57,10 @@ namespace AThousandDawns.EditorTools
             for (int k = 0; k < 3; k++)
                 Block(root, "Dais Step", PrimitiveType.Cube, throneFoot + new Vector3(0f, 0.1f + k * 0.2f, -0.35f * (2 - k)), new Vector3(4.4f - k * 0.8f, 0.2f, 1.2f - k * 0.2f + 0.7f * (2 - k)), Quaternion.identity, stone);
             var throne = At(root, "Broken Throne (부서진 왕좌)", throneFoot + new Vector3(0f, 0.6f, 0.1f), 0f);
+            // 플레이테스트 10차: VARCO 등받이 높은 검은 쇠·나무 의자(위에 가시, 높이 2.6)를 왕좌로. 이름의 "Throne"은 그대로 (아트 2가 그 뒤에서 균열을 번쩍여요). 없으면 예전 상자 왕좌
+            bool varcoThrone = VarcoProp(throne, "DarkChair", Vector3.zero, 0f, 1f, RoomPropFolder) != null;
+            if (!varcoThrone)
+            {
             Block(throne, "Seat", PrimitiveType.Cube, new Vector3(0f, 0.35f, 0f), new Vector3(1.6f, 0.7f, 1.2f), Quaternion.identity, dark);
             Block(throne, "Back", PrimitiveType.Cube, new Vector3(0.1f, 1.6f, 0.55f), new Vector3(1.6f, 2.2f, 0.25f), Quaternion.Euler(0f, 0f, 6f), dark);
             Block(throne, "Back Chip", PrimitiveType.Cube, new Vector3(-0.55f, 2.55f, 0.55f), new Vector3(0.5f, 0.6f, 0.26f), Quaternion.Euler(0f, 0f, 35f), dark);   // 위 귀퉁이가 깨져 기울었어요
@@ -64,6 +68,7 @@ namespace AThousandDawns.EditorTools
                 Block(throne, "Armrest", PrimitiveType.Cube, new Vector3(sx, 0.9f, 0.05f), new Vector3(0.25f, 0.35f, 1.1f), Quaternion.identity, dark);
             Block(throne, "Cushion", PrimitiveType.Cube, new Vector3(0f, 0.74f, -0.05f), new Vector3(1.3f, 0.08f, 0.9f), Quaternion.Euler(3f, 0f, -4f), carpet);
             Block(throne, "Gold Trim", PrimitiveType.Cube, new Vector3(0.1f, 2.72f, 0.42f), new Vector3(1.2f, 0.12f, 0.06f), Quaternion.Euler(0f, 0f, 6f), gold);
+            }
             // 해골과 녹슨 왕관이 계단 앞에 굴러 있어요
             var skull = At(root, "Skull (해골)", throneFoot + new Vector3(0.9f, 0.12f, -1.9f), 30f);
             Block(skull, "Cranium", PrimitiveType.Sphere, new Vector3(0f, 0.14f, 0f), new Vector3(0.3f, 0.26f, 0.32f), Quaternion.identity, bone);
@@ -88,6 +93,13 @@ namespace AThousandDawns.EditorTools
             {
                 float z0 = Mathf.Lerp(zFrom, zTo, k / (float)pieces), z1 = Mathf.Lerp(zFrom, zTo, (k + 1) / (float)pieces);
                 if (k == 2 || k == 5) continue;   // 찢겨 나간 자리
+                // 플레이테스트 10차: VARCO 금테 두른 짙은 붉은 카펫 한 장을 문에서 왕좌 앞까지 길게 깔아요 (조각마다 금테가 둘러져 따로 놓인 깔개처럼 보여서). 없으면 예전 상자 카펫
+                if (k == 0 && VarcoProp(root, "RedCarpet", c + new Vector3(0f, 0.005f, (zFrom + zTo) * 0.5f), 0f, 1f, RoomPropFolder) is Transform rug)
+                {
+                    var rs = rug.GetComponentInChildren<MeshFilter>().sharedMesh.bounds.size;   // 메시 축: X 너비 · Y 길이(누운 카펫) · Z 두께
+                    rug.localScale = new Vector3(2.6f / Mathf.Max(0.01f, rs.x), (zTo - zFrom) / Mathf.Max(0.01f, rs.y), 0.04f / Mathf.Max(0.01f, rs.z));
+                    break;
+                }
                 Block(root, "Carpet", PrimitiveType.Cube, c + new Vector3(R(-0.1f, 0.1f), 0.015f, (z0 + z1) * 0.5f), new Vector3(2.4f, 0.02f, (z1 - z0) * 0.92f), Quaternion.Euler(0f, R(-3f, 3f), 0f), carpet);
                 Block(root, "Carpet Hem", PrimitiveType.Cube, c + new Vector3(1.22f, 0.02f, (z0 + z1) * 0.5f), new Vector3(0.08f, 0.02f, (z1 - z0) * 0.9f), Quaternion.identity, gold);
                 Block(root, "Carpet Hem", PrimitiveType.Cube, c + new Vector3(-1.22f, 0.02f, (z0 + z1) * 0.5f), new Vector3(0.08f, 0.02f, (z1 - z0) * 0.9f), Quaternion.identity, gold);
@@ -138,6 +150,8 @@ namespace AThousandDawns.EditorTools
                 flag.SetParent(banners, false);
                 flag.position = top + Quaternion.Euler(0f, yaw, 0f) * new Vector3(0f, 0f, 0.12f);
                 flag.rotation = Quaternion.Euler(0f, yaw, 0f);
+                // 플레이테스트 10차: VARCO 해골·검 문장 붉은 깃발 (쇠 장대에 걸린, 높이 2.6) — 위쪽 가장자리가 피벗(flag)이라 그 아래로 매달아요. 없으면 예전 천
+                if (VarcoProp(flag, "WallBanner", new Vector3(0f, -2.5f, 0f), 180f, 1f, RoomPropFolder) != null) continue;
                 Block(flag, "Cloth", PrimitiveType.Cube, new Vector3(0f, -1.15f, 0f), new Vector3(1f, 2.3f, 0.02f), Quaternion.identity, red);
                 Block(flag, "Torn Tail L", PrimitiveType.Cube, new Vector3(-0.3f, -2.42f, 0f), new Vector3(0.36f, 0.3f, 0.02f), Quaternion.Euler(0f, 0f, 14f), red);
                 Block(flag, "Torn Tail R", PrimitiveType.Cube, new Vector3(0.28f, -2.38f, 0f), new Vector3(0.32f, 0.22f, 0.02f), Quaternion.Euler(0f, 0f, -16f), red);

@@ -233,7 +233,10 @@ namespace AThousandDawns.EditorTools
                 sword.SetTexture("_BaseMap", swordTex);
                 sword.SetColor("_BaseColor", Color.white);
                 FantasyLook(sword);
-                sword.SetFloat("_OutlineWidth", 1.2f);
+                // 10차: 칼이 검게 보였어요 — 가는 칼날이 외곽선·가장자리 먹·그림자 먹에 덮였어요 → 외곽선 없이, 먹은 아주 옅게
+                sword.SetFloat("_OutlineWidth", 0f);
+                sword.SetFloat("_RimInk", 0.05f);
+                sword.SetFloat("_ShadowInk", 0.1f);
                 EditorUtility.SetDirty(sword);
             }
             var clothDark = Cloth("ClothDark", ClothDarkColor, 0.1f);

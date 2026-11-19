@@ -224,11 +224,13 @@ namespace AThousandDawns.Art
                     if (w != null && w.IsEnraged) // 광폭 (플레이테스트 3차: 몸이 아니라 손톱에서): 덮칠 때만 두 손에서 붉은 기운이 피어오르고 붉은 손톱 자국 꼬리
                     {
                         // 플레이테스트 7차: 서 있거나 걸을 때도 손(몸 옆)에서 붉은 기운·꼬리가 계속 나와 몸에 박힌 것처럼 보였어요 → 빠르게 덮칠 때만
+                        //   10차: 걸음이 빨라도 켜져서 평소에도 보였어요 → 공격 판정이 나가는 동안(Active)에만
+                        bool striking = w.AttackPhase == EnemyAttackTimeline.Phase.Active;
                         var hands = Hands(w);
                         if (_trails.TryGetValue(w, out var trails))
-                            foreach (var t in trails) if (t != null) t.emitting = fast;
+                            foreach (var t in trails) if (t != null) t.emitting = striking;
                         s.puff -= dt;
-                        if (fast && s.puff <= 0f)
+                        if (striking && s.puff <= 0f)
                         {
                             s.puff = 0.07f;
                             foreach (var h in hands)

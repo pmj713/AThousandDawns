@@ -21,6 +21,12 @@ namespace AThousandDawns.EditorTools
             var jarMat = GetInkMaterial("Ink_Onggi", "#211712", 0.55f); // 짙은 갈색 유약 옹기 (객잔 술독 Ink_Jar보다 짙게)
             var lidMat = GetInkMaterial("Ink_PaperLid", "#E8DFC8", 0f);
             var jars = new[] { GetJarMesh(0), GetJarMesh(1), GetJarMesh(2) };
+            // 플레이테스트 10차: 깨면 은자가 나오는 항아리를 VARCO 항아리로 (모래빛 질그릇에 짙은 띠, 천으로 묶은 뚜껑, 높이 0.8). 없으면 예전 옹기 셋
+            if (BakeVarcoMesh("SilverJar", RoomPropFolder, Matrix4x4.identity, "SilverJar_Mesh") is (Mesh varcoJar, Material varcoJarMat))
+            {
+                jars = new[] { varcoJar };
+                jarMat = varcoJarMat;
+            }
             var runProps = new GameObject("Ink Run Props").AddComponent<AThousandDawns.Art.InkRunProps>();
             runProps.Setup(jars, jarMat, lidMat, GetShardMesh(), crack, GetRockMesh(1), stoneMat);
             DressRunModelsInk(runProps, stoneMat);   // 기물 주머니·금 간 돌벽 3D 모델 (PrototypeSceneBuilder.InkRunModels.cs)
@@ -176,8 +182,10 @@ namespace AThousandDawns.EditorTools
 
             // 플레이테스트 9차: 상자 연석 테두리 대신 VARCO 관문 (금빛 룬을 새긴 회색 돌 둘레, 푸른 수정 몇 조각, 지름 약 3 · 높이 0.4).
             //   가운데 먹 소용돌이는 그대로 돌아요. 모델이 없으면 예전 연석
+            //   플레이테스트 10차: 사용자가 예전 연석 관문으로 되돌려 달래서 꺼 둬요 (UseVarcoGate = true면 다시 VARCO 관문)
+            const bool UseVarcoGate = false;
             float vortexY = 0.04f;
-            if (VarcoProp(visual, "PortalGate", Vector3.zero, 0f, 1f, RoomPropFolder) is Transform ring)
+            if (UseVarcoGate && VarcoProp(visual, "PortalGate", Vector3.zero, 0f, 1f, RoomPropFolder) is Transform ring)
             {
                 var b = ring.GetComponentInChildren<Renderer>().bounds;
                 float k = 3.1f / Mathf.Max(0.01f, Mathf.Max(b.size.x, b.size.z));

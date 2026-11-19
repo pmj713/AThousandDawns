@@ -43,6 +43,20 @@ namespace AThousandDawns.EditorTools
             Transform Root(string name)
             {
                 var t = new GameObject(name).transform;
+                // 플레이테스트 10차: 납작한 보라 원판 대신 차원 소품과 같은 셀 풍 얼룩 그림 (RiftPatch.png). 없으면 예전 원판과 금
+                if (RiftPatchSprite() is Sprite patch)
+                {
+                    var go = new GameObject("Rift Patch");
+                    go.transform.SetParent(t, false);
+                    go.transform.localPosition = new Vector3(0f, 0.015f, 0f);
+                    go.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+                    float k = 3.2f / patch.bounds.size.x;
+                    go.transform.localScale = new Vector3(k, k * 0.85f, 1f);
+                    var sr = go.AddComponent<SpriteRenderer>();
+                    sr.sprite = patch;
+                    sr.sortingOrder = 2;
+                    return t;
+                }
                 Block(t, "Rift Soil", PrimitiveType.Cylinder, new Vector3(0f, 0.012f, 0f), new Vector3(3f, 0.012f, 2.6f), Quaternion.identity, soil);
                 GroundCrack(t, new Vector3(0.6f, 0.012f, -0.5f), 30f, 1.6f, rift);
                 GroundCrack(t, new Vector3(-0.7f, 0.012f, 0.4f), -50f, 1.3f, rift);

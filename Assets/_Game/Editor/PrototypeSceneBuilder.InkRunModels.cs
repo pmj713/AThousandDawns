@@ -15,6 +15,10 @@ namespace AThousandDawns.EditorTools
             var silk = GetInkMaterial("Ink_Pouch_Silk", "#8E2A22", 0.6f);    // 짙은 붉은 비단
             var cord = GetInkMaterial("Ink_Pouch_Cord", "#C9A04A", 0.6f);    // 금빛 끈
             var dark = GetInkMaterial("Ink_Crack_Dark", "#141210", 0f);      // 금 속 먹빛
+            // 플레이테스트 10차: 기물 주머니를 VARCO 붉은 비단 주머니(금빛 끈·옥 장식, 높이 0.7)로. 끈은 모델에 들어 있어 따로 안 달아요. 없으면 예전 주머니
+            if (BakeVarcoMesh("TreasurePouch", RoomPropFolder, Matrix4x4.identity, "TreasurePouch_Mesh") is (Mesh varcoPouch, Material varcoSilk))
+                props.SetupModels(varcoPouch, varcoSilk, null, null, GetCrackStonesMesh(), stoneMat, GetCrackDarkMesh(), dark);
+            else
             props.SetupModels(GetPouchMesh(), silk, GetPouchCordMesh(), cord, GetCrackStonesMesh(), stoneMat, GetCrackDarkMesh(), dark);
             // 쇠닻 거한이 던져 꽂은 닻 (플레이테스트 9차: 손에 든 VARCO 쇠닻과 같은 모델 — 비스듬히 기울여 닻가지가 묻혔어요). 모델이 없으면 예전 상자 닻
             if (PlantedVarcoAnchor() is (Mesh varcoAnchor, Material varcoIron)) props.SetupAnchor(varcoAnchor, varcoIron);
@@ -153,22 +157,27 @@ namespace AThousandDawns.EditorTools
         // 고리에서 사슬이 늘어져 땅을 따라 끌려요
         // VARCO 쇠닻(Art/Env/Rooms/Models/IronAnchor, 높이 1.7)을 꽂힌 모양으로 굳힌 메시: 세우고(X 90°) 비스듬히 기울여(18° · 6°) 밑을 0.3 묻어요
         static (Mesh, Material)? PlantedVarcoAnchor()
+            => BakeVarcoMesh("IronAnchor", RoomPropFolder, Matrix4x4.TRS(Vector3.down * 0.3f, Quaternion.Euler(18f, 0f, 6f), Vector3.one), "PlantedAnchor_Mesh");
+
+        // VARCO 소품 모델을 메시 하나로 굳혀요 (게임이 플레이 중에 만드는 소품 — 꽂힌 닻·항아리·기물 주머니 — 은 InkRunProps가 메시·재질로 입혀서).
+        //   place: 모델(발밑 원점·앞 -Z로 선 상태)에 더할 변환. 메시는 {folder}/{saveName}.asset으로 저장해요. 모델이 없으면 null
+        static (Mesh, Material)? BakeVarcoMesh(string name, string folder, Matrix4x4 place, string saveName)
         {
-            var holder = new GameObject("Anchor Bake").transform;
-            var model = VarcoProp(holder, "IronAnchor", Vector3.zero, 0f, 1f, RoomPropFolder);
+            var holder = new GameObject($"{name} Bake").transform;
+            var model = VarcoProp(holder, name, Vector3.zero, 0f, 1f, folder);
             if (model == null) { Object.DestroyImmediate(holder.gameObject); return null; }
             var mf = model.GetComponentInChildren<MeshFilter>();
             var src = mf.sharedMesh;
             var mat = mf.GetComponent<Renderer>().sharedMaterial;
-            var toWorld = Matrix4x4.TRS(Vector3.down * 0.3f, Quaternion.Euler(18f, 0f, 6f), Vector3.one) * mf.transform.localToWorldMatrix;
-            var mesh = new Mesh { name = "Planted Iron Anchor", indexFormat = src.indexFormat };
+            var toWorld = place * mf.transform.localToWorldMatrix;
+            var mesh = new Mesh { name = saveName, indexFormat = src.indexFormat };
             mesh.vertices = System.Array.ConvertAll(src.vertices, v => toWorld.MultiplyPoint3x4(v));
             mesh.normals = System.Array.ConvertAll(src.normals, n => toWorld.MultiplyVector(n).normalized);
             mesh.uv = src.uv;
             mesh.triangles = src.triangles;
             mesh.RecalculateBounds();
             Object.DestroyImmediate(holder.gameObject);
-            const string path = "Assets/_Game/Art/Env/Rooms/Models/PlantedAnchor_Mesh.asset";
+            string path = $"{folder}/{saveName}.asset";
             AssetDatabase.DeleteAsset(path);
             AssetDatabase.CreateAsset(mesh, path);
             return (mesh, mat);

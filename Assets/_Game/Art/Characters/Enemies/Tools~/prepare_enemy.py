@@ -307,14 +307,14 @@ for w in WEAPONS:
         c = f.head_local.lerp(f.tail_local, 0.55)
         # 팔뚝에 끈으로 묶은 방패: 판이 아래팔 방향을 품고(팔을 늘어뜨리면 판도 서요), 바깥·앞쪽을 향해요
         fa = (B["LeftHand"].head_local - f.head_local).normalized()   # 팔꿈치 → 손목 (FBX 뼈 꼬리는 믿지 않아요)
-        out = Vector((1, -0.6, 0)).normalized(); out = (out - fa * out.dot(fa)).normalized()
+        out = Vector((1, -0.15, 0)).normalized(); out = (out - fa * out.dot(fa)).normalized()   # 10차: 앞(-Y)을 많이 보면 팔을 들 때 팔뚝이 방패를 뚫었어요 → 거의 바깥(+X)
 
         def build(bm, c=c, out=out, fa=fa):
             r, th = 0.32, 0.04
             u = fa; v = out.cross(u).normalized()
             ang = [k * math.pi / 8 for k in range(16)]
-            front = [bm.verts.new(c + out * (0.06 + th) + (u * math.cos(a) + v * math.sin(a)) * r) for a in ang]
-            back = [bm.verts.new(c + out * 0.06 + (u * math.cos(a) + v * math.sin(a)) * r) for a in ang]
+            front = [bm.verts.new(c + out * (0.12 + th) + (u * math.cos(a) + v * math.sin(a)) * r) for a in ang]
+            back = [bm.verts.new(c + out * 0.12 + (u * math.cos(a) + v * math.sin(a)) * r) for a in ang]   # 10차: 0.06이면 팔뚝·손이 방패를 뚫고 나왔어요
             bm.faces.new(front); bm.faces.new(list(reversed(back)))
             for k in range(16):
                 j = (k + 1) % 16
@@ -666,15 +666,16 @@ for spec in PROPS:
     key = os.path.splitext(os.path.basename(path))[0].replace("Prop_", "")
     o = import_prop(os.path.abspath(path))
     if mount == "shield":
-        align_normal(o, Vector((0, -1, 0))); scale_to(o, 0.78)
+        # 플레이테스트 10차: 방패를 아래팔 앞면(-Y)에 대면, 팔을 앞으로 드는 자세(대기·공격)에서 팔뚝이 방패 앞면을 가로질러 꽂혀 보였어요.
+        #   → 방패는 아래팔 바깥쪽(+X, 몸에서 먼 쪽)에 끈으로 묶은 것처럼, 면이 바깥(+X)을 보게 대고 팔에서 5cm 띄워요
+        align_normal(o, Vector((1, 0, 0))); scale_to(o, 0.78)
         f = B["LeftForeArm"]
         mid = f.head_local.lerp(f.tail_local, 0.5)
-        # 아래팔 앞면(몸 앞쪽 -Y)에서 2cm 띄워 방패 뒷면을 대요 (팔뚝에 박히지 않게)
         arm_pts = [body.matrix_world @ v.co for v in body.data.vertices]
-        arm_pts = [p for p in arm_pts if abs(p.x - mid.x) < 0.08 and abs(p.z - mid.z) < 0.08]
-        front = min(p.y for p in arm_pts) if arm_pts else mid.y - 0.05
+        arm_pts = [p for p in arm_pts if abs(p.y - mid.y) < 0.08 and abs(p.z - mid.z) < 0.08 and p.x > mid.x - 0.1]
+        outer = max(p.x for p in arm_pts) if arm_pts else mid.x + 0.05
         lo_, hi_ = bbox(o)
-        c = Vector((mid.x, front - 0.02 - hi_.y, mid.z - 0.02))
+        c = Vector((outer + 0.05 - lo_.x, mid.y, mid.z - 0.02))
         for v in o.data.vertices:
             v.co += c
         bind(o, "LeftForeArm", f"{NAME}_Prop_{key}", key)
@@ -2128,6 +2129,15 @@ if "dragonmoves" in EXTRAS:
         left_guard = lambda: arm("Left", sl + Vector((0.25, -0.3, -0.3)), Vector((1, 0.3, -0.5)))
         # 유성추 휘두르기 (플레이 테스트 3차: 머리 뒤에서 내려치는 모양이라 앞 부채꼴 140° 판정과 안 맞았어요)
         #   → 오른쪽 뒤로 허리째 감았다가, 허리 높이에서 사슬을 수평으로 뻗어 오른쪽 → 정면 → 왼쪽으로 크게 휩쓸어요
+        # 플레이테스트 10차: 그래도 어색했어요 (뒤로 감는 자세가 짧고 사슬이 막대처럼 옆으로 툭 나왔어요)
+        #   → 오른팔을 머리 위로 들어 유성추를 한 바퀴 크게 돌리며 힘을 모았다가(whirl), 몸을 낮추고 왼발을 내디디며 오른쪽 → 정면 → 왼쪽으로 크게 휩쓸어요
+        if stage.startswith("whirl_"):
+            a = {"whirl_a": 0, "whirl_b": 120, "whirl_c": 240}[stage] * math.pi / 180
+            lower_hips(-0.14, FEET, dy=0.04)
+            bend("Spine", UP, -20 + 10 * math.sin(a)); bend("Spine", Vector((1, 0, 0)), -6)
+            hold(Vector((-0.12, -0.05, 0.55)), Vector((math.cos(a), math.sin(a), 0.15)))   # 머리 위에서 유성추가 수평으로 돌아요
+            left_guard()
+            return
         if stage == "swing_load":
             lower_hips(-0.2, FEET, dy=0.06)
             bend("Spine", UP, -50); bend("Spine1", UP, -20)
@@ -2203,7 +2213,7 @@ if "dragonmoves" in EXTRAS:
         bpy.data.actions.remove(old_idle)
     make_action("Idle", [(f, f / 60) for f in range(0, 61, 6)], dragon_idle)
 
-    make_action("MeteorSwing", [(0, "swing_load"), (3, "swing_r"), (5, "swing_c"), (7, "swing_l"), (10, "swing_follow"), (18, "swing_follow"), (28, "idle")], dragon_pose)
+    make_action("MeteorSwing", [(0, "whirl_c"), (2, "swing_load"), (4, "swing_r"), (5, "swing_c"), (7, "swing_l"), (10, "swing_follow"), (18, "swing_follow"), (28, "idle")], dragon_pose)   # 10차: 예고 동안 머리 위로 치켜든 유성추(0프레임에 멈춰요) → 뒤로 감아 휩쓸기 (판정 시작부터 재생, 5프레임째 정면)
     make_action("MeteorSlam", [(0, "slam_up"), (4, "slam_down"), (14, "slam_down"), (26, "idle")], dragon_pose)
     make_action("ChainThrow", [(0, "chain_load"), (3, "chain_throw"), (10, "chain_throw"), (15, "chain_pull"), (22, "chain_pull"), (32, "idle")], dragon_pose)
     make_action("Command", [(0, "idle"), (6, "command"), (18, "command"), (24, "idle")], dragon_pose)
