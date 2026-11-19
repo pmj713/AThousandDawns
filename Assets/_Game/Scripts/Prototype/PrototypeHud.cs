@@ -240,7 +240,7 @@ namespace AThousandDawns.Prototype
                         DrawWard(enemyBar, dmg);
                     }
                     if (e.IsElite || e.Rank == EnemyRank.Assassin) GUI.Label(new Rect(g.x - 90, g.y - 40, 180, 22), e.DisplayName, _statusLabel); // 정예: 이름 앞에 특성
-                    DrawStatus(g.x, g.y, e.Statuses, false);
+                    AThousandDawns.Fx.InkStatusIcons.Enemy(new Rect(g.x - 25, g.y, 50, 6), e.Statuses, 18f); // 상태이상 아이콘 (체력바 오른쪽, 스택 숫자)
                 }
             }
 
@@ -730,6 +730,7 @@ namespace AThousandDawns.Prototype
             var bar = new Rect(area.x, area.yMax + 2f, area.width, 16f);
             DrawBar(bar, e.Damageable.Health / Mathf.Max(1f, e.Damageable.MaxHealth), HealthColor);
             DrawWard(bar, e.Damageable);
+            AThousandDawns.Fx.InkStatusIcons.Enemy(bar, e.Statuses, 22f); // 보스 · 고수 상태이상
             GUI.Label(new Rect(bar.x, bar.y - 1f, bar.width, bar.height + 2f), $"{e.Damageable.Health:0} / {e.Damageable.MaxHealth:0}",
                 AThousandDawns.Fx.InkUi.Text(AThousandDawns.Fx.InkUi.Tiny, AThousandDawns.Fx.InkUi.PaperText, TextAnchor.MiddleCenter, true));
         }

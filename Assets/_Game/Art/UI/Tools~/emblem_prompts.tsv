@@ -17,3 +17,10 @@ KeyIcons/Key	warm grey	a single blank square keyboard keycap seen from slightly 
 KeyIcons/KeyWide	warm grey	a single long blank spacebar keycap seen from slightly above, its top face completely empty with nothing printed on it
 KeyIcons/MouseLeft	vermilion	a computer mouse seen from directly above, its left button filled with a vermilion ink wash, the right button plain
 KeyIcons/MouseRight	vermilion	a computer mouse seen from directly above, its right button filled with a vermilion ink wash, the left button plain
+StatusIcons/Burn	vermilion-orange	a fierce tongue of burning flame licking upward, emblem of a burning status (9068f4ec515a70c66afabd7084be94ee)
+StatusIcons/Freeze	pale icy cyan	a six-pointed snowflake crystal encased in a cracked block of ice, emblem of a frozen status (6b1ebe5eda57e6eb7eda5f058028ab16)
+StatusIcons/Shock	electric yellow and violet	a jagged forked lightning bolt crackling with small sparks, emblem of an electric shock status (a354ded9fc6e5943d19016cea9533f5a)
+StatusIcons/Slow	muted slate-blue	a heavy snail shell spiral dragging a sluggish foot, emblem of a slowed status (f19175de899b394e5c5d1f063d4e780f)
+StatusIcons/Poison	toxic poison-green	a fat dripping drop of venom with a tiny skull-like bubble inside, emblem of a poisoned status (6e134d37982695bfd4a85d2f7832474e)
+StatusIcons/Bound	dull iron-grey and faint violet	heavy interlocked iron chain links wrapped in a loop with a shackle, emblem of a bound status (4f30ad15ff9ac99a2ba0b930c92efaed)
+StatusIcons/Curse	deep curse-purple	a sinister glowing evil eye inside a broken occult rune circle with thorny marks, emblem of a cursed status (249b7159d86ec35e2cf159de9955f2dd)

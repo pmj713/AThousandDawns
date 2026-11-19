@@ -109,6 +109,7 @@ namespace AThousandDawns.Fx
             float x = skillRect.xMax + 14f;
             var barRect = new Rect(x, skillRect.y, BarW, BarH);
             DrawHealth(player, barRect);
+            InkStatusIcons.Player(barRect, player, 28f); // 상태이상 아이콘 (체력 획 오른쪽, 스택 · 남은 초)
             DrawGauge(player, new Rect(x + 4f, barRect.yMax + 2f, GaugeW, GaugeH));
             float row = barRect.yMax + GaugeH + 10f;
             float after = DrawDash(player, new Vector2(x + 6f, row));
