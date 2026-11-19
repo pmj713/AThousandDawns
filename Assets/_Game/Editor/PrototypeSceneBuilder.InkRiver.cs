@@ -357,6 +357,7 @@ namespace AThousandDawns.EditorTools
         // 말린 그물 건조대: 기둥 둘에 가로대, 처진 그물(가는 줄 격자)
         static void NetRack(Transform parent, int seed, Material dark, Material net, Material rope)
         {
+            if (VarcoProp(parent, "NetRack", Vector3.zero, 0f, 1f, RiverPropFolder) != null) return;   // VARCO 그물 건조대 (기둥 둘·가로대에 굵은 그물과 부표, 높이 2.3). 없으면 아래 상자 소품
             const float w = 2.2f, h = 2f;
             for (int s = -1; s <= 1; s += 2)
                 Block(parent, "Rack Post", PrimitiveType.Cylinder, new Vector3(s * w * 0.5f, h * 0.5f, 0f), new Vector3(0.12f, h * 0.5f, 0.12f), Quaternion.Euler(0f, 0f, s * 4f), dark);
