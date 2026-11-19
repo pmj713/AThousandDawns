@@ -336,6 +336,7 @@ namespace AThousandDawns.Art
             }
             _modelRestPos = animator.transform.localPosition;
             if (brain is WerewolfBrain) { _werewolf = true; WerewolfBrain.Enraged += OnEnraged; }
+            if (brain is GoblinShamanBrain && animator.HasState(0, Animator.StringToHash("Heal"))) { _shaman = true; GoblinShamanBrain.Healed += OnShamanHealed; }
             if (brain is GargoyleBrain && animator.HasState(0, Animator.StringToHash("Stone"))) { _gargoyle = true; GargoyleBrain.StoneChanged += OnStoneChanged; }
             if (brain is SkeletonBrain && animator.HasState(0, Animator.StringToHash("Reassemble")))
             {
@@ -802,6 +803,15 @@ namespace AThousandDawns.Art
             PlayHeld("Roar", 1f);
         }
 
+        // 고블린 주술사 아군 회복: 회복이 들어가는 순간 지팡이를 세우고 왼손을 들었다가 아군 쪽으로 펼쳐요 (Heal, 1.6초)
+        bool _shaman;
+
+        void OnShamanHealed(GoblinShamanBrain shaman, EnemyBrain target)
+        {
+            if (shaman != _brain) return;
+            PlayHeld("Heal", 1.6f);
+        }
+
         void OnStoneChanged(GargoyleBrain gargoyle, bool stone)
         {
             if (gargoyle != _brain) return;
@@ -1024,6 +1034,7 @@ namespace AThousandDawns.Art
             if (_body != null) _body.Damaged -= OnDamaged;
             if (_skeleton) SkeletonBrain.Reassembling -= OnReassembling;
             if (_werewolf) WerewolfBrain.Enraged -= OnEnraged;
+            if (_shaman) GoblinShamanBrain.Healed -= OnShamanHealed;
             if (_gargoyle) GargoyleBrain.StoneChanged -= OnStoneChanged;
             if (_demon != null) HeavenlyDemonBrain.Cue -= OnDemonCue;
             if (_bossKit)
