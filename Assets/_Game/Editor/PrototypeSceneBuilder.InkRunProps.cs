@@ -21,6 +21,12 @@ namespace AThousandDawns.EditorTools
             var jarMat = GetInkMaterial("Ink_Onggi", "#211712", 0.55f); // 짙은 갈색 유약 옹기 (객잔 술독 Ink_Jar보다 짙게)
             var lidMat = GetInkMaterial("Ink_PaperLid", "#E8DFC8", 0f);
             var jars = new[] { GetJarMesh(0), GetJarMesh(1), GetJarMesh(2) };
+            // 플레이테스트 10차: 깨면 은자가 나오는 항아리를 VARCO 항아리로 (모래빛 질그릇에 짙은 띠, 천으로 묶은 뚜껑, 높이 0.8). 없으면 예전 옹기 셋
+            if (BakeVarcoMesh("SilverJar", RoomPropFolder, Matrix4x4.identity, "SilverJar_Mesh") is (Mesh varcoJar, Material varcoJarMat))
+            {
+                jars = new[] { varcoJar };
+                jarMat = varcoJarMat;
+            }
             var runProps = new GameObject("Ink Run Props").AddComponent<AThousandDawns.Art.InkRunProps>();
             runProps.Setup(jars, jarMat, lidMat, GetShardMesh(), crack, GetRockMesh(1), stoneMat);
             DressRunModelsInk(runProps, stoneMat);   // 기물 주머니·금 간 돌벽 3D 모델 (PrototypeSceneBuilder.InkRunModels.cs)

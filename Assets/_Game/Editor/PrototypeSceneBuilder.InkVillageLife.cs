@@ -123,6 +123,8 @@ namespace AThousandDawns.EditorTools
             var t = new GameObject("Jar Terrace (장독대)").transform;
             t.SetParent(root, false);
             t.localPosition = at;
+            // 플레이테스트 10차: VARCO 장독대 (낮은 돌 단 위 크고 작은 옹기 다섯, 너비 약 2.3). 없으면 예전 상자 장독대
+            if (VarcoProp(t, "JangdokCluster", Vector3.zero, 0f, 1f, VillagePropFolder) != null) return;
             Block(t, "Platform", PrimitiveType.Cube, new Vector3(0f, 0.12f, 0f), new Vector3(2.3f, 0.24f, 1.5f), Quaternion.identity, stone);
             for (int k = 0; k < 6; k++)   // 단 가장자리 돌
                 Block(t, "Edge Stone", PrimitiveType.Cube, new Vector3(-1.05f + k * 0.42f, 0.07f, -0.8f), new Vector3(0.4f, 0.16f, 0.12f), Quaternion.Euler(0f, k * 11 % 7 - 3f, 0f), stone);
@@ -156,15 +158,20 @@ namespace AThousandDawns.EditorTools
             var t = new GameObject("Chicken Coop (닭장)").transform;
             t.SetParent(root, false);
             t.localPosition = at;
-            // 닭장: 다리 넷 위 나무 상자, 짚 지붕 (맞배), 닭이 오르는 비탈 널
+            // 닭장: 다리 넷 위 나무 상자, 짚 지붕 (맞배), 닭이 오르는 비탈 널 (플레이테스트 10차: VARCO 짚 지붕 닭장이 있으면 그걸로, 울타리·모이통은 그대로)
+            bool varcoCoop = VarcoProp(t, "ChickenCoop", new Vector3(0f, 0f, 1.0f), 0f, 1f, VillagePropFolder) != null;
+            if (!varcoCoop)
             for (int sx = -1; sx <= 1; sx += 2)
                 for (int sz = -1; sz <= 1; sz += 2)
                     Block(t, "Leg", PrimitiveType.Cube, new Vector3(sx * 0.48f, 0.2f, 1.0f + sz * 0.3f), new Vector3(0.08f, 0.4f, 0.08f), Quaternion.identity, wood);
+            if (!varcoCoop)
+            {
             Block(t, "Box", PrimitiveType.Cube, new Vector3(0f, 0.72f, 1.0f), new Vector3(1.1f, 0.65f, 0.75f), Quaternion.identity, wood);
             Block(t, "Door", PrimitiveType.Cube, new Vector3(0.18f, 0.62f, 0.62f), new Vector3(0.26f, 0.3f, 0.02f), Quaternion.identity, dark);
             for (int s = -1; s <= 1; s += 2)
                 Block(t, "Thatch", PrimitiveType.Cube, new Vector3(0f, 1.18f, 1.0f + s * 0.24f), new Vector3(1.35f, 0.08f, 0.62f), Quaternion.Euler(-s * 30f, 0f, 0f), straw);
             Block(t, "Ramp", PrimitiveType.Cube, new Vector3(0.18f, 0.25f, 0.3f), new Vector3(0.2f, 0.03f, 0.75f), Quaternion.Euler(-32f, 0f, 0f), wood);
+            }
             // 낮은 울타리: 앞마당 셋 면을 말뚝과 가로대로 둘러요 (앞쪽 가운데는 틈)
             var fence = new (Vector3 a, Vector3 b)[]
             {
@@ -198,6 +205,8 @@ namespace AThousandDawns.EditorTools
                 ch.SetParent(t, false);
                 ch.localPosition = p;
                 ch.localRotation = Quaternion.Euler(0f, yaw, 0f);
+                // 플레이테스트 10차: VARCO 흰 암탉 (높이 0.45). 없으면 예전 도형 닭
+                if (VarcoProp(ch, "Chicken", Vector3.zero, 180f, 1f, VillagePropFolder) != null) { chickens.Add(ch); continue; }
                 Block(ch, "Body", PrimitiveType.Sphere, new Vector3(0f, 0.2f, 0f), new Vector3(0.2f, 0.18f, 0.28f), Quaternion.Euler(-10f, 0f, 0f), feather);
                 Block(ch, "Tail", PrimitiveType.Cube, new Vector3(0f, 0.3f, -0.14f), new Vector3(0.04f, 0.13f, 0.09f), Quaternion.Euler(-30f, 0f, 0f), feather);
                 Block(ch, "Head", PrimitiveType.Sphere, new Vector3(0f, 0.34f, 0.13f), new Vector3(0.1f, 0.11f, 0.1f), Quaternion.identity, feather);
