@@ -13,6 +13,8 @@ namespace AThousandDawns.EditorTools
     {
         static Material RiverMat(string name, string hex, float sat) => GetInkMaterial(name, hex, sat);
 
+        const string RiverPropFolder = "Assets/_Game/Art/Env/River/Models";
+
         static List<GameObject> DressRiverInk(Material stoneMat, Material woodMat, Material roofX, ref int seed)
         {
             var river = new List<GameObject>();
@@ -62,6 +64,9 @@ namespace AThousandDawns.EditorTools
                 piece.SetParent(group.parent, false);
                 piece.localPosition = group.localPosition;
                 piece.localRotation = Quaternion.Euler(0f, seed * 53f % 360f, 0f);
+                // 플레이테스트 10차 통일: VARCO 짐더미·계류 말뚝·그물 걸이가 있으면 그걸로
+                string varco = seed % 4 == 2 ? "MooringPost" : seed % 4 == 3 && height > 2f ? "NetRack" : "CargoPile";
+                if (VarcoProp(piece, varco, Vector3.zero, 0f, 1f, RiverPropFolder) != null) { seed++; StripColliders(piece); river.Add(piece.gameObject); continue; }
                 switch (seed % 4)
                 {
                     case 0: CrateStack(piece, seed, woodMat, dark); break;
@@ -130,6 +135,7 @@ namespace AThousandDawns.EditorTools
         // 망루: 기둥 넷 위 판자 마루와 난간, 작은 지붕, 사다리, 장대 끝 찢어진 깃발
         static void Watchtower(Transform parent, Vector3 foot, int seed, Material wood, Material dark, Material flag, Material roofX)
         {
+            if (VarcoProp(parent, "Watchtower", foot, seed * 61f % 360f, 1f, RiverPropFolder) != null) return;   // 플레이테스트 10차 통일: VARCO 장강 소품 (없으면 아래 상자 소품)
             var t = new GameObject("Watchtower (망루)").transform;
             t.SetParent(parent, false);
             t.localPosition = foot;
@@ -209,6 +215,7 @@ namespace AThousandDawns.EditorTools
         // 거룻배: 길쭉한 배 몸통. broken이면 한쪽 뱃전이 깨져 기울어 반쯤 가라앉았어요
         static void Boat(Transform parent, Vector3 foot, int seed, Material hullMat, Material plankMat, bool broken)
         {
+            if (VarcoProp(parent, "RiverBoat", foot, seed * 61f % 360f, 1f, RiverPropFolder) != null) return;   // 플레이테스트 10차 통일: VARCO 장강 소품 (없으면 아래 상자 소품)
             var b = new GameObject(broken ? "Wrecked Boat (부서진 배)" : "Boat (거룻배)").transform;
             b.SetParent(parent, false);
             b.localPosition = foot + (broken ? new Vector3(0f, -0.25f, 0f) : Vector3.zero);
@@ -266,6 +273,7 @@ namespace AThousandDawns.EditorTools
         // 물가 말뚝 몇 개 (기울고, 하나엔 밧줄)
         static void Pilings(Transform parent, Vector3 foot, int seed, Material dark, Material rope)
         {
+            if (VarcoProp(parent, "MooringPost", foot, seed * 61f % 360f, 1f, RiverPropFolder) != null) return;   // 플레이테스트 10차 통일: VARCO 장강 소품 (없으면 아래 상자 소품)
             for (int k = 0; k < 3; k++)
             {
                 var p = foot + new Vector3((k - 1) * 0.55f, 0f, (k % 2) * 0.35f);

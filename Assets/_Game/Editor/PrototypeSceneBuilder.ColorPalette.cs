@@ -95,6 +95,7 @@ namespace AThousandDawns.EditorTools
                 EditorUtility.SetDirty(mat);
             }
             UnifyRegionLook(TombStalkLook, triplanar);
+            UnifyRegionLook(RiverStalkLook, triplanar);
         }
 
         // 지역 소품을 대나무 줄기 질감에 맞춰요 (플레이테스트 10차 "게임풍 통일": 기준은 대나무 줄기 — 붓결 있는 그림 질감, 세 단 명암, 가는 외곽선, 군데군데 옅은 얼룩).
@@ -109,6 +110,16 @@ namespace AThousandDawns.EditorTools
             ("Ink_Tomb_HotIron", "Tex_Stone", new Color(1f, 0.45f, 0.12f), 1f),
             ("Ink_Tomb_Iron", "Tex_Stone", new Color(0.36f, 0.37f, 0.42f), 1.2f),
             ("Ink_Tomb_Thorn", "Tex_Wood", new Color(0.32f, 0.2f, 0.16f), 1f),
+        };
+
+        // 장강 수채: 젖은 나무·말뚝·깃발은 나무결, 밧줄·그물은 결 옅게, 젖은 돌은 돌결 (갈대는 가는 잎이라 그대로)
+        static readonly (string name, string tex, Color color, float outline)[] RiverStalkLook =
+        {
+            ("Ink_River_DarkWood", "Tex_Wood", new Color(0.36f, 0.26f, 0.18f), 1.5f),   // 짙은 젖은 나무 (밝으면 주황 기둥이 튀었어요)
+            ("Ink_River_Rope", "Tex_Wood", new Color(0.82f, 0.7f, 0.46f), 1f),
+            ("Ink_River_Flag", "Tex_Wood", new Color(0.72f, 0.2f, 0.15f), 1.2f),
+            ("Ink_River_Net", "Tex_Wood", new Color(0.5f, 0.48f, 0.4f), 0.8f),
+            ("Ink_River_WetStone", "Tex_Stone", new Color(0.46f, 0.52f, 0.54f), 1.5f),
         };
 
         static void UnifyRegionLook((string name, string tex, Color color, float outline)[] list, Shader triplanar)

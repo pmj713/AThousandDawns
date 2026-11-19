@@ -301,6 +301,15 @@ namespace AThousandDawns.EditorTools
         static Texture2D TempleGroundTexture() => StylizedGround($"{StylizedGroundFolder}/Ground_TempleColor.png", 5151, "#B8AA8E", "#8FA05E", "#A3B370", "#968872",
             new[] { ("#4F6B3A", 90, 5f, 8f, 0.9f, 1.3f), ("#7C8A55", 40, 5f, 8f, 0.9f, 1.3f) }, 55, "#8E8A82", "#B9B5AC", null);
 
+        // 장강 방 바닥 (플레이테스트 10차 통일): 채색 땅 그림을 살짝 흐리게 · 대비 0.55 · 채도 60% (물웅덩이가 옅어져 적·비도가 묻히지 않게)
+        static Texture2D RiverCalmFloor()
+        {
+            RiverGroundTexture();
+            const string path = "Assets/_Game/Art/Env/Outside/Ground_RiverCalm.png";
+            ImportAsTiledTexture(path);
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        }
+
         static Texture2D RiverGroundTexture() => StylizedGround($"{StylizedGroundFolder}/Ground_RiverColor.png", 6262, "#BFB08C", "#8E8566", "#9D9575", "#A69A78",
             new[] { ("#9AA25E", 40, 10f, 16f, 1.6f, 2.4f) }, 60, "#8C8C88", "#B8B8B2", new[] { ("#7FA9BF", 9, 16f, 30f), ("#9CC0D0", 6, 8f, 14f) });
 

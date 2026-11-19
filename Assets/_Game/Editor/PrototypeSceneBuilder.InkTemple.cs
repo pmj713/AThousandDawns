@@ -551,7 +551,7 @@ namespace AThousandDawns.EditorTools
 
             var look = new GameObject("Ink Region Look").AddComponent<AThousandDawns.Art.InkRegionLook>();
             look.Setup(floorMat,
-                new Texture[] { BambooGroundTexture(), AssetDatabase.LoadAssetAtPath<Texture2D>(TempleCalmFloor), RiverGroundTexture(), AssetDatabase.LoadAssetAtPath<Texture2D>(TombFloor) },
+                new Texture[] { BambooGroundTexture(), AssetDatabase.LoadAssetAtPath<Texture2D>(TempleCalmFloor), RiverCalmFloor(), AssetDatabase.LoadAssetAtPath<Texture2D>(TombFloor) },
                 new[] { bambooGroup, templeGroup, templeGroup, templeGroup },
                 new[] { new GameObject("죽림 분위기 (없음)"), air, riverAir, tombAir },
                 dressing);
