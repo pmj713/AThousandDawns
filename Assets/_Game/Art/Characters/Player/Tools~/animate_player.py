@@ -107,7 +107,7 @@ def build_sword():
     flat = t.cross(edge).normalized()                                     # 칼 두께 방향
     grip_c = knuckles - hand_dir * 0.02 + palm * 0.03                     # 주먹 안 가운데
     # 플레이테스트 9차: 만검귀종 검과 같은 VARCO 무협 검(Weapons/Source~/WuxiaJian.glb)이 있으면 그걸 쥐어요.
-    #   긴 축 → 칼 축(t), 가는 끝(칼끝)이 엄지 쪽, 얇은 축 → 칼 두께(flat). 길이 1.3 (꼭지 -0.13 ~ 칼끝 1.17)
+    #   긴 축 → 칼 축(t), 가는 끝(칼끝)이 엄지 쪽, 얇은 축 → 칼 두께(flat). 길이 1.9 (꼭지 -0.13 ~ 칼끝 1.77)
     jian = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Weapons", "Source~", "WuxiaJian.glb")
     if os.path.isfile(jian):
         import numpy as np
@@ -136,7 +136,7 @@ def build_sword():
         r = np.linalg.norm((pts - c0) - np.outer(d, np.array(ax_long[:])), axis=1)
         if r[d > hi_ - (hi_ - lo_) * 0.06].max() > r[d < lo_ + (hi_ - lo_) * 0.06].max():   # 굵은 끝(꼭지·술)이 + 쪽이면 뒤집어 칼끝을 +로
             ax_long = -ax_long; d = -d; lo_, hi_ = -hi_, -lo_
-        k = 1.3 / (hi_ - lo_)   # 10차: 첫 타 판정(앞으로 2.4)보다 칼이 짧아 보였어요 → 0.95 → 1.3 (꼭지 -0.13 ~ 칼끝 1.17)
+        k = 1.9 / (hi_ - lo_)   # 10차: 첫 타 판정(앞으로 2.4)까지 칼끝이 닿게 → 0.95 → 1.9 (꼭지 -0.13 ~ 칼끝 1.77, 손이 몸 앞 0.6쯤이라 끝이 2.4 근처)
         side = ax_long.cross(ax_thin).normalized()
         for v, dv in zip(obj.data.vertices, d):
             p = Vector(v.co[:]) - Vector(c0.tolist())
