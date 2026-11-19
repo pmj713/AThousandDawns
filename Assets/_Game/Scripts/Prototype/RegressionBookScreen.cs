@@ -189,7 +189,9 @@ namespace AThousandDawns.Prototype
                 if (bloomed) Blossom(p, size);
                 else if (openable) BudShape(p, size, blocker == null ? Bud : BudPoor);
                 else LockedBud(p, size); // 닫힌 눈: 가지에 붙은 작은 갈색 눈
-                string name = bloomed ? $"<b>{node.Name}</b>" : openable ? $"<b>{node.Name}</b> <color=#8a2a3a>{RegressionBook.Cost(node)}</color>" : $"<color=#8a8278>{node.Name}</color>";
+                int nodeCost = RegressionBook.Cost(node);
+                string costColor = blocker == null ? "#1a171f" : "#8a2a3a"; // 지금 개화할 수 있으면 (막는 이유 없음) 비용을 검은 먹으로 (플레이테스트 10차), 못 하면 옅은 붉은색 그대로
+                string name = bloomed ? $"<b>{node.Name}</b>" : openable ? $"<b>{node.Name}</b> <color={costColor}>{nodeCost}</color>" : $"<color=#8a8278>{node.Name}</color>";
                 var labelRect = new Rect(p.x - 100, p.y + size * 0.5f + 4, 200, 26);
                 if (Art.Tree != null) // 손그림 가지 위에서도 읽히게 이름 뒤에 옅은 한지
                 {

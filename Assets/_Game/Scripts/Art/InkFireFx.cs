@@ -21,6 +21,7 @@ namespace AThousandDawns.Art
 
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
         readonly HashSet<Component> _dressed = new HashSet<Component>();
+        readonly HashSet<GameObject> _roots = new HashSet<GameObject>(); // 새로 생긴 씬 루트 (장판이 생긴 그 프레임에 꾸미려고, 루트마다 한 번만 봐요)
         float _scan, _groveScan, _nokrimScan;
         BurningGrove _grove;
         InkBurningGroveFX _groveCards;
@@ -45,12 +46,26 @@ namespace AThousandDawns.Art
         {
             float dt = Time.deltaTime;
             _scan -= dt;
-            if (_scan <= 0f) { _scan = 0.12f; DressPatches(); }
+            if (_scan <= 0f) { _scan = 0.12f; DressPatches(); } // 루트가 아닌 장판까지 (예비)
             TickGrove(dt);
             InkRoomReset.Tick(_live, dt); // 방 꾸밈이라 방을 옮겨도 지우지 않아요
         }
 
         // ── 화염 · 열화 장판
+
+        // 그리기 직전(LateUpdate)에 새 장판을 꾸며요 — 장판이 생긴 프레임부터 새 그림만 보여요 (플레이테스트 10차: 혈폭자 장판에 단색 원판이 잠깐 보였어요)
+        void LateUpdate() => DressNewPatches();
+
+        // 새 씬 루트만 한 번씩: 장판 컴포넌트가 붙어 있으면 그 프레임에 바로 원판을 숨기고 그을린 불길을 깔아요
+        void DressNewPatches()
+        {
+            InkRootWatch.Prune(_roots);
+            foreach (var root in InkRootWatch.New(_roots))
+            {
+                if (root.TryGetComponent<EnemyFirePatch>(out var e) && _dressed.Add(e)) Patch(e);
+                else if (root.TryGetComponent<FirePatch>(out var f) && _dressed.Add(f)) Patch(f);
+            }
+        }
 
         void DressPatches()
         {
