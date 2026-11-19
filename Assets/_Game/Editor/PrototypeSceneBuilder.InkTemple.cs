@@ -543,7 +543,7 @@ namespace AThousandDawns.EditorTools
             riverAir.SetActive(false);
             riverAir.AddComponent<AThousandDawns.Art.InkRiverAir>();
             // 천마총 (지역 3, 아트2): 금 간 검은 대리석 바닥 · 붉은 안개와 재·불씨
-            const string TombFloor = "Assets/_Game/Art/Env/Tomb/Floor_Tomb.png";
+            const string TombFloor = "Assets/_Game/Art/Env/Tomb/Floor_TombCalm.png";   // 플레이테스트 10차 통일: 용암 금은 남기고 대비 0.6 · 채도 45%로 차분하게 (원본 Floor_Tomb.png)
             ImportAsTiledTexture(TombFloor);
             var tombAir = new GameObject("Tomb Atmosphere (붉은 안개·재·불씨)");
             tombAir.SetActive(false);

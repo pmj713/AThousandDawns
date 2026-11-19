@@ -15,6 +15,8 @@ namespace AThousandDawns.EditorTools
         static List<GameObject> DressTombInk(Material stoneMat, Material roofX, ref int seed)
         {
             var tomb = new List<GameObject>();
+            stoneMat = TombStone();   // 플레이테스트 10차 통일: 천마총 석물은 대나무 줄기처럼 결 있는 검붉은 돌 (ColorPalette.cs)
+            roofX = TombCapStone();
             var marble = GetInkMaterial("Ink_Tomb_Marble", "#1E1C1F", 0.2f);     // 검은 대리석
             var red = GetInkMaterial("Ink_Tomb_Red", "#8E1A16", 0.8f);           // 붉은 휘장·등불
             var blood = GetInkMaterial("Ink_Tomb_Blood", "#4E0B0A", 0.7f);       // 마른 피
@@ -103,6 +105,11 @@ namespace AThousandDawns.EditorTools
 
         // ── 석물
 
+        const string TombPropFolder = "Assets/_Game/Art/Env/Tomb/Models";
+
+        // VARCO 천마총 석물을 묶음(t) 아래 발밑 원점에 세워요 (손그림 결·검붉은 잿빛 돌). 모델이 없으면 false
+        static bool TombVarco(Transform t, string name) => VarcoProp(t, name, Vector3.zero, 0f, 1f, TombPropFolder) != null;
+
         // 붉은 등불 기둥: 각진 돌기둥 위에 붉은 종이 등불(기와 지붕 얹은 상자)
         static void LanternPillar(Transform parent, Vector3 foot, int seed, Material stone, Material red, Material roofX)
         {
@@ -110,6 +117,7 @@ namespace AThousandDawns.EditorTools
             t.SetParent(parent, false);
             t.localPosition = foot;
             t.localRotation = Quaternion.Euler(0f, seed * 37f % 90f, 0f);
+            if (TombVarco(t, "LanternPillar")) return;   // 플레이테스트 10차 통일: VARCO 석물 (없으면 아래 상자 석물)
             float h = 2.6f + seed % 3 * 0.3f;
             Block(t, "Base", PrimitiveType.Cube, new Vector3(0f, 0.15f, 0f), new Vector3(0.7f, 0.3f, 0.7f), Quaternion.identity, stone);
             Block(t, "Shaft", PrimitiveType.Cube, new Vector3(0f, h * 0.5f, 0f), new Vector3(0.36f, h, 0.36f), Quaternion.identity, stone);
@@ -131,6 +139,7 @@ namespace AThousandDawns.EditorTools
             t.SetParent(parent, false);
             t.localPosition = foot;
             t.localRotation = Quaternion.Euler(0f, seed * 71f % 360f, 0f);
+            if (TombVarco(t, "SkullStatue")) return;   // 플레이테스트 10차 통일: VARCO 석물 (없으면 아래 상자 석물)
             Block(t, "Plinth", PrimitiveType.Cube, new Vector3(0f, 0.35f, 0f), new Vector3(1.0f, 0.7f, 1.0f), Quaternion.identity, stone);
             Block(t, "Cranium", PrimitiveType.Sphere, new Vector3(0f, 1.3f, 0.05f), new Vector3(0.95f, 0.9f, 1.0f), Quaternion.identity, bone);
             Block(t, "Jaw", PrimitiveType.Cube, new Vector3(0f, 0.85f, -0.22f), new Vector3(0.55f, 0.28f, 0.45f), Quaternion.Euler(-10f, 0f, 0f), bone);
@@ -148,6 +157,7 @@ namespace AThousandDawns.EditorTools
             t.SetParent(parent, false);
             t.localPosition = foot;
             t.localRotation = Quaternion.Euler(0f, seed * 53f % 360f, 0f);
+            if (TombVarco(t, "SkullStatue")) return;   // 플레이테스트 10차 통일: VARCO 석물 (없으면 아래 상자 석물)
             Block(t, "Column", PrimitiveType.Cylinder, new Vector3(0f, 0.8f, 0f), new Vector3(0.6f, 0.8f, 0.6f), Quaternion.identity, stone);
             Block(t, "Head", PrimitiveType.Cube, new Vector3(0f, 2.0f, 0f), new Vector3(0.8f, 0.75f, 0.7f), Quaternion.Euler(0f, 0f, 0f), stone);
             Block(t, "Brow", PrimitiveType.Cube, new Vector3(0f, 2.18f, -0.33f), new Vector3(0.82f, 0.14f, 0.16f), Quaternion.Euler(-12f, 0f, 0f), stone);
@@ -168,6 +178,7 @@ namespace AThousandDawns.EditorTools
             t.SetParent(parent, false);
             t.localPosition = foot;
             t.localRotation = Quaternion.Euler(0f, seed * 47f % 360f, 0f);
+            if (TombVarco(t, "TombCoffin")) return;   // 플레이테스트 10차 통일: VARCO 석물 (없으면 아래 상자 석물)
             Block(t, "Floor", PrimitiveType.Cube, new Vector3(0f, 0.08f, 0f), new Vector3(0.9f, 0.16f, 2.0f), Quaternion.identity, marble);
             for (int s = -1; s <= 1; s += 2)
             {
@@ -187,6 +198,7 @@ namespace AThousandDawns.EditorTools
             t.SetParent(parent, false);
             t.localPosition = foot;
             t.localRotation = Quaternion.Euler(0f, seed * 29f % 360f, 0f);
+            if (TombVarco(t, "BloodStele")) return;   // 플레이테스트 10차 통일: VARCO 석물 (없으면 아래 상자 석물)
             Block(t, "Turtle Base", PrimitiveType.Cube, new Vector3(0f, 0.2f, 0f), new Vector3(1.3f, 0.4f, 0.8f), Quaternion.identity, stone);
             Block(t, "Slab", PrimitiveType.Cube, new Vector3(0f, 1.4f, 0f), new Vector3(1.0f, 2.0f, 0.22f), Quaternion.Euler(0f, 0f, seed % 2 == 0 ? 3f : -2f), stone);
             for (int k = 0; k < 4; k++)   // 세로 글줄 넷 (길이가 제각각, 아래로 흘러내린 자국)
@@ -208,6 +220,7 @@ namespace AThousandDawns.EditorTools
             var t = new GameObject("Chained Pillar (쇠사슬 기둥)").transform;
             t.SetParent(parent, false);
             t.localPosition = foot;
+            if (TombVarco(t, "ChainedPillar")) return;   // 플레이테스트 10차 통일: VARCO 석물
             Block(t, "Pillar", PrimitiveType.Cylinder, new Vector3(0f, 1.3f, 0f), new Vector3(0.6f, 1.3f, 0.6f), Quaternion.identity, stone);
             var coil = new GameObject("Chain Wrap");
             coil.transform.SetParent(t, false);

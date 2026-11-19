@@ -94,9 +94,57 @@ namespace AThousandDawns.EditorTools
                 mat.SetFloat("_OutlineWidth", 0f);
                 EditorUtility.SetDirty(mat);
             }
+            UnifyRegionLook(TombStalkLook, triplanar);
         }
 
-        static readonly string[] SoilMaterials = { "Ink_Temple_Moss", "Ink_Temple_Earth", "Ink_Tomb_Mound", "Ink_Bamboo_Earth" };
+        // 지역 소품을 대나무 줄기 질감에 맞춰요 (플레이테스트 10차 "게임풍 통일": 기준은 대나무 줄기 — 붓결 있는 그림 질감, 세 단 명암, 가는 외곽선, 군데군데 옅은 얼룩).
+        //   캐릭터 셰이더의 납작한 단색 재질을 구조물 셰이더(InkTriplanar)로 바꾸고 결 그림(돌·나무)을 입혀요. (재질 이름, 결 그림, 색, 외곽선)
+        //   천마총: 검붉은 돌·대리석은 돌결, 휘장은 나무결(천 결 대신), 피는 결 없이 짙은 붉은빛, 뼈는 밝은 돌결
+        static readonly (string name, string tex, Color color, float outline)[] TombStalkLook =
+        {
+            ("Ink_Tomb_Marble", "Tex_Stone", new Color(0.36f, 0.27f, 0.3f), 1.5f),
+            ("Ink_Tomb_Red", "Tex_Wood", new Color(0.72f, 0.16f, 0.14f), 1.2f),
+            ("Ink_Tomb_Blood", "Tex_Stone", new Color(0.42f, 0.08f, 0.08f), 0f),
+            ("Ink_Tomb_Bone", "Tex_Stone", new Color(0.9f, 0.86f, 0.74f), 1.2f),
+            ("Ink_Tomb_HotIron", "Tex_Stone", new Color(1f, 0.45f, 0.12f), 1f),
+            ("Ink_Tomb_Iron", "Tex_Stone", new Color(0.36f, 0.37f, 0.42f), 1.2f),
+            ("Ink_Tomb_Thorn", "Tex_Wood", new Color(0.32f, 0.2f, 0.16f), 1f),
+        };
+
+        static void UnifyRegionLook((string name, string tex, Color color, float outline)[] list, Shader triplanar)
+        {
+            if (triplanar == null) return;
+            foreach (var (name, tex, color, outline) in list)
+            {
+                var mat = AssetDatabase.LoadAssetAtPath<Material>($"{InkMaterialFolder}/{name}.mat");
+                if (mat == null) continue;
+                mat.shader = triplanar;
+                mat.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{Env2DArtFolder}/{tex}.png"));
+                mat.SetFloat("_TileSize", 1.2f);
+                StalkStyle(mat, 0.3f, outline);
+                mat.SetColor("_BaseColor", color);
+                EditorUtility.SetDirty(mat);
+            }
+        }
+
+        // 천마총 돌 (석상·비석·등불 기둥·사슬 기둥·피 웅덩이 테두리): 검붉은 잿빛 돌결 · 지붕돌은 더 짙게 (대나무 줄기처럼 결·얼룩·가는 외곽선)
+        static Material TombStone()
+        {
+            var m = StalkStyle(GetInkTriplanar("Ink3D_TombStone", "Tex_Stone", 1.2f, 1.5f), 0.3f, 1.5f);
+            m.SetColor("_BaseColor", new Color(0.5f, 0.42f, 0.42f, 1f));
+            EditorUtility.SetDirty(m);
+            return m;
+        }
+
+        static Material TombCapStone()
+        {
+            var m = StalkStyle(GetInkTriplanar("Ink3D_TombCap", "Tex_Stone", 0.8f, 1.5f), 0.3f, 1.5f);
+            m.SetColor("_BaseColor", new Color(0.3f, 0.22f, 0.24f, 1f));
+            EditorUtility.SetDirty(m);
+            return m;
+        }
+
+        static readonly string[] SoilMaterials ={ "Ink_Temple_Moss", "Ink_Temple_Earth", "Ink_Tomb_Mound", "Ink_Bamboo_Earth" };
 
         // 단청: 절 건물 기둥은 붉은 칠(주칠), 기둥머리에 청록 띠. 돌·마을 나무와 따로 써요
         static Material s_templeLacquer, s_dancheongBand;
