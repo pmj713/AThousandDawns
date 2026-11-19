@@ -53,7 +53,7 @@ namespace AThousandDawns.Enemies
             float keep = canAttack ? AttackRange * 0.8f : AttackRange;
             if (d > keep) Move(dir * MoveSpeed, dt);
             else if (!canAttack) Move(Strafe(dir) * (MoveSpeed * 0.3f), dt);
-            else if (!HasClearLine(d, _width * 0.4f, ProbeHeight) && (Move(Reposition(dir) * (MoveSpeed * 0.6f), dt) & CollisionFlags.Sides) != 0) FlipReposition(); // 엄폐물 너머로는 안 찍고 트인 자리로
+            else if (!HasClearLine(d, _width * 0.4f, ProbeHeight) && (Move(Reposition(dir) * MoveSpeed, dt) & CollisionFlags.Sides) != 0) FlipReposition(); // 엄폐물 너머로는 안 찍고 트인 자리로 (제 빠르기로: 느리면 큰 담을 도는 데 한참 걸려요)
         }
 
         protected override List<Vector2> TelegraphShape()

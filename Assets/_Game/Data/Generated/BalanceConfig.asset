@@ -410,13 +410,13 @@ MonoBehaviour:
     unit: cell/s
     note: "\uC878\uAC1C \uC774\uB3D9"
   - key: grunt.attack_range
-    value: 1.2
+    value: 2.2
     unit: cell
-    note: "\uC878\uAC1C \uBCA0\uAE30 \uBC18\uACBD"
+    note: "\uC878\uAC1C \uB0B4\uB824\uCC0D\uAE30: \uC55E\uC73C\uB85C \uBED7\uB294 \uC9C1\uC120 \uAE38\uC774 (\uB0B4\uB514\uB518 \uAC78\uC74C \uD3EC\uD568)"
   - key: grunt.lunge
-    value: 1.5
+    value: 0.5
     unit: cell
-    note: "\uC878\uAC1C \uC804\uC9C4 \uAC70\uB9AC"
+    note: "\uC878\uAC1C \uB0B4\uB824\uCC0D\uAE30: \uB0B4\uB9AC\uCE58\uBA70 \uB0B4\uB514\uB514\uB294 \uAC78\uC74C"
   - key: grunt.windup
     value: 0.6
     unit: s
@@ -429,14 +429,14 @@ MonoBehaviour:
     value: 1.8
     unit: s
     note: "\uC878\uAC1C \uACF5\uACA9 \uAC04\uACA9"
-  - key: grunt.attack_angle
-    value: 60
-    unit: deg
-    note: "\uC878\uAC1C \uBCA0\uAE30 \uBD80\uCC44\uAF34 \uAC01\uB3C4 (\uBAAC\uC2A4\uD130 K74 \uC124\uBA85)"
   - key: grunt.lunge_time
     value: 0.15
     unit: s
     note: "\uC878\uAC1C \uC804\uC9C4 \uBCA0\uAE30\uC5D0 \uAC78\uB9AC\uB294 \uC2DC\uAC04 (\uC784\uC2DC)"
+  - key: grunt.attack_width
+    value: 0.9
+    unit: cell
+    note: "\uC878\uAC1C \uB0B4\uB824\uCC0D\uAE30: \uC9C1\uC120 \uD3ED (\uC881\uC544\uC11C \uC606\uC740 \uBE44\uC5B4\uC694)"
   - key: boar.hp
     value: 80
     unit: 
@@ -617,18 +617,10 @@ MonoBehaviour:
     value: 1.5
     unit: s
     note: "\uB4E4\uAC1C \uACF5\uACA9 \uAC04\uACA9"
-  - key: hound.hop_distance
-    value: 1.5
-    unit: cell
-    note: "\uBB3C\uACE0 \uC606\uC73C\uB85C \uBE60\uC9C0\uB294 \uAC70\uB9AC (\uBAAC\uC2A4\uD130 K75 \uC124\uBA85)"
   - key: hound.leap_time
     value: 0.2
     unit: s
     note: "\uB6F0\uC5B4\uB4DC\uB294 \uB370 \uAC78\uB9AC\uB294 \uC2DC\uAC04 (\uC784\uC2DC)"
-  - key: hound.hop_time
-    value: 0.2
-    unit: s
-    note: "\uC606\uC73C\uB85C \uBE60\uC9C0\uB294 \uB370 \uAC78\uB9AC\uB294 \uC2DC\uAC04 (\uC784\uC2DC)"
   - key: hound.bite_reach
     value: 0.3
     unit: cell
@@ -4385,6 +4377,18 @@ MonoBehaviour:
     value: 0.4
     unit: 
     note: "\uAC08\uB77C\uC9C4 \uC791\uC740 \uC2AC\uB77C\uC784 \uCCB4\uB825 \uBE44\uC728"
+  - key: slime.puddle_radius
+    value: 1
+    unit: cell
+    note: "\uC2AC\uB77C\uC784 \uB36E\uCE5C \uC790\uB9AC \uC810\uC561 \uBC18\uACBD"
+  - key: slime.puddle_life
+    value: 3
+    unit: s
+    note: "\uC2AC\uB77C\uC784 \uC810\uC561 \uC9C0\uC18D"
+  - key: slime.puddle_slow
+    value: 0.35
+    unit: 
+    note: "\uC2AC\uB77C\uC784 \uC810\uC561 \uC548 \uC774\uB3D9 \uB454\uD654 (\uD53C\uD574 \uC5C6\uC74C)"
   - key: goblin.hp
     value: 22
     unit: 
@@ -4404,11 +4408,11 @@ MonoBehaviour:
   - key: goblin.attack_range
     value: 1
     unit: cell
-    note: "\uACE0\uBE14\uB9B0 \uBABD\uB465\uC774 \uBC18\uACBD"
+    note: "\uACE0\uBE14\uB9B0 \uB6F0\uC5B4 \uB0B4\uB824\uCE58\uAE30: \uB0B4\uB824\uC549\uC740 \uC790\uB9AC \uB458\uB808 \uC6D0 \uBC18\uACBD"
   - key: goblin.lunge
-    value: 1.2
+    value: 1.5
     unit: cell
-    note: "\uACE0\uBE14\uB9B0 \uC804\uC9C4 \uD718\uB450\uB974\uAE30 \uAC70\uB9AC"
+    note: "\uACE0\uBE14\uB9B0 \uB6F0\uC5B4 \uB0B4\uB824\uCE58\uAE30: \uC55E\uC73C\uB85C \uB6F0\uB294 \uCD5C\uB300 \uAC70\uB9AC (\uC0C1\uB300 \uBAB8 \uBC14\uB85C \uC55E\uAE4C\uC9C0 \xB7 \uBCBD\uC5D0 \uB9C9\uD600\uC694)"
   - key: goblin.windup
     value: 0.5
     unit: s
@@ -4421,14 +4425,10 @@ MonoBehaviour:
     value: 1.6
     unit: s
     note: "\uACE0\uBE14\uB9B0 \uACF5\uACA9 \uAC04\uACA9"
-  - key: goblin.attack_angle
-    value: 70
-    unit: deg
-    note: "\uACE0\uBE14\uB9B0 \uD718\uB450\uB974\uAE30 \uAC01\uB3C4"
   - key: goblin.lunge_time
-    value: 0.15
+    value: 0.25
     unit: s
-    note: "\uACE0\uBE14\uB9B0 \uC804\uC9C4 \uC2DC\uAC04"
+    note: "\uACE0\uBE14\uB9B0 \uB6F0\uC5B4 \uB0B4\uB824\uCE58\uAE30: \uB6F0\uC5B4\uC62C\uB77C \uB0B4\uB824\uC549\uAE30\uAE4C\uC9C0 (\uB0B4\uB824\uC549\uC740 \uB4A4 0.12\uCD08 \uD310\uC815)"
   - key: goblinarcher.hp
     value: 18
     unit: 
@@ -4448,11 +4448,11 @@ MonoBehaviour:
   - key: goblinarcher.attack_range
     value: 9
     unit: cell
-    note: "\uACE0\uBE14\uB9B0 \uAD81\uC218 \uC0AC\uAC70\uB9AC"
+    note: "\uACE0\uBE14\uB9B0 \uAD81\uC218 \uACE1\uC0AC \uC0AC\uAC70\uB9AC (\uB5A8\uC5B4\uC9C8 \uC790\uB9AC\uAE4C\uC9C0)"
   - key: goblinarcher.windup
-    value: 0.6
+    value: 0.5
     unit: s
-    note: "\uACE0\uBE14\uB9B0 \uAD81\uC218 \uC608\uACE0"
+    note: "\uACE0\uBE14\uB9B0 \uAD81\uC218 \uACE1\uC0AC \uC870\uC900 \uC608\uACE0 (\uC55E \uC808\uBC18\uC740 \uC6D0\uC774 \uB530\uB77C\uC640\uC694)"
   - key: goblinarcher.recovery
     value: 0.4
     unit: s
@@ -4481,14 +4481,30 @@ MonoBehaviour:
     value: 0.2
     unit: s
     note: "\uACE0\uBE14\uB9B0 \uAD81\uC218 \uC3D8\uB294 \uC21C\uAC04 \uBA48\uCDA4"
-  - key: goblinarcher.arrow_speed
-    value: 11
-    unit: cell/s
-    note: "\uACE0\uBE14\uB9B0 \uD654\uC0B4 \uC18D\uB3C4"
-  - key: goblinarcher.arrow_radius
-    value: 0.2
+  - key: goblinarcher.lob_radius
+    value: 1
     unit: cell
-    note: "\uACE0\uBE14\uB9B0 \uD654\uC0B4 \uD310\uC815"
+    note: "\uACE0\uBE14\uB9B0 \uAD81\uC218 \uACE1\uC0AC \uB5A8\uC5B4\uC9C0\uB294 \uC6D0 \uBC18\uACBD"
+  - key: goblinarcher.lob_flight
+    value: 1
+    unit: s
+    note: "\uACE0\uBE14\uB9B0 \uAD81\uC218 \uACE1\uC0AC \uD654\uC0B4\uC774 \uB0A0\uC544\uAC00\uB294 \uC2DC\uAC04 (\uC6D0 \uC608\uACE0\uAC00 \uCC28\uC624\uB974\uB294 \uC2DC\uAC04)"
+  - key: goblinarcher.lob_ratio
+    value: 0.9
+    unit: 
+    note: "\uACE0\uBE14\uB9B0 \uAD81\uC218 \uACE1\uC0AC \uD53C\uD574 (\uACF5\uACA9 \uBC30\uC728)"
+  - key: goblinarcher.lob_lead
+    value: 0.3
+    unit: s
+    note: "\uACE0\uBE14\uB9B0 \uAD81\uC218 \uACE1\uC0AC \uC55E\uC9C8\uB7EC \uC3D8\uAE30 (\uD50C\uB808\uC774\uC5B4 \uC774\uB3D9 \xD7 \uC774 \uC2DC\uAC04)"
+  - key: goblinarcher.lob_lead_max
+    value: 1.5
+    unit: cell
+    note: "\uACE0\uBE14\uB9B0 \uAD81\uC218 \uACE1\uC0AC \uC55E\uC9C8\uB7EC \uC3D8\uAE30 \uCD5C\uB300 \uAC70\uB9AC"
+  - key: goblinarcher.lob_apex
+    value: 2.5
+    unit: cell
+    note: "\uACE0\uBE14\uB9B0 \uAD81\uC218 \uACE1\uC0AC \uD654\uC0B4 \uCD5C\uACE0 \uB192\uC774 (\uD65C \uB192\uC774 \uC704\uB85C)"
   - key: goblinrogue.hp
     value: 18
     unit: 
@@ -4502,49 +4518,57 @@ MonoBehaviour:
     unit: 
     note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uAC15\uC778\uD568"
   - key: goblinrogue.move_speed
-    value: 5.5
+    value: 4.5
     unit: cell/s
-    note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uC774\uB3D9"
+    note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uC774\uB3D9 (\uAC70\uB9AC \uB450\uAE30 \xB7 \uBB3C\uB7EC\uB098\uAE30)"
   - key: goblinrogue.attack_range
-    value: 1.8
+    value: 9
     unit: cell
-    note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uD30C\uACE0\uB4E4\uAE30 \uC2DC\uC791 \uAC70\uB9AC"
-  - key: goblinrogue.lunge
-    value: 1.8
-    unit: cell
-    note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uD30C\uACE0\uB4E4\uAE30 \uAC70\uB9AC"
+    note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uB2E8\uAC80 \uB358\uC9C0\uAE30 \uC0AC\uAC70\uB9AC (\uB2E8\uAC80\uC774 \uB0A0\uC544\uAC00\uB294 \uAC70\uB9AC)"
   - key: goblinrogue.windup
-    value: 0.3
-    unit: s
-    note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uC608\uACE0"
-  - key: goblinrogue.recovery
     value: 0.5
+    unit: s
+    note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uB2E8\uAC80 \uB358\uC9C0\uAE30 \uC608\uACE0"
+  - key: goblinrogue.recovery
+    value: 0.4
     unit: s
     note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uBE48\uD2C8"
   - key: goblinrogue.attack_interval
-    value: 1.4
+    value: 2
     unit: s
     note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uACF5\uACA9 \uAC04\uACA9"
-  - key: goblinrogue.leap_time
-    value: 0.15
-    unit: s
-    note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uD30C\uACE0\uB4E4\uAE30 \uC2DC\uAC04"
-  - key: goblinrogue.bite_reach
-    value: 0.3
+  - key: goblinrogue.keep_min
+    value: 4
     unit: cell
-    note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uCC0C\uB974\uAE30 \uD310\uC815"
-  - key: goblinrogue.hop_distance
-    value: 1.8
+    note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uC720\uC9C0 \uAC70\uB9AC \uCD5C\uC18C (\uB354 \uAC00\uAE4C\uC6B0\uBA74 \uBB3C\uB7EC\uB098\uC694)"
+  - key: goblinrogue.keep_max
+    value: 6
     unit: cell
-    note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uBE60\uC9C0\uAE30 \uAC70\uB9AC"
-  - key: goblinrogue.hop_time
+    note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uC720\uC9C0 \uAC70\uB9AC \uCD5C\uB300"
+  - key: goblinrogue.retreat_distance
+    value: 2
+    unit: cell
+    note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uBB3C\uB7EC\uB098\uAE30"
+  - key: goblinrogue.strafe_speed
+    value: 2.5
+    unit: cell/s
+    note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uC606\uAC78\uC74C"
+  - key: goblinrogue.shot_pause
     value: 0.2
     unit: s
-    note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uBE60\uC9C0\uAE30 \uC2DC\uAC04"
-  - key: goblinrogue.flank_angle
-    value: 120
-    unit: deg
-    note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uB3CC\uC544 \uB4E4\uC5B4\uAC00\uB294 \uAC01\uB3C4"
+    note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uB358\uC9C0\uB294 \uC21C\uAC04 \uBA48\uCDA4"
+  - key: goblinrogue.dagger_speed
+    value: 13
+    unit: cell/s
+    note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uB2E8\uAC80 \uC18D\uB3C4"
+  - key: goblinrogue.dagger_radius
+    value: 0.2
+    unit: cell
+    note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uB2E8\uAC80 \uD310\uC815 (\uC608\uACE0 \uD3ED\uC758 \uC808\uBC18)"
+  - key: goblinrogue.dagger_ratio
+    value: 0.8
+    unit: 
+    note: "\uACE0\uBE14\uB9B0 \uB2E8\uAC80\uAFBC \uB2E8\uAC80 \uD53C\uD574 (\uACF5\uACA9 \uBC30\uC728)"
   - key: goblinshaman.hp
     value: 30
     unit: 
@@ -4581,18 +4605,6 @@ MonoBehaviour:
     value: 0
     unit: 
     note: "\uACE0\uBE14\uB9B0 \uC8FC\uC220\uC0AC\uB294 \uBD80\uB974\uC9C0 \uC54A\uC544\uC694"
-  - key: goblinshaman.command_radius
-    value: 7
-    unit: cell
-    note: "\uACE0\uBE14\uB9B0 \uC8FC\uC220\uC0AC \uAD11\uD3ED\uD654 \uBC94\uC704"
-  - key: goblinshaman.command_haste
-    value: 0.25
-    unit: 
-    note: "\uACE0\uBE14\uB9B0 \uC8FC\uC220\uC0AC \uAD11\uD3ED\uD654: \uC774\uB3D9 \xB7 \uACF5\uACA9 \uBE68\uB77C\uC9D0"
-  - key: goblinshaman.command_time
-    value: 4
-    unit: s
-    note: "\uACE0\uBE14\uB9B0 \uC8FC\uC220\uC0AC \uAD11\uD3ED\uD654 \uC2DC\uAC04"
   - key: goblinshaman.curse_radius
     value: 1.5
     unit: cell
@@ -4604,19 +4616,23 @@ MonoBehaviour:
   - key: goblinshaman.curse_ratio
     value: 0.5
     unit: 
-    note: "\uACE0\uBE14\uB9B0 \uC8FC\uC220\uC0AC \uC800\uC8FC \uC7A5\uD310 \uD53C\uD574 (\uACF5\uACA9 \uB300\uBE44)"
-  - key: goblinshaman.curse_slow
-    value: 0.3
-    unit: 
-    note: "\uACE0\uBE14\uB9B0 \uC8FC\uC220\uC0AC \uC800\uC8FC \uC7A5\uD310 \uB454\uD654"
-  - key: goblinshaman.curse_slow_time
-    value: 1.5
-    unit: s
-    note: "\uACE0\uBE14\uB9B0 \uC8FC\uC220\uC0AC \uC800\uC8FC \uC7A5\uD310 \uB454\uD654 \uC2DC\uAC04"
+    note: "\uACE0\uBE14\uB9B0 \uC8FC\uC220\uC0AC \uC800\uC8FC \uC7A5\uD310 \uD53C\uD574 (\uACF5\uACA9 \uB300\uBE44 \xB7 0.5\uCD08\uB9C8\uB2E4)"
   - key: goblinshaman.curse_delay
     value: 0.9
     unit: s
     note: "\uACE0\uBE14\uB9B0 \uC8FC\uC220\uC0AC \uC800\uC8FC \uC7A5\uD310 \uC608\uACE0 \uC2DC\uAC04"
+  - key: goblinshaman.heal_radius
+    value: 7
+    unit: cell
+    note: "\uACE0\uBE14\uB9B0 \uC8FC\uC220\uC0AC \uCE58\uC720 \uBC94\uC704 (\uB2E4\uCE5C \uB3D9\uB8CC\uB9CC \xB7 \uC790\uC2E0\uC740 \uBE7C\uC694)"
+  - key: goblinshaman.heal_ratio
+    value: 0.15
+    unit: 
+    note: "\uACE0\uBE14\uB9B0 \uC8FC\uC220\uC0AC \uCE58\uC720\uB7C9 (\uB3D9\uB8CC \uCD5C\uB300 \uCCB4\uB825 \uB300\uBE44)"
+  - key: goblinshaman.curse_linger
+    value: 0.5
+    unit: s
+    note: "\uACE0\uBE14\uB9B0 \uC8FC\uC220\uC0AC \uC800\uC8FC \uC7A5\uD310: \uB098\uC628 \uB4A4\uC5D0\uB3C4 \uB0A8\uB294 \uC800\uC8FC (\uBAA8\uB4E0 \uD53C\uD574 \u2212elite.curse_attack)"
   - key: room_cost.slime
     value: 2
     unit: 
@@ -4696,27 +4712,15 @@ MonoBehaviour:
   - key: elite.fireball_interval
     value: 5
     unit: s
-    note: "\uCC28\uC6D0 \uAC10\uC5FC \uD654\uC5FC\uAD6C: \uB358\uC9C0\uB294 \uAC04\uACA9"
+    note: "\uCC28\uC6D0 \uAC10\uC5FC \uD654\uC5FC\uAD6C: \uBD88\uD654\uC0B4 \uC3D8\uB294 \uAC04\uACA9"
   - key: elite.fireball_range
     value: 10
     unit: cell
-    note: "\uCC28\uC6D0 \uAC10\uC5FC \uD654\uC5FC\uAD6C: \uB358\uC9C0\uB294 \uAC70\uB9AC"
-  - key: elite.fireball_radius
-    value: 1.3
-    unit: cell
-    note: "\uCC28\uC6D0 \uAC10\uC5FC \uD654\uC5FC\uAD6C: \uD3ED\uBC1C \uBC18\uACBD"
-  - key: elite.fireball_fuse
-    value: 1
-    unit: s
-    note: "\uCC28\uC6D0 \uAC10\uC5FC \uD654\uC5FC\uAD6C: \uC608\uACE0 (\uB5A8\uC5B4\uC9C0\uAE30\uAE4C\uC9C0)"
+    note: "\uCC28\uC6D0 \uAC10\uC5FC \uD654\uC5FC\uAD6C: \uBD88\uD654\uC0B4 \uC0AC\uAC70\uB9AC (\uC774 \uAC70\uB9AC \uC548\uC774\uBA74 \uC3F4\uC694)"
   - key: elite.fireball_ratio
     value: 0.8
     unit: 
-    note: "\uCC28\uC6D0 \uAC10\uC5FC \uD654\uC5FC\uAD6C: \uD53C\uD574 (\uACF5\uACA9\uB825 \uB300\uBE44)"
-  - key: elite.fireball_fire_life
-    value: 2.5
-    unit: s
-    note: "\uCC28\uC6D0 \uAC10\uC5FC \uD654\uC5FC\uAD6C: \uB0A8\uB294 \uBD88\uAE38 \uC2DC\uAC04"
+    note: "\uCC28\uC6D0 \uAC10\uC5FC \uD654\uC5FC\uAD6C: \uBD88\uD654\uC0B4 \uD53C\uD574 (\uACF5\uACA9\uB825 \uB300\uBE44 \xB7 \uB9DE\uC73C\uBA74 \uD654\uC0C1 1\uC911\uCCA9)"
   - key: elite.blink_interval
     value: 6
     unit: s
@@ -4790,37 +4794,41 @@ MonoBehaviour:
     unit: cell/s
     note: "\uC624\uD06C \uC774\uB3D9"
   - key: orc.attack_range
-    value: 8
+    value: 5
     unit: cell
-    note: "\uC624\uD06C \uB3CC\uC9C4 \uC2DC\uC791 \uAC70\uB9AC"
-  - key: orc.charge_distance
-    value: 8
-    unit: cell
-    note: "\uC624\uD06C \uB3CC\uC9C4 \uAC70\uB9AC"
+    note: "\uC624\uD06C \uB545 \uB0B4\uB824\uCC0D\uAE30 \uC2DC\uC791 \uAC70\uB9AC"
   - key: orc.windup
     value: 0.8
     unit: s
-    note: "\uC624\uD06C \uB3CC\uC9C4 \uC608\uACE0"
+    note: "\uC624\uD06C \uB545 \uB0B4\uB824\uCC0D\uAE30 \uC608\uACE0 (\uC77C\uC9C1\uC120 \uC9C1\uC0AC\uAC01\uD615)"
   - key: orc.recovery
     value: 1
     unit: s
-    note: "\uC624\uD06C \uBE48\uD2C8"
+    note: "\uC624\uD06C \uBE48\uD2C8 (\uB0B4\uB824\uCC0D\uC740 \uB4A4)"
   - key: orc.attack_interval
     value: 4
     unit: s
     note: "\uC624\uD06C \uACF5\uACA9 \uAC04\uACA9"
-  - key: orc.charge_speed
-    value: 13
-    unit: cell/s
-    note: "\uC624\uD06C \uB3CC\uC9C4 \uC18D\uB3C4"
-  - key: orc.wall_stun
-    value: 1.5
-    unit: s
-    note: "\uC624\uD06C \uBCBD\uC5D0 \uBD80\uB52A\uD600 \uBA4D\uD55C \uC2DC\uAC04"
-  - key: orc.charge_width
-    value: 1.4
+  - key: orc.slam_length
+    value: 6
     unit: cell
-    note: "\uC624\uD06C \uB3CC\uC9C4 \uD3ED"
+    note: "\uC624\uD06C \uCDA9\uACA9\uD30C \uAE38\uC774 (\uBC1C\uBC11\uBD80\uD130 \xB7 \uBCBD\uC5D0\uC11C \uBA48\uCDA4)"
+  - key: orc.slam_width
+    value: 1
+    unit: cell
+    note: "\uC624\uD06C \uCDA9\uACA9\uD30C \uD3ED"
+  - key: orc.slam_speed
+    value: 12
+    unit: cell/s
+    note: "\uC624\uD06C \uCDA9\uACA9\uD30C\uAC00 \uB545\uC744 \uD0C0\uACE0 \uB098\uAC00\uB294 \uC18D\uB3C4"
+  - key: orc.slam_ratio
+    value: 1
+    unit: 
+    note: "\uC624\uD06C \uCDA9\uACA9\uD30C \uD53C\uD574 (\uACF5\uACA9 \uB300\uBE44 \xB7 \uB05D\uC774 \uC9C0\uB098\uAC08 \uB54C \uD55C \uBC88)"
+  - key: orc.slam_knockback
+    value: 0.5
+    unit: cell
+    note: "\uC624\uD06C \uCDA9\uACA9\uD30C \uB109\uBC31"
   - key: skeleton.hp
     value: 28
     unit: 
@@ -4838,13 +4846,13 @@ MonoBehaviour:
     unit: cell/s
     note: "\uC2A4\uCF08\uB808\uD1A4 \uC774\uB3D9"
   - key: skeleton.attack_range
-    value: 1.2
+    value: 1.6
     unit: cell
-    note: "\uC2A4\uCF08\uB808\uD1A4 \uBCA0\uAE30 \uBC18\uACBD"
+    note: "\uC2A4\uCF08\uB808\uD1A4 \uBC29\uD328 \uBC00\uCE58\uAE30: \uC55E\uC73C\uB85C \uBED7\uB294 \uC9C1\uC120 \uAE38\uC774 (\uB0B4\uB51B\uB294 \uAC78\uC74C \uD3EC\uD568)"
   - key: skeleton.lunge
-    value: 1.4
+    value: 0.4
     unit: cell
-    note: "\uC2A4\uCF08\uB808\uD1A4 \uC804\uC9C4 \uBCA0\uAE30 \uAC70\uB9AC"
+    note: "\uC2A4\uCF08\uB808\uD1A4 \uBC29\uD328 \uBC00\uCE58\uAE30: \uBC00\uCE58\uBA70 \uB0B4\uB51B\uB294 \uAC78\uC74C"
   - key: skeleton.windup
     value: 0.6
     unit: s
@@ -4857,10 +4865,6 @@ MonoBehaviour:
     value: 1.8
     unit: s
     note: "\uC2A4\uCF08\uB808\uD1A4 \uACF5\uACA9 \uAC04\uACA9"
-  - key: skeleton.attack_angle
-    value: 60
-    unit: deg
-    note: "\uC2A4\uCF08\uB808\uD1A4 \uBCA0\uAE30 \uAC01\uB3C4"
   - key: skeleton.lunge_time
     value: 0.15
     unit: s
@@ -4873,6 +4877,14 @@ MonoBehaviour:
     value: 0.5
     unit: 
     note: "\uC2A4\uCF08\uB808\uD1A4: \uB2E4\uC2DC \uC77C\uC5B4\uB0A0 \uB54C \uCCB4\uB825"
+  - key: skeleton.attack_width
+    value: 1.2
+    unit: cell
+    note: "\uC2A4\uCF08\uB808\uD1A4 \uBC29\uD328 \uBC00\uCE58\uAE30: \uC9C1\uC120 \uD3ED"
+  - key: skeleton.knockback
+    value: 2
+    unit: cell
+    note: "\uC2A4\uCF08\uB808\uD1A4 \uBC29\uD328 \uBC00\uCE58\uAE30: \uB9DE\uC73C\uBA74 \uBC00\uB824\uB098\uB294 \uAC70\uB9AC"
   - key: imp.hp
     value: 16
     unit: 
@@ -4892,11 +4904,11 @@ MonoBehaviour:
   - key: imp.attack_range
     value: 9
     unit: cell
-    note: "\uC784\uD504 \uD654\uC5FC\uD0C4 \uC0AC\uAC70\uB9AC"
+    note: "\uC784\uD504 \uD654\uC5FC\uAD6C \uC0AC\uAC70\uB9AC (\uB0A0\uC544\uAC00\uB294 \uAC70\uB9AC)"
   - key: imp.windup
     value: 0.6
     unit: s
-    note: "\uC784\uD504 \uD654\uC5FC\uD0C4 \uC608\uACE0"
+    note: "\uC784\uD504 \uD654\uC5FC\uAD6C \uC608\uACE0"
   - key: imp.recovery
     value: 0.4
     unit: s
@@ -4925,14 +4937,30 @@ MonoBehaviour:
     value: 0.2
     unit: s
     note: "\uC784\uD504 \uB358\uC9C0\uB294 \uC21C\uAC04 \uBA48\uCDA4"
-  - key: imp.arrow_speed
-    value: 9
+  - key: imp.fireball_speed
+    value: 6
     unit: cell/s
-    note: "\uC784\uD504 \uD654\uC5FC\uD0C4 \uC18D\uB3C4"
-  - key: imp.arrow_radius
+    note: "\uC784\uD504 \uD654\uC5FC\uAD6C \uC18D\uB3C4 (\uB290\uB824\uC694)"
+  - key: imp.fireball_radius
     value: 0.3
     unit: cell
-    note: "\uC784\uD504 \uD654\uC5FC\uD0C4 \uD310\uC815"
+    note: "\uC784\uD504 \uD654\uC5FC\uAD6C \uBAB8 \uD06C\uAE30 (\uBCBD \xB7 \uC0AC\uC120 \uD310\uC815)"
+  - key: imp.fireball_trigger
+    value: 1.2
+    unit: cell
+    note: "\uC784\uD504 \uD654\uC5FC\uAD6C\uAC00 \uD130\uC9C0\uB294 \uD50C\uB808\uC774\uC5B4\uC640\uC758 \uAC70\uB9AC (\uC608\uACE0 \uD3ED\uC758 \uC808\uBC18)"
+  - key: imp.fireball_blast
+    value: 1.2
+    unit: cell
+    note: "\uC784\uD504 \uD654\uC5FC\uAD6C \uD3ED\uBC1C \uBC18\uACBD"
+  - key: imp.fireball_ratio
+    value: 0.8
+    unit: 
+    note: "\uC784\uD504 \uD654\uC5FC\uAD6C \uD53C\uD574 (\uACF5\uACA9 \uBC30\uC728)"
+  - key: imp.fireball_burn_stacks
+    value: 1
+    unit: 
+    note: "\uC784\uD504 \uD654\uC5FC\uAD6C\uC5D0 \uB9DE\uC73C\uBA74 \uD50C\uB808\uC774\uC5B4 \uD654\uC0C1 \uC911\uCCA9 (player_burn.damage)"
   - key: room_cost.orc
     value: 3
     unit: 
@@ -6757,14 +6785,6 @@ MonoBehaviour:
     value: 0.4
     unit: cell
     note: "\uD558\uD53C \uBC1C\uD1B1 \uD310\uC815"
-  - key: harpy.hop_distance
-    value: 2.5
-    unit: cell
-    note: "\uD558\uD53C \uD560\uD038 \uB4A4 \uBE60\uC9C0\uAE30 \uAC70\uB9AC"
-  - key: harpy.hop_time
-    value: 0.25
-    unit: s
-    note: "\uD558\uD53C \uBE60\uC9C0\uAE30 \uC2DC\uAC04"
   - key: harpy.flank_angle
     value: 140
     unit: deg
@@ -6788,15 +6808,11 @@ MonoBehaviour:
   - key: werewolf.attack_range
     value: 2
     unit: cell
-    note: "\uB291\uB300\uC778\uAC04 \uD30C\uACE0\uB4E4\uAE30 \uC2DC\uC791 \uAC70\uB9AC"
-  - key: werewolf.lunge
-    value: 2.2
-    unit: cell
-    note: "\uB291\uB300\uC778\uAC04 \uD30C\uACE0\uB4E4\uAE30 \uAC70\uB9AC"
+    note: "\uB291\uB300\uC778\uAC04 \uD560\uD034\uAE30 3\uC5F0\uD0C0 \uC2DC\uC791 \uAC70\uB9AC"
   - key: werewolf.windup
     value: 0.45
     unit: s
-    note: "\uB291\uB300\uC778\uAC04 \uBC1C\uD1B1 \uC608\uACE0"
+    note: "\uB291\uB300\uC778\uAC04 \uD560\uD034\uAE30 3\uC5F0\uD0C0 \uC608\uACE0"
   - key: werewolf.recovery
     value: 0.5
     unit: s
@@ -6805,26 +6821,6 @@ MonoBehaviour:
     value: 1.8
     unit: s
     note: "\uB291\uB300\uC778\uAC04 \uACF5\uACA9 \uAC04\uACA9"
-  - key: werewolf.leap_time
-    value: 0.18
-    unit: s
-    note: "\uB291\uB300\uC778\uAC04 \uD30C\uACE0\uB4E4\uAE30 \uC2DC\uAC04"
-  - key: werewolf.bite_reach
-    value: 0.4
-    unit: cell
-    note: "\uB291\uB300\uC778\uAC04 \uBC1C\uD1B1 \uD310\uC815"
-  - key: werewolf.hop_distance
-    value: 1.5
-    unit: cell
-    note: "\uB291\uB300\uC778\uAC04 \uBE60\uC9C0\uAE30 \uAC70\uB9AC"
-  - key: werewolf.hop_time
-    value: 0.2
-    unit: s
-    note: "\uB291\uB300\uC778\uAC04 \uBE60\uC9C0\uAE30 \uC2DC\uAC04"
-  - key: werewolf.flank_angle
-    value: 100
-    unit: deg
-    note: "\uB291\uB300\uC778\uAC04 \uB3CC\uC544 \uB4E4\uC5B4\uAC00\uB294 \uAC01\uB3C4"
   - key: werewolf.enrage_hp
     value: 0.5
     unit: 
@@ -6837,6 +6833,34 @@ MonoBehaviour:
     value: 0.6
     unit: 
     note: "\uB291\uB300\uC778\uAC04 \uAD11\uD3ED\uD654 \uACF5\uACA9 \uAC04\uACA9 \uBC30\uC728"
+  - key: werewolf.claw_count
+    value: 3
+    unit: 
+    note: "\uB291\uB300\uC778\uAC04 \uD560\uD034\uAE30 \uD69F\uC218"
+  - key: werewolf.claw_gap
+    value: 0.25
+    unit: s
+    note: "\uB291\uB300\uC778\uAC04 \uD560\uD034\uAE30 \uAC04\uACA9"
+  - key: werewolf.claw_radius
+    value: 1.6
+    unit: cell
+    note: "\uB291\uB300\uC778\uAC04 \uD560\uD034\uAE30 \uBD80\uCC44\uAF34 \uBC18\uACBD"
+  - key: werewolf.claw_angle
+    value: 100
+    unit: deg
+    note: "\uB291\uB300\uC778\uAC04 \uD560\uD034\uAE30 \uBD80\uCC44\uAF34 \uAC01\uB3C4"
+  - key: werewolf.claw_step
+    value: 0.4
+    unit: cell
+    note: "\uB291\uB300\uC778\uAC04 \uD560\uD034\uAE30 \uC0AC\uC774 \uC804\uC9C4 \uAC70\uB9AC"
+  - key: werewolf.claw_ratio
+    value: 0.5
+    unit: 
+    note: "\uB291\uB300\uC778\uAC04 \uD560\uD034\uAE30 \uD55C \uBC88 \uD53C\uD574 (\uACF5\uACA9 \uBC30\uC728)"
+  - key: werewolf.claw_turn
+    value: 25
+    unit: deg
+    note: "\uB291\uB300\uC778\uAC04 \uD560\uD03C \uB54C\uB9C8\uB2E4 \uB178\uB9AC\uB294 \uCABD\uC73C\uB85C \uB3C4\uB294 \uCD5C\uB300 \uAC01\uB3C4"
   - key: gargoyle.hp
     value: 45
     unit: 
@@ -6854,13 +6878,13 @@ MonoBehaviour:
     unit: cell/s
     note: "\uAC00\uACE0\uC77C \uC774\uB3D9"
   - key: gargoyle.attack_range
-    value: 1.2
+    value: 1.6
     unit: cell
-    note: "\uAC00\uACE0\uC77C \uB3CC\uBC1C\uD1B1 \uBC18\uACBD"
+    note: "\uAC00\uACE0\uC77C \uB0A0\uAC1C \uB0B4\uB824\uCC0D\uAE30: \uC81C \uB458\uB808 \uC6D0 \uBC18\uACBD (\uB4F1 \uB4A4\uB3C4 \uB9DE\uC544\uC694)"
   - key: gargoyle.lunge
-    value: 1.5
+    value: 0
     unit: cell
-    note: "\uAC00\uACE0\uC77C \uC804\uC9C4 \uD560\uD034\uAE30 \uAC70\uB9AC"
+    note: "\uAC00\uACE0\uC77C \uB0A0\uAC1C \uB0B4\uB824\uCC0D\uAE30: \uC804\uC9C4 \uC5C6\uC74C (\uC81C\uC790\uB9AC)"
   - key: gargoyle.windup
     value: 0.55
     unit: s
@@ -6873,14 +6897,10 @@ MonoBehaviour:
     value: 1.5
     unit: s
     note: "\uAC00\uACE0\uC77C \uACF5\uACA9 \uAC04\uACA9"
-  - key: gargoyle.attack_angle
-    value: 80
-    unit: deg
-    note: "\uAC00\uACE0\uC77C \uD560\uD034\uAE30 \uAC01\uB3C4"
   - key: gargoyle.lunge_time
     value: 0.15
     unit: s
-    note: "\uAC00\uACE0\uC77C \uC804\uC9C4 \uC2DC\uAC04"
+    note: "\uAC00\uACE0\uC77C \uB0A0\uAC1C \uB0B4\uB824\uCC0D\uAE30: \uD310\uC815\uC774 \uB0A8\uC544 \uC788\uB294 \uC2DC\uAC04"
   - key: gargoyle.stone_time
     value: 2
     unit: s
@@ -6933,6 +6953,14 @@ MonoBehaviour:
     value: 0.1
     unit: 
     note: "\uBD84\uB178 \uD55C \uACB9\uB9C8\uB2E4 \uC774\uB3D9 \uC99D\uAC00"
+  - key: elite.fireball_speed
+    value: 11
+    unit: cell/s
+    note: "\uCC28\uC6D0 \uAC10\uC5FC \uD654\uC5FC\uAD6C: \uBD88\uD654\uC0B4 \uC18D\uB3C4"
+  - key: elite.fireball_bolt_radius
+    value: 0.3
+    unit: cell
+    note: "\uCC28\uC6D0 \uAC10\uC5FC \uD654\uC5FC\uAD6C: \uBD88\uD654\uC0B4 \uD310\uC815 \uBC18\uACBD"
   - key: karma.extra_enemies
     value: 1
     unit: "\uBA85"
