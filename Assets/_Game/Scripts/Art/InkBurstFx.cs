@@ -28,6 +28,7 @@ namespace AThousandDawns.Art
         static Material _lineMat;
 
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
+        readonly List<Vector3> _discs = new List<Vector3>(); // 이번 프레임 SpawnBurst 자리 (주황 "Burst" 원판을 숨기려고)
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Init()
@@ -52,6 +53,23 @@ namespace AThousandDawns.Art
             at.y = 0f;
             radius = Mathf.Max(0.5f, radius);
             _host.Play(at, radius, kind);
+            _host._discs.Add(at);
+        }
+
+        // EnemyDirector.SpawnBurst가 0.2초 띄우는 주황 "Burst" 원판 (BurstKind가 있는 폭발): 이 연출이 대신 그리니까 그리기 직전에 렌더러만 꺼요
+        //   (플레이테스트 10차: 폭발 순간 예전 그림이 잠깐 보였어요). 폭발이 있던 프레임에만 씬 루트를 한 번 훑어요
+        void LateUpdate()
+        {
+            if (_discs.Count == 0) return;
+            foreach (var root in UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects())
+            {
+                Vector3 p = root.transform.position;
+                bool near = false;
+                foreach (var at in _discs) if ((new Vector3(p.x, 0f, p.z) - at).sqrMagnitude < 0.25f) { near = true; break; }
+                if (!near || root.name != "Burst") continue;
+                foreach (var r in root.GetComponentsInChildren<Renderer>()) r.enabled = false;
+            }
+            _discs.Clear();
         }
 
         void Update()

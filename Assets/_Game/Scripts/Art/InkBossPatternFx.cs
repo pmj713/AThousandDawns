@@ -1037,9 +1037,9 @@ namespace AThousandDawns.Art
             eyes.gameObject.AddComponent<InkFaceCamera>();
             if (_glow != null) GlowOrb(eyes, 0.5f, new Color(0.8f, 1f, 0.95f, 0.9f), 10);
             var wisp = InkParticles.Frost(horse, new Vector3(0f, 1.1f, -0.6f), 0.6f, 3f);
-            var trail = Line(new Color(Teal.r, Teal.g, Teal.b, 0.6f), 0.9f, 2);
-            trail.SetPosition(0, from + Vector3.up * 0.05f);
-            trail.SetPosition(1, from + Vector3.up * 0.05f);
+            // 지나간 자리: 딱딱한 띠 대신 옅은 청록 유령불 자국 (부드러운 빛 줄기가 말을 따라 늘어났다 걷혀요)
+            SpriteRenderer trail = _glow != null ? FlatSprite(_glow, from, 1f, Yaw(dir), 0.05f, 4, new Color(Teal.r, Teal.g, Teal.b, 0f)) : null;
+            float trailUnit = _glow != null ? 1f / Mathf.Max(0.01f, _glow.bounds.size.x) : 1f;
             Flash(from + Vector3.up, Teal, 6f, 3f, 0.4f);
             float t = 0f, hoof = 0f, ghost = 0f;
             _live.Add(dt =>
@@ -1073,8 +1073,10 @@ namespace AThousandDawns.Art
                 }
                 if (trail != null)
                 {
-                    trail.SetPosition(1, p + Vector3.up * 0.05f);
-                    trail.startColor = trail.endColor = new Color(Teal.r, Teal.g, Teal.b, 0.6f * (1f - Mathf.Clamp01((t - run) / 0.6f)));
+                    float len = Mathf.Max(0.3f, Vector3.Distance(from, p));
+                    trail.transform.position = new Vector3(from.x, 0.05f, from.z) + dir * (len * 0.5f);
+                    trail.transform.localScale = new Vector3(1.1f * trailUnit, len * 1.05f * trailUnit, 1f);
+                    trail.color = new Color(Teal.r, Teal.g, Teal.b, 0.35f * (1f - Mathf.Clamp01((t - run) / 0.6f)));
                 }
                 if (t < run + 0.6f) return true;
                 if (trail != null) Destroy(trail.gameObject);
@@ -1249,8 +1251,46 @@ namespace AThousandDawns.Art
                 var b = filter.sharedMesh.bounds;
                 h._flowed.Add(m);
                 var marker = m;
-                h.FlowArrows(() => marker != null && marker.IsVisible, m.transform.position, dir, b.max.z, b.size.x, Teal, 4f);
+                h.LaneMist(() => marker != null && marker.IsVisible, m.transform.position, dir, b.max.z, b.size.x);
             }
+        }
+
+        // 망령 기병 줄 (플레이테스트 10차: 갈매기 선 · 띠가 어색 → 게임풍): 예고 띠 위로 옅은 청록 유령 안개가 깔려 숨 쉬고,
+        //   청록 유령불 알갱이가 달리는 방향으로 흘러가요 (선 없이 흐름만). 예고가 사라지면 알갱이가 멎고 안개가 걷혀요.
+        void LaneMist(Func<bool> alive, Vector3 from, Vector3 dir, float length, float width)
+        {
+            from.y = 0f;
+            Vector3 mid = from + dir * (length * 0.5f);
+            SpriteRenderer mist = null;
+            float unit = _glow != null ? 1f / Mathf.Max(0.01f, _glow.bounds.size.x) : 1f;
+            if (_glow != null)
+            {
+                mist = FlatSprite(_glow, mid, 1f, Yaw(dir), 0.06f, 4, new Color(Teal.r, Teal.g, Teal.b, 0f));
+                mist.transform.localScale = new Vector3(width * 1.3f * unit, length * 1.05f * unit, 1f);
+            }
+            var holder = new GameObject("Lane Wisps").transform;
+            holder.SetParent(transform, false);
+            holder.SetPositionAndRotation(mid, Quaternion.LookRotation(dir));
+            var wisps = InkParticles.Frost(holder, Vector3.zero, 0.3f, Mathf.Clamp(length * 0.6f, 4f, 14f));
+            InkParticles.EmitBox(wisps, Vector3.zero, new Vector3(width * 0.8f, 0.1f, length), 0.25f);
+            var main = wisps.main;
+            main.startColor = new Color(0.55f, 1f, 0.9f, 1f);
+            var vel = wisps.velocityOverLifetime;
+            vel.x = new ParticleSystem.MinMaxCurve(dir.x * 3f, dir.x * 5f);
+            vel.z = new ParticleSystem.MinMaxCurve(dir.z * 3f, dir.z * 5f);
+            float t = 0f, fade = 1f;
+            bool on = true;
+            _live.Add(dt =>
+            {
+                t += dt;
+                if (on && (t > 4f || !alive())) { on = false; if (wisps != null) InkParticles.SetRate(wisps, 0f); }
+                if (!on) fade -= dt / 0.4f;
+                if (mist != null) mist.color = new Color(Teal.r, Teal.g, Teal.b, (0.16f + 0.08f * Mathf.Sin(t * 5f)) * Mathf.Clamp01(t / 0.2f) * Mathf.Clamp01(fade));
+                if (fade > 0f || (wisps != null && wisps.particleCount > 0)) return true;
+                if (mist != null) Destroy(mist.gameObject);
+                if (holder != null) Destroy(holder.gameObject);
+                return false;
+            });
         }
 
         void QueueRift(Vector3 at, float radius, float time)

@@ -7,7 +7,7 @@ namespace AThousandDawns.Art
 {
     // 기물 주머니 반짝임 (금빛 먹). 게임이 놓은 주머니(RoomRun.PouchObject)를 따라다니며 그림만 그려요.
     //   놓여 있는 동안: 바닥에 금빛 먹 번짐이 천천히 돌며 숨 쉬고, 둘레로 금빛 반짝이가 피어올라 사라져요
-    //   열 때(RoomRun.PouchOpened): 금빛 먹이 터지듯 번지고 반짝이가 사방으로 흩어져요
+    //   (플레이테스트 10차: 열 때 터지던 금빛 먹 · 반짝이는 뺐어요 — 고르는 동안 시간이 멈춰 있다가 고른 뒤에 터져 보였어요)
     // 그림: Art/Env/PouchFx/Resources/PouchFx (Glint · Ring · Burst). 씬에 미리 둘 것 없이 게임이 켜지면 저절로 들어요.
     public class InkPouchFx : MonoBehaviour
     {
@@ -19,21 +19,12 @@ namespace AThousandDawns.Art
         float _spawn;
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        static void Init()
-        {
-            RoomRun.PouchOpened -= OnOpened;
-            RoomRun.PouchOpened += OnOpened;
-        }
-
         static InkPouchFx Host()
         {
             var host = FindAnyObjectByType<InkPouchFx>();
             if (host == null) host = new GameObject("Ink Pouch Fx").AddComponent<InkPouchFx>();
             return host;
         }
-
-        static void OnOpened(Vector3 at) => Host().Burst(at);
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Spawn()
@@ -82,34 +73,6 @@ namespace AThousandDawns.Art
             }
 
             InkRoomReset.Tick(_live, dt, transform); // 방을 옮기면 제 밑의 연출을 지워요
-        }
-
-        // 열 때: 금빛 먹이 터지고 반짝이가 흩어져요
-        void Burst(Vector3 at)
-        {
-            Load();
-            var burst = Flat(_burst, new Vector3(at.x, 0.04f, at.z), 1f, UnityEngine.Random.Range(0f, 360f), 0.04f);
-            if (burst != null)
-            {
-                float t = 0f;
-                Vector3 baseScale = burst.transform.localScale;
-                _live.Add(dt =>
-                {
-                    if (burst == null) return false;
-                    t += dt;
-                    burst.transform.localScale = baseScale * Mathf.Lerp(1f, 4f, 1f - Mathf.Pow(1f - Mathf.Clamp01(t / 0.35f), 3f));
-                    burst.color = new Color(1f, 1f, 1f, t < 0.3f ? 1f : Mathf.Clamp01(1f - (t - 0.3f) / 0.6f));
-                    if (t < 0.9f) return true;
-                    Destroy(burst.gameObject);
-                    return false;
-                });
-            }
-            for (int i = 0; i < 22; i++)
-            {
-                float a = i / 22f * Mathf.PI * 2f + UnityEngine.Random.Range(-0.15f, 0.15f);
-                var v = new Vector3(Mathf.Cos(a), UnityEngine.Random.Range(0.6f, 1.6f), Mathf.Sin(a)) * UnityEngine.Random.Range(2.5f, 4.5f);
-                Glint(at, v, UnityEngine.Random.Range(0.3f, 0.55f), UnityEngine.Random.Range(0.6f, 0.9f), gravity: 4f);
-            }
         }
 
         // 반짝이 한 알: 커졌다 작아지며 날아가 사라져요 (카메라를 봐요)
