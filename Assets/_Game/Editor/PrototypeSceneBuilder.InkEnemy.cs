@@ -241,16 +241,29 @@ namespace AThousandDawns.EditorTools
             // 혈인: 1.2초 예고 동안 두 팔을 하늘로 들어 쓰러진 자를 일으켜요 (그대로 재생)
             ["BloodShaman"] = new[] { new MoveSpec { attack = "혈인술", state = "Raise", clips = new[] { "Raise" }, mode = MoveMode.Play, seconds = 1.4f } },
             // 고블린 주술사: 1.2초 예고 동안 해골 지팡이를 하늘로 치켜들고 주문 (둘레 광폭화 + 저주 장판, 그대로 재생)
-            ["GoblinShaman"] = new[] { new MoveSpec { attack = "주술", state = "Cast", clips = new[] { "Raise" }, mode = MoveMode.Play, seconds = 1.4f } },
-            // 오크: 몸을 숙여 버티다가(돌진 준비, 예고 동안) 몽둥이를 치켜든 채 일직선으로 달려 들이받고, 끝에서 내리찍으며 멈춰요
-            ["Orc"] = new[]
+            //   아군 회복은 공격이 아니라 신호(GoblinShamanBrain.Healed) → 회복 손짓 Heal (InkEnemyAnimator)
+            ["GoblinShaman"] = new[]
             {
-                new MoveSpec { state = "ChargeReady", clips = new[] { "ChargeReady" }, mode = MoveMode.Run },
-                new MoveSpec { attack = "돌진", state = "Charge", clips = new[] { "ChargeRun" }, mode = MoveMode.Run, speed = 1.4f, after = "Slam", ready = "ChargeReady" },
-                new MoveSpec { state = "Slam", clips = new[] { "Slam" }, mode = MoveMode.Run },
+                new MoveSpec { attack = "주술", state = "Cast", clips = new[] { "Raise" }, mode = MoveMode.Play, seconds = 1.4f },
+                new MoveSpec { state = "Heal", clips = new[] { "Heal" }, mode = MoveMode.Play },
             },
-            // 스켈레톤: 베기는 기본 Attack. 뼈가 무너졌다가 1.5초 끝에 다시 맞춰져 일어나요 (InkEnemyAnimator가 SkeletonBrain.Reassembling을 보고)
-            ["Skeleton"] = new[] { new MoveSpec { state = "Reassemble", clips = new[] { "Reassemble" }, mode = MoveMode.Play, seconds = 1.5f } },
+            // 오크 (겹침 정리: 돌진 없이 제자리): 땅 내려찍기 = 몽둥이를 두 손으로 치켜들었다가(예고 0.8초) 앞 땅을 찍어 직선 충격파
+            ["Orc"] = new[] { new MoveSpec { attack = "땅 내려찍기", state = "GroundSlam", clips = new[] { "GroundSlam" } } },
+            // 스켈레톤: 베기는 기본 Attack · 방패 밀치기(ShieldShove) · 뼈가 무너졌다가 1.5초 끝에 다시 맞춰져 일어나요 (InkEnemyAnimator가 SkeletonBrain.Reassembling을 보고)
+            ["Skeleton"] = new[]
+            {
+                new MoveSpec { attack = "방패 밀치기", state = "ShieldShove", clips = new[] { "ShieldShove" } },
+                new MoveSpec { state = "Reassemble", clips = new[] { "Reassemble" }, mode = MoveMode.Play, seconds = 1.5f },
+            },
+            // 고블린: 뛰어 내려치기 = 예고 동안 몽둥이를 치켜들고 웅크렸다가(LeapReady) 뛰어올라 착지하며 내려쳐요 (이동은 게임이)
+            ["Goblin"] = new[]
+            {
+                new MoveSpec { state = "LeapReady", clips = new[] { "LeapReady" }, mode = MoveMode.Run },
+                new MoveSpec { attack = "뛰어 내려치기", state = "LeapSmash", clips = new[] { "LeapSmash" }, ready = "LeapReady" },
+            },
+            // 고블린 단검꾼: 단검 던지기 · 고블린 궁수: 곡사 (하늘로 겨눠 높이 쏘기)
+            ["GoblinRogue"] = new[] { new MoveSpec { attack = "단검 던지기", state = "DaggerThrow", clips = new[] { "DaggerThrow" } } },
+            ["GoblinArcher"] = new[] { new MoveSpec { attack = "곡사", state = "LobShot", clips = new[] { "LobShot" } } },
             // 고블린 족장 (판타지 고수, 철권 마웅과 같은 규칙): 철퇴 2연타 · 내려찍기 · 돌진. 2페이즈 전환(함성)은 Roar (InkEnemyAnimator가 IsTransitioning을 보고)
             //   패턴 개편: 철퇴 휘돌리기(220° 크게 한 번) · 점프 덮치기(멀 때 뛰어 내려찍기) · 덫 던지기(신호 TrapThrown → 흩뿌리는 손짓) · 함성은 Roar
             ["GoblinChief"] = new[]
@@ -279,6 +292,8 @@ namespace AThousandDawns.EditorTools
             ["Werewolf"] = new[]
             {
                 new MoveSpec { state = "Ready", clips = new[] { "Ready" }, mode = MoveMode.Run },
+                new MoveSpec { state = "ClawReady", clips = new[] { "ClawReady" }, mode = MoveMode.Run },
+                new MoveSpec { attack = "할퀴기 3연타", state = "Claw3", clips = new[] { "Claw3" }, ready = "ClawReady" },   // 발톱을 치켜들고 웅크렸다가(예고) 걸어 나오며 오른 · 왼 · 오른 할퀴기
                 new MoveSpec { state = "Roar", clips = new[] { "Roar" }, mode = MoveMode.Play, seconds = 1f },
             },
             // 가고일 (돌발톱 할퀴기 = 기본 Attack): 석화(Stone, 굳어 있는 동안) · 풀림(Unstone, 날개를 펴요)
@@ -286,6 +301,7 @@ namespace AThousandDawns.EditorTools
             {
                 new MoveSpec { state = "Stone", clips = new[] { "Stone" }, mode = MoveMode.Run },
                 new MoveSpec { state = "Unstone", clips = new[] { "Unstone" }, mode = MoveMode.Play, seconds = 0.7f },
+                new MoveSpec { attack = "날개 내려찍기", state = "WingSlam", clips = new[] { "WingSlam" } },   // 제자리에서 좌우 둘레를 내려찍어요
             },
             // 다크 엘프 (패턴 개편, 혈영검마와 분리): 쌍검 난무(좌우 번갈아, 판정 시작부터 이어 베기) · 그림자 숨기(낮게 웅크림) → 그림자 기습(옆에서 올려베기) · 독 단검(왼손 투척)
             ["DarkElf"] = new[]
@@ -403,7 +419,6 @@ namespace AThousandDawns.EditorTools
                         kind = kind, model = made.prefab, controller = made.controller, scale = 1f, yaw = 180f,
                         // 나팔수·궁수: 예고 동안 나팔 불기·시위 당기기 동작을 그대로 재생
                         windupPlays = kind == EnemyKind.Horn || kind == EnemyKind.Archer,
-                        noAttackAnim = kind == EnemyKind.Bomber,   // 화약 산적: 손 들지 않고 그대로 터져요
                         moves = made.moves,
                     });
             }

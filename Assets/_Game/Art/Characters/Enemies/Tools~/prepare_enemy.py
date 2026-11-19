@@ -3501,6 +3501,162 @@ if "bossv2" in EXTRAS and NAME in ("IronFist", "GoblinChief", "Ogre", "DeathKnig
         b3("Ambush", [(0, "a_low"), (6, "a_low"), (9, "a_cut"), (18, "a_cut"), (26, "idle")])
         b3("DaggerThrow", [(0, "k_wind"), (8, "k_wind"), (11, "k_throw"), (18, "k_throw"), (26, "idle")])
 
+# ── 일반·엘리트 적 겹침 정리 (elite): 서로 같은 공격 동작을 돌려 쓰던 적에게 새 동작을 더해요 (예전 동작은 그대로, 쓸지는 Unity MoveSpec이 정해요)
+#   스켈레톤 ShieldShove: 방패 밀치기 = 방패 뒤에 웅크렸다가 방패로 앞을 세게 밀쳐요 (찌르기 없이)
+#   고블린 LeapReady·LeapSmash: 뛰어 내려치기 = 예고 동안 몽둥이를 치켜들고 웅크림(반복) → 뛰어올라 착지하며 앞 땅을 내려쳐요 (8프레임째 착지)
+#   가고일 WingSlam: 날개 내려찍기 = 두 날개 팔을 위로 활짝 폈다가 웅크리며 좌우 둘레 땅을 함께 내려찍어요
+#   고블린 단검꾼 DaggerThrow: 왼손으로 겨누고 오른손 단검을 어깨 뒤로 감았다가 위에서 던져요
+#   늑대인간 ClawReady·Claw3: 할퀴기 3연타 = 발톱을 치켜들고 웅크렸다가(예고) 걸어 나오며 오른 → 왼 → 오른 번갈아 할퀴기 (2·10·17프레임, 0.25초 간격)
+#   고블린 궁수 LobShot: 곡사 = 몸을 젖혀 활을 하늘 쪽으로 겨누고 뺨까지 당겨 높이 쏘아요
+#   오크 GroundSlam: 땅 내려찍기 = 몽둥이를 두 손으로 머리 위로 치켜들었다가 앞 땅을 내려찍고 잠깐 멈춰요 (Slam 자세)
+#   화약 산적 Attack: 화약 던지기 = 화약을 머리 뒤로 치켜들었다가 한 발 내디디며 위에서 앞으로 던져요 (attackonly)
+#   고블린 주술사 Heal: 회복 손짓 = 지팡이를 높이 세우고 왼손 바닥을 하늘로 들어 올렸다가 아군 쪽으로 넓게 펼쳐 내려요
+if "elite" in EXTRAS and "playeranim" in EXTRAS:
+    XA = Vector((1, 0, 0))
+
+    def el_pose(stage):
+        if stage == "idle":
+            idle_end_pose(); return
+        sl, sr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+        if NAME == "Goblin":
+            unique_pose(stage); return
+        if NAME == "Skeleton":   # 방패를 몸 앞에 가로로 세워(팔꿈치를 바깥으로) 방패 면이 앞을 보게 해요. 검은 허리 옆에 내려요
+            shove = stage == "s_shove"
+            lower_hips(-0.32 if shove else -0.2, {"Left": FEET["Left"] + Vector((0, -0.45 if shove else -0.15, 0)), "Right": FEET["Right"] + Vector((0, 0.2 if shove else 0.1, 0))}, dy=-0.3 if shove else 0.05)
+            bend("Spine", XA, 16 if shove else 10); bend("Spine", UP, 10 if shove else 20)
+            sl, sr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+            arm("Left", sl + (Vector((-0.42, -0.5, -0.05)) if shove else Vector((-0.3, -0.32, -0.12))), Vector((1, -1, 0)))
+            fa = (pb["LeftHand"].head - pb["LeftForeArm"].head).normalized()
+            bend("LeftForeArm", fa, 35 if shove else 60)   # 아래팔을 비틀어 방패 면이 앞을 보게 해요
+            arm("Right", sr + Vector((-0.05, 0.25, -0.42)), Vector((-1, 0.4, -0.3))); point_blade(Vector((0, -1, 0.1)), wrist_bend=80)
+            return
+        if NAME == "Orc":        # 몽둥이를 두 손으로 머리 위로 치켜들었다가 앞 땅을 찍어요 (몽둥이 끝이 땅에 닿게)
+            if stage == "up":
+                lower_hips(-0.06, FEET, dy=0.06); bend("Spine", XA, -14)
+                both_on_grip((pb["LeftArm"].head + pb["RightArm"].head) / 2 + Vector((0.0, 0.15, 0.6)), Vector((0, 0.75, 0.4)))
+            else:
+                feet = {"Left": FEET["Left"] + Vector((0, -0.45, 0)), "Right": FEET["Right"] + Vector((0, 0.15, 0))}
+                lower_hips(-0.42, feet, dy=-0.25); bend("Spine", XA, 38)
+                both_on_grip((pb["LeftArm"].head + pb["RightArm"].head) / 2 + Vector((0.0, -0.62, -0.5)), Vector((0, -0.55, -0.85)))
+            return
+        if NAME == "Gargoyle":
+            if stage == "w_rear":   # 날개 팔을 위·옆으로 활짝, 발끝으로 솟아요
+                lower_hips(0.04, FEET, dy=0.06); bend("Spine", XA, -16); bend("Neck", XA, -12)
+                for s, sx in (("Left", 1), ("Right", -1)):
+                    sh = pb[f"{s}Arm"].head.copy()
+                    arm(s, sh + Vector((sx * 0.6, 0.1, 0.5)), Vector((sx, 0.4, 0.2)))
+            else:                   # 깊이 웅크리며 두 팔을 좌우 바깥 땅으로 내려찍어요
+                lower_hips(-0.45, {"Left": FEET["Left"] + Vector((0.12, -0.1, 0)), "Right": FEET["Right"] + Vector((-0.12, -0.1, 0))}, dy=-0.05)
+                bend("Spine", XA, 28); bend("Neck", XA, -14)
+                for s, sx in (("Left", 1), ("Right", -1)):
+                    sh = pb[f"{s}Arm"].head.copy()
+                    arm(s, sh + Vector((sx * 0.62, -0.2, -0.6)), Vector((sx, 0.3, 0)))
+        elif NAME == "GoblinRogue":
+            if stage == "k_wind":
+                lower_hips(-0.12, {"Left": FEET["Left"] + Vector((0, -0.2, 0)), "Right": FEET["Right"] + Vector((0, 0.15, 0))}, dy=0.08)
+                bend("Spine", XA, -8); bend("Spine", UP, -25)
+                sl, sr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+                arm("Left", sl + Vector((-0.05, -1, 0.1)).normalized() * REACH, Vector((1, 0, -0.5)))    # 왼손으로 겨눠요
+                arm("Right", sr + Vector((-0.05, 0.3, 0.42)), Vector((-0.6, 0.4, 0.3))); point_blade(Vector((0, -0.4, 1)), wrist_bend=80)
+            else:   # k_throw
+                lower_hips(-0.2, {"Left": FEET["Left"] + Vector((0, -0.4, 0)), "Right": FEET["Right"] + Vector((0, 0.2, 0))}, dy=-0.15)
+                bend("Spine", XA, 18); bend("Spine", UP, 20)
+                sl, sr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+                arm("Left", sl + Vector((0.3, 0.2, -0.35)), Vector((1, 0.3, -0.3)))
+                arm("Right", sr + Vector((0.05, -1, -0.3)).normalized() * REACH, Vector((-0.5, 0.2, -1))); point_blade(Vector((0, -1, -0.2)), wrist_bend=80)
+        elif NAME == "Werewolf":
+            # 걸어 나오며 할퀴어요: 오른손 칠 땐 왼발이, 왼손 칠 땐 오른발이 앞으로
+            step = {"c_ready": 0.0, "c_rwind": 0.1, "c_r": 0.3, "c_lwind": 0.35, "c_l": 0.5, "c_rwind2": 0.55, "c_r2": 0.7}[stage]
+            right = stage in ("c_rwind", "c_r", "c_rwind2", "c_r2")
+            lead = "Left" if right else "Right"
+            feet = {s: FEET[s] + Vector((0, -0.3 if s == lead else 0.1, 0)) for s in FEET}
+            if stage == "c_ready":
+                feet = {"Left": FEET["Left"] + Vector((0, -0.15, 0)), "Right": FEET["Right"] + Vector((0, 0.15, 0))}
+            lower_hips(-0.32, feet, dy=-0.1 - step * 0.2); bend("Spine", XA, 30); bend("Neck", XA, -25)
+            wind = stage in ("c_ready", "c_rwind", "c_lwind", "c_rwind2")
+            twist = 0 if stage == "c_ready" else (-30 if right else 30) * (1 if wind else -1)
+            bend("Spine", UP, twist)
+            sl, sr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+            for s, sx in (("Left", 1), ("Right", -1)):
+                sh = sl if s == "Left" else sr
+                hitting = (s == "Right") == right
+                if stage == "c_ready":
+                    arm(s, sh + Vector((sx * 0.35, -0.3, 0.25)), Vector((sx, 0.3, 0)))        # 두 발톱을 치켜들고 웅크려요
+                elif hitting and wind:
+                    arm(s, sh + Vector((sx * 0.5, 0.05, 0.4)), Vector((sx, 0.4, 0.2)))        # 할퀼 손을 바깥 위로 감아요
+                elif hitting:
+                    arm(s, sh + Vector((-sx * 0.55, -0.75, -0.35)).normalized() * REACH, Vector((sx, 0.3, -0.4)))   # 안쪽 아래로 그어 내려요
+                else:
+                    arm(s, sh + Vector((sx * 0.3, -0.25, -0.2)), Vector((sx, 0.3, -0.4)))
+        elif NAME == "GoblinArcher":
+            lower_hips(-0.1, {"Left": FEET["Left"] + Vector((0, -0.25, 0)), "Right": FEET["Right"] + Vector((0, 0.2, 0))}, dy=0.1)
+            bend("Spine", XA, -18); bend("Spine", UP, 15)
+            sl, sr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+            bow = sl + Vector((-0.15, -0.65, 0.75)).normalized() * REACH                    # 하늘 쪽 45°로 겨눠요
+            arm("Left", bow, Vector((0.4, 0.2, -1)))
+            nock = bow + (sr - bow) * 0.25
+            cheek = sr + Vector((0.12, -0.12, 0.12))
+            flick = cheek + Vector((-0.08, 0.12, 0.08))
+            arm("Right", {"l_nock": nock, "l_draw": cheek, "l_flick": flick}[stage], Vector((-0.5, 0.7, 0.1)))
+        elif NAME == "Bomber":
+            sh = pb["RightArm"].head.copy()
+            if stage == "t_lift":
+                lower_hips(-0.08, {"Left": FEET["Left"] + Vector((0, -0.12, 0)), "Right": FEET["Right"] + Vector((0, 0.15, 0))}, dy=0.08)
+                bend("Spine", XA, -14); bend("Spine", UP, -20)
+                sl, sh = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+                arm("Right", sh + Vector((-0.05, 0.25, 0.7)), Vector((-1, 0.3, 0)))           # 화약을 머리 뒤로 치켜들어요
+                arm("Left", sl + Vector((0.0, -0.55, 0.15)), Vector((1, 0.3, -0.5)))          # 왼손으로 겨눠요
+            else:   # t_throw
+                lower_hips(-0.22, {"Left": FEET["Left"] + Vector((0, -0.4, 0)), "Right": FEET["Right"] + Vector((0, 0.15, 0))}, dy=-0.18)
+                bend("Spine", XA, 24); bend("Spine", UP, 18)
+                sl, sh = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+                arm("Right", sh + Vector((0.1, -1, -0.15)).normalized() * REACH, Vector((-1, 0, -0.5)))
+                arm("Left", sl + Vector((0.3, 0.2, -0.45)), Vector((1, 0.3, -0.3)))
+        elif NAME == "GoblinShaman":
+            if stage == "h_gather":   # 지팡이는 세워 쥐고 왼손을 가슴 앞에 모아요
+                lower_hips(-0.08, FEET, dy=0.03); bend("Spine", XA, 8)
+                arm("Right", sr + Vector((-0.15, -0.3, -0.15)), Vector((-1, 0.3, -0.3))); point_blade(Vector((0, -0.1, 1)), wrist_bend=90)
+                arm("Left", sl + Vector((-0.15, -0.3, -0.12)), Vector((1, 0.3, -0.6)))
+            elif stage == "h_raise":  # 지팡이를 높이 세우고 왼손 바닥을 하늘로 들어 올려요
+                lower_hips(0.0, FEET, dy=0.06); bend("Spine", XA, -14); bend("Neck", XA, -20)
+                sl, sr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+                arm("Right", sr + Vector((-0.1, -0.2, 0.35)), Vector((-1, 0.3, 0))); point_blade(Vector((0, -0.1, 1)), wrist_bend=90)
+                arm("Left", sl + Vector((0.2, -0.15, 0.55)).normalized() * REACH, Vector((1, 0.3, 0)))
+            else:                     # h_spread: 왼손을 바깥 앞으로 넓게 펼쳐 내려 아군에게 기운을 나눠요
+                lower_hips(-0.12, {"Left": FEET["Left"] + Vector((0, -0.15, 0)), "Right": FEET["Right"]}, dy=0.0); bend("Spine", XA, 6); bend("Spine", UP, -18)
+                sl, sr = pb["LeftArm"].head.copy(), pb["RightArm"].head.copy()
+                arm("Right", sr + Vector((-0.1, -0.2, 0.3)), Vector((-1, 0.3, 0))); point_blade(Vector((0, -0.1, 1)), wrist_bend=90)
+                arm("Left", sl + Vector((0.7, -0.6, 0.05)).normalized() * REACH, Vector((1, 0.3, -0.4)))
+
+    def el(name, keys):
+        old = bpy.data.actions.get(name)
+        if old is not None:
+            bpy.data.actions.remove(old)
+        make_action(name, keys, el_pose)
+        rig.animation_data.action = None
+        reset_pose()
+
+    if NAME == "Skeleton":
+        el("ShieldShove", [(0, "idle"), (5, "s_guard"), (9, "s_guard"), (12, "s_shove"), (20, "s_shove"), (30, "idle")])
+    elif NAME == "Goblin":
+        el("LeapReady", [(0, "crouch"), (10, "crouch")])
+        el("LeapSmash", [(0, "crouch"), (4, "air"), (8, "smash"), (18, "smash"), (28, "idle")])
+    elif NAME == "Gargoyle":
+        el("WingSlam", [(0, "idle"), (6, "w_rear"), (11, "w_rear"), (14, "w_slam"), (24, "w_slam"), (34, "idle")])
+    elif NAME == "GoblinRogue":
+        el("DaggerThrow", [(0, "idle"), (6, "k_wind"), (10, "k_wind"), (13, "k_throw"), (20, "k_throw"), (28, "idle")])
+    elif NAME == "Werewolf":
+        el("ClawReady", [(0, "c_ready"), (10, "c_ready")])   # 예고 동안 (반복)
+        el("Claw3", [(0, "c_rwind"), (2, "c_r"), (6, "c_lwind"), (10, "c_l"), (13, "c_rwind2"), (17, "c_r2"), (25, "c_r2"), (33, "idle")])   # 활성 시작 0.07 · 0.33 · 0.57초
+    elif NAME == "GoblinArcher":
+        el("LobShot", [(0, "l_nock"), (3, "l_nock"), (12, "l_draw"), (14, "l_draw"), (15, "l_flick"), (24, "l_flick")])   # 예고 0.5초 끝(15f)에 놓아요
+    elif NAME == "Orc":
+        el("GroundSlam", [(0, "idle"), (7, "up"), (12, "up"), (15, "down"), (26, "down"), (36, "idle")])
+    elif NAME == "Bomber":
+        el("Attack", [(0, "idle"), (6, "t_lift"), (12, "t_lift"), (15, "t_throw"), (22, "t_throw"), (30, "idle")])
+    elif NAME == "GoblinShaman":
+        el("Heal", [(0, "idle"), (6, "h_gather"), (14, "h_raise"), (24, "h_raise"), (30, "h_spread"), (40, "h_spread"), (48, "idle")])
+
 # attackonly (Humanoid 적: 산적·방패병·살수): 대기·달리기·등장은 플레이어 동작을 그대로 옮겨 입으니, 고유 공격(Attack) 하나만 남겨요
 if "attackonly" in EXTRAS:
     for a in list(bpy.data.actions):
