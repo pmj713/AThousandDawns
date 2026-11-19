@@ -3506,7 +3506,7 @@ if "bossv2" in EXTRAS and NAME in ("IronFist", "GoblinChief", "Ogre", "DeathKnig
 #   고블린 LeapReady·LeapSmash: 뛰어 내려치기 = 예고 동안 몽둥이를 치켜들고 웅크림(반복) → 뛰어올라 착지하며 앞 땅을 내려쳐요 (8프레임째 착지)
 #   가고일 WingSlam: 날개 내려찍기 = 두 날개 팔을 위로 활짝 폈다가 웅크리며 좌우 둘레 땅을 함께 내려찍어요
 #   고블린 단검꾼 DaggerThrow: 왼손으로 겨누고 오른손 단검을 어깨 뒤로 감았다가 위에서 던져요
-#   늑대인간 Claw3: 할퀴기 3연타 = 걸어 나오며 오른 → 왼 → 오른 번갈아 할퀴기 (7·15·22프레임, 0.25초 간격)
+#   늑대인간 ClawReady·Claw3: 할퀴기 3연타 = 발톱을 치켜들고 웅크렸다가(예고) 걸어 나오며 오른 → 왼 → 오른 번갈아 할퀴기 (2·10·17프레임, 0.25초 간격)
 #   고블린 궁수 LobShot: 곡사 = 몸을 젖혀 활을 하늘 쪽으로 겨누고 뺨까지 당겨 높이 쏘아요
 #   오크 GroundSlam: 땅 내려찍기 = 몽둥이를 두 손으로 머리 위로 치켜들었다가 앞 땅을 내려찍고 잠깐 멈춰요 (Slam 자세)
 #   화약 산적 Attack: 화약 던지기 = 화약을 머리 뒤로 치켜들었다가 한 발 내디디며 위에서 앞으로 던져요 (attackonly)
@@ -3646,9 +3646,10 @@ if "elite" in EXTRAS and "playeranim" in EXTRAS:
     elif NAME == "GoblinRogue":
         el("DaggerThrow", [(0, "idle"), (6, "k_wind"), (10, "k_wind"), (13, "k_throw"), (20, "k_throw"), (28, "idle")])
     elif NAME == "Werewolf":
-        el("Claw3", [(0, "c_ready"), (4, "c_rwind"), (7, "c_r"), (11, "c_lwind"), (15, "c_l"), (18, "c_rwind2"), (22, "c_r2"), (30, "c_r2"), (38, "idle")])
+        el("ClawReady", [(0, "c_ready"), (10, "c_ready")])   # 예고 동안 (반복)
+        el("Claw3", [(0, "c_rwind"), (2, "c_r"), (6, "c_lwind"), (10, "c_l"), (13, "c_rwind2"), (17, "c_r2"), (25, "c_r2"), (33, "idle")])   # 활성 시작 0.07 · 0.33 · 0.57초
     elif NAME == "GoblinArcher":
-        el("LobShot", [(0, "l_nock"), (4, "l_nock"), (19, "l_draw"), (21, "l_draw"), (23, "l_flick"), (30, "l_flick")])
+        el("LobShot", [(0, "l_nock"), (3, "l_nock"), (12, "l_draw"), (14, "l_draw"), (15, "l_flick"), (24, "l_flick")])   # 예고 0.5초 끝(15f)에 놓아요
     elif NAME == "Orc":
         el("GroundSlam", [(0, "idle"), (7, "up"), (12, "up"), (15, "down"), (26, "down"), (36, "idle")])
     elif NAME == "Bomber":

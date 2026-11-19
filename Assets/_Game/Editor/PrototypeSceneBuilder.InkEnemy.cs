@@ -292,7 +292,8 @@ namespace AThousandDawns.EditorTools
             ["Werewolf"] = new[]
             {
                 new MoveSpec { state = "Ready", clips = new[] { "Ready" }, mode = MoveMode.Run },
-                new MoveSpec { attack = "할퀴기 3연타", state = "Claw3", clips = new[] { "Claw3" }, ready = "Ready" },   // 걸어 나오며 오른 · 왼 · 오른 할퀴기
+                new MoveSpec { state = "ClawReady", clips = new[] { "ClawReady" }, mode = MoveMode.Run },
+                new MoveSpec { attack = "할퀴기 3연타", state = "Claw3", clips = new[] { "Claw3" }, ready = "ClawReady" },   // 발톱을 치켜들고 웅크렸다가(예고) 걸어 나오며 오른 · 왼 · 오른 할퀴기
                 new MoveSpec { state = "Roar", clips = new[] { "Roar" }, mode = MoveMode.Play, seconds = 1f },
             },
             // 가고일 (돌발톱 할퀴기 = 기본 Attack): 석화(Stone, 굳어 있는 동안) · 풀림(Unstone, 날개를 펴요)
