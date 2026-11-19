@@ -113,6 +113,33 @@ namespace AThousandDawns.Player
         // 플레이어 화상 (상태이상 탭 "플레이어가 걸릴 때"): 1중첩 초당 2 × 지역 공격 배율, 최대 3중첩, 3초.
         // 쌓일 때마다 지속이 새로 시작되고, 0.5초마다 들어와요. 강인함 무시, 방어력 적용, 무적·경직과 상관없는 지속 피해.
         public int BurnStacks => _burnTimer > 0f ? _burnStacks : 0;
+        public float BurnLeft => Mathf.Max(0f, _burnTimer);
+
+        // 상태이상 표시 (HUD 아이콘): 묶임은 거의 못 움직이는 둔화 (천마 마기 포박 · 족장 덫)
+        public bool IsBound => SlowRatio >= 0.75f;
+
+        // 독 (다크 엘프 쌍검): 맞을 때마다 시간이 새로 차요 (겹치지 않아요). 체력을 직접 깎지만 쓰러뜨리지는 않아요
+        float _poisonLeft, _poisonTickTimer, _poisonTick, _poisonDamage;
+        public float PoisonLeft => Mathf.Max(0f, _poisonLeft);
+
+        public void ApplyPoison(float damagePerTick, float duration, float tick)
+        {
+            if (IsDead) return;
+            if (_poisonLeft <= 0f) _poisonTickTimer = tick;
+            _poisonLeft = Mathf.Max(_poisonLeft, duration);
+            _poisonTick = Mathf.Max(0.1f, tick);
+            _poisonDamage = Mathf.Max(_poisonDamage, damagePerTick); // 끝나면 TickPoison이 0으로 돌려요
+        }
+
+        void TickPoison(float dt)
+        {
+            if (_poisonLeft <= 0f) { _poisonDamage = 0f; return; }
+            _poisonLeft -= dt;
+            _poisonTickTimer -= dt;
+            if (_poisonTickTimer > 0f) return;
+            _poisonTickTimer += _poisonTick;
+            TakeEventDamage(_poisonDamage);
+        }
 
         public void AddBurnStack(float perStackPerSecond)
         {
@@ -291,6 +318,7 @@ namespace AThousandDawns.Player
             TickDaggers(dt); // 비도: 날아가기 · 꽂힘 · 사라짐
             TickShadowEchoes(dt); // 혈영참 잔상
             TickBurn(dt);
+            TickPoison(dt);
             if (IsDead) return;
 
             if (IsStunned)

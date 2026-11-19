@@ -47,12 +47,11 @@ namespace AThousandDawns.Enemies
         float _daggerInterval, _daggerWindup, _daggerMin, _daggerSpeed, _daggerRange, _daggerRatio;
         float _poisonTime, _poisonTick, _poisonRatio;
         float _decisionTimer, _transitionTimer, _hideTimer, _daggerTimer, _farTimer, _activeTimer;
-        float _poisonLeft, _poisonTickTimer;
         bool _ambushNext;
 
         public int Phase { get; private set; } = 1;
         public bool IsTransitioning => _transitionTimer > 0f;
-        public bool PlayerPoisoned => _poisonLeft > 0f;
+        public bool PlayerPoisoned => Player != null && Player.PoisonLeft > 0f;
         int DanceHits => Phase >= 2 ? Mathf.RoundToInt(Tuning("p2_dance_hits", 5f)) : Mathf.RoundToInt(Tuning("dance_hits", 4f));
 
         public void SetZone(Vector3 center, Vector2 size) { }
@@ -108,7 +107,6 @@ namespace AThousandDawns.Enemies
                 _transitionTimer -= dt;
                 if (_transitionTimer <= 0f) EnterPhase2();
             }
-            TickPoison(dt);
         }
 
         // ── 고르기
@@ -232,21 +230,7 @@ namespace AThousandDawns.Enemies
 
         // ── 독: 맞을 때마다 시간이 새로 차요 (겹치지 않아요)
 
-        void Poison()
-        {
-            if (_poisonLeft <= 0f) _poisonTickTimer = _poisonTick;
-            _poisonLeft = _poisonTime;
-        }
-
-        void TickPoison(float dt)
-        {
-            if (_poisonLeft <= 0f) return;
-            _poisonLeft -= dt;
-            _poisonTickTimer -= dt;
-            if (_poisonTickTimer > 0f) return;
-            _poisonTickTimer += _poisonTick;
-            Player.TakeEventDamage(AttackPower * _poisonRatio);
-        }
+        void Poison() => Player.ApplyPoison(AttackPower * _poisonRatio, _poisonTime, _poisonTick); // 독은 플레이어 쪽에서 돌아요 (HUD 아이콘)
 
         protected override void OnAttackFinished()
         {
@@ -286,6 +270,6 @@ namespace AThousandDawns.Enemies
             _repeat = 0;
         }
 
-        protected override void OnDied() => _poisonLeft = 0f;
+        protected override void OnDied() { }
     }
 }
