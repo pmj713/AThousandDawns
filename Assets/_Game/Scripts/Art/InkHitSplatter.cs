@@ -121,19 +121,21 @@ namespace AThousandDawns.Art
             if (target == null || amount <= 0 || splatMaterial == null) return;
             bool isPlayer = _player != null && target.transform == _player;
             if (!isPlayer) return; // 적이 맞을 때 튀던 주황 물감 (바닥 얼룩 · 방울)은 뺐어요 (플레이테스트 9차). 적 피격 반응은 InkEnemyModels (깜박임 · 파편)
-            var color = playerPaint;
+            // 바닥 위 장식이 적 · 예고 · 비도를 가리지 않게 (대나무 줄기 기준 통일): 얼룩 셰이더는 컷아웃이라 투명도 대신
+            //   어두운 적갈색으로 눌러 바닥에 묻히게 (채도 · 밝기 낮게), 얼룩 크기 ⅔ · 개수 · 방울 ½
+            var color = new Color(playerPaint.r * 0.5f, playerPaint.g * 0.9f, playerPaint.b * 0.9f, 1f);
             Vector3 p = target.transform.position;
             // 맞은 반대쪽: 플레이어에게서 멀어지는 쪽 (플레이어가 맞으면 무작위)
             Vector3 away = !isPlayer && _player != null ? p - _player.position : Random.insideUnitSphere;
             away.y = 0f;
             away = away.sqrMagnitude > 1e-4f ? away.normalized : Vector3.forward;
             bool dead = target.IsDead;
-            float size = Mathf.Clamp(0.6f + amount * 0.01f, 0.6f, 1.4f);
+            float size = Mathf.Clamp(0.6f + amount * 0.01f, 0.6f, 1.4f) * 0.67f;
             if (dead) size *= 1.6f;
 
             // 바닥 얼룩: 맞은 반대쪽으로 길쭉하게, 한 칸쯤 밀려서
             SpawnSplat(p + away * size * 0.35f, size, color, dead ? deathLife : life, away, dead ? 1.2f : 1.7f);
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 1; i++)
             {
                 var offset = Random.insideUnitCircle * 0.9f;
                 SpawnSplat(p + new Vector3(offset.x, 0f, offset.y) + away * 0.4f, size * Random.Range(0.25f, 0.45f), color, life, away, 1.3f);
@@ -141,7 +143,7 @@ namespace AThousandDawns.Art
 
             // 먹 방울: 몸 가운데 높이에서 맞은 반대쪽으로 부채꼴 (쓰러지면 사방으로 크게)
             float height = isPlayer ? 1f : Mathf.Max(0.4f, target.transform.lossyScale.y);
-            int n = dead ? deathDrops : hitDrops;
+            int n = Mathf.CeilToInt((dead ? deathDrops : hitDrops) * 0.5f);
             for (int i = 0; i < n; i++)
             {
                 Vector3 dir = dead

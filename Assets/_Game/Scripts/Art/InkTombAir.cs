@@ -12,9 +12,9 @@ namespace AThousandDawns.Art
         [SerializeField] int emberCount = 14;
         [SerializeField] Vector3 area = new Vector3(26f, 6f, 18f);
 
-        static readonly Color MistColor = new Color(0.55f, 0.12f, 0.1f, 0.28f);   // 핏빛 안개
-        static readonly Color AshColor = new Color(0.6f, 0.55f, 0.52f, 0.85f);    // 재
-        static readonly Color EmberColor = new Color(1f, 0.42f, 0.15f, 1f);       // 불씨
+        static readonly Color MistColor = new Color(0.32f, 0.12f, 0.1f, 0.14f);   // 검붉은 잿빛 안개 (대나무 줄기 기준 통일: 옅고 어둡게)
+        static readonly Color AshColor = new Color(0.42f, 0.38f, 0.36f, 0.45f);    // 재 (어둡고 옅게)
+        static readonly Color EmberColor = new Color(0.85f, 0.38f, 0.16f, 0.6f);   // 불씨 (채도 · 밝기 낮게)
 
         Transform[] _mist, _bits;
         SpriteRenderer[] _mistSr, _bitSr;
@@ -30,6 +30,10 @@ namespace AThousandDawns.Art
             var mist = mistTex != null ? Sprite.Create(mistTex, new Rect(0, 0, mistTex.width, mistTex.height), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect) : null;
             var blot = blotTex != null ? Sprite.Create(blotTex, new Rect(0, 0, blotTex.width, blotTex.height), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect) : null;
 
+            // (대나무 줄기 기준 통일, 천마총부터): 바닥 위 장식이 적 · 예고 · 비도를 가리지 않게 안개 ⅔ · 재 · 불씨 ½
+            mistCount = Mathf.RoundToInt(mistCount * 0.67f);
+            ashCount = Mathf.RoundToInt(ashCount * 0.5f);
+            emberCount = Mathf.RoundToInt(emberCount * 0.5f);
             int m = mist != null ? mistCount : 0;
             _mist = new Transform[m];
             _mistSr = new SpriteRenderer[m];
@@ -103,7 +107,7 @@ namespace AThousandDawns.Art
                 var sway = new Vector3(Mathf.Sin(time * 0.9f + _seed[i]) * 0.3f, 0f, Mathf.Cos(time * 0.7f + _seed[i]) * 0.2f);
                 b.position += (_bitVel[i] + sway) * dt;
                 if (i >= ashCount) // 불씨는 깜빡여요 (뒤쪽 emberCount개 · 이름을 읽으면 매 프레임 문자열이 생겨서 순서로 가려요)
-                    _bitSr[i].color = new Color(EmberColor.r, EmberColor.g * (0.7f + 0.3f * Mathf.Sin(time * 9f + _seed[i])), EmberColor.b, 0.6f + 0.4f * Mathf.Sin(time * 6f + _seed[i]));
+                    _bitSr[i].color = new Color(EmberColor.r, EmberColor.g * (0.7f + 0.3f * Mathf.Sin(time * 9f + _seed[i])), EmberColor.b, EmberColor.a * (0.7f + 0.3f * Mathf.Sin(time * 3f + _seed[i])));
                 var d = b.position - c;
                 if (b.position.y > area.y || Mathf.Abs(d.x) > area.x * 0.6f || Mathf.Abs(d.z) > area.z * 0.6f) Place(b, Random.Range(0f, 0.3f)); // 바닥에서 다시 피어요
             }
