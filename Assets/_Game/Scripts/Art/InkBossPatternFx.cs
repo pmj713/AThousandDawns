@@ -496,7 +496,64 @@ namespace AThousandDawns.Art
                 case HeavenlyDemonBrain.FxKind.Bound: Host().Chains(c.Target, c.Time); break;
                 case HeavenlyDemonBrain.FxKind.RiftOpen: { var h = Host(); h.RiftOpen(c.At, c.Time); h.QueueRift(c.At, c.Radius, c.Time); break; }
                 case HeavenlyDemonBrain.FxKind.MeteorTrack: Host().MeteorShadow(c.Target, c.At, c.Radius, c.Time); break;
+                case HeavenlyDemonBrain.FxKind.MiasmaMark: Host().MiasmaGather(c.At, c.Radius, c.Time); break;
             }
+        }
+
+        // 마기 장판 예고 (MiasmaMark: At · Radius · Time = 깔리기까지, 플레이테스트 10차): 둘레에서 검붉은 마기 덩이들이 가운데로 빨려 모여들고,
+        //   검붉은 고리가 바깥에서 반경까지 조여 들며, 가운데 웅덩이가 점점 짙어져요. 다 차면 마기 장판(GhostFire, InkHeavenlyDemonFx)이 이어요.
+        static readonly Color Miasma = new Color(0.45f, 0.04f, 0.12f);
+
+        void MiasmaGather(Vector3 at, float radius, float time)
+        {
+            if (_glow == null) return;
+            at.y = 0f;
+            float life = Mathf.Max(0.1f, time);
+            var pool = FlatSprite(_glow, at, radius * 2.2f, 0f, 0.05f, 4, new Color(Miasma.r, Miasma.g, Miasma.b, 0f));
+            var ring = _ring != null ? FlatSprite(_ring, at, radius * 2.6f, 0f, 0.055f, 5, new Color(0.7f, 0.08f, 0.15f, 0f)) : null;
+            Vector3 poolUnit = pool.transform.localScale, ringUnit = ring != null ? ring.transform.localScale : Vector3.one;
+            const int motes = 10;
+            var orbs = new Transform[motes];
+            var orbR = new SpriteRenderer[motes];
+            var start = new float[motes];
+            for (int i = 0; i < motes; i++)
+            {
+                orbs[i] = new GameObject("Miasma Mote").transform;
+                orbs[i].SetParent(transform, false);
+                orbs[i].gameObject.AddComponent<InkFaceCamera>();
+                orbR[i] = GlowOrb(orbs[i], UnityEngine.Random.Range(0.35f, 0.6f), new Color(Miasma.r, Miasma.g, Miasma.b, 0f), 8);
+                start[i] = UnityEngine.Random.Range(0f, 360f);
+            }
+            float t = 0f;
+            _live.Add(dt =>
+            {
+                if (pool == null) return false;
+                t += dt;
+                float k = Mathf.Clamp01(t / life);
+                pool.transform.localScale = poolUnit * Mathf.Lerp(0.4f, 1f, k);
+                pool.color = new Color(Miasma.r, Miasma.g, Miasma.b, Mathf.Lerp(0.15f, 0.7f, k));
+                if (ring != null)
+                {
+                    ring.transform.localScale = ringUnit * Mathf.Lerp(1.35f, 0.85f, k);
+                    ring.transform.Rotate(0f, 0f, -90f * dt, Space.Self);
+                    ring.color = new Color(0.7f, 0.08f, 0.15f, 0.75f * Mathf.Sqrt(k));
+                }
+                for (int i = 0; i < motes; i++) // 둘레 → 가운데로 빨려 들어요 (덩이마다 0.45초에 한 바퀴씩 다시)
+                {
+                    if (orbs[i] == null) continue;
+                    float phase = (t / 0.45f + i / (float)motes) % 1f;
+                    float ang = (start[i] + t * 60f) * Mathf.Deg2Rad;
+                    float r = radius * 1.4f * (1f - phase * phase);
+                    orbs[i].position = at + new Vector3(Mathf.Cos(ang) * r, 0.3f + 0.4f * (1f - phase), Mathf.Sin(ang) * r);
+                    orbR[i].color = new Color(Miasma.r + 0.15f, Miasma.g, Miasma.b + 0.05f, 0.75f * Mathf.Sin(phase * Mathf.PI) * Mathf.Clamp01(t / 0.15f));
+                }
+                if (t < life) return true;
+                InkParticles.Burst(at + Vector3.up * 0.4f, 14, new Color(0.7f, 0.1f, 0.2f, 0.9f), new Color(0.2f, 0.02f, 0.05f, 0f), radius * 1.2f, 0.4f, 0.6f, -0.3f);
+                Destroy(pool.gameObject);
+                if (ring != null) Destroy(ring.gameObject);
+                foreach (var o in orbs) if (o != null) Destroy(o.gameObject);
+                return false;
+            });
         }
 
         // 긴 빛 직선 (발도 일섬 = 흰빛, 차원 베기 = 보랏빛): 공중 빛줄기 + 바닥 자국 + 불빛 번쩍 + 불티
@@ -1302,12 +1359,14 @@ namespace AThousandDawns.Art
             Vector3 center = Vector3.zero;
             foreach (var r in _rifts) center += r.at;
             center /= _rifts.Count;
+            float reach = AThousandDawns.Core.GameConfig.GetOptional("heavenlydemon.rift_line_scale", 1.6f); // 베는 줄 = 균열 거리 × 이 값 (플레이테스트 10차)
             foreach (var r in _rifts)
             {
                 Vector3 dir = Flat(center - r.at);
-                float length = Vector3.Distance(center, r.at) * 2f;
+                Vector3 start = center + (r.at - center) * reach;
+                float length = Vector3.Distance(center, r.at) * 2f * reach;
                 float t = 0f, life = r.time;
-                FlowArrows(() => (t += Time.deltaTime) < life, r.at, dir, length, 1f, Violet, life + 0.1f);
+                FlowArrows(() => (t += Time.deltaTime) < life, start, dir, length, 1f, Violet, life + 0.1f);
             }
             _rifts.Clear();
         }

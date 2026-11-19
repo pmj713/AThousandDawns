@@ -203,7 +203,7 @@ namespace AThousandDawns.Art
                 Vector3 from = bomber != null ? bomber.transform.position + Vector3.up * 1.2f : land;
                 bool thrown = bomber != null && (Flat(bomber.transform.position) - Flat(land)).magnitude > 1f; // 죽은 뒤 폭발은 제자리
                 var glob = thrown ? Upright(_drop, from, 0.35f, 7) : null;
-                float t = 0f, flight = 0.45f;
+                float t = 0f, flight = Mathf.Max(0.05f, burst.TimeLeft); // 장판이 깔리는 순간에 맞춰 떨어져요 (BloodBurst.TimeLeft, 플레이테스트 10차)
                 Vector3 last = land;
                 _live.Add(dt =>
                 {
