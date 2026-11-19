@@ -38,6 +38,8 @@ namespace AThousandDawns.Art
             SkeletonBrain.Reassembled += OnRise;
             WerewolfBrain.Enraged -= OnEnraged;
             WerewolfBrain.Enraged += OnEnraged;
+            WerewolfBrain.Clawed -= OnClawed; // 할퀴기 3연타 한 방마다 세 줄 발톱 자국 (일반 · 엘리트 겹침 점검)
+            WerewolfBrain.Clawed += OnClawed;
             GargoyleBrain.StoneChanged -= OnStone;
             GargoyleBrain.StoneChanged += OnStone;
             Damageable.AnyDamaged -= OnDamaged;
@@ -219,7 +221,6 @@ namespace AThousandDawns.Art
                 }
                 if (e.Kind == EnemyKind.Werewolf)
                 {
-                    if (s.fast && !fast && e.AttackName == "발톱 베기") Claws(p, s.last - p); // 덮치고 멈추는 순간: 세 줄 발톱 자국
                     var w = e as WerewolfBrain;
                     if (w != null && w.IsEnraged) // 광폭 (플레이테스트 3차: 몸이 아니라 손톱에서): 덮칠 때만 두 손에서 붉은 기운이 피어오르고 붉은 손톱 자국 꼬리
                     {
@@ -333,6 +334,16 @@ namespace AThousandDawns.Art
             if (root.name == name || root.name.EndsWith(":" + name)) return root;
             foreach (Transform child in root) { var t = Bone(child, name); if (t != null) return t; }
             return null;
+        }
+
+        // 할퀴기 한 방 (index 0 · 1 · 2): 번갈아 비스듬히 그어요 (Claws는 back = 뒤쪽 방향을 받아요)
+        static void OnClawed(WerewolfBrain w, Vector3 at, Vector3 dir, int index)
+        {
+            if (w == null) return;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 1e-4f) dir = w.transform.forward;
+            dir = Quaternion.Euler(0f, index == 1 ? -28f : index == 2 ? 0f : 28f, 0f) * dir.normalized;
+            Host().Claws(at, -dir);
         }
 
         static void OnEnraged(WerewolfBrain w) // 포효: 붉은 김이 터져요

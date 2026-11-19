@@ -41,6 +41,8 @@ namespace AThousandDawns.Art
                 {
                     if (go.transform.Find(Marker) == null) DressArrow(go);
                 }
+                else if (go.name == "LobbedArrow") DressShot(go, false); // 고블린 궁수 곡사 화살 (포물선, 진행 방향을 따라 기울어요)
+                else if (go.name == "ImpFireball") DressShot(go, true);  // 임프 화염구 (단색 구는 숨기고 불덩이)
                 else if (go.name == "Telegraph" && IsBurst(go)) SpawnBurst(go);
             }
             if ((_pruneTimer -= Time.unscaledDeltaTime) <= 0f) // 사라진 루트는 가끔 비워요
@@ -65,6 +67,19 @@ namespace AThousandDawns.Art
             var s = arrow.transform.lossyScale;
             visual.localScale = new Vector3(1f / s.x, 1f / s.y, 1f / s.z);
             if (shuriken) BuildShuriken(visual); else BuildArrow(visual);
+        }
+
+        // 곡사 화살 · 임프 화염구: 단색 도형은 숨기고 그림을 입혀요. 곡사 화살은 날아가는 방향으로 머리를 돌려요 (InkFaceVelocity)
+        void DressShot(GameObject go, bool fireball)
+        {
+            var r = go.GetComponent<Renderer>();
+            if (r != null) r.enabled = false;
+            var visual = new GameObject(Marker).transform;
+            visual.SetParent(go.transform, false);
+            var s = go.transform.lossyScale;
+            visual.localScale = new Vector3(1f / Mathf.Max(0.001f, s.x), 1f / Mathf.Max(0.001f, s.y), 1f / Mathf.Max(0.001f, s.z));
+            if (fireball) { BuildImpBolt(visual); visual.localScale *= 1.6f; }
+            else { BuildGoblinArrow(visual); visual.gameObject.AddComponent<InkFaceVelocity>(); }
         }
 
         void DressArrow(GameObject arrow)
@@ -182,6 +197,19 @@ namespace AThousandDawns.Art
                 case EnemyKind.Hyegwang: Face(visual, "MasterFx/Bead", 0.5f, false); Trail(visual, Vector3.zero, 0.2f, 0.22f, new Color(1f, 0.82f, 0.25f, 0.85f)); return true;
                 case EnemyKind.Takrang: Flat(visual, "MasterFx/Hook", 0.8f, 0f, Color.white); InkParticles.Frost(visual, Vector3.zero, 0.15f, 1.2f); Trail(visual, new Vector3(0f, 0f, -0.3f), 0.16f, 0.25f, new Color(0.35f, 0.7f, 1f, 0.8f)); return true;
                 case EnemyKind.BloodShadow: Flat(visual, "MasterFx/BloodDagger", 0.65f, 0f, Color.white); Trail(visual, Vector3.zero, 0.16f, 0.25f, new Color(0.95f, 0.1f, 0.15f, 0.85f)); return true;
+                case EnemyKind.GoblinRogue: // 고블린 단검꾼 투척 단검 (일반 · 엘리트 겹침 점검): 녹슨 쇠 날 + 가죽 감은 자루, 빙글 돌며 날아가요
+                {
+                    var spin = new GameObject("Spin").transform;
+                    spin.SetParent(visual, false);
+                    spin.gameObject.AddComponent<InkSpin>().Speed(-900f);
+                    var iron = Tinted(shaftMaterial, new Color(0.55f, 0.52f, 0.48f), "Rusty Iron");
+                    var grip = Tinted(featherMaterial, new Color(0.4f, 0.26f, 0.14f), "Leather Grip");
+                    Box(spin, "Blade", new Vector3(0f, 0f, 0.1f), new Vector3(0.08f, 0.02f, 0.32f), Quaternion.identity, iron);
+                    Box(spin, "Tip", new Vector3(0f, 0f, 0.28f), new Vector3(0.06f, 0.02f, 0.06f), Quaternion.Euler(0f, 45f, 0f), iron);
+                    Box(spin, "Grip", new Vector3(0f, 0f, -0.12f), new Vector3(0.05f, 0.05f, 0.14f), Quaternion.identity, grip);
+                    Trail(visual, Vector3.zero, 0.1f, 0.16f, new Color(0.6f, 0.75f, 0.35f, 0.6f));
+                    return true;
+                }
                 case EnemyKind.GoblinChief: Face(visual, "MasterFx/Axe", 0.6f, true); Trail(visual, Vector3.zero, 0.14f, 0.18f, new Color(0.8f, 0.7f, 0.5f, 0.6f)); return true;
                 case EnemyKind.DarkElf: Flat(visual, "DarkElfFx/PoisonDagger", 0.7f, 0f, Color.white); Trail(visual, Vector3.zero, 0.14f, 0.22f, new Color(0.5f, 1f, 0.3f, 0.8f)); return true; // 다크 엘프 독 단검
                 case EnemyKind.DeathKnight: Flat(visual, "DeathKnightFx/GhostCrescent", 1.2f, -90f, Color.white); InkParticles.Frost(visual, Vector3.zero, 0.3f, 1.5f); Trail(visual, Vector3.zero, 0.35f, 0.25f, new Color(0.3f, 1f, 0.85f, 0.8f)); return true; // 데스나이트 저주 검기: 청록 유령불 초승달
