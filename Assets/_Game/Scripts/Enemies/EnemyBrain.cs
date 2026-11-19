@@ -133,6 +133,8 @@ namespace AThousandDawns.Enemies
         public static event System.Action<EnemyBrain, Vector3, Vector3, float, float> Swung; // 누가, 어디서, 방향, 반경, 각도
         public static event System.Action<EnemyBrain, Vector3, Vector3, float, float> Thrust; // 찌르기 (아트): 누가, 어디서, 방향, 길이, 폭
         protected void Thrusted(float length, float width) => Thrust?.Invoke(this, transform.position, AimDirection, length, width);
+        public static event System.Action<EnemyBrain, Vector3, Vector3, float, float, int> RegularStrike; // 일반 적 근접 한 방: 누가, 어디서, 방향, 길이(반경), 폭(각도), 모양(0 부채꼴 · 1 직선 · 2 원)
+        protected void SignalRegularStrike(Vector3 at, float length, float width, int shape) => RegularStrike?.Invoke(this, at, AimDirection, length, width, shape);
 
         protected bool SwingHit(Vector3 from, Vector3 dir, float radius, float angle)
         {

@@ -98,13 +98,13 @@ grunt.hp,30,,졸개 체력 (죽림),몬스터!B22
 grunt.atk,8,,졸개 공격,몬스터!C22
 grunt.toughness,0,,졸개 강인함,몬스터!D22
 grunt.move_speed,3.5,cell/s,졸개 이동,몬스터!C74
-grunt.attack_range,1.2,cell,졸개 베기 반경,몬스터!D74
-grunt.lunge,1.5,cell,졸개 전진 거리,몬스터!E74
+grunt.attack_range,2.2,cell,졸개 내려찍기: 앞으로 뻗는 직선 길이 (내디딘 걸음 포함),플레이테스트 11차
+grunt.lunge,0.5,cell,졸개 내려찍기: 내리치며 내디디는 걸음,플레이테스트 11차
 grunt.windup,0.6,s,졸개 예고,몬스터!F74
 grunt.recovery,0.6,s,졸개 빈틈,몬스터!G74
 grunt.attack_interval,1.8,s,졸개 공격 간격,몬스터!H74
-grunt.attack_angle,60,deg,졸개 베기 부채꼴 각도 (몬스터 K74 설명),
 grunt.lunge_time,0.15,s,졸개 전진 베기에 걸리는 시간 (임시),
+grunt.attack_width,0.9,cell,졸개 내려찍기: 직선 폭 (좁아서 옆은 비어요),플레이테스트 11차
 boar.hp,80,,멧돼지 체력 (죽림),몬스터!B24
 boar.atk,15,,멧돼지 공격,몬스터!C24
 boar.toughness,3,,멧돼지 강인함,몬스터!D24
@@ -150,9 +150,7 @@ hound.lunge,2,cell,들개 뛰어드는 거리,몬스터!E75
 hound.windup,0.35,s,들개 예고,몬스터!F75
 hound.recovery,0.5,s,들개 빈틈 (착지 순간),몬스터!G75
 hound.attack_interval,1.5,s,들개 공격 간격,몬스터!H75
-hound.hop_distance,1.5,cell,물고 옆으로 빠지는 거리 (몬스터 K75 설명),
 hound.leap_time,0.2,s,뛰어드는 데 걸리는 시간 (임시),
-hound.hop_time,0.2,s,옆으로 빠지는 데 걸리는 시간 (임시),
 hound.bite_reach,0.3,cell,몸 바깥으로 무는 거리 (임시),
 hound.flank_angle,100,deg,플레이어가 보는 방향에서 돌아 들어가는 각도 (임시),
 shield.hp,60,,방패 산적 체력 (죽림),몬스터!B26
@@ -1092,23 +1090,25 @@ slime.leap_time,0.3,s,슬라임 덮치기 시간,차원 겹침 개편
 slime.bite_reach,0.4,cell,슬라임 몸통 판정,차원 겹침 개편
 slime.split_count,2,,슬라임이 쓰러지면 갈라지는 수 (작은 것은 다시 안 갈라져요),차원 겹침 개편
 slime.split_health,40%,,갈라진 작은 슬라임 체력 비율,차원 겹침 개편
+slime.puddle_radius,1,cell,슬라임 덮친 자리 점액 반경,플레이테스트 11차
+slime.puddle_life,3,s,슬라임 점액 지속,플레이테스트 11차
+slime.puddle_slow,35%,,슬라임 점액 안 이동 둔화 (피해 없음),플레이테스트 11차
 goblin.hp,22,,고블린 (몽둥이) 체력,차원 겹침 개편
 goblin.atk,6,,고블린 공격,차원 겹침 개편
 goblin.toughness,0,,고블린 강인함,차원 겹침 개편
 goblin.move_speed,4,cell/s,고블린 이동,차원 겹침 개편
-goblin.attack_range,1,cell,고블린 몽둥이 반경,차원 겹침 개편
-goblin.lunge,1.2,cell,고블린 전진 휘두르기 거리,차원 겹침 개편
+goblin.attack_range,1,cell,고블린 뛰어 내려치기: 내려앉은 자리 둘레 원 반경,플레이테스트 11차
+goblin.lunge,1.5,cell,고블린 뛰어 내려치기: 앞으로 뛰는 최대 거리 (상대 몸 바로 앞까지 · 벽에 막혀요),플레이테스트 11차
 goblin.windup,0.5,s,고블린 예고,차원 겹침 개편
 goblin.recovery,0.5,s,고블린 빈틈,차원 겹침 개편
 goblin.attack_interval,1.6,s,고블린 공격 간격,차원 겹침 개편
-goblin.attack_angle,70,deg,고블린 휘두르기 각도,차원 겹침 개편
-goblin.lunge_time,0.15,s,고블린 전진 시간,차원 겹침 개편
+goblin.lunge_time,0.25,s,고블린 뛰어 내려치기: 뛰어올라 내려앉기까지 (내려앉은 뒤 0.12초 판정),플레이테스트 11차
 goblinarcher.hp,18,,고블린 궁수 체력,차원 겹침 개편
 goblinarcher.atk,6,,고블린 궁수 공격,차원 겹침 개편
 goblinarcher.toughness,0,,고블린 궁수 강인함,차원 겹침 개편
 goblinarcher.move_speed,3.5,cell/s,고블린 궁수 이동,차원 겹침 개편
-goblinarcher.attack_range,9,cell,고블린 궁수 사거리,차원 겹침 개편
-goblinarcher.windup,0.6,s,고블린 궁수 예고,차원 겹침 개편
+goblinarcher.attack_range,9,cell,고블린 궁수 곡사 사거리 (떨어질 자리까지),플레이테스트 11차
+goblinarcher.windup,0.5,s,고블린 궁수 곡사 조준 예고 (앞 절반은 원이 따라와요),플레이테스트 11차
 goblinarcher.recovery,0.4,s,고블린 궁수 빈틈,차원 겹침 개편
 goblinarcher.attack_interval,2.2,s,고블린 궁수 공격 간격,차원 겹침 개편
 goblinarcher.keep_min,4.5,cell,고블린 궁수 유지 거리 최소,차원 겹침 개편
@@ -1116,22 +1116,28 @@ goblinarcher.keep_max,6.5,cell,고블린 궁수 유지 거리 최대,차원 겹�
 goblinarcher.retreat_distance,2,cell,고블린 궁수 물러나기,차원 겹침 개편
 goblinarcher.strafe_speed,2.2,cell/s,고블린 궁수 옆걸음,차원 겹침 개편
 goblinarcher.shot_pause,0.2,s,고블린 궁수 쏘는 순간 멈춤,차원 겹침 개편
-goblinarcher.arrow_speed,11,cell/s,고블린 화살 속도,차원 겹침 개편
-goblinarcher.arrow_radius,0.2,cell,고블린 화살 판정,차원 겹침 개편
+goblinarcher.lob_radius,1,cell,고블린 궁수 곡사 떨어지는 원 반경,플레이테스트 11차
+goblinarcher.lob_flight,1,s,고블린 궁수 곡사 화살이 날아가는 시간 (원 예고가 차오르는 시간),플레이테스트 11차
+goblinarcher.lob_ratio,90%,,고블린 궁수 곡사 피해 (공격 배율),플레이테스트 11차
+goblinarcher.lob_lead,0.3,s,고블린 궁수 곡사 앞질러 쏘기 (플레이어 이동 × 이 시간),플레이테스트 11차
+goblinarcher.lob_lead_max,1.5,cell,고블린 궁수 곡사 앞질러 쏘기 최대 거리,플레이테스트 11차
+goblinarcher.lob_apex,2.5,cell,고블린 궁수 곡사 화살 최고 높이 (활 높이 위로),플레이테스트 11차
 goblinrogue.hp,18,,고블린 단검꾼 체력,차원 겹침 개편
 goblinrogue.atk,7,,고블린 단검꾼 공격,차원 겹침 개편
 goblinrogue.toughness,0,,고블린 단검꾼 강인함,차원 겹침 개편
-goblinrogue.move_speed,5.5,cell/s,고블린 단검꾼 이동,차원 겹침 개편
-goblinrogue.attack_range,1.8,cell,고블린 단검꾼 파고들기 시작 거리,차원 겹침 개편
-goblinrogue.lunge,1.8,cell,고블린 단검꾼 파고들기 거리,차원 겹침 개편
-goblinrogue.windup,0.3,s,고블린 단검꾼 예고,차원 겹침 개편
-goblinrogue.recovery,0.5,s,고블린 단검꾼 빈틈,차원 겹침 개편
-goblinrogue.attack_interval,1.4,s,고블린 단검꾼 공격 간격,차원 겹침 개편
-goblinrogue.leap_time,0.15,s,고블린 단검꾼 파고들기 시간,차원 겹침 개편
-goblinrogue.bite_reach,0.3,cell,고블린 단검꾼 찌르기 판정,차원 겹침 개편
-goblinrogue.hop_distance,1.8,cell,고블린 단검꾼 빠지기 거리,차원 겹침 개편
-goblinrogue.hop_time,0.2,s,고블린 단검꾼 빠지기 시간,차원 겹침 개편
-goblinrogue.flank_angle,120,deg,고블린 단검꾼 돌아 들어가는 각도,차원 겹침 개편
+goblinrogue.move_speed,4.5,cell/s,고블린 단검꾼 이동 (거리 두기 · 물러나기),플레이테스트 11차
+goblinrogue.attack_range,9,cell,고블린 단검꾼 단검 던지기 사거리 (단검이 날아가는 거리),플레이테스트 11차
+goblinrogue.windup,0.5,s,고블린 단검꾼 단검 던지기 예고,플레이테스트 11차
+goblinrogue.recovery,0.4,s,고블린 단검꾼 빈틈,플레이테스트 11차
+goblinrogue.attack_interval,2,s,고블린 단검꾼 공격 간격,플레이테스트 11차
+goblinrogue.keep_min,4,cell,고블린 단검꾼 유지 거리 최소 (더 가까우면 물러나요),플레이테스트 11차
+goblinrogue.keep_max,6,cell,고블린 단검꾼 유지 거리 최대,플레이테스트 11차
+goblinrogue.retreat_distance,2,cell,고블린 단검꾼 물러나기,플레이테스트 11차
+goblinrogue.strafe_speed,2.5,cell/s,고블린 단검꾼 옆걸음,플레이테스트 11차
+goblinrogue.shot_pause,0.2,s,고블린 단검꾼 던지는 순간 멈춤,플레이테스트 11차
+goblinrogue.dagger_speed,13,cell/s,고블린 단검꾼 단검 속도,플레이테스트 11차
+goblinrogue.dagger_radius,0.2,cell,고블린 단검꾼 단검 판정 (예고 폭의 절반),플레이테스트 11차
+goblinrogue.dagger_ratio,80%,,고블린 단검꾼 단검 피해 (공격 배율),플레이테스트 11차
 goblinshaman.hp,30,,고블린 주술사 체력,차원 겹침 개편
 goblinshaman.atk,5,,고블린 주술사 공격,차원 겹침 개편
 goblinshaman.toughness,0,,고블린 주술사 강인함,차원 겹침 개편
@@ -1141,15 +1147,13 @@ goblinshaman.recovery,0.5,s,고블린 주술사 빈틈,차원 겹침 개편
 goblinshaman.attack_interval,6,s,고블린 주술사 주문 간격,차원 겹침 개편
 goblinshaman.keep_distance,6,cell,고블린 주술사 유지 거리,차원 겹침 개편
 goblinshaman.summon_count,0,,고블린 주술사는 부르지 않아요,차원 겹침 개편
-goblinshaman.command_radius,7,cell,고블린 주술사 광폭화 범위,차원 겹침 개편
-goblinshaman.command_haste,25%,,고블린 주술사 광폭화: 이동 · 공격 빨라짐,차원 겹침 개편
-goblinshaman.command_time,4,s,고블린 주술사 광폭화 시간,차원 겹침 개편
 goblinshaman.curse_radius,1.5,cell,고블린 주술사 저주 장판 반경,차원 겹침 개편
 goblinshaman.curse_life,4,s,고블린 주술사 저주 장판 시간,차원 겹침 개편
-goblinshaman.curse_ratio,50%,,고블린 주술사 저주 장판 피해 (공격 대비),차원 겹침 개편
-goblinshaman.curse_slow,30%,,고블린 주술사 저주 장판 둔화,차원 겹침 개편
-goblinshaman.curse_slow_time,1.5,s,고블린 주술사 저주 장판 둔화 시간,차원 겹침 개편
+goblinshaman.curse_ratio,50%,,고블린 주술사 저주 장판 피해 (공격 대비 · 0.5초마다),플레이테스트 11차
 goblinshaman.curse_delay,0.9,s,고블린 주술사 저주 장판 예고 시간,플레이테스트 3차
+goblinshaman.heal_radius,7,cell,고블린 주술사 치유 범위 (다친 동료만 · 자신은 빼요),플레이테스트 11차
+goblinshaman.heal_ratio,15%,,고블린 주술사 치유량 (동료 최대 체력 대비),플레이테스트 11차
+goblinshaman.curse_linger,0.5,s,고블린 주술사 저주 장판: 나온 뒤에도 남는 저주 (모든 피해 −elite.curse_attack),플레이테스트 11차
 room_cost.slime,2,,방 예산 점수: 슬라임,차원 겹침 개편
 room_cost.goblin,2,,방 예산 점수: 고블린 (둘이 한 무리),차원 겹침 개편
 room_cost.goblinarcher,2,,방 예산 점수: 고블린 궁수,차원 겹침 개편
@@ -1169,12 +1173,9 @@ fantasy.infection,1,,"차원 감염 정예: 판타지 적은 무공 (경공), �
 elite.gyeonggong_interval,4,s,차원 감염 경공: 내달리는 간격,차원 겹침 개편
 elite.gyeonggong_distance,4,cell,차원 감염 경공: 내달리는 거리 (최대),차원 겹침 개편
 elite.gyeonggong_speed,18,cell/s,차원 감염 경공: 내달리는 속도,차원 겹침 개편
-elite.fireball_interval,5,s,차원 감염 화염구: 던지는 간격,차원 겹침 개편
-elite.fireball_range,10,cell,차원 감염 화염구: 던지는 거리,차원 겹침 개편
-elite.fireball_radius,1.3,cell,차원 감염 화염구: 폭발 반경,차원 겹침 개편
-elite.fireball_fuse,1,s,차원 감염 화염구: 예고 (떨어지기까지),차원 겹침 개편
-elite.fireball_ratio,80%,,차원 감염 화염구: 피해 (공격력 대비),차원 겹침 개편
-elite.fireball_fire_life,2.5,s,차원 감염 화염구: 남는 불길 시간,차원 겹침 개편
+elite.fireball_interval,5,s,차원 감염 화염구: 불화살 쏘는 간격,플레이테스트 11차
+elite.fireball_range,10,cell,차원 감염 화염구: 불화살 사거리 (이 거리 안이면 쏴요),플레이테스트 11차
+elite.fireball_ratio,80%,,차원 감염 화염구: 불화살 피해 (공격력 대비 · 맞으면 화상 1중첩),플레이테스트 11차
 elite.blink_interval,6,s,차원 감염 순간이동: 간격,차원 겹침 개편
 elite.blink_distance,2.5,cell,차원 감염 순간이동: 플레이어 곁 거리,차원 겹침 개편
 hybrid.blazing.t1,30%,,"이계 세트 업화 (#열양 이계 2개): 화상 피해 +",차원 겹침 개편
@@ -1193,42 +1194,48 @@ orc.hp,90,,오크 체력,차원 겹침 개편
 orc.atk,14,,오크 공격,차원 겹침 개편
 orc.toughness,3,,오크 강인함,차원 겹침 개편
 orc.move_speed,3,cell/s,오크 이동,차원 겹침 개편
-orc.attack_range,8,cell,오크 돌진 시작 거리,차원 겹침 개편
-orc.charge_distance,8,cell,오크 돌진 거리,차원 겹침 개편
-orc.windup,0.8,s,오크 돌진 예고,차원 겹침 개편
-orc.recovery,1,s,오크 빈틈,차원 겹침 개편
+orc.attack_range,5,cell,오크 땅 내려찍기 시작 거리,플레이테스트 11차
+orc.windup,0.8,s,오크 땅 내려찍기 예고 (일직선 직사각형),플레이테스트 11차
+orc.recovery,1,s,오크 빈틈 (내려찍은 뒤),플레이테스트 11차
 orc.attack_interval,4,s,오크 공격 간격,차원 겹침 개편
-orc.charge_speed,13,cell/s,오크 돌진 속도,차원 겹침 개편
-orc.wall_stun,1.5,s,오크 벽에 부딪혀 멍한 시간,차원 겹침 개편
-orc.charge_width,1.4,cell,오크 돌진 폭,차원 겹침 개편
+orc.slam_length,6,cell,오크 충격파 길이 (발밑부터 · 벽에서 멈춤),플레이테스트 11차
+orc.slam_width,1,cell,오크 충격파 폭,플레이테스트 11차
+orc.slam_speed,12,cell/s,오크 충격파가 땅을 타고 나가는 속도,플레이테스트 11차
+orc.slam_ratio,100%,,오크 충격파 피해 (공격 대비 · 끝이 지나갈 때 한 번),플레이테스트 11차
+orc.slam_knockback,0.5,cell,오크 충격파 넉백,플레이테스트 11차
 skeleton.hp,28,,스켈레톤 체력,차원 겹침 개편
 skeleton.atk,8,,스켈레톤 공격,차원 겹침 개편
 skeleton.toughness,0,,스켈레톤 강인함,차원 겹침 개편
 skeleton.move_speed,3.2,cell/s,스켈레톤 이동,차원 겹침 개편
-skeleton.attack_range,1.2,cell,스켈레톤 베기 반경,차원 겹침 개편
-skeleton.lunge,1.4,cell,스켈레톤 전진 베기 거리,차원 겹침 개편
+skeleton.attack_range,1.6,cell,스켈레톤 방패 밀치기: 앞으로 뻗는 직선 길이 (내딛는 걸음 포함),플레이테스트 11차
+skeleton.lunge,0.4,cell,스켈레톤 방패 밀치기: 밀치며 내딛는 걸음,플레이테스트 11차
 skeleton.windup,0.6,s,스켈레톤 예고,차원 겹침 개편
 skeleton.recovery,0.6,s,스켈레톤 빈틈,차원 겹침 개편
 skeleton.attack_interval,1.8,s,스켈레톤 공격 간격,차원 겹침 개편
-skeleton.attack_angle,60,deg,스켈레톤 베기 각도,차원 겹침 개편
 skeleton.lunge_time,0.15,s,스켈레톤 전진 시간,차원 겹침 개편
 skeleton.reassemble_time,1.5,s,"스켈레톤: 처음 쓰러질 때 뼈가 무너졌다 다시 맞춰지는 시간 (맞지 않음)",차원 겹침 개편
 skeleton.revive_health,50%,,스켈레톤: 다시 일어날 때 체력,차원 겹침 개편
+skeleton.attack_width,1.2,cell,스켈레톤 방패 밀치기: 직선 폭,플레이테스트 11차
+skeleton.knockback,2,cell,스켈레톤 방패 밀치기: 맞으면 밀려나는 거리,플레이테스트 11차
 imp.hp,16,,임프 체력,차원 겹침 개편
 imp.atk,7,,임프 공격,차원 겹침 개편
 imp.toughness,0,,임프 강인함,차원 겹침 개편
 imp.move_speed,4,cell/s,임프 이동 (날아다녀요),차원 겹침 개편
-imp.attack_range,9,cell,임프 화염탄 사거리,차원 겹침 개편
-imp.windup,0.6,s,임프 화염탄 예고,차원 겹침 개편
+imp.attack_range,9,cell,임프 화염구 사거리 (날아가는 거리),플레이테스트 11차
+imp.windup,0.6,s,임프 화염구 예고,플레이테스트 11차
 imp.recovery,0.4,s,임프 빈틈,차원 겹침 개편
 imp.attack_interval,2.4,s,임프 공격 간격,차원 겹침 개편
 imp.keep_min,5,cell,임프 유지 거리 최소,차원 겹침 개편
 imp.keep_max,7,cell,임프 유지 거리 최대,차원 겹침 개편
 imp.retreat_distance,2.5,cell,임프 물러나기,차원 겹침 개편
 imp.strafe_speed,3,cell/s,임프 옆으로 날기,차원 겹침 개편
-imp.shot_pause,0.2,s,임프 던지는 순간 멈춤,차원 겹침 개편
-imp.arrow_speed,9,cell/s,임프 화염탄 속도,차원 겹침 개편
-imp.arrow_radius,0.3,cell,임프 화염탄 판정,차원 겹침 개편
+imp.shot_pause,0.2,s,임프 던지는 순간 멈춤,플레이테스트 11차
+imp.fireball_speed,6,cell/s,임프 화염구 속도 (느려요),플레이테스트 11차
+imp.fireball_radius,0.3,cell,임프 화염구 몸 크기 (벽 · 사선 판정),플레이테스트 11차
+imp.fireball_trigger,1.2,cell,임프 화염구가 터지는 플레이어와의 거리 (예고 폭의 절반),플레이테스트 11차
+imp.fireball_blast,1.2,cell,임프 화염구 폭발 반경,플레이테스트 11차
+imp.fireball_ratio,80%,,임프 화염구 피해 (공격 배율),플레이테스트 11차
+imp.fireball_burn_stacks,1,,임프 화염구에 맞으면 플레이어 화상 중첩 (player_burn.damage),플레이테스트 11차
 room_cost.orc,3,,방 예산 점수: 오크,차원 겹침 개편
 room_cost.skeleton,2,,방 예산 점수: 스켈레톤,차원 겹침 개편
 room_cost.imp,2,,방 예산 점수: 임프,차원 겹침 개편
@@ -1685,37 +1692,35 @@ harpy.recovery,0.6,s,하피 빈틈,판타지 졸개 추가
 harpy.attack_interval,2.2,s,하피 공격 간격,판타지 졸개 추가
 harpy.leap_time,0.3,s,하피 급강하 시간,판타지 졸개 추가
 harpy.bite_reach,0.4,cell,하피 발톱 판정,판타지 졸개 추가
-harpy.hop_distance,2.5,cell,하피 할퀸 뒤 빠지기 거리,판타지 졸개 추가
-harpy.hop_time,0.25,s,하피 빠지기 시간,판타지 졸개 추가
 harpy.flank_angle,140,deg,하피 돌아 들어가는 각도,판타지 졸개 추가
 werewolf.hp,60,,늑대인간 체력,판타지 졸개 추가
 werewolf.atk,11,,늑대인간 공격,판타지 졸개 추가
 werewolf.toughness,2,,늑대인간 강인함,판타지 졸개 추가
 werewolf.move_speed,4.8,cell/s,늑대인간 이동,판타지 졸개 추가
-werewolf.attack_range,2,cell,늑대인간 파고들기 시작 거리,판타지 졸개 추가
-werewolf.lunge,2.2,cell,늑대인간 파고들기 거리,판타지 졸개 추가
-werewolf.windup,0.45,s,늑대인간 발톱 예고,판타지 졸개 추가
+werewolf.attack_range,2,cell,늑대인간 할퀴기 3연타 시작 거리,플레이테스트 11차
+werewolf.windup,0.45,s,늑대인간 할퀴기 3연타 예고,플레이테스트 11차
 werewolf.recovery,0.5,s,늑대인간 빈틈,판타지 졸개 추가
 werewolf.attack_interval,1.8,s,늑대인간 공격 간격,판타지 졸개 추가
-werewolf.leap_time,0.18,s,늑대인간 파고들기 시간,판타지 졸개 추가
-werewolf.bite_reach,0.4,cell,늑대인간 발톱 판정,판타지 졸개 추가
-werewolf.hop_distance,1.5,cell,늑대인간 빠지기 거리,판타지 졸개 추가
-werewolf.hop_time,0.2,s,늑대인간 빠지기 시간,판타지 졸개 추가
-werewolf.flank_angle,100,deg,늑대인간 돌아 들어가는 각도,판타지 졸개 추가
 werewolf.enrage_hp,50%,,늑대인간 광폭화: 체력이 이 아래로 떨어지면 (한 번),판타지 졸개 추가
 werewolf.enrage_speed,1.4,,늑대인간 광폭화 이동 배율,판타지 졸개 추가
 werewolf.enrage_interval,0.6,,늑대인간 광폭화 공격 간격 배율,판타지 졸개 추가
+werewolf.claw_count,3,,늑대인간 할퀴기 횟수,플레이테스트 11차
+werewolf.claw_gap,0.25,s,늑대인간 할퀴기 간격,플레이테스트 11차
+werewolf.claw_radius,1.6,cell,늑대인간 할퀴기 부채꼴 반경,플레이테스트 11차
+werewolf.claw_angle,100,deg,늑대인간 할퀴기 부채꼴 각도,플레이테스트 11차
+werewolf.claw_step,0.4,cell,늑대인간 할퀴기 사이 전진 거리,플레이테스트 11차
+werewolf.claw_ratio,50%,,늑대인간 할퀴기 한 번 피해 (공격 배율),플레이테스트 11차
+werewolf.claw_turn,25,deg,늑대인간 할퀼 때마다 노리는 쪽으로 도는 최대 각도,플레이테스트 11차
 gargoyle.hp,45,,가고일 체력,판타지 졸개 추가
 gargoyle.atk,9,,가고일 공격,판타지 졸개 추가
 gargoyle.toughness,3,,가고일 강인함,판타지 졸개 추가
 gargoyle.move_speed,3,cell/s,가고일 이동,판타지 졸개 추가
-gargoyle.attack_range,1.2,cell,가고일 돌발톱 반경,판타지 졸개 추가
-gargoyle.lunge,1.5,cell,가고일 전진 할퀴기 거리,판타지 졸개 추가
+gargoyle.attack_range,1.6,cell,가고일 날개 내려찍기: 제 둘레 원 반경 (등 뒤도 맞아요),플레이테스트 11차
+gargoyle.lunge,0,cell,가고일 날개 내려찍기: 전진 없음 (제자리),플레이테스트 11차
 gargoyle.windup,0.55,s,가고일 예고,판타지 졸개 추가
 gargoyle.recovery,0.3,s,가고일 빈틈 (곧 석화),판타지 졸개 추가
 gargoyle.attack_interval,1.5,s,가고일 공격 간격,판타지 졸개 추가
-gargoyle.attack_angle,80,deg,가고일 할퀴기 각도,판타지 졸개 추가
-gargoyle.lunge_time,0.15,s,가고일 전진 시간,판타지 졸개 추가
+gargoyle.lunge_time,0.15,s,가고일 날개 내려찍기: 판정이 남아 있는 시간,플레이테스트 11차
 gargoyle.stone_time,2,s,가고일 석화: 공격 뒤 굳어 있는 시간,판타지 졸개 추가
 gargoyle.stone_ratio,30%,,가고일 석화 중 받는 피해 배율,판타지 졸개 추가
 room_cost.harpy,2,,방 예산 점수: 하피,판타지 졸개 추가
@@ -1729,6 +1734,8 @@ elite.frenzy_radius,6,cell,분노 정예: 이 안에서 다른 적이 쓰러지�
 elite.frenzy_max,3,,분노 정예: 최대 겹 수,판타지 정예 특성
 elite.frenzy_attack,15%,,분노 한 겹마다 공격 증가,판타지 정예 특성
 elite.frenzy_speed,10%,,분노 한 겹마다 이동 증가,판타지 정예 특성
+elite.fireball_speed,11,cell/s,차원 감염 화염구: 불화살 속도,플레이테스트 11차
+elite.fireball_bolt_radius,0.3,cell,차원 감염 화염구: 불화살 판정 반경,플레이테스트 11차
 karma.extra_enemies,1,명,업보 3단계: 싸우는 방마다 첫 웨이브에 그 지역 졸개 +,추적자 제거 (업보 3단계 대신)
 offer.forfeit_silver,30,은자,기물 고르기 포기: 고르지 않는 대신 받는 은자,플레이테스트 2차
 equip.qi_damp_max,4,,장비창 기 조절: 모든 칸의 기를 최대 이만큼 낮출 수 있어요,플레이테스트 2차

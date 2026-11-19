@@ -38,7 +38,7 @@ namespace AThousandDawns.Tests
             var player = Object.FindFirstObjectByType<PlayerController>();
             var enemy = director.Spawn(kind, player.transform.position + new Vector3(0f, 0f, 4f));
             Assert.AreEqual(kind, enemy.Kind);
-            if (kind == EnemyKind.GoblinShaman) director.Spawn(EnemyKind.Goblin, player.transform.position + new Vector3(2f, 0f, 4f)); // 광폭화를 걸 동료
+            if (kind == EnemyKind.GoblinShaman) director.Spawn(EnemyKind.Goblin, player.transform.position + new Vector3(2f, 0f, 4f)); // 치유할 동료
             Time.timeScale = 2f;
             float end = Time.time + 16f;
             while (Time.time < end && player.Health >= player.MaxHealth) { yield return null; }
@@ -127,13 +127,16 @@ namespace AThousandDawns.Tests
             System.Action<EnemyBrain, Vector3, Vector3> blinked = (e, a, b) => used |= e == elite;
             EnemyBrain.Dashed += dashed;
             EnemyBrain.Blinked += blinked;
+            EnemyBrain.FireboltShot += blinked; // 화염구: 불화살을 쏴요
             Time.timeScale = 2f;
             float end = Time.time + 14f;
-            while (Time.time < end && !used && !(trait == EliteTrait.Fireball && BloodBurst.Live > 0)) { player.Heal(9999f); yield return null; }
+            while (Time.time < end && !used) { player.Heal(9999f); yield return null; }
             EnemyBrain.Dashed -= dashed;
             EnemyBrain.Blinked -= blinked;
+            EnemyBrain.FireboltShot -= blinked;
             EnemyBrain.InfectionOverride = 0;
-            Assert.IsTrue(used || (trait == EliteTrait.Fireball && BloodBurst.Live > 0), $"{trait}을(를) 써요");
+            Assert.IsTrue(used, $"{trait}을(를) 써요");
+            if (trait == EliteTrait.Fireball) Assert.AreEqual(0, BloodBurst.Live, "발밑 폭발은 없어요");
         }
 
         [UnityTest]
@@ -223,29 +226,169 @@ namespace AThousandDawns.Tests
             Assert.AreEqual(hp, player.Health, "멀리 있는 플레이어는 그대로");
         }
 
-        // 오크가 방패수에게 돌진할 때 돌진 길 밖의 플레이어는 맞지 않아요 (돌진 판정이 노리는 적 기준이라 8칸 안의 플레이어가 맞던 것)
+        // 오크가 방패수에게 내려찍을 때 충격파 길 밖의 플레이어는 맞지 않아요 (판정이 노리는 적 기준이라 멀리 있는 플레이어가 맞던 것)
         [UnityTest]
-        public IEnumerator 오크가_방패수를_들이받아도_길_밖의_플레이어는_안_맞아요()
+        public IEnumerator 오크가_방패수에게_내려찍어도_길_밖의_플레이어는_안_맞아요()
         {
             yield return Load();
             var director = Object.FindFirstObjectByType<EnemyDirector>();
             var player = Object.FindFirstObjectByType<PlayerController>();
-            Vector3 at = player.transform.position + new Vector3(0f, 0f, 8f); // 돌진 시작 거리 (8칸) 안이지만 돌진은 옆으로
-            var orc = (BoarBrain)director.Spawn(EnemyKind.Orc, at);
+            Vector3 at = player.transform.position + new Vector3(0f, 0f, 8f); // 충격파는 옆 (방패수 쪽)으로
+            var orc = (OrcBrain)director.Spawn(EnemyKind.Orc, at);
             director.Spawn(EnemyKind.Shield, at + new Vector3(2.5f, 0f, 0f));
-            bool charged = false;
-            System.Action<EnemyBrain, EnemyBrain, Vector3> on = (a, b, p) => charged |= a == orc;
+            bool slammed = false;
+            System.Action<EnemyBrain, EnemyBrain, Vector3> on = (a, b, p) => slammed |= a == orc;
             EnemyBrain.RivalHit += on;
             float hp = player.Health;
             Time.timeScale = 2f;
             float end = Time.time + 12f;
-            while (Time.time < end && !charged) yield return null;
+            while (Time.time < end && !slammed) yield return null;
             float until = Time.time + 2f;
-            while (Time.time < until && orc.IsCharging) yield return null; // 돌진이 끝날 때까지
+            while (Time.time < until && orc.IsSlamming) yield return null; // 충격파가 끝날 때까지
             Time.timeScale = 1f;
             EnemyBrain.RivalHit -= on;
-            Assert.IsTrue(charged, "오크가 방패수에게 돌진해요");
-            Assert.AreEqual(hp, player.Health, "돌진 길 밖의 플레이어는 그대로");
+            Assert.IsTrue(slammed, "오크가 방패수에게 내려찍어요");
+            Assert.AreEqual(hp, player.Health, "충격파 길 밖의 플레이어는 그대로");
+        }
+
+        // 오크: 돌진 대신 땅 내려찍기. 충격파가 일직선으로 뻗어 나가며 앞의 플레이어를 한 번 맞혀요. 오크는 그 자리에 서 있어요
+        [UnityTest]
+        public IEnumerator 오크는_땅을_내려찍어_일직선_충격파를_보내요()
+        {
+            EnemyBrain.RivalryEnabled = false;
+            try
+            {
+                yield return Load();
+                var director = Object.FindFirstObjectByType<EnemyDirector>();
+                var player = Object.FindFirstObjectByType<PlayerController>();
+                var orc = (OrcBrain)director.Spawn(EnemyKind.Orc, player.transform.position + new Vector3(0f, 0f, 3.5f));
+                Assert.AreEqual("땅 내려찍기", orc.AttackName);
+                int waves = 0;
+                float length = 0f, speed = 0f;
+                Vector3 from = Vector3.zero;
+                System.Action<OrcBrain, Vector3, Vector3, float, float, float> on = (o, f, d, l, w, s) =>
+                {
+                    if (o != orc) return;
+                    waves++;
+                    from = f;
+                    length = l;
+                    speed = s;
+                };
+                OrcBrain.Shockwave += on;
+                int hits = 0;
+                System.Action<int> hurt = d => hits++;
+                player.Hurt += hurt;
+                Time.timeScale = 2f;
+                float end = Time.time + 10f;
+                while (Time.time < end && waves == 0) yield return null;
+                Assert.AreEqual(1, waves, "충격파 신호");
+                Vector3 orcAt = orc.transform.position;
+                float until = Time.time + 2f;
+                while (Time.time < until && orc.IsSlamming) yield return null;
+                Time.timeScale = 1f;
+                OrcBrain.Shockwave -= on;
+                player.Hurt -= hurt;
+                Assert.Greater(length, 3f, "앞으로 길게 뻗어요");
+                Assert.AreEqual(GameConfig.GetOptional("orc.slam_speed", 12f), speed, 0.01f);
+                Assert.AreEqual(1, hits, "끝이 지나갈 때 한 번만 맞아요");
+                Assert.Less((orc.transform.position - orcAt).magnitude, 0.05f, "내려찍는 동안 오크는 제자리");
+                Assert.Less(Vector3.Distance(from, orcAt), 0.05f, "발밑에서 시작해요");
+            }
+            finally { EnemyBrain.RivalryEnabled = true; }
+        }
+
+        // 고블린 주술사: 광폭화 대신 둘레 다친 동료를 치유해요 (다치지 않은 동료 · 자신은 빼요)
+        [UnityTest]
+        public IEnumerator 고블린_주술사는_다친_동료를_치유해요()
+        {
+            EnemyBrain.RivalryEnabled = false;
+            try
+            {
+                yield return Load();
+                var director = Object.FindFirstObjectByType<EnemyDirector>();
+                var player = Object.FindFirstObjectByType<PlayerController>();
+                Vector3 at = player.transform.position + new Vector3(0f, 0f, 7f);
+                var shaman = (GoblinShamanBrain)director.Spawn(EnemyKind.GoblinShaman, at);
+                var hurtOrc = director.Spawn(EnemyKind.Orc, at + new Vector3(2f, 0f, 0f));
+                var fullOrc = director.Spawn(EnemyKind.Orc, at + new Vector3(-2f, 0f, 0f));
+                hurtOrc.Damageable.ApplyHit(Mathf.RoundToInt(hurtOrc.Damageable.MaxHealth * 0.5f), false);
+                shaman.Damageable.ApplyHit(1, false);
+                float hp = hurtOrc.Damageable.Health;
+                var healed = new System.Collections.Generic.List<EnemyBrain>();
+                System.Action<GoblinShamanBrain, EnemyBrain> on = (s, t) => { if (s == shaman) healed.Add(t); };
+                GoblinShamanBrain.Healed += on;
+                Time.timeScale = 2f;
+                float end = Time.time + 14f;
+                while (Time.time < end && healed.Count == 0) { player.Heal(9999f); yield return null; }
+                Time.timeScale = 1f;
+                GoblinShamanBrain.Healed -= on;
+                CollectionAssert.Contains(healed, hurtOrc, "다친 동료를 치유해요");
+                CollectionAssert.DoesNotContain(healed, fullOrc, "다치지 않은 동료는 건너뛰어요");
+                CollectionAssert.DoesNotContain(healed, shaman, "자신은 빼요");
+                Assert.AreEqual(hp + hurtOrc.Damageable.MaxHealth * GameConfig.GetOptional("goblinshaman.heal_ratio", 0.15f), hurtOrc.Damageable.Health, 0.6f);
+                Assert.IsFalse(hurtOrc.IsHastened, "광폭화는 없어요");
+            }
+            finally { EnemyBrain.RivalryEnabled = true; }
+        }
+
+        // 고블린 주술사 저주 장판: 느려지지 않고, 안에 서 있는 동안 플레이어가 저주 (모든 피해 −20%)에 걸려요
+        [UnityTest]
+        public IEnumerator 고블린_주술사_장판_안에서는_저주에_걸려요()
+        {
+            yield return Load();
+            var director = Object.FindFirstObjectByType<EnemyDirector>();
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var shaman = (GoblinShamanBrain)director.Spawn(EnemyKind.GoblinShaman, player.transform.position + new Vector3(0f, 0f, 6f));
+            bool placed = false;
+            System.Action<GoblinShamanBrain, Vector3, float> on = (s, at, r) => placed |= s == shaman;
+            GoblinShamanBrain.CursePlaced += on;
+            Time.timeScale = 2f;
+            float end = Time.time + 14f;
+            while (Time.time < end && !placed) { player.Heal(9999f); yield return null; }
+            for (int i = 0; i < 3; i++) { player.Heal(9999f); yield return null; }
+            Time.timeScale = 1f;
+            GoblinShamanBrain.CursePlaced -= on;
+            Assert.IsTrue(placed, "장판이 깔려요");
+            Assert.IsTrue(player.IsCursed, "안에 서 있으면 저주");
+            Assert.AreEqual(0f, player.SlowRatio, 0.001f, "느려지지 않아요");
+            shaman.Damageable.ApplyHit(99999); // 쓰러져도 장판이 남아 있는 동안은 저주가 이어져요
+            for (int i = 0; i < 5; i++) yield return null;
+            Assert.IsTrue(player.IsCursed);
+        }
+
+        // 화염구 정예: 발밑 폭발 대신 불화살 한 발. 맞으면 화상 1중첩
+        [UnityTest]
+        public IEnumerator 화염구_정예의_불화살에_맞으면_화상()
+        {
+            EnemyBrain.InfectionOverride = 1;
+            EnemyBrain.RivalryEnabled = false;
+            try
+            {
+                yield return Load();
+                var director = Object.FindFirstObjectByType<EnemyDirector>();
+                var player = Object.FindFirstObjectByType<PlayerController>();
+                var elite = director.Spawn(EnemyKind.Grunt, player.transform.position + new Vector3(0f, 0f, 9f)); // 사거리 (10칸) 안
+                elite.MakeElite(EliteTrait.Fireball);
+                EnemyBrain.InfectionOverride = 0;
+                bool shot = false;
+                System.Action<EnemyBrain, Vector3, Vector3> on = (e, f, d) => shot |= e == elite;
+                EnemyBrain.FireboltShot += on;
+                float end = Time.time + 12f;
+                while (Time.time < end && !shot) { player.Heal(9999f); yield return null; }
+                EnemyBrain.FireboltShot -= on;
+                Assert.IsTrue(shot, "불화살을 쏴요");
+                Assert.IsNotNull(Object.FindFirstObjectByType<EnemyBrain.Firebolt>(), "투사체가 날아가요");
+                int burnBefore = player.BurnStacks;
+                float until = Time.time + 2f;
+                while (Time.time < until && player.BurnStacks <= burnBefore && Object.FindFirstObjectByType<EnemyBrain.Firebolt>() != null) yield return null;
+                Assert.Greater(player.BurnStacks, burnBefore, "맞으면 화상 1중첩");
+                Assert.AreEqual(0, BloodBurst.Live, "발밑 폭발은 없어요");
+            }
+            finally
+            {
+                EnemyBrain.InfectionOverride = 0;
+                EnemyBrain.RivalryEnabled = true;
+            }
         }
 
         // 판타지 전용 정예 특성:마법 방벽 · 저주 · 분노는 판타지 적에게만 (차원 감염이 켜져 있을 때)

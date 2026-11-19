@@ -7,18 +7,12 @@ namespace AThousandDawns.Enemies
     // 2~3마리가 같이 나와요.
     public class HoundBrain : LeapBrain // 고블린 단검꾼 · 하피 · 늑대인간이 이어받아요
     {
-        float _hopDistance, _hopTime, _flankAngle, _hopRemaining, _flankSign = 1f;
-        Vector3 _hopDirection;
+        float _flankAngle, _flankSign = 1f;
 
         public override EnemyKind Kind => EnemyKind.Hound;
         protected override string Key => "hound";
 
-        protected override void ReadMoreTuning()
-        {
-            _hopDistance = Tuning("hop_distance", 1.5f);
-            _hopTime = Mathf.Max(0.05f, Tuning("hop_time", 0.2f));
-            _flankAngle = Tuning("flank_angle", 100f);
-        }
+        protected override void ReadMoreTuning() => _flankAngle = Tuning("flank_angle", 100f);
 
         protected override void OnInitialized() => _flankSign = Random.value < 0.5f ? -1f : 1f;
 
@@ -46,15 +40,7 @@ namespace AThousandDawns.Enemies
             Move(velocity, dt);
         }
 
-        protected override void OnLeapFinished() => Attack.EndActive(); // 물고 나서 옆으로 비켜나지 않고 그 자리에서 빈틈 (플레이테스트 8차)
-
-        protected override void TickAfterLeap(float dt)
-        {
-            float step = Mathf.Min(_hopRemaining, _hopDistance / _hopTime * dt);
-            var flags = MoveRaw(_hopDirection * step);
-            _hopRemaining -= step;
-            if (_hopRemaining <= 1e-4f || (flags & CollisionFlags.Sides) != 0) Attack.EndActive(); // 착지 → 빈틈
-        }
+        // 물고 나면 옆으로 비켜나지 않고 그 자리에서 빈틈 (플레이테스트 8차): LeapBrain 기본 (OnLeapFinished → EndActive) 그대로
 
         protected override void OnAttackFinished() => _flankSign = -_flankSign; // 다음엔 반대쪽으로
 

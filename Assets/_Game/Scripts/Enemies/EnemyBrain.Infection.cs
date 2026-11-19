@@ -1,12 +1,14 @@
 using AThousandDawns.Combat;
 using AThousandDawns.Core;
+using AThousandDawns.Player;
 using UnityEngine;
 
 namespace AThousandDawns.Enemies
 {
     // 차원 감염 정예: 차원이 겹치며 반대편 세계의 능력을 얻은 정예예요.
     //   판타지 적 → 무공: 경공 (elite.gyeonggong_interval마다 순식간에 몇 칸 내달려요: 멀면 파고들고, 붙어 있으면 옆으로 돌아 들어가요)
-    //   무협 적 → 마법: 화염구 (elite.fireball_interval마다 플레이어 발밑에 불덩이가 떨어져요, 예고 원 → 폭발 + 불길)
+    //   무협 적 → 마법: 화염구 (elite.fireball_interval마다 플레이어 쪽으로 불화살 한 발을 곧게 쏴요, 맞으면 화상 1중첩)
+    //                   (혈폭자 핏덩이와 겹쳐서 발밑 폭발은 뺐어요, 플레이테스트 11차)
     //                   순간이동 (elite.blink_interval마다 사라졌다 나타나요: 멀면 플레이어 옆, 붙어 있으면 등 뒤)
     // 시트 fantasy.infection = 0이면 나오지 않아요. 예전 테스트는 InfectionOverride = 0으로 끄고 돌려요.
     public abstract partial class EnemyBrain
@@ -28,6 +30,7 @@ namespace AThousandDawns.Enemies
         public static event System.Action<EnemyBrain, Vector3, Vector3> Blinked; // 순간이동한 적, 떠난 자리, 나타난 자리 (아트)
         public static event System.Action<EnemyBrain, Vector3> Dashed;          // 경공으로 내달린 적, 출발 자리 (아트)
         public static event System.Action<EnemyBrain, Vector3, Vector3> QinggongMoved; // 누가, 떠난 자리, 도착 자리 (경공이 끝난 순간, 아트: 잔상)
+        public static event System.Action<EnemyBrain, Vector3, Vector3> FireboltShot;  // 화염구 정예가 쏜 불화살: 쏜 적, 쏜 자리, 방향 (아트: 투사체는 EnemyBrain.Firebolt)
 
         const float DashProbeHeight = 0.5f, DashMaxStep = 0.25f, DashWallGap = 0.1f;
         float _infectionTimer = -1f, _dashLeft;
@@ -107,11 +110,18 @@ namespace AThousandDawns.Enemies
                     break;
                 }
                 case EliteTrait.Fireball:
-                    if (dist > GameConfig.GetOptional("elite.fireball_range", 10f)) { _infectionTimer = 0.5f; return; }
-                    BloodBurst.Create(Director, Player.transform.position, GameConfig.GetOptional("elite.fireball_radius", 1.3f),
-                        GameConfig.GetOptional("elite.fireball_fuse", 1f), AttackPower * GameConfig.GetOptional("elite.fireball_ratio", 0.8f), Body,
-                        GameConfig.GetOptional("elite.fireball_fire_life", 2.5f), BurstKind.Fireball);
+                {
+                    Vector3 toReal = ToRealPlayer(); // 다른 진영 적을 노리는 중에도 불화살은 플레이어에게
+                    float range = GameConfig.GetOptional("elite.fireball_range", 10f);
+                    if (toReal.magnitude > range) { _infectionTimer = 0.5f; return; }
+                    Vector3 boltDir = toReal.sqrMagnitude > 1e-4f ? toReal.normalized : Facing;
+                    FaceToward(boltDir);
+                    Vector3 origin = transform.position + Vector3.up + boltDir * (BodyRadius + 0.1f);
+                    Firebolt.Launch(origin, boltDir, GameConfig.GetOptional("elite.fireball_speed", 11f), range,
+                        GameConfig.GetOptional("elite.fireball_bolt_radius", 0.3f), AttackPower * GameConfig.GetOptional("elite.fireball_ratio", 0.8f), Player, Body);
+                    FireboltShot?.Invoke(this, origin, boltDir);
                     break;
+                }
                 case EliteTrait.Blink:
                     Vector3 from = transform.position;
                     Vector3 dir = dist > 1e-3f ? to / dist : Facing;
@@ -143,6 +153,70 @@ namespace AThousandDawns.Enemies
             Vector3 up = Vector3.up * DashProbeHeight;
             return ObstacleProbe.Distance(a + up, d / len, 0.05f, len) < len - 1e-3f
                 || ObstacleProbe.Distance(b + up, -d / len, 0.05f, len) < len - 1e-3f;
+        }
+
+        // 화염구 정예의 불화살: 곧게 날아가다 플레이어에게 맞으면 화상 1중첩, 벽 · 엄폐물에 막히거나 사거리 끝에서 사라져요.
+        //   플레이어가 무적 (대시)이면 그대로 지나가요. 그림은 임시 주홍 구 (아트가 꾸며요: Owner · Direction)
+        public sealed class Firebolt : MonoBehaviour
+        {
+            static Material _mat;
+            PlayerController _target;
+            Vector3 _direction;
+            float _speed, _remaining, _radius, _attack;
+            public Damageable Owner { get; private set; }
+            public Vector3 Direction => _direction;
+
+            public static Firebolt Launch(Vector3 origin, Vector3 direction, float speed, float range, float radius, float attack, PlayerController target, Damageable owner)
+            {
+                var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                go.name = "불화살";
+                EnemyFactory.StripCollider(go);
+                go.transform.position = origin;
+                go.transform.localScale = Vector3.one * 0.35f;
+                var renderer = go.GetComponent<Renderer>();
+                renderer.sharedMaterial = RuntimeMaterial.Unlit(ref _mat, new Color(1f, 0.42f, 0.1f));
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                var bolt = go.AddComponent<Firebolt>();
+                bolt._target = target;
+                bolt._direction = new Vector3(direction.x, 0f, direction.z).normalized;
+                bolt._speed = speed;
+                bolt._remaining = range;
+                bolt._radius = radius;
+                bolt._attack = attack;
+                bolt.Owner = owner;
+                go.transform.rotation = Quaternion.LookRotation(bolt._direction);
+                Sfx.Play(SfxId.BoltFire);
+                return bolt;
+            }
+
+            void Update()
+            {
+                float step = Mathf.Min(_speed * Time.deltaTime, _remaining);
+                Vector3 from = transform.position;
+                float free = ObstacleProbe.Distance(from, _direction, _radius, step);
+                bool blocked = free < step;
+                Vector3 to = from + _direction * (blocked ? free : step);
+
+                if (_target != null && !_target.IsDead && DistanceXZ(from, to, _target.transform.position) <= _radius + _target.BodyRadius
+                    && _target.TryReceiveHit(_attack, from, -1f, Owner))
+                {
+                    _target.AddBurnStack(GameConfig.Get("player_burn.damage", 2f)); // 화상 1중첩
+                    Destroy(gameObject);
+                    return;
+                }
+
+                transform.position = to;
+                _remaining -= step;
+                if (blocked || _remaining <= 0f) Destroy(gameObject);
+            }
+
+            static float DistanceXZ(Vector3 a, Vector3 b, Vector3 p)
+            {
+                Vector2 a2 = new Vector2(a.x, a.z), b2 = new Vector2(b.x, b.z), p2 = new Vector2(p.x, p.z);
+                Vector2 ab = b2 - a2;
+                float t = ab.sqrMagnitude < 1e-8f ? 0f : Mathf.Clamp01(Vector2.Dot(p2 - a2, ab) / ab.sqrMagnitude);
+                return Vector2.Distance(a2 + ab * t, p2);
+            }
         }
     }
 }
