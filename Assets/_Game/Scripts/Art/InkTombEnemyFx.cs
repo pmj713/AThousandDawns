@@ -16,7 +16,7 @@ namespace AThousandDawns.Art
     public class InkTombEnemyFx : MonoBehaviour
     {
         static InkTombEnemyFx _host;
-        static Sprite _flame, _fountain, _splash, _slash, _drop, _ring, _glint;
+        static Sprite _flame, _fountain, _splash, _slash, _drop, _ring, _glint, _counterQi;
         static bool _loaded;
 
         readonly List<Func<float, bool>> _live = new List<Func<float, bool>>();
@@ -155,16 +155,18 @@ namespace AThousandDawns.Art
             Vector3 dir = g.transform.forward; dir.y = 0f;
             dir = dir.sqrMagnitude > 1e-4f ? dir.normalized : Vector3.forward;
             Vector3 at = g.transform.position + dir * 1.2f;
-            if (_slash != null)
+            if (_counterQi == null) _counterQi = Resources.Load<Sprite>("SkillFx/SwordQi");
+            var arc = _counterQi != null ? _counterQi : _slash; // (일반 · 엘리트 겹침 점검) 늑대인간 발톱 자국과 다르게: 큰 검기 초승달을 검붉게
+            if (arc != null)
             {
                 var go = new GameObject("Counter Slash");
                 go.transform.SetParent(transform, false);
                 go.transform.position = new Vector3(at.x, 0.9f, at.z);
-                go.transform.rotation = Quaternion.Euler(90f, -Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg - 90f, 0f); // 활 등이 앞으로
-                float s = 2.2f / Mathf.Max(0.01f, _slash.bounds.size.x);
+                go.transform.rotation = arc == _counterQi ? Quaternion.Euler(90f, InkSwordQi.Yaw(dir), 0f) : Quaternion.Euler(90f, -Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg - 90f, 0f); // 활 등이 앞으로
+                float s = 2.6f / Mathf.Max(0.01f, arc.bounds.size.x);
                 go.transform.localScale = Vector3.one * s;
                 var sr = go.AddComponent<SpriteRenderer>();
-                sr.sprite = _slash;
+                sr.sprite = arc;
                 sr.sortingOrder = 7;
                 float t = 0f;
                 _live.Add(dt =>
@@ -172,7 +174,7 @@ namespace AThousandDawns.Art
                     if (go == null) return false;
                     t += dt;
                     go.transform.localScale = Vector3.one * s * Mathf.Lerp(0.6f, 1.2f, t / 0.25f);
-                    sr.color = new Color(1f, 0.85f, 0.8f, 1f - t / 0.25f);
+                    sr.color = new Color(0.62f, 0.05f, 0.1f, 1f - t / 0.25f); // 검붉은 근위 대도 반격
                     if (t < 0.25f) return true;
                     Destroy(go);
                     return false;

@@ -39,6 +39,19 @@ namespace AThousandDawns.Art
             PlayerController.BurstCue += OnBurst;
         }
 
+        // 진각 자리 가까이 석상 나한이 있는지 (진각 폭발 순간에만 한 번 찾아요)
+        static bool NearArhat(Vector3 at, float within)
+        {
+            foreach (var a in FindObjectsByType<ArhatBrain>())
+            {
+                if (a == null) continue;
+                var d = a.transform.position - at;
+                d.y = 0f;
+                if (d.sqrMagnitude < within * within) return true;
+            }
+            return false;
+        }
+
         static void OnBurst(Vector3 at, float radius, BurstKind kind)
         {
             if (kind == BurstKind.Default) return; // 공용 먹 폭발은 InkProjectiles 그대로
@@ -116,10 +129,16 @@ namespace AThousandDawns.Art
                 case BurstKind.Shatter:
                     float w = kind == BurstKind.Quake ? 2.6f : kind == BurstKind.Shatter ? 2.2f : 2f;
                     var dust = kind == BurstKind.Quake ? new Color(0.62f, 0.5f, 0.32f, 0.7f) : new Color(0.45f, 0.42f, 0.38f, 0.7f);
-                    Ring(_quake, at, r * w, 0.5f, new Color(1f, 0.85f, 0.6f, 1f), 0.3f, 0f);
+                    bool arhat = kind == BurstKind.Quake && NearArhat(at, r + 2.5f); // 석상 나한 돌진 끝 (일반 · 엘리트 겹침 점검): 철권 · 오우거 진각과 다르게 금빛 법륜 + 돌 조각
+                    if (arhat)
+                    {
+                        Ring(_mandala, at, r * 2.4f, 0.55f, new Color(1f, 0.82f, 0.35f, 0.9f), 0.3f, 360f);
+                        InkParticles.Burst(at + Vector3.up * 0.3f, 16, new Color(1f, 0.9f, 0.6f, 0.9f), new Color(0.8f, 0.6f, 0.25f, 0f), r * 1.4f, 0.2f, 0.8f, -0.6f); // 금빛 티끌
+                    }
+                    else Ring(_quake, at, r * w, 0.5f, new Color(1f, 0.85f, 0.6f, 1f), 0.3f, 0f);
                     InkParticles.Burst(at + Vector3.up * 0.15f, kind == BurstKind.Shatter ? 22 : 16, dust, new Color(dust.r, dust.g, dust.b, 0.4f), r * 1.6f, r * 0.6f, 0.9f, 0.05f, upward: true);
                     Chips(at, kind == BurstKind.Shatter ? 14 : 8, r, kind == BurstKind.Shatter ? 0.3f : 0.18f);
-                    if (kind == BurstKind.Quake) Spikes(at, r); // 진각 (철권 붕산권 · 나한): 둘레에서 바윗돌이 솟았다 가라앉아요
+                    if (kind == BurstKind.Quake && !arhat) Spikes(at, r); // 진각 (철권 붕산권 · 나한): 둘레에서 바윗돌이 솟았다 가라앉아요
                     break;
                 case BurstKind.Spin:
                     Ring(_mandala, at, r * 2.2f, 0.4f, new Color(1f, 0.78f, 0.25f, 0.9f), 0.5f, -900f);

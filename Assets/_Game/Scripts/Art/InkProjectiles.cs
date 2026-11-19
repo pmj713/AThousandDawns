@@ -82,7 +82,8 @@ namespace AThousandDawns.Art
             else if (shooter == EnemyKind.Imp) BuildImpBolt(visual); // 임프 화염탄: 작은 불덩이 + 불꼬리
             else if (shooter != null && BuildVolley(visual, shooter.Value)) { } // 보스 부채꼴 견제 (BossVolley): 보스마다 다른 투사체
             else if (FiredByAssassin(t.position)) BuildShuriken(visual);
-            else BuildArrow(visual, FiredBy(t.position, EnemyKind.BloodArcher)); // 혈궁수면 붉은 화살
+            else if (FiredBy(t.position, EnemyKind.BloodArcher)) BuildBloodBolt(visual); // 혈궁수: 화살 대신 핏빛 결정 침 (일반 화살과 다르게)
+            else BuildArrow(visual);
         }
 
         // 쏜 적 (Arrow.Owner) — 화살마다 처음 한 번만 읽어요
@@ -329,6 +330,24 @@ namespace AThousandDawns.Art
             return false;
         }
 
+        // 혈궁수 혈시 (일반 · 엘리트 겹침 점검: 산적 화살을 붉게 칠한 것 대신): 깃 없는 핏빛 결정 침 — 마름모 단면 굵은 침 둘이 겹친 검붉은 결정 + 끝의 붉은 빛 + 굵은 검붉은 꼬리
+        void BuildBloodBolt(Transform visual)
+        {
+            var crystal = BloodMaterial(shaftMaterial, new Color(0.55f, 0.03f, 0.06f));
+            Box(visual, "Spike", new Vector3(0f, 0f, 0f), new Vector3(0.07f, 0.07f, 0.7f), Quaternion.Euler(0f, 0f, 45f), crystal);
+            Box(visual, "Spike Barb", new Vector3(0f, 0f, 0.22f), new Vector3(0.12f, 0.12f, 0.22f), Quaternion.Euler(0f, 0f, 45f), crystal);
+            var glow = GlowSprite();
+            if (glow != null)
+            {
+                var pivot = new GameObject("Blood Glow").transform;
+                pivot.SetParent(visual, false);
+                pivot.localPosition = new Vector3(0f, 0f, 0.3f);
+                pivot.gameObject.AddComponent<InkFaceCamera>();
+                Orb(pivot, glow, 0.5f, new Color(1f, 0.15f, 0.15f, 0.8f), 9);
+            }
+            Trail(visual, new Vector3(0f, 0f, -0.35f), 0.26f, 0.32f, new Color(0.45f, 0.02f, 0.04f, 0.85f));
+        }
+
         // blood: 혈궁수 (천마총) — 핏빛 화살대·깃 + 붉은 꼬리
         void BuildArrow(Transform visual, bool blood = false)
         {
@@ -446,6 +465,11 @@ namespace AThousandDawns.Art
             var mf = telegraph.GetComponentInChildren<MeshFilter>();
             if (mf != null && mf.sharedMesh != null) radius = Mathf.Max(0.5f, mf.sharedMesh.bounds.extents.x);
             var p = telegraph.transform.position;
+            if (InkKindBursts.TryPlay(p, radius)) // 목탁승 · 깃발수 · 쇠닻 · 천마 근위 · 혈인 · 고블린 주술사는 각자 그림 (일반 · 엘리트 겹침 점검)
+            {
+                foreach (var r in telegraph.GetComponentsInChildren<Renderer>()) r.enabled = false; // 단색 원판도 숨겨요
+                return;
+            }
             var burst = new GameObject("Ink Burst").AddComponent<InkBurst>();
             burst.transform.position = new Vector3(p.x, 0f, p.z);
             burst.Play(radius, blotMaterial, mistMaterial);

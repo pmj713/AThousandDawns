@@ -16,7 +16,7 @@ namespace AThousandDawns.Art
     public class InkFantasyFx : MonoBehaviour
     {
         static InkFantasyFx _host;
-        static Sprite _slime, _ward, _curse;
+        static Sprite _slime, _ward, _curse, _hex;
         static bool _loaded;
         static readonly Dictionary<GhostFire, bool> CurseCache = new Dictionary<GhostFire, bool>();
 
@@ -87,8 +87,10 @@ namespace AThousandDawns.Art
                 var source = fire.GetComponent<Renderer>();
                 if (source != null) source.enabled = false; // 하늘색 원판은 숨기고 (흐려지는 값은 그 재질 알파를 읽어요)
                 float width = fire.transform.localScale.x * 1.15f;
-                var circle = Flat(_curse, fire.transform.position, width, UnityEngine.Random.Range(0f, 360f), 0.022f);
-                var glow = Flat(_curse, fire.transform.position, width * 1.12f, UnityEngine.Random.Range(0f, 360f), 0.021f);
+                // (일반 · 엘리트 겹침 점검) 저주 특성(플레이어 발밑 보라 눈 문양)과 다르게: 주술사 장판은 연두빛 주술진 + 검푸른 독기
+                var sigil = _hex != null ? _hex : _curse;
+                var circle = Flat(sigil, fire.transform.position, width, UnityEngine.Random.Range(0f, 360f), 0.022f);
+                var glow = Flat(sigil, fire.transform.position, width * 1.12f, UnityEngine.Random.Range(0f, 360f), 0.021f);
                 if (circle == null) continue;
                 Vector3 unit = circle.transform.localScale, glowUnit = glow != null ? glow.transform.localScale : Vector3.one;
                 float t = 0f;
@@ -105,12 +107,12 @@ namespace AThousandDawns.Art
                     float open = 1f - Mathf.Pow(1f - Mathf.Clamp01(t / 0.3f), 3f); // 펼쳐져요
                     circle.transform.Rotate(0f, 0f, 14f * dt, Space.Self);
                     circle.transform.localScale = unit * Mathf.Lerp(0.3f, 1f, open);
-                    circle.color = new Color(1f, 1f, 1f, 0.95f * alpha);
+                    circle.color = sigil == _hex ? new Color(0.65f, 1f, 0.35f, 0.9f * alpha) : new Color(1f, 1f, 1f, 0.95f * alpha);
                     if (glow != null) // 뒤에서 보랏빛이 맥박쳐요
                     {
                         glow.transform.Rotate(0f, 0f, -22f * dt, Space.Self);
                         glow.transform.localScale = glowUnit * Mathf.Lerp(0.3f, 1f + 0.05f * Mathf.Sin(t * 5f), open);
-                        glow.color = new Color(0.7f, 0.35f, 1f, (0.25f + 0.15f * Mathf.Sin(t * 5f)) * alpha);
+                        glow.color = new Color(0.15f, 0.35f, 0.3f, (0.3f + 0.15f * Mathf.Sin(t * 5f)) * alpha);
                     }
                     return true;
                 });
@@ -208,6 +210,7 @@ namespace AThousandDawns.Art
             _slime = Resources.Load<Sprite>("FantasyFx/Slime");
             _ward = Resources.Load<Sprite>("FantasyFx/Ward");
             _curse = Resources.Load<Sprite>("FantasyFx/Curse");
+            _hex = Resources.Load<Sprite>("HeavenlyDemonFx/RuneCircle"); // 주술사 저주 장판 (저주 특성 문양과 다르게)
         }
     }
 }
