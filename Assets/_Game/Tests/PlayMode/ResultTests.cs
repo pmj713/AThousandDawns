@@ -65,7 +65,7 @@ namespace AThousandDawns.Tests
             Assert.IsTrue(player.TryReceiveHit(99999f, grunt.transform.position, -1f, grunt.Damageable));
             Assert.Greater(run.Record.DamageTaken, 0, "받은 피해");
             yield return WaitUntil(() => run.IsShowingResult, 4f);
-            StringAssert.Contains($"{grunt.DisplayName}에게 쓰러짐", run.Result.Where, "사망 원인");
+            StringAssert.Contains($"{grunt.DisplayName}의 {grunt.AttackName}에 쓰러짐", run.Result.Where, "사망 원인 (공격 이름이 있으면 함께)");
             Assert.Greater(run.Result.PlaySeconds, 0.2f, "플레이 시간");
             Assert.AreEqual("19", run.Result.Stats[0].value);
         }

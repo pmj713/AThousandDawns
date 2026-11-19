@@ -135,7 +135,7 @@ namespace AThousandDawns.Tests
             if (!inside) PlacePlayer(from + dir * (d + 2f)); // 내려앉을 자리에서 2칸 넘게 물러나요
             yield return WaitStrike(goblin, LungeSlashBrain.ShapeRing);
             Assert.Greater(Vector3.Dot(Flat(goblin.transform.position) - from, dir), 0.5f, "앞으로 뛰어 내려앉아요");
-            Assert.Less(Vector3.Distance(Flat(_strikeAt), Flat(goblin.transform.position)), 0.05f, "신호는 내려앉은 자리");
+            Assert.Less(Vector3.Distance(Flat(_strikeAt), Flat(goblin.transform.position)), 0.2f, "신호는 내려앉은 자리 (내려앉은 뒤 몸끼리 밀어내는 만큼은 허용)");
             if (inside) Assert.Less(_player.Health, _player.MaxHealth, "내려앉은 자리 둘레에 맞아요");
             else Assert.AreEqual(_player.MaxHealth, _player.Health, "물러나면 안 맞아요");
         }
