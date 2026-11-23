@@ -75,6 +75,11 @@ namespace AThousandDawns.EditorTools
                 {
                     var s = cs.state;
                     sb.Append($"S {s.name} {Ref(s.motion)} {s.speed:R} {s.speedParameterActive} {s.speedParameter} {s.tag} {s.writeDefaultValues} {s.mirror} {s.cycleOffset:R}\n");
+                    if (s.motion is BlendTree bt)   // 섞는 동작의 자식과 문턱값까지 (빠지면 자식이 바뀌어도 같다고 봤어요)
+                    {
+                        sb.Append($"  B {bt.blendType} {bt.blendParameter} {bt.blendParameterY}\n");
+                        foreach (var ch in bt.children) sb.Append($"   C {Ref(ch.motion)} {ch.threshold:R} {ch.timeScale:R}\n");
+                    }
                     foreach (var t in s.transitions) sb.Append("  T ").Append(Describe(t)).Append('\n');
                 }
                 if (sm.stateMachines.Length > 0) sb.Append($"M {sm.stateMachines.Length}\n");
