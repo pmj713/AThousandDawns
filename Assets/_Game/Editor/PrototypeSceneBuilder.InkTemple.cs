@@ -467,7 +467,9 @@ namespace AThousandDawns.EditorTools
         // 폐사찰 바탕: 바닥 무늬(깨진 돌판 마당) · 먼 배경(무너진 절 산수화) · 흩날리는 낙엽과 재 · 바닥에 깔린 옅은 안개.
         // InkRegionLook이 지역에 맞는 것만 켜고 바닥 재질 무늬를 바꿔요
         // 폐사찰 방 바닥: Floor_Temple.png를 살짝 흐리게·대비 0.42·채도 45%·조금 어둡게 (Blender로 한 번 만든 그림)
-        const string TempleCalmFloor = "Assets/_Game/Art/Env/Temple/Floor_TempleCalm.png";
+        //   아트풍 통일(폐사찰 시안 2차 확정): Floor_TempleBrush.png — 판석 배치·줄눈은 또렷하게 그대로, 판석 안의 잔얼룩·이끼 점은 지우고
+        //   2~3톤 + 결 방향 붓결(±12%), 전체 밝기 0.9배. 원본 Floor_TempleCalm은 그대로 둬요
+        const string TempleCalmFloor = "Assets/_Game/Art/Env/Temple/Floor_TempleBrush.png";
 
         static void DressTempleLook(Material floorMat, AThousandDawns.Art.InkRegionDressing dressing)
         {
