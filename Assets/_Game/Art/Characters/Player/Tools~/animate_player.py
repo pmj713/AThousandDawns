@@ -34,7 +34,9 @@ meshes = parts + [hair]
 # 옷 (컨셉 B안): VARCO 3D로 만든 옷(Source~/Outfit_B.glb)을 A자 기본 자세의 몸에 맞춰 입혀요 (outfit_fit.py).
 # 아래에서 T자로 바꿀 때 몸과 같이 바뀌어요. 파일이 없으면 직접 그린 옷(clothes.py)을 써요
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-OUTFIT_GLB = os.path.join(os.path.dirname(rig_blend), "Outfit_B.glb")
+OUTFIT_GLB = os.path.join(os.path.dirname(rig_blend), "Outfit_C.glb")   # 주인공 정리 2차: 찢김 없는 깔끔한 옷 (없으면 예전 찢긴 옷 B)
+if not os.path.isfile(OUTFIT_GLB):
+    OUTFIT_GLB = os.path.join(os.path.dirname(rig_blend), "Outfit_B.glb")
 cloth = []
 if os.path.isfile(OUTFIT_GLB):
     import outfit_fit

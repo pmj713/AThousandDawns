@@ -11,7 +11,9 @@ from mathutils.bvhtree import BVHTree
 
 TARGET_TRIS = 16000
 CLEARANCE = 0.006       # 몸 표면에서 최소 이만큼 띄워요
-HEM_SMOOTH_STEPS = 14   # 옷 끝(열린 가장자리) 다듬기 횟수
+HEM_SMOOTH_STEPS = 120  # 옷 끝(열린 가장자리) 다듬기 횟수 (주인공 정리 2차: 14로는 찢긴 톱니가 남았어요)
+HEM_EAR_PASSES = 4      # 다듬기 전에 가장자리에서 삐죽 튀어나온 면(두 변 이상이 열린 면)을 잘라 내는 횟수
+CUFF_BAND = 0.07        # 흰 안쪽 소매: 소매 끝에서 이 거리 안의 소매 면만 흰 띠로
 LEG_WEIGHT_SMOOTH = 6   # 바지·아랫자락의 골반·다리 가중치 고르기 횟수
 WAIST_EASE = 0.035      # 허리 둘레 여유 (반지름)
 
@@ -205,6 +207,9 @@ def _xy_radius(obj_verts, z, band=0.02):
 
 def fit(rig, parts, glb, paint_png=None):
     scene = bpy.context.scene
+    # 주인공 정리 2차: 찢김 없는 새 옷(Outfit_C)은 단이 이미 곧아서, 찢긴 옷(Outfit_B)용 손질(톱니 자르기·많이 다듬기·흰 소매 띠·신발 한 색)은 건너뛰어요
+    torn = "Outfit_C" not in os.path.basename(glb)
+    hem_steps = HEM_SMOOTH_STEPS if torn else 14
     B = rig.data.bones
     outfit = _import(glb)
     me = outfit.data
@@ -496,8 +501,26 @@ def fit(rig, parts, glb, paint_png=None):
     #   열린 가장자리(천 끝) 점만 양옆 가장자리 점의 가운데로 조금씩 당기기를 되풀이해요 → 삐죽한 끝이 줄어들고 단이 매끈한 곡선이 돼요
     import bmesh as _bm
     bm = _bm.new(); bm.from_mesh(me)
+    # 주인공 정리 2차: 찢긴 끝(톱니)부터 잘라요 — 가장자리 변이 둘 이상인 면 = 밖으로 삐죽 튀어나온 조각
+    ears = 0
+    for _ in range(HEM_EAR_PASSES if torn else 0):
+        cut = [f for f in bm.faces if sum(1 for e in f.edges if e.is_boundary) >= 2]
+        if not cut:
+            break
+        ears += len(cut)
+        bmesh.ops.delete(bm, geom=cut, context='FACES')
+        bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
+    print("OUTFIT trimmed hem spikes faces", ears)
+    # 발목 아래(신발)는 한 가지 색으로: 흰 버선·끈 조각이 얼룩덜룩해서 짙은 천신 한 덩어리로 (지우면 맨발이 돼요)
+    ankle_z = max(B["LeftFoot"].head_local.z, B["RightFoot"].head_local.z) + 0.01
+    clay = bm.faces.layers.int.get("cls")
+    low = [f for f in bm.faces if f.calc_center_median().z < ankle_z]
+    if clay is not None and torn:
+        for f in low:
+            f[clay] = 0
+    print("OUTFIT shoes one colour faces", len(low))
     edge_verts = [v for v in bm.verts if v.is_boundary]
-    for _ in range(HEM_SMOOTH_STEPS):
+    for _ in range(hem_steps):
         moved = {}
         for v in edge_verts:
             nb = [e.other_vert(v) for e in v.link_edges if e.is_boundary]
@@ -505,6 +528,47 @@ def fit(rig, parts, glb, paint_png=None):
                 moved[v] = v.co.lerp((nb[0].co + nb[1].co) * 0.5, 0.5)
         for v, c in moved.items():
             v.co = c
+    # 흰 안쪽 소매: 찢긴 조각처럼 흩어진 흰 면 대신, 소매 끝(손목 쪽 열린 가장자리)에서 CUFF_BAND 안의 소매 면만 고른 흰 띠로
+    lay = bm.faces.layers.int.get("cls")
+    dl = bm.verts.layers.deform.active
+    if lay is not None and dl is not None and not torn:
+        # 깔끔한 옷: 흰색은 소매(팔 뼈를 따라가는 면) · 깃 · 버선(발목 아래)에만. 등·어깨의 밝은 천 결이 흰 조각으로 떨어진 것은 도포로
+        arm_ids = {g.index for g in outfit.vertex_groups if any(k in g.name for k in ("UpperArm", "LowerArm", "Hand"))}
+        def dom(v):
+            items = v[dl].items()
+            return max(items, key=lambda t: t[1])[0] if items else -1
+        neck = B["Neck"].head_local
+        fixed = 0
+        for f in bm.faces:
+            if f[lay] != 1:
+                continue
+            z = f.calc_center_median().z
+            c = f.calc_center_median()
+            collar = z > neck.z - 0.25 and math.hypot(c.x - neck.x, c.y - neck.y) < 0.1   # 목 둘레 깃 (등·어깨의 밝은 결은 아니에요)
+            if z < ankle_z + 0.04 or collar or all(dom(v) in arm_ids for v in f.verts):
+                continue
+            f[lay] = 0; fixed += 1
+        print("OUTFIT stray white -> dark", fixed)
+    if lay is not None and dl is not None and torn:
+        fore_ids = {g.index for g in outfit.vertex_groups if any(k in g.name for k in ("LowerArm", "Hand"))}
+        arm_ids = {g.index for g in outfit.vertex_groups if any(k in g.name for k in ("UpperArm", "LowerArm", "Hand", "Shoulder"))}
+        def dom(v):
+            items = v[dl].items()
+            return max(items, key=lambda t: t[1])[0] if items else -1
+        cuff = [v.co.copy() for v in bm.verts if v.is_boundary and dom(v) in fore_ids]
+        band = 0
+        for f in bm.faces:
+            if not all(dom(v) in arm_ids for v in f.verts):
+                if f[lay] == 1 and f.calc_center_median().z < B["Neck"].head_local.z - 0.12:   # 깃 아래 몸통의 흰 조각도 도포로
+                    f[lay] = 0
+                continue
+            c = f.calc_center_median()
+            near = any((c - q).length < CUFF_BAND for q in cuff)
+            if near and f[lay] != 2:
+                f[lay] = 1; band += 1
+            elif f[lay] == 1:
+                f[lay] = 0
+        print("OUTFIT cuff band faces", band, "cuff verts", len(cuff))
     bm.to_mesh(me); bm.free()
     print("OUTFIT smoothed hem verts", len(edge_verts))
 
@@ -518,6 +582,11 @@ def fit(rig, parts, glb, paint_png=None):
         vals = [0] * len(me.polygons)
         me.attributes["cls"].data.foreach_get("value", vals)
         me.polygons.foreach_set("material_index", vals)
+        # 면을 재질 칸 순서로 정렬해요. FBX를 가져온 Unity는 서브메시를 면이 처음 나오는 순서로 매겨서, 빨간 면이 먼저면 도포가 빨갛게 칠해졌어요
+        bpy.ops.object.select_all(action='DESELECT'); outfit.select_set(True); bpy.context.view_layer.objects.active = outfit
+        bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.mesh.sort_elements(type='MATERIAL', elements={'FACE'})
+        bpy.ops.object.mode_set(mode='OBJECT')
         print("OUTFIT faces by slot", {i: vals.count(i) for i in range(3)})
     made = [outfit]
     for o in made:
