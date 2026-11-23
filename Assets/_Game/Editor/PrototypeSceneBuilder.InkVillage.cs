@@ -115,16 +115,9 @@ namespace AThousandDawns.EditorTools
                 Block(inn, "Eave_Post", PrimitiveType.Cube, new Vector3(w * 0.5f + 1.4f, 1.35f, s * 2f), new Vector3(0.18f, 2.7f, 0.18f), Quaternion.identity, wood);
             RoofMesh(inn, "Eave_Roof", new Vector3(w * 0.5f + 0.9f, 2.85f, 0f), new Vector3(2.2f, 0.5f, 4.8f), false, roofZ);
 
-            // 등불 둘과 술독
+            // 등불 둘 (남쪽 문 앞 공 모양 술독 셋은 사용자 요청으로 뺐어요)
             for (int s = -1; s <= 1; s += 2)
                 Billboard(inn, "LanternPost_A", $"{Env2DArtFolder}/LanternPost_A.png", foot + new Vector3(w * 0.5f + 2.1f, 0f, s * 2.7f), 2.6f, s > 0);
-            var jarMat = GetInkMaterial("Ink_Jar", "#4A3A2E", 0.35f);
-            Vector3[] jars = { new Vector3(-0.6f, 0f, -d * 0.5f - 0.9f), new Vector3(0.1f, 0f, -d * 0.5f - 1.1f), new Vector3(-0.2f, 0f, -d * 0.5f - 0.5f) };
-            for (int i = 0; i < jars.Length; i++)
-            {
-                float s = 0.5f + i % 2 * 0.15f;
-                Block(inn, "Jar", PrimitiveType.Sphere, jars[i] + Vector3.up * s * 0.6f, new Vector3(s, s * 1.2f, s), Quaternion.identity, jarMat);
-            }
         }
 
         // 매화나무: 굽은 줄기·가지를 코드로 만든 3D 메시에 매화 껍질 텍스처(InkTriplanar)를 입혀요.
