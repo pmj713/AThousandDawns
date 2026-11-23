@@ -98,6 +98,7 @@ namespace AThousandDawns.EditorTools
             controller.AddParameter("Combat", AnimatorControllerParameterType.Bool);
             controller.AddParameter("DaggerHold", AnimatorControllerParameterType.Bool);
             controller.AddParameter("DaggerFlash", AnimatorControllerParameterType.Bool);
+            controller.AddParameter("Armed", AnimatorControllerParameterType.Float);   // 0 = 칼을 허리에 꽂은 빈손, 1 = 칼을 쥠 (InkPlayerAnimator가 부드럽게 옮겨요)
             var sm = controller.layers[0].stateMachine;
 
             // 동작 길이를 게임 시간(초)에 맞춰 재생 속도를 정해요
@@ -110,6 +111,18 @@ namespace AThousandDawns.EditorTools
             }
             var idle = State("Idle", 0f);
             var run = State("Run", 0f);
+            // 칼 넣기 (사용자 요청): 이동·대기 중엔 칼을 허리에 꽂은 빈손(IdleBare·RunBare), 공격할 때만 칼을 쥔 대기·달리기 — Armed로 섞어요
+            void ArmedBlend(AnimatorState st, string bare)
+            {
+                if (!all.TryGetValue(bare, out var bareClip)) return;
+                var tree = new BlendTree { name = st.name + "Armed", blendType = BlendTreeType.Simple1D, blendParameter = "Armed", useAutomaticThresholds = false, hideFlags = HideFlags.HideInHierarchy };
+                tree.AddChild(bareClip, 0f);
+                tree.AddChild(all[st.name], 1f);
+                AssetDatabase.AddObjectToAsset(tree, controller);
+                st.motion = tree;
+            }
+            ArmedBlend(idle, "IdleBare");
+            ArmedBlend(run, "RunBare");
             run.speed = 1.2f;   // 걷는 속도 6m/s에 다리 박자를 맞춰요
             var dash = State("Dash", 0.18f);
             // 회선참: 칼을 옆으로 뻗고 있는 동안 게임이 몸을 한 바퀴 돌려요 (시전 0.35초). 동작이 없으면 대기 자세로 돌아요
@@ -216,6 +229,7 @@ namespace AThousandDawns.EditorTools
                 var into = idle.AddTransition(guard);
                 into.hasExitTime = false; into.duration = 0.25f;
                 into.AddCondition(AnimatorConditionMode.If, 0f, "Combat");
+                if (!dagger) into.AddCondition(AnimatorConditionMode.Greater, 0.5f, "Armed");   // 칼 겨눈 자세는 칼을 쥐었을 때만
                 into.AddCondition(dagger ? AnimatorConditionMode.If : AnimatorConditionMode.IfNot, 0f, "DaggerHold");
                 var calm = guard.AddTransition(idle);
                 calm.hasExitTime = false; calm.duration = 0.35f;

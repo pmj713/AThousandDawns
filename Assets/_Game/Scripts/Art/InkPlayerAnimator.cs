@@ -34,6 +34,10 @@ namespace AThousandDawns.Art
         int _vortexLayer = -1;
         float _vortexWeight;
         static readonly int DaggerFlashId = Animator.StringToHash("DaggerFlash");
+        static readonly int ArmedId = Animator.StringToHash("Armed");
+        // 칼 넣기 (사용자 요청): 이동·대기 중엔 칼을 허리에 꽂아(Player_SwordBelt) 빈손, 평타·칼 초식을 시작하면 손에 쥐어요(Player_Sword).
+        //   마지막 공격·초식이 끝나고 sword.sheathe_delay초(시트, 기본 1초) 뒤 허리로. 넣고 빼는 동작은 따로 없이 바꾸고 자세만 0.15초에 섞어요
+        float _armedUntil = -1f, _armedBlend;
         string _upperState = "SkillVortex";
         // 비도 순간이동·호신륜이 도는 중인지 (기획·개발이 PlayerController.Dagger.cs에 추가 중이라 이름으로 찾아요 — 들어오기 전에도 컴파일되게)
 
@@ -51,22 +55,34 @@ namespace AThousandDawns.Art
             _lastPosition = transform.position;
         }
 
-        // 비도를 들면 오른손 칼(Player_Sword)을 숨겨요 (플레이테스트 6차: 비도 무기인데 칼이 그대로 보였어요). 칼은 처음 한 번만 찾아요
-        Renderer _sword;
-        bool _swordSearched, _swordShown = true;
+        // 비도를 들면 칼을 숨겨요 (플레이테스트 6차: 비도 무기인데 칼이 그대로 보였어요) — 손 칼·허리 칼 둘 다. 칼은 처음 한 번만 찾아요
+        Renderer _sword, _beltSword;
+        bool _swordSearched;
+        int _swordShown = -1;   // 0 = 둘 다 숨김 · 1 = 허리 · 2 = 손
 
-        void ShowSword(bool show)
+        void ShowSword(bool dagger, bool armed)
         {
             if (!_swordSearched)
             {
                 _swordSearched = true;
                 foreach (var r in _animator.GetComponentsInChildren<Renderer>(true))
-                    if (r.name == "Player_Sword") { _sword = r; break; }
+                {
+                    if (r.name == "Player_Sword") _sword = r;
+                    else if (r.name == "Player_SwordBelt") _beltSword = r;
+                }
             }
-            if (_sword == null || show == _swordShown) return;
+            if (_beltSword == null) armed = true;   // 허리 칼이 없는 예전 모델은 늘 손에 쥐어요
+            int show = dagger ? 0 : armed ? 2 : 1;
+            if (show == _swordShown) return;
             _swordShown = show;
-            _sword.enabled = show;
+            if (_sword != null) _sword.enabled = show == 2;
+            if (_beltSword != null) _beltSword.enabled = show == 1;
         }
+
+        // 칼을 쓰는 초식 (비도 아닐 때): 회선참 · 죽림섬 · 탁랑참 · 혈영참. 붕산권(주먹)·금강장(손바닥)은 빈손 그대로
+        static bool SwordSkill(SkillKind k) => k == SkillKind.Spin || k == SkillKind.BambooFlash || k == SkillKind.Takrang || k == SkillKind.BloodShadow;
+
+        void Arm() => _armedUntil = Time.time + AThousandDawns.Core.GameConfig.GetOptional("sword.sheathe_delay", 1f);
 
         void OnDestroy()
         {
@@ -111,7 +127,12 @@ namespace AThousandDawns.Art
             }
             _animator.SetBool(CombatId, _combat);
             _animator.SetBool(DaggerHoldId, _player.UsesDagger);
-            ShowSword(!_player.UsesDagger);
+            // 칼 쥐기: 평타(칼)·칼 초식이 이어지는 동안 계속 쥐고, 끝나고 잠시 뒤 허리로
+            if (!_player.UsesDagger && ((_combo != null && _combo.IsAttacking) || (_player.IsCastingSkill && SwordSkill(_player.Skill)))) Arm();
+            bool armed = Time.time < _armedUntil;
+            ShowSword(_player.UsesDagger, armed);
+            _armedBlend = Mathf.MoveTowards(_armedBlend, armed || _player.UsesDagger ? 1f : 0f, Time.deltaTime / 0.15f);
+            _animator.SetFloat(ArmedId, _armedBlend);
             bool dashing = _player.IsDashing;
             if (dashing && !_wasDashing)
             {
@@ -177,6 +198,7 @@ namespace AThousandDawns.Art
         // 0 = 1타(세로) · 1 = 2타(가로) · 2 = 3타(넓은 가로). 검보 조각의 4타째는 가로베기(2타 동작)로 (플레이 테스트 3차: 세로베기가 어색했어요)
         void OnSwingStarted(int index)
         {
+            if (!_player.UsesDagger) { Arm(); ShowSword(false, true); }   // 첫 베기 프레임부터 손에 칼
             _animator.ResetTrigger(DashId);
             _animator.SetInteger(ComboId, index == 3 ? 2 : index % 3 + 1);
             _animator.SetTrigger(AttackId);

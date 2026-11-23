@@ -101,7 +101,8 @@ SWORD_BUTT = 0.08   # 주먹 가운데에서 꼭지까지 (손잡이가 주먹 �
 SWORD_PLAIN = True  # 수수한 검 (사용자 요청: VARCO 검은 금빛 장식·술이 화려해서 쪽빛 도포와 다퉈요). False면 VARCO 무협 검
 
 
-def build_sword():
+def build_sword(place=None, name="Player_Sword", bone="RightHand"):
+    """place = (grip_c, t, edge, flat)를 주면 그 자리에 수수한 직검을 만들어 bone에 붙여요 (허리에 꽂은 칼)."""
     import bmesh
     b = rig.data.bones
     hb = b["RightHand"]
@@ -113,6 +114,8 @@ def build_sword():
     edge = hand_dir                                                       # 날 방향
     flat = t.cross(edge).normalized()                                     # 칼 두께 방향
     grip_c = knuckles - hand_dir * 0.02 + palm * 0.03                     # 주먹 안 가운데
+    if place is not None:
+        grip_c, t, edge, flat = place
     # 플레이테스트 9차: 만검귀종 검과 같은 VARCO 무협 검(Weapons/Source~/WuxiaJian.glb)이 있으면 그걸 쥐어요.
     #   긴 축 → 칼 축(t), 가는 끝(칼끝)이 엄지 쪽, 얇은 축 → 칼 두께(flat). 길이 SWORD_LEN (꼭지 쪽 SWORD_BUTT만큼 주먹 뒤로)
     #   원본 glb가 저장소에 없어서(Source~ 제외) 만검귀종 낙하 검과 같은 Weapons/WuxiaJian.fbx를 써요
@@ -120,7 +123,7 @@ def build_sword():
     jian = os.path.join(weapons, "Source~", "WuxiaJian.glb")
     if not os.path.isfile(jian):
         jian = os.path.join(weapons, "WuxiaJian.fbx")
-    if not SWORD_PLAIN and os.path.isfile(jian):
+    if place is None and not SWORD_PLAIN and os.path.isfile(jian):
         import numpy as np, shutil
         before = set(bpy.data.objects)
         if jian.endswith(".fbx"):
@@ -233,12 +236,12 @@ def build_sword():
             blade_faces.append(f)
     f = bm.faces.new(list(reversed(rings[0][1]))); paint([f], STEEL)
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
-    me = bpy.data.meshes.new("Player_Sword")
+    me = bpy.data.meshes.new(name)
     bm.to_mesh(me); bm.free()
-    print("SWORD plain jian", len(me.polygons), "faces, length", SWORD_LEN)
-    obj = bpy.data.objects.new("Player_Sword", me)
+    print("SWORD plain jian", name, len(me.polygons), "faces, length", SWORD_LEN)
+    obj = bpy.data.objects.new(name, me)
     scene.collection.objects.link(obj)
-    obj.vertex_groups.new(name="RightHand").add(list(range(len(me.vertices))), 1.0, 'REPLACE')
+    obj.vertex_groups.new(name=bone).add(list(range(len(me.vertices))), 1.0, 'REPLACE')
     obj.parent = rig
     obj.modifiers.new("Armature", 'ARMATURE').object = rig
     return obj
@@ -246,6 +249,23 @@ def build_sword():
 
 sword = build_sword()
 meshes.append(sword)
+
+
+# 허리에 꽂은 칼 (Player_SwordBelt, 칼집 없이): 이동·대기 중엔 이 칼이 보이고, 공격할 때만 손 칼(Player_Sword)로 바꿔요 (InkPlayerAnimator).
+#   허리띠 왼쪽(+X)에 비스듬히: 손잡이는 앞쪽 위, 칼날은 엉덩이 바깥을 지나 뒤 아래로. 골반(Hips) 뼈를 따라 움직여요
+def belt_place():
+    b = rig.data.bones
+    waist_z = b["Spine"].head_local.z
+    tb = Vector((0.04, 1.0, -0.36)).normalized()                          # 꼭지 → 칼끝: 뒤로 눕혀 엉덩이 뒤로 빠지게 (19° 아래). 팔과 몸 사이 틈으로 지나 앞에서 보면 왼손·다리와 겹치지 않아요
+    edge_b = (Vector((0, 0, -1)) - tb * tb.z).normalized()                 # 날은 아래를 향해요
+    flat_b = tb.cross(edge_b).normalized()
+    grip_b = Vector((BELT_X, -0.15, waist_z + 0.05))                       # 손잡이: 허리띠 왼쪽 앞
+    return grip_b, tb, edge_b, flat_b
+
+
+BELT_X = 0.2
+belt_sword = build_sword(belt_place(), "Player_SwordBelt", "Hips")
+meshes.append(belt_sword)
 
 # 옷 (컨셉 B안): 먹색 도포·소매·바지·각반·짚신, 흰 속소매·깃, 붉은 허리띠·머리끈 (clothes.py)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -396,6 +416,29 @@ def run_pose(lead, t):
 
 for f, lead, t in ((0, "Left", 0), (5, "Left", 1), (10, "Right", 0), (15, "Right", 1), (20, "Left", 0)):
     run_pose(lead, t)
+    key_all(f)
+actions.append((act, 0, 20))
+
+# ── 빈손 대기·달리기 (칼을 허리에 꽂은 동안): 칼 쥔 자세와 같은 몸짓, 오른손은 가볍게 쥐고 칼 방향 맞추기는 없어요
+act = new_action("IdleBare")
+for f, breath in ((0, 0.0), (30, 1.0), (60, 0.0)):
+    rest_pose(); base_arms()
+    set_rot("Chest", (X, -1.5 * breath))
+    set_rot("Neck", (X, 1.0 * breath))
+    set_rot("LeftUpperArm", (Y, DOWN_L - 1.5 * breath))
+    set_rot("RightUpperArm", (Y, -(DOWN_R - 1.5 * breath)))
+    set_rot("LeftLowerArm", (X, -12))
+    set_rot("RightLowerArm", (X, -12))
+    hands(22 + 4 * breath, 24 + 4 * breath)
+    set_hips_height(-0.004 * breath)
+    key_all(f)
+actions.append((act, 0, 60))
+
+act = new_action("RunBare")
+for f, lead, t in ((0, "Left", 0), (5, "Left", 1), (10, "Right", 0), (15, "Right", 1), (20, "Left", 0)):
+    run_pose(lead, t)
+    hands(55, 55)
+    pose["RightHand"].rotation_quaternion = Quaternion()                 # 칼 방향 맞추기를 풀어 손목을 곧게
     key_all(f)
 actions.append((act, 0, 20))
 
