@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &5078550192987404112
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 51d00cd1c5e674f4ab102c3ef3de653e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 51d00cd1c5e674f4ab102c3ef3de653e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 51d00cd1c5e674f4ab102c3ef3de653e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 51d00cd1c5e674f4ab102c3ef3de653e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 51d00cd1c5e674f4ab102c3ef3de653e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 51d00cd1c5e674f4ab102c3ef3de653e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 51d00cd1c5e674f4ab102c3ef3de653e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 51d00cd1c5e674f4ab102c3ef3de653e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 51d00cd1c5e674f4ab102c3ef3de653e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 51d00cd1c5e674f4ab102c3ef3de653e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7996975578808403623, guid: 51d00cd1c5e674f4ab102c3ef3de653e, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4300000, guid: 3ea8ee621ab9da3439c7f8f86af03492, type: 2}
+    - target: {fileID: -7996975578808403623, guid: 51d00cd1c5e674f4ab102c3ef3de653e, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 9c0391e2c72bb5140b973f443df875da, type: 2}
+    - target: {fileID: -7458317658743077676, guid: 51d00cd1c5e674f4ab102c3ef3de653e, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: a80b4c816bc0a6e48a228bdd7e56321c, type: 2}
+    - target: {fileID: 919132149155446097, guid: 51d00cd1c5e674f4ab102c3ef3de653e, type: 3}
+      propertyPath: m_Name
+      value: DeathKnight_Ink
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 51d00cd1c5e674f4ab102c3ef3de653e, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: fe71bb49903bc444297744d3c986fffc, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 51d00cd1c5e674f4ab102c3ef3de653e, type: 3}

@@ -48,6 +48,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 98221273311402279, guid: 458047948f1dc2c4fb24ba587aa1f726, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4300000, guid: 37d17fc47a75b43428bf90ed157df157, type: 2}
+    - target: {fileID: 98221273311402279, guid: 458047948f1dc2c4fb24ba587aa1f726, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 2c582bcb2f989a8469204ab8d788d815, type: 2}
     - target: {fileID: 919132149155446097, guid: 458047948f1dc2c4fb24ba587aa1f726, type: 3}
       propertyPath: m_Name
       value: Grunt_Ink
@@ -64,10 +72,6 @@ PrefabInstance:
       propertyPath: m_ApplyRootMotion
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7390775202703018949, guid: 458047948f1dc2c4fb24ba587aa1f726, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value: 
-      objectReference: {fileID: 2100000, guid: 2c582bcb2f989a8469204ab8d788d815, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

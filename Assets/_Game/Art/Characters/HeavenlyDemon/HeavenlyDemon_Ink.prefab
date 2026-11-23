@@ -1,0 +1,95 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &5737480787709490040
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: d93e2f3b3419f184d996cba872d32fb6, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d93e2f3b3419f184d996cba872d32fb6, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d93e2f3b3419f184d996cba872d32fb6, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d93e2f3b3419f184d996cba872d32fb6, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d93e2f3b3419f184d996cba872d32fb6, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d93e2f3b3419f184d996cba872d32fb6, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d93e2f3b3419f184d996cba872d32fb6, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d93e2f3b3419f184d996cba872d32fb6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d93e2f3b3419f184d996cba872d32fb6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d93e2f3b3419f184d996cba872d32fb6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -4460390874452083553, guid: d93e2f3b3419f184d996cba872d32fb6, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: f50e7201664ed41458f81274056f8e8e, type: 2}
+    - target: {fileID: -345463476288565535, guid: d93e2f3b3419f184d996cba872d32fb6, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4300000, guid: 17ea6d3933c056649b464d06387280a7, type: 2}
+    - target: {fileID: -345463476288565535, guid: d93e2f3b3419f184d996cba872d32fb6, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 2c582bcb2f989a8469204ab8d788d815, type: 2}
+    - target: {fileID: 919132149155446097, guid: d93e2f3b3419f184d996cba872d32fb6, type: 3}
+      propertyPath: m_Name
+      value: HeavenlyDemon_Ink
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: d93e2f3b3419f184d996cba872d32fb6, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 2084e5002e52c8e499a52be222fc0b67, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d93e2f3b3419f184d996cba872d32fb6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8000260892850302596}
+  m_SourcePrefab: {fileID: 100100000, guid: d93e2f3b3419f184d996cba872d32fb6, type: 3}
+--- !u!1 &4854539211019144745 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: d93e2f3b3419f184d996cba872d32fb6, type: 3}
+  m_PrefabInstance: {fileID: 5737480787709490040}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8000260892850302596
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4854539211019144745}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46d86974165bbfe438dcff8d2d699892, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AThousandDawns.Art::AThousandDawns.Art.InkDemonPhaseFx
