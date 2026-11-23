@@ -10,5 +10,7 @@
 - 엄폐물 · 거리 테스트는 한 가지 배치만 쓰지 말고 거리를 바꿔 봐요 (담 뒤 3칸은 통과, 3.5칸은 근접 적이 멈춤).
 - 병합 전에 아트 브랜치가 더하는 파일이 main의 미추적 파일과 겹치는지 봐요. 겹치면 내용을 비교하고 백업한 뒤 치워요 (씬 빌드가 만든 재질은 GUID가 달라요).
 - 아트 세션이 로컬 main에 직접 병합할 수 있어요. 푸시 전에 `git log origin/main..main`으로 무엇이 같이 올라가는지 봐요.
-- 씬 빌드는 Telegraph 재질 · 컨트롤러 · 프리팹 · 씬을 다시 저장해요. 이 결과물은 main에서 커밋하지 않아요.
+- 씬 빌드 결과물(재질 · 컨트롤러 · 프리팹)은 이제 같은 입력이면 같은 파일이 나와서 커밋해 둬요 (95c3137). 씬 · ProjectSettings · Assets/Settings · Telegraph 재질은 커밋하지 않아요.
+- 빌드 코드에서 에셋을 지우고 새로 만들면 GUID · fileID가 매번 바뀌어요. 내용을 견줘 같으면 그대로 두는 BeginController/FinishController · SaveStablePrefab을 써요.
+- 적 공격 클립은 기본 방식에서 예고 동안 첫 프레임에 멈췄다가 활성에 재생돼요. 첫 프레임 = 예고 자세, 판정 자세는 몇 프레임 안에. 예고 동안 움직이려면 MoveMode.Play.
 - PowerShell `Get-Content`는 `-Encoding UTF8` 없이 쓰면 한글이 깨져요. 중괄호가 든 치환은 perl 대신 Edit 도구로 해요.
