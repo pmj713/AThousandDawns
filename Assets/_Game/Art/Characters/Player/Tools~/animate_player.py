@@ -38,7 +38,7 @@ OUTFIT_GLB = os.path.join(os.path.dirname(rig_blend), "Outfit_B.glb")
 cloth = []
 if os.path.isfile(OUTFIT_GLB):
     import outfit_fit
-    cloth = outfit_fit.fit(rig, parts, OUTFIT_GLB)
+    cloth = outfit_fit.fit(rig, parts, OUTFIT_GLB, os.path.join(os.path.dirname(out_fbx), "Player_Cloth_Paint.png"))   # 옷 붓결 명암 그림도 같이
     meshes += cloth
 
 X, Y, Z = Vector((1, 0, 0)), Vector((0, 1, 0)), Vector((0, 0, 1))
@@ -94,6 +94,11 @@ for pb in pose:
 
 # 오른손 칼(직검): 주먹 쥔 손 안을 지나 엄지 쪽으로 칼날이 나가요 (IK 베기에서 맞추는 칼날 방향과 같음).
 # 칼날 폭은 손등→손가락 방향(날이 그쪽을 향함), 두께는 손바닥 방향. 오른손 뼈에 통째로 붙여 함께 움직여요
+SWORD_LEN = 1.1     # 칼 전체 길이 (꼭지 ~ 칼끝)
+SWORD_BUTT = 0.08   # 주먹 가운데에서 꼭지까지 (손잡이가 주먹 뒤로 이만큼 나와요)
+SWORD_PLAIN = True  # 수수한 검 (사용자 요청: VARCO 검은 금빛 장식·술이 화려해서 쪽빛 도포와 다퉈요). False면 VARCO 무협 검
+
+
 def build_sword():
     import bmesh
     b = rig.data.bones
@@ -107,12 +112,19 @@ def build_sword():
     flat = t.cross(edge).normalized()                                     # 칼 두께 방향
     grip_c = knuckles - hand_dir * 0.02 + palm * 0.03                     # 주먹 안 가운데
     # 플레이테스트 9차: 만검귀종 검과 같은 VARCO 무협 검(Weapons/Source~/WuxiaJian.glb)이 있으면 그걸 쥐어요.
-    #   긴 축 → 칼 축(t), 가는 끝(칼끝)이 엄지 쪽, 얇은 축 → 칼 두께(flat). 길이 1.9 (꼭지 -0.13 ~ 칼끝 1.77)
-    jian = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Weapons", "Source~", "WuxiaJian.glb")
-    if os.path.isfile(jian):
-        import numpy as np
+    #   긴 축 → 칼 축(t), 가는 끝(칼끝)이 엄지 쪽, 얇은 축 → 칼 두께(flat). 길이 SWORD_LEN (꼭지 쪽 SWORD_BUTT만큼 주먹 뒤로)
+    #   원본 glb가 저장소에 없어서(Source~ 제외) 만검귀종 낙하 검과 같은 Weapons/WuxiaJian.fbx를 써요
+    weapons = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Weapons")
+    jian = os.path.join(weapons, "Source~", "WuxiaJian.glb")
+    if not os.path.isfile(jian):
+        jian = os.path.join(weapons, "WuxiaJian.fbx")
+    if not SWORD_PLAIN and os.path.isfile(jian):
+        import numpy as np, shutil
         before = set(bpy.data.objects)
-        bpy.ops.import_scene.gltf(filepath=os.path.abspath(jian))
+        if jian.endswith(".fbx"):
+            bpy.ops.import_scene.fbx(filepath=os.path.abspath(jian))
+        else:
+            bpy.ops.import_scene.gltf(filepath=os.path.abspath(jian))
         new = [o for o in bpy.data.objects if o not in before]
         ms = [o for o in new if o.type == 'MESH']
         bpy.ops.object.select_all(action='DESELECT')
@@ -136,15 +148,26 @@ def build_sword():
         r = np.linalg.norm((pts - c0) - np.outer(d, np.array(ax_long[:])), axis=1)
         if r[d > hi_ - (hi_ - lo_) * 0.06].max() > r[d < lo_ + (hi_ - lo_) * 0.06].max():   # 굵은 끝(꼭지·술)이 + 쪽이면 뒤집어 칼끝을 +로
             ax_long = -ax_long; d = -d; lo_, hi_ = -hi_, -lo_
-        k = 1.9 / (hi_ - lo_)   # 10차: 첫 타 판정(앞으로 2.4)까지 칼끝이 닿게 → 0.95 → 1.9 (꼭지 -0.13 ~ 칼끝 1.77, 손이 몸 앞 0.6쯤이라 끝이 2.4 근처)
+        # 주인공 정리: 실제 검 비율로 1.1 (손잡이 포함). 10차에 첫 타 판정(2.4)에 닿게 1.9로 늘렸던 걸 되돌려요 — 사거리는 그대로, 칼끝이 짧아 보이는 건 알고 고른 것
+        k = SWORD_LEN / (hi_ - lo_)
         side = ax_long.cross(ax_thin).normalized()
         for v, dv in zip(obj.data.vertices, d):
             p = Vector(v.co[:]) - Vector(c0.tolist())
-            along = (dv - lo_) * k - 0.13
+            along = (dv - lo_) * k - SWORD_BUTT
             v.co = grip_c + t * along + flat * (p.dot(ax_thin) * k) + edge * (p.dot(side) * k)
         img = next((n.image for m in obj.data.materials if m and m.use_nodes for n in m.node_tree.nodes if n.type == 'TEX_IMAGE' and n.image), None)
-        if img is not None:
-            img.filepath_raw = os.path.join(os.path.dirname(out_fbx), "Player_Sword_Albedo.png"); img.file_format = 'PNG'; img.save()
+        # 칼 축(t)·두께(flat)·날(edge)로 옮긴 배치가 거울상이면 면이 뒤집혀요. 그러면 Unity에서 앞면이 잘려 나가고 외곽선 패스(뒷면을 먹색으로)만 보여서 칼이 새까맸어요 → 면을 뒤집어 바로잡아요
+        if t.dot(flat.cross(edge)) < 0:
+            import bmesh as _bm
+            bm = _bm.new(); bm.from_mesh(obj.data)
+            _bm.ops.reverse_faces(bm, faces=bm.faces[:])
+            bm.to_mesh(obj.data); bm.free()
+            print("SWORD flipped faces (mirrored placement)")
+        sword_png = os.path.join(os.path.dirname(out_fbx), "Player_Sword_Albedo.png")
+        if img is not None and img.has_data:
+            img.filepath_raw = sword_png; img.file_format = 'PNG'; img.save()
+        elif os.path.isfile(os.path.join(weapons, "WuxiaJian_Albedo.png")):
+            shutil.copyfile(os.path.join(weapons, "WuxiaJian_Albedo.png"), sword_png)
         obj.name = "Player_Sword"
         obj.data.name = "Player_Sword"
         dec = obj.modifiers.new("Dec", 'DECIMATE'); dec.ratio = min(1.0, 3000 / max(1, len(obj.data.polygons)))
@@ -155,41 +178,62 @@ def build_sword():
         obj.modifiers.new("Armature", 'ARMATURE').object = rig
         print("SWORD VARCO jian", len(obj.data.polygons), "faces")
         return obj
+    # 장식 없는 직검 (무늬·보석·금장식·술 없이): 곧은 강철 날(마름모 단면, 가운데 등줄) · 얕은 일자 코등이 · 짙은 천 감은 손잡이 · 작은 칼자루 끝.
+    #   색은 정점 색 (재질 _VertexTint 1): 날은 무광에 가까운 회색, 칼끝 쪽만 살짝 밝게 / 코등이·칼자루 끝은 짙은 무쇠 / 손잡이는 짙은 쪽빛 감색 천
+    #   길이 SWORD_LEN (꼭지 -SWORD_BUTT ~ 칼끝), 칼 축 t · 날 방향 edge · 두께 flat
     bm = bmesh.new()
+    col = bm.loops.layers.color.new("Col")
+    STEEL, TIP, IRON, WRAP = (0.52, 0.54, 0.56, 1), (0.7, 0.72, 0.74, 1), (0.2, 0.2, 0.22, 1), (0.13, 0.14, 0.2, 1)
 
-    def box(center_along, length, w, th, start=None):
-        c = grip_c + t * center_along
-        vs = []
-        for dz in (-length / 2, length / 2):
-            for dw, dt in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
-                vs.append(bm.verts.new(c + t * dz + edge * (w / 2 * dw) + flat * (th / 2 * dt)))
-        for f in ((0, 1, 2, 3), (7, 6, 5, 4), (0, 4, 5, 1), (1, 5, 6, 2), (2, 6, 7, 3), (3, 7, 4, 0)):
-            bm.faces.new([vs[i] for i in f])
+    def paint(faces, c):
+        for f in faces:
+            for l in f.loops:
+                l[col] = c
 
-    box(-0.02, 0.17, 0.026, 0.024)          # 손잡이
-    box(-0.115, 0.03, 0.04, 0.034)          # 손잡이 끝(폼멜)
-    box(0.075, 0.018, 0.11, 0.026)          # 코등이
-    # 칼날: 마름모 단면, 끝으로 갈수록 좁아져 뾰족
-    L, w0, th0 = 0.74, 0.034, 0.008
+    def prism(a0, a1, w0, w1, th0, th1, c, sides=8):
+        """칼 축을 따라 a0에서 a1까지 타원 단면 기둥 (w = 날 방향 폭, th = 두께)."""
+        rings = []
+        for a, w, th in ((a0, w0, th0), (a1, w1, th1)):
+            cc = grip_c + t * a
+            rings.append([bm.verts.new(cc + edge * (w / 2 * math.cos(k * 2 * math.pi / sides)) + flat * (th / 2 * math.sin(k * 2 * math.pi / sides))) for k in range(sides)])
+        fs = [bm.faces.new((rings[0][k], rings[0][(k + 1) % sides], rings[1][(k + 1) % sides], rings[1][k])) for k in range(sides)]
+        fs.append(bm.faces.new(list(reversed(rings[0])))); fs.append(bm.faces.new(rings[1]))
+        paint(fs, c)
+
+    butt = -SWORD_BUTT
+    prism(butt, butt + 0.035, 0.034, 0.03, 0.03, 0.028, IRON)                      # 칼자루 끝 (작은 둥근 꼭지)
+    prism(butt + 0.035, 0.15, 0.03, 0.032, 0.026, 0.028, WRAP)                       # 손잡이 (천 감음)
+    for k in range(5):                                                               # 감은 천 마디 (살짝 도드라진 띠)
+        a = butt + 0.05 + k * 0.042
+        prism(a, a + 0.012, 0.035, 0.035, 0.031, 0.031, WRAP, sides=6)
+    prism(0.15, 0.168, 0.085, 0.08, 0.03, 0.028, IRON)                              # 얕은 일자 코등이
+    # 칼날: 마름모 단면(가운데 등줄), 끝 0.1에서 뾰족하게 모여요. 칼끝 쪽으로 갈수록 색이 살짝 밝아요
+    blade0, blade1 = 0.168, SWORD_LEN - SWORD_BUTT
+    L = blade1 - blade0
+    stations = [(0.0, 1.0), (0.3, 0.97), (0.6, 0.93), (0.88, 0.86), (0.95, 0.55), (1.0, 0.0)]
+    w0, th0 = 0.036, 0.009
     rings = []
-    for u, scale in ((0.0, 1.0), (0.85, 0.85), (1.0, 0.0)):
-        c = grip_c + t * (0.084 + L * u)
-        if scale == 0.0:
-            rings.append([bm.verts.new(c)])
-            continue
-        rings.append([bm.verts.new(c + edge * (w0 / 2 * scale)), bm.verts.new(c + flat * (th0 / 2 * scale)),
-                      bm.verts.new(c - edge * (w0 / 2 * scale)), bm.verts.new(c - flat * (th0 / 2 * scale))])
-    for a_, b_ in zip(rings[:-1], rings[1:]):
+    for u, sc in stations:
+        cc = grip_c + t * (blade0 + L * u)
+        if sc == 0.0:
+            rings.append((u, [bm.verts.new(cc)])); continue
+        rings.append((u, [bm.verts.new(cc + edge * (w0 / 2 * sc)), bm.verts.new(cc + flat * (th0 / 2 * sc)),
+                          bm.verts.new(cc - edge * (w0 / 2 * sc)), bm.verts.new(cc - flat * (th0 / 2 * sc))]))
+    blade_faces = []
+    for (ua, ra), (ub, rb) in zip(rings[:-1], rings[1:]):
         for i in range(4):
             j = (i + 1) % 4
-            if len(b_) == 1:
-                bm.faces.new((a_[i], a_[j], b_[0]))
-            else:
-                bm.faces.new((a_[i], a_[j], b_[j], b_[i]))
-    bm.faces.new(list(reversed(rings[0])))
+            f = bm.faces.new((ra[i], ra[j], rb[0])) if len(rb) == 1 else bm.faces.new((ra[i], ra[j], rb[j], rb[i]))
+            for l in f.loops:
+                u = (l.vert.co - grip_c).dot(t)
+                k = max(0.0, min(1.0, (u - blade0 - L * 0.55) / (L * 0.45)))
+                l[col] = tuple(STEEL[c] + (TIP[c] - STEEL[c]) * k for c in range(4))
+            blade_faces.append(f)
+    f = bm.faces.new(list(reversed(rings[0][1]))); paint([f], STEEL)
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
     me = bpy.data.meshes.new("Player_Sword")
     bm.to_mesh(me); bm.free()
+    print("SWORD plain jian", len(me.polygons), "faces, length", SWORD_LEN)
     obj = bpy.data.objects.new("Player_Sword", me)
     scene.collection.objects.link(obj)
     obj.vertex_groups.new(name="RightHand").add(list(range(len(me.vertices))), 1.0, 'REPLACE')

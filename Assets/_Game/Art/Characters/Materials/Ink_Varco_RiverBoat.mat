@@ -31,6 +31,7 @@ Material:
     m_Floats:
     - _BandSoftness: 0.04
     - _Bands: 4
+    - _Cull: 2
     - _Dissolve: 0
     - _OutlineJitter: 0.08
     - _OutlineNoiseScale: 5

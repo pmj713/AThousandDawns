@@ -24,23 +24,24 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: 81c48e3107c8f2849b671327565c4dd4, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _BandSoftness: 0.04
     - _Bands: 4
+    - _Cull: 2
     - _Dissolve: 0
     - _OutlineJitter: 0.08
     - _OutlineNoiseScale: 5
-    - _OutlineWidth: 0
+    - _OutlineWidth: 1
     - _PaperGrain: 0.015
     - _RimInk: 0.05
     - _RimPower: 2.5
     - _Saturation: 1
-    - _ShadowInk: 0.1
-    - _VertexTint: 0
+    - _ShadowInk: 0.3
+    - _VertexTint: 1
     - _WashNoiseScale: 3
     - _WashNoiseStrength: 0.04
     m_Colors:

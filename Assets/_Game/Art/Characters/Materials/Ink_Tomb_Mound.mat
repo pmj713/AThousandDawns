@@ -32,6 +32,7 @@ Material:
     - _BandSoftness: 0.12
     - _Bands: 3
     - _BlendSharpness: 6
+    - _Cull: 2
     - _Dissolve: 0
     - _OutlineFromCenter: 1
     - _OutlineJitter: 0.7

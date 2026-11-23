@@ -24,13 +24,14 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 44cb6576dc3d5f24a880e244dae19bd7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _BandSoftness: 0.12
     - _Bands: 3
+    - _Cull: 0
     - _Dissolve: 0
     - _OutlineJitter: 0.7
     - _OutlineNoiseScale: 5
