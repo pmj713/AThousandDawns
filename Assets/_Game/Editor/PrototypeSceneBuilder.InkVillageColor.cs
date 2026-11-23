@@ -6,23 +6,11 @@ namespace AThousandDawns.EditorTools
 {
     // 마을 채색 손질: 회귀할 때마다 보는 곳이라 이계가 섞이기 전의 따뜻한 마을로.
     //   마을 바닥은 판과 따로 (지역마다 바뀌는 판 바닥 재질과 떨어져 늘 따뜻한 황토 마당)
-    //   어귀에서 매화나무·객잔 쪽으로 이어진 디딤돌 길 · 마당 북쪽을 가로지르는 줄에 붉은·노란 종이 등롱 · 남서쪽 텃밭(배추·고추)
+    //   어귀에서 매화나무·객잔 쪽으로 이어진 디딤돌 길 · 마당 북쪽을 가로지르는 줄에 붉은·노란 종이 등롱
     //   · 어귀 안쪽과 사당 앞 꽃 화분. 모두 보기용이라 충돌체는 장식 규칙(AddDecorColliders)에 맡겨요 (낮은 것은 안 막아요)
+    //   남서쪽 텃밭(배추·고추 두둑)은 사용자 요청으로 뺐어요
     public static partial class PrototypeSceneBuilder
     {
-        // 텃밭 작물 하나: 입체 덤불 덩어리(밑동이 원점)를 작게
-        static int s_crop;
-        static void Crop(Transform root, string name, Vector3 foot, Vector3 size, Material mat)
-        {
-            var go = new GameObject(name);
-            go.transform.SetParent(root, false);
-            go.transform.position = foot;
-            go.transform.rotation = Quaternion.Euler(0f, (s_crop * 67) % 360, 0f);
-            go.transform.localScale = size;
-            go.AddComponent<MeshFilter>().sharedMesh = BushMesh(s_crop++ % 3);
-            go.AddComponent<MeshRenderer>().sharedMaterial = mat;
-        }
-
         static void DressVillageColor(Transform deco, Vector3 c, GameObject village, Material stoneMat, Material woodMat)
         {
             // 마을 바닥: 판 바닥과 같은 흙 그림에 따뜻한 황토빛
@@ -34,19 +22,11 @@ namespace AThousandDawns.EditorTools
             var rope = GetInkMaterial("Ink_River_Rope", "#A88F62", 0.45f);
             var lanternRed = GetInkMaterial("Ink_Village_LanternRed", "#D8352A", 1f);
             var lanternGold = GetInkMaterial("Ink_Village_LanternGold", "#F2B43A", 1f);
-            // 텃밭은 다른 마을 소품(결 있는 나무·돌 구조물 셰이더)과 같은 그림풍으로 (플레이 테스트 3차: 매끈한 초록 공이 겉돌았어요)
-            //   두둑은 마당 흙 그림을 짙게 · 배추·고춧대는 대나무 잎과 같은 잎 그림을 입힌 울퉁불퉁한 덤불 덩어리 (배추는 옅은 연두로)
-            var soil = GetInkTriplanar("Ink3D_VillageSoil", "Floor_Ground", 1.2f, 1f);
-            soil.SetColor("_BaseColor", new Color(0.36f, 0.28f, 0.22f, 1f));
-            EditorUtility.SetDirty(soil);
+            // 화분 잎: 대나무 잎과 같은 잎 그림 (원기둥 화분일 때만 쓰여요)
             LeafPaintTexture();
-            var cabbage = StalkStyle(GetInkTriplanar("Ink3D_Cabbage", "Tex_LeafPaint", 0.4f, 1f), 0.45f, 1f);
-            cabbage.SetColor("_BaseColor", new Color(0.46f, 0.48f, 0.36f, 1f));   // 흙빛 마당에 맞게 차분한 배추색
-            EditorUtility.SetDirty(cabbage);
             var pepperLeaf = StalkStyle(GetInkTriplanar("Ink3D_PepperLeaf", "Tex_LeafPaint", 0.4f, 1f), 0.45f, 1f);
             pepperLeaf.SetColor("_BaseColor", new Color(0.36f, 0.4f, 0.28f, 1f));
             EditorUtility.SetDirty(pepperLeaf);
-            var pepper = GetInkMaterial("Ink_Village_Pepper", "#B02A1E", 1f);
             var pot = GetInkMaterial("Ink_Village_Pot", "#B5603A", 1f);
             var petals = new[] { GetInkMaterial("Ink_Village_FlowerPink", "#F07AA0", 1f), GetInkMaterial("Ink_Village_FlowerYellow", "#F5C842", 1f), GetInkMaterial("Ink_Village_FlowerWhite", "#F4EEE0", 1f) };
             var leaf = pepperLeaf;
@@ -92,25 +72,6 @@ namespace AThousandDawns.EditorTools
                     Block(root, "Lantern Cap", PrimitiveType.Cylinder, p + Vector3.down * 0.05f, new Vector3(0.12f, 0.02f, 0.12f), Quaternion.identity, woodMat);
                 }
                 prev = p;
-            }
-
-            // 텃밭 (남서쪽): 두둑 셋, 배추와 고추가 번갈아
-            var field = c + new Vector3(-3f, 0f, -5.4f);
-            for (int row = 0; row < 3; row++)
-            {
-                var rc = field + new Vector3(0f, 0f, (row - 1) * 0.75f);
-                Block(root, "Furrow", PrimitiveType.Cube, rc + Vector3.up * 0.06f, new Vector3(3.2f, 0.12f, 0.45f), Quaternion.identity, soil);
-                for (int k = 0; k < 6; k++)
-                {
-                    var p = rc + new Vector3(-1.35f + k * 0.54f, 0.12f, R(-0.05f, 0.05f));
-                    if (row == 1)
-                    {
-                        Crop(root, "Pepper Plant", p, new Vector3(0.26f, 0.3f, 0.26f), leaf);
-                        Block(root, "Pepper", PrimitiveType.Capsule, p + new Vector3(0.06f, 0.12f, -0.08f), new Vector3(0.04f, 0.06f, 0.04f), Quaternion.Euler(0f, 0f, 20f), pepper);
-                    }
-                    else
-                        Crop(root, "Cabbage", p, new Vector3(0.36f, 0.26f, 0.36f), cabbage);
-                }
             }
 
             // 꽃 화분: 어귀 안쪽 양옆과 사당 앞
