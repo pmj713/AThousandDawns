@@ -36,7 +36,8 @@ namespace AThousandDawns.Art
         static readonly int DaggerFlashId = Animator.StringToHash("DaggerFlash");
         static readonly int ArmedId = Animator.StringToHash("Armed");
         // 칼 넣기 (사용자 요청): 이동·대기 중엔 칼을 허리에 꽂아(Player_SwordBelt) 빈손, 평타·칼 초식을 시작하면 손에 쥐어요(Player_Sword).
-        //   마지막 공격·초식이 끝나고 sword.sheathe_delay초(시트, 기본 1초) 뒤 허리로. 넣고 빼는 동작은 따로 없이 바꾸고 자세만 0.15초에 섞어요
+        //   마지막 공격·초식이 끝나면 바로 허리로 (사용자 요청, sword.sheathe_delay 시트 값으로 늦출 수 있어요 · 기본 0초).
+        //   연타 사이 다음 타 연결 구간(combo.chain_window)에는 손에 둬요 (안 그러면 타마다 깜빡여요). 넣고 빼는 동작은 따로 없이 바꾸고 자세만 0.15초에 섞어요
         float _armedUntil = -1f, _armedBlend;
         string _upperState = "SkillVortex";
         // 비도 순간이동·호신륜이 도는 중인지 (기획·개발이 PlayerController.Dagger.cs에 추가 중이라 이름으로 찾아요 — 들어오기 전에도 컴파일되게)
@@ -82,7 +83,7 @@ namespace AThousandDawns.Art
         // 칼을 쓰는 초식 (비도 아닐 때): 회선참 · 죽림섬 · 탁랑참 · 혈영참. 붕산권(주먹)·금강장(손바닥)은 빈손 그대로
         static bool SwordSkill(SkillKind k) => k == SkillKind.Spin || k == SkillKind.BambooFlash || k == SkillKind.Takrang || k == SkillKind.BloodShadow;
 
-        void Arm() => _armedUntil = Time.time + AThousandDawns.Core.GameConfig.GetOptional("sword.sheathe_delay", 1f);
+        void Arm() => _armedUntil = Time.time + AThousandDawns.Core.GameConfig.GetOptional("sword.sheathe_delay", 0f);
 
         void OnDestroy()
         {
@@ -127,9 +128,10 @@ namespace AThousandDawns.Art
             }
             _animator.SetBool(CombatId, _combat);
             _animator.SetBool(DaggerHoldId, _player.UsesDagger);
-            // 칼 쥐기: 평타(칼)·칼 초식이 이어지는 동안 계속 쥐고, 끝나고 잠시 뒤 허리로
-            if (!_player.UsesDagger && ((_combo != null && _combo.IsAttacking) || (_player.IsCastingSkill && SwordSkill(_player.Skill)))) Arm();
-            bool armed = Time.time < _armedUntil;
+            // 칼 쥐기: 평타(칼)·다음 타 연결 구간·칼 초식 동안 쥐고, 끝나면 바로(또는 sword.sheathe_delay 뒤) 허리로
+            bool swinging = !_player.UsesDagger && ((_combo != null && (_combo.IsAttacking || _combo.CurrentPhase == ComboTimeline.Phase.ChainWindow)) || (_player.IsCastingSkill && SwordSkill(_player.Skill)));
+            if (swinging) Arm();
+            bool armed = swinging || Time.time < _armedUntil;
             ShowSword(_player.UsesDagger, armed);
             _armedBlend = Mathf.MoveTowards(_armedBlend, armed || _player.UsesDagger ? 1f : 0f, Time.deltaTime / 0.15f);
             _animator.SetFloat(ArmedId, _armedBlend);
