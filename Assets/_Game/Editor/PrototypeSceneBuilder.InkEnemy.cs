@@ -448,7 +448,9 @@ namespace AThousandDawns.EditorTools
             // 고유 동작(BlowHorn·ShootBow)도 플레이어 동작처럼 몸통 방향·위치를 구워 넣어요.
             // 기본값(몸 방향 기준 루트 회전)으로 두면 모델을 돌려 세운 방향과 어긋나 뒤돌아서 쏴요
             var ownClips = importer.defaultClipAnimations;
-            if (ownClips.Length > 0 && (importer.clipAnimations.Length != ownClips.Length || importer.clipAnimations.Any(c => !c.lockRootRotation || !c.keepOriginalOrientation || c.loopTime != LoopingOwnClips.Contains(c.name))))
+            // 클립 길이를 바꿔 다시 구웠으면(같은 이름) 가져오기 설정의 범위도 새 길이로 (예전엔 개수만 봐서 옛 끝 프레임이 남았어요)
+            bool RangeChanged(ModelImporterClipAnimation c) => !ownClips.Any(d => d.takeName == c.takeName && d.firstFrame == c.firstFrame && d.lastFrame == c.lastFrame);
+            if (ownClips.Length > 0 && (importer.clipAnimations.Length != ownClips.Length || importer.clipAnimations.Any(c => RangeChanged(c) || !c.lockRootRotation || !c.keepOriginalOrientation || c.loopTime != LoopingOwnClips.Contains(c.name))))
             {
                 foreach (var clip in ownClips)
                 {
@@ -488,8 +490,7 @@ namespace AThousandDawns.EditorTools
             if (clips.TryGetValue("BlowHorn", out var blow)) attackClip = blow;
             else if (clips.TryGetValue("ShootBow", out var shoot)) attackClip = shoot;
 
-            AssetDatabase.DeleteAsset(controllerPath);
-            var controller = AnimatorController.CreateAnimatorControllerAtPath(controllerPath);
+            var controller = BeginController(controllerPath);   // 옆 임시 경로에 새로 만들어 지금 것과 견줘요 (PrototypeSceneBuilder.StableAssets.cs)
             controller.AddParameter("Speed", AnimatorControllerParameterType.Float);
             controller.AddParameter("Attack", AnimatorControllerParameterType.Trigger);
             controller.AddParameter(new AnimatorControllerParameter { name = "AttackSpeed", type = AnimatorControllerParameterType.Float, defaultFloat = 1f });
@@ -584,6 +585,7 @@ namespace AThousandDawns.EditorTools
                 else m = r.name.Contains("Dao") ? weapon : body;
                 r.sharedMaterials = Enumerable.Repeat(m, Mathf.Max(1, r.sharedMaterials.Length)).ToArray();
             }
+            controller = FinishController(controllerPath, controller);   // 내용이 같으면 지금 파일을 그대로 (PrototypeSceneBuilder.StableAssets.cs)
             var animator = go.GetComponent<Animator>();
             if (animator == null) animator = go.AddComponent<Animator>();
             animator.runtimeAnimatorController = controller;

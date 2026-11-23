@@ -82,8 +82,7 @@ namespace AThousandDawns.EditorTools
             }
 
             // 애니메이터는 매번 새로 만들어요 (설정은 이 코드가 기준)
-            AssetDatabase.DeleteAsset(PlayerControllerPath);
-            var controller = AnimatorController.CreateAnimatorControllerAtPath(PlayerControllerPath);
+            var controller = BeginController(PlayerControllerPath);   // 옆 임시 경로에 새로 만들어 지금 것과 견줘요 (PrototypeSceneBuilder.StableAssets.cs)
             controller.AddParameter("Speed", AnimatorControllerParameterType.Float);
             controller.AddParameter("Combo", AnimatorControllerParameterType.Int);
             controller.AddParameter("Attack", AnimatorControllerParameterType.Trigger);
@@ -295,7 +294,7 @@ namespace AThousandDawns.EditorTools
             }
 
             AssetDatabase.SaveAssets();
-            return controller;
+            return FinishController(PlayerControllerPath, controller);
         }
 
         // 에셋의 Humanoid 동작에서 구간을 잘라 시간을 다시 배치한 새 동작 파일을 만들어요.

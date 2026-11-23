@@ -36,8 +36,7 @@ namespace AThousandDawns.EditorTools
             var clips = AssetDatabase.LoadAllAssetsAtPath(modelPath).OfType<AnimationClip>().Where(c => !c.name.StartsWith("__preview__")).ToDictionary(c => c.name);
             if (!clips.TryGetValue("Captive", out var captive) || !clips.TryGetValue("Freed", out var freed)) return;
             string controllerPath = $"{TombEventFolder}/CaptiveHero_Event.controller";
-            AssetDatabase.DeleteAsset(controllerPath);
-            var controller = UnityEditor.Animations.AnimatorController.CreateAnimatorControllerAtPath(controllerPath);
+            var controller = BeginController(controllerPath);   // 옆 임시 경로에 새로 만들어 지금 것과 견줘요 (PrototypeSceneBuilder.StableAssets.cs)
             controller.AddParameter("Free", AnimatorControllerParameterType.Trigger);
             var sm = controller.layers[0].stateMachine;
             var held = sm.AddState("Captive"); held.motion = captive;
@@ -54,7 +53,7 @@ namespace AThousandDawns.EditorTools
             hero.transform.SetParent(root.transform, false);
             hero.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);   // 방 입구(남쪽)를 봐요
             var animator = hero.GetComponent<Animator>();
-            animator.runtimeAnimatorController = controller;
+            animator.runtimeAnimatorController = controller = FinishController(controllerPath, controller);
             var chains = new GameObject("Chains").transform;
             chains.SetParent(root.transform, false);
             Vector3 wrists = new Vector3(0f, 0.65f, 0.3f);   // 무릎 꿇은 고수의 등 뒤 손목
@@ -85,7 +84,7 @@ namespace AThousandDawns.EditorTools
                 var body = a.gameObject.AddComponent<CapsuleCollider>();
                 body.center = new Vector3(0f, 0.6f, 0f); body.height = 1.2f; body.radius = 0.35f;
             }
-            var prefab = PrefabUtility.SaveAsPrefabAsset(root, $"{TombEventFolder}/{name}.prefab");
+            var prefab = SaveStablePrefab(root, $"{TombEventFolder}/{name}.prefab");
             Object.DestroyImmediate(root);
             // RoomRun이 이벤트 방에 들어갈 때 세워요 (RoomRun.EventProps)
             string field = name switch

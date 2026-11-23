@@ -41,7 +41,7 @@ namespace AThousandDawns.EditorTools
         static GameObject SaveReward(GameObject root, string name)
         {
             StripColliders(root.transform);
-            var prefab = PrefabUtility.SaveAsPrefabAsset(root, $"{RewardFolder}/{name}.prefab");
+            var prefab = SaveStablePrefab(root, $"{RewardFolder}/{name}.prefab");
             Object.DestroyImmediate(root);
             return prefab;
         }

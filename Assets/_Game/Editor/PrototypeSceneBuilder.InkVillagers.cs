@@ -74,8 +74,7 @@ namespace AThousandDawns.EditorTools
             if (life == null) return null;
 
             string controllerPath = $"{folder}/{name}.controller";
-            AssetDatabase.DeleteAsset(controllerPath);
-            var controller = AnimatorController.CreateAnimatorControllerAtPath(controllerPath);
+            var controller = BeginController(controllerPath);   // 옆 임시 경로에 새로 만들어 지금 것과 견줘요 (PrototypeSceneBuilder.StableAssets.cs)
             var state = controller.layers[0].stateMachine.AddState("Life");
             state.motion = life;
             state.cycleOffset = offset;   // 주민마다 박자가 어긋나게
@@ -91,7 +90,7 @@ namespace AThousandDawns.EditorTools
                 r.sharedMaterials = Enumerable.Repeat(r.name.Contains("Weapon") ? tool : body, Mathf.Max(1, r.sharedMaterials.Length)).ToArray();
             var animator = go.GetComponent<Animator>();
             if (animator == null) animator = go.AddComponent<Animator>();
-            animator.runtimeAnimatorController = controller;
+            animator.runtimeAnimatorController = controller = FinishController(controllerPath, controller);
             animator.applyRootMotion = false;
             animator.cullingMode = AnimatorCullingMode.CullCompletely;   // 마을이 화면 밖이면 쉬어요
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, $"{folder}/{name}_Ink.prefab");

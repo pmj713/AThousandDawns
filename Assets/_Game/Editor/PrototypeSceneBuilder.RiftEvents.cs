@@ -246,7 +246,7 @@ namespace AThousandDawns.EditorTools
         static void SaveRiftEvent(GameObject root, string name, string field)
         {
             StripColliders(root.transform);
-            var prefab = PrefabUtility.SaveAsPrefabAsset(root, $"{RiftEventFolder}/{name}.prefab");
+            var prefab = SaveStablePrefab(root, $"{RiftEventFolder}/{name}.prefab");
             Object.DestroyImmediate(root);
             var run = Object.FindFirstObjectByType<AThousandDawns.Prototype.RoomRun>(FindObjectsInactive.Include);
             if (run == null) return;

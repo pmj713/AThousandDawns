@@ -147,7 +147,7 @@ namespace AThousandDawns.EditorTools
         static GameObject SaveFeature(GameObject root, string name)
         {
             StripColliders(root.transform);
-            var prefab = PrefabUtility.SaveAsPrefabAsset(root, $"{FeatureFolder}/{name}.prefab");
+            var prefab = SaveStablePrefab(root, $"{FeatureFolder}/{name}.prefab");
             Object.DestroyImmediate(root);
             return prefab;
         }
