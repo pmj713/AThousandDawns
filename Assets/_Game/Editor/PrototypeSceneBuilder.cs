@@ -47,8 +47,8 @@ namespace AThousandDawns.EditorTools
         const string GateColor = "#B7322C";       // 결계 부적 (잠긴 문), 색감 시트
         const string EnemyAccentColor = "#EFE6D2";
         const string ArrowColor = "#1E1C1A";
-        const string TelegraphBaseColor = "#E7BD7B";
-        const string TelegraphFillColor = "#FF9A2E";
+        const string TelegraphBaseColor = "#FF3B3033"; // 범위: 투명한 빨강 (알파 0.2)
+        const string TelegraphFillColor = "#D4141480"; // 차오름: 진한 붉은색 (알파 0.5)
         const string TelegraphOutlineColor = "#FFFFFF";
 
         static readonly Vector3 CameraOffset = new Vector3(0f, 13.1f, -9.2f); // 거리 16, 55°
@@ -411,7 +411,13 @@ namespace AThousandDawns.EditorTools
             EnsureFolder(MaterialFolder);
             string path = $"{MaterialFolder}/{name}.mat";
             var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
-            if (mat != null && name.StartsWith("Telegraph_")) return mat; // 공격 예고 재질은 아트가 반투명으로 맞춰 둬요 (다시 만들 때 알파 · 패스를 덮어쓰지 않아요)
+            ColorUtility.TryParseHtmlString(hex, out Color color);
+            if (mat != null && name.StartsWith("Telegraph_"))
+            {
+                // 공격 예고 재질은 아트가 반투명으로 맞춰 둬요: 셰이더 · 패스는 덮어쓰지 않고 색(알파 포함)만 상수로 맞춰요
+                if (mat.GetColor("_BaseColor") != color) { mat.SetColor("_BaseColor", color); EditorUtility.SetDirty(mat); }
+                return mat;
+            }
             var shader = Shader.Find(unlit ? "Universal Render Pipeline/Unlit" : "Universal Render Pipeline/Lit");
             if (mat == null)
             {
@@ -419,7 +425,6 @@ namespace AThousandDawns.EditorTools
                 AssetDatabase.CreateAsset(mat, path);
             }
             else if (shader != null) mat.shader = shader;
-            ColorUtility.TryParseHtmlString(hex, out Color color);
             mat.SetColor("_BaseColor", color);
             EditorUtility.SetDirty(mat);
             return mat;
