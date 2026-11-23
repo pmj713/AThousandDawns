@@ -10,6 +10,7 @@ namespace AThousandDawns.Art
     {
         static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
         static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+        static readonly int TileSizeId = Shader.PropertyToID("_TileSize");
         // 지역 바닥 색: 바닥 그림(채색)에 곱하는 빛 — 죽림 흙과 낙엽 · 폐사찰 이끼 낀 돌마당 · 장강 젖은 자갈과 물웅덩이 · 천마총 불씨 금 간 검붉은 돌
         static readonly Color[] FloorColors =
         {
@@ -18,6 +19,7 @@ namespace AThousandDawns.Art
 
         [SerializeField] Material floorMaterial;
         [SerializeField] Texture[] floorTextures = new Texture[0];      // 지역별 바닥 무늬 (비면 원래 것)
+        [SerializeField] float[] floorTileScales = new float[0];        // 지역별 바닥 무늬 크기 배수 (원래 _TileSize에 곱해요, 비면 그대로)
         [SerializeField] GameObject[] backdrops = new GameObject[0];     // 지역별 먼 배경 (그 지역 것만 켜요)
         [SerializeField] GameObject[] atmosphere = new GameObject[0];    // 지역별 분위기 (낙엽·안개)
         [SerializeField] InkRegionDressing dressing;
@@ -25,10 +27,12 @@ namespace AThousandDawns.Art
         RoomRun _run;
         Texture _original;
         Color _originalColor;
+        float _originalTile;
         int _shown = -1;
 
-        public void Setup(Material floor, Texture[] floors, GameObject[] backs, GameObject[] airs, InkRegionDressing dress)
+        public void Setup(Material floor, Texture[] floors, GameObject[] backs, GameObject[] airs, InkRegionDressing dress, float[] tileScales = null)
         {
+            floorTileScales = tileScales ?? new float[0];
             floorMaterial = floor;
             floorTextures = floors;
             backdrops = backs;
@@ -38,7 +42,11 @@ namespace AThousandDawns.Art
 
         void Start()
         {
-            if (floorMaterial != null) { _original = floorMaterial.GetTexture(BaseMapId); _originalColor = floorMaterial.GetColor(BaseColorId); }
+            if (floorMaterial != null)
+            {
+                _original = floorMaterial.GetTexture(BaseMapId); _originalColor = floorMaterial.GetColor(BaseColorId);
+                if (floorMaterial.HasProperty(TileSizeId)) _originalTile = floorMaterial.GetFloat(TileSizeId);
+            }
             Show(0);
         }
 
@@ -57,6 +65,8 @@ namespace AThousandDawns.Art
                 var tex = floorTextures[Mathf.Clamp(region, 0, floorTextures.Length - 1)];
                 floorMaterial.SetTexture(BaseMapId, tex != null ? tex : _original);
                 floorMaterial.SetColor(BaseColorId, FloorColors[Mathf.Clamp(region, 0, FloorColors.Length - 1)]);
+                if (floorTileScales.Length > 0 && _originalTile > 0f)
+                    floorMaterial.SetFloat(TileSizeId, _originalTile * floorTileScales[Mathf.Clamp(region, 0, floorTileScales.Length - 1)]);
             }
             Toggle(backdrops, region);
             Toggle(atmosphere, region);
@@ -73,6 +83,7 @@ namespace AThousandDawns.Art
         void OnDestroy()
         {
             if (floorMaterial != null && _original != null) { floorMaterial.SetTexture(BaseMapId, _original); floorMaterial.SetColor(BaseColorId, _originalColor); }
+            if (floorMaterial != null && _originalTile > 0f) floorMaterial.SetFloat(TileSizeId, _originalTile);
         }
     }
 }

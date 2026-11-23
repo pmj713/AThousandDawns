@@ -12,21 +12,25 @@ namespace AThousandDawns.Art
     public class InkOutsideGround : MonoBehaviour
     {
         static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
+        static readonly int TileSizeId = Shader.PropertyToID("_TileSize");
 
         [SerializeField] Texture[] regionTextures;
+        [SerializeField] float[] regionTileScales;   // 지역별 땅 무늬 크기 배수 (원래 _TileSize에 곱해요, 비면 그대로)
         [SerializeField] GameObject[] regionScenery; // 벽 너머 풍경: 죽림 대나무 · 폐사찰 · 장강 수채 · 천마총 (지역마다 하나만 켜요)
 
         RoomRun _run;
         InkRegionDressing _dressing;
         Material _material;
         int _shown = -1;
+        float _baseTile;
 
-        public void Setup(Texture[] textures, GameObject[] scenery) { regionTextures = textures; regionScenery = scenery; }
+        public void Setup(Texture[] textures, GameObject[] scenery, float[] tileScales = null) { regionTextures = textures; regionScenery = scenery; regionTileScales = tileScales; }
 
         void Start()
         {
             var r = GetComponent<Renderer>();
             if (r != null) _material = r.material; // 복사본
+            if (_material != null && _material.HasProperty(TileSizeId)) _baseTile = _material.GetFloat(TileSizeId);
 
             // 벽 너머에 세운 먼 배경 그림 판(Backdrop_*)은 게임 중엔 숨겨요 — 바깥 땅이 대신 채워요 (사용자 요청).
             // 지역마다 켜고 끄는 건 그쪽(InkRegionLook) 그대로 두고, 그림만 안 그리게 해요.
@@ -44,6 +48,8 @@ namespace AThousandDawns.Art
             if (region == _shown) return;
             _shown = region;
             if (regionTextures[region] != null) _material.SetTexture(BaseMapId, regionTextures[region]);
+            if (regionTileScales != null && regionTileScales.Length > 0 && _baseTile > 0f)
+                _material.SetFloat(TileSizeId, _baseTile * regionTileScales[Mathf.Min(region, regionTileScales.Length - 1)]);
             if (regionScenery != null)
                 for (int i = 0; i < regionScenery.Length; i++)
                     if (regionScenery[i] != null) regionScenery[i].SetActive(i == Mathf.Min(region, regionScenery.Length - 1));

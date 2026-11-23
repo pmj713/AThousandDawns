@@ -15,7 +15,7 @@ namespace AThousandDawns.EditorTools
             var paths = new[] { $"{OutsideArtFolder}/Ground_Bamboo.png", $"{OutsideArtFolder}/Ground_Temple.png", $"{OutsideArtFolder}/Ground_River.png", $"{OutsideArtFolder}/Ground_Tomb.png" }; // 죽림 · 폐사찰 · 장강 수채 · 천마총
             foreach (var p in paths) ImportAsTiledTexture(p);
             var textures = System.Array.ConvertAll(paths, p => AssetDatabase.LoadAssetAtPath<Texture2D>(p));
-            textures[0] = BambooGroundTexture();
+            textures[0] = BambooCalmFloor();   // 죽림 바깥 땅도 방 바닥과 같은 조용한 붓결 땅 (타일 2.5배)
             textures[1] = TempleGroundTexture();   // 폐사찰 · 장강 · 천마총 바깥 땅도 채색 땅 그림으로
             textures[2] = RiverGroundTexture();
             textures[3] = TombGroundTexture();   // 죽림은 방 바닥과 같은 채색 땅 (입체 덤불·잎과 어울리게, PrototypeSceneBuilder.StylizedFoliage.cs)
@@ -55,7 +55,7 @@ namespace AThousandDawns.EditorTools
             DressOutsideRift();   // 차원 균열 먼저 (모든 지역, PrototypeSceneBuilder.InkRift.cs): 대나무·지역 풍경이 균열 둘레를 비워 둬요
             var scenery = DressOutsideScenery(stoneMat, woodMat, roofX);   // 먼저 세워요 (대나무 자리를 피하지 않게)
             var bamboo = DressOutsideBamboo(bambooMat);
-            ground.AddComponent<AThousandDawns.Art.InkOutsideGround>().Setup(textures, new[] { bamboo.gameObject, scenery[0], scenery[1], scenery[2] });
+            ground.AddComponent<AThousandDawns.Art.InkOutsideGround>().Setup(textures, new[] { bamboo.gameObject, scenery[0], scenery[1], scenery[2] }, new[] { BambooFloorTileScale, 1f, 1f, 1f });
         }
 
         // 벽 너머 대나무 (사용자 요청 "대충 넣어 놓으면"): 방 바닥마다 북·동·서쪽 바깥 띠에 대나무 묶음을 듬성듬성.
