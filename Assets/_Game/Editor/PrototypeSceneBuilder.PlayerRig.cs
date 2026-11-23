@@ -45,7 +45,7 @@ namespace AThousandDawns.EditorTools
             foreach (var clip in clips)
             {
                 clip.name = clip.takeName.Split('|').Last();
-                clip.loopTime = clip.name == "Idle" || clip.name == "Run" || clip.name == "SkillVortex" || clip.name == "SkillHalo" || clip.name == "DaggerFlash" || clip.name.StartsWith("CombatIdle");   // 비도 초식(소용돌이·호신륜·순간이동)은 도는 동안 반복
+                clip.loopTime = clip.name == "Idle" || clip.name == "Run" || clip.name == "IdleBare" || clip.name == "RunBare" || clip.name == "SkillVortex" || clip.name == "SkillHalo" || clip.name == "DaggerFlash" || clip.name.StartsWith("CombatIdle");   // 비도 초식(소용돌이·호신륜·순간이동)은 도는 동안 반복
                 // 몸통 위치·방향은 동작에 구워 넣어 캐릭터가 제자리에서 움직여요 (이동은 걷기 스크립트가 해요)
                 clip.lockRootRotation = clip.lockRootHeightY = clip.lockRootPositionXZ = true;
                 clip.keepOriginalOrientation = clip.keepOriginalPositionY = clip.keepOriginalPositionXZ = true;

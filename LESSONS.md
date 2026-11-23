@@ -16,5 +16,6 @@
 - Unity MCP는 `unity mcp`가 아니라 AI Assistant 패키지의 릴레이 `%USERPROFILE%\.unity\relay\relay_win.exe --mcp --project-path <프로젝트>`로 붙어요 (`unity mcp`는 도구 0개). `~/.claude.json`의 `unity-editor-mcp`를 쓰고, 프로젝트 경로가 없는 데스크톱 확장 `unity-mcp`는 쓰지 않아요. 세션 도구 목록은 시작할 때만 받아서 설정을 바꾸면 새 대화에서 보이고, 안 보이면 에디터의 Project Settings > AI > Unity MCP Server가 Running인지 봐요.
 - 아트 시안을 맡기기 전에 그 오브젝트가 Play 화면에서 실제로 보이는지 확인해요. 편집 화면과 게임 화면이 달라요: 바닥은 InkRegionLook이 지역 텍스처로 바꾸고 (죽림 = Floor_BambooGrove), 죽림 방은 ShowBushes가 풀숲을 꺼요 (덤불 시안 3~5차가 헛걸음).
 - Unity MCP `Unity_RunCommand` 안에서 Undo.RevertAllDownToGroup은 되돌리지 못해요. 열린 씬을 잠깐 바꿔 캡처할 땐 미리 씬이 저장된 상태인지 보고, 끝나면 `EditorSceneManager.OpenScene`으로 다시 불러와요 (delayCall은 에디터가 뒤에 있으면 안 돌아요).
+- 주인공 동작 클립을 새로 만들면 PlayerRig.cs의 반복(loopTime) 목록에도 넣어요. 빠지면 한 번 재생하고 멈춰요 (IdleBare·RunBare: 걷다가 1~2초 뒤 다리가 멈췄어요).
 - PowerShell `Get-Content`는 `-Encoding UTF8` 없이 쓰면 한글이 깨져요. 중괄호가 든 치환은 perl 대신 Edit 도구로 해요.
 - 런타임 스크립트가 공유 재질 에셋(바닥 Ink3D_Floor 등)을 바꿀 때, 원래 값은 Start에서 재질을 읽지 말고 씬 빌드 때 적어 둬요. 이전 실행이 되돌리지 못한 값이 원래 값이 되어 곱이 쌓여요 (타일 4 → 62.5). 바꾼 뒤엔 EditMode 테스트를 두 번 돌려 재질이 그대로인지 봐요.
