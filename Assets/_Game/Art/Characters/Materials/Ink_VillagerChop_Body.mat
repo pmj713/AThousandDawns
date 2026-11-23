@@ -40,6 +40,7 @@ Material:
     - _RimPower: 2.5
     - _Saturation: 0.45
     - _ShadowInk: 0.6
+    - _VertexTint: 0
     - _WashNoiseScale: 3
     - _WashNoiseStrength: 0.25
     m_Colors:

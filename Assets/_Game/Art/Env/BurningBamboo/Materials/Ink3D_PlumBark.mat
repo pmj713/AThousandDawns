@@ -44,6 +44,7 @@ Material:
     - _RimPower: 3
     - _Saturation: 0.1
     - _ShadowInk: 0.5
+    - _ShadowReceive: 1
     - _StreakLight: 0.35
     - _StreakScale: 4
     - _TileSize: 0.9

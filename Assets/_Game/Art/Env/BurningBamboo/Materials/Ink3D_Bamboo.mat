@@ -44,6 +44,7 @@ Material:
     - _RimPower: 2
     - _Saturation: 0
     - _ShadowInk: 0.5
+    - _ShadowReceive: 1
     - _StreakLight: 0.6
     - _StreakScale: 8
     - _TileSize: 1.2
@@ -51,7 +52,7 @@ Material:
     - _WashNoiseScale: 1.5
     - _WashNoiseStrength: 0.25
     m_Colors:
-    - _BaseColor: {r: 0.5, g: 0.62, b: 0.34, a: 1}
+    - _BaseColor: {r: 0.53, g: 0.53, b: 0.53, a: 1}
     - _InkColor: {r: 0.07, g: 0.1, b: 0.07, a: 1}
     - _PaperColor: {r: 0.93, g: 0.91, b: 0.86, a: 1}
   m_BuildTextureStacks: []

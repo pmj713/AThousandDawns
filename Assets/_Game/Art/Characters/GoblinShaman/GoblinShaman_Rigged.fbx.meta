@@ -32,11 +32,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Attack
-      takeName: GoblinShaman_Rig|Attack
-      internalID: -3342032003856476196
+      name: Heal
+      takeName: GoblinShaman_Rig|Heal
+      internalID: 5769216832050234842
       firstFrame: 0
-      lastFrame: 22
+      lastFrame: 48
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -94,7 +94,7 @@ ModelImporter:
       takeName: GoblinShaman_Rig|Raise
       internalID: -2095723010238314345
       firstFrame: 0
-      lastFrame: 44
+      lastFrame: 45
       wrapMode: 0
       orientationOffsetY: 0
       level: 0

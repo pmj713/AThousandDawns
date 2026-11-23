@@ -31,6 +31,7 @@ Material:
     m_Floats:
     - _BandSoftness: 0.12
     - _Bands: 3
+    - _Dissolve: 0
     - _OutlineJitter: 0.7
     - _OutlineNoiseScale: 5
     - _OutlineWidth: 3
@@ -39,10 +40,13 @@ Material:
     - _RimPower: 2.5
     - _Saturation: 0.45
     - _ShadowInk: 0.6
+    - _VertexTint: 0
     - _WashNoiseScale: 3
     - _WashNoiseStrength: 0.25
     m_Colors:
+    - _AuraColor: {r: 0, g: 0, b: 0, a: 0}
     - _BaseColor: {r: 0.2901961, g: 0.33333334, b: 0.3764706, a: 1}
+    - _CrackColor: {r: 0, g: 0, b: 0, a: 0}
     - _InkColor: {r: 0.06999998, g: 0.06999998, b: 0.079999976, a: 1}
     - _PaperColor: {r: 0.93, g: 0.91, b: 0.86, a: 1}
   m_BuildTextureStacks: []
