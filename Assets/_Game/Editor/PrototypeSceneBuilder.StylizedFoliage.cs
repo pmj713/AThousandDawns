@@ -301,6 +301,17 @@ namespace AThousandDawns.EditorTools
         static Texture2D TempleGroundTexture() => StylizedGround($"{StylizedGroundFolder}/Ground_TempleColor.png", 5151, "#B8AA8E", "#8FA05E", "#A3B370", "#968872",
             new[] { ("#4F6B3A", 90, 5f, 8f, 0.9f, 1.3f), ("#7C8A55", 40, 5f, 8f, 0.9f, 1.3f) }, 55, "#8E8A82", "#B9B5AC", null);
 
+        // 죽림 방 바닥 (아트풍 통일 시안 3차 확정): 채색 땅 그림(Floor_BambooGrove)을 흙빛 한 톤으로 조용히 깔고 한 방향의 길고 부드러운 붓결 아홉 줄(밝기 ±14%)만.
+        //   잔무늬(낙엽·자갈)는 없어요. 반복이 덜 보이게 죽림에서만 타일을 2.5배로 (BambooFloorTileScale, InkRegionLook · InkOutsideGround)
+        const float BambooFloorTileScale = 2.5f;
+
+        static Texture2D BambooCalmFloor()
+        {
+            const string path = "Assets/_Game/Art/Env/BurningBamboo/Floor_BambooGroveCalm.png";
+            ImportAsTiledTexture(path);
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        }
+
         // 장강 방 바닥 (플레이테스트 10차 통일): 채색 땅 그림을 살짝 흐리게 · 대비 0.55 · 채도 60% (물웅덩이가 옅어져 적·비도가 묻히지 않게)
         static Texture2D RiverCalmFloor()
         {

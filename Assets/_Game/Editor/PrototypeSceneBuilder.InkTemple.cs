@@ -551,10 +551,11 @@ namespace AThousandDawns.EditorTools
 
             var look = new GameObject("Ink Region Look").AddComponent<AThousandDawns.Art.InkRegionLook>();
             look.Setup(floorMat,
-                new Texture[] { BambooGroundTexture(), AssetDatabase.LoadAssetAtPath<Texture2D>(TempleCalmFloor), RiverCalmFloor(), AssetDatabase.LoadAssetAtPath<Texture2D>(TombFloor) },
+                new Texture[] { BambooCalmFloor(), AssetDatabase.LoadAssetAtPath<Texture2D>(TempleCalmFloor), RiverCalmFloor(), AssetDatabase.LoadAssetAtPath<Texture2D>(TombFloor) },
                 new[] { bambooGroup, templeGroup, templeGroup, templeGroup },
                 new[] { new GameObject("죽림 분위기 (없음)"), air, riverAir, tombAir },
-                dressing);
+                dressing,
+                new[] { BambooFloorTileScale, 1f, 1f, 1f });   // 죽림 바닥만 타일 2.5배
         }
 
         // 흩어진 오브젝트를 한 번에 켜고 끄는 묶음: 실제로는 부모를 바꾸지 않고, 켜고 끌 때 같이 따라오게 표시 오브젝트에 매달아요
