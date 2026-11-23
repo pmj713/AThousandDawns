@@ -175,6 +175,7 @@ namespace AThousandDawns.EditorTools
         static Material TempleStone()
         {
             if (s_templeStone == null) s_templeStone = GetInkTriplanar("Ink3D_TempleStone", "Tex_Stone", 1f, 1.5f);
+            s_templeStone.SetTexture("_BaseMap", TempleStoneBrush());   // 폐사찰 돌만 붓결 돌 (다른 지역 Tex_Stone은 그대로)
             s_templeStone.SetColor("_BaseColor", new Color(0.66f, 0.66f, 0.6f, 1f));
             EditorUtility.SetDirty(s_templeStone);
             return s_templeStone;
@@ -183,9 +184,18 @@ namespace AThousandDawns.EditorTools
         static Material TempleCapStone()
         {
             if (s_templeCap == null) s_templeCap = GetInkTriplanar("Ink3D_TempleCap", "Tex_Stone", 0.8f, 1.5f);
+            s_templeCap.SetTexture("_BaseMap", TempleStoneBrush());
             s_templeCap.SetColor("_BaseColor", new Color(0.42f, 0.46f, 0.42f, 1f));
             EditorUtility.SetDirty(s_templeCap);
             return s_templeCap;
+        }
+
+        // 아트풍 통일(폐사찰 시안 2차 확정): 돌기둥·석탑·비석 돌결 — 화강암 점을 지운 2~3톤 + 줄눈 + 위 테두리, 바닥보다 확실히 밝게 (장애물이 바닥에 묻히지 않게)
+        static Texture2D TempleStoneBrush()
+        {
+            const string path = "Assets/_Game/Art/Env/Temple/Tex_TempleStoneBrush.png";
+            ImportAsTiledTexture(path);
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
 
         static Material TempleLacquer()
