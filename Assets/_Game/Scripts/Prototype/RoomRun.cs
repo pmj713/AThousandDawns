@@ -141,7 +141,14 @@ namespace AThousandDawns.Prototype
                 {
                     GrantRelics(); // 유품록에서 고른 유품
                     StartKarma(); // 업보
-                    if (StartsTutorial()) BeginTutorialFloor(); // 처음엔 입문 죽림
+                    if (StartRegionForTest >= 0) // 시험 키 T를 마을에서 눌렀어요: 이 판은 그 지역 1층부터 (RoomRun.Region)
+                    {
+                        SetRegionForTest(StartRegionForTest);
+                        StartRegionForTest = -1;
+                        ApplyRegionRules();
+                        BeginFork(1);
+                    }
+                    else if (StartsTutorial()) BeginTutorialFloor(); // 처음엔 입문 죽림
                     else BeginFork(1);
                 }
             }

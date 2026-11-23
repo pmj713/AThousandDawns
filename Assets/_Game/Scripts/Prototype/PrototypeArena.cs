@@ -153,6 +153,7 @@ namespace AThousandDawns.Prototype
                 if (keyboard.gKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.FillGauge();
                 if (keyboard.lKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.GainLevelForTest(); // 시험용 레벨업
                 if (keyboard.kKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.KillForTest(); // 시험용: 바로 쓰러지기
+                if (keyboard.tKey.wasPressedThisFrame && FindAnyObjectByType<RoomRun>() is RoomRun run) run.JumpToLastRegionForTest(); // 시험용: 바로 천마총으로 (누를 때만 찾아요)
                 if (keyboard.vKey.wasPressedThisFrame && director != null && director.Player != null) director.Player.SetWeapon(director.Player.UsesDagger ? WeaponKind.Sword : WeaponKind.Dagger); // 시험용: 검 ↔ 비도
                 if (keyboard.hKey.wasPressedThisFrame && director != null && director.Player != null) // 시험용: 비급 바꾸기 (회선참 → 죽림섬 → 붕산권 → 금강장 → 회선참)
                 {

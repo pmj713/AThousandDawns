@@ -120,5 +120,28 @@ namespace AThousandDawns.Prototype
 
         // 테스트용: 지역을 바로 정해요 (다음 갈림길부터)
         public void SetRegionForTest(int region) => _region = Mathf.Clamp(region, 0, RegionNames.Length - 1);
+
+        // 시험 키 T (사용자 요청): 바로 천마총으로. 캐릭터는 그대로 두고 지역 규칙(근접 자리·적 배율)만 맞춰요.
+        //   마을에서 누르면: 어귀를 나설 때 씬을 다시 부르니, 다음 판 시작에 쓸 지역을 적어 두고 나가자마자 천마총 1층 갈림길이에요
+        //   판 도중에 누르면: 다음 갈림길부터 천마총
+        public static int StartRegionForTest = -1;
+        // 플레이 시작마다 지워요 (도메인을 다시 불러오지 않는 설정이라, 마을에서 누르고 Play를 끄면 다음 Play까지 남아요)
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStartRegionForTest() => StartRegionForTest = -1;
+
+        public void JumpToLastRegionForTest()
+        {
+            if (InVillage)
+            {
+                StartRegionForTest = RegionNames.Length - 1;
+                ShowBanner($"[시험] 어귀를 나서면 {RegionNames[StartRegionForTest]} 1층 갈림길이에요", 3f);
+                return;
+            }
+            SetRegionForTest(RegionNames.Length - 1);
+            ApplyRegionRules();
+            _masterDone = false;
+            _masterChoiceShown = false;
+            ShowBanner($"[시험] {RegionName}로 가요 · 다음 갈림길부터", 3f);
+        }
     }
 }
