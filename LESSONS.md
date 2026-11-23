@@ -14,3 +14,4 @@
 - 빌드 코드에서 에셋을 지우고 새로 만들면 GUID · fileID가 매번 바뀌어요. 내용을 견줘 같으면 그대로 두는 BeginController/FinishController · SaveStablePrefab을 써요.
 - 적 공격 클립은 기본 방식에서 예고 동안 첫 프레임에 멈췄다가 활성에 재생돼요. 첫 프레임 = 예고 자세, 판정 자세는 몇 프레임 안에. 예고 동안 움직이려면 MoveMode.Play.
 - PowerShell `Get-Content`는 `-Encoding UTF8` 없이 쓰면 한글이 깨져요. 중괄호가 든 치환은 perl 대신 Edit 도구로 해요.
+- Unity MCP는 `~/.claude.json`의 `unity-editor-mcp`(`relay_win.exe --mcp --project-path <프로젝트>`)를 써요. 도구 목록은 세션 시작 때만 읽으니 설정을 바꾸면 새 세션을 열고, 에디터의 Project Settings > AI > Unity MCP Server가 Running인지 봐요. 데스크톱 확장 `unity-mcp`는 프로젝트 경로가 없어 쓰지 않아요.
