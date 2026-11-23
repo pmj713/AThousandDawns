@@ -55,7 +55,8 @@ namespace AThousandDawns.EditorTools
             DressOutsideRift();   // 차원 균열 먼저 (모든 지역, PrototypeSceneBuilder.InkRift.cs): 대나무·지역 풍경이 균열 둘레를 비워 둬요
             var scenery = DressOutsideScenery(stoneMat, woodMat, roofX);   // 먼저 세워요 (대나무 자리를 피하지 않게)
             var bamboo = DressOutsideBamboo(bambooMat);
-            ground.AddComponent<AThousandDawns.Art.InkOutsideGround>().Setup(textures, new[] { bamboo.gameObject, scenery[0], scenery[1], scenery[2] }, new[] { BambooFloorTileScale, 1f, 1f, 1f });
+            ground.AddComponent<AThousandDawns.Art.InkOutsideGround>().Setup(textures, new[] { bamboo.gameObject, scenery[0], scenery[1], scenery[2] }, new[] { BambooFloorTileScale, 1f, 1f, 1f },
+                BambooGroundTexture());   // 마을 둘레: 예전 채색 땅 (죽림 붓결 땅은 방 둘레만, 마을 마당 흙과 어울리게)
         }
 
         // 벽 너머 대나무 (사용자 요청 "대충 넣어 놓으면"): 방 바닥마다 북·동·서쪽 바깥 띠에 대나무 묶음을 듬성듬성.

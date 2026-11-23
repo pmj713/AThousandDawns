@@ -16,15 +16,20 @@ namespace AThousandDawns.Art
 
         [SerializeField] Texture[] regionTextures;
         [SerializeField] float[] regionTileScales;   // 지역별 땅 무늬 크기 배수 (원래 _TileSize에 곱해요, 비면 그대로)
+        [SerializeField] Texture villageTexture;     // 마을에 있는 동안의 땅 무늬 (마당 흙과 어울리는 옛 채색 땅, 타일 배수 1). 비면 지역 것 그대로
         [SerializeField] GameObject[] regionScenery; // 벽 너머 풍경: 죽림 대나무 · 폐사찰 · 장강 수채 · 천마총 (지역마다 하나만 켜요)
 
         RoomRun _run;
         InkRegionDressing _dressing;
         Material _material;
-        int _shown = -1;
+        int _shown = -2;     // 지금 보이는 땅 무늬 (-1 = 마을)
+        int _scenery = -1;   // 지금 켠 벽 너머 풍경의 지역
         float _baseTile;
 
-        public void Setup(Texture[] textures, GameObject[] scenery, float[] tileScales = null) { regionTextures = textures; regionScenery = scenery; regionTileScales = tileScales; }
+        public void Setup(Texture[] textures, GameObject[] scenery, float[] tileScales = null, Texture village = null)
+        {
+            regionTextures = textures; regionScenery = scenery; regionTileScales = tileScales; villageTexture = village;
+        }
 
         void Start()
         {
@@ -45,11 +50,18 @@ namespace AThousandDawns.Art
             if (_dressing == null) _dressing = FindAnyObjectByType<InkRegionDressing>();
             int region = _dressing != null && _dressing.PreviewRegion >= 0 ? _dressing.PreviewRegion : _run != null ? _run.Region : 0;
             region = Mathf.Clamp(region, 0, regionTextures.Length - 1);
-            if (region == _shown) return;
-            _shown = region;
-            if (regionTextures[region] != null) _material.SetTexture(BaseMapId, regionTextures[region]);
+            // 마을에선 지역(죽림 붓결 땅 · 타일 2.5배)이 아니라 마을 땅 무늬 · 원래 타일 (마을에서도 지역 번호는 판의 지역 · 처음엔 죽림 0 이라서)
+            bool village = villageTexture != null && _run != null && _run.InVillage && (_dressing == null || _dressing.PreviewRegion < 0);
+            int key = village ? -1 : region;
+            if (key == _shown) return;
+            bool regionChanged = region != _scenery;
+            _shown = key;
+            _scenery = region;
+            if (village) _material.SetTexture(BaseMapId, villageTexture);
+            else if (regionTextures[region] != null) _material.SetTexture(BaseMapId, regionTextures[region]);
             if (regionTileScales != null && regionTileScales.Length > 0 && _baseTile > 0f)
-                _material.SetFloat(TileSizeId, _baseTile * regionTileScales[Mathf.Min(region, regionTileScales.Length - 1)]);
+                _material.SetFloat(TileSizeId, _baseTile * (village ? 1f : regionTileScales[Mathf.Min(region, regionTileScales.Length - 1)]));
+            if (!regionChanged) return;
             if (regionScenery != null)
                 for (int i = 0; i < regionScenery.Length; i++)
                     if (regionScenery[i] != null) regionScenery[i].SetActive(i == Mathf.Min(region, regionScenery.Length - 1));
