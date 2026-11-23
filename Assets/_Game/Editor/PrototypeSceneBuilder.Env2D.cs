@@ -227,21 +227,32 @@ namespace AThousandDawns.EditorTools
             Material Recolor(Material m, string hex) { if (ColorUtility.TryParseHtmlString(hex, out var col)) { m.SetColor("_BaseColor", col); EditorUtility.SetDirty(m); } return m; }
             Material Cloth(string name, string hex, float sat) => Recolor(ink ? GetInkMaterial($"Ink_Player{name}", hex, sat) : GetMaterial($"Player{name}", hex, false), hex);
             Recolor(sword, PlayerSwordColor);
-            // 플레이테스트 9차: 손에 든 칼이 VARCO 무협 검이면(animate_player.py가 Player_Sword_Albedo.png를 꺼내요) 그 그림을 입혀요
-            if (ink && AssetDatabase.LoadAssetAtPath<Texture2D>($"{PlayerPartsFolder}/Player_Sword_Albedo.png") is Texture2D swordTex)
+            // 주인공 정리: 장식 없는 직검 (animate_player.py SWORD_PLAIN). 색은 칼의 정점 색 (무광 회색 날 · 짙은 무쇠 코등이 · 감색 천 손잡이)이라
+            //   그림 없이 흰 바탕에 정점 색만 곱해요. 화려하게 보이던 채색 강조(FantasyLook)와 테두리 빛은 빼고, 가는 외곽선만
+            //   (예전 VARCO 검이 새까맣게 보인 건 면이 뒤집혀서였어요 — 이제 바로잡혀서 외곽선을 다시 써도 돼요)
+            if (ink)
             {
-                sword.SetTexture("_BaseMap", swordTex);
+                sword.SetTexture("_BaseMap", null);
                 sword.SetColor("_BaseColor", Color.white);
-                FantasyLook(sword);
-                // 10차: 칼이 검게 보였어요 — 가는 칼날이 외곽선·가장자리 먹·그림자 먹에 덮였어요 → 외곽선 없이, 먹은 아주 옅게
-                sword.SetFloat("_OutlineWidth", 0f);
+                sword.SetFloat("_VertexTint", 1f);
+                sword.SetFloat("_OutlineWidth", 1f);
                 sword.SetFloat("_RimInk", 0.05f);
-                sword.SetFloat("_ShadowInk", 0.1f);
+                sword.SetFloat("_ShadowInk", 0.3f);
                 EditorUtility.SetDirty(sword);
             }
             var clothDark = Cloth("ClothDark", ClothDarkColor, 0.1f);
             var clothLight = Cloth("ClothLight", ClothLightColor, 0.1f);
             var clothRed = Cloth("ClothRed", ClothRedColor, 0.85f);
+            // 주인공 정리: 옷에 대나무 줄기 같은 붓결 명암 (animate_player.py가 VARCO 옷 그림에서 만든 회색 세 톤 그림, 색은 _BaseColor 그대로).
+            //   한 겹 천이라 안쪽(소매·옷자락 속)도 그려요 (_Cull Off) — 예전엔 안이 비어 외곽선 먹색이 비쳤어요
+            var clothPaint = ink ? AssetDatabase.LoadAssetAtPath<Texture2D>($"{PlayerPartsFolder}/Player_Cloth_Paint.png") : null;
+            foreach (var m in new[] { clothDark, clothLight, clothRed })
+            {
+                if (!ink) break;
+                m.SetTexture("_BaseMap", clothPaint);
+                m.SetFloat("_Cull", clothPaint != null ? 0f : 2f);
+                EditorUtility.SetDirty(m);
+            }
             // Blender에서 -Y를 보던 모델이 Unity에서는 -Z(뒤)를 보고 들어와서, 앞(+Z)을 보게 돌려요
             model.localRotation = Quaternion.Euler(0f, 180f, 0f);
             var paths = controller != null ? new[] { PlayerRiggedModel } : new[] { PlayerBodyModel, PlayerHairModel };
@@ -256,6 +267,9 @@ namespace AThousandDawns.EditorTools
                         : r.name.Contains("Sword") ? sword : r.name.Contains("Hair") || path == PlayerHairModel ? hair : skin;
                     var mats = new Material[r.sharedMaterials.Length];
                     for (int i = 0; i < mats.Length; i++) mats[i] = mat;
+                    // 옷 한 메시(Cloth_Outfit): 재질 칸이 Dark · Light · Red 순 (outfit_fit.py). 세 메시로 자르면 색 경계에서 외곽선이 갈라졌어요
+                    if (r.name.Contains("Cloth_Outfit"))
+                        for (int i = 0; i < mats.Length; i++) mats[i] = i == 1 ? clothLight : i == 2 ? clothRed : clothDark;
                     r.sharedMaterials = mats;
                 }
                 if (controller != null)

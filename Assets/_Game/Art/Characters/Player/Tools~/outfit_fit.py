@@ -2,7 +2,8 @@
 # animate_player.py가 A자 기본 자세(T자로 바꾸기 전)에서 불러요. 그다음 T자로 바꿀 때 몸과 같이 바뀌어요.
 #   1) 크기·위치: 발바닥 = 0, 깃 윗단 = 목 높이, 허리 둘레 = 몸 허리 + 여유
 #   2) 몸을 뚫고 들어간 곳은 몸 밖으로 밀어내요
-#   3) 색으로 나눠요 (텍스처 색): 붉은색 → Cloth_Red, 흰색 → Cloth_Light, 나머지 → Cloth_Dark (Unity가 이름으로 재질을 골라요)
+#   3) 색으로 나눠요 (텍스처 색): 붉은색 → Cloth_Red, 흰색 → Cloth_Light, 나머지 → Cloth_Dark.
+#      한 메시(Cloth_Outfit)에 재질 칸 셋(Dark · Light · Red 순)으로 나눠요. 세 메시로 자르면 색 경계에서 옷이 갈라져 외곽선이 끊겼어요
 #   4) 뼈 가중치는 가까운 몸에서 옮겨 오고, 도포 아랫단은 골반 가중치를 섞어 다리 사이가 찢어지지 않게
 import bpy, bmesh, math, os
 from mathutils import Vector, Quaternion
@@ -10,7 +11,9 @@ from mathutils.bvhtree import BVHTree
 
 TARGET_TRIS = 16000
 CLEARANCE = 0.006       # 몸 표면에서 최소 이만큼 띄워요
-HEM_SMOOTH_STEPS = 14   # 옷 끝(열린 가장자리) 다듬기 횟수
+HEM_SMOOTH_STEPS = 120  # 옷 끝(열린 가장자리) 다듬기 횟수 (주인공 정리 2차: 14로는 찢긴 톱니가 남았어요)
+HEM_EAR_PASSES = 4      # 다듬기 전에 가장자리에서 삐죽 튀어나온 면(두 변 이상이 열린 면)을 잘라 내는 횟수
+CUFF_BAND = 0.07        # 흰 안쪽 소매: 소매 끝에서 이 거리 안의 소매 면만 흰 띠로
 LEG_WEIGHT_SMOOTH = 6   # 바지·아랫자락의 골반·다리 가중치 고르기 횟수
 WAIST_EASE = 0.035      # 허리 둘레 여유 (반지름)
 
@@ -36,6 +39,127 @@ def _import(glb):
     bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-4)
     bm.to_mesh(obj.data); bm.free()
     return obj
+
+
+def _texture(obj):
+    for m in obj.data.materials:
+        if m and m.use_nodes:
+            for n in m.node_tree.nodes:
+                if n.type == 'TEX_IMAGE' and n.image:
+                    return n.image
+    return None
+
+
+def _face_classes(obj):
+    """면마다 색 종류를 정해요: 면 가운데와 꼭짓점 쪽 네 곳(가운데로 70% 당긴 자리) 텍셀을 읽어 다수결.
+    예전엔 가운데 텍셀 하나만 읽어서 무늬·반사가 걸린 면이 빨강·흰 조각으로 떨어졌어요. 텍스처가 없으면 None."""
+    me = obj.data
+    img = _texture(obj)
+    if img is None or not me.uv_layers:
+        return None
+    w, h = img.size
+    px = img.pixels[:]
+    uv = me.uv_layers.active.data
+    out = []
+    for p in me.polygons:
+        us = [(uv[li].uv.x, uv[li].uv.y) for li in p.loop_indices]
+        cu = sum(u for u, _ in us) / len(us); cv = sum(v for _, v in us) / len(us)
+        samples = [(cu, cv)] + [(cu + (u - cu) * 0.7, cv + (v - cv) * 0.7) for u, v in us[:4]]
+        votes = {}
+        for u, v in samples:
+            x = min(w - 1, max(0, int((u % 1.0) * w))); y = min(h - 1, max(0, int((v % 1.0) * h)))
+            i = (y * w + x) * 4
+            c = _classify((px[i], px[i + 1], px[i + 2]))
+            votes[c] = votes.get(c, 0) + 1
+        out.append(max(votes, key=lambda k: (votes[k], k == "Dark")))   # 비기면 도포(Dark)
+    return out
+
+
+def _absorb_small(bm, layer, min_faces):
+    """같은 색 면이 이어진 덩어리 중 min_faces보다 작은 것은 둘레에 가장 많은 색으로 바꿔요 (도포 위 빨강·흰 점)."""
+    bm.faces.ensure_lookup_table()
+    seen = set(); changed = 0
+    for f0 in bm.faces:
+        if f0.index in seen:
+            continue
+        c0 = f0[layer]; isl = [f0]; seen.add(f0.index); stack = [f0]
+        while stack:
+            f = stack.pop()
+            for e in f.edges:
+                for g in e.link_faces:
+                    if g.index not in seen and g[layer] == c0:
+                        seen.add(g.index); isl.append(g); stack.append(g)
+        if len(isl) >= min_faces:
+            continue
+        votes = {}
+        ids = {f.index for f in isl}
+        for f in isl:
+            for e in f.edges:
+                for g in e.link_faces:
+                    if g.index not in ids:
+                        votes[g[layer]] = votes.get(g[layer], 0) + 1
+        if votes:
+            best = max(votes, key=votes.get)
+            for f in isl:
+                f[layer] = best
+            changed += len(isl)
+    return changed
+
+
+def _red_only_at_belt(bm, layer, belt_z, band):
+    """빨강은 허리띠(와 거기서 늘어진 띠 끝)만: 허리 높이 띠에 닿지 않는 빨강 덩어리는 도포(Dark)로 (등 뒤 자락의 붉은 얼룩)."""
+    bm.faces.ensure_lookup_table()
+    seen = set(); changed = 0
+    for f0 in bm.faces:
+        if f0.index in seen or f0[layer] != 2:
+            continue
+        isl = [f0]; seen.add(f0.index); stack = [f0]
+        while stack:
+            f = stack.pop()
+            for e in f.edges:
+                for g in e.link_faces:
+                    if g.index not in seen and g[layer] == 2:
+                        seen.add(g.index); isl.append(g); stack.append(g)
+        if any(abs(f.calc_center_median().z - belt_z) < band for f in isl):
+            continue
+        for f in isl:
+            f[layer] = 0
+        changed += len(isl)
+    return changed
+
+
+def paint_tone_texture(obj, out_png):
+    """VARCO 옷 텍스처에서 붓결 명암 그림을 만들어요 (대나무 줄기처럼 큰 덩어리 2~3톤, 잔무늬 없이).
+    색은 재질(_BaseColor)이 정하고, 이 그림은 밝기만 곱해요 (회색, 1 근처). 원본이 그려 둔 주름 명암을 따라가요."""
+    import numpy as np
+    img = _texture(obj)
+    if img is None:
+        return False
+    w, h = img.size
+    a = np.array(img.pixels[:], dtype=np.float32).reshape(h, w, 4)[..., :3]
+    lum = a @ np.array([0.3, 0.59, 0.11], dtype=np.float32)
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    red = (r > 0.12) & (r > g * 1.8) & (r > b * 1.8)
+    light = ~red & (lum > 0.45) & (a.max(-1) - a.min(-1) < 0.18)
+    rel = np.ones_like(lum)
+    for m in (red, light, ~red & ~light):   # 색 종류마다 평균 밝기로 나눠 1 근처로
+        if m.any():
+            rel[m] = lum[m] / max(1e-3, float(np.median(lum[m])))
+    def blur(x, s):
+        ky = np.fft.fftfreq(x.shape[0])[:, None]; kx = np.fft.fftfreq(x.shape[1])[None, :]
+        return np.real(np.fft.ifft2(np.fft.fft2(x) * np.exp(-2 * (np.pi * s) ** 2 * (kx ** 2 + ky ** 2))))
+    sm = blur(np.clip(rel, 0.3, 1.8), 6.0)                      # 잔무늬를 지우고 큰 주름 명암만
+    def step(x, e, k): return 1.0 / (1.0 + np.exp(-(x - e) / k))
+    t = (step(sm, 0.85, 0.03) + step(sm, 1.12, 0.03)) / 2       # 어두움 · 중간 · 밝음 세 톤
+    tone = 0.8 + 0.34 * t
+    tone = blur(tone, 1.2)                                      # 톤 경계만 살짝 부드럽게
+    out = np.ones((h, w, 4), dtype=np.float32)
+    out[..., :3] = np.clip(tone, 0, 1)[..., None]
+    im = bpy.data.images.new("ClothPaint", w, h, alpha=True)
+    im.pixels = out.ravel()
+    im.filepath_raw = out_png; im.file_format = 'PNG'; im.save()
+    bpy.data.images.remove(im)
+    return True
 
 
 def _face_colors(obj):
@@ -81,8 +205,11 @@ def _xy_radius(obj_verts, z, band=0.02):
     return sum(math.hypot(p.x, p.y) for p in pts) / len(pts)
 
 
-def fit(rig, parts, glb):
+def fit(rig, parts, glb, paint_png=None):
     scene = bpy.context.scene
+    # 주인공 정리 2차: 찢김 없는 새 옷(Outfit_C)은 단이 이미 곧아서, 찢긴 옷(Outfit_B)용 손질(톱니 자르기·많이 다듬기·흰 소매 띠·신발 한 색)은 건너뛰어요
+    torn = "Outfit_C" not in os.path.basename(glb)
+    hem_steps = HEM_SMOOTH_STEPS if torn else 14
     B = rig.data.bones
     outfit = _import(glb)
     me = outfit.data
@@ -119,10 +246,13 @@ def fit(rig, parts, glb):
         print("OUTFIT upper stretch %.3f (outfit shoulder %.3f -> %.3f)" % (f, out_sh, body_sh))
     print("OUTFIT scale %.3f waist k %.3f (body r %.3f, outfit r %.3f)" % (s, k, body_r or 0, out_r or 0))
 
+    # 붓결 명암 그림 (옷 텍스처에서, 줄이기 전에)
+    if paint_png:
+        print("OUTFIT paint", paint_tone_texture(outfit, paint_png), paint_png)
+
     # 색 나누기 (줄이기 전에 읽어요)
-    cols = _face_colors(outfit)
-    if cols is not None:
-        cls = [_classify(c) for c in cols]
+    cls = _face_classes(outfit)
+    if cls is not None:
         # 이웃 면 다수결로 3번 다듬어요 (먹색 천 위 밝은 반사·얼룩이 흰 조각으로 떨어지지 않게)
         nb = [[] for _ in me.polygons]
         by_edge = {}
@@ -143,6 +273,9 @@ def fit(rig, parts, glb):
             cls = new
         a = me.attributes.new("cls", 'INT', 'FACE')
         a.data.foreach_set("value", [{"Dark": 0, "Light": 1, "Red": 2}[c] for c in cls])
+        bm = bmesh.new(); bm.from_mesh(me)
+        print("OUTFIT absorbed small color islands (full res)", _absorb_small(bm, bm.faces.layers.int.get("cls"), 120))
+        bm.to_mesh(me); bm.free()
         print("OUTFIT classes", {c: cls.count(c) for c in ("Dark", "Light", "Red")})
 
     # 폴리곤 줄이기
@@ -153,6 +286,14 @@ def fit(rig, parts, glb):
         bpy.ops.object.select_all(action='DESELECT'); outfit.select_set(True); bpy.context.view_layer.objects.active = outfit
         bpy.ops.object.modifier_apply(modifier=dec.name)
         me = outfit.data
+
+    # 줄인 뒤 다시 한 번: 줄이며 생긴 작은 색 조각을 둘레 색으로
+    if "cls" in me.attributes:
+        bm = bmesh.new(); bm.from_mesh(me)
+        lay = bm.faces.layers.int.get("cls")
+        print("OUTFIT absorbed small color islands (decimated)", _absorb_small(bm, lay, 30))
+        print("OUTFIT red away from belt -> dark", _red_only_at_belt(bm, lay, B["Spine"].head_local.z, 0.09))
+        bm.to_mesh(me); bm.free()
 
     # 몸 밖으로 밀어내기
     verts, polys, off = [], [], 0
@@ -302,6 +443,8 @@ def fit(rig, parts, glb):
                     seen.add(o.index); stack.append(o)
         if len(isl) < 300 and kind_after[isl[0].index] == 0 and abs(isl[0].co.x) > 0.2:
             small += isl
+        elif len(isl) < 40:   # 어디에도 붙지 않고 떠 있는 작은 조각 (단추·실밥·찢긴 끝)
+            small += isl
     bmesh.ops.delete(bm, geom=small, context='VERTS')
     print("OUTFIT removed loose scraps verts", len(small))
     bm.to_mesh(me); bm.free()
@@ -358,8 +501,26 @@ def fit(rig, parts, glb):
     #   열린 가장자리(천 끝) 점만 양옆 가장자리 점의 가운데로 조금씩 당기기를 되풀이해요 → 삐죽한 끝이 줄어들고 단이 매끈한 곡선이 돼요
     import bmesh as _bm
     bm = _bm.new(); bm.from_mesh(me)
+    # 주인공 정리 2차: 찢긴 끝(톱니)부터 잘라요 — 가장자리 변이 둘 이상인 면 = 밖으로 삐죽 튀어나온 조각
+    ears = 0
+    for _ in range(HEM_EAR_PASSES if torn else 0):
+        cut = [f for f in bm.faces if sum(1 for e in f.edges if e.is_boundary) >= 2]
+        if not cut:
+            break
+        ears += len(cut)
+        bmesh.ops.delete(bm, geom=cut, context='FACES')
+        bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
+    print("OUTFIT trimmed hem spikes faces", ears)
+    # 발목 아래(신발)는 한 가지 색으로: 흰 버선·끈 조각이 얼룩덜룩해서 짙은 천신 한 덩어리로 (지우면 맨발이 돼요)
+    ankle_z = max(B["LeftFoot"].head_local.z, B["RightFoot"].head_local.z) + 0.01
+    clay = bm.faces.layers.int.get("cls")
+    low = [f for f in bm.faces if f.calc_center_median().z < ankle_z]
+    if clay is not None and torn:
+        for f in low:
+            f[clay] = 0
+    print("OUTFIT shoes one colour faces", len(low))
     edge_verts = [v for v in bm.verts if v.is_boundary]
-    for _ in range(HEM_SMOOTH_STEPS):
+    for _ in range(hem_steps):
         moved = {}
         for v in edge_verts:
             nb = [e.other_vert(v) for e in v.link_edges if e.is_boundary]
@@ -367,39 +528,68 @@ def fit(rig, parts, glb):
                 moved[v] = v.co.lerp((nb[0].co + nb[1].co) * 0.5, 0.5)
         for v, c in moved.items():
             v.co = c
+    # 흰 안쪽 소매: 찢긴 조각처럼 흩어진 흰 면 대신, 소매 끝(손목 쪽 열린 가장자리)에서 CUFF_BAND 안의 소매 면만 고른 흰 띠로
+    lay = bm.faces.layers.int.get("cls")
+    dl = bm.verts.layers.deform.active
+    if lay is not None and dl is not None and not torn:
+        # 깔끔한 옷: 흰색은 소매(팔 뼈를 따라가는 면) · 깃 · 버선(발목 아래)에만. 등·어깨의 밝은 천 결이 흰 조각으로 떨어진 것은 도포로
+        arm_ids = {g.index for g in outfit.vertex_groups if any(k in g.name for k in ("UpperArm", "LowerArm", "Hand"))}
+        def dom(v):
+            items = v[dl].items()
+            return max(items, key=lambda t: t[1])[0] if items else -1
+        neck = B["Neck"].head_local
+        fixed = 0
+        for f in bm.faces:
+            if f[lay] != 1:
+                continue
+            z = f.calc_center_median().z
+            c = f.calc_center_median()
+            collar = z > neck.z - 0.25 and math.hypot(c.x - neck.x, c.y - neck.y) < 0.1   # 목 둘레 깃 (등·어깨의 밝은 결은 아니에요)
+            if z < ankle_z + 0.04 or collar or all(dom(v) in arm_ids for v in f.verts):
+                continue
+            f[lay] = 0; fixed += 1
+        print("OUTFIT stray white -> dark", fixed)
+    if lay is not None and dl is not None and torn:
+        fore_ids = {g.index for g in outfit.vertex_groups if any(k in g.name for k in ("LowerArm", "Hand"))}
+        arm_ids = {g.index for g in outfit.vertex_groups if any(k in g.name for k in ("UpperArm", "LowerArm", "Hand", "Shoulder"))}
+        def dom(v):
+            items = v[dl].items()
+            return max(items, key=lambda t: t[1])[0] if items else -1
+        cuff = [v.co.copy() for v in bm.verts if v.is_boundary and dom(v) in fore_ids]
+        band = 0
+        for f in bm.faces:
+            if not all(dom(v) in arm_ids for v in f.verts):
+                if f[lay] == 1 and f.calc_center_median().z < B["Neck"].head_local.z - 0.12:   # 깃 아래 몸통의 흰 조각도 도포로
+                    f[lay] = 0
+                continue
+            c = f.calc_center_median()
+            near = any((c - q).length < CUFF_BAND for q in cuff)
+            if near and f[lay] != 2:
+                f[lay] = 1; band += 1
+            elif f[lay] == 1:
+                f[lay] = 0
+        print("OUTFIT cuff band faces", band, "cuff verts", len(cuff))
     bm.to_mesh(me); bm.free()
     print("OUTFIT smoothed hem verts", len(edge_verts))
 
 
-    # 색별로 나눠 이름 붙이기
-    made = []
+    # 한 메시에 색별 재질 칸 셋 (Dark · Light · Red 순). 정점을 같이 써서 색 경계에서도 법선이 이어져 외곽선이 갈라지지 않아요
+    outfit.name = "Cloth_Outfit"; outfit.data.name = "Cloth_Outfit"
+    outfit.data.materials.clear()
+    for nm in ("Cloth_Dark", "Cloth_Light", "Cloth_Red"):
+        outfit.data.materials.append(bpy.data.materials.get(nm) or bpy.data.materials.new(nm))
     if "cls" in me.attributes:
-        bm = bmesh.new(); bm.from_mesh(me)
-        layer = bm.faces.layers.int.get("cls")
-        for idx, name in ((0, "Cloth_Dark_Outfit"), (1, "Cloth_Light_Outfit"), (2, "Cloth_Red_Outfit")):
-            pbm = bm.copy()
-            kill = [f for f in pbm.faces if f[pbm.faces.layers.int.get("cls")] != idx]
-            bmesh.ops.delete(pbm, geom=kill, context='FACES')
-            if not pbm.faces:
-                pbm.free(); continue
-            pme = bpy.data.meshes.new(name); pbm.to_mesh(pme); pbm.free()
-            o = bpy.data.objects.new(name, pme); scene.collection.objects.link(o)
-            for g in outfit.vertex_groups:
-                o.vertex_groups.new(name=g.name)
-            made.append(o)
-        bm.free()
-        # 나눈 조각에 원본 가중치를 옮겨요 (같은 자리 점이라 가장 가까운 점 그대로)
-        for o in made:
-            m = o.modifiers.new("W", 'DATA_TRANSFER')
-            m.object = outfit; m.use_vert_data = True; m.data_types_verts = {'VGROUP_WEIGHTS'}
-            m.vert_mapping = 'NEAREST'; m.layers_vgroup_select_src = 'ALL'; m.layers_vgroup_select_dst = 'NAME'
-            bpy.ops.object.select_all(action='DESELECT'); o.select_set(True); bpy.context.view_layer.objects.active = o
-            bpy.ops.object.modifier_apply(modifier=m.name)
-        bpy.data.objects.remove(outfit, do_unlink=True)
-    else:
-        outfit.name = "Cloth_Dark_Outfit"; made = [outfit]
+        vals = [0] * len(me.polygons)
+        me.attributes["cls"].data.foreach_get("value", vals)
+        me.polygons.foreach_set("material_index", vals)
+        # 면을 재질 칸 순서로 정렬해요. FBX를 가져온 Unity는 서브메시를 면이 처음 나오는 순서로 매겨서, 빨간 면이 먼저면 도포가 빨갛게 칠해졌어요
+        bpy.ops.object.select_all(action='DESELECT'); outfit.select_set(True); bpy.context.view_layer.objects.active = outfit
+        bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.mesh.sort_elements(type='MATERIAL', elements={'FACE'})
+        bpy.ops.object.mode_set(mode='OBJECT')
+        print("OUTFIT faces by slot", {i: vals.count(i) for i in range(3)})
+    made = [outfit]
     for o in made:
-        o.data.materials.clear()
         o.data.shade_smooth()
         o.parent = rig
         o.modifiers.new("Armature", 'ARMATURE').object = rig

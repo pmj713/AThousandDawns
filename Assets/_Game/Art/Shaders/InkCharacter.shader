@@ -31,6 +31,9 @@ Shader "AThousandDawns/InkCharacter"
         _OutlineWidth ("Outline Width (px)", Range(0, 8)) = 3
         _OutlineJitter ("Outline Brush Jitter", Range(0, 1)) = 0.7
         _OutlineNoiseScale ("Outline Noise Scale", Float) = 5
+
+        // 몸통 면 그리기: 기본은 뒷면 안 그림(Back = 2). 한 겹 천(주인공 옷)은 Off(0)로 두면 소매·옷자락 안쪽도 그려요 (뒷면은 법선을 뒤집어 칠해요)
+        [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull (몸통)", Float) = 2
     }
 
     SubShader
@@ -143,6 +146,7 @@ Shader "AThousandDawns/InkCharacter"
         {
             Name "InkForward"
             Tags { "LightMode" = "UniversalForward" }
+            Cull [_Cull]
 
             HLSLPROGRAM
             #pragma vertex Vert
@@ -186,9 +190,10 @@ Shader "AThousandDawns/InkCharacter"
                 return output;
             }
 
-            half4 Frag(Varyings input) : SV_Target
+            half4 Frag(Varyings input, bool isFront : SV_IsFrontFace) : SV_Target
             {
                 float3 n = normalize(input.normalWS);
+                n = isFront ? n : -n;   // 뒷면(Cull Off일 때만 그려져요)은 안쪽을 향한 법선으로
                 float3 v = normalize(GetWorldSpaceViewDir(input.positionWS));
                 Light light = GetMainLight(TransformWorldToShadowCoord(input.positionWS));
 

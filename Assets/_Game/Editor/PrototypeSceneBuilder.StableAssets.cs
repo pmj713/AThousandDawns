@@ -32,17 +32,30 @@ namespace AThousandDawns.EditorTools
             if (current != null && Describe(current) == Describe(built))
             {
                 AssetDatabase.DeleteAsset(temp);
-                return current;
+                return Named(current, path);
             }
             if (current == null)
             {
                 AssetDatabase.MoveAsset(temp, path);
-                return AssetDatabase.LoadAssetAtPath<AnimatorController>(path);
+                return Named(AssetDatabase.LoadAssetAtPath<AnimatorController>(path), path);
             }
             File.Copy(Path.GetFullPath(temp), Path.GetFullPath(path), true);
             AssetDatabase.DeleteAsset(temp);
             AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
-            return AssetDatabase.LoadAssetAtPath<AnimatorController>(path);
+            return Named(AssetDatabase.LoadAssetAtPath<AnimatorController>(path), path);
+        }
+
+        // 임시 경로에서 만든 컨트롤러는 이름이 "…_Build"로 남아요 (파일을 덮어쓰거나 옮겨도 안의 이름은 그대로) → 파일 이름으로 맞춰요
+        static AnimatorController Named(AnimatorController c, string path)
+        {
+            string name = Path.GetFileNameWithoutExtension(path);
+            if (c != null && c.name != name)
+            {
+                c.name = name;
+                EditorUtility.SetDirty(c);
+                AssetDatabase.SaveAssets();
+            }
+            return c;
         }
 
         static string BuildTempPath(string path) => path.Substring(0, path.Length - ".controller".Length) + "_Build.controller";
