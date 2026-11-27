@@ -10,6 +10,9 @@ namespace AThousandDawns.Art
     //   "번개" 뇌정 연쇄 번개 · 낙뢰: 노란 직선은 숨기고 지그재그 번개 (흰 심 + 노란 빛 + 먹 테두리)가 번쩍여요.
     //   "잔상" 잔영 가면: 캡슐은 숨기고 그 순간 플레이어 모델 모습을 먹빛 반투명으로 떠서 세워 둬요.
     //   "강기" 강기 (평타 3타째 · 절초 #강기 각인): 상자는 숨기고 쪽빛 테 붓질 초승달 검기 (InkSwordQi)가 날아가요.
+    //   "염주" 혜광 염주 던지기 (플레이테스트 2차 11-27: 갈색 공이 목탁처럼 보였어요): 공은 숨기고 나무 구슬을 꿴 둥근 염주가 빙빙 돌며 날아가요.
+    //   "서리 길" 한철 비녀 · 빙결 수정 장화 (플레이테스트 2차 11-27: 하늘색 납작 상자를 장애물로 봤어요): 상자는 숨기고
+    //     가장자리가 부드럽게 사라지는 반투명 얼음 붓결 자국 (FxArt/FrostTrail). 크기 · 자리 · 판정은 상자 그대로
     // 게임이 만든 루트 오브젝트는 이름을 처음 볼 때 한 번만 확인해요 (InkRootWatch). 짧게 사는 번개 때문에 매 프레임 봐요.
     public class InkRuntimeDress : MonoBehaviour
     {
@@ -44,6 +47,8 @@ namespace AThousandDawns.Art
                     case "강기": Ganggi(root); break;
                     case "하피 깃털": Feather(root, true); break;
                     case "버들잎 표창": Feather(root, false); break;
+                    case "염주": Beads(root); break;
+                    case "서리 길": Frost(root); break;
                 }
             }
             InkRoomReset.Tick(_live, dt, transform); // 방을 옮기면 제 밑의 연출을 지워요
@@ -291,6 +296,101 @@ namespace AThousandDawns.Art
                 t += dt;
                 spin.localRotation = Quaternion.Euler(0f, 0f, t * (harpy ? 540f : 720f)) * Quaternion.Euler(Mathf.Sin(t * 14f) * 8f, 0f, 0f); // 축을 따라 팔랑
                 return true;
+            });
+        }
+
+        // ── 혜광 염주: 반지름 0.32 고리에 짙은 나무 구슬 열여덟 + 큰 모주 하나 + 붉은 술. 날아가는 동안 눕힌 채 빙빙
+        static Material _beadMat, _frostMat;
+        static Texture2D _frostTex;
+        static bool _frostLoaded;
+
+        void Beads(GameObject ball)
+        {
+            var source = ball.GetComponent<Renderer>();
+            if (source != null) source.enabled = false;
+            if (_beadMat == null)
+            {
+                var sh = Shader.Find("AThousandDawns/InkCharacter");
+                _beadMat = new Material(sh != null ? sh : Shader.Find("Sprites/Default")) { name = "Prayer Beads" };
+                _beadMat.SetColor("_BaseColor", Color.white);   // 구슬 색은 MaterialPropertyBlock으로
+            }
+            var holder = new GameObject("Prayer Beads").transform;
+            holder.SetParent(ball.transform, false);
+            var s = ball.transform.lossyScale;
+            holder.localScale = new Vector3(1f / Mathf.Max(0.01f, s.x), 1f / Mathf.Max(0.01f, s.y), 1f / Mathf.Max(0.01f, s.z));
+            var spin = new GameObject("Spin").transform;
+            spin.SetParent(holder, false);
+            spin.localRotation = Quaternion.Euler(70f, 0f, 0f);   // 거의 눕혀 위에서도 고리로 보이게
+            const int n = 18; const float r = 0.32f;
+            var wood = new Color(0.36f, 0.2f, 0.11f); var wood2 = new Color(0.5f, 0.3f, 0.16f);
+            for (int i = 0; i < n; i++)
+            {
+                float a = i * Mathf.PI * 2f / n;
+                Bead(spin, new Vector3(Mathf.Cos(a) * r, Mathf.Sin(a) * r, 0f), 0.085f, i % 2 == 0 ? wood : wood2);
+            }
+            Bead(spin, new Vector3(0f, -r - 0.07f, 0f), 0.13f, new Color(0.55f, 0.36f, 0.14f));   // 모주
+            Bead(spin, new Vector3(0f, -r - 0.22f, 0f), 0.07f, new Color(0.75f, 0.12f, 0.1f));    // 붉은 술
+            float t = UnityEngine.Random.Range(0f, 3f);
+            _live.Add(dt =>
+            {
+                if (spin == null) return false;
+                t += dt;
+                spin.localRotation = Quaternion.Euler(0f, t * 720f, 0f) * Quaternion.Euler(70f, 0f, 0f);
+                return true;
+            });
+        }
+
+        static void Bead(Transform parent, Vector3 at, float size, Color? color)
+        {
+            if (color == null) return;
+            var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            Destroy(go.GetComponent<Collider>());
+            go.name = "Bead";
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = at;
+            go.transform.localScale = Vector3.one * size;
+            var mr = go.GetComponent<MeshRenderer>();
+            mr.sharedMaterial = _beadMat;
+            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            var block = new MaterialPropertyBlock();
+            block.SetColor("_BaseColor", color.Value);
+            mr.SetPropertyBlock(block);
+        }
+
+        // ── 서리 길: 상자 자리에 얼음 붓결 판 (길 방향 = 상자 앞 +Z), 처음 0.15초 동안 맺히고 상자가 없어지면 0.4초에 녹아 사라져요
+        void Frost(GameObject box)
+        {
+            var source = box.GetComponent<Renderer>();
+            if (source == null) return;
+            if (!_frostLoaded) { _frostLoaded = true; _frostTex = Resources.Load<Texture2D>("FxArt/FrostTrail"); }
+            if (_frostTex == null) return;
+            source.enabled = false;
+            if (_frostMat == null) _frostMat = new Material(Shader.Find("Sprites/Default")) { name = "Frost Trail", mainTexture = _frostTex };
+            var size = box.transform.localScale;
+            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            Destroy(go.GetComponent<Collider>());
+            go.name = "Ink Frost Trail";
+            go.transform.SetParent(transform, false);
+            go.transform.position = new Vector3(box.transform.position.x, 0.025f, box.transform.position.z);
+            go.transform.rotation = box.transform.rotation * Quaternion.Euler(90f, 0f, 0f);   // 바닥에 눕히고, 그림 세로 = 길 방향
+            go.transform.localScale = new Vector3(size.x * 1.25f, size.z * 1.05f, 1f);       // 부드러운 가장자리만큼 조금 넓게
+            var mr = go.GetComponent<MeshRenderer>();
+            mr.sharedMaterial = _frostMat;
+            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            var block = new MaterialPropertyBlock();
+            float t = 0f, fade = -1f;
+            _live.Add(dt =>
+            {
+                if (go == null) return false;
+                t += dt;
+                if (box == null && fade < 0f) fade = 0f;
+                float a = Mathf.Clamp01(t / 0.15f);
+                if (fade >= 0f) { fade += dt; a *= 1f - Mathf.Clamp01(fade / 0.4f); }
+                block.SetColor("_Color", new Color(0.78f, 0.92f, 1f, 0.8f * a));
+                mr.SetPropertyBlock(block);
+                if (fade < 0.4f) return true;
+                Destroy(go);
+                return false;
             });
         }
 

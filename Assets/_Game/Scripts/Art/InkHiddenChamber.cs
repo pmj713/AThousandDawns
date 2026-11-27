@@ -18,7 +18,8 @@ namespace AThousandDawns.Art
         [SerializeField] Vector2 size = new Vector2(20f, 12f);
 
         RoomRun _run;
-        GameObject _root;
+        GameObject _root, _moss;
+        int _mossRegion = -1;
 
         public InkHiddenChamber Setup(Sprite remains, Sprite bottle, Sprite book, Sprite moss, Sprite glow, Material stoneMat, Mesh rockMesh, Vector3 center, Vector2 size)
         {
@@ -33,6 +34,9 @@ namespace AThousandDawns.Art
             bool hidden = _run != null && _run.Room != null && _run.Room.Kind == FloorRoomKind.Hidden;
             if (hidden && _root == null) Build();
             if (_root != null && _root.activeSelf != hidden) _root.SetActive(hidden);
+            // 이끼는 천마총(용암 바닥)에선 꺼요 (플레이테스트 2차 11-27: 붉은 바닥 위 초록 덩어리가 겉돌았어요)
+            int region = _run != null ? _run.Region : 0;
+            if (_moss != null && region != _mossRegion) { _mossRegion = region; _moss.SetActive(region != 3); }
         }
 
         void Build()
@@ -42,7 +46,9 @@ namespace AThousandDawns.Art
             var rng = new System.Random(7);
             float R(float a, float b) => a + (float)rng.NextDouble() * (b - a);
 
-            // 바닥 이끼 (벽 쪽에 더 많이) · 무너진 돌
+            // 바닥 이끼 (벽 쪽에 더 많이) · 무너진 돌. 이끼는 한 묶음에 모아 지역에 따라 켜고 꺼요
+            _moss = new GameObject("Moss");
+            _moss.transform.SetParent(_root.transform, false);
             if (moss != null)
                 for (int i = 0; i < 14; i++)
                 {
@@ -50,7 +56,7 @@ namespace AThousandDawns.Art
                     float x = edge ? (rng.Next(2) == 0 ? -1f : 1f) * R(size.x * 0.32f, size.x * 0.46f) : R(-size.x * 0.3f, size.x * 0.3f);
                     float z = edge ? R(-size.y * 0.45f, size.y * 0.45f) : (rng.Next(2) == 0 ? -1f : 1f) * R(size.y * 0.22f, size.y * 0.42f);
                     if (i % 3 == 0 && edge) { (x, z) = (R(-size.x * 0.45f, size.x * 0.45f), (rng.Next(2) == 0 ? -1f : 1f) * R(size.y * 0.36f, size.y * 0.46f)); }
-                    Flat(moss, new Vector3(x, 0.02f + i * 0.001f, z), R(1.6f, 3.2f), R(0f, 360f), new Color(1f, 1f, 1f, R(0.75f, 1f)));
+                    Flat(moss, new Vector3(x, 0.02f + i * 0.001f, z), R(1.6f, 3.2f), R(0f, 360f), new Color(1f, 1f, 1f, R(0.75f, 1f)), _moss.transform);
                 }
             if (rockMesh != null && stoneMat != null)
                 for (int i = 0; i < 6; i++)
@@ -90,10 +96,10 @@ namespace AThousandDawns.Art
         }
 
         // 바닥에 눕힌 그림 (가운데 기준)
-        void Flat(Sprite sprite, Vector3 pos, float width, float yaw, Color color)
+        void Flat(Sprite sprite, Vector3 pos, float width, float yaw, Color color, Transform parent = null)
         {
             var go = new GameObject(sprite.name);
-            go.transform.SetParent(_root.transform, false);
+            go.transform.SetParent(parent != null ? parent : _root.transform, false);
             go.transform.localPosition = pos;
             go.transform.localRotation = Quaternion.Euler(90f, yaw, 0f);
             go.transform.localScale = Vector3.one * (width / Mathf.Max(0.01f, sprite.bounds.size.x));
