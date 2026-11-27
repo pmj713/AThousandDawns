@@ -179,12 +179,28 @@ namespace AThousandDawns.Fx
             GUI.color = fill;
             if (_swatch != null) GUI.DrawTexture(Grow(rect, 0.02f), _swatch, ScaleMode.StretchToFill);
             else GUI.DrawTexture(rect, Texture2D.whiteTexture);
-            if (_frame != null)
+            if (_frame != null)   // 가는 금갈색 붓선 (플레이테스트 11-27: 통째로 늘인 남빛 붓 테두리가 큰 창에선 굵은 띠가 돼 글자를 가리고 종이 밖으로 비어져 나왔어요)
             {
-                GUI.color = new Color(PanelInk.r, PanelInk.g, PanelInk.b, 0.75f);
-                GUI.DrawTexture(Grow(rect, 0.02f), _frame, ScaleMode.StretchToFill);
+                GUI.color = new Color(0.55f, 0.42f, 0.22f, 0.85f);
+                FrameStrips(rect, Mathf.Clamp(Mathf.Min(rect.width, rect.height) * 0.05f, 3f, 6f));
             }
             GUI.color = old;
+        }
+
+        // 작은 기호 버튼 (− · + 등, 한지 화면): 옅은 한지 칸 + 가는 금갈색 붓선 + 또렷한 먹 기호. 마우스 · 누름은 연한 주홍, 쓸 수 없으면 흐리게.
+        //   먹 붓 버튼 그림(InkButton)은 가장자리 번짐이 28px라, 44px 버튼에선 칸 전체가 남빛 먹 덩어리가 됐어요
+        public static bool SmallButton(Rect rect, string text, GUIStyle textStyle)
+        {
+            Load();
+            bool over = GUI.enabled && rect.Contains(Event.current.mousePosition);
+            bool down = over && GUIUtility.hotControl != 0;   // 누르고 있는 동안 (IMGUI 버튼이 잡고 있어요)
+            var fill = !GUI.enabled ? new Color(0.88f, 0.86f, 0.82f, 0.6f) : down ? new Color(0.95f, 0.72f, 0.62f, 1f) : over ? new Color(1f, 0.88f, 0.8f, 1f) : new Color(1f, 0.98f, 0.93f, 1f);
+            var old = GUI.color;
+            GUI.color = fill;
+            GUI.DrawTexture(rect, Texture2D.whiteTexture);
+            if (_frame != null) { GUI.color = new Color(0.45f, 0.33f, 0.18f, GUI.enabled ? 0.9f : 0.4f); FrameStrips(rect, 3f); }
+            GUI.color = old;
+            return GUI.Button(rect, text, textStyle);
         }
 
         public static void PaperPanel(Rect rect) => PaperPanel(rect, new Color(1f, 0.99f, 0.96f, 0.97f)); // 밝고 거의 불투명하게 (짙은 먹 글자와 대비)
