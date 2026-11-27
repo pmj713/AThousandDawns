@@ -4,8 +4,8 @@ using UnityEngine;
 namespace AThousandDawns.Enemies
 {
     // 고블린 궁수: 산적 궁수처럼 거리를 두지만, 곧게 쏘지 않고 곡사로 떨어뜨려요 (플레이테스트 11차).
-    //   예고 동안 플레이어 발밑 (움직이면 goblinarcher.lob_lead초만큼 앞, 최대 lob_lead_max칸)에 원(lob_radius)이 따라오다 고정되고,
-    //   쏘면 화살이 lob_flight초 동안 포물선으로 날아가며 같은 자리 원이 다시 차올라요. 떨어지는 순간 원 안의 플레이어만 맞아요 (공격 × lob_ratio).
+    //   당기는 동안 떨어질 자리 (플레이어 발밑, 움직이면 goblinarcher.lob_lead초만큼 앞, 최대 lob_lead_max칸)를 겨누다 고정하고 (바닥 예고는 없어요, 플레이테스트 11-27),
+    //   쏘면 화살이 lob_flight초 동안 포물선으로 날아가며 그 자리에 원(lob_radius)이 차올라요. 떨어지는 순간 원 안의 플레이어만 맞아요 (공격 × lob_ratio).
     //   엄폐물 너머로도 쏴서 사선을 찾아 옮기지 않아요.
     public sealed class GoblinArcherBrain : KiteBrain
     {
@@ -18,6 +18,7 @@ namespace AThousandDawns.Enemies
         public override string AttackName => "곡사";
         protected override bool NeedsClearLine => false;
         protected override bool RadialTelegraph => true;
+        protected override bool WindupTelegraph => false; // 플레이테스트 11-27: 당기는 동안엔 바닥 예고 없이, 쏜 뒤 화살(LobbedArrow)이 떨어질 자리 원을 띄워요
 
         // 쏜 순간 (아트: 하늘로 당겨 쏘는 자세 · 화살 궤적): 누가, 어디서 (활 높이), 떨어질 자리, 날아가는 시간
         public static event System.Action<GoblinArcherBrain, Vector3, Vector3, float> Lobbed;

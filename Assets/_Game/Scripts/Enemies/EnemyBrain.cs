@@ -43,6 +43,7 @@ namespace AThousandDawns.Enemies
         protected virtual float TurnSpeed => 0f;             // 초당 회전 각도. 0이면 바로 돌아봐요 (방패 산적 180°)
         protected virtual bool InterruptibleWindup => false; // 예고 중에 맞으면 끊김 (나팔수 소환, 예고 중 경직 규칙의 유일한 예외)
         protected virtual bool RadialTelegraph => false;     // 원형 예고는 가운데부터 차올라요
+        protected virtual bool WindupTelegraph => true;     // 예고 동안 바닥 예고를 띄워요 (고블린 궁수 곡사는 쏜 뒤 화살이 자기 원을 띄워요)
         protected virtual float HitKnockback => -1f;         // 플레이어를 미는 거리. 음수면 기본 넉백
         protected virtual float DeathDelay => 0.25f;         // 쓰러진 뒤 사라지기까지
         protected virtual bool IsBoss => false;              // 고수·보스: 둔화 효과 50%, 빙결 1초 + 면역 10초
@@ -232,7 +233,7 @@ namespace AThousandDawns.Enemies
             AimDirection = Facing;
             Attack.Start(WindupTime + Status.WindupExtra, ActiveTime, RecoveryTime); // 눈송이 수정: 둔화 3중첩이면 예고가 길어짐
             OnAttackStarted();
-            Telegraph.Show(TelegraphShape(), RadialTelegraph);
+            if (WindupTelegraph) Telegraph.Show(TelegraphShape(), RadialTelegraph);
             if (Rank != EnemyRank.Normal) Sfx.Play(SfxId.Telegraph, 0.6f); // 예고 소리는 정예·살수·고수·보스만 (졸개가 여럿이면 겹쳐서)
             UpdateTelegraph();
         }
