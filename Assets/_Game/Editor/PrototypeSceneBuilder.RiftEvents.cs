@@ -65,6 +65,13 @@ namespace AThousandDawns.EditorTools
 
             // 1) 이계 대장간
             var forge = Root("RiftEvent_Forge (이계 대장간)");
+            // 플레이테스트 11-27 (사용자: 더 고퀄리티로): VARCO 한 덩어리 OtherworldForge (나무 그루터기 위 쇠 모루·룬 망치, 룬 새긴 돌 화로에 주황·보라 불, 가죽 풀무, 집게·쇠 덩이, 폭 약 2.4).
+            //   모델이 없으면 예전 도형 대장간
+            if (// VARCO 참고 그림의 앞(제단·샘물·모루가 보이는 쪽)이 모델 뒤로 들어와서 0°로 세워요 (180°면 뒷면이 카메라를 봤어요)
+            VarcoProp(forge, "OtherworldForge", Vector3.zero, 0f) is Transform forgeModel)
+                FlameCardsWith(forge, forgeModel.localPosition + new Vector3(0.2f, 0.55f, 0.1f), 0.5f, 2, manaFlame);   // 화로 입구의 청보라 불꽃 (모델의 그린 불 위로 일렁여요)
+            else
+            {
             Block(forge, "Anvil Base", PrimitiveType.Cube, new Vector3(-0.35f, 0.22f, 0f), new Vector3(0.36f, 0.44f, 0.3f), Quaternion.identity, iron);
             Block(forge, "Anvil Waist", PrimitiveType.Cube, new Vector3(-0.35f, 0.5f, 0f), new Vector3(0.24f, 0.14f, 0.22f), Quaternion.identity, iron);
             Block(forge, "Anvil Face", PrimitiveType.Cube, new Vector3(-0.35f, 0.63f, 0f), new Vector3(0.78f, 0.14f, 0.3f), Quaternion.identity, iron);
@@ -83,6 +90,7 @@ namespace AThousandDawns.EditorTools
             Rock(forge, "Ore", new Vector3(-0.8f, 0f, 0.55f), 0.24f, 1, 20f, crystalPale, false);
             Rock(forge, "Ore Small", new Vector3(-0.95f, 0f, 0.3f), 0.15f, 2, 70f, crystal, false);
             Block(forge, "Tongs", PrimitiveType.Cube, new Vector3(0.2f, 0.02f, -0.6f), new Vector3(0.5f, 0.02f, 0.04f), Quaternion.Euler(0f, 30f, 0f), darkSteel);
+            }
             SaveRiftEvent(forge.gameObject, "RiftEvent_Forge", "otherworldForgeProp");
 
             // 2) 무너진 성당 제단 (플레이 테스트: 돌 상자 제단이 허접해 보였어요 → 성당 안쪽 성소처럼)
@@ -90,6 +98,10 @@ namespace AThousandDawns.EditorTools
             //   뒤로 뾰족 아치 창 둘(색유리 칸이 빛나요, 오른쪽은 깨져 위 칸이 비었어요)과 그 위 둥근 장미창, 양옆 기둥(오른쪽은 부러져 쓰러짐),
             //   앞에는 체스판 대리석 바닥·붉은 카펫·짧은 신도석 둘(하나는 넘어짐), 바닥에 깨진 색유리. 빛 이펙트는 아트 2 몫
             var chapel = Root("RiftEvent_Chapel (무너진 성당 제단)");
+            // 플레이테스트 11-27 (제단으로 안 읽혔어요 · 더 고퀄리티로): VARCO 한 덩어리 RuinedChapelAltar — 두 단 돌 단 위 조각 새긴 돌 제단(촛대·펼친 책),
+            //   바로 뒤 반쯤 무너진 뾰족 아치 창(남은 색유리 조각), 옆에 쓰러진 기둥 토막·돌덩이, 틈마다 이끼. 높이 3. 모델이 없으면 예전 도형 성소
+            if (VarcoProp(chapel, "RuinedChapelAltar", Vector3.zero, 0f) == null)
+            {
             var marble = Fantasy("Ink_Chapel_Marble", "#EDE8DC");
             var marbleDark = Fantasy("Ink_Chapel_MarbleDark", "#3C3A44");
             var gold = Fantasy("Ink_Chapel_Gold", "#E8B83A");
@@ -174,10 +186,15 @@ namespace AThousandDawns.EditorTools
                 var at = new Vector3(0.35f + (k % 3) * 0.25f, 0.07f + (k % 2) * 0.02f, 0.05f - (k / 3) * 0.3f);
                 Block(chapel, "Glass Shard", PrimitiveType.Cube, at, new Vector3(0.16f, 0.2f, 0.02f), rot, panes[k % panes.Length]);
             }
+            }
             SaveRiftEvent(chapel.gameObject, "RiftEvent_Chapel", "chapelAltarProp");
 
             // 3) 마나 샘
             var spring = Root("RiftEvent_ManaSpring (마나 샘)");
+            // 플레이테스트 11-27 (더 고퀄리티로): VARCO 한 덩어리 ManaSpring — 이끼 낀 바위로 둘러친 둥근 샘, 큰 바위 틈에서 흘러내리는 물줄기,
+            //   청보라로 빛나는 물, 바위에 돋은 수정. 폭 약 2.2. 모델이 없으면 예전 돌 테 샘
+            if (VarcoProp(spring, "ManaSpring", Vector3.zero, 0f, 1.3f) == null)
+            {
             for (int k = 0; k < 14; k++)   // 둥글게 둘러친 돌 테
             {
                 float a = k * 360f / 14f;
@@ -198,10 +215,24 @@ namespace AThousandDawns.EditorTools
                 Block(spring, "Crystal", PrimitiveType.Cube, foot + tilt * new Vector3(0f, h * 0.45f, 0f), new Vector3(h * 0.3f, h * 0.9f, h * 0.3f), tilt * Quaternion.Euler(0f, 45f, 0f), m);
                 Block(spring, "Crystal Tip", PrimitiveType.Cube, foot + tilt * new Vector3(0f, h * 0.92f, 0f), Vector3.one * h * 0.21f, tilt * Quaternion.Euler(45f, 45f, 0f), m);
             }
+            }
             SaveRiftEvent(spring.gameObject, "RiftEvent_ManaSpring", "manaSpringProp");
 
             // 4) 봉인된 마검
             var sealed_ = Root("RiftEvent_SealedBlade (봉인된 마검)");
+            // 플레이테스트 11-27 (더 고퀄리티로): VARCO 두 덩어리 — 바닥 SealedBladeShrine (룬 원을 새긴 금 간 검은 돌판, 사방 룬 말뚝에 쇠고리·사슬, 가운데 칼 꽂는 틈, 폭 2.6)
+            //   + 칼 SealedBlade (보랏빛 홈이 빛나는 검은 장검, 금테 코등이·보석 머리, 날에 감긴 끊어진 사슬, 길이 1.9)는 자식 "Blade"에 넣어 돌판 틈에 꽂아요.
+            //   뽑으면 코드가 "Blade"를 꺼요. 모델이 없으면 예전 도형
+            if (VarcoProp(sealed_, "SealedBladeShrine", Vector3.zero, 0f) is Transform shrine)
+            {
+                var bladeHolder = new GameObject("Blade").transform;
+                bladeHolder.SetParent(sealed_, false);
+                bladeHolder.localRotation = Quaternion.Euler(0f, 0f, 4f);
+                float slab = shrine.GetComponentInChildren<Renderer>().bounds.max.y - sealed_.position.y;
+                VarcoProp(bladeHolder, "SealedBlade", new Vector3(0f, slab * 0.5f - 0.3f, 0f), 0f);   // 칼끝 0.3이 돌판에 묻혀요
+                SaveRiftEvent(sealed_.gameObject, "RiftEvent_SealedBlade", "sealedBladeProp");
+                return;
+            }
             for (int k = 0; k < 3; k++)   // 바닥 룬 원: 빛나는 고리 조각 셋 겹
                 for (int s = 0; s < 12; s++)
                 {
