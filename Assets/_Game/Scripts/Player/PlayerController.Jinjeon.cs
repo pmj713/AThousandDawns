@@ -44,7 +44,7 @@ namespace AThousandDawns.Player
             }
             int count = stage == 0 ? _ultimateSwordCount : Mathf.RoundToInt(J(StageKey("ultimate.sword_count", stage), stage == 1 ? 12f : 16f));
             float time = _ultimateCastTime;
-            Vector2 area = _ultimateArea;
+            UltimateArea(out var areaCenter, out var area);
             swordRain.ScarRatio = stage >= 1 ? J("ultimate.scar_ratio", 0.25f) : 0f; // 검흔: 0.5초마다 한 자루의 25% × 4번 (한 적에 한 번)
             swordRain.FinaleRatio = stage >= 2 ? J("ultimate.finale_damage", 100f) / Mathf.Max(1f, J("ultimate.sword_damage", 18f)) : 0f;
             if (form == UltimateForm.OneSword) // 큰 검 한 자루 = 원래 검 모두 × 배율
@@ -60,7 +60,7 @@ namespace AThousandDawns.Player
             swordRain.OrbitInterval = J("jinjeon.formation_interval", 0.3f);
             swordRain.EchoDelay = J("jinjeon.echo_delay", 1f);
             swordRain.EchoRatio = J("jinjeon.echo_ratio", 0.6f);
-            swordRain.Begin(transform.position, area, count, time, _ultimateFallTime, hit, _rules);
+            swordRain.Begin(areaCenter, area, count, time, _ultimateFallTime, hit, _rules);
         }
 
         // 기연 방에서 고를 진전: 지금 무기의 3가지 중 지금 것이 아닌 하나

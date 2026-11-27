@@ -38,7 +38,23 @@ namespace AThousandDawns.Player
         float _sinceSkillPress = float.PositiveInfinity;
 
         float _ultimateCastTime, _ultimateSwordDamage, _ultimateFallTime;
-        Vector2 _ultimateArea; // 방 하나 크기 (가로 × 세로)
+        Vector2 _ultimateArea; // 방 하나 크기 (가로 × 세로) — 지금 방을 모를 때 시전한 자리 둘레로 쓰는 기본 범위
+
+        // 지금 방 범위 (판 구조에서 RoomRun이 알려 줘요). 플레이테스트 11-27: 중간·큰 방(26×16 · 32×20)이나 방 가장자리에서 쓰면
+        //   시전 자리 둘레 20×12 밖의 같은 방 적에게 검이 안 꽂혔어요. 내가 그 방 안에 있을 때만 방 전체를 쓰고, 아니면(마을·보스 결투장 등) 기본 범위
+        public System.Func<(Vector3 center, Vector2 size)> RoomArea { get; set; }
+
+        void UltimateArea(out Vector3 center, out Vector2 size)
+        {
+            center = transform.position;
+            size = _ultimateArea;
+            if (RoomArea == null) return;
+            var (c, s) = RoomArea();
+            var p = transform.position;
+            if (s.x <= 0f || Mathf.Abs(p.x - c.x) > s.x * 0.5f + 1f || Mathf.Abs(p.z - c.z) > s.y * 0.5f + 1f) return;
+            center = c;
+            size = s + Vector2.one; // 벽에 붙은 적도
+        }
         int _ultimateSwordCount;
         float _ultimateTimer;
         float _sinceUltimatePress = float.PositiveInfinity;
@@ -635,8 +651,9 @@ namespace AThousandDawns.Player
             int chains = (thunder >= 4 ? _thunderImprintChains : 0) + BellChains;
             if (chains <= 0 || totalDamage <= 0) return;
             var starts = new List<Damageable>();
+            UltimateArea(out var areaCenter, out var area);
             foreach (var d in Damageable.All())
-                if (!d.IsDead && d.Targetable && SwordRain.InArea(transform.position, _ultimateArea, d)) starts.Add(d); // 절초 범위(방 하나) 안에서
+                if (!d.IsDead && d.Targetable && SwordRain.InArea(areaCenter, area, d)) starts.Add(d); // 절초 범위(지금 방) 안에서
             if (starts.Count == 0) return;
             starts.Sort((a, b) => (a.transform.position - transform.position).sqrMagnitude.CompareTo((b.transform.position - transform.position).sqrMagnitude));
             for (int i = 0; i < chains; i++)

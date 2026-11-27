@@ -128,6 +128,7 @@ namespace AThousandDawns.Prototype
             PlaceJars(null);
             PlacePouch(null);
             ApplyBook();
+            if (Player != null) Player.RoomArea = () => (RoomCenter, RoomExtent); // 만검귀종 범위 = 지금 방 (플레이테스트 11-27)
             PrototypeArena.Forfeited += OnOfferForfeited;
             PrototypeArena.OfferResolved += OnOfferResolved;
             bool resume = ResumeRun;
