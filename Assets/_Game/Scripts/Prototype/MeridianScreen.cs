@@ -946,7 +946,8 @@ namespace AThousandDawns.Prototype
             var state = Preview(def, qi, maxBonus);
             if (state == QiState.Lacking) return $"<color=#8a8a8a>{text} (기 부족: 효과 없음)</color>";
             int level = Mathf.Min(qi, def.maxQi + maxBonus) - def.minQi + 1;
-            float mult = level * (state == QiState.Deviated && Player != null && Player.Items != null ? Player.Items.DeviationMultiplier : 1f);
+            float deviation = state == QiState.Deviated && Player != null && Player.Items != null ? Player.Items.DeviationMultiplier : 1f;
+            float mult = level * deviation;
             if (Mathf.Approximately(mult, 1f)) return text;
             int from = 0;
             for (int i = 1; i <= 4; i++)
@@ -960,7 +961,7 @@ namespace AThousandDawns.Prototype
                 int at = FindNumber(text, token, from);
                 if (at < 0 && percent) { token = plain; at = FindNumber(text, token, from); } // "0.5초"처럼 비율이 아닌 작은 수
                 if (at < 0) continue;
-                float scaled = Mathf.Abs(v) * mult;
+                float scaled = Mathf.Abs(AThousandDawns.Player.PlayerItems.ScaledValue(v, i == 1 ? def.levelBonus : 0f, level)) * deviation; // v1은 레벨마다 더 커질 수 있어요 (level_bonus)
                 string value = token.EndsWith("%") ? (scaled * 100f).ToString("0.#") + "%" : scaled.ToString("0.##");
                 string rep = $"<color=#ffd27a><b>{value}</b></color>";
                 text = text.Substring(0, at) + rep + text.Substring(at + token.Length);

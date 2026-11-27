@@ -18,6 +18,7 @@ namespace AThousandDawns.Items
         public int minQi, maxQi;
         public float v1, v2, v3, v4;
         public bool v1Scales, v2Scales, v3Scales, v4Scales;
+        public float levelBonus;  // v1이 레벨마다 더 붙는 값 (시트 level_bonus, 플레이테스트 11-27): v1 × 레벨 + levelBonus × 레벨(레벨−1)/2. 0이면 예전처럼 똑같이 늘어요
         public string side;    // 주화입마 부작용 종류
         public float sideValue;
         public string effectText, sideText;

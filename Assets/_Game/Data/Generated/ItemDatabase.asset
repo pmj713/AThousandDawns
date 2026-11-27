@@ -377,7 +377,7 @@ MonoBehaviour:
     aux: 
     minQi: 2
     maxQi: 4
-    v1: 3
+    v1: 0.15
     v2: 0
     v3: 0
     v4: 0
@@ -387,7 +387,7 @@ MonoBehaviour:
     v4Scales: 0
     side: self_slow
     sideValue: 1
-    effectText: "\uBE59\uACB0\uB85C \uCDE8\uC18C\uB41C \uBCF4\uC2A4 \uD328\uD134\uC740 3\uCD08 \uB3D9\uC548 \uB2E4\uC2DC \uB098\uC624\uC9C0 \uC54A\uC74C"
+    effectText: "빙결된 적이 받는 피해 +15%"
     sideText: "\uD53C\uACA9 \uC2DC \uC790\uC2E0\uB3C4 1\uCD08 \uB454\uD654"
     slot: 8
     otherworld: 0
@@ -490,6 +490,7 @@ MonoBehaviour:
     v2Scales: 0
     v3Scales: 0
     v4Scales: 0
+    levelBonus: 0.1
     side: dash_distance
     sideValue: 0.1
     effectText: "\uAC10\uC804\uC774 \uCD5C\uB300 \uC911\uCCA9\uC778 \uC801\uC744 \uBC29\uC804\uC2DC\uD0A4\uBA74 \uBC29\uC804 \uD53C\uD574 +15%"
@@ -616,6 +617,7 @@ MonoBehaviour:
     v2Scales: 0
     v3Scales: 0
     v4Scales: 0
+    levelBonus: 0.1
     side: taken
     sideValue: 0.1
     effectText: "\uBC29\uC804 \uD53C\uD574\uC758 30%\uAC00 \uC8FC\uBCC0 2\uCE78 \uC801\uC5D0\uAC8C \uD37C\uC9D0"
@@ -637,6 +639,7 @@ MonoBehaviour:
     v2Scales: 0
     v3Scales: 0
     v4Scales: 0
+    levelBonus: 0.1
     side: gauge_drain
     sideValue: 0.1
     effectText: "\uBC29\uC804 \uD53C\uD574 +25%. \uC751\uC9D1\uB41C \uBC88\uAC1C\uB85C \uBC29\uC804\uD558\uBA74 \uAC10\uC804 \uC911\uCCA9\uC744 2\uBC30\uB85C \uC148"

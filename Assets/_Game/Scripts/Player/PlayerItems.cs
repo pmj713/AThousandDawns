@@ -431,8 +431,12 @@ namespace AThousandDawns.Player
             }
             if (!scales) return value;
             bool deviated = deviationMultiplier && StateOf(item) == QiState.Deviated;
-            return value * LevelOf(item) * (deviated ? DeviationMultiplier : 1f);
+            return ScaledValue(value, index == 1 ? d.levelBonus : 0f, LevelOf(item)) * (deviated ? DeviationMultiplier : 1f);
         }
+
+        // 레벨에 맞춘 값: v × 레벨, v1은 레벨마다 levelBonus씩 더 커지게 (뇌정 옥새 25 → 60 → 105 → 160%). 경맥도 글(ScaledEffect)도 이걸 써요
+        public static float ScaledValue(float value, float levelBonus, int level) =>
+            value * level + Mathf.Sign(value) * levelBonus * level * (level - 1) * 0.5f;
 
         public int Count(string id, int index) => Mathf.RoundToInt(Value(id, index));
 

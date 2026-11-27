@@ -65,6 +65,7 @@ namespace AThousandDawns.Combat
         void Awake()
         {
             _body = GetComponent<Damageable>();
+            _body.Status = this;
             _burnMax = Mathf.RoundToInt(GameConfig.Get("burn.max_stacks", 5f));
             _burnDuration = GameConfig.Get("burn.duration", 4f);
             _burnTick = Mathf.Max(0.05f, GameConfig.Get("burn.tick", 0.5f));

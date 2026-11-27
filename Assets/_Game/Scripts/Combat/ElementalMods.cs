@@ -24,7 +24,8 @@ namespace AThousandDawns.Combat
         public float FreezeDurationBonus;        // 한빙 거울: 빙결 시간 +초
         public float FreezeImmunityMultiplier = 1f;  // 한빙 거울 주화입마: 빙결 면역 시간 절반
         public float BossFreezeImmunityReduction;    // 빙백 염주 (0개면): 보스 빙결 면역 −초
-        public float PatternBan;                 // 설련 향낭: 빙결로 취소된 보스 패턴이 다시 나오지 않는 시간
+        public float PatternBan;                 // 빙결로 취소된 보스 패턴이 다시 나오지 않는 시간 (녹림왕이 읽어요. 플레이테스트 11-27에 설련 향낭이 효과를 바꿔 지금 채우는 기물은 없어요)
+        public float FrozenTakenBonus;           // 설련 향낭: 빙결된 적이 받는 피해 +% (Damageable.ApplyHit)
 
         // 감전·번개
         public float ShockDurationBonus;         // 뇌석: 감전 지속 +초

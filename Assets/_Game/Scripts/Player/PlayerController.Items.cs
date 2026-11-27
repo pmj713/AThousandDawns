@@ -87,7 +87,7 @@ namespace AThousandDawns.Player
                 BossFreezeImmunityReduction = pure ? V("ice_beads", 2) : 0f,
                 FreezeDurationBonus = V("icemirror", 1) + Hy(Keyword.Bingbaek, 2),
                 FreezeImmunityMultiplier = Deviated("icemirror") ? MirrorDeviatedImmunity : 1f,
-                PatternBan = V("snow_lotus_sachet", 1),
+                FrozenTakenBonus = V("snow_lotus_sachet", 1), // 설련 향낭 (플레이테스트 11-27: 보스 패턴 봉인 → 빙결된 적 받는 피해)
                 // #뇌정
                 ShockDurationBonus = pure ? V("thunderstone", 2) : V("thunderstone", 1),
                 ChainTargetsBonus = C("thunder_drum", 1) + Mathf.RoundToInt(Hy(Keyword.Noejeong, 1)), // + 뇌문

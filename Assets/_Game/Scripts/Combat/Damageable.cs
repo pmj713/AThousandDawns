@@ -129,6 +129,8 @@ namespace AThousandDawns.Combat
         public void ApplyHit(int amount, bool reacts = true, PopupStyle style = PopupStyle.Normal)
         {
             if (IsDead) return;
+            if (amount > 0 && Status != null && Status.IsFrozen && ElementalMods.Current.FrozenTakenBonus > 0f) // 설련 향낭: 빙결된 적이 받는 피해 +%
+                amount = Mathf.RoundToInt(amount * (1f + ElementalMods.Current.FrozenTakenBonus));
             if (Ward > 0 && amount > 0) // 가호가 먼저 막아요
             {
                 int absorbed = Mathf.Min(Ward, amount);
@@ -152,6 +154,9 @@ namespace AThousandDawns.Combat
         }
 
         public bool LastHitReacts { get; private set; } = true;
+
+        // 같은 몸의 상태 이상 (StatusEffects가 깨어날 때 스스로 걸어요 · 맞을 때마다 GetComponent로 찾지 않게)
+        public StatusEffects Status { get; internal set; }
 
         // 쓰러질 피해를 이 횟수만큼 버텨요 (체력 1로 남고 Collapsed). 스켈레톤이 써요
         public int Undying { get; set; }

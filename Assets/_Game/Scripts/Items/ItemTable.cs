@@ -28,7 +28,7 @@ namespace AThousandDawns.Items
             int idCol = Col("id"), keywordCol = Col("keyword"), nameCol = Col("name"), gradeCol = Col("grade"), auxCol = Col("aux");
             int minCol = Col("min_qi"), maxCol = Col("max_qi"), scalesCol = Col("scales"), sideCol = Col("side"), sideValueCol = Col("side_value");
             int effectCol = Col("effect"), sideTextCol = Col("side_text");
-            int slotCol = Col("slot"), realmCol = Col("realm"); // 장비 부위 (머리 · 상의 …) · 세계 (이계면 판타지 기물)
+            int slotCol = Col("slot"), realmCol = Col("realm"), levelBonusCol = Col("level_bonus"); // 장비 부위 (머리 · 상의 …) · 세계 (이계면 판타지 기물)
             int[] vCols = { Col("v1"), Col("v2"), Col("v3"), Col("v4") };
             if (idCol < 0 || keywordCol < 0 || minCol < 0 || maxCol < 0)
             {
@@ -63,6 +63,7 @@ namespace AThousandDawns.Items
                 for (int i = 0; i < 4; i++) SheetValue.TryParseFloat(Cell(vCols[i]), out v[i]); // 빈 칸은 0
                 string scales = " " + Cell(scalesCol) + " ";
                 SheetValue.TryParseFloat(Cell(sideValueCol), out float sideValue);
+                SheetValue.TryParseFloat(Cell(levelBonusCol), out float levelBonus); // 없거나 빈 칸이면 0
 
                 items.Add(new ItemDefinition
                 {
@@ -76,6 +77,7 @@ namespace AThousandDawns.Items
                     v1 = v[0], v2 = v[1], v3 = v[2], v4 = v[3],
                     v1Scales = scales.Contains(" v1 "), v2Scales = scales.Contains(" v2 "),
                     v3Scales = scales.Contains(" v3 "), v4Scales = scales.Contains(" v4 "),
+                    levelBonus = levelBonus,
                     side = Cell(sideCol),
                     sideValue = sideValue,
                     effectText = Cell(effectCol),
