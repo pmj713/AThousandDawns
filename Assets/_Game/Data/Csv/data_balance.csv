@@ -1232,8 +1232,8 @@ imp.strafe_speed,3,cell/s,임프 옆으로 날기,차원 겹침 개편
 imp.shot_pause,0.2,s,임프 던지는 순간 멈춤,플레이테스트 11차
 imp.fireball_speed,6,cell/s,임프 화염구 속도 (느려요),플레이테스트 11차
 imp.fireball_radius,0.3,cell,임프 화염구 몸 크기 (벽 · 사선 판정),플레이테스트 11차
-imp.fireball_trigger,1.2,cell,임프 화염구가 터지는 플레이어와의 거리 (예고 폭의 절반),플레이테스트 11차
-imp.fireball_blast,1.2,cell,임프 화염구 폭발 반경,플레이테스트 11차
+imp.fireball_trigger,0.7,cell,임프 화염구가 터지는 플레이어와의 거리 (예고 폭의 절반),플레이테스트 11-27 (예고 폭이 넓어 1.2에서 줄임)
+imp.fireball_blast,0.7,cell,임프 화염구 폭발 반경,플레이테스트 11-27 (1.2에서 줄임)
 imp.fireball_ratio,80%,,임프 화염구 피해 (공격 배율),플레이테스트 11차
 imp.fireball_burn_stacks,1,,임프 화염구에 맞으면 플레이어 화상 중첩 (player_burn.damage),플레이테스트 11차
 room_cost.orc,3,,방 예산 점수: 오크,차원 겹침 개편

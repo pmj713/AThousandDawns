@@ -4946,11 +4946,11 @@ MonoBehaviour:
     unit: cell
     note: "\uC784\uD504 \uD654\uC5FC\uAD6C \uBAB8 \uD06C\uAE30 (\uBCBD \xB7 \uC0AC\uC120 \uD310\uC815)"
   - key: imp.fireball_trigger
-    value: 1.2
+    value: 0.7
     unit: cell
     note: "\uC784\uD504 \uD654\uC5FC\uAD6C\uAC00 \uD130\uC9C0\uB294 \uD50C\uB808\uC774\uC5B4\uC640\uC758 \uAC70\uB9AC (\uC608\uACE0 \uD3ED\uC758 \uC808\uBC18)"
   - key: imp.fireball_blast
-    value: 1.2
+    value: 0.7
     unit: cell
     note: "\uC784\uD504 \uD654\uC5FC\uAD6C \uD3ED\uBC1C \uBC18\uACBD"
   - key: imp.fireball_ratio
