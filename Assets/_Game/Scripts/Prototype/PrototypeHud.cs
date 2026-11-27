@@ -25,6 +25,7 @@ namespace AThousandDawns.Prototype
         static readonly Color ShockDot = new Color(1f, 0.89f, 0.3f);     // 노랑
 
         [System.NonSerialized] GUIStyle _hintLabel, _label, _wrapLabel, _popup, _dummy, _big, _bossLabel, _popupSmall, _popupBig, _statusLabel, _card, _cardTop, _cardLeft, _cardLeftSmall, _itemLine, _itemSmall;
+        [System.NonSerialized] GUIStyle _pauseTitle, _pauseCard, _pauseHint; // 일시정지 화면 전용 (큰 글자)
         Camera _camera;
         int _lastLevel = 1;
         float _levelUpTimer;
@@ -297,7 +298,12 @@ namespace AThousandDawns.Prototype
             GUILayout.EndArea();
         }
 
-        // 층 지도 (오른쪽 아래): 지금 방은 붉게, 가 본 방은 밝게, 옆방은 흐리게. 시 = 시작, 보 = 보상 방, 관 = 관문, 기 = 기연 방 (? = 느껴지는 기연), ! = 아직 싸우는 중
+        // 층 지도 (오른쪽 아래): 지금 방은 붉게, 가 본 방은 밝게, 옆방은 흐리게. 시 = 시작, 주머니 = 보상 방, 순간이동 = 관문, 기 = 기연 방 (? = 느껴지는 기연), ! = 아직 싸우는 중
+        static Texture2D _mapPouch, _mapGate;
+        static bool _mapPouchTried, _mapGateTried;
+        static Texture2D MapPouch { get { if (!_mapPouchTried) { _mapPouchTried = true; _mapPouch = Resources.Load<Texture2D>("HudArt/MapPouch"); } return _mapPouch; } } // 처음 한 번만 찾아요
+        static Texture2D MapGate { get { if (!_mapGateTried) { _mapGateTried = true; _mapGate = Resources.Load<Texture2D>("HudArt/MapGate"); } return _mapGate; } }
+
         void DrawMinimap()
         {
             if (run == null || run.Map == null || run.CurrentPhase != RoomRun.Phase.Floor || run.IsForking) return;
@@ -326,6 +332,13 @@ namespace AThousandDawns.Prototype
                 if (!here && r.Kind == FloorRoomKind.Hidden && !r.Found) GUI.color = new Color(0.75f, 0.6f, 1f, 0.25f); // 느껴지는 기연 방
                 GUI.DrawTexture(rect, Texture2D.whiteTexture);
                 GUI.color = Color.white;
+                // 플레이테스트 11-27: 보상 방은 주머니, 관문은 순간이동 그림 (HudArt/MapPouch · MapGate, 없으면 예전 글자)
+                var icon = r.Kind == FloorRoomKind.Reward ? MapPouch : r.Kind == FloorRoomKind.Gate ? MapGate : null;
+                if (icon != null)
+                {
+                    GUI.DrawTexture(new Rect(rect.x + 3f, rect.y + 3f, rect.width - 6f, rect.height - 6f), icon, ScaleMode.ScaleToFit);
+                    continue;
+                }
                 string mark = r.Kind == FloorRoomKind.Start ? "시" : r.Kind == FloorRoomKind.Reward ? "보" : r.Kind == FloorRoomKind.Gate ? "관" : r.Kind == FloorRoomKind.Event ? "사" : r.Kind == FloorRoomKind.Hidden ? (r.Found ? "기" : "?") : r.Visited && r.HasFight && !r.Cleared ? "!" : "";
                 if (mark != "") GUI.Label(rect, mark, _statusLabel);
             }
@@ -351,8 +364,13 @@ namespace AThousandDawns.Prototype
                 if (run.PauseBook.Draw(new Rect((UiScale.Width - 1200f) * 0.5f, (UiScale.Height - 760f) * 0.5f, 1200f, 760f))) run.SetPauseBook(false);
                 return;
             }
-            float w = 420f, x = (UiScale.Width - w) * 0.5f, y = UiScale.Height * 0.32f;
-            GUI.Label(new Rect(0, y - 70f, UiScale.Width, 50f), "일시정지", _big);
+            // 플레이테스트 11-27: 더 크게 (폭 420 → 640, 칸 58 → 84, 글자 Tiny → Body, 제목 Heading → Title)
+            const float step = 100f, h = 84f;
+            float w = 640f, x = (UiScale.Width - w) * 0.5f, y = UiScale.Height * 0.28f;
+            _pauseTitle ??= new GUIStyle(_big) { fontSize = AThousandDawns.Fx.InkUi.Title };
+            _pauseCard ??= new GUIStyle(_card) { fontSize = AThousandDawns.Fx.InkUi.Body };
+            _pauseHint ??= new GUIStyle(_dummy) { fontSize = AThousandDawns.Fx.InkUi.Label };
+            GUI.Label(new Rect(0, y - 96f, UiScale.Width, 70f), "일시정지", _pauseTitle);
             string[] labels =
             {
                 "계속하기",
@@ -363,12 +381,12 @@ namespace AThousandDawns.Prototype
             };
             for (int i = 0; i < labels.Length; i++)
             {
-                var rect = new Rect(x, y + i * 70f, w, 58f);
+                var rect = new Rect(x, y + i * step, w, h);
                 bool on = run.PauseSelected == i;
                 string text = on ? $"<b>▸ {labels[i]}</b>" : labels[i];
-                if (GUI.Button(rect, text, _card)) run.ChoosePause((RoomRun.PauseItem)i);
+                if (GUI.Button(rect, text, _pauseCard)) run.ChoosePause((RoomRun.PauseItem)i);
             }
-            GUI.Label(new Rect(0, y + labels.Length * 70f + 10f, UiScale.Width, 30f), "위아래 · Enter · Esc 돌아가기", _dummy);
+            GUI.Label(new Rect(0, y + labels.Length * step + 10f, UiScale.Width, 40f), "위아래 · Enter · Esc 돌아가기", _pauseHint);
         }
 
         // 객잔 진열대 (시간이 멈춰 있어요). 숫자 키 또는 클릭으로 사기, F·Esc 닫기
@@ -399,7 +417,7 @@ namespace AThousandDawns.Prototype
                 string body = s.Kind switch
                 {
                     InnShop.SlotKind.Item => $"<b>{s.Item.name}</b>  {Colored(s.Item.keyword)} · {GradeColored(s.Item.grade)} · {ShopSlot(s.Item)}기 {s.Item.minQi}–{s.Item.maxQi}\n<size=13>{s.Item.effectText}</size>",
-                    InnShop.SlotKind.Potion => $"<b>금창약</b>  최대 체력 40% 회복 (R 누르고 있기)\n<size=13>지금 {player.Potions}/{player.PotionMax}개</size>",
+                    InnShop.SlotKind.Potion => $"<b>금창약</b>  최대 체력 40% 회복\n<size=13>지금 {player.Potions}/{player.PotionMax}개</size>",
                     InnShop.SlotKind.Part => $"<b>부품 {PlayerItems.PartLabel(s.Part)}</b>\n<size=13>경맥도 칸에 놓는 부품 (E · 부품 줄)</size>",
                     InnShop.SlotKind.Scroll => $"<b>비급 {PlayerController.SkillLabel(s.Skill)}</b>  우클릭 초식이 바뀌어요 (지금 {player.SkillName})\n<size=13>{PlayerController.SkillText(s.Skill)}</size>",
                     InnShop.SlotKind.MoveDanjeon => $"<b>이혈</b>  단전 하나를 다른 칸으로 옮겨요\n<size=13>산 뒤 경맥도(E)에서 옮길 단전 → 새 칸{(player.Items.DanjeonMoves > 0 ? $" · 남은 이혈 {player.Items.DanjeonMoves}" : "")}</size>",
