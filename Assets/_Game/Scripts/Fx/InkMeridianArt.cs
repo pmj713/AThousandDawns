@@ -16,12 +16,15 @@ namespace AThousandDawns.Fx
 
         static Texture2D _bg, _swatch, _frame, _blot, _button, _buttonHover;
         static bool _loaded;
+        static int _bgFrame = -1;
+        static float _bgW, _bgH;
 
         public static void Backdrop(float width, float height)
         {
             Load();
             var old = GUI.color;
             var screen = new Rect(0f, 0f, width, height);
+            _bgFrame = Time.frameCount; _bgW = width; _bgH = height;   // 같은 프레임의 Panel이 바탕 그림과 결을 맞춰요
             if (_bg != null)
             {
                 GUI.color = Color.white;
@@ -56,6 +59,25 @@ namespace AThousandDawns.Fx
             Load();
             if (_swatch == null) { GUI.Box(rect, GUIContent.none); return; }
             var old = GUI.color;
+            // 플레이테스트 11-27 (장비창 키워드 단계 · 주머니 · 설명 칸이 단색 남색 상자라 먹 번짐 바탕과 겉돌았어요):
+            //   같은 프레임에 경맥도 바탕(Backdrop)을 깔았으면, 칸 안에 바탕 그림의 그 자리를 한 단 어둡게 다시 그려요 — 결이 이어진 창처럼.
+            //   가장자리는 번진 남빛 먹 (붓 자국), 테두리는 바탕 경혈선과 같은 옅은 한지·금빛 붓 네모
+            if (_bg != null && _bgFrame == Time.frameCount && _bgW > 0f)
+            {
+                GUI.color = new Color(PanelInk.r * 0.6f, PanelInk.g * 0.6f, PanelInk.b * 0.6f, 0.95f);
+                GUI.DrawTexture(Grow(rect, 0.05f), _swatch, ScaleMode.StretchToFill);          // 번진 먹 가장자리
+                GUI.color = new Color(0.62f, 0.66f, 0.82f, 1f);                                 // 바탕보다 한 단 어둡게
+                GUI.DrawTextureWithTexCoords(Grow(rect, -0.015f), _bg, BackdropUv(Grow(rect, -0.015f)));
+                GUI.color = new Color(PanelInk.r, PanelInk.g, PanelInk.b, 0.35f);              // 글자가 읽히게 옅은 남빛 한 겹
+                GUI.DrawTexture(Grow(rect, -0.015f), _swatch, ScaleMode.StretchToFill);
+                if (_frame != null)   // 붓 테두리는 칸 크기와 상관없이 가늘게 (통째로 늘이면 큰 칸에서 굵은 회색 띠가 됐어요)
+                {
+                    GUI.color = new Color(0.86f, 0.8f, 0.62f, 0.5f);
+                    FrameStrips(Grow(rect, 0.01f), Mathf.Clamp(Mathf.Min(rect.width, rect.height) * 0.06f, 8f, 16f));
+                }
+                GUI.color = old;
+                return;
+            }
             GUI.color = new Color(PanelInk.r, PanelInk.g, PanelInk.b, 0.92f);
             GUI.DrawTexture(Grow(rect, 0.03f), _swatch, ScaleMode.StretchToFill);
             if (_frame != null) // 옅은 한지색 붓 테두리 (밋밋한 검은 상자로 보이지 않게)
@@ -94,6 +116,26 @@ namespace AThousandDawns.Fx
             style.hover.textColor = style.active.textColor = style.focused.textColor = c;
             style.onNormal.textColor = style.onHover.textColor = style.onActive.textColor = style.onFocused.textColor = c;
             return style;
+        }
+
+        // 붓 네모 테두리 그림(CellFrame)의 네 변만 잘라 thick 두께로 둘러요 (그림의 붓 획 두께는 한 변 16%)
+        static void FrameStrips(Rect r, float thick)
+        {
+            const float e = 0.17f;
+            GUI.DrawTextureWithTexCoords(new Rect(r.x, r.y, r.width, thick), _frame, new Rect(0f, 1f - e, 1f, e));
+            GUI.DrawTextureWithTexCoords(new Rect(r.x, r.yMax - thick, r.width, thick), _frame, new Rect(0f, 0f, 1f, e));
+            GUI.DrawTextureWithTexCoords(new Rect(r.x, r.y + thick, thick, r.height - thick * 2f), _frame, new Rect(0f, e, e, 1f - e * 2f));
+            GUI.DrawTextureWithTexCoords(new Rect(r.xMax - thick, r.y + thick, thick, r.height - thick * 2f), _frame, new Rect(1f - e, e, e, 1f - e * 2f));
+        }
+
+        // 바탕 그림(ScaleAndCrop으로 화면을 덮은)에서 rect 자리의 UV
+        static Rect BackdropUv(Rect r)
+        {
+            float a = _bg.width / (float)_bg.height, sAsp = _bgW / _bgH;
+            float uw = 1f, uh = 1f;
+            if (sAsp > a) uh = a / sAsp; else uw = sAsp / a;
+            float ux = (1f - uw) * 0.5f, uy = (1f - uh) * 0.5f;
+            return new Rect(ux + r.x / _bgW * uw, uy + (1f - r.yMax / _bgH) * uh, r.width / _bgW * uw, r.height / _bgH * uh);
         }
 
         static Rect Grow(Rect r, float ratio)
