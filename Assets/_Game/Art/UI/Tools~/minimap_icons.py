@@ -1,6 +1,6 @@
 # 미니맵 방 아이콘 (Hud/Resources/HudArt/MapPouch · MapGate, 64×64 투명): 굵고 단순한 먹색 실루엣 + 얇은 한지색 테두리
 #   미니맵 칸(34px, 옅은 회색 · 지금 방은 붉은색) 위에 28px로 그려져요 — 둘 다에서 읽히게 짙은 먹 + 밝은 가장자리
-#   MapPouch: 끈으로 조인 복주머니 (보상 방) · MapGate: 소용돌이 문 (관문 = 순간이동)
+#   MapPouch: 끈으로 조인 복주머니 (보상 방) · MapGate: 검은 소용돌이 (관문 = 순간이동)
 # 사용: blender -b --python minimap_icons.py -- <out_dir>
 import bpy, sys, os, math, numpy as np
 
@@ -42,14 +42,12 @@ pouch = body | neck | mouth | loops
 tie = (np.abs(y - 26) <= 1.6) & (np.abs(x - 32) <= 9) | ellipse(32, 26, 3.2, 3.2)
 save("MapPouch", pouch, tie & pouch)
 
-# 소용돌이 문: 둥근 아치 문틀(두꺼운 먹) 안에 금빛 나선
-arch_outer = ((x - 32) ** 2 + (y - 26) ** 2 <= 23 ** 2) & (y <= 26) | (np.abs(x - 32) <= 23) & (y > 26) & (y <= 58)
-arch_inner = ((x - 32) ** 2 + (y - 26) ** 2 <= 15 ** 2) & (y <= 26) | (np.abs(x - 32) <= 15) & (y > 26) & (y <= 58)
-door = arch_outer
+# 관문 = 검은 소용돌이 하나 (플레이테스트 2차 11-27: 문틀 없이 소용돌이만, 먹색). 굵은 나선 두 바퀴, 한지색 테두리
 spiral = np.zeros((M, M), bool)
-for i in range(400):                       # 굵은 나선 한 바퀴 반 (28px에서도 소용돌이로 읽히게)
-    t = i / 400 * 1.7 * 2 * math.pi
-    r = 1.5 + 11 * t / (1.7 * 2 * math.pi)
-    sx, sy = 32 + r * math.cos(t), 38 + r * math.sin(t) * 1.15
-    spiral |= (x - sx) ** 2 + (y - sy) ** 2 <= (2.3 + 0.8 * t / 11) ** 2
-save("MapGate", door, spiral & arch_inner)
+turns = 2.0
+for i in range(600):
+    t = i / 600 * turns * 2 * math.pi
+    r = 2.0 + 22 * t / (turns * 2 * math.pi)
+    sx, sy = 32 + r * math.cos(t), 32 + r * math.sin(t)
+    spiral |= (x - sx) ** 2 + (y - sy) ** 2 <= (3.0 + 1.6 * t / (turns * 2 * math.pi)) ** 2
+save("MapGate", spiral, np.zeros((M, M), bool))

@@ -11,7 +11,7 @@ namespace AThousandDawns.Art
     //     부채꼴 = 적마다 색이 다른 검기 초승달 (방패 산적 쇳빛 · 등패수 등나무빛 · 마교도 핏빛 · 파계승 금빛 · 수적 졸개 물빛)
     //     직선 = 산적 졸개 내려찍기는 먹빛 내려찍기 자국 + 흙먼지 / 스켈레톤 방패 밀치기는 뼛빛 충격 띠 + 뼛가루
     //     원 = 고블린 뛰어 내려치기는 흙빛 착지 고리 + 흙먼지 / 가고일 날개 내려찍기는 잿빛 돌 고리 + 바람
-    //   오크 땅 내려찍기 (OrcBrain.Shockwave): 밝은 충격 띠와 흙 · 돌이 솟는 앞머리가 직선으로 달려 나가고, 지나간 자리에 먹빛 금이 남아요
+    //   오크 땅 내려찍기 (OrcBrain.Shockwave): 흙 · 돌이 솟는 앞머리가 직선으로 달려 나가고, 지나간 자리에 먹빛 금이 남아요
     //   고블린 주술사 회복 (Healed): 받은 적 몸에서 연두 · 금빛 티끌이 솟고 발밑 고리 / 저주 장판 (CursePlaced): 연두 포자가 확 퍼져요 (장판 그림은 InkFantasyFx)
     //   화염구 정예 불화살 (FireboltShot → 투사체 "불화살"): 단색 구는 숨기고 길쭉한 불덩이 + 불꼬리 + 불티
     //   슬라임 점액 (PuddleMade → "점액"): 단색 원판은 숨기고 반들거리는 연두 점액 웅덩이가 거품을 내다 마르며 사라져요
@@ -153,20 +153,6 @@ namespace AThousandDawns.Art
             });
         }
 
-        // 충격파 앞머리 띠 (바닥에 누운 빛 덩이, 판정 폭보다 조금 넓게 · 진행 방향으로 짧게)
-        SpriteRenderer FrontGlow(float width)
-        {
-            if (_glow == null) return null;
-            var go = new GameObject("Shockwave Front");
-            go.transform.SetParent(transform, false);
-            var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = _glow;
-            sr.sortingOrder = 7;
-            float unit = 1f / Mathf.Max(0.01f, _glow.bounds.size.x);
-            go.transform.localScale = new Vector3(width * 1.8f * unit, 1.1f * unit, 1f);
-            return sr;
-        }
-
         // 바닥 고리가 size까지 퍼지며 옅어져요
         void Ring(Vector3 at, float size, float life, Color color)
         {
@@ -200,33 +186,23 @@ namespace AThousandDawns.Art
             from.y = 0f;
             dir = Flat(dir);
             // 플레이테스트 11-27 (죽림에서 잘 안 보였어요 — 갈색 금·흙먼지가 초록·흙 바닥에 묻혔어요): 명암을 벌려요.
-            //   지나간 자리 금은 거의 먹빛으로 진하게, 앞머리엔 밝은 주황·크림빛 충격 띠가 함께 달리고, 흙먼지도 밝은 크림색
+            //   지나간 자리 금은 거의 먹빛으로 진하게, 앞머리 흙먼지는 밝은 회백색 (플레이테스트 2차 11-27: 주황 충격 띠는 노란 광채로 보여 뺐어요)
             float life = length / Mathf.Max(0.1f, speed);
             h.Streak(from, dir, length, width * 0.9f, new Color(0.09f, 0.05f, 0.03f), 0.035f, life, 0.7f); // 지나간 자리 금 (먹빛): 앞머리와 같은 속도로 늘어나요
             float t = 0f, step = 0f;
             Vector3 side = new Vector3(dir.z, 0f, -dir.x);
-            var front = h.FrontGlow(width);
             h._live.Add(dt =>
             {
                 t += dt;
                 step -= dt;
                 Vector3 p = from + dir * Mathf.Min(length, speed * t);
-                if (front != null) // 앞머리 충격 띠: 판정 폭만큼, 끝에 닿으면 빠르게 사그라져요
-                {
-                    front.transform.position = new Vector3(p.x, 0.05f, p.z);
-                    front.transform.rotation = Quaternion.Euler(90f, Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg, 0f);
-                    float fade = Mathf.Clamp01((t - life) / 0.15f);
-                    front.color = new Color(1f, 0.78f, 0.38f, 0.95f * (1f - fade));
-                }
                 if (step <= 0f && t <= life) // 앞머리에서 흙 · 돌이 솟아요
                 {
                     step = 0.04f;
-                    InkParticles.Burst(p + side * UnityEngine.Random.Range(-0.3f, 0.3f) * width + Vector3.up * 0.1f, 7, new Color(0.98f, 0.9f, 0.68f, 1f), new Color(0.8f, 0.66f, 0.45f, 0f), 2.6f, 0.34f, 0.5f, 1.8f);
+                    InkParticles.Burst(p + side * UnityEngine.Random.Range(-0.3f, 0.3f) * width + Vector3.up * 0.1f, 7, new Color(0.93f, 0.92f, 0.88f, 1f), new Color(0.7f, 0.68f, 0.64f, 0f), 2.6f, 0.34f, 0.5f, 1.8f);
                     InkParticles.Burst(p + Vector3.up * 0.1f, 3, new Color(0.2f, 0.17f, 0.15f, 1f), new Color(0.12f, 0.1f, 0.08f, 0f), 3f, 0.16f, 0.45f, 3.5f); // 돌 조각 (진하게)
                 }
-                if (t <= life + 0.2f) return true;
-                if (front != null) Destroy(front.gameObject);
-                return false;
+                return t <= life + 0.1f;
             });
         }
 
