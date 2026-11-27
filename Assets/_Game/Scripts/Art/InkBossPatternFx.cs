@@ -238,6 +238,9 @@ namespace AThousandDawns.Art
         void Bamboo(Vector3 center, Vector3 dir, float length, float width, float fall)
         {
             center.y = 0f;
+            // 플레이테스트 11-27 (대나무가 화면을 다 가렸어요): 앞뒤로 쓰러지는 대나무는 카메라에서 먼 끝을 밑동으로 두고 카메라 쪽으로 쓰러져요
+            //   (카메라 쪽 끝에 결투장 길이만큼 선 대나무가 화면을 막았어요). 쓰러진 자리·폭·길이(판정)는 그대로예요
+            if (dir.z > 0.01f) dir = -dir;
             Vector3 hinge = center - dir * (length * 0.5f);
             Vector3 axis = Vector3.Cross(Vector3.up, dir).normalized;
             var pivot = new GameObject("Burning Bamboo").transform;
@@ -251,7 +254,9 @@ namespace AThousandDawns.Art
             var model = BambooModel != null ? Instantiate(BambooModel, pivot, false) : null;
             if (model != null)
             {
-                model.transform.localScale = Vector3.one * length;
+                // 굵기는 길이와 따로 (모델 지름 0.12 × 길이로 통째 키우면 결투장 길이 20칸에서 굵기 2.4칸이 됐어요)
+                float thick = d * 1.6f / 0.12f;
+                model.transform.localScale = new Vector3(thick, length, thick);
                 model.GetComponentsInChildren(true, _modelRenderers);
                 foreach (var r in _modelRenderers) { r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; nodes.Add(r); }
             }
@@ -282,7 +287,7 @@ namespace AThousandDawns.Art
                 }
                 t += dt;
                 float k = Mathf.Clamp01(t / Mathf.Max(0.1f, fall));
-                pivot.rotation = Quaternion.AngleAxis(12f + 78f * k * k * k, axis); // 천천히 기울다 확 쓰러져요
+                pivot.rotation = Quaternion.AngleAxis(30f + 60f * k * k * k, axis); // 이미 기운 채로 나타나 천천히 기울다 확 쓰러져요 (곧게 서서 화면을 막지 않게)
                 if (landed && !hidden && t - fall < 0.5f) hidden = HideRoot("Burning Bamboo (불타는 대나무)", center, 1f); // 임시 불 띠는 렌더러만 꺼요
                 if (strip != null) // 판정 폭(width) 그대로 바닥 불길 띠
                 {
