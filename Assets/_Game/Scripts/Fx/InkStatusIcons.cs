@@ -68,6 +68,8 @@ namespace AThousandDawns.Fx
             foreach (var (kind, corner) in Items)
             {
                 var r = new Rect(x, centerY - size * 0.5f, size, size);
+                GUI.color = new Color(0.05f, 0.04f, 0.04f, 0.6f); // 어두운 받침 (플레이테스트 11-27: 밝은 바닥·초록 숲 위에서 아이콘이 잘 안 보였어요)
+                GUI.DrawTexture(new Rect(r.x - 2f, r.y - 2f, r.width + 4f, r.height + 4f), Texture2D.whiteTexture);
                 var icon = Icon(kind);
                 if (icon != null)
                 {

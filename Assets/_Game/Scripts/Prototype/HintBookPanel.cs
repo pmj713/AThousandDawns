@@ -17,7 +17,7 @@ namespace AThousandDawns.Prototype
         HashSet<string> _seen = new HashSet<string>();
         int _packs;
         Vector2 _scroll, _codexScroll;
-        [NonSerialized] GUIStyle _title, _tab, _tabOn, _group, _item, _itemOn, _body, _hint;
+        [NonSerialized] GUIStyle _title, _tab, _tabOn, _group, _item, _itemOn, _body, _hint, _oneLine;
 
         public int Selected { get; private set; }
         public IReadOnlyList<HintBook.Entry> Entries => _entries;
@@ -169,15 +169,28 @@ namespace AThousandDawns.Prototype
 
             GUI.Label(new Rect(right.x, right.y, right.width, 36f), "최근 판", _title);
             var list = new Rect(right.x, right.y + 46f, right.width, right.height - 46f);
+            // 줄마다 글 높이를 재서 놓아요 (플레이테스트 11-27: 쓰러진 곳이 길면 두세 줄로 접혀 다음 판 위에 겹쳤어요 — 글은 칸 밖으로도 그려져요)
             const float rowH = 64f, mark = 44f;
-            _recordScroll = GUI.BeginScrollView(list, _recordScroll, new Rect(0, 0, list.width - 20f, m.recentRuns.Count * rowH));
+            float textW = list.width - 36f - mark;
+            var texts = new string[m.recentRuns.Count];
+            var heights = new float[m.recentRuns.Count];
+            float total = 0f;
             for (int i = 0; i < m.recentRuns.Count; i++)
             {
                 var r = m.recentRuns[i];
                 string karma = r.karma > 0 ? $" · 업보 {r.karma}" : "";
                 string head = r.victory ? $"<color=#e8c06a>제{r.run}회 · {r.where}</color>" : $"제{r.run}회 · {r.where}";
-                AThousandDawns.Fx.InkPadUi.Result(new Rect(0, i * rowH + (rowH - mark) * 0.5f - 2f, mark, mark), r.victory); // 승리 금빛 낙관 · 패배 먹 점
-                GUI.Label(new Rect(mark + 12f, i * rowH, list.width - 36f - mark, rowH - 4f), $"{head}\n<color=#bdbdbd>{r.floors}층 돌파 · {RunRecord.Clock(r.seconds)}{karma} · 기억 +{r.memory}</color>", _body);
+                texts[i] = $"{head}\n<color=#bdbdbd>{r.floors}층 돌파 · {RunRecord.Clock(r.seconds)}{karma} · 기억 +{r.memory}</color>";
+                heights[i] = Mathf.Max(rowH, _body.CalcHeight(new GUIContent(texts[i]), textW) + 10f);
+                total += heights[i];
+            }
+            _recordScroll = GUI.BeginScrollView(list, _recordScroll, new Rect(0, 0, list.width - 20f, total));
+            float ry = 0f;
+            for (int i = 0; i < m.recentRuns.Count; i++)
+            {
+                AThousandDawns.Fx.InkPadUi.Result(new Rect(0, ry + (heights[i] - mark) * 0.5f - 2f, mark, mark), m.recentRuns[i].victory); // 승리 금빛 낙관 · 패배 먹 점
+                GUI.Label(new Rect(mark + 12f, ry, textW, heights[i] - 4f), texts[i], _body);
+                ry += heights[i];
             }
             GUI.EndScrollView();
         }
@@ -190,10 +203,12 @@ namespace AThousandDawns.Prototype
             GUI.Label(new Rect(area.x, y, area.width, 30f), $"<b>{title}</b>", _body);
             y += 32f;
             float most = Mathf.Max(1, sorted[0].count), nameW = area.width * 0.42f, countW = 70f;
+            // 이름은 한 줄로 자르고 막대는 이름 뒤 12칸 떼어요 (플레이테스트 11-27: 긴 이름이 접혀 다음 줄 막대 밑에 깔렸어요)
+            _oneLine ??= new GUIStyle(_body) { wordWrap = false, clipping = TextClipping.Clip };
             for (int i = 0; i < sorted.Count && i < top && y < area.yMax - 28f; i++)
             {
-                GUI.Label(new Rect(area.x + 8f, y, nameW, 28f), $"{i + 1}. {sorted[i].name}", _body);
-                AThousandDawns.Fx.InkPadUi.Bar(new Rect(area.x + nameW + 8f, y + 4f, area.width - nameW - countW - 16f, 20f), sorted[i].count / most, ink);
+                GUI.Label(new Rect(area.x + 8f, y, nameW, 28f), $"{i + 1}. {sorted[i].name}", _oneLine);
+                AThousandDawns.Fx.InkPadUi.Bar(new Rect(area.x + nameW + 20f, y + 4f, area.width - nameW - countW - 28f, 20f), sorted[i].count / most, ink);
                 GUI.Label(new Rect(area.xMax - countW, y, countW, 28f), $"{sorted[i].count}{unit}", _body);
                 y += 30f;
             }

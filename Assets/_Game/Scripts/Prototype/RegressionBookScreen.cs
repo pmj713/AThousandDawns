@@ -212,7 +212,22 @@ namespace AThousandDawns.Prototype
         {
             var node = _selected != null ? RegressionBook.Find(_selected) : null;
             var pack = PackItems(node);
-            var panel = pack != null ? new Rect(UiScale.Width - 660, 100, 610, 690) : new Rect(UiScale.Width - 520, 180, 470, 360);
+            // 새 기물 묶음: 기물마다 글 높이를 재서 놓고, 판도 그만큼 키워요 (플레이테스트 11-27: 효과가 두 줄이면 다음 기물 이름에 겹쳤어요)
+            float[] packH = null;
+            float packTotal = 0f;
+            if (pack != null)
+            {
+                packH = new float[pack.Count];
+                for (int i = 0; i < pack.Count; i++)
+                {
+                    var def = pack[i];
+                    float textW = 610 - (ItemIcons.Get(def) != null ? 84 : 20) - 20;
+                    packH[i] = Mathf.Max(66f, _small.CalcHeight(new GUIContent(PackText(def)), textW)) + 6f;
+                    packTotal += packH[i];
+                }
+            }
+            float packPanelH = 18 + 48 + 32 + 30 + packTotal + 4 + 40 + 50 + 24;
+            var panel = pack != null ? new Rect(UiScale.Width - 660, Mathf.Clamp(UiScale.Height - 40 - packPanelH, 20, 100), 610, Mathf.Max(690, packPanelH)) : new Rect(UiScale.Width - 520, 180, 470, 360);
             Fill(panel, new Color(1f, 1f, 1f, 0.85f));
             if (node == null)
             {
@@ -231,13 +246,13 @@ namespace AThousandDawns.Prototype
             {
                 GUI.Label(new Rect(panel.x + 20, y, panel.width - 40, 26), "새 기물 6종이 보상 · 객잔 · 이벤트에 나와요", _small);
                 y += 30;
-                foreach (var def in pack)
+                for (int i = 0; i < pack.Count; i++)
                 {
-                    string head = $"<b>{def.name}</b>  {PlayerKeywords.Label(def.keyword)} · {ItemDefinition.GradeLabel(def.grade)} · 기 {def.minQi}–{def.maxQi}";
+                    var def = pack[i];
                     bool icon = ItemIcons.Draw(new Rect(panel.x + 16, y + 4, 58, 58), def);
                     float left = icon ? 84 : 20;
-                    GUI.Label(new Rect(panel.x + left, y, panel.width - left - 20, 66), $"{head}\n{def.effectText}", _small);
-                    y += 70;
+                    GUI.Label(new Rect(panel.x + left, y, panel.width - left - 20, packH[i] - 4), PackText(def), _small);
+                    y += packH[i];
                 }
                 y += 4;
             }
@@ -257,6 +272,9 @@ namespace AThousandDawns.Prototype
             if (GUI.Button(new Rect(panel.x + 20, y, panel.width - 40, 50), $"개화 · 기억 {cost}", _button)) BloomSelected();
             GUI.enabled = true;
         }
+
+        static string PackText(ItemDefinition def) =>
+            $"<b>{def.name}</b>  {PlayerKeywords.Label(def.keyword)} · {ItemDefinition.GradeLabel(def.grade)} · 기 {def.minQi}–{def.maxQi}\n{def.effectText}";
 
         // 새 기물 묶음 봉우리면 그 묶음의 기물 (기물 에셋 순서), 아니면 null
         public static List<ItemDefinition> PackItems(BookNode node)

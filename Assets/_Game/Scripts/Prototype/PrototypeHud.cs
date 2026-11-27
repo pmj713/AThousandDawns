@@ -45,6 +45,7 @@ namespace AThousandDawns.Prototype
         {
             UiScale.Apply(); // 기준 1920×1080, 어떤 창 크기에도 같은 비율
             DrawHud();
+            DrawOffscreenEnemies();
             InkHud.Draw(player); // 수묵 HUD: 초식 · 체력 · 대시 · 금창약 (왼쪽 위, Fx/InkHud)
             if (run != null && !run.InVillage && !run.IsShowingResult) InkHud.DrawKarma(run.Karma); // 판 중 업보 단계 (위 가운데, 0이면 숨김)
             DrawMinimap();
@@ -57,6 +58,39 @@ namespace AThousandDawns.Prototype
             DrawDiscard(); // 둘 곳이 없을 때 버릴 기물 고르기는 그보다 위에
             DrawPause(); // 일시정지는 맨 위
             DrawPadHints(); // 게임패드 커서가 있는 화면이면 A · B 안내 (PrototypeHud.Pad)
+        }
+
+        // 화면 밖 적 (플레이테스트 11-27): 지금 방의 살아 있는 적이 화면 밖이면 그쪽 화면 가장자리에 붉은 화살표
+        static readonly Color OffscreenArrow = new Color(0.85f, 0.12f, 0.08f, 0.9f);
+        void DrawOffscreenEnemies()
+        {
+            if (director == null || _camera == null) return;
+            if (run != null && (run.InVillage || run.IsShowingResult || run.IsPaused)) return;
+            const float margin = 34f;
+            var center = new Vector2(UiScale.Width * 0.5f, UiScale.Height * 0.5f);
+            var oldColor = GUI.color;
+            var oldMatrix = GUI.matrix;
+            GUI.color = OffscreenArrow;
+            foreach (var e in director.Enemies)
+            {
+                if (e == null || e.IsDead || e.Damageable == null || !e.Damageable.Targetable) continue;
+                Vector3 sp = _camera.WorldToScreenPoint(e.transform.position + Vector3.up * (e.Height * 0.5f));
+                if (sp.z < 0f) { sp.x = Screen.width - sp.x; sp.y = Screen.height - sp.y; } // 카메라 뒤면 반대쪽
+                var g = UiScale.FromScreen(sp);
+                if (sp.z >= 0f && g.x >= 0f && g.x <= UiScale.Width && g.y >= 0f && g.y <= UiScale.Height) continue; // 화면 안
+                var d = g - center;
+                if (d.sqrMagnitude < 1f) continue;
+                float sx = (center.x - margin) / Mathf.Max(0.001f, Mathf.Abs(d.x)), sy = (center.y - margin) / Mathf.Max(0.001f, Mathf.Abs(d.y));
+                var p = center + d * Mathf.Min(sx, sy); // 가장자리 안쪽 테두리에 붙여요
+                float angle = Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg;
+                GUI.matrix = oldMatrix;
+                GUIUtility.RotateAroundPivot(angle, p);
+                GUI.DrawTexture(new Rect(p.x - 22f, p.y - 4f, 18f, 8f), Texture2D.whiteTexture); // 화살 몸통
+                GUIUtility.RotateAroundPivot(-45f, p); // 네모의 (+,+) 모서리를 화살 방향으로
+                GUI.DrawTexture(new Rect(p.x - 9f, p.y - 9f, 13f, 13f), Texture2D.whiteTexture); // 화살촉
+            }
+            GUI.matrix = oldMatrix;
+            GUI.color = oldColor;
         }
 
         void DrawHud()
@@ -241,7 +275,7 @@ namespace AThousandDawns.Prototype
                         DrawWard(enemyBar, dmg);
                     }
                     if (e.IsElite || e.Rank == EnemyRank.Assassin) GUI.Label(new Rect(g.x - 90, g.y - 40, 180, 22), e.DisplayName, _statusLabel); // 정예: 이름 앞에 특성
-                    AThousandDawns.Fx.InkStatusIcons.Enemy(new Rect(g.x - 25, g.y, 50, 6), e.Statuses, 18f); // 상태이상 아이콘 (체력바 오른쪽, 스택 숫자)
+                    AThousandDawns.Fx.InkStatusIcons.Enemy(new Rect(g.x - 25, g.y, 50, 6), e.Statuses, 26f); // 상태이상 아이콘 (체력바 오른쪽, 스택 숫자 · 플레이테스트 11-27: 18 → 26, 잘 안 보였어요)
                 }
             }
 
@@ -298,7 +332,7 @@ namespace AThousandDawns.Prototype
             GUILayout.EndArea();
         }
 
-        // 층 지도 (오른쪽 아래): 지금 방은 붉게, 가 본 방은 밝게, 옆방은 흐리게. 시 = 시작, 주머니 = 보상 방, 순간이동 = 관문, 기 = 기연 방 (? = 느껴지는 기연), ! = 아직 싸우는 중
+        // 층 지도 (오른쪽 아래): 지금 방은 붉게, 가 본 방은 밝게, 옆방은 흐리게. 시작 방은 표시 없음 (플레이테스트 11-27), 주머니 = 보상 방, 순간이동 = 관문, 기 = 기연 방 (? = 느껴지는 기연), ! = 아직 싸우는 중
         static Texture2D _mapPouch, _mapGate;
         static bool _mapPouchTried, _mapGateTried;
         static Texture2D MapPouch { get { if (!_mapPouchTried) { _mapPouchTried = true; _mapPouch = Resources.Load<Texture2D>("HudArt/MapPouch"); } return _mapPouch; } } // 처음 한 번만 찾아요
@@ -339,7 +373,7 @@ namespace AThousandDawns.Prototype
                     GUI.DrawTexture(new Rect(rect.x + 3f, rect.y + 3f, rect.width - 6f, rect.height - 6f), icon, ScaleMode.ScaleToFit);
                     continue;
                 }
-                string mark = r.Kind == FloorRoomKind.Start ? "시" : r.Kind == FloorRoomKind.Reward ? "보" : r.Kind == FloorRoomKind.Gate ? "관" : r.Kind == FloorRoomKind.Event ? "사" : r.Kind == FloorRoomKind.Hidden ? (r.Found ? "기" : "?") : r.Visited && r.HasFight && !r.Cleared ? "!" : "";
+                string mark = r.Kind == FloorRoomKind.Start ? "" : r.Kind == FloorRoomKind.Reward ? "보" : r.Kind == FloorRoomKind.Gate ? "관" : r.Kind == FloorRoomKind.Event ? "사" : r.Kind == FloorRoomKind.Hidden ? (r.Found ? "기" : "?") : r.Visited && r.HasFight && !r.Cleared ? "!" : "";
                 if (mark != "") GUI.Label(rect, mark, _statusLabel);
             }
             GUI.color = old;
