@@ -1,5 +1,5 @@
 // 적 공격 예고. 원래 색·밝기는 그대로 두고 붓 자국 같은 농담과 종이 결만 얹어요 (읽히는 건 그대로).
-// 반투명 (플레이테스트 3차: 바닥이 비쳐 보이게): 투명도는 _BaseColor.a — 바탕 0.2 투명한 빨강 · 차오름 0.5 진한 붉은색 (PrototypeSceneBuilder 상수).
+// 반투명 (플레이테스트 3차: 바닥이 비쳐 보이게): 투명도는 _BaseColor.a — 바탕 0.2 투명한 빨강 · 차오름 0.7 진한 핏빛 빨강 (PrototypeSceneBuilder 상수).
 Shader "AThousandDawns/InkTelegraph"
 {
     Properties

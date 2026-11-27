@@ -48,7 +48,7 @@ namespace AThousandDawns.EditorTools
         const string EnemyAccentColor = "#EFE6D2";
         const string ArrowColor = "#1E1C1A";
         const string TelegraphBaseColor = "#FF3B3033"; // 범위: 투명한 빨강 (알파 0.2)
-        const string TelegraphFillColor = "#D4141480"; // 차오름: 진한 붉은색 (알파 0.5)
+        const string TelegraphFillColor = "#A00A0AB3"; // 차오름: 더 진한 핏빛 빨강 (알파 0.7, 플레이테스트 11-27)
         const string TelegraphOutlineColor = "#FFFFFF";
 
         static readonly Vector3 CameraOffset = new Vector3(0f, 13.1f, -9.2f); // 거리 16, 55°
