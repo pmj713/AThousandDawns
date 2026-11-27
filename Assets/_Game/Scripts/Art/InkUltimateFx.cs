@@ -6,16 +6,14 @@ namespace AThousandDawns.Art
     // 만검귀종 (검 절초) 검이 잘 보이게 (플레이테스트): 게임 코드 SwordRain이 만드는 씬 루트 "만검귀종 검" (상자 셋: 날 · 코등이 · 손잡이)을 처음 볼 때 한 번 꾸며요.
     //   모델 (플레이테스트 3차): 판타지 검 대신 코드로 만든 무협풍 곧은 양날 검 (마름모 단면 날 · 금동 코등이 · 붉은 끈 손잡이 · 붉은 검수 술). 상자 셋은 끄고 1.4배로.
     //   밝기: 흰 금빛으로 밝게 칠해요 (빛을 받지 않는 재질이라 어두운 바닥에서도 또렷해요).
-    //   테두리: 검 뒤로 금빛 빛무리가 카메라를 향해 은은하게 일렁이고, 날을 따라 가는 금빛 꼬리가 남아요.
+    //   테두리: 날을 따라 가는 흰 꼬리만 남아요 (플레이테스트 11-27: 금빛 빛무리·금빛 꼬리 끝, 노란 이펙트는 뺐어요).
     // 그림: FxArt/InkMist (부드러운 빛).
     public class InkUltimateFx : MonoBehaviour
     {
         static readonly Color Blade = new Color(1f, 0.97f, 0.85f);
-        static readonly Color Gold = new Color(1f, 0.8f, 0.3f);
 
         static InkUltimateFx _host;
         static Material _bright, _trail, _vertexBright;
-        static Sprite _glow;
 
         readonly HashSet<GameObject> _roots = new HashSet<GameObject>();
 
@@ -85,24 +83,9 @@ namespace AThousandDawns.Art
             return _varco;
         }
 
-        // 금빛 빛무리 (테두리) + 날을 따라 가는 금빛 꼬리
+        // 날을 따라 가는 흰 꼬리 (플레이테스트 11-27: 노란 이펙트 — 금빛 빛무리와 금빛 꼬리 끝 — 는 뺐어요)
         static void Glow(Transform sword)
         {
-            if (_glow != null) // 금빛 빛무리 (테두리)
-            {
-                var halo = new GameObject("Sword Halo").transform;
-                halo.SetParent(sword, false);
-                halo.localPosition = Vector3.up * 1.1f;
-                halo.gameObject.AddComponent<InkFaceCamera>();
-                var go = new GameObject("Glow");
-                go.transform.SetParent(halo, false);
-                go.transform.localScale = new Vector3(0.9f, 2.9f, 1f) / Mathf.Max(0.01f, _glow.bounds.size.x);
-                var sr = go.AddComponent<SpriteRenderer>();
-                sr.sprite = _glow;
-                sr.color = new Color(Gold.r, Gold.g, Gold.b, 0.55f);
-                sr.sortingOrder = -1;
-                go.AddComponent<InkFlicker>();
-            }
             var tail = new GameObject("Sword Tail");
             tail.transform.SetParent(sword, false);
             tail.transform.localPosition = Vector3.up * 0.2f;
@@ -114,7 +97,7 @@ namespace AThousandDawns.Art
             trail.widthMultiplier = 0.35f;
             trail.colorGradient = new Gradient
             {
-                colorKeys = new[] { new GradientColorKey(Blade, 0f), new GradientColorKey(Gold, 1f) },
+                colorKeys = new[] { new GradientColorKey(Blade, 0f), new GradientColorKey(Steel, 1f) },
                 alphaKeys = new[] { new GradientAlphaKey(0.8f, 0f), new GradientAlphaKey(0f, 1f) },
             };
             trail.alignment = LineAlignment.View;
@@ -175,11 +158,7 @@ namespace AThousandDawns.Art
             _vertexBright = new Material(Shader.Find("Sprites/Default")) { name = "Ultimate Sword Vertex" };
             _trail = new Material(Shader.Find("Sprites/Default")) { name = "Ultimate Sword Tail" };
             var tex = Resources.Load<Texture2D>("FxArt/InkMist");
-            if (tex != null)
-            {
-                _trail.mainTexture = tex;
-                _glow = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f);
-            }
+            if (tex != null) _trail.mainTexture = tex;
         }
     }
 
