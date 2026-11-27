@@ -26,6 +26,7 @@ namespace AThousandDawns.EditorTools
             }
 
             // 1) 벽 너머 대나무 숲 → 소나무 숲 + 무너진 전각
+            int twistSlot = 0;   // 뒤틀린 나무 자리 번호: 숲 묶음이 여럿이어도 이어서 (묶음마다 0부터면 같은 난수가 되풀이돼요)
             foreach (var forest in Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None)
                          .Where(t => t.name == "Forest (3D stalks)" && !Skip(t)).ToList())
             {
@@ -37,6 +38,7 @@ namespace AThousandDawns.EditorTools
                 foreach (Transform cluster in forest)
                 {
                     if (i++ % 5 == 2) RuinedHall(grove, cluster.localPosition, seed++, stoneMat, TempleLacquer(), roofX);   // 절 건물은 단청 (붉은 칠 기둥)
+                    else if (SlotHash(seed, 21) < TwistedRatio(1)) TwistedTree(grove, cluster.localPosition, 1, seed++);   // 뒤틀린 나무 (PrototypeSceneBuilder.Trees.cs)
                     else PineTree(grove, cluster.localPosition, 4.5f + (seed % 4) * 0.5f, seed++, woodMat);
                 }
                 StripColliders(grove);
@@ -49,6 +51,13 @@ namespace AThousandDawns.EditorTools
                     {
                         StripColliders(tree);
                         cluster.gameObject.SetActive(false);
+                    }
+                // 뒤틀린 나무: 대숲 자리(대나무 묶음·서양 나무) 중 10% (PrototypeSceneBuilder.Trees.cs)
+                foreach (var spot in forest.Cast<Transform>().Where(t => t.gameObject.activeSelf).ToList())
+                    if (SlotHash(twistSlot++, 31) < TwistedRatio(0))
+                    {
+                        TwistedTree(forest, spot.localPosition, 0, twistSlot);
+                        spot.gameObject.SetActive(false);
                     }
             }
 
@@ -644,143 +653,14 @@ namespace AThousandDawns.EditorTools
             cap.AddComponent<MeshRenderer>().sharedMaterial = roofX;
         }
 
-        // 굽은 소나무: 두 마디로 휜 줄기 + 가지 끝마다 납작한 솔잎 구름 (덤불 덩어리를 눌러 써요)
-        // 소나무 (실제 소나무처럼): 줄기가 한 번에 휘어 기울다가 위에서 다시 굽어 오르고(굽은 원통 한 덩이라 이음매가 없어요),
-        // 위쪽에서 가지가 거의 수평으로 뻗었다가 끝이 살짝 들려요. 가지 끝·꼭대기에 넓고 납작한 솔잎 층.
-        // 모양은 네 가지(메시 저장)를 돌려 쓰고, 나무마다 높이·방향만 달라요
+        // 소나무: S자로 휘어 오르는 줄기, 위쪽에서 거의 수평으로 뻗은 가지 끝·꼭대기에 납작한 솔잎 층.
+        // 모양은 네 가지(Art/Env/Trees/Tree_Pine_0..3)를 돌려 쓰고, 나무마다 높이·방향만 달라요 (설계 높이 5)
         const float PineDesignHeight = 5f;
 
         static void PineTree(Transform parent, Vector3 foot, float height, int seed, Material woodMat)
         {
-            var tree = new GameObject("Pine (소나무)").transform;
-            tree.SetParent(parent, false);
-            tree.localPosition = foot;
-            tree.localRotation = Quaternion.Euler(0f, seed * 67f % 360f, 0f);
-            tree.localScale = Vector3.one * (height / PineDesignHeight);
-
-            int variant = seed % 4;
-            var mesh = GetPineMesh(variant, out var pads);
-            var trunk = new GameObject("Trunk");
-            trunk.transform.SetParent(tree, false);
-            trunk.AddComponent<MeshFilter>().sharedMesh = mesh;
-            trunk.AddComponent<MeshRenderer>().sharedMaterial = woodMat;
-
-            var mat = PineNeedleMaterial();   // 입체 채색 솔잎 층 (PrototypeSceneBuilder.StylizedFoliage.cs)
-            for (int k = 0; k < pads.Count; k++)
-            {
-                var puff = new GameObject($"Needles_{k + 1}");
-                puff.transform.SetParent(tree, false);
-                puff.transform.localPosition = pads[k];
-                float w = k == 0 ? 1.9f : 1.5f - (k % 2) * 0.2f;
-                puff.transform.localScale = new Vector3(w * 0.95f, 0.5f, w * 0.8f);   // 넓고 납작한 솔잎 층
-                puff.transform.localRotation = Quaternion.Euler(0f, k * 73f, 0f);
-                puff.AddComponent<MeshFilter>().sharedMesh = BushMesh((seed + k) % 3);
-                puff.AddComponent<MeshRenderer>().sharedMaterial = mat;
-            }
-        }
-
-        // 줄기+가지 메시 (높이 PineDesignHeight 기준). pads = 솔잎 층 자리 (0번이 꼭대기)
-        static Mesh GetPineMesh(int variant, out List<Vector3> pads)
-        {
-            var rnd = new System.Random(variant * 211 + 3);
-            float R(float a, float b) => a + (float)rnd.NextDouble() * (b - a);
-
-            var verts = new List<Vector3>();
-            var normals = new List<Vector3>();
-            var tris = new List<int>();
-            pads = new List<Vector3>();
-
-            // 줄기 중심선: 아래는 한쪽으로 기울고(lean), 위에서 반대로 굽어 올라 S자. 옆으로 살짝 비틀려요(sway)
-            float lean = R(0.7f, 1.1f) * (variant % 2 == 0 ? 1f : -1f), sway = R(-0.35f, 0.35f), top = PineDesignHeight * 0.88f;
-            Vector3 Trunk(float t) => new Vector3(
-                lean * Mathf.Sin(Mathf.PI * t * 0.85f) - lean * 0.55f * t * t * t,
-                top * t,
-                sway * Mathf.Sin(Mathf.PI * 2f * t));
-            const int trunkSegs = 14;
-            var line = new List<Vector3>();
-            var radii = new List<float>();
-            for (int i = 0; i <= trunkSegs; i++)
-            {
-                float t = i / (float)trunkSegs;
-                line.Add(Trunk(t));
-                radii.Add(Mathf.Lerp(0.2f, 0.06f, t) * (1f + 0.6f * Mathf.Pow(1f - t, 8f)));   // 위로 갈수록 가늘고 뿌리께는 퍼져요
-            }
-            Tube(line, radii, verts, normals, tris);
-            pads.Add(Trunk(1f) + new Vector3(0f, 0.15f, 0f));
-
-            // 가지: 줄기 위쪽 세 곳에서 둘레를 돌아가며 거의 수평으로 뻗고, 가운데가 처졌다가 끝이 들려요
-            float[] at = { 0.5f, 0.66f, 0.8f };
-            float yaw0 = R(0f, 360f);
-            for (int b = 0; b < at.Length; b++)
-            {
-                Vector3 start = Trunk(at[b]);
-                float yaw = (yaw0 + b * R(110f, 150f)) * Mathf.Deg2Rad;
-                var dir = new Vector3(Mathf.Cos(yaw), 0f, Mathf.Sin(yaw));
-                float blen = R(1.3f, 1.9f) * (1f - b * 0.12f);
-                var bl = new List<Vector3>();
-                var br = new List<float>();
-                const int segs = 6;
-                for (int i = 0; i <= segs; i++)
-                {
-                    float u = i / (float)segs;
-                    float y = 0.35f * u - 0.45f * u * u + 0.35f * u * u * u;   // 살짝 오르다 처지고 끝이 들려요
-                    bl.Add(start + dir * (blen * u) + Vector3.up * y);
-                    br.Add(Mathf.Lerp(0.07f, 0.025f, u));
-                }
-                Tube(bl, br, verts, normals, tris);
-                pads.Add(bl[segs] + new Vector3(0f, 0.12f, 0f));
-            }
-
-            string key = $"PineTrunk_{variant}";
-            if (s_inkPropMeshes.TryGetValue(key, out var cached) && cached != null) return cached;
-            string path = $"{InkMeshFolder}/{key}.asset";
-            var mesh = AssetDatabase.LoadAssetAtPath<Mesh>(path);
-            bool isNew = mesh == null;
-            if (isNew) mesh = new Mesh { name = key };
-            mesh.Clear();
-            mesh.SetVertices(verts);
-            mesh.SetNormals(normals);
-            mesh.SetTriangles(tris, 0);
-            mesh.RecalculateBounds();
-            if (isNew)
-            {
-                EnsureFolder(InkMeshFolder);
-                AssetDatabase.CreateAsset(mesh, path);
-            }
-            else EditorUtility.SetDirty(mesh);
-            s_inkPropMeshes[key] = mesh;
-            return mesh;
-        }
-
-        // 중심선을 따라 굵기가 변하는 매끈한 관 (평행 이동 틀로 고리가 비틀리지 않게)
-        static void Tube(List<Vector3> line, List<float> radii, List<Vector3> verts, List<Vector3> normals, List<int> tris)
-        {
-            const int sides = 8;
-            int baseIndex = verts.Count;
-            Vector3 prevT = (line[1] - line[0]).normalized;
-            Vector3 n = Vector3.Cross(prevT, Mathf.Abs(prevT.y) < 0.9f ? Vector3.up : Vector3.right).normalized;
-            for (int i = 0; i < line.Count; i++)
-            {
-                Vector3 t = i == 0 ? prevT : i == line.Count - 1 ? (line[i] - line[i - 1]).normalized : (line[i + 1] - line[i - 1]).normalized;
-                n = (Quaternion.FromToRotation(prevT, t) * n).normalized;
-                prevT = t;
-                Vector3 bnorm = Vector3.Cross(t, n);
-                for (int k = 0; k < sides; k++)
-                {
-                    float a = k * Mathf.PI * 2f / sides;
-                    Vector3 d = n * Mathf.Cos(a) + bnorm * Mathf.Sin(a);
-                    verts.Add(line[i] + d * radii[i]);
-                    normals.Add(d);
-                }
-            }
-            for (int i = 0; i < line.Count - 1; i++)
-                for (int k = 0; k < sides; k++)
-                {
-                    int a = baseIndex + i * sides + k, b = baseIndex + i * sides + (k + 1) % sides;
-                    int c = a + sides, d = b + sides;
-                    tris.Add(a); tris.Add(b); tris.Add(c);   // 바깥이 앞면 (Cross(b-a, c-a)가 바깥)
-                    tris.Add(b); tris.Add(d); tris.Add(c);
-                }
+            // 죽림 대나무처럼 (사용자 요청 2026-11-23): 줄기·가지는 Blender에서 한 몸으로, 솔잎 층은 속 채움 없이 가는 솔잎 다발을 성글게 (PrototypeSceneBuilder.Trees.cs)
+            PlaceTree(parent, $"Pine_{seed % 4}", "Pine (소나무)", foot, seed * 67f % 360f, height / PineDesignHeight);
         }
 
         // 무너진 전각: 기둥 몇 개만 남고, 기운 지붕이 내려앉은 모습

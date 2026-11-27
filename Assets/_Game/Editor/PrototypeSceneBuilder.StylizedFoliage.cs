@@ -411,19 +411,6 @@ namespace AThousandDawns.EditorTools
             return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
 
-        // 폐사찰 소나무 솔잎 층: 납작한 입체 덤불 덩어리에 짙은 청록 솔잎색 (예전 덤불 그림 카드 덩어리 대신)
-        static Material PineNeedleMaterial()
-        {
-            var m = FantasyLook(GetInkMaterial("Ink3D_PineNeedles", "#5E8C78", 1f));
-            m.SetColor("_BaseColor", new Color(0.37f, 0.55f, 0.47f, 1f));   // 덤불 초록(정점 색)에 곱해 짙은 청록 솔잎으로
-            m.SetFloat("_VertexTint", 1f);
-            m.SetFloat("_OutlineWidth", 2.5f);
-            m.SetFloat("_RimInk", 0.15f);
-            m.SetFloat("_ShadowInk", 0.35f);
-            EditorUtility.SetDirty(m);
-            return m;
-        }
-
         // 정팔면체를 두 번 쪼갠 공 (삼각형 128개, 꼭짓점은 삼각형마다 따로: 방향만)
         static List<Vector3> s_sphereTris;
         static List<Vector3> UnitSphereTris()
