@@ -15,7 +15,9 @@ namespace AThousandDawns.EditorTools
         {
             string name = seed % 2 == 0 ? "OakTree" : "FirTree";
             float scale = 0.85f + (seed * 37 % 5) * 0.08f;
-            return VarcoProp(parent, name, localPos, seed * 67f % 360f, scale, BambooFantasyFolder);
+            var tree = VarcoProp(parent, name, localPos, seed * 67f % 360f, scale, BambooFantasyFolder);
+            if (tree != null) ApplyVarcoTreeLeaves(tree, name);   // 잎 덩어리를 대나무 같은 잎다발로 (죽림 시안 2차, PrototypeSceneBuilder.Trees.cs)
+            return tree;
         }
 
         static Transform BambooFantasyProp(Transform parent, Vector3 localPos, float height, int seed)

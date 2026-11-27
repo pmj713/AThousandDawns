@@ -48,7 +48,10 @@ namespace AThousandDawns.EditorTools
                         case 3: Watchtower(bank, p, seed++, woodMat, dark, flag, roofX); break;
                         case 7: Boat(bank, p, seed++, dark, woodMat, true); break;
                         case 5: Pilings(bank, p, seed++, dark, rope); ReedClump(bank, p + new Vector3(0.5f, 0f, 0.4f), seed++, reed); break;
-                        default: ReedClump(bank, p, seed++, reed); ReedClump(bank, p + new Vector3(0.6f, 0f, 0.5f), seed++, reed); break;
+                        default:
+                            // 갈대 자리 37%는 늘어진 전나무 (뒤틀린 나무, PrototypeSceneBuilder.Trees.cs) — 망루·배·말뚝 자리는 그대로
+                            if (SlotHash(seed, 41) < TwistedRatio(2)) { TwistedTree(bank, p, 2, seed++); break; }
+                            ReedClump(bank, p, seed++, reed); ReedClump(bank, p + new Vector3(0.6f, 0f, 0.5f), seed++, reed); break;
                     }
                 }
                 StripColliders(bank);

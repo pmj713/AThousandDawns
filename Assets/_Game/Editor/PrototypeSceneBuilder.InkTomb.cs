@@ -44,6 +44,7 @@ namespace AThousandDawns.EditorTools
                 foreach (Transform cluster in forest)
                 {
                     var p = cluster.localPosition;
+                    if (SlotHash(seed, 51) < TwistedRatio(3)) { TwistedTree(crypt, p, 3, seed++); i++; continue; }   // 석물 자리 50%는 마른 고목 (뒤틀린 나무, PrototypeSceneBuilder.Trees.cs)
                     switch (i++ % 6)
                     {
                         case 0: LanternPillar(crypt, p, seed++, stoneMat, red, roofX); break;
