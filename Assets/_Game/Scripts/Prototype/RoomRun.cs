@@ -208,6 +208,7 @@ namespace AThousandDawns.Prototype
                 case Phase.Floor:
                     TickWater(Time.deltaTime); // 장강 물: 느려지고 물살에 밀려요
                     TickJars(); // 항아리는 싸우는 중에도 부딪히면 깨져요
+                    WatchStuckExit(); // 열린 문 앞에서 못 나가면 그때 상태를 한 번 남겨요 (플레이테스트 11-27 진단)
                     if (_fighting) TickFight();
                     else TickFloorExits();
                     break;
@@ -398,6 +399,34 @@ namespace AThousandDawns.Prototype
             var dir = FloorMap.Directions[FloorMap.Opposite(movedDirection)];
             float inset = dir.x != 0 ? Combat.size.x * 0.5f - 1.5f : Combat.size.y * 0.5f - 1.5f;
             return Combat.center + new Vector3(dir.x, 0f, dir.y) * inset;
+        }
+
+        // 출구 막힘 진단 (플레이테스트 11-27: 폐사찰 "?" 방 · 천마총에서 담 틈 앞에 섰는데 못 나갔어요. 코드로는 원인을 못 좁혀서)
+        //   막음 벽이 꺼진 (틈이 보이는) 문 앞에 1.5초 넘게 서 있으면, 그때 판 상태와 주변 충돌체를 콘솔에 한 번 남겨요
+        float _stuckTimer;
+        bool _stuckLogged;
+        void WatchStuckExit()
+        {
+            if (_room == null || Player == null) return;
+            Vector3 p = Player.transform.position;
+            int door = -1;
+            for (int d = 0; d < 4; d++)
+            {
+                var dir = FloorMap.Directions[d];
+                float half = dir.x != 0 ? Combat.size.x * 0.5f : Combat.size.y * 0.5f;
+                var plug = Combat.plugs[d];
+                if ((plug == null || !plug.activeSelf) && Flat(p - (Combat.center + new Vector3(dir.x, 0f, dir.y) * half)).magnitude < 1.6f) { door = d; break; }
+            }
+            if (door < 0) { _stuckTimer = 0f; _stuckLogged = false; return; }
+            _stuckTimer += Time.deltaTime;
+            if (_stuckTimer < 1.5f || _stuckLogged) return;
+            _stuckLogged = true;
+            var next = _map.Neighbor(_room, door);
+            var hits = new System.Text.StringBuilder();
+            foreach (var c in Physics.OverlapSphere(p, 1.2f, ~0, QueryTriggerInteraction.Ignore))
+                if (!c.transform.IsChildOf(Player.transform)) hits.Append($"{c.name}({(c.transform.parent != null ? c.transform.parent.name : "-")}) ");
+            Debug.LogWarning($"[출구 막힘 진단] 지역 {_region} · 방 {_room.Kind} {_room.Cell} · 문 {door} · 싸우는 중 {_fighting} · 기물 창 {OffersOpen} · 이벤트 {IsInEvent} · " +
+                             $"옆방 {(next == null ? "없음" : next.Kind + (FloorMap.IsOpen(next) ? " 열림" : " 닫힘"))} · 출구 자리까지 {Flat(p - ExitPoint(door)).magnitude:F2} (반경 {Combat.exitRadius}) · 주변 충돌체 {hits}");
         }
 
         Vector3 ExitPoint(int direction)
