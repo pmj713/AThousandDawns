@@ -55,8 +55,9 @@ namespace AThousandDawns.Prototype
             if (!_rackOpen || Player == null) return;
             UiScale.Apply();
             GUI.depth = -5;
-            if (_rackSword == null) _rackSword = Resources.Load<Texture2D>("HintArt/basic_attack");
-            if (_rackDagger == null) _rackDagger = Resources.Load<Texture2D>("HintArt/dagger");
+            // 거치대 전용 채색 수묵 그림 (사건 그림과 같은 화풍). 없으면 힌트 책 그림
+            if (_rackSword == null) _rackSword = Resources.Load<Texture2D>("HintArt/rack_sword") ?? Resources.Load<Texture2D>("HintArt/basic_attack");
+            if (_rackDagger == null) _rackDagger = Resources.Load<Texture2D>("HintArt/rack_dagger") ?? Resources.Load<Texture2D>("HintArt/dagger");
             var old = GUI.color;
             GUI.color = new Color(0f, 0f, 0f, 0.55f); // 뒤를 어둡게
             GUI.DrawTexture(new Rect(0, 0, UiScale.Width, UiScale.Height), Texture2D.whiteTexture);
@@ -102,7 +103,7 @@ namespace AThousandDawns.Prototype
             GUI.Label(new Rect(card.x + 16, y + 32, card.width - 32, 26), open ? about : "회귀록 무기 가지에서 열려요", AThousandDawns.Fx.InkUi.Text(AThousandDawns.Fx.InkUi.Small, AThousandDawns.Fx.InkUi.SubInk, TextAnchor.MiddleCenter));
             var button = new Rect(card.center.x - 90, card.yMax - 60, 180, 44);
             if (equipped)
-                GUI.Label(button, "장착 중", AThousandDawns.Fx.InkUi.Text(AThousandDawns.Fx.InkUi.Label, AThousandDawns.Fx.InkUi.Accent, TextAnchor.MiddleCenter, true));
+                AThousandDawns.Fx.InkUi.Stamp(button, "장착 중"); // 눌리지 않는 금빛 도장 (버튼과 구분)
             else if (!open)
                 GUI.Label(button, "잠김", AThousandDawns.Fx.InkUi.Text(AThousandDawns.Fx.InkUi.Label, AThousandDawns.Fx.InkUi.Muted, TextAnchor.MiddleCenter, true));
             else if (AThousandDawns.Fx.InkUi.Button(button, "장착", AThousandDawns.Fx.InkUi.Label))

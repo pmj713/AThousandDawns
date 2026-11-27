@@ -177,6 +177,8 @@ namespace AThousandDawns.Fx
             Load();
             var old = GUI.color;
             GUI.color = fill;
+            // 안쪽은 불투명하게 한 겹 (번진 먹 그림은 가운데도 알파가 0.8~0.9라 뒤의 글자 · 표시가 비쳤어요: 무기 거치대 "거치대" 유령 글자)
+            if (fill.a >= 0.95f) GUI.DrawTexture(Grow(rect, -0.03f), Texture2D.whiteTexture);
             if (_swatch != null) GUI.DrawTexture(Grow(rect, 0.02f), _swatch, ScaleMode.StretchToFill);
             else GUI.DrawTexture(rect, Texture2D.whiteTexture);
             if (_frame != null)   // 가는 금갈색 붓선 (플레이테스트 11-27: 통째로 늘인 남빛 붓 테두리가 큰 창에선 굵은 띠가 돼 글자를 가리고 종이 밖으로 비어져 나왔어요)
@@ -187,9 +189,9 @@ namespace AThousandDawns.Fx
             GUI.color = old;
         }
 
-        // 작은 기호 버튼 (− · + 등, 한지 화면): 옅은 한지 칸 + 가는 금갈색 붓선 + 또렷한 먹 기호. 마우스 · 누름은 연한 주홍, 쓸 수 없으면 흐리게.
-        //   먹 붓 버튼 그림(InkButton)은 가장자리 번짐이 28px라, 44px 버튼에선 칸 전체가 남빛 먹 덩어리가 됐어요
-        public static bool SmallButton(Rect rect, string text, GUIStyle textStyle)
+        // 한지 버튼 (한지 화면의 글자 · 기호 버튼): 옅은 한지 칸 + 가는 금갈색 붓선 + 또렷한 먹 글자. 마우스 · 누름은 연한 주홍, 쓸 수 없으면 흐리게.
+        //   먹 붓 버튼 그림(InkButton)은 가장자리 번짐이 28px라, 작은 버튼은 칸 전체가 남빛 먹 덩어리가 되고 큰 버튼도 글자가 먹에 묻혔어요
+        public static bool PaperButton(Rect rect, string text, GUIStyle textStyle)
         {
             Load();
             bool over = GUI.enabled && rect.Contains(Event.current.mousePosition);
@@ -203,7 +205,24 @@ namespace AThousandDawns.Fx
             return GUI.Button(rect, text, textStyle);
         }
 
-        public static void PaperPanel(Rect rect) => PaperPanel(rect, new Color(1f, 0.99f, 0.96f, 0.97f)); // 밝고 거의 불투명하게 (짙은 먹 글자와 대비)
+        // 눌리지 않는 상태 표시 (예: 무기 거치대 "장착 중"): 옅은 금빛 칸 + 두 겹 금빛 붓선 (버튼과 달리 마우스에 반응하지 않아요)
+        public static void Stamp(Rect rect, string text, GUIStyle textStyle)
+        {
+            Load();
+            var old = GUI.color;
+            GUI.color = new Color(1f, 0.92f, 0.7f, 1f);
+            GUI.DrawTexture(rect, Texture2D.whiteTexture);
+            if (_frame != null)
+            {
+                GUI.color = new Color(0.78f, 0.56f, 0.12f, 1f);
+                FrameStrips(rect, 3f);
+                FrameStrips(Grow(rect, -0.12f), 2f);
+            }
+            GUI.color = old;
+            GUI.Label(rect, text, textStyle);
+        }
+
+        public static void PaperPanel(Rect rect) => PaperPanel(rect, new Color(1f, 0.99f, 0.96f, 1f)); // 밝고 불투명하게 (짙은 먹 글자와 대비 · 뒤가 비치지 않게)
 
         // ── 장비 화면 (차원 겹침): 인체 경혈도 위 장비 칸 10개 (MeridianScreen.DrawBody가 불러요)
 

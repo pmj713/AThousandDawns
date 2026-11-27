@@ -53,11 +53,15 @@ namespace AThousandDawns.Fx
             return s;
         }
 
-        // 작은 정사각 버튼(64px 이하, − · + 같은 기호)은 한지 칸 버튼으로 (먹 붓 바탕이 칸 전체를 덮어 얼룩처럼 보였어요)
-        public static bool Button(Rect rect, string text, int size = Label) =>
-            rect.width <= 64f && rect.height <= 64f
-                ? InkMeridianArt.SmallButton(rect, text, Text(size + 4, GUI.enabled ? Ink : Muted, TextAnchor.MiddleCenter, true))
-                : GUI.Button(rect, text, ButtonStyle(size));
+        // 한지 화면 버튼 (영혼수련 · 무기 거치대): 한지 칸 + 가는 붓선 + 또렷한 먹 글자 (먹 붓 바탕에 글자가 묻혔어요). 작은 기호 버튼은 글자를 조금 크게
+        public static bool Button(Rect rect, string text, int size = Label)
+        {
+            bool small = rect.width <= 64f && rect.height <= 64f;
+            return InkMeridianArt.PaperButton(rect, text, Text(small ? size + 4 : size, GUI.enabled ? Ink : Muted, TextAnchor.MiddleCenter, true));
+        }
+
+        // 눌리지 않는 상태 표시 (금빛 도장)
+        public static void Stamp(Rect rect, string text, int size = Label) => InkMeridianArt.Stamp(rect, text, Text(size, Accent, TextAnchor.MiddleCenter, true));
 
         public static void Window(Rect rect) => InkMeridianArt.PaperPanel(rect);
         public static void Window(Rect rect, Color fill) => InkMeridianArt.PaperPanel(rect, fill);
