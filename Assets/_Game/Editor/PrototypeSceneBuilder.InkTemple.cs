@@ -567,6 +567,7 @@ namespace AThousandDawns.EditorTools
                 new[] { new GameObject("죽림 분위기 (없음)"), air, riverAir, tombAir },
                 dressing,
                 new[] { BambooFloorTileScale, 1f, 1f, 1f });   // 죽림 바닥만 타일 2.5배
+            look.gameObject.AddComponent<AThousandDawns.Art.InkRoomFog>().Setup(dressing);   // 맵 바깥 안개 (방 벽에서 멀어질수록 지역 그늘색)
         }
 
         // 흩어진 오브젝트를 한 번에 켜고 끄는 묶음: 실제로는 부모를 바꾸지 않고, 켜고 끌 때 같이 따라오게 표시 오브젝트에 매달아요

@@ -74,8 +74,14 @@ namespace AThousandDawns.EditorTools
             var fx = cam.GetComponent<AThousandDawns.Art.InkPaperPostFX>();
             if (fx != null) Object.DestroyImmediate(fx);
 
-            // 원근 안개는 꺼요: 위에서 내려다보는 화면이라 벽 너머 풍경까지 안개에 묻혀 색이 빠져 보였어요
-            RenderSettings.fog = false;
+            // 원근 안개는 꺼요: 위에서 내려다보는 화면이라 벽 너머 풍경까지 안개에 묻혀 색이 빠져 보였어요.
+            //   대신 맵 바깥 안개(InkRoomFog: 방 벽에서 멀어질수록)를 Ink 셰이더가 MixFog로 그려요 — 장면 안개는 켜 두되 선형 · 시작 5000이라
+            //   카메라 거리 안개는 생기지 않고, 안개 셰이더 변형만 빌드에 남아요. 안개색은 InkRoomFog가 지역마다 바꿔요
+            RenderSettings.fog = true;
+            RenderSettings.fogMode = FogMode.Linear;
+            RenderSettings.fogStartDistance = 5000f;
+            RenderSettings.fogEndDistance = 5001f;
+            RenderSettings.fogColor = new Color(0.25f, 0.29f, 0.17f);
         }
 
         // Prototype_Run의 층 방(CombatSize 20×12, 네 변 가운데 폭 3 문)과 같은 자리에 2D 그림을 둬요.

@@ -42,6 +42,7 @@ Shader "AThousandDawns/InkCharacter"
 
         HLSLINCLUDE
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+        #include "InkRoomFog.hlsl"   // 맵 바깥 안개 (방 테두리에서 멀어질수록)
 
         TEXTURE2D(_BaseMap);
         SAMPLER(sampler_BaseMap);
@@ -183,7 +184,7 @@ Shader "AThousandDawns/InkCharacter"
                 output.positionCS = pos.positionCS;
                 output.positionWS = pos.positionWS;
                 output.normalWS = TransformObjectToWorldNormal(input.normalOS);
-                output.fogFactor = ComputeFogFactor(pos.positionCS.z);
+                output.fogFactor = InkRoomFog(pos.positionWS);
                 output.uv = TRANSFORM_TEX(input.uv, _BaseMap);
                 output.positionOS = input.positionOS.xyz;
                 output.color = input.color;
@@ -280,7 +281,7 @@ Shader "AThousandDawns/InkCharacter"
                 positionCS.xy += dir * (_OutlineWidth * (1.0 - _InkCharOutlineThin) * brush * 2.0 / _ScreenParams.xy) * positionCS.w;
 
                 output.positionCS = positionCS;
-                output.fogFactor = ComputeFogFactor(positionCS.z);
+                output.fogFactor = InkRoomFog(positionWS);
                 output.positionOS = input.positionOS.xyz;
                 return output;
             }

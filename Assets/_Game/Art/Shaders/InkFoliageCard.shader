@@ -27,6 +27,7 @@ Shader "AThousandDawns/InkFoliageCard"
 
         HLSLINCLUDE
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+        #include "InkRoomFog.hlsl"   // 맵 바깥 안개 (방 테두리에서 멀어질수록)
 
         TEXTURE2D(_BaseMap);
         SAMPLER(sampler_BaseMap);
@@ -100,7 +101,7 @@ Shader "AThousandDawns/InkFoliageCard"
                 output.positionWS = positionWS;
                 output.normalWS = TransformObjectToWorldNormal(input.normalOS);
                 output.uv = TRANSFORM_TEX(input.uv, _BaseMap);
-                output.fogFactor = ComputeFogFactor(output.positionCS.z);
+                output.fogFactor = InkRoomFog(positionWS);
                 return output;
             }
 

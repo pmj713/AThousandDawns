@@ -45,6 +45,7 @@ Shader "AThousandDawns/InkTriplanar"
 
         HLSLINCLUDE
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+        #include "InkRoomFog.hlsl"   // 맵 바깥 안개 (방 테두리에서 멀어질수록)
 
         TEXTURE2D(_BaseMap);
         SAMPLER(sampler_BaseMap);
@@ -144,7 +145,7 @@ Shader "AThousandDawns/InkTriplanar"
                 output.positionCS = pos.positionCS;
                 output.positionWS = pos.positionWS;
                 output.normalWS = TransformObjectToWorldNormal(input.normalOS);
-                output.fogFactor = ComputeFogFactor(pos.positionCS.z);
+                output.fogFactor = InkRoomFog(pos.positionWS);
                 output.vertexInk = input.color.rg * _VertexInk;
                 return output;
             }
@@ -230,7 +231,7 @@ Shader "AThousandDawns/InkTriplanar"
                 //   두께 0인 윤곽이 앞면과 깊이 싸움을 해서 그리는 순서(정적 배칭·카메라 이동)에 따라 짙은 윤곽색으로 번쩍였어요
                 if (_OutlineWidth <= 0.001) positionCS = float4(0, 0, 0, 1);   // 모든 꼭짓점이 한 점 → 넓이 0 삼각형은 래스터되지 않아요
                 output.positionCS = positionCS;
-                output.fogFactor = ComputeFogFactor(positionCS.z);
+                output.fogFactor = InkRoomFog(positionWS);
                 return output;
             }
 
