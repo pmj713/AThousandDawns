@@ -59,7 +59,7 @@ namespace AThousandDawns.Enemies
             Sfx.Stop(_horn, 0.3f); // 소환하면 나팔도 끝
             if (!Director.TryUseSummon()) return;
             for (int i = 0; i < _summonCount; i++)
-                Director.SpawnSummon(SummonKind, Director.FindFreeSpot(transform.position, CallRadius + 0.3f), givesXp: true); // 일반 적이 부른 도움은 수련치를 줘요
+                Director.SpawnSummon(SummonKind, Director.FindFreeSpot(transform.position, CallRadius + 0.3f)); // 부른 도움은 수련치 없음 (플레이테스트 11-27: 소환된 적은 일반·보스 모두 수련치 없음)
         }
 
         protected override void TickActive(float dt) { }

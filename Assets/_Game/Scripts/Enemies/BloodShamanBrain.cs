@@ -72,6 +72,7 @@ namespace AThousandDawns.Enemies
             var risen = Director.Spawn(c.Kind, Director.FindFreeSpot(c.At, 1f)); // 지역 배율은 쓰러진 적 수치로 맞춰요
             if (risen == null) return;
             risen.Revived = true;
+            risen.NoXp = true; // 되살린 적은 소환이라 수련치 없음 (플레이테스트 11-27: 한 번 더 수련치를 줬어요)
             risen.Allied = c.Allied; // 협력하던 적은 협력한 채로
             risen.Damageable.ScaleMaxHealth(c.MaxHealth * _ratio / Mathf.Max(1f, risen.Damageable.MaxHealth));
             risen.ScaleAttack(c.Attack / Mathf.Max(0.01f, risen.AttackStat));

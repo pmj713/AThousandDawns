@@ -79,7 +79,7 @@ namespace AThousandDawns.Enemies
         public System.Action<EnemyBrain> SummonScale;
 
         // 보스·고수가 부른 부하 (혈불 목탁승 · 철룡 · 녹림왕 · 고블린 족장 · 사신 기사)는 쓰러뜨려도 수련치가 없어요 (기본).
-        // 일반 적이 부른 도움 (나팔수)과 정예·슬라임 분열은 givesXp: true로 수련치를 그대로 줘요
+        // 소환된 적은 누가 불렀든 수련치 없음 (플레이테스트 11-27). 정예·슬라임 분열만 부모를 따라 givesXp로 정해요
         public EnemyBrain SpawnSummon(EnemyKind kind, Vector3 position, bool givesXp = false)
         {
             var enemy = Spawn(kind, position);
@@ -191,6 +191,8 @@ namespace AThousandDawns.Enemies
             foreach (var f in FindObjectsByType<EnemyFirePatch>(FindObjectsSortMode.None)) Destroy(f.gameObject);
             foreach (var b in FindObjectsByType<BloodBurst>(FindObjectsSortMode.None)) Destroy(b.gameObject);
             foreach (var p in FindObjectsByType<AThousandDawns.Combat.FirePatch>(FindObjectsSortMode.None)) Destroy(p.gameObject);
+            // 서리 길 (빙결 수정 장화 · 한철 비녀, 플레이테스트 11-27): 방은 같은 자리를 다시 써서 다음 방 같은 자리에 하늘색 길이 남아 있었어요
+            foreach (var t in FindObjectsByType<AThousandDawns.Combat.FrostTrail>(FindObjectsSortMode.None)) Destroy(t.gameObject);
             RoomReset?.Invoke();
         }
 

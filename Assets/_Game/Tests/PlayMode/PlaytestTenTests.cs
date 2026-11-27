@@ -100,11 +100,11 @@ namespace AThousandDawns.Tests
             Assert.AreEqual(level, _player.Level.Level);
             Assert.AreEqual(xp, _player.Level.Xp, "보스가 부른 부하는 수련치 0");
 
-            var called = _director.SpawnSummon(EnemyKind.Grunt, Ahead(4f), givesXp: true); // 나팔수가 부른 도움
+            var called = _director.SpawnSummon(EnemyKind.Grunt, Ahead(4f), givesXp: true); // 정예·슬라임 분열 (부모가 일반 적이면 수련치를 줘요 · 소환은 플레이테스트 11-27부터 모두 수련치 없음)
             Assert.IsFalse(called.NoXp);
             called.Damageable.ApplyHit(99999, false);
             yield return null;
-            Assert.IsTrue(_player.Level.Level > level || _player.Level.Xp > xp, "일반 적이 부른 도움은 수련치를 줘요");
+            Assert.IsTrue(_player.Level.Level > level || _player.Level.Xp > xp, "일반 적에서 갈라진 적은 수련치를 줘요");
         }
 
         [Test]

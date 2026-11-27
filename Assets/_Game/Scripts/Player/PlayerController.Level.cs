@@ -5,7 +5,7 @@ using AThousandDawns.Enemies;
 namespace AThousandDawns.Player
 {
     // 수련치와 레벨업 (수련치 탭, 경맥도 탭 혈자리).
-    //   적을 쓰러뜨리면 등급만큼 수련치 (일반 1 · 정예 5 · 살수 5 · 고수 15 · 보스 30). 보스·고수가 부른 부하는 0 (EnemyBrain.NoXp).
+    //   적을 쓰러뜨리면 등급만큼 수련치 (일반 1 · 정예 5 · 살수 5 · 고수 15 · 보스 30). 소환된 적(나팔수 도움 · 되살아난 적 · 보스·고수 부하)은 0 (EnemyBrain.NoXp).
     //   레벨업 순간: 최대 체력 +5 (현재 체력도 같이) · 몸이 빛남. 혈자리는 개혈 대기로 쌓였다가 경맥도에서 골라요.
     public sealed partial class PlayerController
     {
