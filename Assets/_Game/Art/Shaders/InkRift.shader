@@ -30,6 +30,7 @@ Shader "AThousandDawns/InkRift"
             #pragma vertex Vert
             #pragma fragment Frag
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "InkRoomFog.hlsl"   // 맵 바깥 안개: 더하기 빛이라 안개 속에선 빛을 줄여 사라지게 (안개색으로 섞지 않아요)
 
             CBUFFER_START(UnityPerMaterial)
                 half4 _CoreColor;
@@ -45,6 +46,7 @@ Shader "AThousandDawns/InkRift"
                 float4 positionCS : SV_POSITION;
                 float2 uv : TEXCOORD0;
                 float seed : TEXCOORD1;
+                half fog : TEXCOORD2;
             };
 
             float Hash12(float2 p)
@@ -68,6 +70,7 @@ Shader "AThousandDawns/InkRift"
                 output.positionCS = TransformWorldToHClip(world);
                 output.uv = input.uv;
                 output.seed = (world.x + world.z) * 0.37;   // 이어진 값 (판 하나 안에서 끊기지 않게)
+                output.fog = InkRoomFog(world);
                 return output;
             }
 
@@ -84,7 +87,7 @@ Shader "AThousandDawns/InkRift"
                 half3 color = lerp(_EdgeColor.rgb, _CoreColor.rgb, core);
                 float pulse = 0.75 + 0.25 * sin(t * 2.0 + uv.y * 7.0);
                 float alpha = smoothstep(0.0, 0.35, a) * pulse * (0.75 + 0.6 * _Boost);
-                return half4(color, saturate(alpha));
+                return half4(color, saturate(alpha) * input.fog);
             }
             ENDHLSL
         }

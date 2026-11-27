@@ -29,6 +29,7 @@ Shader "AThousandDawns/InkFlame"
             #pragma fragment Frag
             #pragma multi_compile_fog
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "InkRoomFog.hlsl"   // 맵 바깥 안개 (석등 불 등): 방 벽에서 멀어질수록 안개색으로
 
             CBUFFER_START(UnityPerMaterial)
                 half4 _CoreColor;
@@ -71,7 +72,7 @@ Shader "AThousandDawns/InkFlame"
                 output.uv = input.uv;
                 float3 origin = TransformObjectToWorld(float3(0, 0, 0));
                 output.seed = Hash12(origin.xz * 3.7) * 17.0;
-                output.fogFactor = ComputeFogFactor(pos.positionCS.z);
+                output.fogFactor = InkRoomFog(pos.positionWS);
                 return output;
             }
 
