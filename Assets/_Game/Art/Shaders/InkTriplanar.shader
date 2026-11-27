@@ -226,6 +226,9 @@ Shader "AThousandDawns/InkTriplanar"
                 float brush = 0.5;   // 채색 전환: 붓 떨림 없는 고른 가는 윤곽
                 positionCS.xy += dir * (_OutlineWidth * brush * 2.0 / _ScreenParams.xy) * positionCS.w;
 
+                // 외곽선 두께 0 (잎 등): 패스를 아예 그리지 않아요. 앞뒤 두 면 잎 카드는 뒷면이 앞면과 같은 깊이라,
+                //   두께 0인 윤곽이 앞면과 깊이 싸움을 해서 그리는 순서(정적 배칭·카메라 이동)에 따라 짙은 윤곽색으로 번쩍였어요
+                if (_OutlineWidth <= 0.001) positionCS = float4(0, 0, 0, 1);   // 모든 꼭짓점이 한 점 → 넓이 0 삼각형은 래스터되지 않아요
                 output.positionCS = positionCS;
                 output.fogFactor = ComputeFogFactor(positionCS.z);
                 return output;
