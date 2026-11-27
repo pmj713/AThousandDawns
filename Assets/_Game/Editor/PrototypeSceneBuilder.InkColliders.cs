@@ -76,6 +76,9 @@ namespace AThousandDawns.EditorTools
                 ["Laundry Line (빨랫줄)"] = new[] { (new Vector3(0f, 0.95f, 0f), new Vector3(3.6f, 1.9f, 0.3f)) },   // 기둥 사이 빨래 줄 전체
                 // 사당: 기둥·뒷벽 안쪽만 (상호작용 자리는 북동 모서리 바깥이라 옆·뒤에서 닿아요) + 옆 석등
                 ["Shrine (사당)"] = new[] { (new Vector3(0f, 0.9f, 0f), new Vector3(1.95f, 1.8f, 1.5f)), (new Vector3(1.75f, 0.6f, -1.05f), new Vector3(0.5f, 1.2f, 0.5f)) },
+                // 뒷산 동굴 (영혼수련, 플레이테스트 11-27: 캐릭터가 입구 모델을 뚫고 지나갔어요): 산자락 바위 줄 + 바위 아치·계단·비석 입구 (VARCO, 폭 3.8 · 깊이 4.2)
+                //   입구 앞쪽 끝은 z −1.1 — 상호작용 자리(가운데 0,0,0, 반경 village.interact_radius 1.8) 안에 설 수 있게 남겨요
+                ["Cave (뒷산 동굴)"] = new[] { (new Vector3(0f, 0.8f, 1.5f), new Vector3(7.2f, 1.6f, 2.4f)), (new Vector3(0f, 1.2f, 0.8f), new Vector3(3.8f, 2.4f, 3.8f)) },
             };
             int added = 0;
             foreach (var t in Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
